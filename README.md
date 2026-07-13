@@ -1,6 +1,42 @@
+:warning: **AI operators:** start with [`AGENTS.md`](./AGENTS.md).
+
 # Synth v2
 
-Synth is a deterministic execution system for engineering work. It turns ideas into approved missions, missions into expeditions, and expeditions into a replayable history of events. State is never edited directly — it is derived from events, and replay proves that the derived state is correct.
+> **Humans explore. SYNTH remembers. AI executes deterministically.**
+>
+> From an idea to replayable software through **Missions**, **Expeditions**, and **Proof**.
+
+Synth turns human intent into approved Missions, Missions into bounded Expeditions, and every action into an immutable Event. State is never edited directly — it is derived from Events, and Replay proves that the derived State is correct.
+
+## Install
+
+Install globally with npm:
+
+```bash
+npm install -g @synth-framework/synth
+```
+
+Or run once with npx:
+
+```bash
+npx @synth-framework/synth --version
+```
+
+For contributors, you can also clone the repository and run `npm install`.
+
+## Quick Start
+
+Initialize a project, create a Mission Draft, and validate:
+
+```bash
+synth init --name "My Project"
+synth mission create --subject "Adopt SYNTH" --purpose "Make our engineering work replayable"
+# review the draft, then approve:
+synth mission approve --draft-id <draft-id>
+npm run govern
+```
+
+For the full operator journey, see [`docs/operator/01-getting-started.md`](docs/operator/01-getting-started.md).
 
 ## Why Synth
 
@@ -21,30 +57,6 @@ Everything in Synth is explained with seven concepts:
 | **Replay** | Rebuilding state from events to prove correctness |
 
 Everything else is implementation detail.
-
-## Install
-
-```bash
-git clone <repository-url>
-cd synth-v2
-npm install
-```
-
-## Quick Start
-
-Run the canonical governance pipeline:
-
-```bash
-npm run govern
-```
-
-This builds the project, runs the full test suite, verifies replay determinism, runs adversarial audits, and generates a proof artifact in `proof/`.
-
-To explore the operator journey:
-
-```bash
-npm run test:operator-journey
-```
 
 ## Documentation
 
