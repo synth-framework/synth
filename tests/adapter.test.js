@@ -59,12 +59,13 @@ test("GitRepositoryAdapter initializes a git repository", async () => {
 
 test("GitRepositoryAdapter reports status on initialized repo", async () => {
   initRepo()
+  const expectedBranch = execSync("git branch --show-current", { cwd: TEST_REPO, encoding: "utf-8" }).trim()
   const adapter = createGitRepositoryAdapter()
   await adapter.configure({ path: TEST_REPO, remote: "origin", defaultBranch: "main", promotionMode: "direct" })
   await adapter.enable()
   const status = await adapter.status()
   assert.strictEqual(status.initialized, true)
-  assert.strictEqual(status.branch, "main")
+  assert.strictEqual(status.branch, expectedBranch)
   assert.strictEqual(status.uncommittedChanges, false)
   assert.strictEqual(status.adapterEnabled, true)
 })
