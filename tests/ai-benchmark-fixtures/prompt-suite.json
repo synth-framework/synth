@@ -1,0 +1,24 @@
+[
+  {
+    "id": "bootstrap",
+    "name": "Bootstrap repository",
+    "description": "Initialize the repository with SYNTH, approve the initial Mission, and run governance.",
+    "commands": [
+      {
+        "program": "synth",
+        "args": ["bootstrap", "--approve"]
+      }
+    ]
+  },
+  {
+    "id": "replay",
+    "name": "Explain Replay",
+    "description": "Verify replay consistency and explain the execution.",
+    "commands": [
+      {
+        "program": "synth",
+        "args": ["explain", "replay"]
+      }
+    ]
+  }
+]

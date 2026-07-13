@@ -1,0 +1,9 @@
+{
+  "name": "synth-benchmark-polyglot",
+  "version": "1.0.0",
+  "description": "Synthetic polyglot repository for AI benchmark",
+  "type": "module",
+  "scripts": {
+    "govern": "node --version"
+  }
+}

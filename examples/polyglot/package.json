@@ -1,0 +1,9 @@
+{
+  "name": "synth-example-polyglot",
+  "version": "1.0.0",
+  "description": "Polyglot repository analysis example for Synth",
+  "type": "module",
+  "scripts": {
+    "govern": "node scripts/run.js"
+  }
+}

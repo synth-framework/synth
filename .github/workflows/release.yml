@@ -1,0 +1,43 @@
+# ============================================================
+# Synth Release Workflow
+# ============================================================
+# Creates a semantic-versioned release, generates a changelog
+# entry, and attaches the latest proof artifact.
+#
+# Trigger: push a tag matching v*.*.*
+# ============================================================
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run governance pipeline
+        run: npm run govern
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            proof/proof-*.json
+          generate_release_notes: true

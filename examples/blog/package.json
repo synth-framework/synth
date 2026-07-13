@@ -1,0 +1,9 @@
+{
+  "name": "synth-example-blog",
+  "version": "1.0.0",
+  "description": "Content publishing example for Synth",
+  "type": "module",
+  "scripts": {
+    "govern": "node scripts/run.js"
+  }
+}

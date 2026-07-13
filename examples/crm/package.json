@@ -1,0 +1,9 @@
+{
+  "name": "synth-example-crm",
+  "version": "1.0.0",
+  "description": "Customer relationship management example for Synth",
+  "type": "module",
+  "scripts": {
+    "govern": "node scripts/run.js"
+  }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture — Synth</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="docs.html">Docs</a>
+        <a href="quick-start.html">Quick Start</a>
+        <a href="examples.html">Examples</a>
+        <a href="mission-studio.html">Mission Studio</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="community.html">Community</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Architecture</h1>
+      <p>Synth explained using only the seven public concepts.</p>
+    </section>
+
+    <section>
+      <h2>The public flow</h2>
+      <div class="code-block"><code>Idea → Mission → Planning → Approval → Commit → Execution → Events → State → Replay</code></div>
+    </section>
+
+    <section>
+      <h2>Step by step</h2>
+      <ol class="steps">
+        <li><strong>Idea</strong> — Someone describes what they want to achieve.</li>
+        <li><strong>Mission</strong> — The idea becomes a strategic goal.</li>
+        <li><strong>Planning</strong> — Evidence is gathered and expeditions are defined.</li>
+        <li><strong>Approval</strong> — The plan is reviewed and approved.</li>
+        <li><strong>Commit</strong> — The approved plan is committed.</li>
+        <li><strong>Execution</strong> — Actions are requested and, if allowed, recorded.</li>
+        <li><strong>Events</strong> — Every action is appended as an immutable record.</li>
+        <li><strong>State</strong> — The current picture is derived from events.</li>
+        <li><strong>Replay</strong> — The event log is replayed to prove correctness.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>What is not shown</h2>
+      <p>Internal components are intentionally omitted from public architecture explanations. Operators do not need to know them to use Synth correctly.</p>
+      <p>Read the full <a href="https://github.com/synth-dev/synth-v2/blob/main/docs/reference/public-architecture.md">Public Architecture Overview</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="index.html">← Back to Synth</a></p>
+  </footer>
+</body>
+</html>

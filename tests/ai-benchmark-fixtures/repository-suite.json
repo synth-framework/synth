@@ -1,0 +1,23 @@
+[
+  {
+    "id": "empty",
+    "name": "Empty Repository",
+    "path": "tests/ai-benchmark-fixtures/repos/empty",
+    "type": "empty",
+    "description": "Empty repository."
+  },
+  {
+    "id": "node",
+    "name": "Node.js Repository",
+    "path": "tests/ai-benchmark-fixtures/repos/node",
+    "type": "node",
+    "description": "Synthetic Node.js repository with a fast governance script."
+  },
+  {
+    "id": "polyglot",
+    "name": "Polyglot Repository",
+    "path": "tests/ai-benchmark-fixtures/repos/polyglot",
+    "type": "polyglot",
+    "description": "Synthetic repository with TypeScript and Python."
+  }
+]

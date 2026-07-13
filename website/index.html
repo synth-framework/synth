@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synth — Deterministic Engineering System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="docs.html">Docs</a>
+        <a href="quick-start.html">Quick Start</a>
+        <a href="examples.html">Examples</a>
+        <a href="mission-studio.html">Mission Studio</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="community.html">Community</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Engineering work with a permanent, replayable history.</h1>
+      <p>Synth turns ideas into approved missions, missions into expeditions, and every action into an immutable event. State is derived from history. Replay proves it is correct.</p>
+      <div class="cta-group">
+        <a href="quick-start.html" class="btn btn-primary">Get Started in 5 Minutes</a>
+        <a href="https://github.com/synth-dev/synth-v2" class="btn btn-secondary">View on GitHub</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Seven public concepts</h2>
+      <p>Synth is explained with exactly seven concepts. Everything else is implementation detail.</p>
+      <div class="card-grid">
+        <div class="card"><h3>Mission</h3><p>The strategic goal you are working toward.</p></div>
+        <div class="card"><h3>Expedition</h3><p>A bounded investigation or build that moves the mission forward.</p></div>
+        <div class="card"><h3>Evidence</h3><p>What you know and how confidently you know it.</p></div>
+        <div class="card"><h3>Plan</h3><p>The approved path forward, ready to execute.</p></div>
+        <div class="card"><h3>Event</h3><p>An immutable record that something happened.</p></div>
+        <div class="card"><h3>State</h3><p>The current picture, derived from events.</p></div>
+        <div class="card"><h3>Replay</h3><p>Rebuilding state from events to prove correctness.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>The public flow</h2>
+      <div class="code-block"><code>Idea → Mission → Planning → Approval → Commit → Execution → Events → State → Replay</code></div>
+      <p>Every step produces evidence. The event log is the source of truth. Replay verifies that the current state matches the history.</p>
+    </section>
+
+    <section>
+      <h2>Why Synth?</h2>
+      <div class="card-grid">
+        <div class="card"><h3>Auditability</h3><p>Every decision and action is recorded. Nothing is hidden.</p></div>
+        <div class="card"><h3>Determinism</h3><p>Same events produce the same state, every time.</p></div>
+        <div class="card"><h3>Governance</h3><p>Actions are checked against the approved plan before execution.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Synth v2 is frozen and in Era II — Adoption. <a href="https://github.com/synth-dev/synth-v2/blob/main/docs/adr/ADR-004-synth-eras-and-protected-assets.md">Read the governance model</a>.</p>
+  </footer>
+</body>
+</html>

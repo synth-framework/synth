@@ -1,0 +1,9 @@
+{
+  "name": "synth-example-monolith",
+  "version": "1.0.0",
+  "description": "Monolithic repository example for Synth",
+  "type": "module",
+  "scripts": {
+    "govern": "node scripts/run.js"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "synth-example-todo",
+  "version": "1.0.0",
+  "description": "Minimal task tracking example for Synth",
+  "type": "module",
+  "scripts": {
+    "govern": "node scripts/run.js"
+  }
+}

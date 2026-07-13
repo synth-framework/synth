@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Start — Synth</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="docs.html">Docs</a>
+        <a href="quick-start.html">Quick Start</a>
+        <a href="examples.html">Examples</a>
+        <a href="mission-studio.html">Mission Studio</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="community.html">Community</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Quick Start</h1>
+      <p>Install Synth and run the canonical governance pipeline in under five minutes.</p>
+    </section>
+
+    <section>
+      <h2>1. Install</h2>
+      <div class="code-block"><code>git clone https://github.com/synth-dev/synth-v2.git
+cd synth-v2
+npm install</code></div>
+    </section>
+
+    <section>
+      <h2>2. Run the governance pipeline</h2>
+      <div class="code-block"><code>npm run govern</code></div>
+      <p>This builds the project, runs the full test suite, verifies replay, runs adversarial audits, and generates a proof artifact in <code>proof/</code>.</p>
+    </section>
+
+    <section>
+      <h2>3. Run the operator journey</h2>
+      <div class="code-block"><code>npm run test:operator-journey</code></div>
+      <p>This automates the full Idea → Mission → Planning → Approval → Genesis → Execution → Replay → Documentation → Done journey.</p>
+    </section>
+
+    <section>
+      <h2>4. Try an example</h2>
+      <div class="code-block"><code>cd examples/todo
+npm run govern</code></div>
+      <p>Each example is a standalone project that demonstrates a real Synth mission.</p>
+    </section>
+
+    <section>
+      <h2>5. Read the operator guide</h2>
+      <p>Continue with <a href="https://github.com/synth-dev/synth-v2/blob/main/docs/operator/01-getting-started.md">Getting Started</a> to learn how to chart your first mission.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="index.html">← Back to Synth</a></p>
+  </footer>
+</body>
+</html>

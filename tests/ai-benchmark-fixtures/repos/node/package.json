@@ -1,0 +1,9 @@
+{
+  "name": "synth-benchmark-node",
+  "version": "1.0.0",
+  "description": "Synthetic Node.js repository for AI benchmark",
+  "type": "module",
+  "scripts": {
+    "govern": "node --version"
+  }
+}
