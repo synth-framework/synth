@@ -11,7 +11,8 @@
 **Product Boundary ADR:** [ADR-002 — Product Boundary](../adr/ADR-002-product-boundary.md)
 **v2.1 Charter ADR:** [ADR-003 — Synth v2.1 Validation Program Charter](../adr/ADR-003-v2-1-validation-program-charter.md)
 **Eras and Protected Assets ADR:** [ADR-004 — Synth Eras and Protected Assets](../adr/ADR-004-synth-eras-and-protected-assets.md)
-**Latest Verified Proof:** `proof/proof-2026-07-12T11-54-38-974Z.json`
+**Architecture Era Closure ADR:** [ADR-005 — Architecture Era Closure](../adr/ADR-005-architecture-era-closure.md)
+**Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
 
@@ -136,6 +137,7 @@ Freeze ADR: ADR-001
 Product Boundary ADR: ADR-002
 v2.1 Charter ADR: ADR-003
 Eras and Protected Assets ADR: ADR-004
+Architecture Era Closure ADR: ADR-005
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```

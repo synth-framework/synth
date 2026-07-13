@@ -47,6 +47,12 @@ Synth's lifecycle is divided into three eras. Versions exist within eras; eras a
 
 Every future decision is evaluated by a single question: **Which era does this belong to?** If the answer is Evolution but the project is still in Adoption, the work waits behind the lock.
 
+The Knowledge Graph Lock is strengthened as follows:
+
+> The Knowledge Graph is prohibited until SYNTH demonstrates repeatable adoption by independent operators. Architecture may not advance faster than understanding.
+
+The lock may only be lifted by an Architecture Expedition and a new ADR after adoption evidence shows that the frozen architecture is insufficient for real users.
+
 ### Protected Assets
 
 The following artifacts SHALL NOT be modified without an approved Architecture Expedition:

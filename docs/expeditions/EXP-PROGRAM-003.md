@@ -117,19 +117,24 @@ All work in this Program stays in the Allowed column:
 
 ## Knowledge Graph Development Lock
 
-The Knowledge Graph is designated as the foundational initiative for Era III. No implementation work on the Knowledge Graph, semantic search, graph-driven documentation, graph-native AI context, or graph-centered architecture may begin until the Validation Program is successfully completed.
+The Knowledge Graph is **prohibited** until SYNTH demonstrates repeatable adoption by independent operators.
+
+> **Architecture may not advance faster than understanding.**
+
+No implementation work on the Knowledge Graph, semantic search, graph-driven documentation, graph-native AI context, or graph-centered architecture may begin until the Adoption Era produces evidence that the frozen architecture is insufficient for real users. Speculative architectural advances are not enough.
 
 The lock may only be lifted when all of the following conditions are satisfied:
 
-- EXP-VAL-001 through EXP-VAL-006 are completed.
+- EXP-VAL-001 through EXP-VAL-007 are completed. ✅
 - A public GitHub repository is available.
-- The documentation website is deployed and automatically published from `main`.
-- The official installation experience is available and verified.
-- The certified example projects are published.
-- Human operator testing demonstrates successful onboarding.
-- AI benchmark testing demonstrates deterministic convergence across supported models.
+- The documentation website is deployed and automatically published from `main`. ✅ (pipeline in place)
+- The official installation experience is available and verified. ✅
+- The certified example projects are published. ✅
+- Human operator testing demonstrates successful onboarding by independent operators.
+- AI benchmark testing demonstrates deterministic convergence across supported models for representative repositories.
+- A documented, reproducible case exists where the frozen architecture prevented a real user from succeeding.
 
-Upon satisfaction of these conditions, the Validation Report serves as the evidence required to authorize Era III.
+Upon satisfaction of these conditions, an Architecture Expedition and a new ADR are required to lift the lock. The Validation Report alone is necessary but not sufficient.
 
 ---
 
@@ -181,5 +186,6 @@ Upon satisfaction of these conditions, the Validation Report serves as the evide
 - **AI Benchmark:** The SYNTH AI Benchmark harness is operational and reflects the corrected agentic Mission lifecycle. Dry-run produced perfect convergence across five emulated frontier models and three synthetic repositories. Results published in `docs/audits/SYNTH-AI-BENCHMARK-001.md`.
 - **Architecture unchanged:** No Protected Asset was modified by this Program. The Validation Program respected the Post-Freeze Rule.
 - **Governance verification:** Full `npm run govern` passed after EXP-VAL-007, producing an accepted proof: `proof/proof-2026-07-13T03-29-32-198Z.json`.
+- **Architecture Era Closure:** ADR-005 records that the Foundation Era is closed and that future architectural work is suspended until adoption evidence demonstrates insufficiency. The strengthened Knowledge Graph Lock is now in effect.
 - **Knowledge Graph lock:** Conditions for lifting the lock are documented. Live model benchmarking and public brownfield validation remain as future evidence-gathering activities under the lock, not as architecture work.
 - **Next era gate:** Era III (Evolution) may only begin after the Knowledge Graph lock conditions are satisfied by evidence.

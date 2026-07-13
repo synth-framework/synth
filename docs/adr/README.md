@@ -10,3 +10,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-002 — Product Boundary](ADR-002-product-boundary.md)
 - [ADR-003 — Synth v2.1 Validation Program Charter](ADR-003-v2-1-validation-program-charter.md)
 - [ADR-004 — Synth Eras and Protected Assets](ADR-004-synth-eras-and-protected-assets.md)
+- [ADR-005 — Architecture Era Closure](ADR-005-architecture-era-closure.md)
