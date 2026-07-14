@@ -27,7 +27,7 @@ This directory contains the canonical documentation for Synth v2.
 | [examples/](examples/) | Operators | Documentation for the example repositories |
 | [expeditions/](expeditions/) | Maintainers | Approved and proposed work |
 | [adr/](adr/) | Architects | Architecture Decision Records |
-| [generated/](generated/) | Tools | Auto-generated architecture guides |
+| generated/ | Tools | Auto-generated architecture guides |
 | [audits/](audits/) | Reviewers | Audit reports and certification evidence |
 
 ## Public Vocabulary

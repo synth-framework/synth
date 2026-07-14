@@ -220,7 +220,11 @@ test("${functionName} satisfies: ${requirement}", () => {
       return { success: true, passing: 0, failing: 0, message: "No TDD-generated tests to run" }
     }
 
-    const command = `node --test ${testFiles.map((f) => path.join(this.testDir(), f)).join(" ")}`
+    // Force the spec reporter so local and CI output are aligned, and so the
+    // diagnostic parse below sees stable ✔/✖ markers. The process exit code is
+    // the authoritative signal of success or failure; the symbol counts are
+    // used only for reporting.
+    const command = `node --test --test-reporter spec ${testFiles.map((f) => path.join(this.testDir(), f)).join(" ")}`
     try {
       const output = execSync(command, { cwd: process.cwd(), encoding: "utf-8", stdio: "pipe" } as any)
       const passing = (output.match(/✔/g) || []).length
@@ -229,7 +233,10 @@ test("${functionName} satisfies: ${requirement}", () => {
     } catch (err: any) {
       const output = err.stdout?.toString() || err.message || ""
       const passing = (output.match(/✔/g) || []).length
-      const failing = (output.match(/✖/g) || []).length
+      // If the process exited non-zero but no ✖ markers were parsed (e.g. a
+      // loader/module-resolution error wrote only to stderr), still report at
+      // least one failure so the Red phase is detected.
+      const failing = Math.max((output.match(/✖/g) || []).length, 1)
       return { success: false, passing, failing, message: `Tests failed: ${passing} passing, ${failing} failing` }
     }
   }
