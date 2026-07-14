@@ -46,7 +46,7 @@ async function testProtectedAssetEscalation() {
   assert(plan.protectedAssetsTouched === true, "should flag Protected Asset touch")
   assert(plan.run.includes("govern"), "should run full govern")
   assert(plan.confidence === 1.0, "should have full confidence")
-  assert(plan.reason.includes("Protected Asset"), "should explain escalation")
+  assert(plan.reason.includes("Mission Studio"), "should explain escalation")
   console.log("[PASS] Protected Asset change escalates to full govern")
 }
 
