@@ -1,6 +1,6 @@
 # EXP-AX-003 — README & Narrative Alignment
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -162,7 +162,7 @@ Have someone unfamiliar with SYNTH read the README and summarize it back.
 - [x] Architecture section is secondary.
 - [x] `docs/getting-started/README.md` and `docs/operator/01-getting-started.md` match the README narrative.
 - [x] Website landing page is aligned.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -188,4 +188,4 @@ Public narrative rewritten and cross-document alignment completed:
 - `docs/operator/01-getting-started.md` rewritten to teach the public concepts through the CLI instead of the internal API.
 - `website/index.html` aligned with the new narrative, including the install command, AGENTS.md reference, and updated public flow.
 
-The remaining open item is formal expedition acceptance.
+**Acceptance:** Expedition accepted as part of EXP-PROGRAM-004 closure.
