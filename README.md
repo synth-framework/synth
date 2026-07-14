@@ -6,17 +6,21 @@
 >
 > From an idea to replayable software through **Missions**, **Expeditions**, and **Proof**.
 
-Synth turns human intent into approved Missions, Missions into bounded Expeditions, and every action into an immutable Event. State is never edited directly — it is derived from Events, and Replay proves that the derived State is correct.
+Synth turns human intent into approved Missions, breaks Missions into bounded Expeditions, and records every action as an immutable Event. State is never edited directly — it is derived from Events, and Replay proves that the derived State is correct.
+
+The result is deterministic, auditable engineering work that humans guide and AI executes.
+
+---
 
 ## Install
 
-Install globally with npm:
+Install the Synth CLI globally from npm:
 
 ```bash
 npm install -g @synth-framework/synth
 ```
 
-Or run once with npx:
+Or run it once without installing:
 
 ```bash
 npx @synth-framework/synth --version
@@ -28,61 +32,93 @@ Verify the installation:
 synth doctor
 ```
 
-For contributors, see [CONTRIBUTING.md](CONTRIBUTING.md) for the repository-based setup.
+For contributors, see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the repository-based setup.
 
-## Quick Start
+---
 
-Initialize a project, create a Mission Draft, and validate:
+## 60-second demo
+
+Initialize a project, create a Mission Draft, and validate your work:
 
 ```bash
 synth init --name "My Project"
 synth mission create --subject "Adopt SYNTH" --purpose "Make our engineering work replayable"
 # review the draft, then approve:
 synth mission approve --draft-id <draft-id>
+synth validate
 npm run govern
+synth explain replay
 ```
 
-For the full operator journey, see [`docs/operator/01-getting-started.md`](docs/operator/01-getting-started.md).
+- `synth mission create` produces a Draft with confidence, unknowns, and proposals.
+- `synth mission approve` turns the Draft into an approved Mission.
+- `synth validate` runs only the checks affected by your change.
+- `npm run govern` produces the canonical proof that everything is healthy.
+- `synth explain replay` verifies that the current state is consistent with its event history.
+
+---
+
+## AI operators
+
+If you are an AI coding assistant, read [`AGENTS.md`](./AGENTS.md) before making any changes. It defines the operator contract for working inside a Synth repository, including how to handle Missions, Expeditions, validation, and governance.
+
+---
 
 ## Why Synth
 
-Engineering teams lose reasoning. Decisions fade, context scatters, and systems drift from their original intent. Synth keeps the reasoning alive by recording every action as an immutable event and making the current state a pure function of that history.
+Engineering teams lose reasoning. Decisions fade, context scatters, and systems drift from their original intent. Synth keeps the reasoning alive by recording every action as an immutable Event and making the current State a pure function of that history.
 
-## The Seven Public Concepts
+For teams working with AI agents, Synth provides a shared boundary:
 
-Everything in Synth is explained with seven concepts:
+- Humans express intent.
+- AI gathers evidence and proposes work.
+- Synth records decisions and proves the resulting state.
+
+---
+
+## The seven public concepts
+
+Everything in Synth is explained with seven concepts. Everything else is implementation detail.
 
 | Concept | Meaning |
 |---|---|
-| **Mission** | The strategic goal |
-| **Expedition** | A bounded investigation or build |
+| **Mission** | The strategic goal you are working toward |
+| **Expedition** | A bounded investigation or build that moves the Mission forward |
 | **Evidence** | What you know and how confidently you know it |
-| **Plan** | The approved path forward |
+| **Plan** | The approved path forward, ready to execute |
 | **Event** | An immutable record that something happened |
-| **State** | The current picture, derived from events |
-| **Replay** | Rebuilding state from events to prove correctness |
+| **State** | The current picture, derived from Events |
+| **Replay** | Rebuilding State from Events to prove correctness |
 
-Everything else is implementation detail.
+---
 
 ## Documentation
 
-- [Getting Started](docs/getting-started/README.md)
-- [Mission Studio Guide](docs/operator/mission-studio-guide.md)
-- [Examples Guide](docs/operator/examples-guide.md)
-- [Public Architecture](docs/reference/public-architecture.md)
-- [Public Vocabulary](docs/reference/public-vocabulary.md)
-- [FAQ](docs/operator/12-faq.md)
-- [Operator Journey](docs/operator/13-operator-journey.md)
+- [Quick Start](docs/getting-started/README.md) — Install and run your first Mission in five minutes
+- [Getting Started](docs/operator/01-getting-started.md) — Learn the public concepts through the CLI
+- [Your First Expedition](docs/operator/02-your-first-expedition.md) — Plan and execute your first piece of work
+- [Mission Studio Guide](docs/operator/mission-studio-guide.md) — Chart and approve Missions
+- [Examples Guide](docs/operator/examples-guide.md) — Run certified example projects
+- [Operator Journey](docs/operator/13-operator-journey.md) — See the complete end-to-end flow
+- [Public Architecture](docs/reference/public-architecture.md) — How Synth works under the hood
+- [Public Vocabulary](docs/reference/public-vocabulary.md) — The seven public concepts in depth
+- [FAQ](docs/operator/12-faq.md) — Common questions
+
+---
 
 ## Governance
 
-Every change must pass:
+Every change must pass the canonical governance pipeline:
 
 ```bash
 npm run govern
 ```
 
-For the governance model, see [docs/governance.md](docs/governance.md).
+This builds the project, runs the full test suite, verifies Replay consistency, runs adversarial architecture audits, and generates a proof artifact in `proof/`.
+
+For the governance model, see [`docs/governance.md`](docs/governance.md).
+
+---
 
 ## Status
 
