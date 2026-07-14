@@ -22,6 +22,10 @@
       "name": "Determinism",
       "description": "Determinism and replay integrity expeditions."
     },
+    "DOCS": {
+      "name": "Documentation & Projections",
+      "description": "Documentation projection system and derived artifact expeditions."
+    },
     "ENV": {
       "name": "Environment Independence",
       "description": "Constitutional environment independence and capability provider expeditions."

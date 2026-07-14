@@ -87,6 +87,7 @@
     "audit:repository": "node scripts/repository-health-audit.js",
     "docs:check-links": "node scripts/check-links.js",
     "docs:generate": "node dist/cli/synth.js docs generate",
+    "docs:validate-projections": "node scripts/verify-documentation-projection.js",
     "docs:verify-projection": "node scripts/verify-documentation-projection.js",
     "docs:verify-website-sync": "node scripts/verify-website-sync.js",
     "version:verify": "node scripts/verify-version-sync.js",
