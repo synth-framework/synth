@@ -22,6 +22,10 @@
       "name": "Determinism",
       "description": "Determinism and replay integrity expeditions."
     },
+    "ENV": {
+      "name": "Environment Independence",
+      "description": "Constitutional environment independence and capability provider expeditions."
+    },
     "GOV": {
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
