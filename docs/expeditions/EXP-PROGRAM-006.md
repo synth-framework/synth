@@ -1,6 +1,6 @@
 # EXP-PROGRAM-006 — Installation & Distribution
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -168,8 +168,8 @@ All work in this Program stays in the Allowed column:
 - [x] EXP-INSTALL-008 completed and accepted.
 - [x] EXP-INSTALL-009 completed and accepted.
 - [x] EXP-INSTALL-010 completed and accepted.
-- [ ] EXP-INSTALL-011 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-INSTALL-011 completed and accepted.
+- [x] Program accepted.
 
 ---
 
@@ -183,7 +183,15 @@ All expeditions completed:
 - EXP-INSTALL-010 delivered installation documentation synchronized with the installer.
 - EXP-INSTALL-011 verified website deployment and installer URL availability with a polling CI check and surfaced the install command on the landing page.
 
-Program reopened to accommodate an extended Definition of Done for EXP-INSTALL-011, which now explicitly covers the GitHub Pages deployment step in addition to post-deploy installer verification.
+Program closed. All expeditions completed:
+
+- EXP-INSTALL-001 through EXP-INSTALL-005 established the bootstrap installer contract, environment detection, distribution resolution, installation engine, and verification.
+- EXP-INSTALL-006 through EXP-INSTALL-008 integrated the installer with the website, added the version manifest, and implemented deterministic upgrades.
+- EXP-INSTALL-009 added CI installation certification.
+- EXP-INSTALL-010 delivered installation documentation synchronized with the installer.
+- EXP-INSTALL-011 verified GitHub Pages deployment and installer URL availability; deployment succeeded at `https://synth-framework.github.io/synth/install.sh`.
+
+Program accepted and closed via PRs #37, #40, #41, #43, and #44.
 
 ---
 
