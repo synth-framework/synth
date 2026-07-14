@@ -1,6 +1,6 @@
 # EXP-INSTALL-011 — Website Deployment Verification
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -97,13 +97,13 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
 
 ## Definition of Done
 
-- [ ] Website deployment URL is traceable in CI.
-- [ ] `install.sh` is available at `${SYNTH_INSTALLER_BASE_URL}/install.sh`.
-- [ ] CI verifies installer availability after every deployment.
-- [ ] Verification uses the `SYNTH_INSTALLER_BASE_URL` repository variable.
-- [ ] Optional UI/UX refinements are evaluated and either implemented or explicitly deferred.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Website deployment URL is traceable in CI.
+- [x] `install.sh` is available at `${SYNTH_INSTALLER_BASE_URL}/install.sh`.
+- [x] CI verifies installer availability after every deployment.
+- [x] Verification uses the `SYNTH_INSTALLER_BASE_URL` repository variable.
+- [x] Optional UI/UX refinements are evaluated and either implemented or explicitly deferred.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -120,4 +120,12 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
 
 ## Completion Notes
 
-Pending.
+- Updated `website/index.html` to surface the canonical bootstrap installer command and added an npm fallback.
+- Added `.hero-alt` styling in `website/styles.css` for the npm fallback.
+- Replaced the simple post-deploy curl check in `.github/workflows/publish.yml` with a robust polling verifier:
+  - Reads `SYNTH_INSTALLER_BASE_URL` from repository variables with a safe default.
+  - Retries up to 10 times with a 15-second backoff to accommodate GitHub Pages propagation lag.
+  - Verifies HTTP 200 and that the response body starts with `#!/usr/bin/env bash`.
+  - Fails the workflow if the installer is unreachable.
+  - Writes the deployment URL and result to `GITHUB_STEP_SUMMARY`.
+- Expedition accepted and merged via PR #37.
