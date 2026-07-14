@@ -18,7 +18,7 @@
 
 > **A user should be able to install SYNTH in one command and verify it in the next.**
 
-The public installation experience is the first contact point for humans and AI agents. It must be deterministic, versioned, and governed while remaining independent of the underlying distribution mechanism.
+The public installation experience is the first contact point for humans and AI agents. AI coding assistants consume the same install command as humans, so the installer must be deterministic, versioned, and governed while remaining independent of the underlying distribution mechanism.
 
 ---
 
@@ -49,39 +49,39 @@ EXP-PROGRAM-006
 Installation & Distribution
 │
 ├── EXP-INSTALL-001  Bootstrap Contract
-│       Installation Expedition
+│       Adoption Expedition
 │       Define the permanent public installation contract.
 │
 ├── EXP-INSTALL-002  Environment Detection
-│       Installation Expedition
+│       Adoption Expedition
 │       Create the environment discovery layer.
 │
 ├── EXP-INSTALL-003  Distribution Resolution
-│       Installation Expedition
+│       Adoption Expedition
 │       Determine which distribution backend to use.
 │
 ├── EXP-INSTALL-004  Installation Engine
-│       Installation Expedition
+│       Adoption Expedition
 │       Implement the installation workflow.
 │
 ├── EXP-INSTALL-005  Installation Verification
-│       Installation Expedition
+│       Adoption Expedition
 │       Verify that installation completed successfully.
 │
 ├── EXP-INSTALL-006  Website Integration
-│       Installation Expedition
+│       Adoption Expedition
 │       Publish the installer through the website deployment pipeline.
 │
 ├── EXP-INSTALL-007  Version Manifest
-│       Installation Expedition
+│       Adoption Expedition
 │       Generate the canonical installer manifest during release.
 │
 ├── EXP-INSTALL-008  Upgrade Engine
-│       Installation Expedition
+│       Adoption Expedition
 │       Provide deterministic upgrade behavior.
 │
 ├── EXP-INSTALL-009  Installation Certification
-│       Installation Expedition
+│       Adoption Expedition
 │       Validate installation automatically during CI.
 │
 └── EXP-INSTALL-010  Documentation & Onboarding
@@ -180,3 +180,4 @@ Program created. No expeditions have started.
 | `docs/adr/ADR-005-architecture-era-closure.md` | Architecture Era closure. |
 | `docs/expeditions/EXP-PROGRAM-004.md` | Preceding First Contact Program, now closed. |
 | `docs/expeditions/EXP-PROGRAM-005.md` | Preceding Adaptive Validation Program, now closed. |
+| `AGENTS.md` | AI operator contract; installers must be agent-consumable. |

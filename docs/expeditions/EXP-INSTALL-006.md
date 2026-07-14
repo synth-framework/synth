@@ -1,7 +1,7 @@
 # EXP-INSTALL-006 — Website Integration
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-001  
@@ -28,7 +28,7 @@ Publish the installer automatically through the website deployment pipeline.
 
 ## Motivation
 
-The canonical install command references `https://synth.dev/install.sh`. Until a custom domain is acquired, the installer should be served from GitHub Pages and the URL should be configurable without rebuilding the installer or the website.
+The canonical install command references a stable URL such as `https://synth.dev/install.sh`. The actual base URL is controlled by a GitHub repository variable so it can point to GitHub Pages, a custom domain, or a future CDN without rebuilding the installer or the website.
 
 ---
 
@@ -57,9 +57,9 @@ Website Build
         ↓
 install.sh
         ↓
-GitHub Pages
+GitHub Pages / Custom Domain
         ↓
-https://synth.dev/install.sh  (via repository variable)
+$SYNTH_INSTALLER_BASE_URL/install.sh
 ```
 
 ---

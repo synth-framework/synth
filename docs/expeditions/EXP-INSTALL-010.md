@@ -1,7 +1,7 @@
 # EXP-INSTALL-010 — Documentation & Onboarding
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-004, EXP-INSTALL-005  

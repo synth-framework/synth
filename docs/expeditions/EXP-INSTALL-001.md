@@ -1,7 +1,7 @@
 # EXP-INSTALL-001 — Bootstrap Contract
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-PROGRAM-006  

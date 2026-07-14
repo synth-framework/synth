@@ -1,7 +1,7 @@
 # EXP-INSTALL-007 — Version Manifest
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-003  

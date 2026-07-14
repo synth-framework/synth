@@ -1,7 +1,7 @@
 # EXP-INSTALL-005 — Installation Verification
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-004  

@@ -1,7 +1,7 @@
 # EXP-INSTALL-004 — Installation Engine
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-002, EXP-INSTALL-003  

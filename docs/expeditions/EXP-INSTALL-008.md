@@ -1,7 +1,7 @@
 # EXP-INSTALL-008 — Upgrade Engine
 
 **Status:** Active  
-**Kind:** Installation Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-004, EXP-INSTALL-007  
