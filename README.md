@@ -6,6 +6,11 @@
 >
 > From an idea to replayable software through **Missions**, **Expeditions**, and **Proof**.
 
+[![npm version](https://img.shields.io/npm/v/@synth-framework/synth)](https://www.npmjs.com/package/@synth-framework/synth)
+[![Proof Gate](https://github.com/synth-framework/synth/actions/workflows/proof.yml/badge.svg)](https://github.com/synth-framework/synth/actions/workflows/proof.yml)
+[![Documentation](https://img.shields.io/badge/docs-website-blue)](https://synth-framework.github.io/synth/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
 Synth turns human intent into approved Missions, breaks Missions into bounded Expeditions, and records every action as an immutable Event. State is never edited directly — it is derived from Events, and Replay proves that the derived State is correct.
 
 The result is deterministic, auditable engineering work that humans guide and AI executes.
@@ -58,6 +63,12 @@ synth explain replay
 
 ---
 
+## Quick-start demo
+
+> **Media placeholder.** A 90-second walkthrough of the install → Mission Draft → approval → `synth validate` → `npm run govern` flow will be inserted here.
+
+---
+
 ## AI operators
 
 If you are an AI coding assistant, read [`AGENTS.md`](./AGENTS.md) before making any changes. It defines the operator contract for working inside a Synth repository, including how to handle Missions, Expeditions, validation, and governance.
@@ -106,6 +117,23 @@ Everything in Synth is explained with seven concepts. Everything else is impleme
 
 ---
 
+## Example gallery
+
+Certified example projects live in [`examples/`](examples/README.md). Each one is a standalone Synth repository with its own Mission, documentation, and proof artifacts.
+
+| Example | What it demonstrates |
+|---|---|
+| [`todo/`](examples/todo/) | Minimal task-tracking application |
+| [`blog/`](examples/blog/) | Content-driven web application |
+| [`crm/`](examples/crm/) | Customer relationship management backend |
+| [`legacy-node/`](examples/legacy-node/) | Legacy Node.js application with migration path |
+| [`polyglot/`](examples/polyglot/) | Multi-language repository |
+| [`monolith/`](examples/monolith/) | Large monolithic application |
+
+Every example supports `npm run govern` from within its own directory.
+
+---
+
 ## Governance
 
 Every change must pass the canonical governance pipeline:
@@ -117,6 +145,14 @@ npm run govern
 This builds the project, runs the full test suite, verifies Replay consistency, runs adversarial architecture audits, and generates a proof artifact in `proof/`.
 
 For the governance model, see [`docs/governance.md`](docs/governance.md).
+
+---
+
+## Contributing
+
+Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the development workflow, [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) for community standards, and [`SECURITY.md`](SECURITY.md) for reporting vulnerabilities.
+
+AI contributors should start with [`AGENTS.md`](AGENTS.md) before making any changes.
 
 ---
 
