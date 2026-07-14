@@ -31,6 +31,7 @@ const PUBLIC_VOCABULARY = [
 
 const COMMANDS = [
   { name: "version", description: "Print the installed Synth version" },
+  { name: "doctor", description: "Verify installation and project health" },
   { name: "init", description: "Initialize the current directory as a Synth project" },
   { name: "bootstrap", description: "Transform a repository into a Synth project" },
   { name: "govern", description: "Run the full governance pipeline" },
@@ -112,6 +113,59 @@ async function getVersion(): Promise<string> {
 async function cmdVersion() {
   const version = await getVersion()
   printJson({ status: "ok", version, name: "synth", schema: "synth-cli-v1" })
+}
+
+async function cmdDoctor() {
+  const REQUIRED_NODE_MAJOR = 20
+  const checks: Record<string, { ok: boolean; detail: string }> = {}
+
+  // Node version
+  const nodeVersion = process.version
+  const nodeMajor = Number(nodeVersion.replace("v", "").split(".")[0])
+  checks.node = {
+    ok: nodeMajor >= REQUIRED_NODE_MAJOR,
+    detail: `Node.js ${nodeVersion} (required >= ${REQUIRED_NODE_MAJOR})`,
+  }
+
+  // Binary path
+  checks.binary = {
+    ok: true,
+    detail: process.argv[1] || "unknown",
+  }
+
+  // Package version
+  const version = await getVersion()
+  checks.version = {
+    ok: version !== "unknown",
+    detail: version,
+  }
+
+  // Project manifest
+  const manifestPath = path.join(process.cwd(), ".synth", "manifest.json")
+  let hasManifest = false
+  try {
+    await fs.access(manifestPath)
+    hasManifest = true
+  } catch {
+    hasManifest = false
+  }
+  checks.manifest = {
+    ok: hasManifest,
+    detail: hasManifest ? manifestPath : "No SYNTH project manifest found in current directory",
+  }
+
+  const allOk = Object.values(checks).every((c) => c.ok)
+
+  printJson({
+    status: allOk ? "ok" : "warning",
+    name: "synth",
+    version,
+    healthy: allOk,
+    checks,
+    nextSteps: hasManifest
+      ? ["synth status", "synth mission create --subject '...' --purpose '...'"]
+      : ["synth init --name 'Project Name'"],
+  })
 }
 
 async function cmdHelp() {
@@ -534,6 +588,10 @@ async function main() {
   switch (command) {
     case "version":
       await cmdVersion()
+      break
+
+    case "doctor":
+      await cmdDoctor()
       break
 
     case "init":

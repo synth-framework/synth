@@ -18,11 +18,25 @@ This guide takes you from zero to a passing governance run in under five minutes
 
 ## Install
 
+Install the Synth CLI globally from npm:
+
 ```bash
-git clone <repository-url>
-cd synth-v2
-npm install
+npm install -g @synth-framework/synth
 ```
+
+Or run it once without installing:
+
+```bash
+npx @synth-framework/synth --version
+```
+
+Verify the installation:
+
+```bash
+synth doctor
+```
+
+If you are contributing to Synth itself, clone the repository and run `npm install` instead. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
 
 ## Run the Governance Pipeline
 

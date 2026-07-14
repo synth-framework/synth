@@ -1,0 +1,55 @@
+{
+  "schema": "synth-expedition-prefix-registry-v1",
+  "description": "Canonical prefixes for SYNTH Expedition and Program identifiers. Every EXP-XXX-NNN identifier must use a registered prefix.",
+  "prefixes": {
+    "ADP": {
+      "name": "Adapter",
+      "description": "Adapter ecosystem expeditions (discovery, implementation, certification)."
+    },
+    "ADP-OBS": {
+      "name": "Adapter Observation",
+      "description": "Adapter observation and evidence-gathering expeditions."
+    },
+    "AUD": {
+      "name": "Audit",
+      "description": "Architecture and security audit expeditions."
+    },
+    "AX": {
+      "name": "Agent Experience",
+      "description": "Adoption-era expeditions focused on AI-first distribution and first-contact experience."
+    },
+    "DET": {
+      "name": "Determinism",
+      "description": "Determinism and replay integrity expeditions."
+    },
+    "GOV": {
+      "name": "Governance",
+      "description": "Governance model and constitutional expeditions."
+    },
+    "MST": {
+      "name": "Mission Studio",
+      "description": "Mission Studio planning and cognition expeditions."
+    },
+    "PROD": {
+      "name": "Productization",
+      "description": "Productization program expeditions (snapshot lineage, documentation, operator journey, freeze)."
+    },
+    "REL": {
+      "name": "Release",
+      "description": "Public release program expeditions (repository, docs, examples, website, OSS readiness)."
+    },
+    "SMA": {
+      "name": "Semantic Migration",
+      "description": "Semantic migration and canonical-language expeditions."
+    },
+    "VAL": {
+      "name": "Validation",
+      "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."
+    },
+    "PROGRAM": {
+      "name": "Program",
+      "description": "Program-level containers that group related expeditions.",
+      "kind": "program"
+    }
+  }
+}
