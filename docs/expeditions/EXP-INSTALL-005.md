@@ -1,6 +1,6 @@
 # EXP-INSTALL-005 — Installation Verification
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -93,15 +93,15 @@ Add `--verify-only` for certification pipelines.
 
 ## Definition of Done
 
-- [ ] Executable availability check implemented.
-- [ ] PATH resolution check implemented.
-- [ ] Version verification implemented.
-- [ ] `synth --version` check implemented.
-- [ ] `synth doctor` check implemented.
-- [ ] Installation Proof schema documented.
-- [ ] `--verify-only` mode implemented.
-- [ ] Tests cover verification paths.
-- [ ] `npm run govern` passes.
+- [x] Executable availability check implemented.
+- [x] PATH resolution check implemented.
+- [x] Version verification implemented.
+- [x] `synth --version` check implemented.
+- [x] `synth doctor` check implemented.
+- [x] Installation Proof schema documented.
+- [x] `--verify-only` mode implemented.
+- [x] Tests cover verification paths.
+- [ ] `npm run govern` passes (verified in CI).
 - [ ] Expedition is accepted.
 
 ---
@@ -119,4 +119,10 @@ Add `--verify-only` for certification pipelines.
 
 ## Completion Notes
 
-Pending.
+- Enhanced `verify_installation()` in `scripts/install.sh` to perform executable availability, PATH resolution, version matching, `synth --version`, and `synth doctor` checks.
+- Added `emit_installation_proof()` to produce a structured Installation Proof artifact.
+- Added `--verify-only` mode for CI certification pipelines.
+- Ensured verification uses the prefix-installed binary when `SYNTH_INSTALLER_NPM_PREFIX` is set.
+- Created `tests/installer-verify.test.js` covering missing synth, successful verify-only, version mismatch, proof emission, and unhealthy doctor scenarios.
+- Registered `test:installer-verify` in `package.json` and included it in `test:all`.
+- Updated `tests/installer-contract.test.js` to recognize the new `--verify-only` option.

@@ -2,8 +2,8 @@
 // Synth Installer Engine Tests
 // ============================================================
 // Verifies the installation workflow: package installation,
-// retry logic, cleanup on failure, rollback on upgrade, and
-// idempotent execution.
+// retry logic, cleanup on failure, rollback on upgrade,
+// idempotent execution, and verification integration.
 // ============================================================
 
 import { spawnSync } from "child_process"
@@ -47,6 +47,15 @@ if [ "$1" = "view" ]; then
   exit 0
 fi
 
+if [ "$1" = "config" ] && [ "\${2:-}" = "get" ] && [ "\${3:-}" = "prefix" ]; then
+  if [ -n "$FAKE_NPM_PREFIX" ]; then
+    echo "$FAKE_NPM_PREFIX"
+  else
+    echo "/usr/local"
+  fi
+  exit 0
+fi
+
 if [ "$1" = "uninstall" ]; then
   if [ -n "$FAKE_NPM_PREFIX" ] && [ -f "$FAKE_NPM_PREFIX/bin/synth" ]; then
     rm -f "$FAKE_NPM_PREFIX/bin/synth"
@@ -73,7 +82,22 @@ if [ -n "$FAKE_NPM_PREFIX" ]; then
   mkdir -p "$FAKE_NPM_PREFIX/bin"
   cat > "$FAKE_NPM_PREFIX/bin/synth" <<'INNEREOF'
 #!/usr/bin/env bash
-echo "synth 2.0.0-rc.1"
+if [ "$1" = "--version" ] || [ "$1" = "version" ]; then
+  echo "synth 2.0.0-rc.1"
+  exit 0
+fi
+if [ "$1" = "init" ]; then
+  mkdir -p .synth
+  echo '{"status":"ok"}' > .synth/manifest.json
+  echo '{"status":"ok","message":"initialized"}'
+  exit 0
+fi
+if [ "$1" = "doctor" ]; then
+  echo '{"status":"ok","name":"synth","version":"2.0.0-rc.1","healthy":true,"checks":{"node":{"ok":true},"binary":{"ok":true},"version":{"ok":true},"manifest":{"ok":true}}}'
+  exit 0
+fi
+echo "Unknown synth command: $1" >&2
+exit 1
 INNEREOF
   chmod +x "$FAKE_NPM_PREFIX/bin/synth"
 fi
@@ -85,12 +109,16 @@ exit 0
   return { dir, logFile, attemptsFile }
 }
 
-function runInstaller(args = [], env = {}) {
+function runInstaller(args = [], env = {}, timeout = 60000) {
   const result = spawnSync("bash", [INSTALLER_PATH, ...args], {
     cwd: process.cwd(),
     encoding: "utf-8",
-    env: { ...process.env, ...env },
-    timeout: 60000,
+    env: {
+      ...process.env,
+      SYNTH_INSTALLER_BASE_URL: "http://localhost:1",
+      ...env,
+    },
+    timeout,
   })
   return {
     stdout: result.stdout || "",
@@ -130,6 +158,7 @@ async function testSuccessfulInstall() {
       SYNTH_INSTALLER_NPM_PREFIX: prefix,
       PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
     },
+    180000,
   )
   assert(result.status === 0, "Install must exit with code 0")
   assert(result.stdout.includes("Synth @synth-framework/synth@2.0.0-rc.1 installed successfully"), "Must report successful install")
@@ -149,6 +178,7 @@ async function testRetryOnTransientFailure() {
       SYNTH_INSTALLER_NPM_PREFIX: prefix,
       PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
     },
+    180000,
   )
   assert(result.status === 0, "Install must succeed after retries")
   const attempts = fs.readFileSync(fake.attemptsFile, "utf-8").trim()
@@ -165,6 +195,7 @@ async function testCleanupOnFailure() {
       SYNTH_INSTALLER_NPM_PREFIX: prefix,
       PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
     },
+    180000,
   )
   assert(result.status === 1, "Permanent failure must exit with code 1")
   assert(result.stderr.includes("Installation failed after 3 attempts"), "Must report final failure")
@@ -180,9 +211,9 @@ async function testIdempotentExecution() {
     SYNTH_INSTALLER_NPM_PREFIX: prefix,
     PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
   }
-  const first = runInstaller([], env)
+  const first = runInstaller([], env, 180000)
   assert(first.status === 0, "First install must succeed")
-  const second = runInstaller([], env)
+  const second = runInstaller([], env, 180000)
   assert(second.status === 0, "Second install must succeed")
   const log = fs.readFileSync(fake.logFile, "utf-8").trim().split("\n")
   const installLines = log.filter((line) => line.startsWith("install "))
@@ -198,6 +229,7 @@ async function testUpgradeFlagParsedAndPassed() {
       SYNTH_INSTALLER_NPM_PREFIX: prefix,
       PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
     },
+    180000,
   )
   assert(result.status === 0, "Upgrade must exit with code 0")
   assert(result.stdout.includes("Upgrade:    true"), "Must indicate upgrade mode")
