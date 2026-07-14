@@ -1,6 +1,6 @@
 # EXP-AX-004 — Documentation Synchronization
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -119,7 +119,7 @@ Ensure the publication workflow runs the synchronization check.
 - [x] Broken internal links fail the build.
 - [x] A drift-detection test exists and passes.
 - [x] CI enforces documentation freshness.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
