@@ -168,14 +168,22 @@ All work in this Program stays in the Allowed column:
 - [x] EXP-INSTALL-008 completed and accepted.
 - [x] EXP-INSTALL-009 completed and accepted.
 - [x] EXP-INSTALL-010 completed and accepted.
-- [ ] EXP-INSTALL-011 completed and accepted.
+- [x] EXP-INSTALL-011 completed and accepted.
 - [ ] Program accepted.
 
 ---
 
 ## Completion Notes
 
-Program created. No expeditions have started.
+All expeditions completed:
+
+- EXP-INSTALL-001 through EXP-INSTALL-005 established the bootstrap installer contract, environment detection, distribution resolution, installation engine, and verification.
+- EXP-INSTALL-006 through EXP-INSTALL-008 integrated the installer with the website, added the version manifest, and implemented deterministic upgrades.
+- EXP-INSTALL-009 added CI installation certification.
+- EXP-INSTALL-010 delivered installation documentation synchronized with the installer.
+- EXP-INSTALL-011 verified website deployment and installer URL availability with a polling CI check and surfaced the install command on the landing page.
+
+Program is ready for acceptance.
 
 ---
 

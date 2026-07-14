@@ -101,6 +101,56 @@ jobs:
         env:
           INSTALLER_BASE_URL: ${{ vars.SYNTH_INSTALLER_BASE_URL || 'https://synth-framework.github.io/synth' }}
         run: |
-          echo "Checking installer at ${INSTALLER_BASE_URL}/install.sh"
-          curl -fsSL --max-time 30 "${INSTALLER_BASE_URL}/install.sh" | head -n 5
-          echo "Installer reachable."
+          set -euo pipefail
+          installer_url="${INSTALLER_BASE_URL}/install.sh"
+          echo "Checking installer at ${installer_url}"
+
+          max_attempts=10
+          backoff_seconds=15
+          attempt=1
+          http_code="0"
+          body=""
+
+          while [ ${attempt} -le ${max_attempts} ]; do
+            echo "Attempt ${attempt}/${max_attempts}: GET ${installer_url}"
+            response_file=$(mktemp)
+            http_code=$(curl -sL --max-time 30 -o "${response_file}" -w "%{http_code}" "${installer_url}" || true)
+
+            if [ "${http_code}" = "200" ]; then
+              body=$(head -n 1 "${response_file}")
+              if [ "${body}" = "#!/usr/bin/env bash" ]; then
+                rm -f "${response_file}"
+                echo "✅ Installer is reachable and has a valid bash shebang."
+                {
+                  echo "## Installer Availability ✅"
+                  echo ""
+                  echo "- **URL:** ${installer_url}"
+                  echo "- **Status:** 200 OK"
+                  echo "- **Shebang:** ${body}"
+                  echo "- **Attempts:** ${attempt}"
+                } >> "${GITHUB_STEP_SUMMARY}"
+                exit 0
+              else
+                echo "⚠️ HTTP 200 received, but first line was '${body}' instead of '#!/usr/bin/env bash'. Retrying..."
+              fi
+            else
+              echo "⚠️ Installer returned HTTP ${http_code}. Retrying in ${backoff_seconds}s..."
+            fi
+
+            rm -f "${response_file}"
+
+            if [ ${attempt} -eq ${max_attempts} ]; then
+              echo "❌ Installer is not reachable at ${installer_url} after ${max_attempts} attempts."
+              {
+                echo "## Installer Availability ❌"
+                echo ""
+                echo "- **URL:** ${installer_url}"
+                echo "- **Last HTTP status:** ${http_code}"
+                echo "- **Attempts:** ${max_attempts}"
+              } >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
+
+            sleep ${backoff_seconds}
+            attempt=$((attempt + 1))
+          done
