@@ -1,6 +1,6 @@
 # EXP-AX-001 — Universal Distribution
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -159,11 +159,11 @@ Replace `git clone` installation path in README and guides.
 - [x] `npx @synth-framework/synth` works without prior installation.
 - [x] Installation verification command is implemented.
 - [x] README and operator guides no longer lead with `git clone`.
-- [ ] Installation and Quick Start docs reference `synth validate` for local iteration.
+- [x] Installation and Quick Start docs reference `synth validate` for local iteration.
 - [x] Local installation smoke tests pass (`synth doctor`, `synth init`).
 - [x] Published-package smoke test passes in a clean environment.
 - [x] Installation matrix is populated (macOS verified; Ubuntu/Windows/GitHub Actions pending).
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -204,4 +204,4 @@ Package published. The canonical distribution is now live on npm as `@synth-fram
 
 Ubuntu, Windows, and GitHub Actions rows in the installation matrix remain pending platform-specific testing.
 
-**Alignment note:** The Quick Start guide (`docs/getting-started/README.md`) still describes `npm run govern` without first showing the Mission lifecycle or `synth validate`. That alignment is tracked under EXP-AX-003.
+**Acceptance:** Expedition accepted as part of EXP-PROGRAM-004 closure.

@@ -1,6 +1,6 @@
 # EXP-PROGRAM-004 — First Contact Program
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -136,25 +136,34 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 
 ## Definition of Done
 
-- [ ] EXP-AX-001 completed and accepted.
-- [ ] EXP-AX-002 completed and accepted.
-- [ ] EXP-AX-003 completed and accepted.
-- [ ] EXP-AX-004 completed and accepted.
-- [ ] EXP-AX-005 completed and accepted.
-- [ ] AGENTS.md is published at repository root.
-- [ ] README is aligned with the AI-native experience.
-- [ ] Website and documentation synchronization is verified.
-- [ ] Public release polish is in place.
-- [ ] `npm run govern` passes without architectural changes.
+- [x] EXP-AX-001 completed and accepted.
+- [x] EXP-AX-002 completed and accepted.
+- [x] EXP-AX-003 completed and accepted.
+- [x] EXP-AX-004 completed and accepted.
+- [x] EXP-AX-005 completed and accepted (quick-start media deferred to follow-up).
+- [x] AGENTS.md is published at repository root.
+- [x] README is aligned with the AI-native experience.
+- [x] Website and documentation synchronization is verified.
+- [x] Public release polish is in place.
+- [x] `npm run govern` passes without architectural changes.
 
 ---
 
 ## Completion Notes
 
-- **Status:** Active — EXP-AX-001 package is published and smoke-tested on macOS; EXP-AX-002 documentation updates are merged. Ready for EXP-AX-003.
-- **Authority:** ADR-005 — Architecture Era Closure establishes that future architectural work is suspended and that this Adoption Program is the highest-leverage next step.
-- **Alignment update:** All expeditions were reviewed against the current state of the art and updated to include `synth validate` and the root `AGENTS.md` AI operator contract as first-class deliverables.
-- **Next milestone:** Begin EXP-AX-003 — README & Narrative Alignment.
+EXP-PROGRAM-004 — First Contact Program is complete.
+
+All five expeditions were accepted:
+
+- **EXP-AX-001 Universal Distribution** — `@synth-framework/synth` is published on npm; global install, `npx`, `synth doctor`, and `synth init` are smoke-tested on macOS.
+- **EXP-AX-002 AI First Experience** — `AGENTS.md` is published at repository root and defines the AI operator contract, responsibilities, prohibitions, and full mission/validation/replay lifecycle.
+- **EXP-AX-003 README & Narrative Alignment** — README leads with the AI-native value proposition, npm install, 60-second demo, `AGENTS.md` reference, and secondary architecture.
+- **EXP-AX-004 Documentation Synchronization** — `docs/generated/` projection, link checking, and website-to-README copy sync are enforced in CI.
+- **EXP-AX-005 Public Release Polish** — Badges, example gallery, contributor section, and quick-start media placeholder are in place.
+
+**Deferred work:** The quick-start GIF/video asset for EXP-AX-005 is tracked as a follow-up task and does not block program closure.
+
+The architecture remained untouched throughout this program, consistent with ADR-005 — Architecture Era Closure.
 
 ---
 
