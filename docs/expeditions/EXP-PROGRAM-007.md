@@ -24,9 +24,11 @@
 
 Establish environment independence as a constitutional property of the SYNTH platform by ensuring that the Core defines work exclusively in terms of constitutional intent and capabilities, while all interaction with external execution environments occurs through discoverable, observable, replayable, and replaceable capability providers.
 
-The program shall preserve the AI-first interaction model, maintain deterministic execution, and ensure that no component of the SYNTH Core depends directly on any operating system, revision system, forge, package manager, shell, runtime, or external tool.
+The program shall preserve the AI-first interaction model, maintain deterministic execution, ensure that no component of the SYNTH Core depends directly on any operating system, revision system, forge, package manager, shell, runtime, or external tool, and establish that all derived artifacts are produced exclusively through deterministic projections.
 
 > **Constitutional Rule:** The SYNTH Core shall never depend directly upon the execution environment.
+>
+> **Projection Rule:** Derived artifacts are produced exclusively through deterministic projections from constitutional sources. Projection outputs are build artifacts and shall not be considered authoritative project state.
 
 ---
 
@@ -136,6 +138,7 @@ All work in this Program stays in the Allowed column:
 5. Existing constitutional concepts remain unchanged.
 6. New capability providers may be introduced without modifying constitutional behavior.
 7. The same Mission executes deterministically across supported environments.
+8. Derived artifacts are produced exclusively through deterministic projections from constitutional sources.
 
 ---
 
@@ -149,6 +152,7 @@ All work in this Program stays in the Allowed column:
 - New capability providers may be introduced without modification to constitutional behavior.
 - The AI agent can execute constitutional intent without prior environment configuration.
 - The same Mission executes deterministically across supported environments.
+- Derived artifacts are produced exclusively through deterministic projections from constitutional sources.
 
 ---
 

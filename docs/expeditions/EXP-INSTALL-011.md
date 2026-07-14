@@ -4,7 +4,7 @@
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
-**Depends On:** EXP-INSTALL-006  
+**Depends On:** EXP-INSTALL-006, EXP-DOCS-001  
 **Blocks:** none
 
 ---
@@ -22,13 +22,17 @@ Impact:
 
 ## Purpose
 
-Ensure the website is correctly deployed to GitHub Pages and verify that the published installer script is reachable through the configured endpoint.
+Deploy the website to GitHub Pages and verify that the published installer script is reachable through the configured endpoint.
+
+This expedition is a consumer of documentation projection artifacts produced by EXP-DOCS-001. It does not generate or verify documentation projections.
 
 ---
 
 ## Motivation
 
 Publishing the installer is not enough. The deployment must be traceable, the installer URL must resolve, and the URL must match the `SYNTH_INSTALLER_BASE_URL` repository variable. This expedition closes the loop between CI, GitHub Pages, and the public install command.
+
+Documentation projections are handled separately by EXP-DOCS-001. This expedition assumes those projection artifacts are available and focuses exclusively on deploying them and verifying the live installer.
 
 ---
 
@@ -38,6 +42,7 @@ Publishing the installer is not enough. The deployment must be traceable, the in
    - The publish workflow deploys the `website/` directory to GitHub Pages on every merge to `main`.
    - Deployment failures fail the publish workflow.
    - CI records the GitHub Pages deployment URL in the workflow summary.
+   - The deployment consumes documentation projection artifacts produced upstream; it does not generate them.
 
 2. **Deployment traceability**
    - CI records the GitHub Pages deployment URL.
@@ -123,12 +128,13 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
 
 ## Implementation Plan
 
-1. Confirm publish workflow uploads `install.sh`.
-2. Add a verification job or step to the publish workflow.
-3. Read `SYNTH_INSTALLER_BASE_URL` from repository variables.
-4. Fetch and validate the installer.
-5. Review website UI/UX and decide on refinements.
-6. Build and verify.
+1. Confirm documentation projection artifacts are available to the publish workflow.
+2. Confirm publish workflow uploads `install.sh`.
+3. Add a verification job or step to the publish workflow.
+4. Read `SYNTH_INSTALLER_BASE_URL` from repository variables.
+5. Fetch and validate the installer.
+6. Review website UI/UX and decide on refinements.
+7. Build and verify.
 
 ---
 

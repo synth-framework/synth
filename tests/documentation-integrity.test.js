@@ -13,7 +13,7 @@ import os from "os"
 
 const PROJECT_ROOT = process.cwd()
 const CHECK_LINKS_PATH = path.resolve(PROJECT_ROOT, "scripts", "check-links.js")
-const VERIFY_PROJECTION_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-documentation-projection.js")
+const VALIDATE_PROJECTIONS_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-documentation-projection.js")
 const VERIFY_VERSION_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-version-sync.js")
 const VERIFY_WEBSITE_SYNC_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-website-sync.js")
 
@@ -57,10 +57,11 @@ async function testCheckLinksDetectsBrokenInternalLink() {
   }
 }
 
-async function testProjectionVerificationScriptExists() {
-  const content = await fs.readFile(VERIFY_PROJECTION_PATH, "utf-8")
-  assert(content.includes("docs/generated"), "Projection verifier must reference docs/generated")
-  assert(content.includes("docs generate"), "Projection verifier must run synth docs generate")
+async function testProjectionValidationScriptExists() {
+  const content = await fs.readFile(VALIDATE_PROJECTIONS_PATH, "utf-8")
+  assert(content.includes('"docs", "generated"') || content.includes("docs/generated"), "Projection validator must reference docs/generated")
+  assert(content.includes("docs generate"), "Projection validator must run synth docs generate")
+  assert(content.includes("deterministic"), "Projection validator must verify determinism")
 }
 
 async function testWebsiteSyncScriptExists() {
@@ -84,7 +85,7 @@ async function testVersionVerificationScriptExists() {
 
 async function testNpmScriptsExist() {
   const packageJson = JSON.parse(await fs.readFile(path.join(PROJECT_ROOT, "package.json"), "utf-8"))
-  assert(typeof packageJson.scripts["docs:verify-projection"] === "string", "docs:verify-projection script must exist")
+  assert(typeof packageJson.scripts["docs:validate-projections"] === "string", "docs:validate-projections script must exist")
   assert(typeof packageJson.scripts["docs:verify-website-sync"] === "string", "docs:verify-website-sync script must exist")
   assert(typeof packageJson.scripts["version:verify"] === "string", "version:verify script must exist")
 }
@@ -98,8 +99,8 @@ async function main() {
   await testCheckLinksDetectsBrokenInternalLink()
   console.log("✓ check-links.js detects broken internal website link")
 
-  await testProjectionVerificationScriptExists()
-  console.log("✓ projection verification script exists and is configured")
+  await testProjectionValidationScriptExists()
+  console.log("✓ projection validation script exists and is configured")
 
   await testWebsiteSyncScriptExists()
   console.log("✓ website synchronization script exists and is configured")
