@@ -305,12 +305,70 @@
       "typecheckScope": []
     },
     "Validation": {
-      "unitTests": ["test:impact-analyzer"],
+      "unitTests": ["test:impact-analyzer", "test:validation-planner"],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
       "lintScope": ["src/validation/", "tests/validation*.test.js"],
       "typecheckScope": ["src/validation/"]
+    },
+    "ValidationPlanner": {
+      "unitTests": ["test:validation-planner"],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": ["src/validation/planner.ts", "tests/validation-planner.test.js"],
+      "typecheckScope": ["src/validation/planner.ts"]
+    },
+    "Scripts": {
+      "unitTests": ["test:validation-mapping"],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": ["scripts/"],
+      "typecheckScope": []
+    },
+    "GitHubActions": {
+      "unitTests": ["test:continuous-publication"],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [".github/"],
+      "typecheckScope": []
+    },
+    "GitHooks": {
+      "unitTests": ["test:adapter"],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [".githooks/"],
+      "typecheckScope": []
+    },
+    "RepositoryConfig": {
+      "unitTests": ["test:adapter"],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [".gitignore"],
+      "typecheckScope": []
+    },
+    "Constitution": {
+      "unitTests": ["test:public-vocabulary-audit"],
+      "integrationTests": ["test:freeze-certification"],
+      "benchmarks": [],
+      "proofs": ["test:freeze-certification"],
+      "protectedAsset": "Constitutional Baseline",
+      "lintScope": ["docs/architecture/constitution.md"],
+      "typecheckScope": []
+    },
+    "ArchitectureDecisionRecords": {
+      "unitTests": ["test:public-vocabulary-audit"],
+      "integrationTests": ["test:freeze-certification"],
+      "benchmarks": [],
+      "proofs": ["test:freeze-certification"],
+      "protectedAsset": "Constitutional Baseline",
+      "lintScope": ["docs/adr/"],
+      "typecheckScope": []
     },
     "Website": {
       "unitTests": ["docs:check-links"],
