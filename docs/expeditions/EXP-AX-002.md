@@ -112,10 +112,10 @@ Iterate on unclear instructions discovered during simulation.
 
 ## Definition of Done
 
-- [ ] `AGENTS.md` exists at repository root.
-- [ ] `AGENTS.md` defines AI responsibilities and prohibitions.
-- [ ] Agent guides are complete and cross-referenced.
-- [ ] Prompt catalog covers install, bootstrap, mission lifecycle, replay, and recovery.
+- [x] `AGENTS.md` exists at repository root.
+- [x] `AGENTS.md` defines AI responsibilities and prohibitions.
+- [x] Agent guides are complete and cross-referenced.
+- [x] Prompt catalog covers install, bootstrap, mission lifecycle, replay, validation, and recovery.
 - [ ] An agent can initialize and operate a SYNTH repository using only `AGENTS.md`.
 - [ ] Expedition is accepted.
 
@@ -123,15 +123,23 @@ Iterate on unclear instructions discovered during simulation.
 
 ## Implementation Plan
 
-1. Create `AGENTS.md` at repository root.
-2. Audit and complete `docs/guides/agents/index.md`.
-3. Verify per-agent guides are current.
-4. Update prompt catalog if needed.
-5. Add a test or script that simulates an agent following `AGENTS.md`.
-6. Build and verify.
+1. Create `AGENTS.md` at repository root. ✅
+2. Audit and complete `docs/guides/agents/index.md`. ✅
+3. Verify per-agent guides are current. ✅
+4. Update prompt catalog if needed. ✅
+5. Add a test or script that simulates an agent following `AGENTS.md`. ⏳
+6. Build and verify. ✅
 
 ---
 
 ## Completion Notes
 
-Pending.
+AI-first experience documentation is now current and internally consistent:
+
+- `AGENTS.md` at repository root already defines responsibilities, hard constraints, installation, mission lifecycle, validation, replay, and recovery.
+- Updated `docs/guides/agents/index.md` to reference the correct package (`@synth-framework/synth`), include `synth validate`, and link to the prompt book.
+- Updated per-agent guides (Claude Code, Cursor, Codex, Gemini CLI, Windsurf) to use `@synth-framework/synth` for installation.
+- Added `docs/guides/agents/prompts/validate-changes.md` so the prompt catalog covers validation as well as install, bootstrap, mission lifecycle, replay, and recovery.
+- Updated `docs/guides/agents/prompts/prompt-book.md` to list all prompts.
+
+The remaining open item is a scripted agent simulation that proves an agent can initialize and operate a repository using only `AGENTS.md`. This is intentionally deferred until after EXP-AX-001 publishes the npm package, because the simulation needs a real install path.

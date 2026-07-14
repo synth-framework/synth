@@ -17,8 +17,10 @@ A collection of tested prompts for operating Synth from an AI agent.
 ## Prompts
 
 - [Initialize this repository with Synth](initialize.md)
+- [Bootstrap an existing repository](bootstrap-repository.md)
 - [Create a Mission](create-mission.md)
 - [Generate Expeditions](generate-expeditions.md)
+- [Validate changes](validate-changes.md)
 - [Explain the Replay](explain-replay.md)
 - [Recover the interrupted Mission](recover-mission.md)
 
