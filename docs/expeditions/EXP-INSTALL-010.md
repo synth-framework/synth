@@ -51,10 +51,10 @@ The installation experience is only as good as its documentation. README, Quick 
 5. **First-run documentation**
    - What to do after installation.
 
-Primary onboarding flow:
+Primary onboarding flow (URL resolved via `SYNTH_INSTALLER_BASE_URL`):
 
 ```bash
-curl -fsSL https://synth.dev/install.sh | sh
+curl -fsSL "${SYNTH_INSTALLER_BASE_URL}/install.sh" | sh
 
 synth doctor
 

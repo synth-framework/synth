@@ -30,6 +30,8 @@ Establish the canonical installation experience for SYNTH by delivering a determ
 curl -fsSL https://synth.dev/install.sh | sh
 ```
 
+The `synth.dev` URL is the aspirational canonical endpoint. Until the domain is acquired, the actual base URL is controlled by the `SYNTH_INSTALLER_BASE_URL` GitHub repository variable (for example, a GitHub Pages URL) so the installer can be published and tested without code changes.
+
 The installer acts as a bootstrap layer responsible for environment detection, distribution resolution, installation, verification, and upgrades. The Era II implementation targets npm as the distribution backend while preserving a stable public interface for future Homebrew, binary, and package-manager support.
 
 > **Constitutional Rule:** This Program completes without touching architecture.
