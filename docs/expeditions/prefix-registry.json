@@ -30,6 +30,10 @@
       "name": "Environment Independence",
       "description": "Constitutional environment independence and capability provider expeditions."
     },
+    "FIRSTCONTACT": {
+      "name": "First Contact & Public Identity",
+      "description": "Public narrative, product identity, and first-contact experience expeditions."
+    },
     "GOV": {
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
