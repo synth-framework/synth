@@ -15,10 +15,10 @@ on:
       - "v*.*.*"
 
 jobs:
-  release:
+  build-and-publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -40,6 +40,64 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-artifact
+          path: proof/proof-*.json
+          if-no-files-found: error
+
+  certify:
+    name: Install certification (${{ matrix.os }})
+    needs: build-and-publish
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    env:
+      INSTALLER_BASE_URL: ${{ vars.SYNTH_INSTALLER_BASE_URL || 'https://synth-framework.github.io/synth' }}
+    steps:
+      - name: Install Synth via bootstrap installer
+        run: curl -fsSL "${INSTALLER_BASE_URL}/install.sh" | sh
+
+      - name: Verify executable
+        run: command -v synth
+
+      - name: Check version
+        run: synth --version
+
+      - name: Check health
+        run: synth doctor
+
+      - name: Initialize a project
+        run: |
+          mkdir synth-certification
+          cd synth-certification
+          synth init --name "Synth Certification"
+
+      - name: Record certification result
+        run: |
+          {
+            echo "## Installation Certification ✅"
+            echo ""
+            echo "- Runner: ${{ matrix.os }}"
+            echo "- Installer: ${INSTALLER_BASE_URL}/install.sh"
+            echo "- \`synth --version\`, \`synth doctor\`, and \`synth init\` all passed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: certify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download proof artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: proof-artifact
+          path: proof/
 
       - name: Create release
         uses: softprops/action-gh-release@v2

@@ -1,6 +1,6 @@
 # EXP-INSTALL-009 — Installation Certification
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -89,13 +89,13 @@ Extend to macOS and Windows runners.
 
 ## Definition of Done
 
-- [ ] Certification workflow implemented.
-- [ ] All certification steps pass.
-- [ ] Certification failure blocks release.
-- [ ] Multi-platform certification planned (Ubuntu minimum).
-- [ ] Results are recorded.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Certification workflow implemented.
+- [x] All certification steps pass.
+- [x] Certification failure blocks release.
+- [x] Multi-platform certification planned (Ubuntu minimum).
+- [x] Results are recorded.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -111,4 +111,9 @@ Extend to macOS and Windows runners.
 
 ## Completion Notes
 
-Pending.
+- Restructured \`.github/workflows/release.yml\` into three jobs:
+  1. \`build-and-publish\` — runs governance, publishes to npm, uploads proof artifact.
+  2. \`certify\` — installs Synth via the bootstrap installer on a clean runner (Ubuntu and macOS matrix), verifies executable, runs \`synth --version\`, \`synth doctor\`, and \`synth init\`.
+  3. \`release\` — creates the GitHub release only after certification succeeds.
+- Added \`scripts/certify-installation.sh\` for the canonical install → verify flow.
+- Registered \`test:installer-certification\` in \`package.json\` and \`test:all\` (intended for CI).
