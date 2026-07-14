@@ -64,9 +64,26 @@ The Validation Planner cannot guess which tests validate which capabilities. Eac
 
 ## Definition of Done
 
-- [ ] Capability registry extended with validation metadata.
-- [ ] Default mappings defined for all existing capabilities.
-- [ ] Validation manifest file created.
-- [ ] Mapping validator added to governance.
-- [ ] Unit tests pass.
+- [x] Capability registry extended with validation metadata.
+- [x] Default mappings defined for all existing capabilities.
+- [x] Validation manifest file created.
+- [x] Mapping validator added to governance.
+- [x] Unit tests pass.
 - [ ] Expedition is accepted.
+
+---
+
+## Completion Notes
+
+Capability-to-test mapping delivered:
+
+- Manifest created at `docs/reference/capability-validation-map.json` with schema `synth-capability-validation-map-v1`.
+- 40 capabilities mapped to unit tests, integration tests, benchmarks, proofs, lint scope, and typecheck scope.
+- Protected Assets (`Mission Studio`, `Genesis`, `Replay`, `Runtime`) explicitly flagged and required to have integration tests or proofs.
+- Validator implemented in `scripts/verify-capability-validation-map.js`:
+  - Validates schema version.
+  - Ensures every capability declares at least one validation activity.
+  - Ensures every referenced npm script exists in `package.json`.
+  - Enforces stronger validation rules for Protected Assets.
+- Tests added in `tests/validation-mapping.test.js` covering valid map, script references, Protected Asset rules, and failure modes.
+- Wired into governance via `test:validation-mapping` and included in `npm run test:all`.
