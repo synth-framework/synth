@@ -3,7 +3,8 @@
 **Status:** Active
 **Kind:** Kernel Capability
 **Priority:** High
-**Depends On:** EXP-SRC-001, EXP-SMA-001, EXP-DET-001, EXP-AUD-002, EXP-GOV-001, EXP-ADP-000
+**Program:** EXP-PROGRAM-001 — SYNTH Productization Program
+**Depends On:** EXP-SMA-001, EXP-DET-001, EXP-AUD-002, EXP-GOV-001, EXP-ADP-000
 **Blocks:** Sample Projects, Agent UI, Project Templates
 
 ---

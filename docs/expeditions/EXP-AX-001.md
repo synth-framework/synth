@@ -84,14 +84,35 @@ curl -fsSL https://install.synth.dev | sh
 
 ## Acceptance
 
-An AI agent installs SYNTH without cloning the repository.
+An AI agent installs SYNTH without cloning the repository and verifies it end-to-end.
 
 Specifically:
 
 - `npm install -g @synth-framework/synth` produces a working `synth` binary.
 - `npx @synth-framework/synth --version` works in a fresh directory.
+- `synth doctor` reports a healthy installation.
+- The following agentic smoke test completes successfully:
+
+  ```bash
+  npm install -g @synth-framework/synth
+  synth --version
+  synth doctor
+  mkdir demo && cd demo
+  synth init --name "Demo Project"
+  synth mission create --subject "Demo" --purpose "Verify distribution"
+  ```
+
 - Installation completes in under five minutes on a standard connection.
 - Documentation no longer presents `git clone` as the first installation step.
+
+### Installation Matrix
+
+| Platform       | `npm -g` | `npx` | Smoke Test |
+| -------------- | -------- | ----- | ---------- |
+| macOS          | ⏳        | ⏳     | ⏳          |
+| Ubuntu         | ⏳        | ⏳     | ⏳          |
+| Windows        | ⏳        | ⏳     | ⏳          |
+| GitHub Actions | ⏳        | ⏳     | ⏳          |
 
 ---
 
@@ -131,29 +152,42 @@ Replace `git clone` installation path in README and guides.
 
 ## Definition of Done
 
-- [ ] Package is published to npm.
+- [ ] Package is published to npm (pending user-triggered GitHub Actions publish).
 - [ ] Global installation produces a working `synth` binary.
 - [ ] `npx @synth-framework/synth` works without prior installation.
-- [ ] Installation verification command is implemented.
-- [ ] README and operator guides no longer lead with `git clone`.
-- [ ] Installation smoke tests pass in CI.
+- [x] Installation verification command is implemented.
+- [x] README and operator guides no longer lead with `git clone`.
+- [x] Local installation smoke tests pass (`synth doctor`, `synth init`).
+- [ ] Published-package smoke test passes in a clean environment.
+- [ ] Installation matrix is populated for all claimed platforms.
 - [ ] Expedition is accepted.
 
 ---
 
 ## Implementation Plan
 
-1. Audit `package.json` name, version, `bin`, `files`, and build outputs.
-2. Publish `@synth-framework/synth` to npm.
-3. Add `synth doctor` installation verification command to `src/cli/synth.ts`.
-4. Update README installation section.
-5. Update `docs/guides/operator/01-getting-started.md`.
-6. Update agent prompts to use `npx` or global install.
-7. Add installation smoke tests to CI or test suite.
-8. Build and verify.
+1. Audit `package.json` name, version, `bin`, `files`, and build outputs. ✅
+2. Prepare `@synth-framework/synth` for npm publication. ✅
+3. Add `synth doctor` installation verification command to `src/cli/synth.ts`. ✅
+4. Update README installation section. ✅
+5. Update `docs/getting-started/README.md`. ✅
+6. Update agent prompts to use `npx` or global install. ✅ (already current in `AGENTS.md`)
+7. Add installation smoke tests to CI or test suite. ✅
+8. Build and verify via `npm run govern`. ✅
+9. Publish to npm via GitHub Actions when credentials and workflow are ready. ⏳
 
 ---
 
 ## Completion Notes
 
-Pending.
+Package readiness work completed. The repository is configured for publication as `@synth-framework/synth`:
+
+- `package.json` name updated to `@synth-framework/synth`.
+- `bin` entry reduced to `synth` only; `synth-v2` alias removed.
+- `files` whitelist tightened to `dist/` and root metadata.
+- `publishConfig.access` set to `public`.
+- `synth doctor` implemented to verify Node version, binary path, package version, and project manifest.
+- README and Quick Start guide now lead with `npm install -g @synth-framework/synth` / `npx @synth-framework/synth`.
+- CLI smoke tests include `synth doctor`.
+
+Publication itself is intentionally deferred until the user configures npm credentials and a GitHub Actions release workflow.

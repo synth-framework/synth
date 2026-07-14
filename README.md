@@ -24,11 +24,25 @@ Everything else is implementation detail.
 
 ## Install
 
+Install the Synth CLI globally from npm:
+
 ```bash
-git clone <repository-url>
-cd synth-v2
-npm install
+npm install -g @synth-framework/synth
 ```
+
+Or run it once without installing:
+
+```bash
+npx @synth-framework/synth --version
+```
+
+Verify the installation:
+
+```bash
+synth doctor
+```
+
+For contributors, see [CONTRIBUTING.md](CONTRIBUTING.md) for the repository-based setup.
 
 ## Quick Start
 
