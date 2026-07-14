@@ -165,7 +165,7 @@ All work in this Program stays in the Allowed column:
 - [ ] EXP-INSTALL-005 completed and accepted.
 - [x] EXP-INSTALL-006 completed and accepted.
 - [x] EXP-INSTALL-007 completed and accepted.
-- [ ] EXP-INSTALL-008 completed and accepted.
+- [x] EXP-INSTALL-008 completed and accepted.
 - [ ] EXP-INSTALL-009 completed and accepted.
 - [ ] EXP-INSTALL-010 completed and accepted.
 - [ ] EXP-INSTALL-011 completed and accepted.

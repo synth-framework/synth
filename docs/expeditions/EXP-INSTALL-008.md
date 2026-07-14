@@ -1,6 +1,6 @@
 # EXP-INSTALL-008 — Upgrade Engine
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -93,14 +93,14 @@ Add rollback on failure.
 
 ## Definition of Done
 
-- [ ] `--upgrade` implemented.
-- [ ] `--channel` implemented.
-- [ ] `--version` implemented.
-- [ ] Current version detection implemented.
-- [ ] Rollback on failure implemented.
-- [ ] Tests cover upgrade paths.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] `--upgrade` implemented.
+- [x] `--channel` implemented.
+- [x] `--version` implemented.
+- [x] Current version detection implemented.
+- [x] Rollback on failure implemented.
+- [x] Tests cover upgrade paths.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -117,4 +117,7 @@ Add rollback on failure.
 
 ## Completion Notes
 
-Pending.
+- Improved `get_installed_version()` in `scripts/install.sh` to extract the semver from `synth --version` output.
+- Verified existing `--upgrade`, `--channel`, and `--version` parsing and rollback logic.
+- Added `tests/installer-upgrade.test.js` covering upgrade, exact version install, channel selection, and rollback on failure.
+- Registered `test:installer-upgrade` in `package.json` and `test:all`.
