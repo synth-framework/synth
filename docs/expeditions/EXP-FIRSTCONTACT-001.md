@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-001 — Public Narrative
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — First Contact & Public Identity  
@@ -76,9 +76,26 @@ Map existing website and documentation content to the five levels. Identify gaps
 
 Document tone, perspective, and examples of good/bad copy.
 
-### Phase 5 — Review
+### Phase 5 — Comprehension validation
 
-Present the narrative to at least one external reviewer for comprehension testing.
+Run a structured comprehension test with at least three experienced developers who have never used SYNTH.
+
+Procedure:
+
+1. Give each reviewer the public narrative document or a projection of it (e.g., the website).
+2. Allow 10–15 minutes to read.
+3. Remove the document.
+4. Ask the questions from memory.
+
+Questions:
+
+1. What is SYNTH?
+2. What problem does it solve?
+3. How is it different from Git, CI/CD, or AI coding assistants?
+4. Describe the AI-human workflow in your own words.
+5. What does "Replay" mean, and why is it important?
+
+Pass if all participants demonstrate consistent conceptual understanding without relying on verbatim repetition.
 
 ---
 
@@ -94,13 +111,13 @@ Present the narrative to at least one external reviewer for comprehension testin
 
 ## Definition of Done
 
-- [ ] Problem statement documented.
-- [ ] SYNTH promise documented.
-- [ ] Narrative ladder defined with examples at each level.
-- [ ] Style guide drafted.
-- [ ] AI-native human-AI division of labor stated.
-- [ ] External comprehension check passed.
-- [ ] `npm run govern` passes.
+- [x] Problem statement documented.
+- [x] SYNTH promise documented.
+- [x] Narrative ladder defined with examples at each level.
+- [x] Style guide drafted.
+- [x] AI-native human-AI division of labor stated.
+- [ ] Structured comprehension validation passed with at least three external developers.
+- [x] `npm run govern` passes.
 - [ ] Expedition is accepted.
 
 ---
@@ -118,4 +135,17 @@ Present the narrative to at least one external reviewer for comprehension testin
 
 ## Completion Notes
 
-Pending.
+- Created `docs/reference/public-narrative.md` as the canonical public narrative source artifact.
+- Reframed problem statement around trust and accountability at AI scale.
+- Identity statement: "SYNTH is the AI-native execution platform for governed software engineering."
+- SYNTH promise: "Every decision is recorded, every action is governed, and every state is provable."
+- Added "What SYNTH Is Not" section to prevent the wrong mental model.
+- Narrative ladder defined with five levels and example copy at each level.
+- AI-native workflow explains the human-AI division of labor with the CLI as an execution surface for agents.
+- Plain-language definitions provided for all public terms, each with Definition → In SYNTH → Why it matters.
+- Added "Frequently Confused Concepts" section distinguishing SYNTH terms from familiar software engineering ideas.
+- Style guide includes tone, perspective, forbidden phrases, and canonical statements.
+- Document is ready to merge as the canonical public-narrative source.
+- Expedition implementation is complete; the document may now be merged and subsequent expeditions may project from it.
+- Structured comprehension validation is pending and must pass before the expedition is formally accepted.
+- Until validation evidence exists, the narrative should be treated as implemented but not yet validated.
