@@ -162,7 +162,7 @@ function computeConfidence(
   return Math.round(Math.min(0.99, 0.85 + coverage * 0.14) * 100) / 100
 }
 
-function getFullGovernPlan(options: PlannerOptions): ValidationPlan {
+function getFullGovernPlan(options: PlannerOptions, touchedAssets?: string[]): ValidationPlan {
   const { availableScripts, fullGovernScript = "govern" } = options
 
   const run = availableScripts.includes(fullGovernScript)
@@ -171,13 +171,20 @@ function getFullGovernPlan(options: PlannerOptions): ValidationPlan {
 
   const skip = availableScripts.filter((s) => !run.includes(s))
 
+  const assetText =
+    touchedAssets && touchedAssets.length > 0
+      ? touchedAssets.length === 1
+        ? touchedAssets[0]
+        : touchedAssets.join(", ")
+      : "Protected Asset"
+
   return {
     run,
     skip,
     confidence: 1.0,
     protectedAssetsTouched: true,
     risk: "high",
-    reason: "Protected Asset touched — full constitutional validation required.",
+    reason: `${assetText} modified; full constitutional validation required.`,
   }
 }
 
@@ -190,7 +197,7 @@ export function buildValidationPlan(
 
   // Protected Asset escalation: full govern plan.
   if (report.protectedAssets.length > 0) {
-    return getFullGovernPlan(options)
+    return getFullGovernPlan(options, report.protectedAssets)
   }
 
   // If no capabilities were detected, run a minimal sanity check.

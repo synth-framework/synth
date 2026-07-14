@@ -6,6 +6,7 @@
 // ============================================================
 
 import { spawnSync } from "child_process"
+import { detectProtectedAssets } from "./protected-assets.js"
 
 export type RiskLevel = "low" | "medium" | "high"
 
@@ -52,6 +53,7 @@ const DEFAULT_RULES: MappingRule[] = [
   { pattern: /^src\/adapters\//, capability: "AdapterRegistry", risk: "medium" },
   { pattern: /^src\/api\//, capability: "SynthAPI", risk: "medium" },
   { pattern: /^src\/validation\//, capability: "Validation", risk: "medium" },
+  { pattern: /^src\/governance\/protected-assets/, capability: "ProtectedAssets", risk: "medium" },
   { pattern: /^src\/governance\//, capability: "Governance", risk: "medium" },
   { pattern: /^src\/workspace\//, capability: "Workspace", risk: "medium" },
   { pattern: /^src\/planning\//, capability: "Planning", risk: "medium" },
@@ -106,29 +108,28 @@ function classifyFile(filePath: string): FileClassification {
 
 export function analyzeFiles(files: string[]): ImpactReport {
   const affectedCapabilities = new Set<string>()
-  const protectedAssets = new Set<string>()
   let maxRisk: RiskLevel = "low"
 
   for (const file of files) {
     const classification = classifyFile(file)
     affectedCapabilities.add(classification.capability)
-    if (classification.protectedAsset) {
-      protectedAssets.add(classification.protectedAsset)
-    }
     if (riskRank(classification.risk) > riskRank(maxRisk)) {
       maxRisk = classification.risk
     }
   }
 
+  // Detect Protected Assets using the canonical catalog (ADR-004).
+  const protectedAssets = detectProtectedAssets(files)
+
   // Any Protected Asset touched forces high risk regardless of other files.
-  if (protectedAssets.size > 0) {
+  if (protectedAssets.length > 0) {
     maxRisk = "high"
   }
 
   return {
     files: Array.from(new Set(files)).sort(),
     affectedCapabilities: Array.from(affectedCapabilities).sort(),
-    protectedAssets: Array.from(protectedAssets).sort(),
+    protectedAssets,
     risk: maxRisk,
   }
 }

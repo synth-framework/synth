@@ -222,12 +222,20 @@
       "typecheckScope": ["src/genesis/"]
     },
     "Governance": {
-      "unitTests": ["test:expedition-governance", "test:impact-analyzer"],
+      "unitTests": ["test:expedition-governance", "test:impact-analyzer", "test:protected-asset-escalation"],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
       "lintScope": ["src/governance/", "scripts/verify-expedition-governance.js", "scripts/verify-capability-validation-map.js"],
       "typecheckScope": ["src/governance/"]
+    },
+    "ProtectedAssets": {
+      "unitTests": ["test:protected-asset-escalation"],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": ["src/governance/protected-assets.ts", "tests/protected-asset-escalation.test.js"],
+      "typecheckScope": ["src/governance/protected-assets.ts"]
     },
     "MissionStudio": {
       "unitTests": ["test:mission-studio", "test:mission-studio-snapshot-lineage", "test:mission-studio-adapter-mapper", "test:mission-studio-adapter-collector"],
