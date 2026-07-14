@@ -136,5 +136,7 @@ Environment detection delivered in `scripts/install.sh`:
 - `check_permissions()` reports whether the npm global prefix is writable.
 - `build_environment_profile()` prints a structured profile during `--dry-run`.
 - `validate_environment()` fails early on unsupported OS/arch or missing Node.js.
+- `check_command_exists()` provides a lightweight presence check for dry-run mode.
+- In `--dry-run` mode the profile uses lightweight presence checks for Node/npm and skips the permissions probe to keep feedback fast; full version and permission checks still run during actual installation.
 - `tests/installer-environment.test.js` verifies the profile is printed and the current platform is detected as supported.
 - Added `npm run test:installer-environment` and included it in `npm run test:all`.
