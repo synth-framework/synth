@@ -93,9 +93,9 @@ The following are non-negotiable for the entire program:
 
 ## Definition of Done
 
-- [ ] EXP-VAL-008 completed.
-- [ ] EXP-VAL-009 completed.
-- [ ] EXP-VAL-010 completed.
-- [ ] EXP-VAL-011 completed.
-- [ ] EXP-VAL-012 completed.
+- [x] EXP-VAL-008 completed.
+- [x] EXP-VAL-009 completed.
+- [x] EXP-VAL-010 completed.
+- [x] EXP-VAL-011 completed.
+- [x] EXP-VAL-012 completed.
 - [ ] Program accepted.

@@ -141,7 +141,7 @@
       "typecheckScope": ["src/adapters/wizard/"]
     },
     "CLI": {
-      "unitTests": ["test"],
+      "unitTests": ["test", "test:synth-cli"],
       "integrationTests": ["test:operator-journey"],
       "benchmarks": [],
       "proofs": [],

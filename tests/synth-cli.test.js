@@ -56,6 +56,7 @@ async function testHelp() {
   assert(output.commands.some((c) => c.name === "init"), "help should include init command")
   assert(output.commands.some((c) => c.name === "doctor"), "help should include doctor command")
   assert(output.commands.some((c) => c.name === "govern"), "help should include govern command")
+  assert(output.commands.some((c) => c.name === "validate"), "help should include validate command")
   assert(Array.isArray(output.vocabulary), "help should list public vocabulary")
   assert(output.vocabulary.includes("Mission"), "vocabulary should include Mission")
   console.log("[PASS] synth --help returns commands and vocabulary")
@@ -74,17 +75,45 @@ async function testDoctor() {
   console.log("[PASS] synth doctor reports installation health")
 }
 
-async function testValidate() {
-  const { stdout, status } = runSynth(["validate"])
-  assert(status === 0, "validate command should exit 0")
+async function testValidateDryRun() {
+  const { stdout, status } = runSynth(["validate", "--dry-run"])
+  assert(status === 0, "validate --dry-run should exit 0")
   const output = parseJson(stdout)
   assert(output.status === "ok", "validate status should be ok")
-  assert(output.kind === "ImpactReport", "validate should return ImpactReport")
+  assert(output.kind === "ValidationPlan", "validate --dry-run should return ValidationPlan")
   assert(Array.isArray(output.files), "validate should list files")
   assert(Array.isArray(output.affectedCapabilities), "validate should list affected capabilities")
   assert(Array.isArray(output.protectedAssets), "validate should list protected assets")
+  assert(Array.isArray(output.run), "validate should list run scripts")
+  assert(Array.isArray(output.skip), "validate should list skip scripts")
   assert(["low", "medium", "high"].includes(output.risk), "validate should report risk")
-  console.log("[PASS] synth validate returns impact report")
+  assert(output.note && output.note.includes("Dry-run"), "validate --dry-run note should indicate dry run")
+  console.log("[PASS] synth validate --dry-run returns ValidationPlan")
+}
+
+async function testValidateNoChanges() {
+  const { stdout, status } = runSynth(["validate", "--diff", ""])
+  assert(status === 0, "validate with empty diff should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "validate status should be ok")
+  assert(output.kind === "ValidationPlan", "validate should return ValidationPlan")
+  assert(Array.isArray(output.files) && output.files.length === 0, "empty diff should produce no files")
+  assert(Array.isArray(output.run) && output.run.length === 0, "empty diff should produce no run scripts")
+  assert(output.reason && output.reason.includes("No changed files"), "empty diff should explain no changes")
+  console.log("[PASS] synth validate with empty diff returns empty plan")
+}
+
+async function testValidateFullDryRun() {
+  const { stdout, status } = runSynth(["validate", "--full", "--dry-run"])
+  assert(status === 0, "validate --full --dry-run should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "validate status should be ok")
+  assert(output.kind === "ValidationPlan", "validate --full --dry-run should return ValidationPlan")
+  assert(output.run.includes("govern"), "full plan should run govern")
+  assert(output.protectedAssetsTouched === true, "full plan should flag protected assets touched")
+  assert(output.risk === "high", "full plan should report high risk")
+  assert(output.note && output.note.includes("Dry-run"), "validate --full --dry-run note should indicate dry run")
+  console.log("[PASS] synth validate --full --dry-run returns full governance plan")
 }
 
 async function testInit() {
@@ -128,7 +157,9 @@ async function main() {
   await testVersion()
   await testHelp()
   await testDoctor()
-  await testValidate()
+  await testValidateDryRun()
+  await testValidateNoChanges()
+  await testValidateFullDryRun()
   await testInit()
   await testAdapterDelegation()
 

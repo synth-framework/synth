@@ -1,6 +1,6 @@
 # EXP-VAL-012 — CI/Local Validation Integration
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Validation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-005 — Adaptive Validation Program  
@@ -66,10 +66,23 @@ Adaptive validation is only useful if developers and AI agents can invoke it eas
 
 ## Definition of Done
 
-- [ ] `synth validate` command implemented.
-- [ ] `--full` and `--dry-run` flags implemented.
-- [ ] CI workflows preserve `npm run govern` gate.
-- [ ] `AGENTS.md` updated.
-- [ ] Operator guide updated.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] `synth validate` command implemented.
+- [x] `--full` and `--dry-run` flags implemented.
+- [x] CI workflows preserve `npm run govern` gate.
+- [x] `AGENTS.md` updated.
+- [x] Operator guide updated.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
+
+---
+
+## Completion Notes
+
+- Implemented `cmdValidate` in `src/cli/synth.ts` to analyze the working tree diff, build a validation plan, and execute it.
+- Added `--dry-run` to preview plans and `--full` to run the canonical `npm run govern` pipeline.
+- Added `test:synth-cli` npm script and wired it into `test:all` and the CLI capability map.
+- Updated `tests/synth-cli.test.js` to assert `ValidationPlan` output and the new flags.
+- Updated `AGENTS.md` to recommend `synth validate` for local iteration and `npm run govern` before merge.
+- Added `docs/operator/14-local-vs-ci-validation.md` and updated `docs/operator/README.md`.
+- Updated `docs/guides/operator/continuous-publication.md` to document the non-blocking adaptive-validation role in CI.
+- No Protected Assets were modified.

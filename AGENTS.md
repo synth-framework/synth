@@ -70,7 +70,27 @@ synth expedition create --mission "Mission Name" --subject "Expedition Subject" 
 
 ## Validate work
 
-Run the canonical governance pipeline after any significant change:
+For local iteration, run the adaptive validator first. It analyzes your change and executes only the validations that could be affected:
+
+```bash
+synth validate
+```
+
+To preview the plan without executing:
+
+```bash
+synth validate --dry-run
+```
+
+To run the complete canonical governance pipeline locally:
+
+```bash
+synth validate --full
+# equivalent to:
+npm run govern
+```
+
+**Before requesting a merge, always run the full governance pipeline:**
 
 ```bash
 npm run govern
@@ -102,6 +122,9 @@ If `data/` is lost or corrupted, replay can reconstruct state from the event log
 | `synth expedition create --mission ... --subject ... --goal ...` | Create Expedition proposals |
 | `synth docs generate` | Regenerate public documentation |
 | `synth explain replay` | Verify replay consistency |
+| `synth validate` | Analyze changes and run the minimum sound validation plan |
+| `synth validate --dry-run` | Preview the validation plan without executing |
+| `synth validate --full` | Run the full `npm run govern` pipeline |
 | `npm run govern` | Run the full governance pipeline |
 
 ## Public vocabulary
