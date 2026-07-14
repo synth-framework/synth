@@ -30,9 +30,9 @@ Your job as an agent is to:
 1. Install Synth:
 
    ```bash
-   npm install -g synth-v2
-   # or from the repository:
-   ./install.sh
+   npm install -g @synth-framework/synth
+   # or run without installing:
+   npx @synth-framework/synth --version
    ```
 
 2. Read the bootstrap manifest:
@@ -65,7 +65,13 @@ Your job as an agent is to:
    synth mission approve --draft-id <draft-id>
    ```
 
-7. Run governance:
+7. Validate changes locally:
+
+   ```bash
+   synth validate
+   ```
+
+8. Run the full governance pipeline before requesting a merge:
 
    ```bash
    npm run govern
@@ -79,6 +85,8 @@ Your job as an agent is to:
 - [Gemini CLI](gemini-cli.md)
 - [Windsurf](windsurf.md)
 - [MCP-compatible agents](mcp.md) — future
+
+See also the [Agent Prompt Book](prompts/prompt-book.md) for ready-to-use prompts.
 
 ## Public vocabulary
 

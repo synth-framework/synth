@@ -14,7 +14,11 @@ Status: stable
 
 ## Setup
 
-1. Install Synth globally or run `./install.sh` in the project repository.
+1. Install Synth globally:
+
+   ```bash
+   npm install -g @synth-framework/synth
+   ```
 2. Ensure `synth --version` works in the Claude Code terminal.
 3. Read `.synth/manifest.json` at the start of every Synth-related session.
 

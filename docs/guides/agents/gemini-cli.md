@@ -17,7 +17,7 @@ Status: stable
 1. Install Synth globally:
 
    ```bash
-   npm install -g synth-v2
+   npm install -g @synth-framework/synth
    ```
 
 2. Verify:
