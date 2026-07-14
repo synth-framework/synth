@@ -74,6 +74,19 @@ async function testDoctor() {
   console.log("[PASS] synth doctor reports installation health")
 }
 
+async function testValidate() {
+  const { stdout, status } = runSynth(["validate"])
+  assert(status === 0, "validate command should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "validate status should be ok")
+  assert(output.kind === "ImpactReport", "validate should return ImpactReport")
+  assert(Array.isArray(output.files), "validate should list files")
+  assert(Array.isArray(output.affectedCapabilities), "validate should list affected capabilities")
+  assert(Array.isArray(output.protectedAssets), "validate should list protected assets")
+  assert(["low", "medium", "high"].includes(output.risk), "validate should report risk")
+  console.log("[PASS] synth validate returns impact report")
+}
+
 async function testInit() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-test-"))
   try {
@@ -115,6 +128,7 @@ async function main() {
   await testVersion()
   await testHelp()
   await testDoctor()
+  await testValidate()
   await testInit()
   await testAdapterDelegation()
 
