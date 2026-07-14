@@ -24,11 +24,16 @@ SYNTH is a deterministic execution system for engineering work. Humans explore, 
 
 ## Installation
 
-Use npm or npx. Do not rely on cloning the repository unless you are contributing to SYNTH itself.
+Use the bootstrap installer, npm, or npx. Do not rely on cloning the repository unless you are contributing to SYNTH itself.
 
 ```bash
+# Bootstrap installer
+curl -fsSL https://synth-framework.github.io/synth/install.sh | sh
+
+# Or npm
 npm install -g @synth-framework/synth
-# or
+
+# Or run once without installing
 npx @synth-framework/synth --version
 ```
 
