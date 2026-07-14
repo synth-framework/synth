@@ -1,6 +1,6 @@
 # EXP-INSTALL-003 — Distribution Resolution
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -98,14 +98,14 @@ Support channel aliases and exact versions.
 
 ## Definition of Done
 
-- [ ] Distribution Profile schema defined.
-- [ ] npm backend resolver implemented.
-- [ ] Channel resolution implemented.
-- [ ] Version selection implemented.
-- [ ] Unknown channels/versions fail cleanly.
-- [ ] Tests cover resolution paths.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Distribution Profile schema defined.
+- [x] npm backend resolver implemented.
+- [x] Channel resolution implemented.
+- [x] Version selection implemented.
+- [x] Unknown channels/versions fail cleanly.
+- [x] Tests cover resolution paths.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -122,4 +122,15 @@ Support channel aliases and exact versions.
 
 ## Completion Notes
 
-Pending.
+Distribution resolution delivered in `scripts/install.sh`:
+
+- `resolve_distribution(channel, version)` produces a Distribution Profile with backend, package, version, and channel.
+- Era II backend is npm; package is `@synth-framework/synth`.
+- Supported channels: `latest`, `stable`, `beta`, `nightly`.
+- Exact `--version` overrides channel resolution.
+- `latest` and `stable` resolve via `npm view @synth-framework/synth version`.
+- `beta` and `nightly` resolve via `npm view @synth-framework/synth dist-tags.<tag>`.
+- Unknown channels fail with a clear error message and exit code `1`.
+- `--dry-run` prints the Distribution Profile alongside the Environment Profile.
+- `tests/installer-distribution.test.js` verifies default/latest resolution, exact version, stable channel, and unknown channel failure.
+- Added `npm run test:installer-distribution` and included it in `npm run test:all`.

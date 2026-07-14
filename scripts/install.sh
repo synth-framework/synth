@@ -191,7 +191,7 @@ check_path() {
 check_network() {
   local url="${INSTALLER_BASE_URL}/install.sh"
   if command -v curl >/dev/null 2>&1; then
-    if curl -fsSL -I "$url" >/dev/null 2>&1; then
+    if curl --max-time 3 -fsSL -I "$url" >/dev/null 2>&1; then
       printf "ok"
       return
     fi
@@ -213,16 +213,34 @@ check_permissions() {
   fi
 }
 
+check_command_exists() {
+  if command -v "$1" >/dev/null 2>&1; then
+    printf "present"
+  else
+    printf "not found"
+  fi
+}
+
 build_environment_profile() {
   printf "Environment profile:\n"
   printf "  OS:           %s\n" "$(detect_os)"
   printf "  Architecture: %s\n" "$(detect_arch)"
   printf "  Shell:        %s\n" "$(detect_shell)"
-  printf "  Node:         %s\n" "$(check_command_version node)"
-  printf "  npm:          %s\n" "$(check_command_version npm)"
-  printf "  PATH synth:   %s\n" "$(check_path)"
-  printf "  Network:      %s\n" "$(check_network)"
-  printf "  Permissions:  %s\n" "$(check_permissions)"
+
+  if [ "$DRY_RUN" = true ]; then
+    # In dry-run mode avoid expensive npm startup; presence is sufficient.
+    printf "  Node:         %s\n" "$(check_command_exists node)"
+    printf "  npm:          %s\n" "$(check_command_exists npm)"
+    printf "  PATH synth:   %s\n" "$(check_path)"
+    printf "  Network:      %s\n" "$(check_network)"
+    printf "  Permissions:  %s\n" "dry-run"
+  else
+    printf "  Node:         %s\n" "$(check_command_version node)"
+    printf "  npm:          %s\n" "$(check_command_version npm)"
+    printf "  PATH synth:   %s\n" "$(check_path)"
+    printf "  Network:      %s\n" "$(check_network)"
+    printf "  Permissions:  %s\n" "$(check_permissions)"
+  fi
 }
 
 validate_environment() {
@@ -242,6 +260,54 @@ validate_environment() {
   if [ "$node_version" = "not found" ]; then
     fail "Node.js is required but was not found. Please install Node.js >= 20."
   fi
+}
+
+get_npm_latest_version() {
+  npm view @synth-framework/synth version 2>/dev/null || true
+}
+
+get_npm_dist_tag_version() {
+  local tag="$1"
+  npm view @synth-framework/synth "dist-tags.${tag}" 2>/dev/null || true
+}
+
+resolve_distribution() {
+  local channel="$1"
+  local version="$2"
+  local resolved_version=""
+
+  case "$channel" in
+    latest|stable)
+      if [ -n "$version" ]; then
+        resolved_version="$version"
+      elif [ "$DRY_RUN" = true ]; then
+        resolved_version="<latest in channel>"
+      else
+        resolved_version="$(get_npm_latest_version)"
+      fi
+      ;;
+    beta|nightly)
+      if [ -n "$version" ]; then
+        resolved_version="$version"
+      elif [ "$DRY_RUN" = true ]; then
+        resolved_version="<latest in channel>"
+      else
+        resolved_version="$(get_npm_dist_tag_version "$channel")"
+      fi
+      ;;
+    *)
+      fail "Unknown release channel: $channel"
+      ;;
+  esac
+
+  if [ -z "$resolved_version" ]; then
+    fail "Could not resolve version for channel '$channel'"
+  fi
+
+  printf "Backend:    npm\n"
+  printf "Package:    @synth-framework/synth\n"
+  printf "Version:    %s\n" "$resolved_version"
+  printf "Channel:    %s\n" "$channel"
 }
 
 print_plan() {
@@ -269,15 +335,18 @@ main() {
   print_plan
   build_environment_profile
 
+  printf "Distribution profile:\n"
+  resolve_distribution "$CHANNEL" "$VERSION"
+
   if [ "$DRY_RUN" = true ]; then
     log "Dry run requested; no changes will be made."
     exit 0
   fi
 
   # Installation logic is intentionally deferred to EXP-INSTALL-004.
-  # This expedition implements environment detection only.
+  # This expedition implements distribution resolution only.
   log "Installation logic is not implemented in this expedition."
-  printf "Synth environment detected. Installation will begin in EXP-INSTALL-004.\n"
+  printf "Synth distribution resolved. Installation will begin in EXP-INSTALL-004.\n"
 }
 
 main "$@"
