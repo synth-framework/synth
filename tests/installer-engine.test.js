@@ -2,8 +2,8 @@
 // Synth Installer Engine Tests
 // ============================================================
 // Verifies the installation workflow: package installation,
-// retry logic, cleanup on failure, rollback on upgrade, and
-// idempotent execution.
+// retry logic, cleanup on failure, rollback on upgrade,
+// idempotent execution, and verification integration.
 // ============================================================
 
 import { spawnSync } from "child_process"
@@ -149,27 +149,24 @@ async function testDryRunDoesNotInstall() {
   assert(result.stdout.includes("Dry run:    true"), "Must indicate dry run")
 }
 
-async function testInstallSuccessAndIdempotency() {
+async function testSuccessfulInstall() {
   const prefix = makeTempDir()
   const fake = createFakeNpm({ prefix })
-  const env = {
-    SYNTH_INSTALLER_NPM_PREFIX: prefix,
-    PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
-  }
-  const first = runInstaller([], env, 180000)
-  assert(first.status === 0, "First install must exit with code 0")
-  assert(first.stdout.includes("Synth @synth-framework/synth@2.0.0-rc.1 installed successfully"), "Must report successful install")
-  const firstLog = fs.readFileSync(fake.logFile, "utf-8").trim().split("\n")
-  const firstInstallLine = firstLog.find((line) => line.startsWith("install "))
-  assert(firstInstallLine !== undefined, "npm install must be invoked")
-  assert(firstInstallLine.includes("@synth-framework/synth@2.0.0-rc.1"), "Must install correct target")
+  const result = runInstaller(
+    [],
+    {
+      SYNTH_INSTALLER_NPM_PREFIX: prefix,
+      PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
+    },
+    180000,
+  )
+  assert(result.status === 0, "Install must exit with code 0")
+  assert(result.stdout.includes("Synth @synth-framework/synth@2.0.0-rc.1 installed successfully"), "Must report successful install")
+  const log = fs.readFileSync(fake.logFile, "utf-8").trim().split("\n")
+  const installLine = log.find((line) => line.startsWith("install "))
+  assert(installLine !== undefined, "npm install must be invoked")
+  assert(installLine.includes("@synth-framework/synth@2.0.0-rc.1"), "Must install correct target")
   assert(fs.existsSync(path.join(prefix, "bin", "synth")), "Fake synth binary must be created")
-
-  const second = runInstaller([], env, 180000)
-  assert(second.status === 0, "Second install must succeed")
-  const fullLog = fs.readFileSync(fake.logFile, "utf-8").trim().split("\n")
-  const installLines = fullLog.filter((line) => line.startsWith("install "))
-  assert(installLines.length === 2, `Expected 2 install invocations, got ${installLines.length}`)
 }
 
 async function testRetryOnTransientFailure() {
@@ -207,20 +204,57 @@ async function testCleanupOnFailure() {
   assert(uninstallLines.length >= 1, "Cleanup uninstall must be attempted")
 }
 
+async function testIdempotentExecution() {
+  const prefix = makeTempDir()
+  const fake = createFakeNpm({ prefix })
+  const env = {
+    SYNTH_INSTALLER_NPM_PREFIX: prefix,
+    PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
+  }
+  const first = runInstaller([], env, 180000)
+  assert(first.status === 0, "First install must succeed")
+  const second = runInstaller([], env, 180000)
+  assert(second.status === 0, "Second install must succeed")
+  const log = fs.readFileSync(fake.logFile, "utf-8").trim().split("\n")
+  const installLines = log.filter((line) => line.startsWith("install "))
+  assert(installLines.length === 2, `Expected 2 install invocations, got ${installLines.length}`)
+}
+
+async function testUpgradeFlagParsedAndPassed() {
+  const prefix = makeTempDir()
+  const fake = createFakeNpm({ prefix })
+  const result = runInstaller(
+    ["--upgrade"],
+    {
+      SYNTH_INSTALLER_NPM_PREFIX: prefix,
+      PATH: `${prefix}/bin:${fake.dir}:${process.env.PATH}`,
+    },
+    180000,
+  )
+  assert(result.status === 0, "Upgrade must exit with code 0")
+  assert(result.stdout.includes("Upgrade:    true"), "Must indicate upgrade mode")
+}
+
 async function main() {
   console.log("Running installer engine tests...")
 
   await testDryRunDoesNotInstall()
   console.log("✓ --dry-run does not invoke npm install")
 
-  await testInstallSuccessAndIdempotency()
-  console.log("✓ Successful install invokes npm with correct target and re-running succeeds")
+  await testSuccessfulInstall()
+  console.log("✓ Successful install invokes npm with correct target")
 
   await testRetryOnTransientFailure()
   console.log("✓ Transient failures are retried with backoff")
 
   await testCleanupOnFailure()
   console.log("✓ Failed installs attempt cleanup")
+
+  await testIdempotentExecution()
+  console.log("✓ Re-running the installer succeeds")
+
+  await testUpgradeFlagParsedAndPassed()
+  console.log("✓ --upgrade flag is parsed and installation proceeds")
 
   console.log("\nAll installer engine tests passed.")
 }
