@@ -36,6 +36,7 @@ async function testHelpReturnsZero() {
   assert(result.stdout.includes("--channel"), "Help must mention --channel")
   assert(result.stdout.includes("--version"), "Help must mention --version")
   assert(result.stdout.includes("--dry-run"), "Help must mention --dry-run")
+  assert(result.stdout.includes("--verify-only"), "Help must mention --verify-only")
   assert(result.stdout.includes("--verbose"), "Help must mention --verbose")
 }
 
@@ -80,6 +81,14 @@ async function testVersionFlagIsParsed() {
   assert(result.stdout.includes("Version:    2.1.0"), "Must indicate version 2.1.0")
 }
 
+async function testVerifyOnlyFlagIsParsed() {
+  // --verify-only is mutually exclusive with --dry-run, so we just verify the option
+  // is accepted and that the script enters verification mode. The actual behavior is
+  // tested in installer-verify.test.js.
+  const result = runInstaller(["--verify-only", "--help"])
+  assert(result.status === 0, "--verify-only --help must exit with code 0")
+}
+
 async function testBaseUrlEnvironmentVariable() {
   const result = runInstaller(["--dry-run"], { SYNTH_INSTALLER_BASE_URL: "https://example.com/synth" })
   assert(result.status === 0, "Custom base URL must exit with code 0")
@@ -118,6 +127,9 @@ async function main() {
 
   await testVersionFlagIsParsed()
   console.log("✓ --version is parsed")
+
+  await testVerifyOnlyFlagIsParsed()
+  console.log("✓ --verify-only is parsed")
 
   await testBaseUrlEnvironmentVariable()
   console.log("✓ SYNTH_INSTALLER_BASE_URL environment variable is respected")

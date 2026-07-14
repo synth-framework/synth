@@ -9,12 +9,13 @@
 #   curl -fsSL "${SYNTH_INSTALLER_BASE_URL}/install.sh" | sh -s -- --dry-run
 #
 # Options:
-#   --upgrade        Upgrade an existing installation.
-#   --channel <name> Install from a specific release channel (default: latest).
-#   --version <ver>  Install an exact semantic version.
-#   --dry-run        Print the installation plan without executing it.
-#   --verbose        Enable verbose output.
-#   --help           Show this help message.
+#   --upgrade         Upgrade an existing installation.
+#   --channel <name>  Install from a specific release channel (default: latest).
+#   --version <ver>   Install an exact semantic version.
+#   --dry-run         Print the installation plan without executing it.
+#   --verify-only     Verify an existing installation without installing.
+#   --verbose         Enable verbose output.
+#   --help            Show this help message.
 #
 # Exit codes:
 #   0 - Success or successful no-op.
@@ -38,6 +39,7 @@ INSTALLER_NPM_PREFIX="${SYNTH_INSTALLER_NPM_PREFIX:-}"
 DRY_RUN=false
 VERBOSE=false
 UPGRADE=false
+VERIFY_ONLY=false
 CHANNEL=""
 VERSION=""
 
@@ -70,6 +72,7 @@ Options:
   --channel <channel>    Release channel (default: ${DEFAULT_CHANNEL}).
   --version <version>    Exact semantic version to install.
   --dry-run              Print the installation plan without executing it.
+  --verify-only          Verify an existing installation without installing.
   --verbose              Enable verbose output.
   --help                 Show this help message.
 
@@ -108,6 +111,10 @@ parse_args() {
         ;;
       --dry-run)
         DRY_RUN=true
+        shift
+        ;;
+      --verify-only)
+        VERIFY_ONLY=true
         shift
         ;;
       --verbose)
@@ -243,7 +250,11 @@ build_environment_profile() {
     printf "  npm:          %s\n" "$(check_command_version npm)"
     printf "  PATH synth:   %s\n" "$(check_path)"
     printf "  Network:      %s\n" "$(check_network)"
-    printf "  Permissions:  %s\n" "$(check_permissions)"
+    if [ -n "$INSTALLER_NPM_PREFIX" ]; then
+      printf "  Permissions:  %s\n" "prefix-install"
+    else
+      printf "  Permissions:  %s\n" "$(check_permissions)"
+    fi
   fi
 }
 
@@ -413,15 +424,137 @@ install_package() {
   fi
 }
 
+expected_binary_path() {
+  if [ -n "$INSTALLER_NPM_PREFIX" ]; then
+    printf "%s/bin/synth" "$INSTALLER_NPM_PREFIX"
+  else
+    npm config get prefix 2>/dev/null | tr -d '[:space:]' | sed 's|$|/bin/synth|'
+  fi
+}
+
+resolve_installed_version() {
+  local synth_bin="$1"
+  if [ -n "$synth_bin" ] && [ -x "$synth_bin" ]; then
+    "$synth_bin" --version 2>/dev/null | head -n 1 | tr -d '[:space:]'
+  else
+    printf ""
+  fi
+}
+
+run_doctor_check() {
+  local synth_bin="$1"
+  local tmp_dir
+  local doctor_output=""
+  tmp_dir="$(mktemp -d)"
+  (
+    cd "$tmp_dir"
+    if "$synth_bin" init --name "synth-installer-verify" >/dev/null 2>&1; then
+      doctor_output="$("$synth_bin" doctor 2>/dev/null)"
+      printf "%s" "$doctor_output"
+    else
+      printf ""
+    fi
+  )
+  rm -rf "$tmp_dir"
+}
+
+doctor_is_healthy() {
+  local synth_bin="$1"
+  local doctor_output
+  doctor_output="$(run_doctor_check "$synth_bin")"
+  if [ -z "$doctor_output" ]; then
+    return 1
+  fi
+  printf "%s" "$doctor_output" | grep -q '"healthy": *true'
+}
+
 verify_installation() {
+  local requested_version="${1:-}"
+  local binary_path=""
+  local installed_version=""
+  local expected_path=""
+  local path_ok=false
+  local version_ok=false
+  local doctor_ok=false
+  local checks=0
+
   log "Verifying installation..."
+
   if ! command -v synth >/dev/null 2>&1; then
+    emit_installation_proof "failed" "" "" "synth is not available on PATH" "{}"
     fail "Installation verification failed: synth is not available on PATH"
   fi
-  if ! synth --version >/dev/null 2>&1; then
-    fail "Installation verification failed: synth --version did not execute"
+
+  binary_path="$(command -v synth)"
+  if [ -n "$INSTALLER_NPM_PREFIX" ] && [ -x "$INSTALLER_NPM_PREFIX/bin/synth" ]; then
+    binary_path="$INSTALLER_NPM_PREFIX/bin/synth"
   fi
-  printf "Verification: synth is installed and executable\n"
+  installed_version="$(resolve_installed_version "$binary_path")"
+  expected_path="$(expected_binary_path)"
+
+  if [ -n "$expected_path" ] && [ "$binary_path" = "$expected_path" ]; then
+    path_ok=true
+  fi
+
+  if [ -n "$requested_version" ]; then
+    if printf "%s" "$installed_version" | grep -q "$requested_version"; then
+      version_ok=true
+    fi
+  else
+    version_ok=true
+  fi
+
+  if "$binary_path" --version >/dev/null 2>&1; then
+    checks=$((checks + 1))
+  fi
+
+  if doctor_is_healthy "$binary_path"; then
+    doctor_ok=true
+  fi
+
+  printf "Verification:\n"
+  printf "  Binary:     %s\n" "$binary_path"
+  printf "  Expected:   %s\n" "$expected_path"
+  printf "  Version:    %s\n" "$installed_version"
+  printf "  PATH match: %s\n" "$path_ok"
+  printf "  Version match: %s\n" "$version_ok"
+  printf "  Doctor:     %s\n" "$doctor_ok"
+
+  if [ "$path_ok" != true ]; then
+    emit_installation_proof "failed" "$binary_path" "$installed_version" "Installed binary path does not match expected path" "{\"path_match\": false, \"version_match\": $version_ok, \"doctor_ok\": $doctor_ok}"
+    fail "Installation verification failed: binary path mismatch"
+  fi
+
+  if [ "$version_ok" != true ]; then
+    emit_installation_proof "failed" "$binary_path" "$installed_version" "Installed version does not match requested version" "{\"path_match\": $path_ok, \"version_match\": false, \"doctor_ok\": $doctor_ok}"
+    fail "Installation verification failed: version mismatch"
+  fi
+
+  if [ "$doctor_ok" != true ]; then
+    emit_installation_proof "failed" "$binary_path" "$installed_version" "synth doctor did not report healthy" "{\"path_match\": $path_ok, \"version_match\": $version_ok, \"doctor_ok\": false}"
+    fail "Installation verification failed: synth doctor unhealthy"
+  fi
+
+  emit_installation_proof "ok" "$binary_path" "$installed_version" "Installation verified" "{\"path_match\": true, \"version_match\": true, \"doctor_ok\": true}"
+  printf "Installation verified successfully.\n"
+}
+
+emit_installation_proof() {
+  local status="$1"
+  local binary="$2"
+  local version="$3"
+  local message="$4"
+  local checks="$5"
+  local timestamp
+  timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+  printf "Installation Proof:\n"
+  printf "  Status:    %s\n" "$status"
+  printf "  Binary:    %s\n" "$binary"
+  printf "  Version:   %s\n" "$version"
+  printf "  Message:   %s\n" "$message"
+  printf "  Checks:    %s\n" "$checks"
+  printf "  Timestamp: %s\n" "$timestamp"
 }
 
 print_plan() {
@@ -446,6 +579,13 @@ main() {
   log "Dry run: ${DRY_RUN}"
 
   validate_environment
+
+  if [ "$VERIFY_ONLY" = true ]; then
+    log "Verify-only mode; no installation will be performed."
+    verify_installation "$VERSION"
+    exit 0
+  fi
+
   print_plan
   build_environment_profile
 
@@ -460,7 +600,8 @@ main() {
   local target
   target="$(resolve_target "$CHANNEL" "$VERSION")"
   install_package "$target"
-  verify_installation
+  hash -r
+  verify_installation "$VERSION"
 
   printf "\n"
   printf "Synth %s installed successfully.\n" "$target"
