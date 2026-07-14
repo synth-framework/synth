@@ -1,6 +1,6 @@
 # EXP-INSTALL-001 — Bootstrap Contract
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -102,13 +102,13 @@ Document the interface in the Installation Guide.
 
 ## Definition of Done
 
-- [ ] `install.sh` skeleton exists.
-- [ ] Argument parser handles `--upgrade`, `--channel`, `--version`, `--dry-run`, `--help`.
-- [ ] Exit code contract is implemented.
-- [ ] Logging and error conventions are documented.
-- [ ] Installer interface is documented in the Installation Guide.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] `install.sh` skeleton exists.
+- [x] Argument parser handles `--upgrade`, `--channel`, `--version`, `--dry-run`, `--help`.
+- [x] Exit code contract is implemented.
+- [x] Logging and error conventions are documented.
+- [ ] Installer interface is documented in the Installation Guide. *(deferred to EXP-INSTALL-010)*
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -125,4 +125,13 @@ Document the interface in the Installation Guide.
 
 ## Completion Notes
 
-Pending.
+Bootstrap contract delivered:
+
+- `scripts/install.sh` created with `set -euo pipefail`, argument parsing, help text, exit codes, and logging conventions.
+- Supports `--upgrade`, `--channel`, `--version`, `--dry-run`, `--verbose`, and `--help`.
+- Exit code `0` for success/no-op, `1` for operational failure or invalid arguments.
+- Respects `SYNTH_INSTALLER_BASE_URL` environment variable with a default fallback to the GitHub Pages URL.
+- `tests/installer-contract.test.js` verifies argument parsing, exit codes, help output, and environment variable handling.
+- Added `npm run test:installer-contract` and included it in `npm run test:all`.
+
+No installation logic is implemented; that is the responsibility of EXP-INSTALL-004. Documentation of the interface in the Installation Guide is deferred to EXP-INSTALL-010.
