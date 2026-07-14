@@ -81,6 +81,8 @@ Community
    - Show installation with `npm install -g` or `npx`.
    - Provide a 60-second demo.
    - Introduce Mission Studio naturally during the Quick Start.
+   - Reference `AGENTS.md` so AI operators know the root contract.
+   - Mention `synth validate` as the local iteration command.
    - Keep architecture as a secondary section.
    - Add examples, documentation links, and community section.
 
@@ -88,6 +90,7 @@ Community
    - `synth init`
    - `synth mission create`
    - `synth mission approve`
+   - `synth validate`
    - `npm run govern`
    - `synth explain replay`
 
@@ -109,6 +112,8 @@ Specifically:
 - Installation instructions are visible within the first screen.
 - A runnable demo appears before the architecture explanation.
 - Mission Studio is introduced as part of normal usage.
+- `synth validate` is introduced as the local iteration command.
+- `AGENTS.md` is referenced for AI operators.
 - Architecture section is below the fold.
 
 ---
@@ -152,8 +157,10 @@ Have someone unfamiliar with SYNTH read the README and summarize it back.
 - [ ] README opens with the new tagline and value proposition.
 - [ ] Installation instructions use `npm` / `npx`, not `git clone`.
 - [ ] A 60-second demo is included as text or recording.
-- [ ] Quick Start includes the Mission lifecycle.
+- [ ] Quick Start includes the Mission lifecycle and `synth validate`.
+- [ ] README references `AGENTS.md` for AI operators.
 - [ ] Architecture section is secondary.
+- [ ] `docs/getting-started/README.md` and `docs/operator/01-getting-started.md` match the README narrative.
 - [ ] Website landing page is aligned.
 - [ ] Expedition is accepted.
 
@@ -173,4 +180,4 @@ Have someone unfamiliar with SYNTH read the README and summarize it back.
 
 ## Completion Notes
 
-Pending.
+README already uses the npm/npx install path and a CLI Quick Start, but it still does not surface `AGENTS.md`, `synth validate`, or the AI-native workflow prominently. `docs/getting-started/README.md` and `docs/operator/01-getting-started.md` are also out of sync with the CLI-first narrative and need to be rewritten as part of this expedition.

@@ -54,11 +54,14 @@ No duplicated content. No manually maintained website pages that contradict the 
    - Ensure internal links between README, docs, and website resolve.
    - Fail the build on broken internal links.
 
-3. **Website synchronization verification**
+3. **Content consistency audit**
+   - Ensure `synth validate`, `AGENTS.md`, and the AI-native workflow are described consistently across README, operator docs, agent guides, and website.
+
+4. **Website synchronization verification**
    - Add a check that `website/` content matches the latest docs projection.
    - Or generate website pages from docs automatically.
 
-4. **Documentation freshness verification**
+5. **Documentation freshness verification**
    - Ensure generated docs are up to date on every merge.
    - Reject hand-edits to generated output.
 
@@ -72,6 +75,7 @@ Specifically:
 
 - `docs/generated/` is a pure function of `docs/`.
 - Website landing content matches README narrative.
+- `synth validate`, `AGENTS.md`, and AI-native workflow are described consistently across surfaces.
 - Broken internal links fail the build.
 - No manual edits to generated docs are required.
 
@@ -111,6 +115,7 @@ Ensure the publication workflow runs the synchronization check.
 
 - [ ] `docs/generated/` is verified as a projection of `docs/`.
 - [ ] Website content is synchronized with docs.
+- [ ] `synth validate`, `AGENTS.md`, and AI-native workflow are consistent across README, docs, agent guides, and website.
 - [ ] Broken internal links fail the build.
 - [ ] A drift-detection test exists and passes.
 - [ ] CI enforces documentation freshness.
@@ -130,4 +135,4 @@ Ensure the publication workflow runs the synchronization check.
 
 ## Completion Notes
 
-Pending.
+Link checking and documentation projection verification already exist (`npm run docs:check-links`, `npm run docs:verify-projection`). The remaining work is to close content drift between the README, `docs/getting-started/`, agent guides, and the static website, especially after the `synth validate` and `AGENTS.md` additions.

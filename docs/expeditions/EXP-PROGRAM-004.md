@@ -151,9 +151,10 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 
 ## Completion Notes
 
-- **Status:** Active — awaiting execution of EXP-AX-001 through EXP-AX-005.
+- **Status:** Active — EXP-AX-002 documentation updates are in progress; EXP-AX-001 is blocked on npm publication.
 - **Authority:** ADR-005 — Architecture Era Closure establishes that future architectural work is suspended and that this Adoption Program is the highest-leverage next step.
-- **Next milestone:** Begin EXP-AX-001 — Universal Distribution.
+- **Alignment update:** All expeditions were reviewed against the current state of the art and updated to include `synth validate` and the root `AGENTS.md` AI operator contract as first-class deliverables.
+- **Next milestone:** Publish `@synth-framework/synth` to npm (EXP-AX-001) so the remaining smoke tests and agent simulations can run against a real package.
 
 ---
 

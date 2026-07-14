@@ -72,7 +72,7 @@ Specifically:
 - `AGENTS.md` is at repository root.
 - It contains installation, bootstrap, mission lifecycle, replay, recovery, and validation instructions.
 - It forbids bypassing Mission Studio, Genesis, and Replay.
-- An agent following it can run `synth init`, `synth mission create`, `synth mission approve`, and `npm run govern`.
+- An agent following it can run `synth init`, `synth mission create`, `synth mission approve`, `synth validate`, and `npm run govern`.
 
 ---
 
@@ -115,6 +115,7 @@ Iterate on unclear instructions discovered during simulation.
 - [x] `AGENTS.md` exists at repository root.
 - [x] `AGENTS.md` defines AI responsibilities and prohibitions.
 - [x] Agent guides are complete and cross-referenced.
+- [x] Agent quick-start and prompts include `synth validate`.
 - [x] Prompt catalog covers install, bootstrap, mission lifecycle, replay, validation, and recovery.
 - [ ] An agent can initialize and operate a SYNTH repository using only `AGENTS.md`.
 - [ ] Expedition is accepted.

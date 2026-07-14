@@ -43,10 +43,12 @@ Before launching external outreach, the repository must immediately communicate 
 2. **Installation status**
    - Clear install command.
    - Verified install instructions for npm, npx, and shell installer.
+   - Reference to `AGENTS.md` for AI operators.
 
 3. **Quick-start media**
    - Quick-start GIF or 90-second demo recording.
    - Example gallery.
+   - Demo includes `synth validate` as the local iteration step.
 
 4. **Contributor onboarding**
    - First-time contributor checklist.
@@ -72,6 +74,7 @@ The repository immediately communicates:
 Specifically:
 
 - README contains badges and install command above the fold.
+- README references `AGENTS.md` for AI operators.
 - A demo or example gallery is one click away.
 - Contribution guidelines are discoverable.
 - GitHub Community Standards show no missing items.
@@ -116,7 +119,9 @@ Run GitHub's community standards check and close gaps.
 
 - [ ] Badges are present and functional.
 - [ ] Install command is visible above the fold.
+- [ ] README references `AGENTS.md` for AI operators.
 - [ ] Quick-start GIF or demo is published.
+- [ ] Demo includes `synth validate` as the local iteration step.
 - [ ] Example gallery is linked from README.
 - [ ] Contributor guidelines are discoverable.
 - [ ] GitHub Community Standards are satisfied.
@@ -137,4 +142,4 @@ Run GitHub's community standards check and close gaps.
 
 ## Completion Notes
 
-Pending.
+Pending. This expedition should be the final polish pass after EXP-AX-003 and EXP-AX-004 have aligned the README, docs, and website with the AI-native, adaptive-validation workflow.
