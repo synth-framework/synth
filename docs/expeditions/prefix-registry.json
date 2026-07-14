@@ -26,6 +26,10 @@
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
     },
+    "INSTALL": {
+      "name": "Installation & Distribution",
+      "description": "Installation, distribution, and bootstrap installer expeditions."
+    },
     "MST": {
       "name": "Mission Studio",
       "description": "Mission Studio planning and cognition expeditions."
