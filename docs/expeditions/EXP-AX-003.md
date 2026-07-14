@@ -154,30 +154,38 @@ Have someone unfamiliar with SYNTH read the README and summarize it back.
 
 ## Definition of Done
 
-- [ ] README opens with the new tagline and value proposition.
-- [ ] Installation instructions use `npm` / `npx`, not `git clone`.
-- [ ] A 60-second demo is included as text or recording.
-- [ ] Quick Start includes the Mission lifecycle and `synth validate`.
-- [ ] README references `AGENTS.md` for AI operators.
-- [ ] Architecture section is secondary.
-- [ ] `docs/getting-started/README.md` and `docs/operator/01-getting-started.md` match the README narrative.
-- [ ] Website landing page is aligned.
+- [x] README opens with the new tagline and value proposition.
+- [x] Installation instructions use `npm` / `npx`, not `git clone`.
+- [x] A 60-second demo is included as text.
+- [x] Quick Start includes the Mission lifecycle and `synth validate`.
+- [x] README references `AGENTS.md` for AI operators.
+- [x] Architecture section is secondary.
+- [x] `docs/getting-started/README.md` and `docs/operator/01-getting-started.md` match the README narrative.
+- [x] Website landing page is aligned.
 - [ ] Expedition is accepted.
 
 ---
 
 ## Implementation Plan
 
-1. Draft new README structure.
-2. Record or script the 60-second demo.
-3. Rewrite `README.md`.
-4. Update `docs/operator/01-getting-started.md`.
-5. Update `website/index.html` landing copy.
-6. Run `npm run docs:check-links`.
-7. Build and verify.
+1. Draft new README structure. ✅
+2. Script the 60-second demo. ✅
+3. Rewrite `README.md`. ✅
+4. Rewrite `docs/getting-started/README.md`. ✅
+5. Rewrite `docs/operator/01-getting-started.md`. ✅
+6. Update `website/index.html` landing copy. ✅
+7. Run `npm run docs:check-links`. ✅
+8. Build and verify. ✅
 
 ---
 
 ## Completion Notes
 
-README already uses the npm/npx install path and a CLI Quick Start, but it still does not surface `AGENTS.md`, `synth validate`, or the AI-native workflow prominently. `docs/getting-started/README.md` and `docs/operator/01-getting-started.md` are also out of sync with the CLI-first narrative and need to be rewritten as part of this expedition.
+Public narrative rewritten and cross-document alignment completed:
+
+- `README.md` now leads with the tagline and value proposition, shows the npm install command, includes a 60-second CLI demo, references `AGENTS.md`, and keeps architecture secondary.
+- `docs/getting-started/README.md` rewritten as a CLI-first Quick Start covering install, Mission Draft creation, approval, `synth validate`, `npm run govern`, and `synth explain replay`.
+- `docs/operator/01-getting-started.md` rewritten to teach the public concepts through the CLI instead of the internal API.
+- `website/index.html` aligned with the new narrative, including the install command, AGENTS.md reference, and updated public flow.
+
+The remaining open item is formal expedition acceptance.

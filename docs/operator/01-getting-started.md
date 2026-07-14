@@ -14,35 +14,60 @@ Status: stable
 
 ## What You Need to Know First
 
-Synth is a system for doing engineering work with a permanent, replayable history. You interact with it by asking for actions. A request says what you want to do. Synth checks it against the approved plan, executes it if allowed, and records what happened.
+Synth is a system for doing engineering work with a permanent, replayable history. You interact with it by asking for actions through the CLI. A request says what you want to do. Synth checks it against the approved Plan, executes it if allowed, and records what happened as an Event.
 
-You do not edit state directly. You request actions. Synth handles the rest.
+You do not edit State directly. You request actions. Synth handles the rest.
 
 For the seven public concepts that explain Synth, see the [Public Vocabulary](../reference/public-vocabulary.md).
 
-## Your First Interaction
+## Install and Initialize
 
-When a Synth system boots, it goes through **Genesis** — the moment the initial plan is committed and the system begins recording events. After Genesis, the system is in operational mode.
+Install the CLI from npm:
 
-Once running, you interact with Synth through its API:
-
-```javascript
-// Example: request the CreateExpedition action
-api.handleIntent({
-  actor: "your-name",
-  capability: "CreateExpedition",
-  payload: { id: "E-1", missionId: "M-1", name: "My First Expedition", goal: "Learn Synth" }
-})
+```bash
+npm install -g @synth-framework/synth
 ```
 
-Synth responds with:
+Initialize a project:
 
-```javascript
-{
-  status: "ok",
-  result: { /* output */ },
-  traceId: "unique-transaction-id"
-}
+```bash
+synth init --name "My Project"
+```
+
+This creates the project manifest and the data directory where Events are recorded.
+
+## Your First Interaction
+
+The most common first interaction is creating a Mission:
+
+```bash
+synth mission create --subject "Adopt Synth" --purpose "Make our engineering work replayable"
+```
+
+Synth returns a Mission Draft with confidence, unknowns, questions, and proposals. Review them. If you are satisfied, approve the Draft:
+
+```bash
+synth mission approve --draft-id <draft-id>
+```
+
+Approval emits an Event. The current State is now derived from that Event.
+
+To validate your work locally:
+
+```bash
+synth validate
+```
+
+To run the full governance pipeline and generate a proof:
+
+```bash
+npm run govern
+```
+
+To verify that the current State is consistent with its Event history:
+
+```bash
+synth explain replay
 ```
 
 ## Key Concepts for Operators
@@ -50,72 +75,70 @@ Synth responds with:
 | Concept | What It Means |
 |---------|---------------|
 | **Mission** | The strategic goal you are working toward |
-| **Expedition** | A bounded piece of work that moves the mission forward |
+| **Expedition** | A bounded piece of work that moves the Mission forward |
 | **Evidence** | What you know and how confidently you know it |
 | **Plan** | The approved path forward, including the work to do |
 | **Event** | An immutable record that something happened |
-| **State** | The current picture of the world, derived from events |
-| **Replay** | Rebuilding state from events to prove correctness |
+| **State** | The current picture of the world, derived from Events |
+| **Replay** | Rebuilding State from Events to prove correctness |
 
 ## Checking System Status
 
-To see the current state:
+To see the current State:
 
-```javascript
-const state = await replayVerifier.getStats()
-// Returns: event count, expedition count, plan count, state hash, etc.
+```bash
+synth status
 ```
+
+This reports the event count, state hash, and counts of Missions, Expeditions, Objectives, and Work Items.
 
 To verify consistency:
 
-```javascript
-const check = await replayVerifier.verify()
-// check.consistent === true means state is valid
+```bash
+synth explain replay
 ```
+
+A consistent result means the State is valid.
 
 ## Common Workflows
 
-### Create a mission
+### Create a Mission
 
-```javascript
-api.handleIntent({ actor: "you", capability: "CreateMission", payload: { id: "M-1", name: "Platform Build" } })
+```bash
+synth mission create --subject "Platform Build" --purpose "Build the core platform"
 ```
 
-### Approve a mission
+### Approve a Mission
 
-```javascript
-api.handleIntent({ actor: "you", capability: "ApproveMission", payload: { id: "M-1" } })
+```bash
+synth mission approve --draft-id <draft-id>
 ```
 
-### Start an expedition
+### Create an Expedition
 
-```javascript
-api.handleIntent({ actor: "you", capability: "StartExpedition", payload: { id: "E-1" } })
+```bash
+synth expedition create --mission "Platform Build" --subject "Design data model" --goal "Define the domain model"
 ```
 
-### Complete an objective
+### Validate changes
 
-```javascript
-api.handleIntent({ actor: "you", capability: "CompleteObjective", payload: { id: "O-1" } })
+```bash
+synth validate
+```
+
+### Run governance
+
+```bash
+npm run govern
 ```
 
 ## What Happens When Things Go Wrong
 
-If a request is rejected:
+If a request is rejected, Synth returns a structured response with a reason. Common reasons:
 
-```javascript
-{
-  status: "error",
-  error: "[POLICY_BLOCKED] Denied by policy: completed-work-protection",
-  traceId: "policy-1234567890"
-}
-```
-
-Common reasons for rejection:
-
-- **Policy blocked** — The action would violate a system rule
-- **Validation failed** — The request is malformed or missing required fields
-- **Invariant violation** — The action would break a structural rule
+- **Mission Studio rejected approval** — The Draft lacks sufficient evidence. Review the `unknowns` and `questions`, add more evidence, and create a new Draft.
+- **Validation failed** — A check in `synth validate` or `npm run govern` did not pass. Fix the issue and run the command again.
+- **Replay is inconsistent** — The State does not match the Event history. Do not edit Events or State by hand. Use `synth explain replay` to diagnose and ask for guidance.
 
 ## Next Steps
 
