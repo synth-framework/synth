@@ -97,6 +97,19 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Record deployment URL
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          echo "GitHub Pages deployment URL: ${DEPLOYMENT_URL}"
+          {
+            echo "## GitHub Pages Deployment ✅"
+            echo ""
+            echo "- **Environment:** github-pages"
+            echo "- **Deployment URL:** ${DEPLOYMENT_URL}"
+            echo "- **Artifact path:** website/"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Verify installer is reachable
         env:
           INSTALLER_BASE_URL: ${{ vars.SYNTH_INSTALLER_BASE_URL || 'https://synth-framework.github.io/synth' }}

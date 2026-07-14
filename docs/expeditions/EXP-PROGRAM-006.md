@@ -1,6 +1,6 @@
 # EXP-PROGRAM-006 — Installation & Distribution
 
-**Status:** Completed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -168,8 +168,8 @@ All work in this Program stays in the Allowed column:
 - [x] EXP-INSTALL-008 completed and accepted.
 - [x] EXP-INSTALL-009 completed and accepted.
 - [x] EXP-INSTALL-010 completed and accepted.
-- [x] EXP-INSTALL-011 completed and accepted.
-- [x] Program accepted.
+- [ ] EXP-INSTALL-011 completed and accepted.
+- [ ] Program accepted.
 
 ---
 
@@ -183,7 +183,7 @@ All expeditions completed:
 - EXP-INSTALL-010 delivered installation documentation synchronized with the installer.
 - EXP-INSTALL-011 verified website deployment and installer URL availability with a polling CI check and surfaced the install command on the landing page.
 
-Program accepted. EXP-PROGRAM-006 — Installation & Distribution is closed.
+Program reopened to accommodate an extended Definition of Done for EXP-INSTALL-011, which now explicitly covers the GitHub Pages deployment step in addition to post-deploy installer verification.
 
 ---
 
