@@ -1,6 +1,6 @@
 # EXP-INSTALL-002 — Environment Detection
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -99,17 +99,17 @@ Define behavior for unsupported or incomplete environments.
 
 ## Definition of Done
 
-- [ ] OS detection implemented.
-- [ ] Architecture detection implemented.
-- [ ] Shell detection implemented.
-- [ ] Node.js and npm validation implemented.
-- [ ] PATH inspection implemented.
-- [ ] Network check implemented.
-- [ ] Permission check implemented.
-- [ ] Environment Profile schema documented.
-- [ ] Tests cover supported platforms.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] OS detection implemented.
+- [x] Architecture detection implemented.
+- [x] Shell detection implemented.
+- [x] Node.js and npm validation implemented.
+- [x] PATH inspection implemented.
+- [x] Network check implemented.
+- [x] Permission check implemented.
+- [x] Environment Profile schema documented.
+- [x] Tests cover supported platforms.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -125,4 +125,16 @@ Define behavior for unsupported or incomplete environments.
 
 ## Completion Notes
 
-Pending.
+Environment detection delivered in `scripts/install.sh`:
+
+- `detect_os()` supports macOS, Linux, and WSL with unsupported-platform fallback.
+- `detect_arch()` supports x86_64 and arm64.
+- `detect_shell()` reads `$SHELL`.
+- `check_command_version()` reports Node and npm versions.
+- `check_path()` reports whether `synth` is already on PATH.
+- `check_network()` verifies reachability of the installer base URL via curl.
+- `check_permissions()` reports whether the npm global prefix is writable.
+- `build_environment_profile()` prints a structured profile during `--dry-run`.
+- `validate_environment()` fails early on unsupported OS/arch or missing Node.js.
+- `tests/installer-environment.test.js` verifies the profile is printed and the current platform is detected as supported.
+- Added `npm run test:installer-environment` and included it in `npm run test:all`.
