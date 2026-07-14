@@ -31,6 +31,10 @@ DEFAULT_BASE_URL="https://synth-framework.github.io/synth"
 INSTALLER_BASE_URL="${SYNTH_INSTALLER_BASE_URL:-${DEFAULT_BASE_URL}}"
 DEFAULT_CHANNEL="latest"
 
+# Internal override for testing and non-global installs.
+# When set, npm install uses --prefix instead of -g.
+INSTALLER_NPM_PREFIX="${SYNTH_INSTALLER_NPM_PREFIX:-}"
+
 DRY_RUN=false
 VERBOSE=false
 UPGRADE=false
@@ -310,6 +314,116 @@ resolve_distribution() {
   printf "Channel:    %s\n" "$channel"
 }
 
+resolve_target() {
+  local channel="$1"
+  local version="$2"
+  local resolved_version=""
+
+  case "$channel" in
+    latest|stable)
+      if [ -n "$version" ]; then
+        resolved_version="$version"
+      else
+        resolved_version="$(get_npm_latest_version)"
+      fi
+      ;;
+    beta|nightly)
+      if [ -n "$version" ]; then
+        resolved_version="$version"
+      else
+        resolved_version="$(get_npm_dist_tag_version "$channel")"
+      fi
+      ;;
+    *)
+      fail "Unknown release channel: $channel"
+      ;;
+  esac
+
+  if [ -z "$resolved_version" ]; then
+    fail "Could not resolve version for channel '$channel'"
+  fi
+
+  printf "%s@%s" "@synth-framework/synth" "$resolved_version"
+}
+
+npm_install_cmd() {
+  if [ -n "$INSTALLER_NPM_PREFIX" ]; then
+    printf "install --prefix %s" "${INSTALLER_NPM_PREFIX}"
+  else
+    printf "install -g"
+  fi
+}
+
+get_installed_version() {
+  if command -v synth >/dev/null 2>&1; then
+    synth --version 2>/dev/null | head -n 1 | tr -d '[:space:]' || true
+  else
+    printf ""
+  fi
+}
+
+install_package() {
+  local target="$1"
+  local package_name="@synth-framework/synth"
+  local previous_version=""
+  local max_attempts=3
+  local attempt=1
+  local exit_code=0
+
+  if [ "$UPGRADE" = true ]; then
+    previous_version="$(get_installed_version)"
+    log "Previous version: ${previous_version:-<none>}"
+  fi
+
+  local npm_cmd
+  npm_cmd="$(npm_install_cmd)"
+
+  while [ "$attempt" -le "$max_attempts" ]; do
+    log "Installation attempt ${attempt}/${max_attempts}: npm ${npm_cmd} ${target}"
+    # shellcheck disable=SC2086
+    if npm ${npm_cmd} "$target"; then
+      exit_code=0
+      break
+    else
+      exit_code=$?
+      log "Installation attempt ${attempt} failed with exit code ${exit_code}"
+      if [ "$attempt" -lt "$max_attempts" ]; then
+        local backoff=$((2 ** attempt))
+        log "Retrying in ${backoff} seconds..."
+        sleep "$backoff"
+      fi
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  if [ "$exit_code" -ne 0 ]; then
+    log "Installation failed; cleaning up partial install..."
+    npm uninstall -g "$package_name" >/dev/null 2>&1 || true
+    if [ -n "$INSTALLER_NPM_PREFIX" ]; then
+      npm uninstall --prefix "$INSTALLER_NPM_PREFIX" "$package_name" >/dev/null 2>&1 || true
+    fi
+
+    if [ "$UPGRADE" = true ] && [ -n "$previous_version" ]; then
+      log "Attempting rollback to ${previous_version}..."
+      # shellcheck disable=SC2086
+      npm ${npm_cmd} "${package_name}@${previous_version}" >/dev/null 2>&1 || true
+    fi
+
+    fail "Installation failed after ${max_attempts} attempts"
+  fi
+}
+
+verify_installation() {
+  log "Verifying installation..."
+  if ! command -v synth >/dev/null 2>&1; then
+    fail "Installation verification failed: synth is not available on PATH"
+  fi
+  if ! synth --version >/dev/null 2>&1; then
+    fail "Installation verification failed: synth --version did not execute"
+  fi
+  printf "Verification: synth is installed and executable\n"
+}
+
 print_plan() {
   cat <<EOF
 Installation plan:
@@ -343,10 +457,14 @@ main() {
     exit 0
   fi
 
-  # Installation logic is intentionally deferred to EXP-INSTALL-004.
-  # This expedition implements distribution resolution only.
-  log "Installation logic is not implemented in this expedition."
-  printf "Synth distribution resolved. Installation will begin in EXP-INSTALL-004.\n"
+  local target
+  target="$(resolve_target "$CHANNEL" "$VERSION")"
+  install_package "$target"
+  verify_installation
+
+  printf "\n"
+  printf "Synth %s installed successfully.\n" "$target"
+  printf "Run 'synth --help' to get started.\n"
 }
 
 main "$@"
