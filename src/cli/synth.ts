@@ -214,7 +214,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
       confidence: 1.0,
       protectedAssetsTouched: false,
       reason: "No changed files detected.",
-      note: "No validation needed.",
+      note: dryRun ? "Dry-run: no changed files detected." : "No validation needed.",
     })
     return
   }
