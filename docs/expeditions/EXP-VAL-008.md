@@ -76,10 +76,23 @@ Given a git diff, determine which SYNTH capabilities, subsystems, and Protected 
 
 ## Definition of Done
 
-- [ ] Diff parser implemented.
-- [ ] File-to-capability classifier implemented.
-- [ ] Protected Asset detector implemented.
-- [ ] Risk classifier implemented.
-- [ ] Impact report schema documented.
-- [ ] Unit tests pass.
+- [x] Diff parser implemented (`parseDiff`, `getWorkingTreeDiff`).
+- [x] File-to-capability classifier implemented (`analyzeFiles`).
+- [x] Protected Asset detector implemented.
+- [x] Risk classifier implemented.
+- [x] Impact report schema documented.
+- [x] Unit tests pass.
 - [ ] Expedition is accepted.
+
+---
+
+## Completion Notes
+
+Impact analyzer implemented in `src/governance/impact-analyzer.ts`:
+
+- Parses `git diff --name-status` output and plain file lists.
+- Maps `src/adapters/<name>/` to `<Name>Adapter`, `src/mission-studio/` to `MissionStudio`, etc.
+- Flags Protected Assets: Mission Studio, Genesis, Replay, Runtime, ExecutionGate, Event Model, Capability Model, Constitutional Baseline.
+- Computes risk: `low` for docs/website/tests/scripts, `medium` for adapters/CLI/workspace/planning, `high` for Protected Assets and core runtime/domain/policy.
+- Exposed via `synth validate` in the CLI.
+- Tests added in `tests/impact-analyzer.test.js` and wired into `npm run test:all`.

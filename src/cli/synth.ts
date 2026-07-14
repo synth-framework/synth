@@ -13,6 +13,7 @@ import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
+import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { PlanningSession } from "../mission-studio/types.js"
 
@@ -35,6 +36,7 @@ const COMMANDS = [
   { name: "init", description: "Initialize the current directory as a Synth project" },
   { name: "bootstrap", description: "Transform a repository into a Synth project" },
   { name: "govern", description: "Run the full governance pipeline" },
+  { name: "validate", description: "Analyze changes and report affected capabilities" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve)" },
   { name: "expedition", description: "Planning operations (create)" },
@@ -165,6 +167,36 @@ async function cmdDoctor() {
     nextSteps: hasManifest
       ? ["synth status", "synth mission create --subject '...' --purpose '...'"]
       : ["synth init --name 'Project Name'"],
+  })
+}
+
+async function cmdValidate(flags: Record<string, string | boolean>) {
+  const diffText = typeof flags.diff === "string" ? flags.diff : getWorkingTreeDiff()
+  const files = parseDiff(diffText)
+
+  if (files.length === 0) {
+    printJson({
+      status: "ok",
+      kind: "ImpactReport",
+      files: [],
+      affectedCapabilities: [],
+      protectedAssets: [],
+      risk: "low",
+      note: "No changed files detected.",
+    })
+    return
+  }
+
+  const report = analyzeFiles(files)
+
+  printJson({
+    status: "ok",
+    kind: "ImpactReport",
+    ...report,
+    note:
+      report.protectedAssets.length > 0
+        ? "Protected Assets touched — full governance required."
+        : `Risk ${report.risk}. Run targeted tests or npm run govern for final verification.`,
   })
 }
 
@@ -604,6 +636,10 @@ async function main() {
 
     case "govern":
       await cmdGovern()
+      break
+
+    case "validate":
+      await cmdValidate(flags)
       break
 
     case "status":
