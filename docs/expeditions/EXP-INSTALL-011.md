@@ -1,6 +1,6 @@
 # EXP-INSTALL-011 — Website Deployment Verification
 
-**Status:** Completed  
+**Status:** Active  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -22,7 +22,7 @@ Impact:
 
 ## Purpose
 
-Verify that the website deployment pipeline publishes the installer and that the install script is reachable through the configured endpoint.
+Ensure the website is correctly deployed to GitHub Pages and verify that the published installer script is reachable through the configured endpoint.
 
 ---
 
@@ -34,19 +34,24 @@ Publishing the installer is not enough. The deployment must be traceable, the in
 
 ## Deliverables
 
-1. **Deployment traceability**
+1. **GitHub Pages deployment**
+   - The publish workflow deploys the `website/` directory to GitHub Pages on every merge to `main`.
+   - Deployment failures fail the publish workflow.
+   - CI records the GitHub Pages deployment URL in the workflow summary.
+
+2. **Deployment traceability**
    - CI records the GitHub Pages deployment URL.
    - The published `install.sh` URL is deterministic from the repository variable.
 
-2. **Installer availability check**
+3. **Installer availability check**
    - A post-deploy CI step fetches `install.sh` from the deployed website.
    - The script returns HTTP 200 and non-empty content.
 
-3. **Repository variable verification**
+4. **Repository variable verification**
    - The check uses `SYNTH_INSTALLER_BASE_URL` from GitHub repository variables.
    - The fetched URL matches the configured base URL.
 
-4. **Optional UI/UX refinements**
+5. **Optional UI/UX refinements**
    - If the website landing page needs updates to surface the install command, those changes are tracked here.
    - UI/UX work is optional and only undertaken if the current page does not clearly present the installer.
 
@@ -54,11 +59,13 @@ Publishing the installer is not enough. The deployment must be traceable, the in
 
 ## Acceptance
 
-After every merge to `main`, the published website serves `install.sh` at the URL defined by `SYNTH_INSTALLER_BASE_URL`, and CI confirms it.
+After every merge to `main`, the website is deployed to GitHub Pages, the published website serves `install.sh` at the URL defined by `SYNTH_INSTALLER_BASE_URL`, and CI confirms both the deployment and the installer reachability.
 
 Specifically:
 
-- The publish workflow outputs the deployed Pages URL.
+- The publish workflow deploys the `website/` directory to GitHub Pages.
+- Deployment failures fail the publish workflow.
+- The publish workflow records the deployed Pages URL in the workflow summary.
 - A verification step fetches `${SYNTH_INSTALLER_BASE_URL}/install.sh`.
 - The response status is 200 and the body contains the installer shebang.
 - The verification step fails the build if the installer is unavailable.
@@ -67,19 +74,23 @@ Specifically:
 
 ## Phases
 
-### Phase 1 — Deployment traceability
+### Phase 1 — GitHub Pages deployment
+
+Ensure the publish workflow deploys the `website/` directory to GitHub Pages on every merge to `main`, and that deployment failures fail the workflow. Record the deployment URL in the workflow summary.
+
+### Phase 2 — Deployment traceability
 
 Add workflow output for the GitHub Pages URL and ensure `install.sh` is included in the artifact.
 
-### Phase 2 — Availability check
+### Phase 3 — Availability check
 
 Add a CI step that fetches the installer from the configured base URL.
 
-### Phase 3 — Repository variable verification
+### Phase 4 — Repository variable verification
 
 Confirm the fetched URL matches `SYNTH_INSTALLER_BASE_URL`.
 
-### Phase 4 — Optional UI/UX review
+### Phase 5 — Optional UI/UX review
 
 Evaluate whether `website/index.html` clearly presents the install command. Implement refinements only if needed.
 
@@ -97,6 +108,9 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
 
 ## Definition of Done
 
+- [ ] Publish workflow deploys the `website/` directory to GitHub Pages on every merge to `main`.
+- [ ] GitHub Pages deployment failures fail the publish workflow.
+- [ ] Deployment URL is recorded in the CI workflow summary.
 - [x] Website deployment URL is traceable in CI.
 - [x] `install.sh` is available at `${SYNTH_INSTALLER_BASE_URL}/install.sh`.
 - [x] CI verifies installer availability after every deployment.
@@ -122,10 +136,12 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
 
 - Updated `website/index.html` to surface the canonical bootstrap installer command and added an npm fallback.
 - Added `.hero-alt` styling in `website/styles.css` for the npm fallback.
-- Replaced the simple post-deploy curl check in `.github/workflows/publish.yml` with a robust polling verifier:
+- Added a `Record deployment URL` step in `.github/workflows/publish.yml` after GitHub Pages deployment to trace the deployment in the workflow summary.
+- Ensured the publish workflow deploys the `website/` directory to GitHub Pages and that deployment failures fail the workflow.
+- Replaced the simple post-deploy curl check with a robust polling verifier:
   - Reads `SYNTH_INSTALLER_BASE_URL` from repository variables with a safe default.
   - Retries up to 10 times with a 15-second backoff to accommodate GitHub Pages propagation lag.
   - Verifies HTTP 200 and that the response body starts with `#!/usr/bin/env bash`.
   - Fails the workflow if the installer is unreachable.
-  - Writes the deployment URL and result to `GITHUB_STEP_SUMMARY`.
+  - Writes the installer URL and result to `GITHUB_STEP_SUMMARY`.
 - Expedition accepted and merged via PR #37.
