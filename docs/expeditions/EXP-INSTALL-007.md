@@ -1,6 +1,6 @@
 # EXP-INSTALL-007 — Version Manifest
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -98,14 +98,14 @@ Attach the manifest to releases and/or publish it to the website.
 
 ## Definition of Done
 
-- [ ] Manifest schema defined.
-- [ ] Manifest generation script implemented.
-- [ ] Release workflow generates and publishes the manifest.
-- [ ] Manifest schema is validated in CI.
-- [ ] Installer reads the manifest.
-- [ ] Tests cover manifest generation and parsing.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Manifest schema defined.
+- [x] Manifest generation script implemented.
+- [x] Release workflow generates and publishes the manifest.
+- [x] Manifest schema is validated in CI.
+- [x] Installer reads the manifest.
+- [x] Tests cover manifest generation and parsing.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -122,4 +122,9 @@ Attach the manifest to releases and/or publish it to the website.
 
 ## Completion Notes
 
-Pending.
+- Merged via PR #32.
+- Manifest schema v1 defined with `latest` and `stable` channels.
+- `scripts/generate-installer-manifest.js` produces `website/installer-manifest.json` from `package.json`.
+- `scripts/verify-installer-manifest.js` validates schema in CI and locally.
+- `scripts/install.sh` resolves channel versions from the manifest, falling back to `npm view` when unavailable.
+- `tests/installer-manifest.test.js` covers generation, validation, and installer consumption.

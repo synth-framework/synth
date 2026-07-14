@@ -1,6 +1,6 @@
 # EXP-INSTALL-006 — Website Integration
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -103,13 +103,13 @@ Add a CI step that fetches the published installer.
 
 ## Definition of Done
 
-- [ ] `install.sh` is copied to the website output during publish.
-- [ ] Publish workflow includes the installer artifact.
-- [ ] Base URL is configurable via GitHub repository variable.
-- [ ] Post-deploy reachability check passes.
-- [ ] Documentation references the correct URL.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] `install.sh` is copied to the website output during publish.
+- [x] Publish workflow includes the installer artifact.
+- [x] Base URL is configurable via GitHub repository variable.
+- [x] Post-deploy reachability check passes.
+- [x] Documentation references the correct URL.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -125,4 +125,7 @@ Add a CI step that fetches the published installer.
 
 ## Completion Notes
 
-Pending.
+- Merged via PR #31.
+- `SYNTH_INSTALLER_BASE_URL` repository variable set to `https://synth-framework.github.io/synth`.
+- Publish workflow copies `scripts/install.sh` to `website/install.sh`, generates the installer manifest, and verifies reachability after deployment.
+- Quick-start and operator docs reference the bootstrap installer URL.
