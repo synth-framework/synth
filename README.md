@@ -19,7 +19,13 @@ The result is deterministic, auditable engineering work that humans guide and AI
 
 ## Install
 
-Install the Synth CLI globally from npm:
+Install the Synth CLI with the bootstrap installer:
+
+```bash
+curl -fsSL https://synth-framework.github.io/synth/install.sh | sh
+```
+
+Or install from npm:
 
 ```bash
 npm install -g @synth-framework/synth

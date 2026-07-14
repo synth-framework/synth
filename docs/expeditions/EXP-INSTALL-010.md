@@ -1,6 +1,6 @@
 # EXP-INSTALL-010 — Documentation & Onboarding
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -107,14 +107,14 @@ Provide GitHub Actions snippets.
 
 ## Definition of Done
 
-- [ ] README references the canonical installer.
-- [ ] `docs/getting-started/README.md` reflects the install flow.
-- [ ] `AGENTS.md` references the installer.
-- [ ] Troubleshooting guide added.
-- [ ] CI examples added.
-- [ ] Documentation projection tests pass.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] README references the canonical installer.
+- [x] `docs/getting-started/README.md` reflects the install flow.
+- [x] `AGENTS.md` references the installer.
+- [x] Troubleshooting guide added.
+- [x] CI examples added.
+- [x] Documentation projection tests pass.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -131,4 +131,9 @@ Provide GitHub Actions snippets.
 
 ## Completion Notes
 
-Pending.
+- Updated `README.md` install section to list the bootstrap installer first.
+- Updated `AGENTS.md` install section for AI operators.
+- Added `docs/guides/operator/troubleshooting.md` covering installation and first-run issues.
+- Added `docs/guides/operator/installing-in-ci.md` with GitHub Actions examples.
+- Regenerated `docs/generated/` projections.
+- Documentation integrity and projection tests pass.
