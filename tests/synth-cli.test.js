@@ -54,10 +54,24 @@ async function testHelp() {
   assert(output.status === "ok", "help status should be ok")
   assert(Array.isArray(output.commands), "help should list commands")
   assert(output.commands.some((c) => c.name === "init"), "help should include init command")
+  assert(output.commands.some((c) => c.name === "doctor"), "help should include doctor command")
   assert(output.commands.some((c) => c.name === "govern"), "help should include govern command")
   assert(Array.isArray(output.vocabulary), "help should list public vocabulary")
   assert(output.vocabulary.includes("Mission"), "vocabulary should include Mission")
   console.log("[PASS] synth --help returns commands and vocabulary")
+}
+
+async function testDoctor() {
+  const { stdout, status } = runSynth(["doctor"])
+  assert(status === 0, "doctor command should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok" || output.status === "warning", "doctor status should be ok or warning")
+  assert(output.healthy !== undefined, "doctor should report healthy flag")
+  assert(output.checks && output.checks.node, "doctor should include node check")
+  assert(output.checks && output.checks.version, "doctor should include version check")
+  assert(output.checks && output.checks.binary, "doctor should include binary check")
+  assert(output.checks && output.checks.manifest, "doctor should include manifest check")
+  console.log("[PASS] synth doctor reports installation health")
 }
 
 async function testInit() {
@@ -100,6 +114,7 @@ async function main() {
 
   await testVersion()
   await testHelp()
+  await testDoctor()
   await testInit()
   await testAdapterDelegation()
 

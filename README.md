@@ -22,7 +22,13 @@ Or run once with npx:
 npx @synth-framework/synth --version
 ```
 
-For contributors, you can also clone the repository and run `npm install`.
+Verify the installation:
+
+```bash
+synth doctor
+```
+
+For contributors, see [CONTRIBUTING.md](CONTRIBUTING.md) for the repository-based setup.
 
 ## Quick Start
 

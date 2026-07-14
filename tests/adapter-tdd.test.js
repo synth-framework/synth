@@ -66,6 +66,49 @@ test("TddAdapter verifies failure when generated tests exist", async () => {
   cleanupGeneratedTests()
 })
 
+test("TddAdapter detects assertion failure in generated test", async () => {
+  cleanupGeneratedTests()
+  const adapter = createTddAdapter()
+  await adapter.enable()
+  await adapter.generateTest("forced assertion failure", "domain/workitem.js", "createWorkItem")
+
+  // Replace the generated skeleton with a test that fails via assertion so we
+  // verify Red-phase detection for a normal test failure, not only module
+  // resolution errors.
+  const testFile = fs.readdirSync(TEST_DIR).find((f) => f.startsWith("tdd-createWorkItem") && f.endsWith(".test.js"))
+  assert.ok(testFile, "Generated test file should exist")
+  fs.writeFileSync(
+    path.join(TEST_DIR, testFile),
+    `import { test } from "node:test"\nimport assert from "node:assert"\n\ntest("forced assertion failure", () => {\n  assert.ok(false, "forced red phase failure")\n})\n`,
+  )
+
+  const result = await adapter.verifyFailure()
+  assert.strictEqual(result.success, true)
+  assert.strictEqual(result.failingTests.length, 1)
+  cleanupGeneratedTests()
+})
+
+test("TddAdapter detects module-resolution failure under non-spec reporter", async () => {
+  cleanupGeneratedTests()
+  const adapter = createTddAdapter()
+  await adapter.enable()
+  await adapter.generateTest("module resolution failure", "domain/execution.js", "nonExistentFunction")
+
+  // Simulate CI/non-TTY conditions where Node defaults to TAP output. The
+  // adapter must still detect the Red phase from the process exit code even
+  // when stdout contains no spec-style ✖ markers.
+  const previousNodeOptions = process.env.NODE_OPTIONS
+  process.env.NODE_OPTIONS = "--test-reporter tap"
+  try {
+    const result = await adapter.verifyFailure()
+    assert.strictEqual(result.success, true)
+    assert.strictEqual(result.failingTests.length, 1)
+  } finally {
+    process.env.NODE_OPTIONS = previousNodeOptions
+  }
+  cleanupGeneratedTests()
+})
+
 test("TddAdapter generates evidence with timeline", async () => {
   cleanupGeneratedTests()
   const adapter = createTddAdapter()
