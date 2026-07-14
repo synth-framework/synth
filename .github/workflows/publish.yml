@@ -76,6 +76,9 @@ jobs:
             git push
           fi
 
+      - name: Copy installer to website
+        run: cp scripts/install.sh website/install.sh
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -87,3 +90,11 @@ jobs:
       - name: Deploy website to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify installer is reachable
+        env:
+          INSTALLER_BASE_URL: ${{ vars.SYNTH_INSTALLER_BASE_URL || 'https://synth-framework.github.io/synth' }}
+        run: |
+          echo "Checking installer at ${INSTALLER_BASE_URL}/install.sh"
+          curl -fsSL --max-time 30 "${INSTALLER_BASE_URL}/install.sh" | head -n 5
+          echo "Installer reachable."

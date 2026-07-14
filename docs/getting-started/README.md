@@ -26,6 +26,12 @@ Install the Synth CLI globally from npm:
 npm install -g @synth-framework/synth
 ```
 
+Or install with the bootstrap installer:
+
+```bash
+curl -fsSL https://synth-framework.github.io/synth/install.sh | sh
+```
+
 Or run it once without installing:
 
 ```bash
