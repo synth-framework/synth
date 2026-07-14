@@ -113,12 +113,12 @@ Ensure the publication workflow runs the synchronization check.
 
 ## Definition of Done
 
-- [ ] `docs/generated/` is verified as a projection of `docs/`.
-- [ ] Website content is synchronized with docs.
-- [ ] `synth validate`, `AGENTS.md`, and AI-native workflow are consistent across README, docs, agent guides, and website.
-- [ ] Broken internal links fail the build.
-- [ ] A drift-detection test exists and passes.
-- [ ] CI enforces documentation freshness.
+- [x] `docs/generated/` is verified as a projection of `docs/`.
+- [x] Website content is synchronized with docs.
+- [x] `synth validate`, `AGENTS.md`, and AI-native workflow are consistent across README, docs, agent guides, and website.
+- [x] Broken internal links fail the build.
+- [x] A drift-detection test exists and passes.
+- [x] CI enforces documentation freshness.
 - [ ] Expedition is accepted.
 
 ---
@@ -135,4 +135,21 @@ Ensure the publication workflow runs the synchronization check.
 
 ## Completion Notes
 
-Link checking and documentation projection verification already exist (`npm run docs:check-links`, `npm run docs:verify-projection`). The remaining work is to close content drift between the README, `docs/getting-started/`, agent guides, and the static website, especially after the `synth validate` and `AGENTS.md` additions.
+Link checking and documentation projection verification already existed (`npm run docs:check-links`, `npm run docs:verify-projection`). This expedition added:
+
+- `scripts/verify-website-sync.js` and `npm run docs:verify-website-sync` to audit that `website/index.html` carries the README tagline, canonical install command, and `AGENTS.md` reference, and that `website/quick-start.html` mentions `synth validate`, `synth mission create`, and `synth mission approve`.
+- Updated `tests/documentation-integrity.test.js` to assert the new script exists, is configured, and passes on the repository.
+- Updated `.github/workflows/publish.yml` to run `docs:check-links`, `docs:verify-projection`, and `docs:verify-website-sync` before regenerating documentation and deploying the website.
+- Refreshed `website/quick-start.html` to match `docs/getting-started/README.md`, replacing the old `git clone` flow with the npm-based install, Mission Draft, approval, validation, and governance steps.
+
+The synchronization chain is now enforced in CI:
+
+```text
+Repository
+↓
+Documentation Projection
+↓
+Website Projection
+↓
+Published Site
+```

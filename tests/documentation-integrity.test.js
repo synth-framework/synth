@@ -15,6 +15,7 @@ const PROJECT_ROOT = process.cwd()
 const CHECK_LINKS_PATH = path.resolve(PROJECT_ROOT, "scripts", "check-links.js")
 const VERIFY_PROJECTION_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-documentation-projection.js")
 const VERIFY_VERSION_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-version-sync.js")
+const VERIFY_WEBSITE_SYNC_PATH = path.resolve(PROJECT_ROOT, "scripts", "verify-website-sync.js")
 
 function runScript(scriptPath, cwd = PROJECT_ROOT) {
   const result = spawnSync("node", [scriptPath], {
@@ -62,6 +63,19 @@ async function testProjectionVerificationScriptExists() {
   assert(content.includes("docs generate"), "Projection verifier must run synth docs generate")
 }
 
+async function testWebsiteSyncScriptExists() {
+  const content = await fs.readFile(VERIFY_WEBSITE_SYNC_PATH, "utf-8")
+  assert(content.includes("README.md"), "Website sync verifier must reference README.md")
+  assert(content.includes("website/index.html"), "Website sync verifier must reference website/index.html")
+  assert(content.includes("synth validate"), "Website sync verifier must check for synth validate")
+}
+
+async function testWebsiteSyncPasses() {
+  const result = runScript(VERIFY_WEBSITE_SYNC_PATH)
+  assert(result.status === 0, `verify-website-sync.js must pass on this project:\n${result.stdout}\n${result.stderr}`)
+  assert(result.stdout.includes("Website content is synchronized"), "verify-website-sync.js should report success")
+}
+
 async function testVersionVerificationScriptExists() {
   const content = await fs.readFile(VERIFY_VERSION_PATH, "utf-8")
   assert(content.includes("package.json"), "Version verifier must reference package.json")
@@ -71,6 +85,7 @@ async function testVersionVerificationScriptExists() {
 async function testNpmScriptsExist() {
   const packageJson = JSON.parse(await fs.readFile(path.join(PROJECT_ROOT, "package.json"), "utf-8"))
   assert(typeof packageJson.scripts["docs:verify-projection"] === "string", "docs:verify-projection script must exist")
+  assert(typeof packageJson.scripts["docs:verify-website-sync"] === "string", "docs:verify-website-sync script must exist")
   assert(typeof packageJson.scripts["version:verify"] === "string", "version:verify script must exist")
 }
 
@@ -85,6 +100,12 @@ async function main() {
 
   await testProjectionVerificationScriptExists()
   console.log("✓ projection verification script exists and is configured")
+
+  await testWebsiteSyncScriptExists()
+  console.log("✓ website synchronization script exists and is configured")
+
+  await testWebsiteSyncPasses()
+  console.log("✓ website synchronization check passes on this project")
 
   await testVersionVerificationScriptExists()
   console.log("✓ version synchronization script exists and is configured")

@@ -29,32 +29,50 @@
 
     <section>
       <h2>1. Install</h2>
-      <div class="code-block"><code>git clone https://github.com/synth-dev/synth-v2.git
-cd synth-v2
-npm install</code></div>
+      <p>Install the Synth CLI globally from npm:</p>
+      <div class="code-block"><code>npm install -g @synth-framework/synth</code></div>
+      <p>Or run it once without installing:</p>
+      <div class="code-block"><code>npx @synth-framework/synth --version</code></div>
+      <p>Verify the installation:</p>
+      <div class="code-block"><code>synth doctor</code></div>
+      <p>For contributors, see <a href="https://github.com/synth-dev/synth-v2/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for the repository-based setup.</p>
     </section>
 
     <section>
-      <h2>2. Run the governance pipeline</h2>
+      <h2>2. Initialize a project</h2>
+      <div class="code-block"><code>synth init --name "My Project"</code></div>
+      <p>This creates <code>.synth/manifest.json</code> and the required <code>data/</code> directory.</p>
+    </section>
+
+    <section>
+      <h2>3. Create a Mission Draft</h2>
+      <div class="code-block"><code>synth mission create --subject "Adopt SYNTH" --purpose "Make our engineering work replayable"</code></div>
+      <p>Review the returned <code>draftId</code>, <code>confidence</code>, <code>unknowns</code>, <code>questions</code>, and <code>proposals</code>. If Mission Studio needs more evidence, add it and create a new Draft. Do not lower the confidence threshold.</p>
+    </section>
+
+    <section>
+      <h2>4. Approve the Mission</h2>
+      <div class="code-block"><code>synth mission approve --draft-id &lt;draft-id&gt;</code></div>
+      <p>Approval produces an approved Mission and emits an Event. The current State is now derived from that Event.</p>
+    </section>
+
+    <section>
+      <h2>5. Validate and govern</h2>
+      <p>For local iteration, run only the validations affected by your change:</p>
+      <div class="code-block"><code>synth validate</code></div>
+      <p>Before requesting a merge, run the full governance pipeline:</p>
       <div class="code-block"><code>npm run govern</code></div>
       <p>This builds the project, runs the full test suite, verifies replay, runs adversarial audits, and generates a proof artifact in <code>proof/</code>.</p>
     </section>
 
     <section>
-      <h2>3. Run the operator journey</h2>
-      <div class="code-block"><code>npm run test:operator-journey</code></div>
-      <p>This automates the full Idea → Mission → Planning → Approval → Genesis → Execution → Replay → Documentation → Done journey.</p>
+      <h2>6. Verify replay</h2>
+      <div class="code-block"><code>synth explain replay</code></div>
+      <p>Use this to verify that the current state is consistent with its event history.</p>
     </section>
 
     <section>
-      <h2>4. Try an example</h2>
-      <div class="code-block"><code>cd examples/todo
-npm run govern</code></div>
-      <p>Each example is a standalone project that demonstrates a real Synth mission.</p>
-    </section>
-
-    <section>
-      <h2>5. Read the operator guide</h2>
+      <h2>7. Read the operator guide</h2>
       <p>Continue with <a href="https://github.com/synth-dev/synth-v2/blob/main/docs/operator/01-getting-started.md">Getting Started</a> to learn how to chart your first mission.</p>
     </section>
   </main>
