@@ -1,6 +1,6 @@
 # EXP-AX-005 — Public Release Polish
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -120,12 +120,12 @@ Run GitHub's community standards check and close gaps.
 - [x] Badges are present and functional.
 - [x] Install command is visible above the fold.
 - [x] README references `AGENTS.md` for AI operators.
-- [ ] Quick-start GIF or demo is published. *(media placeholder in place; awaiting asset)*
+- [ ] Quick-start GIF or demo is published. *(deferred to follow-up; media placeholder and file path reserved)*
 - [x] Demo includes `synth validate` as the local iteration step.
 - [x] Example gallery is linked from README.
 - [x] Contributor guidelines are discoverable.
 - [x] GitHub Community Standards are satisfied.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -150,4 +150,8 @@ README and website polished from an agent-first perspective:
 - Added a **Contributing** section to README linking `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, and `AGENTS.md`.
 - Added a **Quick-start demo** media placeholder in README; the actual GIF/video asset will be inserted in a follow-up change.
 
-The existing issue templates and pull request template already satisfy GitHub Community Standards and include the Era II / Protected Assets guardrails. The only remaining DoD item is the published demo media, which is blocked on asset creation.
+The existing issue templates and pull request template already satisfy GitHub Community Standards and include the Era II / Protected Assets guardrails.
+
+### Deferred work
+
+The published quick-start GIF/video is intentionally deferred. The README already contains a reserved placeholder section so the asset can be dropped in without restructuring the page.
