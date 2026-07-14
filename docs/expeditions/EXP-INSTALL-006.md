@@ -5,7 +5,7 @@
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
 **Depends On:** EXP-INSTALL-001  
-**Blocks:** EXP-INSTALL-009
+**Blocks:** EXP-INSTALL-009, EXP-INSTALL-011
 
 ---
 
