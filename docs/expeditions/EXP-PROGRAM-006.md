@@ -86,9 +86,13 @@ Installation & Distribution
 │       Adoption Expedition
 │       Validate installation automatically during CI.
 │
-└── EXP-INSTALL-010  Documentation & Onboarding
-        Installation Expedition
-        Deliver installation documentation synchronized with the installer.
+├── EXP-INSTALL-010  Documentation & Onboarding
+│       Adoption Expedition
+│       Deliver installation documentation synchronized with the installer.
+│
+└── EXP-INSTALL-011  Website Deployment Verification
+        Adoption Expedition
+        Verify GitHub Pages deployment and installer URL availability.
 ```
 
 ---
@@ -164,6 +168,7 @@ All work in this Program stays in the Allowed column:
 - [ ] EXP-INSTALL-008 completed and accepted.
 - [ ] EXP-INSTALL-009 completed and accepted.
 - [ ] EXP-INSTALL-010 completed and accepted.
+- [ ] EXP-INSTALL-011 completed and accepted.
 - [ ] Program accepted.
 
 ---
