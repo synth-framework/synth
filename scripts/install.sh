@@ -286,29 +286,61 @@ get_npm_dist_tag_version() {
   npm view @synth-framework/synth "dist-tags.${tag}" 2>/dev/null || true
 }
 
+fetch_manifest_version() {
+  local channel="$1"
+  local manifest_url="${INSTALLER_BASE_URL}/installer-manifest.json"
+  local version=""
+
+  if ! command -v curl >/dev/null 2>&1; then
+    printf ""
+    return 0
+  fi
+
+  version="$(curl -fsSL --max-time 5 "${manifest_url}" 2>/dev/null \
+    | tr -d '[:space:]' \
+    | sed -n "s|.*\"${channel}\":{[^}]*\"version\":\"\([^\"]*\)\".*|\1|p")"
+
+  printf "%s" "$version"
+}
+
+resolve_channel_version() {
+  local channel="$1"
+  local version="$2"
+  local resolved_version=""
+
+  if [ -n "$version" ]; then
+    printf "%s" "$version"
+    return 0
+  fi
+
+  resolved_version="$(fetch_manifest_version "$channel")"
+
+  if [ -z "$resolved_version" ]; then
+    case "$channel" in
+      latest|stable)
+        resolved_version="$(get_npm_latest_version)"
+        ;;
+      beta|nightly)
+        resolved_version="$(get_npm_dist_tag_version "$channel")"
+        ;;
+    esac
+  fi
+
+  if [ -z "$resolved_version" ] && [ "$DRY_RUN" = true ]; then
+    resolved_version="<latest in channel>"
+  fi
+
+  printf "%s" "$resolved_version"
+}
+
 resolve_distribution() {
   local channel="$1"
   local version="$2"
   local resolved_version=""
 
   case "$channel" in
-    latest|stable)
-      if [ -n "$version" ]; then
-        resolved_version="$version"
-      elif [ "$DRY_RUN" = true ]; then
-        resolved_version="<latest in channel>"
-      else
-        resolved_version="$(get_npm_latest_version)"
-      fi
-      ;;
-    beta|nightly)
-      if [ -n "$version" ]; then
-        resolved_version="$version"
-      elif [ "$DRY_RUN" = true ]; then
-        resolved_version="<latest in channel>"
-      else
-        resolved_version="$(get_npm_dist_tag_version "$channel")"
-      fi
+    latest|stable|beta|nightly)
+      resolved_version="$(resolve_channel_version "$channel" "$version")"
       ;;
     *)
       fail "Unknown release channel: $channel"
@@ -331,19 +363,8 @@ resolve_target() {
   local resolved_version=""
 
   case "$channel" in
-    latest|stable)
-      if [ -n "$version" ]; then
-        resolved_version="$version"
-      else
-        resolved_version="$(get_npm_latest_version)"
-      fi
-      ;;
-    beta|nightly)
-      if [ -n "$version" ]; then
-        resolved_version="$version"
-      else
-        resolved_version="$(get_npm_dist_tag_version "$channel")"
-      fi
+    latest|stable|beta|nightly)
+      resolved_version="$(resolve_channel_version "$channel" "$version")"
       ;;
     *)
       fail "Unknown release channel: $channel"

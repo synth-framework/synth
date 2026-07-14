@@ -79,6 +79,12 @@ jobs:
       - name: Copy installer to website
         run: cp scripts/install.sh website/install.sh
 
+      - name: Generate installer manifest
+        run: node scripts/generate-installer-manifest.js
+
+      - name: Validate installer manifest
+        run: node scripts/verify-installer-manifest.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
