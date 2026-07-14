@@ -80,6 +80,7 @@
     "docs:check-links": "node scripts/check-links.js",
     "docs:generate": "node dist/cli/synth.js docs generate",
     "docs:verify-projection": "node scripts/verify-documentation-projection.js",
+    "docs:verify-website-sync": "node scripts/verify-website-sync.js",
     "version:verify": "node scripts/verify-version-sync.js",
     "adapter": "node dist/cli/adapter.js",
     "govern": "npm run build && npm run test:all && npm run proof",

@@ -52,6 +52,15 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Check internal links
+        run: npm run docs:check-links
+
+      - name: Verify documentation projection
+        run: npm run docs:verify-projection
+
+      - name: Verify website synchronization
+        run: npm run docs:verify-website-sync
+
       - name: Regenerate documentation
         run: npm run docs:generate
 
