@@ -153,7 +153,8 @@ Replace `git clone` installation path in README and guides.
 
 ## Definition of Done
 
-- [ ] Package is published to npm (pending user-triggered GitHub Actions publish).
+- [x] GitHub Actions release workflow is configured to publish to npm on tag push.
+- [ ] Package is published to npm (pending first semantic-versioned tag push).
 - [ ] Global installation produces a working `synth` binary.
 - [ ] `npx @synth-framework/synth` works without prior installation.
 - [x] Installation verification command is implemented.
@@ -176,7 +177,8 @@ Replace `git clone` installation path in README and guides.
 6. Update agent prompts to use `npx` or global install. ✅ (already current in `AGENTS.md`)
 7. Add installation smoke tests to CI or test suite. ✅
 8. Build and verify via `npm run govern`. ✅
-9. Publish to npm via GitHub Actions when credentials and workflow are ready. ⏳
+9. Configure the GitHub Actions release workflow to publish to npm on tag push. ✅
+10. Push a semantic-versioned tag to trigger the first npm publish. ⏳
 
 ---
 
@@ -192,7 +194,8 @@ Package readiness work completed. The repository is configured for publication a
 - `synth validate` provides adaptive local validation.
 - README and Quick Start guide now lead with `npm install -g @synth-framework/synth` / `npx @synth-framework/synth`.
 - CLI smoke tests include `synth doctor` and `synth validate --dry-run`.
+- `.github/workflows/release.yml` is configured to publish to npm when a semantic-versioned tag is pushed, using the `NPM_TOKEN` secret.
 
-Publication itself is intentionally deferred until the user configures npm credentials and a GitHub Actions release workflow.
+The first npm publish will happen automatically on the next tag push. After that, the published-package smoke test and installation matrix can be populated.
 
 **Alignment note:** The Quick Start guide (`docs/getting-started/README.md`) still describes `npm run govern` without first showing the Mission lifecycle or `synth validate`. That alignment is tracked under EXP-AX-003.
