@@ -1,6 +1,6 @@
 # EXP-DOCS-001 — Documentation Projection System
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-008 — Documentation & Projections  
@@ -103,13 +103,13 @@ Run projections locally and in CI and confirm identical outputs.
 
 ## Definition of Done
 
-- [ ] Projection Rule is documented in EXP-PROGRAM-008 and this expedition.
-- [ ] `docs/generated/` is not tracked in version control.
-- [ ] Projection engine runs deterministically from committed sources.
-- [ ] Projection graph validation passes and does not compare against Git.
-- [ ] Publish workflow consumes projection artifacts.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Projection Rule is documented in EXP-PROGRAM-008 and this expedition.
+- [x] `docs/generated/` is not tracked in version control.
+- [x] Projection engine runs deterministically from committed sources.
+- [x] Projection graph validation passes and does not compare against Git.
+- [x] Publish workflow consumes projection artifacts.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -126,4 +126,11 @@ Run projections locally and in CI and confirm identical outputs.
 
 ## Completion Notes
 
-Pending.
+- Documented the Projection Rule in EXP-PROGRAM-008 and this expedition.
+- Repurposed `scripts/verify-documentation-projection.js` to validate the projection graph and determinism instead of comparing against committed files.
+- Added `docs:validate-projections` npm script.
+- Updated `tests/documentation-integrity.test.js` for the new validation semantics.
+- Restructured `.github/workflows/publish.yml` to generate projections in CI and consume them as build artifacts.
+- Confirmed `docs/generated/` is gitignored and not tracked.
+- Verified the Publish workflow succeeds end-to-end after GitHub Pages was enabled.
+- Expedition accepted and implemented via PR #40.

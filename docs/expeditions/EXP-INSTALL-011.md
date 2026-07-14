@@ -1,6 +1,6 @@
 # EXP-INSTALL-011 — Website Deployment Verification
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-006 — Installation & Distribution  
@@ -113,9 +113,9 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
 
 ## Definition of Done
 
-- [ ] Publish workflow deploys the `website/` directory to GitHub Pages on every merge to `main`.
-- [ ] GitHub Pages deployment failures fail the publish workflow.
-- [ ] Deployment URL is recorded in the CI workflow summary.
+- [x] Publish workflow deploys the `website/` directory to GitHub Pages on every merge to `main`.
+- [x] GitHub Pages deployment failures fail the publish workflow.
+- [x] Deployment URL is recorded in the CI workflow summary.
 - [x] Website deployment URL is traceable in CI.
 - [x] `install.sh` is available at `${SYNTH_INSTALLER_BASE_URL}/install.sh`.
 - [x] CI verifies installer availability after every deployment.
@@ -150,4 +150,7 @@ Evaluate whether `website/index.html` clearly presents the install command. Impl
   - Verifies HTTP 200 and that the response body starts with `#!/usr/bin/env bash`.
   - Fails the workflow if the installer is unreachable.
   - Writes the installer URL and result to `GITHUB_STEP_SUMMARY`.
-- Expedition accepted and merged via PR #37.
+- GitHub Pages deployment succeeded end-to-end after enabling Pages and removing the redundant static.yml workflow.
+- Deployment URL recorded in CI workflow summary.
+- Installer reachable at `https://synth-framework.github.io/synth/install.sh` verified on first attempt after deployment.
+- Expedition accepted via PRs #37, #40, #41, and #43.

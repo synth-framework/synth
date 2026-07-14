@@ -1,6 +1,6 @@
 # EXP-PROGRAM-008 — Documentation & Projections
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -105,14 +105,18 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-DOCS-001 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-DOCS-001 completed and accepted.
+- [x] Program accepted.
 
 ---
 
 ## Completion Notes
 
-Program created. No expeditions have started.
+- EXP-DOCS-001 delivered the Documentation Projection System and Projection Rule.
+- Projections are now generated deterministically in CI and treated as build artifacts.
+- `docs/generated/` is excluded from version control.
+- The Publish workflow consumes projection artifacts instead of generating or committing them.
+- Program accepted and closed.
 
 ---
 
