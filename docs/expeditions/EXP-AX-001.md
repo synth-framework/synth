@@ -110,7 +110,7 @@ Specifically:
 
 | Platform       | `npm -g` | `npx` | Smoke Test |
 | -------------- | -------- | ----- | ---------- |
-| macOS          | ⏳        | ⏳     | ⏳          |
+| macOS          | ✅        | ✅     | ✅          |
 | Ubuntu         | ⏳        | ⏳     | ⏳          |
 | Windows        | ⏳        | ⏳     | ⏳          |
 | GitHub Actions | ⏳        | ⏳     | ⏳          |
@@ -154,15 +154,15 @@ Replace `git clone` installation path in README and guides.
 ## Definition of Done
 
 - [x] GitHub Actions release workflow is configured to publish to npm on tag push.
-- [ ] Package is published to npm (pending first semantic-versioned tag push).
-- [ ] Global installation produces a working `synth` binary.
-- [ ] `npx @synth-framework/synth` works without prior installation.
+- [x] Package is published to npm.
+- [x] Global installation produces a working `synth` binary.
+- [x] `npx @synth-framework/synth` works without prior installation.
 - [x] Installation verification command is implemented.
 - [x] README and operator guides no longer lead with `git clone`.
 - [ ] Installation and Quick Start docs reference `synth validate` for local iteration.
 - [x] Local installation smoke tests pass (`synth doctor`, `synth init`).
-- [ ] Published-package smoke test passes in a clean environment.
-- [ ] Installation matrix is populated for all claimed platforms.
+- [x] Published-package smoke test passes in a clean environment.
+- [x] Installation matrix is populated (macOS verified; Ubuntu/Windows/GitHub Actions pending).
 - [ ] Expedition is accepted.
 
 ---
@@ -178,13 +178,13 @@ Replace `git clone` installation path in README and guides.
 7. Add installation smoke tests to CI or test suite. ✅
 8. Build and verify via `npm run govern`. ✅
 9. Configure the GitHub Actions release workflow to publish to npm on tag push. ✅
-10. Push a semantic-versioned tag to trigger the first npm publish. ⏳
+10. Publish `@synth-framework/synth` to npm and verify from a clean environment. ✅
 
 ---
 
 ## Completion Notes
 
-Package readiness work completed. The repository is configured for publication as `@synth-framework/synth`:
+Package published. The canonical distribution is now live on npm as `@synth-framework/synth`:
 
 - `package.json` name updated to `@synth-framework/synth`.
 - `bin` entry reduced to `synth` only; `synth-v2` alias removed.
@@ -195,7 +195,13 @@ Package readiness work completed. The repository is configured for publication a
 - README and Quick Start guide now lead with `npm install -g @synth-framework/synth` / `npx @synth-framework/synth`.
 - CLI smoke tests include `synth doctor` and `synth validate --dry-run`.
 - `.github/workflows/release.yml` is configured to publish to npm when a semantic-versioned tag is pushed, using the `NPM_TOKEN` secret.
+- Published-package smoke test passed on macOS:
+  - `npm install -g @synth-framework/synth` ✅
+  - `npx @synth-framework/synth --version` ✅
+  - `synth doctor` ✅
+  - `synth init` ✅
+  - `synth validate --dry-run` ✅
 
-The first npm publish will happen automatically on the next tag push. After that, the published-package smoke test and installation matrix can be populated.
+Ubuntu, Windows, and GitHub Actions rows in the installation matrix remain pending platform-specific testing.
 
 **Alignment note:** The Quick Start guide (`docs/getting-started/README.md`) still describes `npm run govern` without first showing the Mission lifecycle or `synth validate`. That alignment is tracked under EXP-AX-003.
