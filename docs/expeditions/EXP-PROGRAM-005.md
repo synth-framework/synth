@@ -1,6 +1,6 @@
 # EXP-PROGRAM-005 — Adaptive Validation Program
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -98,4 +98,16 @@ The following are non-negotiable for the entire program:
 - [x] EXP-VAL-010 completed.
 - [x] EXP-VAL-011 completed.
 - [x] EXP-VAL-012 completed.
-- [ ] Program accepted.
+- [x] Program accepted.
+
+---
+
+## Completion Notes
+
+All five Validation Expeditions were implemented and merged without modifying any Protected Asset.
+
+- Impact analysis, validation planning, capability mapping, protected-asset escalation, and CLI/CI integration are now operational.
+- `synth validate` provides fast local feedback while `npm run govern` remains the canonical merge gate.
+- The Validation Compiler is deterministic and produces the same plan for the same diff across human and AI use.
+
+Program accepted. Execution state transitions to EXP-PROGRAM-004 — First Contact Program.
