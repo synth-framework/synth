@@ -388,7 +388,7 @@ npm_install_cmd() {
 
 get_installed_version() {
   if command -v synth >/dev/null 2>&1; then
-    synth --version 2>/dev/null | head -n 1 | tr -d '[:space:]' || true
+    synth --version 2>/dev/null | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+[^[:space:]]*' | head -n 1 || true
   else
     printf ""
   fi
