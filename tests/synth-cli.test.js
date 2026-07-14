@@ -10,6 +10,7 @@ import path from "path"
 import os from "os"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
+const PACKAGE_PATH = path.resolve(process.cwd(), "package.json")
 
 function runSynth(args, cwd = process.cwd()) {
   const result = spawnSync("node", [CLI_PATH, ...args], {
@@ -37,12 +38,15 @@ function assert(condition, message) {
 }
 
 async function testVersion() {
+  const packageJson = JSON.parse(await fs.readFile(PACKAGE_PATH, "utf-8"))
+  const expectedVersion = packageJson.version
+
   const { stdout, status } = runSynth(["--version"])
   assert(status === 0, "version command should exit 0")
   const output = parseJson(stdout)
   assert(output.status === "ok", "version status should be ok")
   assert(output.name === "synth", "version name should be synth")
-  assert(output.version === "2.0.0", `version should be 2.0.0, got ${output.version}`)
+  assert(output.version === expectedVersion, `version should be ${expectedVersion}, got ${output.version}`)
   assert(output.schema === "synth-cli-v1", "version schema should be synth-cli-v1")
   console.log("[PASS] synth --version returns structured version")
 }
