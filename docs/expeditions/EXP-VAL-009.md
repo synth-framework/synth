@@ -82,9 +82,26 @@ Knowing which capabilities are affected is not enough. SYNTH must decide which t
 
 ## Definition of Done
 
-- [ ] Plan generator implemented.
-- [ ] Ordering rules defined and tested.
-- [ ] Protected Asset escalation implemented.
-- [ ] CLI output implemented.
-- [ ] Unit tests pass.
+- [x] Plan generator implemented.
+- [x] Ordering rules defined and tested.
+- [x] Protected Asset escalation implemented.
+- [x] CLI output implemented.
+- [x] Unit tests pass.
 - [ ] Expedition is accepted.
+
+---
+
+## Completion Notes
+
+Validation Planner delivered:
+
+- Planner implemented in `src/validation/planner.ts`:
+  - Consumes `ImpactReport` and `docs/reference/capability-validation-map.json`.
+  - Produces deterministic `ValidationPlan` with `run`, `skip`, `confidence`, `protectedAssetsTouched`, `risk`, and `reason`.
+  - Escalates to full `npm run govern` when Protected Assets are touched.
+  - Orders validations: typecheck first, then unit tests, integration tests, benchmarks, proofs.
+  - Handles unknown capabilities gracefully with reduced confidence.
+- `synth validate` updated in `src/cli/synth.ts` to emit a `ValidationPlan` (JSON). Supports `--dry-run`.
+- `typecheck` script added to `package.json` (`tsc --noEmit`). Lint slot reserved for future expedition.
+- Capability map extended with missing capabilities detected by the impact analyzer (`Scripts`, `GitHubActions`, `GitHooks`, `RepositoryConfig`, `Constitution`, `ArchitectureDecisionRecords`) and the new `ValidationPlanner` capability.
+- Tests added in `tests/validation-planner.test.js` and wired into `test:all` via `test:validation-planner`.

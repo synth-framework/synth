@@ -14,6 +14,7 @@ import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
+import { buildValidationPlan } from "../validation/planner.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { PlanningSession } from "../mission-studio/types.js"
 
@@ -177,26 +178,62 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
   if (files.length === 0) {
     printJson({
       status: "ok",
-      kind: "ImpactReport",
+      kind: "ValidationPlan",
       files: [],
       affectedCapabilities: [],
       protectedAssets: [],
       risk: "low",
-      note: "No changed files detected.",
+      run: [],
+      skip: [],
+      confidence: 1.0,
+      protectedAssetsTouched: false,
+      reason: "No changed files detected.",
+      note: "No validation needed.",
     })
     return
   }
 
   const report = analyzeFiles(files)
 
+  const packagePath = path.resolve(__dirname, "..", "..", "package.json")
+  const packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
+  const availableScripts = Object.keys(packageJson.scripts || {})
+
+  const mapPath = path.resolve(process.cwd(), "docs", "reference", "capability-validation-map.json")
+  let map
+  try {
+    map = JSON.parse(await fs.readFile(mapPath, "utf-8"))
+  } catch {
+    printJson({
+      status: "error",
+      error: `Capability validation map not found at ${mapPath}. Run 'synth init' or verify the repository layout.`,
+    })
+    return
+  }
+
+  const plan = buildValidationPlan(report, map, { availableScripts })
+
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  if (dryRun) {
+    printJson({
+      status: "ok",
+      kind: "ValidationPlan",
+      ...report,
+      ...plan,
+      note: "Dry-run: plan computed but not executed.",
+    })
+    return
+  }
+
   printJson({
     status: "ok",
-    kind: "ImpactReport",
+    kind: "ValidationPlan",
     ...report,
+    ...plan,
     note:
-      report.protectedAssets.length > 0
+      plan.protectedAssetsTouched
         ? "Protected Assets touched — full governance required."
-        : `Risk ${report.risk}. Run targeted tests or npm run govern for final verification.`,
+        : `Risk ${report.risk}. Execute the 'run' list locally; CI runs 'npm run govern'.`,
   })
 }
 
