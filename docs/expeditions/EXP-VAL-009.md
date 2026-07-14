@@ -1,6 +1,6 @@
 # EXP-VAL-009 — Validation Planner
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Validation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-005 — Adaptive Validation Program  
@@ -87,7 +87,7 @@ Knowing which capabilities are affected is not enough. SYNTH must decide which t
 - [x] Protected Asset escalation implemented.
 - [x] CLI output implemented.
 - [x] Unit tests pass.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -105,3 +105,5 @@ Validation Planner delivered:
 - `typecheck` script added to `package.json` (`tsc --noEmit`). Lint slot reserved for future expedition.
 - Capability map extended with missing capabilities detected by the impact analyzer (`Scripts`, `GitHubActions`, `GitHooks`, `RepositoryConfig`, `Constitution`, `ArchitectureDecisionRecords`) and the new `ValidationPlanner` capability.
 - Tests added in `tests/validation-planner.test.js` and wired into `test:all` via `test:validation-planner`.
+
+**Acceptance:** Expedition accepted as part of EXP-PROGRAM-005 closure.

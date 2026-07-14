@@ -1,6 +1,6 @@
 # EXP-VAL-010 — Capability ↔ Test Mapping
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Validation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-005 — Adaptive Validation Program  
@@ -69,7 +69,7 @@ The Validation Planner cannot guess which tests validate which capabilities. Eac
 - [x] Validation manifest file created.
 - [x] Mapping validator added to governance.
 - [x] Unit tests pass.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -87,3 +87,5 @@ Capability-to-test mapping delivered:
   - Enforces stronger validation rules for Protected Assets.
 - Tests added in `tests/validation-mapping.test.js` covering valid map, script references, Protected Asset rules, and failure modes.
 - Wired into governance via `test:validation-mapping` and included in `npm run test:all`.
+
+**Acceptance:** Expedition accepted as part of EXP-PROGRAM-005 closure.

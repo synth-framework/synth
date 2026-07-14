@@ -1,6 +1,6 @@
 # EXP-VAL-011 — Protected Asset Escalation
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Validation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-005 — Adaptive Validation Program  
@@ -73,7 +73,7 @@ Protected Assets are frozen for a reason. Any change to them has unknown blast r
 - [x] Path detector implemented.
 - [x] Escalation rule implemented.
 - [x] Enforcement tests pass.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -90,3 +90,5 @@ Protected Asset Escalation delivered:
 - Validation planner updated to name the specific touched asset(s) in the escalation reason.
 - Enforcement tests added in `tests/protected-asset-escalation.test.js` covering every Protected Asset path, non-protected changes, mixed changes, and multiple asset naming.
 - `test:protected-asset-escalation` added to `package.json` and `test:all`; capability map extended with `ProtectedAssets` capability.
+
+**Acceptance:** Expedition accepted as part of EXP-PROGRAM-005 closure.

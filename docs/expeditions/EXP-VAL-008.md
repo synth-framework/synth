@@ -1,6 +1,6 @@
 # EXP-VAL-008 — Impact Analysis
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Validation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-005 — Adaptive Validation Program  
@@ -82,7 +82,7 @@ Given a git diff, determine which SYNTH capabilities, subsystems, and Protected 
 - [x] Risk classifier implemented.
 - [x] Impact report schema documented.
 - [x] Unit tests pass.
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
@@ -96,3 +96,5 @@ Impact analyzer implemented in `src/governance/impact-analyzer.ts`:
 - Computes risk: `low` for docs/website/tests/scripts, `medium` for adapters/CLI/workspace/planning, `high` for Protected Assets and core runtime/domain/policy.
 - Exposed via `synth validate` in the CLI.
 - Tests added in `tests/impact-analyzer.test.js` and wired into `npm run test:all`.
+
+**Acceptance:** Expedition accepted as part of EXP-PROGRAM-005 closure.
