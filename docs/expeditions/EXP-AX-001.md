@@ -99,6 +99,7 @@ Specifically:
   synth doctor
   mkdir demo && cd demo
   synth init --name "Demo Project"
+  synth validate --dry-run
   synth mission create --subject "Demo" --purpose "Verify distribution"
   ```
 
@@ -157,6 +158,7 @@ Replace `git clone` installation path in README and guides.
 - [ ] `npx @synth-framework/synth` works without prior installation.
 - [x] Installation verification command is implemented.
 - [x] README and operator guides no longer lead with `git clone`.
+- [ ] Installation and Quick Start docs reference `synth validate` for local iteration.
 - [x] Local installation smoke tests pass (`synth doctor`, `synth init`).
 - [ ] Published-package smoke test passes in a clean environment.
 - [ ] Installation matrix is populated for all claimed platforms.
@@ -187,7 +189,10 @@ Package readiness work completed. The repository is configured for publication a
 - `files` whitelist tightened to `dist/` and root metadata.
 - `publishConfig.access` set to `public`.
 - `synth doctor` implemented to verify Node version, binary path, package version, and project manifest.
+- `synth validate` provides adaptive local validation.
 - README and Quick Start guide now lead with `npm install -g @synth-framework/synth` / `npx @synth-framework/synth`.
-- CLI smoke tests include `synth doctor`.
+- CLI smoke tests include `synth doctor` and `synth validate --dry-run`.
 
 Publication itself is intentionally deferred until the user configures npm credentials and a GitHub Actions release workflow.
+
+**Alignment note:** The Quick Start guide (`docs/getting-started/README.md`) still describes `npm run govern` without first showing the Mission lifecycle or `synth validate`. That alignment is tracked under EXP-AX-003.
