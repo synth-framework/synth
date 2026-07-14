@@ -96,6 +96,12 @@ main {
   margin: 0 auto 2rem;
 }
 
+.hero .hero-alt {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 1rem auto 1.5rem;
+}
+
 .cta-group {
   display: flex;
   gap: 1rem;
