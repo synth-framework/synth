@@ -57,6 +57,20 @@ When a maintainer pushes a semantic-versioned tag such as `v2.1.0`, the release 
 3. Attaches the generated `proof/proof-*.json` artifact.
 4. Generates release notes from the changelog.
 
+## Adaptive validation in CI
+
+The canonical merge gate remains `npm run govern`. Nothing in the adaptive validation path weakens that guarantee.
+
+For information only, a repository may run:
+
+```bash
+synth validate --dry-run
+```
+
+in a non-blocking workflow. This reports the optimized validation plan that the change would produce, which is useful for pull-request diagnostics and agent visibility. It does not gate the merge.
+
+Developers should still use `synth validate` locally for fast iteration and `npm run govern` (or `synth validate --full`) before requesting a merge.
+
 ## Determinism guarantee
 
 Every published state of SYNTH is replayable from Git history because:

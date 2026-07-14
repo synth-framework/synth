@@ -8,7 +8,7 @@
 
 import fs from "fs/promises"
 import path from "path"
-import { spawn } from "child_process"
+import { spawn, spawnSync } from "child_process"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
@@ -37,7 +37,7 @@ const COMMANDS = [
   { name: "init", description: "Initialize the current directory as a Synth project" },
   { name: "bootstrap", description: "Transform a repository into a Synth project" },
   { name: "govern", description: "Run the full governance pipeline" },
-  { name: "validate", description: "Analyze changes and report affected capabilities" },
+  { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve)" },
   { name: "expedition", description: "Planning operations (create)" },
@@ -172,6 +172,32 @@ async function cmdDoctor() {
 }
 
 async function cmdValidate(flags: Record<string, string | boolean>) {
+  const fullMode = flags.full === true || flags.full === "true"
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+
+  // --full always runs the complete governance pipeline.
+  if (fullMode) {
+    if (dryRun) {
+      printJson({
+        status: "ok",
+        kind: "ValidationPlan",
+        files: [],
+        affectedCapabilities: [],
+        protectedAssets: [],
+        risk: "high",
+        run: ["govern"],
+        skip: [],
+        confidence: 1.0,
+        protectedAssetsTouched: true,
+        reason: "Full validation requested.",
+        note: "Dry-run: would run npm run govern.",
+      })
+      return
+    }
+
+    return runGovernAndExit()
+  }
+
   const diffText = typeof flags.diff === "string" ? flags.diff : getWorkingTreeDiff()
   const files = parseDiff(diffText)
 
@@ -188,7 +214,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
       confidence: 1.0,
       protectedAssetsTouched: false,
       reason: "No changed files detected.",
-      note: "No validation needed.",
+      note: dryRun ? "Dry-run: no changed files detected." : "No validation needed.",
     })
     return
   }
@@ -208,12 +234,11 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
       status: "error",
       error: `Capability validation map not found at ${mapPath}. Run 'synth init' or verify the repository layout.`,
     })
-    return
+    process.exit(1)
   }
 
   const plan = buildValidationPlan(report, map, { availableScripts })
 
-  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
   if (dryRun) {
     printJson({
       status: "ok",
@@ -225,16 +250,75 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     return
   }
 
+  // Execute the planned validations.
+  const execution = await executeValidationPlan(plan.run)
+
   printJson({
-    status: "ok",
-    kind: "ValidationPlan",
+    status: execution.success ? "ok" : "error",
+    kind: "ValidationResult",
     ...report,
     ...plan,
-    note:
-      plan.protectedAssetsTouched
-        ? "Protected Assets touched — full governance required."
-        : `Risk ${report.risk}. Execute the 'run' list locally; CI runs 'npm run govern'.`,
+    execution,
+    note: execution.success
+      ? "All planned validations passed."
+      : `Planned validation failed: ${execution.failedScript}`,
   })
+
+  if (!execution.success) {
+    process.exit(1)
+  }
+}
+
+function runGovernAndExit(): Promise<void> {
+  return new Promise<void>((resolve) => {
+    const child = spawn("npm", ["run", "govern"], {
+      stdio: "inherit",
+      shell: true,
+      cwd: process.cwd(),
+    })
+    child.on("close", (code) => {
+      process.exit(code ?? 1)
+    })
+  })
+}
+
+interface ValidationExecution {
+  success: boolean
+  results: Array<{ script: string; status: number; durationMs: number }>
+  failedScript?: string
+  totalDurationMs: number
+}
+
+async function executeValidationPlan(scripts: string[]): Promise<ValidationExecution> {
+  const results: Array<{ script: string; status: number; durationMs: number }> = []
+  const start = Date.now()
+
+  for (const script of scripts) {
+    const scriptStart = Date.now()
+    const args = script === "govern" ? ["run", "govern"] : ["run", script]
+    const result = spawnSync("npm", args, {
+      stdio: "inherit",
+      shell: true,
+      cwd: process.cwd(),
+    })
+    const durationMs = Date.now() - scriptStart
+    results.push({ script, status: result.status ?? 1, durationMs })
+
+    if (result.status !== 0) {
+      return {
+        success: false,
+        results,
+        failedScript: script,
+        totalDurationMs: Date.now() - start,
+      }
+    }
+  }
+
+  return {
+    success: true,
+    results,
+    totalDurationMs: Date.now() - start,
+  }
 }
 
 async function cmdHelp() {

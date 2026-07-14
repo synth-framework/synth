@@ -14,7 +14,6 @@ All operator docs use the seven public concepts: Mission, Expedition, Evidence, 
 
 | # | Document | Learn |
 |---|----------|-------|
-| 00 | [Operator Journey](13-operator-journey.md) | The complete end-to-end journey |
 | 01 | [Getting Started](01-getting-started.md) | Your first interaction with Synth |
 | 02 | [Your First Expedition](02-your-first-expedition.md) | Planning and executing work |
 | 03 | [Understanding Genesis](03-understanding-genesis.md) | Initialization and first events |
@@ -27,6 +26,8 @@ All operator docs use the seven public concepts: Mission, Expedition, Evidence, 
 | 10 | [Recovery](10-recovery.md) | Dealing with failures |
 | 11 | [Best Practices](11-best-practices.md) | Operator wisdom |
 | 12 | [FAQ](12-faq.md) | Common questions |
+| 13 | [Operator Journey](13-operator-journey.md) | The complete end-to-end journey |
+| 14 | [Local vs CI Validation](14-local-vs-ci-validation.md) | Fast local validation and the merge gate |
 
 ## Knowledge Establishes
 How humans interact with Synth systems productively and correctly.
