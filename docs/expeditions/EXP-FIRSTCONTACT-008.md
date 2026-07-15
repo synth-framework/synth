@@ -1,10 +1,10 @@
-# EXP-FIRSTCONTACT-004B — Experience Projections
+# EXP-FIRSTCONTACT-008 — Experience Projections
 
 **Status:** Proposed  
 **Kind:** Adoption Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
-**Depends On:** EXP-FIRSTCONTACT-004A, EXP-PROGRAM-010  
+**Depends On:** EXP-FIRSTCONTACT-007, EXP-PROGRAM-010  
 **Blocks:** EXP-FIRSTCONTACT-006
 
 ---
@@ -28,7 +28,7 @@ Generate the remaining public experience projections from the canonical journey,
 
 ## Motivation
 
-The superseded EXP-FIRSTCONTACT-004 grouped nine projection targets that are different products with different audiences — website, docs, interactive tutorial, slides, video storyboard, conference demo, AI onboarding, and installer walkthrough. EXP-FIRSTCONTACT-004A delivers the website and documentation projections. The remaining targets depend on stable semantics that EXP-PROGRAM-010 will guarantee (aggregate relationships, snapshot lineage, semantic validation); building rich interactive experiences over incomplete semantics risks polishing an interface on top of unproven foundations.
+The superseded EXP-FIRSTCONTACT-004 grouped nine projection targets that are different products with different audiences — website, docs, interactive tutorial, slides, video storyboard, conference demo, AI onboarding, and installer walkthrough. EXP-FIRSTCONTACT-007 delivers the website and documentation projections. The remaining targets depend on stable semantics that EXP-PROGRAM-010 will guarantee (aggregate relationships, snapshot lineage, semantic validation); building rich interactive experiences over incomplete semantics risks polishing an interface on top of unproven foundations.
 
 These targets may be further split into separate expeditions if needed.
 

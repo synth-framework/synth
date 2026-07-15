@@ -1,11 +1,11 @@
-# EXP-FIRSTCONTACT-004A — Canonical Journey Documentation Projection
+# EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection
 
 **Status:** Proposed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
 **Depends On:** EXP-FIRSTCONTACT-002, EXP-FIRSTCONTACT-003  
-**Blocks:** EXP-FIRSTCONTACT-004B, EXP-FIRSTCONTACT-005, EXP-FIRSTCONTACT-006
+**Blocks:** EXP-FIRSTCONTACT-008, EXP-FIRSTCONTACT-005, EXP-FIRSTCONTACT-006
 
 ---
 
@@ -30,7 +30,7 @@ Generate the website and documentation First Contact experiences as deterministi
 
 The canonical recorded journey (EXP-FIRSTCONTACT-003) produced a complete evidence archive: `timeline.json`, `commands.json`, `events.jsonl`, and `proof.json`. Today that evidence is invisible to newcomers. The website and the documentation should present the journey by projecting directly from this archive, so the public story can never drift from the recorded execution.
 
-This expedition is the first half of the superseded EXP-FIRSTCONTACT-004, split to keep the work reviewable: website and documentation projections are low-risk, produce external value, and help validate the public vocabulary. The remaining projection targets live in EXP-FIRSTCONTACT-004B behind the EXP-PROGRAM-010 hardening boundary.
+This expedition is the first half of the superseded EXP-FIRSTCONTACT-004, split to keep the work reviewable: website and documentation projections are low-risk, produce external value, and help validate the public vocabulary. The remaining projection targets live in EXP-FIRSTCONTACT-008 behind the EXP-PROGRAM-010 hardening boundary.
 
 ---
 

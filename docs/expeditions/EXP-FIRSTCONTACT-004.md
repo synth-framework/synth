@@ -11,8 +11,8 @@
 
 > **Superseded on 2026-07-15.** This expedition's nine projection targets were different products with different audiences; combining them created unnecessary coordination complexity. It has been split:
 >
-> - **EXP-FIRSTCONTACT-004A — Canonical Journey Documentation Projection** (website + documentation projections first).
-> - **EXP-FIRSTCONTACT-004B — Experience Projections** (interactive tutorial, slides, video storyboard, conference demo, AI onboarding, installer walkthrough), deferred behind the EXP-PROGRAM-010 hardening boundary.
+> - **EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection** (website + documentation projections first).
+> - **EXP-FIRSTCONTACT-008 — Experience Projections** (interactive tutorial, slides, video storyboard, conference demo, AI onboarding, installer walkthrough), deferred behind the EXP-PROGRAM-010 hardening boundary.
 >
 > The original text below is preserved for the record.
 

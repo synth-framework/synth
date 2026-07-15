@@ -167,13 +167,13 @@ Canonical First Contact Experience
 │
 ├── EXP-FIRSTCONTACT-004  Experience Projection System
 │       Adoption Expedition
-│       Superseded 2026-07-15 — split into 004A and 004B.
+│       Superseded 2026-07-15 — split into EXP-FIRSTCONTACT-007 and EXP-FIRSTCONTACT-008.
 │
-├── EXP-FIRSTCONTACT-004A  Canonical Journey Documentation Projection
+├── EXP-FIRSTCONTACT-007  Canonical Journey Documentation Projection
 │       Adoption Expedition
 │       Website and documentation projections derived from the canonical evidence archive.
 │
-├── EXP-FIRSTCONTACT-004B  Experience Projections
+├── EXP-FIRSTCONTACT-008  Experience Projections
 │       Adoption Expedition
 │       Remaining projection targets, deferred behind the EXP-PROGRAM-010 hardening boundary.
 │
@@ -234,8 +234,8 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [ ] EXP-FIRSTCONTACT-001 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-002 completed and accepted.
 - [x] EXP-FIRSTCONTACT-003 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-004A completed and accepted.
-- [ ] EXP-FIRSTCONTACT-004B completed and accepted.
+- [ ] EXP-FIRSTCONTACT-007 completed and accepted.
+- [ ] EXP-FIRSTCONTACT-008 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-005 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-006 completed and accepted.
 - [ ] Program accepted.
