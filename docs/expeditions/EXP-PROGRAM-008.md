@@ -1,6 +1,6 @@
 # EXP-PROGRAM-008 — Documentation & Projections
 
-**Status:** Completed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -46,9 +46,31 @@ Build a Documentation Projection System that transforms constitutional sources i
 EXP-PROGRAM-008
 Documentation & Projections
 │
-└── EXP-DOCS-001  Documentation Projection System
+├── EXP-DOCS-001  Documentation Projection System
+│       Adoption Expedition
+│       Establish deterministic projections from constitutional sources to derived artifacts.
+│
+├── EXP-DOCS-002  Capability Model Documentation
+│       Adoption Expedition
+│       Bring public capability documentation in line with the Capability Graph
+│       and the capability families delivered by EXP-PROGRAM-007.
+│
+├── EXP-DOCS-003  Agent Planning Guide Update
+│       Adoption Expedition
+│       Align AI agent guides with environment discovery and capability-aware planning.
+│
+├── EXP-DOCS-004  Environment Layer Reference
+│       Adoption Expedition
+│       Publish the canonical Environment Layer reference: architecture, provider
+│       contracts, discovery evidence, and registration status.
+│
+├── EXP-DOCS-005  Example Synchronization
+│       Adoption Expedition
+│       Bring every example in `examples/` in line with the post-PROGRAM-007 architecture.
+│
+└── EXP-DOCS-006  Website Projection Verification
         Adoption Expedition
-        Establish deterministic projections from constitutional sources to derived artifacts.
+        Verify the website reflects the current documentation surface.
 ```
 
 ---
@@ -98,6 +120,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - Projections run deterministically from committed sources.
 - Projection graph validation passes in CI and locally.
 - The Publish workflow consumes documentation projection artifacts without generating them itself.
+- The public documentation surface (reference, architecture, agent guides, examples, website) accurately reflects the Environment Layer and Capability Graph delivered by EXP-PROGRAM-007.
 - No generated artifact is treated as authoritative.
 - No Protected Asset is modified.
 
@@ -106,7 +129,12 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 ## Definition of Done
 
 - [x] EXP-DOCS-001 completed and accepted.
-- [x] Program accepted.
+- [ ] EXP-DOCS-002 completed and accepted.
+- [ ] EXP-DOCS-003 completed and accepted.
+- [ ] EXP-DOCS-004 completed and accepted.
+- [ ] EXP-DOCS-005 completed and accepted.
+- [ ] EXP-DOCS-006 completed and accepted.
+- [ ] Program accepted.
 
 ---
 
@@ -117,6 +145,8 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - `docs/generated/` is excluded from version control.
 - The Publish workflow consumes projection artifacts instead of generating or committing them.
 - Program accepted and closed.
+
+Program reopened on 2026-07-15 to synchronize the documentation surface with the Environment Layer architecture delivered by EXP-PROGRAM-007. EXP-DOCS-001 remains completed and accepted; EXP-DOCS-002 through EXP-DOCS-006 extend the program scope to capability model documentation, agent planning guides, the Environment Layer reference, example synchronization, and website projection verification.
 
 ---
 
