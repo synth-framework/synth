@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-002 — Canonical Journey Specification
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
@@ -96,13 +96,13 @@ Specify how comprehension is measured at each stage.
 
 ## Definition of Done
 
-- [ ] Journey structure documented.
-- [ ] Episode sequence defined.
-- [ ] Learning objectives specified per episode.
-- [ ] Story progression for the canonical Mission documented.
-- [ ] Concept introduction order defined.
-- [ ] Success metrics specified.
-- [ ] `npm run govern` passes.
+- [x] Journey structure documented.
+- [x] Episode sequence defined.
+- [x] Learning objectives specified per episode.
+- [x] Story progression for the canonical Mission documented.
+- [x] Concept introduction order defined.
+- [x] Success metrics specified.
+- [ ] `npm run govern` passes on final PR.
 - [ ] Expedition is accepted.
 
 ---
@@ -119,4 +119,22 @@ Specify how comprehension is measured at each stage.
 
 ## Completion Notes
 
-Pending.
+- Created `docs/reference/first-contact-specification.md` as the authoritative First Contact Specification.
+- Defined an eight-episode canonical journey aligned with the Narrative Ladder:
+  1. The Spark — the user's first encounter with SYNTH's pause-to-analyze behavior.
+  2. The Idea — the Mission is captured from human intent.
+  3. The Plan — Expeditions, Evidence, and approved Plan.
+  4. The AI Works — the agent executes through the CLI surface.
+  5. Nothing Was Forgotten — every action becomes an immutable Event.
+  6. State — the current picture is derived from Events.
+  7. Replay — history is reconstructed as proof.
+  8. Your Turn — the emotional conclusion and call to action.
+- Architecture is moved to a separate "Continue Exploring" deep-dive path, not the core journey.
+- Each episode includes a one-sentence learning objective, an experience, an explanation, a named concept, and a success metric.
+- Each episode follows Show → Explain → Name.
+- Canonical Mission selected: *Build me a Space Mission Tracking Application.*
+- Concept introduction order documented for all public terms.
+- Success metrics defined for each episode and for the full five-minute comprehension target.
+- Projection targets listed: website, documentation, installer, video, conference demo, AI onboarding.
+- Specification references the companion canonical recorded journey to be produced by EXP-FIRSTCONTACT-003.
+- Expedition implementation is complete; awaiting acceptance review before PR is opened.
