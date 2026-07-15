@@ -18,7 +18,10 @@ function runScript(scriptPath, cwd) {
   const result = spawnSync("node", [scriptPath], {
     cwd,
     encoding: "utf-8",
-    timeout: 300000,
+    // The dry-run executes 15 model/repository scenarios, each spawning
+    // several synth CLI subprocesses. Under full-pipeline load this can
+    // exceed 5 minutes; 15 minutes avoids flaky timeout kills.
+    timeout: 900000,
   })
   return {
     stdout: result.stdout || "",

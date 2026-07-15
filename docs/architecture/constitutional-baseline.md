@@ -17,6 +17,7 @@
 **Workspace Capability ADR:** [ADR-008 — Workspace Capability](../adr/ADR-008-workspace-capability.md)
 **Revision Capability ADR:** [ADR-009 — Revision Capability](../adr/ADR-009-revision-capability.md)
 **Filesystem Capability ADR:** [ADR-010 — Filesystem Capability](../adr/ADR-010-filesystem-capability.md)
+**Process & Tool Capability ADR:** [ADR-011 — Process & Tool Capability](../adr/ADR-011-process-tool-capability.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -149,6 +150,7 @@ Capability Graph ADR: ADR-007
 Workspace Capability ADR: ADR-008
 Revision Capability ADR: ADR-009
 Filesystem Capability ADR: ADR-010
+Process & Tool Capability ADR: ADR-011
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```
