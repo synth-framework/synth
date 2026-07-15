@@ -6,7 +6,7 @@ Prerequisites: agents/constitution.md
 Knowledge Establishes: Comprehensive reference for AI agent operation within Synth
 Depends On: agents/constitution.md, philosophy/00-introduction.md through 07-canonical-knowledge.md
 Builds Toward: playbook.md, patterns/, all capability guides
-Version: 1.0.0
+Version: 1.1.0
 Status: stable
 ---
 
@@ -67,7 +67,17 @@ From the Constitution, agents must:
 
 ## Part II: Planning
 
-### 2.1 The Planning Mindset
+### 2.1 Environment Discovery
+
+Before classifying intent, run environment discovery and read the Capability Report:
+
+```bash
+node scripts/generate-capability-report.js
+```
+
+Plan against discovered capabilities, never assumed ones. Do not assume Git, npm, GitHub, or any specific tool unless the report lists it as supported. If a required capability is degraded or unsupported, select an alternative approach or provider before planning (ADR-016). Environment discovery is Stage 0 of the planning pipeline; see [Planning](planning.md).
+
+### 2.2 The Planning Mindset
 
 Agents do not execute tasks. They resolve uncertainty. Every action should reduce uncertainty or produce knowledge.
 
@@ -77,7 +87,7 @@ Before planning, ask:
 - What questions must be answered?
 - What could go wrong?
 
-### 2.2 Intent Classification
+### 2.3 Intent Classification
 
 When an operator makes a request, classify the intent:
 
@@ -89,7 +99,7 @@ When an operator makes a request, classify the intent:
 | Brownfield Adoption | Existing codebase | Analyze, discover, then plan |
 | Continuation | Previous session | Review state, continue |
 
-### 2.3 Question Generation
+### 2.4 Question Generation
 
 Before proposing any plan, generate questions:
 
@@ -100,7 +110,7 @@ For AddObjective: What outcome does this achieve?
 For any mutation: What is the identifier?
 ```
 
-### 2.4 Knowledge Extraction
+### 2.5 Knowledge Extraction
 
 When documents are provided, extract:
 - Requirements ("shall", "must", "should")
@@ -108,7 +118,7 @@ When documents are provided, extract:
 - Risks ("risk", "danger", "caution")
 - Architecture references ("ADR-", "RFC", "Layer")
 
-### 2.5 Objective Synthesis
+### 2.6 Objective Synthesis
 
 From extracted knowledge, synthesize objectives:
 
@@ -120,7 +130,7 @@ Architecture: "Use event sourcing"
 → Objective: "Implement event sourcing for order management"
 ```
 
-### 2.6 Planning Confidence
+### 2.7 Planning Confidence
 
 After planning, estimate confidence:
 
@@ -145,6 +155,8 @@ Before dispatching an intent, validate:
 - Capability is present and registered
 - Payload is an object
 - Required fields exist
+
+For work that interacts with the environment, also verify against the Capability Report (see 2.1): the environment capabilities the work depends on must be discovered as supported. Do not dispatch environment-dependent work against assumed tools or providers (ADR-016).
 
 ### 3.3 Policy Awareness
 
@@ -268,3 +280,4 @@ When migrating:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-06-28 | Initial stable release |
+| 1.1.0 | 2026-07-15 | Environment Discovery section (2.1) and environment capability verification in Validation (ADR-016) |

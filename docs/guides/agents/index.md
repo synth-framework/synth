@@ -6,7 +6,7 @@ Prerequisites: docs/getting-started/01-getting-started.md
 Knowledge Establishes: How AI assistants operate Synth
 Depends On: docs/reference/public-vocabulary.md
 Builds Toward: agent-bootstrap
-Version: 1.0.0
+Version: 1.1.0
 Status: stable
 ---
 
@@ -53,31 +53,45 @@ Your job as an agent is to:
    synth docs generate
    ```
 
-5. Create a Mission Draft:
+5. Run environment discovery and read the Capability Report. Plan against discovered capabilities — never assume Git, npm, GitHub, or any specific tool unless the report lists it as supported (ADR-016):
+
+   ```bash
+   node scripts/generate-capability-report.js
+   ```
+
+6. Create a Mission Draft:
 
    ```bash
    synth mission create --subject "Mission Name" --purpose "What we want to achieve"
    ```
 
-6. Approve the Mission (after human review):
+7. Approve the Mission (after human review):
 
    ```bash
    synth mission approve --draft-id <draft-id>
    ```
 
-7. Validate changes locally:
+8. Validate changes locally:
 
    ```bash
    synth validate
    ```
 
-8. Run the full governance pipeline before requesting a merge:
+9. Run the full governance pipeline before requesting a merge:
 
    ```bash
    npm run govern
    ```
 
 ## Available guides
+
+Core guides:
+
+- [Agent Handbook](handbook.md) — comprehensive reference for agent operation
+- [Planning](planning.md) — the planning pipeline, starting with Stage 0 environment discovery
+- [Constitution](constitution.md) — immutable behavioral rules
+
+Environment-specific guides:
 
 - [Claude Code](claude-code.md)
 - [Cursor](cursor.md)
