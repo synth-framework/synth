@@ -1,0 +1,56 @@
+{
+  "schema": "synth-recorded-journey-timeline-v1",
+  "generatedAt": "2026-07-15T01:43:26.469Z",
+  "mission": "Space Mission Tracking Application",
+  "totalEvents": 32,
+  "timeline": [
+    {
+      "episode": 1,
+      "title": "The Spark",
+      "eventTypes": ["SYSTEM_GENESIS"],
+      "description": "SYNTH bootstraps and begins analyzing before acting."
+    },
+    {
+      "episode": 2,
+      "title": "The Idea",
+      "eventTypes": ["MISSION_CREATED"],
+      "description": "Human intent is captured as a Mission."
+    },
+    {
+      "episode": 3,
+      "title": "The Plan",
+      "eventTypes": ["PLAN_CREATED", "EXPEDITION_CREATED", "OBJECTIVE_ADDED", "WORK_ITEM_CREATED", "MISSION_APPROVED"],
+      "description": "The Mission is decomposed into Expeditions and Objectives, then approved."
+    },
+    {
+      "episode": 4,
+      "title": "The AI Works",
+      "eventTypes": ["EXPEDITION_APPROVED", "EXPEDITION_STARTED"],
+      "description": "The approved Plan is executed through the CLI surface."
+    },
+    {
+      "episode": 5,
+      "title": "Nothing Was Forgotten",
+      "eventTypes": ["OBJECTIVE_COMPLETED", "EXPEDITION_COMPLETED"],
+      "description": "Every action is recorded as an immutable Event."
+    },
+    {
+      "episode": 6,
+      "title": "State",
+      "eventTypes": ["MISSION_COMPLETED"],
+      "description": "The final State shows all work completed."
+    },
+    {
+      "episode": 7,
+      "title": "Replay",
+      "eventTypes": [],
+      "description": "Replay verifies that State matches the 32-event history."
+    },
+    {
+      "episode": 8,
+      "title": "Your Turn",
+      "eventTypes": [],
+      "description": "The user is invited to install SYNTH and create their first Mission."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "synth-example-first-contact",
+  "version": "1.0.0",
+  "description": "Canonical recorded journey for the SYNTH First Contact experience",
+  "type": "module",
+  "scripts": {
+    "govern": "node scripts/run.js"
+  }
+}
