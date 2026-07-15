@@ -22,3 +22,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-014 — Secrets & Identity Capability](ADR-014-secrets-identity-capability.md)
 - [ADR-015 — Discovery Evidence & Replay Integration](ADR-015-discovery-evidence-replay.md)
 - [ADR-016 — AI Environment Planning](ADR-016-ai-environment-planning.md)
+- [ADR-017 — Constitutional Compliance & Core Boundary Enforcement](ADR-017-constitutional-compliance-core-boundary.md)

@@ -23,6 +23,7 @@
 **Secrets & Identity Capability ADR:** [ADR-014 — Secrets & Identity Capability](../adr/ADR-014-secrets-identity-capability.md)
 **Discovery Evidence & Replay ADR:** [ADR-015 — Discovery Evidence & Replay Integration](../adr/ADR-015-discovery-evidence-replay.md)
 **AI Environment Planning ADR:** [ADR-016 — AI Environment Planning](../adr/ADR-016-ai-environment-planning.md)
+**Constitutional Compliance ADR:** [ADR-017 — Constitutional Compliance & Core Boundary Enforcement](../adr/ADR-017-constitutional-compliance-core-boundary.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -161,6 +162,7 @@ Forge Capability ADR: ADR-013
 Secrets & Identity Capability ADR: ADR-014
 Discovery Evidence & Replay ADR: ADR-015
 AI Environment Planning ADR: ADR-016
+Constitutional Compliance ADR: ADR-017
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```
