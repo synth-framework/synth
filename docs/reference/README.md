@@ -12,6 +12,7 @@ All — operators, agents, developers, architects.
 |----------|---------|
 | [Events](event-reference.md) | All event types and schemas |
 | [Capabilities](capability-reference.md) | All capabilities and input/output schemas |
+| [Environment Layer](environment-layer.md) | Environment Layer architecture, providers, and discovery evidence |
 | [Planning Events](planning-events.md) | PCE-specific events |
 | [Planning Permits](planning-permits.md) | PlanningPermit schema and validation |
 | [Knowledge Graph](public-architecture.md) | Knowledge graph schema |

@@ -1,6 +1,6 @@
 # EXP-DOCS-004 — Environment Layer Reference
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-008 — Documentation & Projections  
@@ -89,13 +89,13 @@ Run documentation integrity checks and the full validation plan.
 
 ## Definition of Done
 
-- [ ] Environment Layer reference document published under `docs/reference/`.
-- [ ] Provider contract summary covers every provider in `src/environment/`.
-- [ ] Registration status matrix matches the implementation, including known gaps.
-- [ ] Discovery evidence model documented.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Environment Layer reference document published under `docs/reference/`.
+- [x] Provider contract summary covers every provider in `src/environment/`.
+- [x] Registration status matrix matches the implementation, including known gaps.
+- [x] Discovery evidence model documented.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI proof check).
+- [x] Expedition is accepted.
 
 ---
 
@@ -111,4 +111,9 @@ Run documentation integrity checks and the full validation plan.
 
 ## Completion Notes
 
-Pending.
+- Published `docs/reference/environment-layer.md`: position in the architecture with the ADR-017 core boundary rule, module map for all fifteen `src/environment/` modules, the discovery pipeline (observe → classify → resolve → persist), the ADR-015 evidence model (canonicalization, hashing, replay verification, `data/discovery-evidence.json`), and the ADR-016 Capability Report (supported / degraded / unsupported, families stated never omitted).
+- Provider contract summary covers every contract and default provider in `src/environment/`: Workspace, Filesystem (POSIX + in-memory), Revision, Process/Tool, Runtime/Package, Forge, Secrets/Identity, plus the five reference providers.
+- Registration status matrix derived from the implementation: per family — ADR, contract, default provider(s), discovery rule presence, reference provider. The orchestrator receives providers from its caller; there is no implicit global registry.
+- Known gaps recorded as status, not defects: Network has no contract or discovery rule (graph node only); Secrets/Identity are not discoverable by design; bootstrap adoption is limited to Mission Studio's snapshot store (`FilesystemProvider`), with broader adoption deferred to the Constitutional Hardening Program.
+- Cross-linked from `docs/reference/README.md`, `docs/architecture/glossary.md` (new Environment Layer entry), and `docs/reference/capability-reference.md`.
+- Documentation integrity checks pass: `docs:check-links`, `docs:verify-projection`, `docs:verify-website-sync`.
