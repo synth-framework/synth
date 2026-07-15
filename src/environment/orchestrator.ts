@@ -22,7 +22,7 @@ import type {
 } from "./types.js"
 import { createDefaultDiscoveryRules } from "./rules.js"
 
-function classifyEnvironment(observations: DiscoveryObservation[]): DiscoveryEvidence["environment"]["classification"] {
+export function classifyEnvironment(observations: DiscoveryObservation[]): DiscoveryEvidence["environment"]["classification"] {
   const envType = observations.find((o) => o.name === "environmentType")
   if (envType && (envType.value as { type?: string }).type === "ci") {
     return "ci"
@@ -36,14 +36,14 @@ function classifyEnvironment(observations: DiscoveryObservation[]): DiscoveryEvi
   return "bare"
 }
 
-function platformFromObservations(observations: DiscoveryObservation[]): string {
+export function platformFromObservations(observations: DiscoveryObservation[]): string {
   const runtime = observations.find((o) => o.name === "runtimes")
   const runtimes = (runtime?.value as Array<{ name: string; version?: string }>) || []
   const node = runtimes.find((r) => r.name === "node")
   return node ? `node:${node.version ?? "unknown"}` : "unknown"
 }
 
-function buildCapabilitySummaries(
+export function buildCapabilitySummaries(
   observations: DiscoveryObservation[],
 ): DiscoveryEvidence["capabilities"] {
   const byFamily = new Map<CapabilityFamily, DiscoveryObservation[]>()
@@ -141,7 +141,7 @@ function confidenceRank(confidence: DiscoveryObservation["confidence"]): number 
   return order.indexOf(confidence)
 }
 
-function buildAssumptions(
+export function buildAssumptions(
   observations: DiscoveryObservation[],
   providers: ResolvedProvider[],
 ): DiscoveryEvidence["assumptions"] {
@@ -186,7 +186,7 @@ function buildAssumptions(
   return assumptions
 }
 
-function buildCompatibility(
+export function buildCompatibility(
   capabilities: DiscoveryEvidence["capabilities"],
   providers: ResolvedProvider[],
 ): DiscoveryEvidence["compatibility"] {

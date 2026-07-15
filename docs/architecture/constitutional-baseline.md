@@ -21,6 +21,7 @@
 **Runtime & Package Capability ADR:** [ADR-012 — Runtime & Package Capability](../adr/ADR-012-runtime-package-capability.md)
 **Forge Capability ADR:** [ADR-013 — Forge Capability](../adr/ADR-013-forge-capability.md)
 **Secrets & Identity Capability ADR:** [ADR-014 — Secrets & Identity Capability](../adr/ADR-014-secrets-identity-capability.md)
+**Discovery Evidence & Replay ADR:** [ADR-015 — Discovery Evidence & Replay Integration](../adr/ADR-015-discovery-evidence-replay.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -157,6 +158,7 @@ Process & Tool Capability ADR: ADR-011
 Runtime & Package Capability ADR: ADR-012
 Forge Capability ADR: ADR-013
 Secrets & Identity Capability ADR: ADR-014
+Discovery Evidence & Replay ADR: ADR-015
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```
