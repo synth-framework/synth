@@ -19,3 +19,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-011 — Process & Tool Capability](ADR-011-process-tool-capability.md)
 - [ADR-012 — Runtime & Package Capability](ADR-012-runtime-package-capability.md)
 - [ADR-013 — Forge Capability](ADR-013-forge-capability.md)
+- [ADR-014 — Secrets & Identity Capability](ADR-014-secrets-identity-capability.md)
