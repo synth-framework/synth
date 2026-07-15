@@ -1,11 +1,20 @@
 # EXP-FIRSTCONTACT-004 — Experience Projection System
 
-**Status:** Proposed  
+**Status:** Superseded  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
 **Depends On:** EXP-FIRSTCONTACT-002, EXP-FIRSTCONTACT-003  
 **Blocks:** EXP-FIRSTCONTACT-005, EXP-FIRSTCONTACT-006
+
+---
+
+> **Superseded on 2026-07-15.** This expedition's nine projection targets were different products with different audiences; combining them created unnecessary coordination complexity. It has been split:
+>
+> - **EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection** (website + documentation projections first).
+> - **EXP-FIRSTCONTACT-008 — Experience Projections** (interactive tutorial, slides, video storyboard, conference demo, AI onboarding, installer walkthrough), deferred behind the EXP-PROGRAM-010 hardening boundary.
+>
+> The original text below is preserved for the record.
 
 ---
 

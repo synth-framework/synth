@@ -1,6 +1,6 @@
 # EXP-PROGRAM-009 — Canonical First Contact Experience
 
-**Status:** Draft  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -167,11 +167,20 @@ Canonical First Contact Experience
 │
 ├── EXP-FIRSTCONTACT-004  Experience Projection System
 │       Adoption Expedition
-│       Generate public experiences from the canonical journey.
+│       Superseded 2026-07-15 — split into EXP-FIRSTCONTACT-007 and EXP-FIRSTCONTACT-008.
+│
+├── EXP-FIRSTCONTACT-007  Canonical Journey Documentation Projection
+│       Adoption Expedition
+│       Website and documentation projections derived from the canonical evidence archive.
+│
+├── EXP-FIRSTCONTACT-008  Experience Projections
+│       Adoption Expedition
+│       Remaining projection targets, deferred behind the EXP-PROGRAM-010 hardening boundary.
 │
 ├── EXP-FIRSTCONTACT-005  Interactive Replay Experience
 │       Adoption Expedition
 │       Allow newcomers to observe the canonical Mission through Replay.
+│       Deferred behind the EXP-PROGRAM-010 hardening boundary.
 │
 └── EXP-FIRSTCONTACT-006  Comprehension Validation
         Adoption Expedition
@@ -224,8 +233,9 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 - [ ] EXP-FIRSTCONTACT-001 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-002 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-003 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-004 completed and accepted.
+- [x] EXP-FIRSTCONTACT-003 completed and accepted.
+- [ ] EXP-FIRSTCONTACT-007 completed and accepted.
+- [ ] EXP-FIRSTCONTACT-008 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-005 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-006 completed and accepted.
 - [ ] Program accepted.

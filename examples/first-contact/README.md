@@ -28,8 +28,26 @@ This executes the Mission through Mission Studio, Genesis, execution, Replay ver
 
 - A replay-consistent event log in `data/event-log.jsonl`.
 - A generated proof artifact in `proof/`.
-- Generated documentation in `docs-generated/`.
+- Generated documentation in `docs-generated/` (local build artifact).
 - A recorded journey narrative in `recorded-journey/`.
+
+## Known Limitations
+
+This journey validates:
+
+- ✓ Mission creation
+- ✓ Expedition execution
+- ✓ Event sourcing
+- ✓ Replay integrity
+- ✓ Proof generation
+
+Future hardening (EXP-PROGRAM-010):
+
+- Aggregate relationship validation
+- Snapshot persistence
+- Lineage enforcement
+
+This record demonstrates a governed execution path. It is not yet evidence that every implementation layer fully realizes the constitutional guarantees.
 
 ## Relationship to EXP-PROGRAM-009
 
