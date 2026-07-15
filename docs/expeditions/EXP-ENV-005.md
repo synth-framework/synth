@@ -1,6 +1,6 @@
 # EXP-ENV-005 — Filesystem Capability
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Constitutional Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-007 — Environment Independence Program  
@@ -48,15 +48,31 @@ SYNTH can read, write, list, and observe files through the capability interface 
 
 ## Definition of Done
 
-- [ ] Filesystem capability interface defined.
-- [ ] POSIX provider implemented.
-- [ ] Path abstraction documented.
-- [ ] Tests pass.
-- [ ] ADR approved.
-- [ ] Expedition is accepted.
+- [x] Filesystem capability interface defined.
+- [x] POSIX provider implemented.
+- [x] Path abstraction documented.
+- [x] Tests pass.
+- [x] ADR approved.
+- [x] Expedition is accepted.
 
 ---
 
 ## Completion Notes
 
-Pending.
+- Drafted and approved **ADR-010 — Filesystem Capability**.
+- Added ADR-010 to `docs/adr/README.md` and `docs/architecture/constitutional-baseline.md`.
+- Implemented `src/environment/filesystem-capability.ts`:
+  - `FilesystemProvider` interface: readFile, writeFile, listDirectory, pathExists, isDirectory, ensureDirectory, deleteFile.
+  - `PosixFilesystemProvider` reference implementation using Node.js `fs/promises`.
+  - `InMemoryFilesystemProvider` for deterministic testing.
+- Added regression tests in `tests/environment-filesystem-capability.test.js` covering:
+  - Read/write operations
+  - Directory listing
+  - Existence and directory checks
+  - Directory creation
+  - File deletion
+  - Both in-memory and POSIX providers
+- Added `test:environment-filesystem` npm script and included it in `test:all`.
+- Updated `docs/expeditions/EXP-ENV-005.md` to Completed.
+- Verified TypeScript compilation and unit tests.
+- Expedition accepted via PR #59.

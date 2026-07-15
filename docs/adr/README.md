@@ -15,3 +15,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-007 — Capability Graph Model](ADR-007-capability-graph-model.md)
 - [ADR-008 — Workspace Capability](ADR-008-workspace-capability.md)
 - [ADR-009 — Revision Capability](ADR-009-revision-capability.md)
+- [ADR-010 — Filesystem Capability](ADR-010-filesystem-capability.md)
