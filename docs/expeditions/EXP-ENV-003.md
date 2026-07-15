@@ -1,6 +1,6 @@
 # EXP-ENV-003 — Workspace Capability
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Constitutional Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-007 — Environment Independence Program  
@@ -48,15 +48,33 @@ SYNTH can locate, inspect, and prepare a workspace through the capability interf
 
 ## Definition of Done
 
-- [ ] Workspace capability interface defined.
-- [ ] Filesystem provider implemented.
-- [ ] Discovery rules documented.
-- [ ] Tests pass.
-- [ ] ADR approved.
-- [ ] Expedition is accepted.
+- [x] Workspace capability interface defined.
+- [x] Filesystem provider implemented.
+- [x] Discovery rules documented.
+- [x] Tests pass.
+- [x] ADR approved.
+- [x] Expedition is accepted.
 
 ---
 
 ## Completion Notes
 
-Pending.
+- Drafted and approved **ADR-008 — Workspace Capability**.
+- Added ADR-008 to `docs/adr/README.md` and `docs/architecture/constitutional-baseline.md`.
+- Implemented `src/environment/workspace-capability.ts`:
+  - `WorkspaceProvider` interface: discover, locateRoot, listProjects, readManifest, prepare.
+  - `FilesystemWorkspaceProvider` default implementation.
+  - Workspace descriptor, manifest, and prepared result types.
+- Updated `src/environment/node-context.ts` to resolve absolute paths correctly, enabling workspace providers to operate on roots outside `process.cwd()`.
+- Added regression tests in `tests/environment-workspace-capability.test.js` covering:
+  - Provider metadata
+  - Root location by SYNTH manifest and package.json
+  - Upward root search
+  - Manifest reading
+  - Project listing
+  - Workspace discovery
+  - Workspace preparation
+- Added `test:environment-workspace` npm script and included it in `test:all`.
+- Updated `docs/expeditions/EXP-ENV-003.md` to Completed.
+- Verified TypeScript compilation and test suite.
+- Expedition accepted via PR #57.

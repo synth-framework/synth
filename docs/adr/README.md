@@ -13,3 +13,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-005 — Architecture Era Closure](ADR-005-architecture-era-closure.md)
 - [ADR-006 — Environment Discovery Framework](ADR-006-environment-discovery-framework.md)
 - [ADR-007 — Capability Graph Model](ADR-007-capability-graph-model.md)
+- [ADR-008 — Workspace Capability](ADR-008-workspace-capability.md)

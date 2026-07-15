@@ -15,7 +15,7 @@ import { readFile as nodeReadFile, readdir, access, constants } from "node:fs/pr
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
 import { platform, release } from "node:os"
-import { resolve, join } from "node:path"
+import { resolve } from "node:path"
 import type { ObservationContext } from "./types.js"
 
 const execFileAsync = promisify(execFile)
@@ -67,9 +67,9 @@ function readEnv(name: string): string | undefined {
 export function createNodeObservationContext(basePath?: string): ObservationContext {
   const root = basePath ? resolve(basePath) : process.cwd()
   return {
-    readFile: async (path: string) => safeReadFile(join(root, path)),
-    listDirectory: async (path: string) => safeListDirectory(join(root, path)),
-    pathExists: async (path: string) => safePathExists(join(root, path)),
+    readFile: async (path: string) => safeReadFile(resolve(root, path)),
+    listDirectory: async (path: string) => safeListDirectory(resolve(root, path)),
+    pathExists: async (path: string) => safePathExists(resolve(root, path)),
     readEnv,
     execTool: safeExecTool,
     cwd: root,
