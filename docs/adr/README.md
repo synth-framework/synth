@@ -18,3 +18,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-010 — Filesystem Capability](ADR-010-filesystem-capability.md)
 - [ADR-011 — Process & Tool Capability](ADR-011-process-tool-capability.md)
 - [ADR-012 — Runtime & Package Capability](ADR-012-runtime-package-capability.md)
+- [ADR-013 — Forge Capability](ADR-013-forge-capability.md)

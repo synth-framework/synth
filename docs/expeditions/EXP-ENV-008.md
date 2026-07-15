@@ -1,6 +1,6 @@
 # EXP-ENV-008 — Forge Capability
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Constitutional Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-007 — Environment Independence Program  
@@ -48,15 +48,21 @@ SYNTH can read repository metadata, issues, and releases through the capability 
 
 ## Definition of Done
 
-- [ ] Forge capability interface defined.
-- [ ] GitHub provider implemented.
-- [ ] Abstractions documented.
-- [ ] Tests pass.
-- [ ] ADR approved.
-- [ ] Expedition is accepted.
+- [x] Forge capability interface defined.
+- [x] GitHub provider implemented.
+- [x] Abstractions documented.
+- [x] Tests pass.
+- [x] ADR approved.
+- [x] Expedition is accepted.
 
 ---
 
 ## Completion Notes
 
-Pending.
+- **ADR:** [ADR-013 — Forge Capability](../adr/ADR-013-forge-capability.md) (Accepted).
+- **Implementation:** `src/environment/forge-capability.ts` defines the `ForgeProvider` interface plus forge-agnostic `ForgeRepository`/`ForgeIssue`/`ForgePullRequest`/`ForgeRelease`/`ForgeListOptions` abstractions, and the `GitHubForgeProvider` reference implementation. The provider composes the `ToolProvider` capability (ADR-011) via the `gh` CLI; authentication is delegated to `gh` — no credential handling in the provider. Read-only scope per ADR-013. Exported via `src/environment/index.ts`.
+- **Abstractions:** documented in ADR-013 §2 (forge-agnostic vocabulary; provider-specific fields stay inside providers).
+- **Test coverage:** `tests/environment-forge-capability.test.js` — 8 tests covering repository metadata parsing, failure tolerance, issue listing with labels, malformed-entry skipping, PR branch mapping, release listing, unparseable output, and `gh` failure handling — all via scripted ToolProvider fakes (no live `gh` calls).
+- **npm script:** `test:environment-forge`, included in `test:all`.
+- The product-boundary `GitHubAdapter` in `src/adapters/github/` is unchanged; the Forge capability is an Environment Layer artifact. Core migration is deferred to EXP-ENV-012 per program sequencing.
+- Expedition accepted via PR #62.
