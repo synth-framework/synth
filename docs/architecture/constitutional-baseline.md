@@ -15,6 +15,7 @@
 **Environment Independence ADR:** [ADR-006 — Environment Discovery Framework](../adr/ADR-006-environment-discovery-framework.md)
 **Capability Graph ADR:** [ADR-007 — Capability Graph Model](../adr/ADR-007-capability-graph-model.md)
 **Workspace Capability ADR:** [ADR-008 — Workspace Capability](../adr/ADR-008-workspace-capability.md)
+**Revision Capability ADR:** [ADR-009 — Revision Capability](../adr/ADR-009-revision-capability.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -145,6 +146,7 @@ Architecture Era Closure ADR: ADR-005
 Environment Independence ADR: ADR-006
 Capability Graph ADR: ADR-007
 Workspace Capability ADR: ADR-008
+Revision Capability ADR: ADR-009
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```
