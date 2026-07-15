@@ -1,6 +1,6 @@
 # EXP-PROGRAM-010 — Constitutional Hardening Program
 
-**Status:** Draft  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  

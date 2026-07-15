@@ -21,6 +21,7 @@ export {
   reconstructSessionFromSnapshot,
   getSnapshotLineage,
 } from "./snapshot-lineage.js"
+export { validateProposalGraph } from "./proposal-graph-validator.js"
 export type {
   SnapshotDiff,
   NodeChange,
