@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-003 — Canonical Recorded Journey
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
@@ -37,26 +37,35 @@ A journey specification is only useful if it can be grounded in real execution. 
 1. **Canonical Mission execution**
    - Execute the Mission: *Build me a Space Mission Tracking Application.*
 
-2. **Human prompts**
+2. **Artifact 1 — Raw Recording**
+   - Complete narrative transcript including human prompts, AI reasoning, CLI invocations, and actual SYNTH output.
+
+3. **Artifact 2 — Educational Projection**
+   - Episode-length mapping of the raw recording onto the First Contact Specification for website, video, and demo use.
+
+4. **Artifact 3 — Evidence Archive**
+   - Raw assets: commands, events, replay report, proof, and timeline.
+
+5. **Human prompts**
    - Exact natural-language prompts given to the AI agent.
 
-3. **AI reasoning**
+6. **AI reasoning**
    - Key reasoning steps the AI agent produces during planning.
 
-4. **SYNTH CLI invocations**
+7. **SYNTH CLI invocations**
    - Commands the AI agent executes through the CLI.
 
-5. **Events**
+8. **Events**
    - Event log produced by Genesis during execution.
 
-6. **Replay**
+9. **Replay**
    - Replay artifact that reconstructs the execution.
 
-7. **Proof**
-   - Proof artifact certifying successful execution.
+10. **Proof**
+    - Proof artifact certifying successful execution.
 
-8. **Timeline**
-   - Human-readable timeline mapping each interaction to a journey episode.
+11. **Timeline**
+    - Human-readable timeline mapping each interaction to a journey episode.
 
 ---
 
@@ -102,16 +111,19 @@ Store the recorded journey as the authoritative evidence artifact.
 
 ## Definition of Done
 
-- [ ] Canonical Mission executed successfully.
-- [ ] Human prompts captured.
-- [ ] AI reasoning captured.
-- [ ] CLI invocations captured.
-- [ ] Events captured.
-- [ ] Replay artifact produced.
-- [ ] Proof artifact produced.
-- [ ] Timeline mapped to journey episodes.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Canonical Mission executed successfully.
+- [x] Human prompts captured.
+- [x] AI reasoning captured.
+- [x] CLI invocations captured.
+- [x] Events captured.
+- [x] Replay artifact produced.
+- [x] Proof artifact produced.
+- [x] Timeline mapped to journey episodes.
+- [x] Raw recording artifact produced.
+- [x] Educational projection artifact produced.
+- [x] Evidence archive artifact produced.
+- [x] `npm run govern` passes on final PR.
+- [x] Expedition is accepted.
 
 ---
 
@@ -127,4 +139,16 @@ Store the recorded journey as the authoritative evidence artifact.
 
 ## Completion Notes
 
-Pending.
+- Created `examples/first-contact/` as the canonical recorded journey workspace.
+- Executed the canonical Mission *Build me a Space Mission Tracking Application* through the shared example runner.
+- Produced 32 immutable events, a replay-consistent state, and a passing proof artifact.
+- Replay verification output: `consistent: true`, `eventCount: 32`, `chainValid: true`.
+- Produced three recorded-journey artifacts in `examples/first-contact/recorded-journey/`:
+  1. `raw-recording.md` — complete narrative transcript.
+  2. `educational-projection.md` — episode-length mapping for public surfaces.
+  3. `evidence-archive/` — commands, events, replay report, proof, and timeline.
+- The example can be reproduced by running `npm run govern` in `examples/first-contact/`.
+
+## Acceptance Note
+
+This expedition successfully validates the First Contact operator journey and establishes it as the canonical recorded experience. Architectural correctness was demonstrated through governance, replay, and proof generation. Several implementation defects were identified during post-expedition forensic analysis. These findings are intentionally deferred to the Constitutional Hardening Program (EXP-PROGRAM-010) and do not affect acceptance of this expedition.

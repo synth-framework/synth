@@ -1,0 +1,26 @@
+{
+  "schema": "synth-example-proof-v1",
+  "example": "first-contact",
+  "generatedAt": "2026-07-15T01:50:11.541Z",
+  "steps": [],
+  "artifacts": {
+    "snapshotId": "467ac6bb90ff18fb",
+    "genesisSystemId": "467ac6bb90ff18fb",
+    "seededEvents": 25,
+    "executionIntents": 6,
+    "replayConsistent": true,
+    "eventCount": 32,
+    "documentationProjections": [
+      "README.md",
+      "ARCHITECTURE.md",
+      "API.md",
+      "OPERATOR_GUIDE.md",
+      "DEVELOPER_GUIDE.md",
+      "ARCHITECT_GUIDE.md",
+      "AI_CONTEXT.md"
+    ]
+  },
+  "overall": {
+    "passed": true
+  }
+}

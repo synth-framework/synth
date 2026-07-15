@@ -1,0 +1,109 @@
+{
+  "schema": "synth-recorded-journey-commands-v1",
+  "generatedAt": "2026-07-15T01:43:26.469Z",
+  "commands": [
+    {
+      "episode": 2,
+      "actor": "human",
+      "type": "natural-language",
+      "command": "Build me a Space Mission Tracking application."
+    },
+    {
+      "episode": 2,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth mission create --subject \"Space Mission Tracking Application\" --purpose \"Track space missions, crew assignments, and launch windows with a simple, realistic implementation.\"",
+      "purpose": "Capture human intent as a Mission."
+    },
+    {
+      "episode": 3,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Design Data Model\" --goal \"Design the data model for missions, crew, and launch windows.\"",
+      "purpose": "Propose the first Expedition."
+    },
+    {
+      "episode": 3,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Scaffold Application\" --goal \"Scaffold the application structure and core modules.\"",
+      "purpose": "Propose the second Expedition."
+    },
+    {
+      "episode": 3,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Implement Mission Views\" --goal \"Implement mission listing and detail views.\"",
+      "purpose": "Propose the third Expedition."
+    },
+    {
+      "episode": 3,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Implement Crew Workflow\" --goal \"Add crew assignment workflow.\"",
+      "purpose": "Propose the fourth Expedition."
+    },
+    {
+      "episode": 3,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Validate Implementation\" --goal \"Validate the implementation with the operator and generate documentation.\"",
+      "purpose": "Propose the fifth Expedition."
+    },
+    {
+      "episode": 3,
+      "actor": "human",
+      "type": "natural-language",
+      "command": "The proposed plan looks good. Approve it."
+    },
+    {
+      "episode": 3,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth mission approve --draft-id <draft-id>",
+      "purpose": "Approve the Mission and its Plan."
+    },
+    {
+      "episode": 4,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "npm run govern",
+      "purpose": "Execute the approved Plan through Mission Studio, Genesis, execution, Replay, and documentation generation."
+    },
+    {
+      "episode": 7,
+      "actor": "ai-agent",
+      "type": "cli",
+      "command": "synth explain replay",
+      "purpose": "Verify that the current State matches the event history."
+    },
+    {
+      "episode": 8,
+      "actor": "human",
+      "type": "cli",
+      "command": "curl -fsSL https://synth.dev/install.sh | sh",
+      "purpose": "Install SYNTH."
+    },
+    {
+      "episode": 8,
+      "actor": "human",
+      "type": "cli",
+      "command": "synth doctor",
+      "purpose": "Verify installation health."
+    },
+    {
+      "episode": 8,
+      "actor": "human",
+      "type": "cli",
+      "command": "synth init",
+      "purpose": "Initialize a new SYNTH project."
+    },
+    {
+      "episode": 8,
+      "actor": "human",
+      "type": "cli",
+      "command": "synth mission create --subject \"Space Mission Tracker\" --purpose \"Track missions, crew, and launch windows.\"",
+      "purpose": "Create the user's first Mission."
+    }
+  ]
+}
