@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
@@ -141,14 +141,14 @@ Determinism check, link checks, sync checks, full validation.
 
 ## Definition of Done
 
-- [ ] `replay-report.json` regenerated and archive complete.
-- [ ] Projection generator implemented and deterministic.
-- [ ] `docs/first-contact/` generated (6 documents).
-- [ ] Website First Contact section generated (6 pages).
-- [ ] Projection verification wired into validation.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] `replay-report.json` regenerated and archive complete.
+- [x] Projection generator implemented and deterministic.
+- [x] `docs/first-contact/` generated (6 documents).
+- [x] Website First Contact section generated (6 pages).
+- [x] Projection verification wired into validation.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -165,4 +165,33 @@ Determinism check, link checks, sync checks, full validation.
 
 ## Completion Notes
 
-Pending.
+Completed via PR (see branch `feat/exp-firstcontact-007`).
+
+**Phase 1 — Archive repair**
+
+- `scripts/repair-first-contact-archive.js` regenerates `replay-report.json` deterministically from `events.jsonl` through the real replay pipeline (`EventStore` + `InMemoryStateStore` + `createReplayVerifier` + `rebuildState`). Repaired report: 32 events, `chainValid: true`, `consistent: true`, live and replay hashes equal (`707567213`).
+- **EXP-PROGRAM-010 evidence:** the archived `replay-report.json` had been corrupt (2 bytes, a lone `}`) since PR #51, and no reproducible producer existed anywhere in the repository. The example runner emitted the artifact once and never again. Recorded as hardening evidence: derived artifacts must always have a deterministic regenerator.
+
+**Phase 2 — Projection generator**
+
+- `scripts/generate-first-contact-projection.js` validates the archive (5 required artifacts, cross-artifact event-count consistency), re-derives the replay report and compares the five replay keys, extracts Known Limitations from `examples/first-contact/README.md`, and emits 12 outputs. `--check` mode byte-compares outputs and exits non-zero on stale or missing files. Regeneration is byte-identical.
+
+**Phase 3 — Documentation projection**
+
+- `docs/first-contact/`: `overview.md`, `journey.md`, `architecture.md`, `evidence.md`, `replay.md`, `lessons.md` — every document carries a projection banner citing the canonical evidence archive.
+
+**Phase 4 — Website projection**
+
+- `website/first-contact/`: `index.html`, `mission.html`, `expedition.html`, `evidence.html`, `replay.html`, `result.html`, reusing the site `styles.css` and nav structure. "First Contact" nav link added to all 8 existing website pages.
+
+**Phase 5 — Verification**
+
+- `tests/first-contact-projection.test.js` (6 tests): archive completeness/integrity, `--check` passes, byte-identical regeneration, drift detection, incomplete-archive failure, repair consistency.
+- npm scripts: `test:first-contact-projection` (wired into `test:all`), `docs:generate-first-contact`, `docs:verify-first-contact-projection`.
+- Check battery green: first-contact tests 6/6, documentation integrity tests pass, `docs:check-links` (847 internal links resolve), `docs:verify-projection`, `docs:verify-website-sync`.
+- Full governance pipeline runs via the CI `proof` check on the pull request.
+
+**Acceptance evidence**
+
+- No narrative is authored by hand: deleting the generated outputs and re-running the generator restores them byte-identically (covered by test).
+- Every generated page cites the evidence it was projected from.
