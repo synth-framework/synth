@@ -32,6 +32,7 @@ import type {
 } from "./types.js"
 import { MissionIntake } from "./intake.js"
 import { buildSnapshotLineage } from "./snapshot-lineage.js"
+import { validateProposalGraph } from "./proposal-graph-validator.js"
 
 export class MissionStudio {
   private intake: MissionIntake
@@ -370,7 +371,7 @@ export class MissionStudio {
   proposeMissions(session: PlanningSession): MissionProposal[] {
     const missions = Array.from(session.worldModel.nodes.values()).filter((n) => n.kind === "mission")
     return missions.map((m) => ({
-      id: this.hash(`proposal-mission-${m.id}`),
+      id: this.missionProposalId(m.id),
       kind: "mission",
       name: m.name,
       description: m.description,
@@ -385,11 +386,11 @@ export class MissionStudio {
   proposeExpeditions(session: PlanningSession): ExpeditionProposal[] {
     const expeditions = Array.from(session.worldModel.nodes.values()).filter((n) => n.kind === "expedition")
     return expeditions.map((e) => ({
-      id: this.hash(`proposal-expedition-${e.id}`),
+      id: this.expeditionProposalId(e.id),
       kind: "expedition",
       name: e.name,
       description: e.description,
-      missionId: (e as any).missionId || "",
+      missionId: (e as any).missionId ? this.missionProposalId((e as any).missionId) : "",
       goal: (e as any).goal || "",
       evidenceRefs: e.evidenceRefs,
       observationIds: e.observationIds,
@@ -401,11 +402,11 @@ export class MissionStudio {
   proposeObjectives(session: PlanningSession): ObjectiveProposal[] {
     const objectives = Array.from(session.worldModel.nodes.values()).filter((n) => n.kind === "objective")
     return objectives.map((o) => ({
-      id: this.hash(`proposal-objective-${o.id}`),
+      id: this.objectiveProposalId(o.id),
       kind: "objective",
       name: o.name,
       description: o.description,
-      expeditionId: (o as any).expeditionId || "",
+      expeditionId: (o as any).expeditionId ? this.expeditionProposalId((o as any).expeditionId) : "",
       title: (o as any).title || o.name,
       evidenceRefs: o.evidenceRefs,
       observationIds: o.observationIds,
@@ -492,6 +493,15 @@ export class MissionStudio {
       ...this.proposeExpeditions(session),
       ...this.proposeObjectives(session),
     ]
+
+    const proposalGraphViolations = validateProposalGraph(proposals)
+    if (proposalGraphViolations.length > 0) {
+      return {
+        success: false,
+        session,
+        error: `Invalid proposal graph: ${proposalGraphViolations.join("; ")}`,
+      }
+    }
 
     const snapshot: ApprovedMissionModelSnapshot = {
       id: this.hash(`approved-${session.id}-${session.worldModel.version}`),
@@ -817,6 +827,18 @@ export class MissionStudio {
   private nodeId(kind: string, obs: PlanningObservation): string {
     const identity = `${kind}-${obs.id}-${obs.sourceAdapter}-${obs.timestamp}`
     return this.hash(identity)
+  }
+
+  private missionProposalId(nodeId: string): string {
+    return this.hash(`proposal-mission-${nodeId}`)
+  }
+
+  private expeditionProposalId(nodeId: string): string {
+    return this.hash(`proposal-expedition-${nodeId}`)
+  }
+
+  private objectiveProposalId(nodeId: string): string {
+    return this.hash(`proposal-objective-${nodeId}`)
   }
 
   private edgeId(kind: string, source: string, target: string): string {

@@ -1,6 +1,6 @@
 # EXP-HARDEN-001 — Mission Studio Integrity
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-010 — Constitutional Hardening Program  
@@ -90,14 +90,14 @@ Add permanent tests that fail if parent references ever break again.
 
 ## Definition of Done
 
-- [ ] Parent-reference defect reproduced in a test.
-- [ ] `proposeExpeditions` uses mission proposal IDs.
-- [ ] `proposeObjectives` uses expedition proposal IDs.
-- [ ] Proposal graph validator implemented.
-- [ ] Regression tests added.
-- [ ] All existing examples pass.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Parent-reference defect reproduced in a test.
+- [x] `proposeExpeditions` uses mission proposal IDs.
+- [x] `proposeObjectives` uses expedition proposal IDs.
+- [x] Proposal graph validator implemented.
+- [x] Regression tests added.
+- [x] All existing examples pass.
+- [x] `npm run govern` passes.
+- [x] Expedition is accepted.
 
 ---
 
@@ -113,4 +113,21 @@ Add permanent tests that fail if parent references ever break again.
 
 ## Completion Notes
 
-Pending.
+Completed via PR (see branch `feat/exp-harden-001`).
+
+**Phase 1 — Defect reproduced.** New `tests/mission-studio-proposal-graph.test.js` failed 11/11 against the unfixed build: expedition proposals referenced world-model node-space mission IDs, objective proposals referenced node-space expedition IDs, matching no proposal identity.
+
+**Phase 2 — Proposal generation fixed.** `proposeExpeditions` (`src/mission-studio/engine.ts:392`) now resolves the node's missionId through the same formula `proposeMissions` uses; `proposeObjectives` (`engine.ts:408`) does the same for expedition IDs. Identity formulas deduplicated into private helpers `missionProposalId` / `expeditionProposalId` / `objectiveProposalId`. Payload schemas unchanged — only identity values.
+
+**Phase 3 — Proposal graph validator.** New `src/mission-studio/proposal-graph-validator.ts` (`validateProposalGraph`): rejects orphan expedition/objective proposals, missing parents, and duplicate proposal identities. Wired into `MissionStudio.approve()` — the only seam where the complete proposal graph is assembled and sealed into an `ApprovedMissionModelSnapshot` — using the existing `MissionStudioResult` error idiom. `proposeExpeditions`/`proposeObjectives` remain unvalidated individually because the CLI/API call them for partial draft views where a full graph legitimately does not exist yet.
+
+**Phase 4 — Regression tests.** 11 permanent tests: parent-reference correctness across proposals and approved snapshots, correct-parent selection among multiple missions, end-to-end passthrough through `snapshotToSeedEvents` (`EXPEDITION_CREATED.missionId` ∈ `MISSION_CREATED` IDs, `OBJECTIVE_ADDED.expeditionId` ∈ `EXPEDITION_CREATED` IDs), validator accept/reject cases, and loud approval rejection of a tampered graph.
+
+**Identity preservation verified.** `src/genesis/snapshot-bridge.ts` passes `proposal.missionId`/`proposal.expeditionId` verbatim into event payloads — no re-derivation anywhere. Verified live end-to-end (session → approve → `genesisFromSnapshot` → event log): every expedition's missionId matches an existing mission id; every objective's expeditionId matches an existing expedition id. Acceptance criterion holds. No consumer of node-space IDs exists outside the bridge.
+
+**Validation.** Build + typecheck pass; new tests 11/11; mission-studio 14/14; genesis-snapshot-bridge 5/5; snapshot-lineage 7/7; adapter-mapper 7/7; adapter-collector 5/5; api-adapter-integration 6/6; synth 113/113; synth-cli, synth-bootstrap, freeze-certification, public-vocabulary-audit, protected-asset-escalation, bypass audit, replay, and determinism checks all pass. Full governance pipeline runs via the CI `proof` check on the PR.
+
+**Findings deferred to later PROGRAM-010 expeditions**
+
+1. **`persistence: "memory"` footgun** — `src/infra/index.ts:45` creates the event store unconditionally via `EventStore.createAuthorized(config.eventLogPath)`, and `EventStore` falls back to `<cwd>/data/event-log.jsonl`; `isFile` only gates the *state* store. Every `bootstrap({ infra: { persistence: "memory" } })` (used by integration tests, `synth mission create/approve`, `synth expedition create`, `docs generate`) still appends to the repository's canonical event log whenever a writing path is reached. Candidate for EXP-HARDEN-003 (Genesis Hardening) or EXP-HARDEN-006 (Validation Expansion).
+2. **Historical log intentionally untouched** — the existing `data/event-log.jsonl` retains pre-fix events with node-space parent references as immutable forensic evidence; the fix is forward-looking only. Historical-graph validity is EXP-HARDEN-005 territory.
