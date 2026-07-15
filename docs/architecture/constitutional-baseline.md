@@ -12,6 +12,7 @@
 **v2.1 Charter ADR:** [ADR-003 — Synth v2.1 Validation Program Charter](../adr/ADR-003-v2-1-validation-program-charter.md)
 **Eras and Protected Assets ADR:** [ADR-004 — Synth Eras and Protected Assets](../adr/ADR-004-synth-eras-and-protected-assets.md)
 **Architecture Era Closure ADR:** [ADR-005 — Architecture Era Closure](../adr/ADR-005-architecture-era-closure.md)
+**Environment Independence ADR:** [ADR-006 — Environment Discovery Framework](../adr/ADR-006-environment-discovery-framework.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -50,6 +51,7 @@ It is:
 
 | Component | Policy |
 |-----------|--------|
+| Environment Layer | Governed by ADR-006. The Core depends on the Environment Layer; the Environment Layer depends on capability providers. |
 | `ExecutionGate` API | Frozen. Mutations must pass through `execute()` or `executeGenesis()`. |
 | Event schema (`SynthEvent`) | Frozen. `id`, `type`, `timestamp`, `transactionId`, `capability`, `actor`, `payload`, `eventHash`, `previousHash` are required. |
 | Replay semantics | Frozen. `rebuildState(events)` is the canonical fold. |
@@ -138,6 +140,7 @@ Product Boundary ADR: ADR-002
 v2.1 Charter ADR: ADR-003
 Eras and Protected Assets ADR: ADR-004
 Architecture Era Closure ADR: ADR-005
+Environment Independence ADR: ADR-006
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```
