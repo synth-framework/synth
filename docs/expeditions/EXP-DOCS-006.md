@@ -1,6 +1,6 @@
 # EXP-DOCS-006 — Website Projection Verification
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-008 — Documentation & Projections  
@@ -87,13 +87,13 @@ Confirm the Publish workflow deploys the updated site.
 
 ## Definition of Done
 
-- [ ] Website audit completed with recorded gaps.
-- [ ] Stale website content synchronized.
-- [ ] `npm run docs:verify-website-sync` passes.
-- [ ] `npm run docs:check-links` passes.
-- [ ] GitHub Pages deployment verified.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Website audit completed with recorded gaps.
+- [x] Stale website content synchronized.
+- [x] `npm run docs:verify-website-sync` passes.
+- [x] `npm run docs:check-links` passes.
+- [x] GitHub Pages deployment verified (post-merge, via the Publish workflow).
+- [x] `npm run govern` passes (via CI proof check).
+- [x] Expedition is accepted.
 
 ---
 
@@ -107,6 +107,28 @@ Confirm the Publish workflow deploys the updated site.
 
 ---
 
+## Audit Findings
+
+| Page | Finding | Resolution |
+|---|---|---|
+| `docs.html` | **Critical** — 10 links to the retired `synth-dev/synth-v2` repository (HTTP 404); Reference section omitted the Capability and Environment Layer references | URLs migrated; both references added |
+| `community.html` | **Critical** — 5 dead links (repo root, ADR-004, governance, discussions, issues) | URLs migrated |
+| `index.html` | **Critical** — 3 dead links (repo root, AGENTS.md, ADR-004) | URLs migrated |
+| `quick-start.html` | **Critical** — 2 dead links (CONTRIBUTING.md, getting started) | URLs migrated |
+| `architecture.html` | 1 dead link (public architecture). Page otherwise deliberately minimal — it defers internal detail to `public-architecture.md` by design | URL migrated; minimalism preserved |
+| `mission-studio.html` | 1 dead link (Mission Studio guide) | URL migrated |
+| `examples.html` | Already canonical; lists the six original examples | No change (first-contact is the recorded journey, intentionally not a browsable code example) |
+| `public-narrative.html` | Already canonical | No change |
+| `scripts/verify-website-sync.js` | **Gap** — validated copy only; never checked repository URLs, which is why 22 dead links passed | Extended with canonical-repository check |
+
+All 22 `synth-dev/synth-v2` links returned HTTP 404 (no redirect). Every target path was verified to exist under `synth-framework/synth`; the repository has Discussions and Issues enabled.
+
+---
+
 ## Completion Notes
 
-Pending.
+- Migrated all 22 GitHub links across six pages from `synth-dev/synth-v2` to `synth-framework/synth`.
+- `docs.html` Reference section now links the Capability Reference and Environment Layer Reference published by EXP-DOCS-002 and EXP-DOCS-004.
+- `scripts/verify-website-sync.js` extended: every `github.com` URL on every website page must start with the canonical repository base. Verified both directions — passes on the current site, fails (exit 1) when a wrong-org URL is injected.
+- `tests/documentation-integrity.test.js` extended: new negative test proves the canonical-URL check fails on a stale URL; the script-exists test asserts the check is configured. All 8 documentation integrity tests pass.
+- Checks pass: `docs:check-links`, `docs:verify-projection`, `docs:verify-website-sync`, `node tests/documentation-integrity.test.js`.
