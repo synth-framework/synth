@@ -8,8 +8,8 @@
 // refusing to overwrite an existing snapshot.
 // ============================================================
 
-import fs from "fs/promises"
-import path from "path"
+import type { FilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
 import type { StoredSnapshot, ApprovedMissionModelSnapshot, PlanningSession } from "./types.js"
 
 /** Snapshot store contract. Implementations may be filesystem, memory, or external. */
@@ -65,42 +65,39 @@ export function createInMemorySnapshotStore(): SnapshotStore {
 // ============================================================
 
 export class FileSystemSnapshotStore implements SnapshotStore {
-  constructor(private dir: string) {}
+  private readonly fs: FilesystemProvider
+
+  constructor(private dir: string, fsProvider?: FilesystemProvider) {
+    this.fs = fsProvider ?? createPosixFilesystemProvider(dir)
+  }
 
   async save(stored: StoredSnapshot): Promise<void> {
-    await fs.mkdir(this.dir, { recursive: true })
-    const filePath = this.filePath(stored.snapshot.id)
+    await this.fs.ensureDirectory(".")
+    const name = this.fileName(stored.snapshot.id)
 
-    try {
-      await fs.access(filePath)
+    if (await this.fs.pathExists(name)) {
       throw new Error(`INVARIANT_VIOLATION: snapshot ${stored.snapshot.id} already exists`)
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err
     }
 
     const serialized = JSON.stringify(stored, replacer, 2)
-    await fs.writeFile(filePath, serialized, "utf-8")
+    await this.fs.writeFile(name, serialized)
   }
 
   async get(snapshotId: string): Promise<StoredSnapshot | undefined> {
-    const filePath = this.filePath(snapshotId)
-    try {
-      const content = await fs.readFile(filePath, "utf-8")
-      return JSON.parse(content, reviver) as StoredSnapshot
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code === "ENOENT") return undefined
-      throw err
-    }
+    const content = await this.fs.readFile(this.fileName(snapshotId))
+    if (content === undefined) return undefined
+    return JSON.parse(content, reviver) as StoredSnapshot
   }
 
   async list(lineageId?: string): Promise<StoredSnapshot[]> {
-    await fs.mkdir(this.dir, { recursive: true })
-    const entries = await fs.readdir(this.dir)
+    await this.fs.ensureDirectory(".")
+    const entries = await this.fs.listDirectory(".")
     const snapshots: StoredSnapshot[] = []
 
     for (const entry of entries) {
       if (!entry.endsWith(".json")) continue
-      const content = await fs.readFile(path.join(this.dir, entry), "utf-8")
+      const content = await this.fs.readFile(entry)
+      if (content === undefined) continue
       const stored = JSON.parse(content, reviver) as StoredSnapshot
       if (!lineageId || stored.snapshot.lineage?.lineageId === lineageId) {
         snapshots.push(stored)
@@ -112,9 +109,9 @@ export class FileSystemSnapshotStore implements SnapshotStore {
     )
   }
 
-  private filePath(snapshotId: string): string {
+  private fileName(snapshotId: string): string {
     const safeId = snapshotId.replace(/[^a-zA-Z0-9_-]/g, "_")
-    return path.join(this.dir, `${safeId}.json`)
+    return `${safeId}.json`
   }
 }
 
