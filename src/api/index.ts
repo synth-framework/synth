@@ -21,6 +21,7 @@ import { translateCapability } from "../capability/registry.js"
 import { computeEventHash } from "../core/hash.js"
 import { collectPlanningObservations } from "../mission-studio/adapter-observation-collector.js"
 import { snapshotToGenesisInput } from "../genesis/snapshot-bridge.js"
+import { certifyGenesisIntake, buildGenesisIntegrityProof } from "../genesis/certification.js"
 import { reconstructSessionFromSnapshot, diffSnapshots, getSnapshotLineage } from "../mission-studio/snapshot-lineage.js"
 import { documentFromKnowledgeBase } from "../documentation/documentation-expedition.js"
 
@@ -335,6 +336,19 @@ export class SynthAPI {
     const genesisInput = snapshotToGenesisInput(snapshot)
     const seedEvents: Array<{ type: string; payload: Record<string, unknown> }> = genesisInput.seedEvents || []
 
+    // EXP-HARDEN-003: certify the snapshot and the seed event graph
+    // BEFORE any seed event is committed through the gate. Genesis
+    // does not trust that the snapshot passed Mission Studio approval.
+    const certification = certifyGenesisIntake({ snapshot, seedEvents })
+    if (certification.result === "rejected") {
+      return {
+        status: "error",
+        error: `Genesis certification failed: ${certification.violations.join("; ")}`,
+        traceId: "genesis-snapshot-tx",
+        meta: { contractSatisfied: false, certification },
+      }
+    }
+
     // Build raw SynthEvent objects for executeGenesis and compute hash chain.
     // The chain must continue from the last event in the log, not restart at genesis.
     const now = Date.now()
@@ -359,9 +373,16 @@ export class SynthAPI {
 
     try {
       await this.gate.executeGenesis(rawEvents)
+      const integrityProof = buildGenesisIntegrityProof({ report: certification, events: rawEvents })
       return {
         status: "ok",
-        result: { systemId: genesisInput.systemId, projectName: genesisInput.projectName, seededEvents: rawEvents.length },
+        result: {
+          systemId: genesisInput.systemId,
+          projectName: genesisInput.projectName,
+          seededEvents: rawEvents.length,
+          certification,
+          integrityProof,
+        },
         traceId: "genesis-snapshot-tx",
         meta: { contractSatisfied: true },
       }
