@@ -3,9 +3,9 @@
 **Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
-**Program:** EXP-PROGRAM-009 — First Contact & Public Identity  
+**Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
 **Depends On:** none  
-**Blocks:** EXP-FIRSTCONTACT-002, EXP-FIRSTCONTACT-003, EXP-FIRSTCONTACT-004, EXP-FIRSTCONTACT-007
+**Blocks:** EXP-FIRSTCONTACT-002, EXP-FIRSTCONTACT-003, EXP-FIRSTCONTACT-004, EXP-FIRSTCONTACT-006
 
 ---
 

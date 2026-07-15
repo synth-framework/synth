@@ -1,13 +1,13 @@
-# EXP-PROGRAM-009 — First Contact & Public Identity
+# EXP-PROGRAM-009 — Canonical First Contact Experience
 
-**Status:** Proposed  
+**Status:** Draft  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
-**Scope:** Public narrative, product identity, and first-contact experience across all surfaces  
+**Scope:** First-contact experience across all public surfaces  
 **Era:** II — Adoption  
 **Architecture Impact:** None  
-**Constitutional Impact:** Low  
+**Constitutional Impact:** Medium  
 **Public Impact:** Critical  
 **Product Impact:** High  
 **Execution Impact:** None
@@ -16,69 +16,166 @@
 
 ## Thesis
 
-> **Every public-facing expression of SYNTH shall be a deterministic projection of one coherent identity.**
+> **Every person who encounters SYNTH, regardless of medium, should experience the same canonical journey from intent to Replay. Public understanding shall be a deterministic projection of one authoritative First Contact experience, just as documentation is a projection of authoritative sources.**
 
-The website, documentation, installer, examples, CLI help, Mission Studio, tutorials, and future educational content must all explain SYNTH the same way. First contact is not a single page; it is every surface a newcomer touches.
+First Contact is a constitutional asset. It is not a website, a README, or a video. It is the single authoritative learning journey that every public surface—website, documentation, installer, tutorials, presentations, videos, AI onboarding, and future media—projects deterministically.
 
 ---
 
 ## Purpose
 
-Establish a coherent, AI-first public identity for SYNTH that enables first-time users to understand what SYNTH is, why it exists, and how it differs from existing software engineering tools — while preserving the seven public concepts, the Projection Rule, and architectural integrity.
-
-> **Plain Language Principle:**
->
-> Every public-facing concept introduced by SYNTH shall be understandable by a technically literate software developer without requiring prior knowledge of SYNTH or specialized terminology. Technical terms shall be accompanied by concise plain-language definitions on first introduction.
-
-> **Narrative Ladder Principle:**
->
-> Public communication shall progress through five levels: (1) What problem exists? (2) Why does SYNTH solve it? (3) How does it work? (4) How do I use it? (5) How is it implemented?
+Define, govern, and continuously validate the single authoritative first-contact experience of SYNTH so that every newcomer, regardless of medium, experiences the same conceptual journey from human intent to Replay.
 
 ---
 
-## Mission
+## Problem Statement
 
-Govern SYNTH's public identity so that every first-contact surface — website, documentation, installer, examples, CLI, AI onboarding, and future media — tells the same AI-native execution story at the appropriate level of depth.
+SYNTH's architecture is deterministic. Its public communication is not.
+
+Different surfaces currently explain SYNTH independently:
+
+- website
+- documentation
+- tutorials
+- presentations
+- onboarding
+- installer
+- AI prompts
+
+Although technically correct, these explanations differ in sequencing, emphasis, terminology, and learning progression. The result is inconsistent understanding despite architectural consistency.
+
+---
+
+## Guiding Principles
+
+### 1. Behavior Before Vocabulary
+
+Every foundational concept shall first be experienced before it is defined.
+
+Visitors should observe a Mission before reading its definition.
+
+Observe Replay before reading its definition.
+
+Observe Governance before reading its definition.
+
+### 2. Show → Explain → Name
+
+Every new concept follows exactly this sequence:
+
+```text
+Experience
+    ↓
+Explanation
+    ↓
+Terminology
+```
+
+Never:
+
+```text
+Terminology
+    ↓
+Definition
+    ↓
+Example
+```
+
+### 3. One Story
+
+All public communication derives from the same canonical execution journey.
+
+No disconnected examples. No competing narratives.
+
+### 4. AI First
+
+The AI agent is the primary interface. The CLI is the execution surface. Humans should observe AI interacting with SYNTH rather than manually executing commands.
+
+### 5. Deterministic Communication
+
+Public communication follows the same projection philosophy as documentation: one authoritative source, many deterministic projections.
+
+---
+
+## Canonical Journey
+
+The canonical first-contact experience shall follow one complete Mission.
+
+**Working title:** Build me a Space Mission Tracking Application.
+
+This journey becomes the authoritative source for:
+
+- Website
+- Documentation
+- Installer
+- Interactive Demo
+- Tutorials
+- Presentations
+- Conference Talks
+- Videos
+- AI onboarding
+- Marketing material
+
+---
+
+## Capability Areas
+
+| Area | Responsibility |
+|---|---|
+| **First Contact** | Defines the experience. |
+| **Narrative** | Defines the story. |
+| **Recorded Execution** | Defines the execution evidence. |
+| **Replay Experience** | Defines how execution is observed. |
+| **Projection System** | Produces every public artifact. |
+| **Validation** | Measures comprehension. |
+
+---
+
+## Success Criteria
+
+A first-time technical visitor should be able to answer within five minutes:
+
+- What is SYNTH?
+- What problem does it solve?
+- Why is it different?
+- What role does AI play?
+- What role does the CLI play?
+- Why do Missions exist?
+- Why does Replay matter?
+
+without requiring architectural documentation.
 
 ---
 
 ## Program Composition
 
-```
+```text
 EXP-PROGRAM-009
-First Contact & Public Identity
+Canonical First Contact Experience
 │
 ├── EXP-FIRSTCONTACT-001  Public Narrative
 │       Adoption Expedition
-│       Define the canonical SYNTH story and narrative ladder.
+│       Define the canonical SYNTH identity, positioning, vocabulary, and messaging.
+│       Status: Completed (pending external validation)
 │
-├── EXP-FIRSTCONTACT-002  Website Information Architecture
+├── EXP-FIRSTCONTACT-002  Canonical Journey Specification
 │       Adoption Expedition
-│       Restructure website navigation and page flow.
+│       Design the authoritative learning journey that every newcomer experiences.
 │
-├── EXP-FIRSTCONTACT-003  Homepage Experience
+├── EXP-FIRSTCONTACT-003  Canonical Recorded Journey
 │       Adoption Expedition
-│       Redesign the homepage to communicate identity above the fold.
+│       Execute the canonical Mission while recording every interaction between Human, AI Agent, and SYNTH.
 │
-├── EXP-FIRSTCONTACT-004  AI Workflow Story
+├── EXP-FIRSTCONTACT-004  Experience Projection System
 │       Adoption Expedition
-│       Explain the human-AI execution workflow clearly.
+│       Generate public experiences from the canonical journey.
 │
-├── EXP-FIRSTCONTACT-005  Documentation Journey
+├── EXP-FIRSTCONTACT-005  Interactive Replay Experience
 │       Adoption Expedition
-│       Move foundational docs onto the website and sequence learning.
+│       Allow newcomers to observe the canonical Mission through Replay.
 │
-├── EXP-FIRSTCONTACT-006  Interactive First Mission
-│       Adoption Expedition
-│       Provide a guided, low-friction first mission experience.
-│
-├── EXP-FIRSTCONTACT-007  Product Positioning
-│       Adoption Expedition
-│       Contrast SYNTH with alternatives and define its category.
-│
-└── EXP-FIRSTCONTACT-008  Public Terminology
+└── EXP-FIRSTCONTACT-006  Comprehension Validation
         Adoption Expedition
-        Define plain-language definitions and first-use rules for every public concept.
+        Validate that the First Contact experience consistently communicates SYNTH.
 ```
 
 ---
@@ -104,34 +201,22 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 | Allowed | Forbidden |
 |---|---|
-| Rewriting public-facing copy | Changing constitutional vocabulary definitions |
-| Restructuring website navigation | Modifying the event model |
-| Creating new website pages | Altering the capability model |
-| Adding plain-language definitions | Changing Protected Asset semantics |
-| Updating documentation projections | Introducing new architectural concepts without an ADR |
-| Improving CLI help text | Changing the execution model |
-| Aligning examples with narrative | Rewriting governance rules |
+| Defining the canonical first-contact journey | Changing constitutional vocabulary definitions |
+| Recording and publishing canonical execution evidence | Modifying the event model |
+| Building projection targets from the canonical journey | Altering the capability model |
+| Creating interactive Replay experiences | Changing Protected Asset semantics |
+| Validating comprehension with external participants | Introducing new architectural concepts without an ADR |
+| Rewriting public-facing copy | Changing the execution model |
 
 ---
 
 ## Invariants
 
-1. The seven public concepts remain the only required user-facing vocabulary.
-2. Every new public term is accompanied by a plain-language definition on first use.
-3. The Narrative Ladder is respected across all surfaces.
+1. The canonical journey is the single source of truth for all public first-contact experiences.
+2. The seven public concepts remain the only required user-facing vocabulary.
+3. Every new concept is introduced through Show → Explain → Name.
 4. No Protected Asset is modified.
-5. All content changes remain deterministic projections of constitutional sources.
-
----
-
-## Success Criteria
-
-- A first-time visitor can answer "What is SYNTH?", "What problem does it solve?", and "How is it AI-native?" within two minutes.
-- The website, documentation, installer, CLI help, and examples tell a coherent story.
-- Every public constitutional term has a plain-language definition.
-- The Narrative Ladder is observable across first-contact surfaces.
-- Competitive positioning is explicit.
-- No Protected Asset is modified.
+5. All public artifacts remain deterministic projections of the First Contact Specification.
 
 ---
 
@@ -143,15 +228,13 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [ ] EXP-FIRSTCONTACT-004 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-005 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-006 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-007 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-008 completed and accepted.
 - [ ] Program accepted.
 
 ---
 
 ## Completion Notes
 
-Program created. No expeditions have started.
+Program restructured to treat First Contact as a constitutional asset with a canonical journey and deterministic projection system.
 
 ---
 
@@ -163,4 +246,5 @@ Program created. No expeditions have started.
 | `docs/audits/WEBSITE-AUDIT-001-executive-summary.md` | Executive summary of findings and proposed expeditions. |
 | `docs/adr/ADR-004-synth-eras-and-protected-assets.md` | Eras, Protected Assets, and Post-Freeze Rule. |
 | `docs/reference/public-vocabulary.md` | Canonical seven-concept vocabulary. |
-| `docs/expeditions/EXP-PROGRAM-008.md` | Documentation & Projections Program; produces identity-aligned artifacts. |
+| `docs/reference/public-narrative.md` | Canonical public identity source. |
+| `docs/expeditions/EXP-PROGRAM-008.md` | Documentation & Projections Program; produces first-contact-aligned artifacts. |
