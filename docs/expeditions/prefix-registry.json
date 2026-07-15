@@ -38,6 +38,10 @@
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
     },
+    "HARDEN": {
+      "name": "Constitutional Hardening",
+      "description": "Constitutional hardening expeditions (Mission Studio, Snapshot, Genesis, Replay, Graph Integrity, Validation, Observability)."
+    },
     "INSTALL": {
       "name": "Installation & Distribution",
       "description": "Installation, distribution, and bootstrap installer expeditions."
