@@ -1,6 +1,6 @@
 # EXP-DOCS-002 — Capability Model Documentation
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-008 — Documentation & Projections  
@@ -87,12 +87,12 @@ Run documentation integrity checks and the full validation plan.
 
 ## Definition of Done
 
-- [ ] Environment capability families documented in `docs/reference/capability-reference.md`.
-- [ ] `docs/architecture/07-capability-model.md` updated for the Capability Graph.
-- [ ] ADR-006 through ADR-017 cross-linked from the relevant sections.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Environment capability families documented in `docs/reference/capability-reference.md`.
+- [x] `docs/architecture/07-capability-model.md` updated for the Capability Graph.
+- [x] ADR-006 through ADR-015 and ADR-017 cross-linked from the relevant sections (ADR-016 governs AI environment planning and is handled by EXP-DOCS-003).
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI proof check).
+- [x] Expedition is accepted.
 
 ---
 
@@ -108,4 +108,11 @@ Run documentation integrity checks and the full validation plan.
 
 ## Completion Notes
 
-Pending.
+- Added a **Capability Layers** section to `docs/reference/capability-reference.md` distinguishing domain capabilities (mutate canonical state, frozen registry) from environment capabilities (describe the environment, never mutate state).
+- Documented all twelve environment capability families in `docs/reference/capability-reference.md`: description, required flag, provider contract, default provider(s), and governing ADR — derived from `src/environment/types.ts`, `src/environment/graph.ts`, and the capability contract files.
+- Documented the eight `requires` dependency edges from `CAPABILITY_DEPENDENCIES` and the deterministic provider model, including the five reference providers in `src/environment/providers/reference.ts`.
+- Updated `docs/architecture/07-capability-model.md` with a **Two Capability Layers** section, a **Capability Graph** section (node kinds, edge kinds, deterministic resolution), and ADR cross-links.
+- Recorded status honestly: the Environment and Network families currently have no provider contract (graph nodes only), matching the implementation.
+- Observation for future work (out of scope here): the domain capability tables in both documents still list legacy Ticket capabilities; the registry's canonical names are WorkItem-based with `CAPABILITY_ALIASES` translating legacy names. This predates EXP-PROGRAM-007 and was left unchanged to keep this expedition scoped.
+- ADR-016 (AI Environment Planning) is not cross-linked here; it governs planning cognition and is covered by EXP-DOCS-003.
+- Documentation integrity checks pass: `docs:check-links`, `docs:verify-projection`, `docs:verify-website-sync`.
