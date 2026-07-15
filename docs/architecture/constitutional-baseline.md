@@ -13,6 +13,7 @@
 **Eras and Protected Assets ADR:** [ADR-004 — Synth Eras and Protected Assets](../adr/ADR-004-synth-eras-and-protected-assets.md)
 **Architecture Era Closure ADR:** [ADR-005 — Architecture Era Closure](../adr/ADR-005-architecture-era-closure.md)
 **Environment Independence ADR:** [ADR-006 — Environment Discovery Framework](../adr/ADR-006-environment-discovery-framework.md)
+**Capability Graph ADR:** [ADR-007 — Capability Graph Model](../adr/ADR-007-capability-graph-model.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -141,6 +142,7 @@ v2.1 Charter ADR: ADR-003
 Eras and Protected Assets ADR: ADR-004
 Architecture Era Closure ADR: ADR-005
 Environment Independence ADR: ADR-006
+Capability Graph ADR: ADR-007
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```

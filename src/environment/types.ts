@@ -150,3 +150,84 @@ export type DiscoveryResult = {
   evidence: DiscoveryEvidence
   durationMs: number
 }
+
+// ============================================================
+// Capability Graph Types
+// ============================================================
+
+/** Kinds of nodes in a capability graph */
+export type CapabilityGraphNodeKind = "capability" | "provider"
+
+/** A capability node in the graph */
+export type CapabilityNode = {
+  id: string
+  kind: "capability"
+  family: CapabilityFamily
+  version: string
+  required: boolean
+  metadata: {
+    description: string
+    compatibilityNotes?: string
+  }
+}
+
+/** A provider node in the graph */
+export type ProviderNode = {
+  id: string
+  kind: "provider"
+  name: string
+  version: string
+  capabilities: string[]
+  priority: number
+  metadata: {
+    description?: string
+    confidence?: DiscoveryConfidence
+  }
+}
+
+/** Union of all graph node types */
+export type CapabilityGraphNode = CapabilityNode | ProviderNode
+
+/** Kinds of edges in a capability graph */
+export type CapabilityGraphEdgeKind = "satisfies" | "requires"
+
+/** An edge in the capability graph */
+export type CapabilityGraphEdge = {
+  id: string
+  source: string
+  target: string
+  kind: CapabilityGraphEdgeKind
+  metadata?: Record<string, unknown>
+}
+
+/** Canonical capability graph serialization */
+export type CapabilityGraph = {
+  schema: "synth-capability-graph-v1"
+  version: string
+  timestamp: number
+  nodes: CapabilityGraphNode[]
+  edges: CapabilityGraphEdge[]
+  resolution: Record<string, ProviderPath>
+}
+
+/** A selected provider and its dependency path */
+export type ProviderPath = {
+  capabilityId: string
+  providerId: string
+  providerName: string
+  confidence: DiscoveryConfidence
+  reason: string
+  dependencies: ProviderPath[]
+}
+
+/** Resolution failure record */
+export type ResolutionFailure = {
+  capabilityId: string
+  reason: string
+}
+
+/** Result of a resolution request */
+export type ResolutionResult =
+  | { success: true; path: ProviderPath }
+  | { success: false; failures: ResolutionFailure[] }
+
