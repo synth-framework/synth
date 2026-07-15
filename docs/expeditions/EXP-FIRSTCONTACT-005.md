@@ -1,11 +1,11 @@
-# EXP-FIRSTCONTACT-005 — Documentation Journey
+# EXP-FIRSTCONTACT-005 — Interactive Replay Experience
 
 **Status:** Proposed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
-**Program:** EXP-PROGRAM-009 — First Contact & Public Identity  
-**Depends On:** EXP-FIRSTCONTACT-002  
-**Blocks:** none
+**Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
+**Depends On:** EXP-FIRSTCONTACT-003  
+**Blocks:** EXP-FIRSTCONTACT-006
 
 ---
 
@@ -22,63 +22,65 @@ Impact:
 
 ## Purpose
 
-Move foundational documentation onto the website and sequence it so visitors can learn SYNTH from problem to first mission without leaving the site.
+Allow newcomers to observe the canonical Mission through Replay, making execution evidence the centerpiece of the first-contact experience.
 
 ---
 
 ## Motivation
 
-The Documentation page (`docs.html`) is only a link list to GitHub markdown. The audit identified that core docs should live on the website, with GitHub reserved for deep reference. This expedition defines which docs move and how they are sequenced.
+Replay is SYNTH's most distinctive concept. The first-contact experience should let visitors see Replay in action before reading a definition. An interactive Replay experience transforms abstract concepts into observable behavior.
 
 ---
 
 ## Deliverables
 
-1. **Documentation inventory**
-   - List all docs in `docs/operator/`, `docs/reference/`, and `docs/guides/`.
-   - Classify each as website-first or GitHub-reference-only.
+1. **Interactive timeline**
+   - Step-by-step visualization of the recorded journey.
 
-2. **Learning sequence**
-   - Ordered path from problem → concepts → install → first mission → governance → advanced topics.
+2. **Event visualization**
+   - Human-readable rendering of events from the canonical Mission.
 
-3. **Website documentation pages**
-   - Getting Started, Public Vocabulary, Public Architecture, Governance at a Glance.
+3. **Mission progression**
+   - Visual indicators of Mission phases and approvals.
 
-4. **Projection strategy**
-   - How website docs remain synchronized with source markdown under the Deterministic Projection Model.
+4. **Replay browser**
+   - A lightweight viewer for the canonical Replay artifact.
 
-5. **Updated docs.html**
-   - On-site pages first; GitHub deep links second.
+5. **Approval checkpoints**
+   - Highlight governance and approval moments.
+
+6. **Execution visualization**
+   - Show AI reasoning, CLI invocations, and outcomes side by side.
 
 ---
 
 ## Acceptance
 
-A visitor can complete the first-contact learning journey entirely on the website, using GitHub links only for deep reference or contribution.
+A first-time visitor can open the interactive Replay experience and understand what happened during the canonical Mission without reading architectural documentation.
 
 ---
 
 ## Phases
 
-### Phase 1 — Inventory
+### Phase 1 — Design the experience
 
-List and classify all documentation.
+Define the ideal newcomer flow through the Replay viewer.
 
-### Phase 2 — Sequence design
+### Phase 2 — Parse the canonical Replay
 
-Define the learning path.
+Consume the Replay artifact produced by EXP-FIRSTCONTACT-003.
 
-### Phase 3 — Migration plan
+### Phase 3 — Build the timeline
 
-Decide which docs become website pages and which stay in GitHub.
+Render events and checkpoints in chronological order.
 
-### Phase 4 — Projection implementation
+### Phase 4 — Add interactivity
 
-Ensure website docs are generated or synchronized from source.
+Allow visitors to expand events, see AI reasoning, and inspect CLI commands.
 
-### Phase 5 — Navigation update
+### Phase 5 — Integrate into the website
 
-Update `docs.html` and cross-links.
+Embed the Replay experience on the website as a first-class surface.
 
 ---
 
@@ -86,19 +88,21 @@ Update `docs.html` and cross-links.
 
 | Risk | Mitigation |
 |---|---|
-| Duplication between site and GitHub | Use deterministic projections |
-| Scope creep | Limit to first-contact docs only |
-| Broken external links | Run link checker after reorganization |
+| Replay viewer becomes too technical | Hide implementation details behind plain-language labels |
+| Replay artifact is too large | Scope the canonical Mission to a manageable event count |
+| Viewer depends on Protected Assets | Only consume Replay output; do not modify Replay itself |
 
 ---
 
 ## Definition of Done
 
-- [ ] Documentation inventory complete.
-- [ ] Learning sequence defined.
-- [ ] Migration plan documented.
-- [ ] Foundational docs available on website.
-- [ ] `docs.html` updated.
+- [ ] Interactive timeline implemented.
+- [ ] Event visualization implemented.
+- [ ] Mission progression visualization implemented.
+- [ ] Replay browser implemented.
+- [ ] Approval checkpoints highlighted.
+- [ ] Execution visualization implemented.
+- [ ] Experience embedded on the website.
 - [ ] `npm run govern` passes.
 - [ ] Expedition is accepted.
 
@@ -106,11 +110,11 @@ Update `docs.html` and cross-links.
 
 ## Implementation Plan
 
-1. Inventory existing docs.
-2. Define learning sequence.
-3. Migrate foundational docs to website pages.
-4. Update projections if needed.
-5. Update navigation and links.
+1. Receive the canonical Replay artifact from EXP-FIRSTCONTACT-003.
+2. Design the newcomer-facing Replay experience.
+3. Build a static or lightly dynamic viewer.
+4. Embed it in the website.
+5. Validate comprehension with EXP-FIRSTCONTACT-006.
 
 ---
 

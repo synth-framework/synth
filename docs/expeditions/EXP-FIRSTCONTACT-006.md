@@ -1,9 +1,9 @@
-# EXP-FIRSTCONTACT-006 — Interactive First Mission
+# EXP-FIRSTCONTACT-006 — Comprehension Validation
 
 **Status:** Proposed  
 **Kind:** Adoption Expedition  
-**Priority:** High  
-**Program:** EXP-PROGRAM-009 — First Contact & Public Identity  
+**Priority:** Critical  
+**Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
 **Depends On:** EXP-FIRSTCONTACT-004, EXP-FIRSTCONTACT-005  
 **Blocks:** none
 
@@ -22,62 +22,65 @@ Impact:
 
 ## Purpose
 
-Provide a guided, low-friction first mission experience on the website so visitors can understand SYNTH's value before installing anything.
+Validate that the First Contact experience consistently communicates SYNTH to newcomers without coaching.
 
 ---
 
 ## Motivation
 
-The Quick Start page lists CLI commands but does not show what a first mission feels like. An interactive or heavily guided first mission page can bridge the gap between reading about SYNTH and installing it.
+A deterministic first-contact system is only successful if real people understand it. Comprehension validation provides the evidence required to accept the canonical journey and its projections.
 
 ---
 
 ## Deliverables
 
-1. **First mission scenario**
-   - A realistic, minimal scenario (e.g., "Add a README section" or "Create a mission to refactor a function").
+1. **Evaluation protocol**
+   - Step-by-step procedure for running comprehension tests.
 
-2. **Guided walkthrough**
-   - Step-by-step explanation of intent, evidence, expedition, plan, approval, execution, event, state, and replay.
+2. **Participant criteria**
+   - Profile of target evaluators (experienced developers unfamiliar with SYNTH).
 
-3. **Expected outputs**
-   - Show what the event log, proof artifact, and replay output look like.
+3. **Question set**
+   - Standardized questions measuring conceptual understanding.
 
-4. **Try-it-yourself path**
-   - Clear instructions to run the same mission locally after reading the guide.
+4. **Scoring rubric**
+   - Definition of passing and failing responses.
 
-5. **Integration with Quick Start**
-   - Link from Quick Start and homepage.
+5. **Test artifacts**
+   - Recorded sessions, written responses, or interview notes.
+
+6. **Validation report**
+   - Summary of findings and recommended adjustments.
 
 ---
 
 ## Acceptance
 
-A visitor can complete the guided first mission page and understand what each public concept means in practice, even if they have not installed SYNTH.
+External developers consistently answer the core questions without coaching, demonstrating that the First Contact Specification and its projections communicate SYNTH effectively.
 
 ---
 
 ## Phases
 
-### Phase 1 — Scenario selection
+### Phase 1 — Define the protocol
 
-Choose a scenario that requires no external dependencies and demonstrates all seven concepts.
+Specify how participants are recruited, briefed, tested, and debriefed.
 
-### Phase 2 — Walkthrough writing
+### Phase 2 — Build the question set
 
-Write the guided steps with plain-language definitions.
+Draft questions that test conceptual understanding rather than verbatim recall.
 
-### Phase 3 — Output samples
+### Phase 3 — Recruit participants
 
-Create example event log and proof artifact snippets.
+Identify at least three experienced developers who have not used SYNTH.
 
-### Phase 4 — Page implementation
+### Phase 4 — Run comprehension tests
 
-Create `website/first-mission.html`.
+Expose participants to the canonical first-contact experience and collect responses.
 
-### Phase 5 — Cross-linking
+### Phase 5 — Score and report
 
-Link from homepage, Quick Start, and AI Workflow pages.
+Apply the rubric, identify gaps, and recommend adjustments to EXP-FIRSTCONTACT-002 or EXP-FIRSTCONTACT-004.
 
 ---
 
@@ -85,19 +88,22 @@ Link from homepage, Quick Start, and AI Workflow pages.
 
 | Risk | Mitigation |
 |---|---|
-| Scenario is too trivial | Choose one that genuinely demonstrates replay and governance |
-| Scenario is too complex | Keep it to a single file change |
-| Becomes a tutorial instead of an experience | Focus on concepts, not tool mechanics |
+| Participants are too sympathetic | Recruit developers outside the SYNTH community |
+| Questions are too leading | Test questions internally before running validation |
+| Results require major rework | Treat validation as iterative; adjust projections, not the constitution |
 
 ---
 
 ## Definition of Done
 
-- [ ] First mission scenario chosen.
-- [ ] Guided walkthrough written.
-- [ ] Expected outputs shown.
-- [ ] Try-it-yourself path provided.
-- [ ] Cross-links added.
+- [ ] Evaluation protocol documented.
+- [ ] Participant criteria documented.
+- [ ] Question set finalized.
+- [ ] Scoring rubric defined.
+- [ ] At least three external participants evaluated.
+- [ ] Test artifacts recorded.
+- [ ] Validation report published.
+- [ ] Recommended adjustments applied or rejected with rationale.
 - [ ] `npm run govern` passes.
 - [ ] Expedition is accepted.
 
@@ -105,11 +111,12 @@ Link from homepage, Quick Start, and AI Workflow pages.
 
 ## Implementation Plan
 
-1. Select scenario.
-2. Write walkthrough.
-3. Create output samples.
-4. Build page.
-5. Link and verify.
+1. Finalize the protocol and question set.
+2. Recruit participants.
+3. Run comprehension tests against the projected first-contact experience.
+4. Score responses and write the validation report.
+5. Feed findings back into EXP-FIRSTCONTACT-002 and EXP-FIRSTCONTACT-004.
+6. Re-test if major adjustments are made.
 
 ---
 

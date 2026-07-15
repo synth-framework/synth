@@ -1,11 +1,11 @@
-# EXP-FIRSTCONTACT-003 — Homepage Experience
+# EXP-FIRSTCONTACT-003 — Canonical Recorded Journey
 
 **Status:** Proposed  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
-**Program:** EXP-PROGRAM-009 — First Contact & Public Identity  
-**Depends On:** EXP-FIRSTCONTACT-001, EXP-FIRSTCONTACT-002  
-**Blocks:** none
+**Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
+**Depends On:** EXP-FIRSTCONTACT-002  
+**Blocks:** EXP-FIRSTCONTACT-004, EXP-FIRSTCONTACT-005
 
 ---
 
@@ -22,65 +22,71 @@ Impact:
 
 ## Purpose
 
-Redesign the homepage so a first-time visitor understands what SYNTH is, what problem it solves, and why it is AI-native without scrolling.
+Execute the canonical Mission while recording every interaction between Human, AI Agent, and SYNTH, producing the authoritative behavioral evidence from which every first-contact projection is derived.
 
 ---
 
 ## Motivation
 
-WEBSITE-AUDIT-001 found that the homepage hero is abstract. A visitor cannot determine whether SYNTH is a CLI, framework, methodology, or platform until scrolling. The above-the-fold message must identify SYNTH and its primary value immediately.
+A journey specification is only useful if it can be grounded in real execution. Recording the complete interaction—human prompts, AI reasoning, SYNTH CLI invocations, events, and Replay—creates the canonical evidence that makes the first-contact story reproducible and verifiable.
 
 ---
 
 ## Deliverables
 
-1. **New hero copy**
-   - One-line problem statement.
-   - One-line what-SYNTH-is statement.
-   - One-line AI-native value proposition.
+1. **Canonical Mission execution**
+   - Execute the Mission: *Build me a Space Mission Tracking Application.*
 
-2. **Canonical install command**
-   - Single primary install command.
-   - Alternative commands clearly marked as alternatives.
+2. **Human prompts**
+   - Exact natural-language prompts given to the AI agent.
 
-3. **Hero call to action**
-   - Primary CTA aligned with the next step in the Narrative Ladder.
+3. **AI reasoning**
+   - Key reasoning steps the AI agent produces during planning.
 
-4. **Visual hierarchy**
-   - Order of sections supporting comprehension from problem to proof.
+4. **SYNTH CLI invocations**
+   - Commands the AI agent executes through the CLI.
 
-5. **Mobile-first layout**
-   - Above-the-fold message remains clear on small screens.
+5. **Events**
+   - Event log produced by Genesis during execution.
+
+6. **Replay**
+   - Replay artifact that reconstructs the execution.
+
+7. **Proof**
+   - Proof artifact certifying successful execution.
+
+8. **Timeline**
+   - Human-readable timeline mapping each interaction to a journey episode.
 
 ---
 
 ## Acceptance
 
-A technically literate developer who has never heard of SYNTH can, within 10 seconds of landing on the homepage, correctly identify that SYNTH is an AI-native execution platform for turning human intent into replayable, governed software.
+The recorded journey can be replayed, inspected, and projected into any first-contact surface without requiring additional explanation.
 
 ---
 
 ## Phases
 
-### Phase 1 — Copy drafts
+### Phase 1 — Prepare the Mission
 
-Write at least three hero copy variants based on EXP-FIRSTCONTACT-001 narrative.
+Translate the EXP-FIRSTCONTACT-002 journey specification into a concrete Mission.
 
-### Phase 2 — Comprehension test
+### Phase 2 — Execute with an AI agent
 
-Show variants to external reviewers and measure understanding.
+Run the Mission through SYNTH while capturing all interaction evidence.
 
-### Phase 3 — Layout design
+### Phase 3 — Produce Replay and Proof
 
-Define section order and visual hierarchy.
+Generate Replay and Proof artifacts using `npm run govern`.
 
-### Phase 4 — Implementation
+### Phase 4 — Build the timeline
 
-Update `website/index.html` and `website/styles.css`.
+Map recorded events to the journey episodes defined in EXP-FIRSTCONTACT-002.
 
-### Phase 5 — Verification
+### Phase 5 — Publish the canonical record
 
-Re-run WEBSITE-AUDIT-001 first-contact check.
+Store the recorded journey as the authoritative evidence artifact.
 
 ---
 
@@ -88,19 +94,22 @@ Re-run WEBSITE-AUDIT-001 first-contact check.
 
 | Risk | Mitigation |
 |---|---|
-| Copy becomes marketing-heavy | Anchor every claim to a concrete engineering outcome |
-| Losing existing strengths | Preserve seven concepts and install command prominence |
-| Mobile degradation | Test on narrow viewports |
+| Execution fails or is non-deterministic | Re-run until a clean, reproducible record is produced |
+| Recorded journey is too complex | Scope the Mission to fit the five-minute comprehension target |
+| AI reasoning is not captured | Use SYNTH's event and replay system as the source of truth |
 
 ---
 
 ## Definition of Done
 
-- [ ] New hero copy implemented.
-- [ ] Canonical install command chosen and displayed.
-- [ ] CTA aligned with Narrative Ladder.
-- [ ] Section order supports comprehension.
-- [ ] Comprehension test passed.
+- [ ] Canonical Mission executed successfully.
+- [ ] Human prompts captured.
+- [ ] AI reasoning captured.
+- [ ] CLI invocations captured.
+- [ ] Events captured.
+- [ ] Replay artifact produced.
+- [ ] Proof artifact produced.
+- [ ] Timeline mapped to journey episodes.
 - [ ] `npm run govern` passes.
 - [ ] Expedition is accepted.
 
@@ -108,11 +117,11 @@ Re-run WEBSITE-AUDIT-001 first-contact check.
 
 ## Implementation Plan
 
-1. Draft hero copy variants.
-2. Test comprehension.
-3. Update `website/index.html`.
-4. Adjust styles if needed.
-5. Verify links and projection sync.
+1. Finalize Mission scope with EXP-FIRSTCONTACT-002.
+2. Execute the Mission through SYNTH.
+3. Collect events, replay, and proof.
+4. Build the human-readable timeline.
+5. Store the canonical recorded journey.
 
 ---
 
