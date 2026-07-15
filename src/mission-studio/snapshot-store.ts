@@ -5,12 +5,16 @@
 // PlanningSessions that produced them.
 //
 // Snapshots are immutable. The store enforces immutability by
-// refusing to overwrite an existing snapshot.
+// refusing to overwrite an existing snapshot. The filesystem
+// implementation certifies every record on load (schema version,
+// structure, proposal graph, signature, and lineage chain) and
+// rejects tampered or malformed files loudly.
 // ============================================================
 
 import type { FilesystemProvider } from "../environment/filesystem-capability.js"
 import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
 import type { StoredSnapshot, ApprovedMissionModelSnapshot, PlanningSession } from "./types.js"
+import { certifySnapshot, migrateStoredSnapshot } from "./snapshot-integrity.js"
 
 /** Snapshot store contract. Implementations may be filesystem, memory, or external. */
 export interface SnapshotStore {
@@ -86,7 +90,7 @@ export class FileSystemSnapshotStore implements SnapshotStore {
   async get(snapshotId: string): Promise<StoredSnapshot | undefined> {
     const content = await this.fs.readFile(this.fileName(snapshotId))
     if (content === undefined) return undefined
-    return JSON.parse(content, reviver) as StoredSnapshot
+    return this.loadVerified(snapshotId, content, new Set([snapshotId]))
   }
 
   async list(lineageId?: string): Promise<StoredSnapshot[]> {
@@ -98,7 +102,7 @@ export class FileSystemSnapshotStore implements SnapshotStore {
       if (!entry.endsWith(".json")) continue
       const content = await this.fs.readFile(entry)
       if (content === undefined) continue
-      const stored = JSON.parse(content, reviver) as StoredSnapshot
+      const stored = await this.loadVerified(entry, content, new Set())
       if (!lineageId || stored.snapshot.lineage?.lineageId === lineageId) {
         snapshots.push(stored)
       }
@@ -107,6 +111,62 @@ export class FileSystemSnapshotStore implements SnapshotStore {
     return snapshots.sort(
       (a, b) => (a.snapshot.lineage?.version ?? 0) - (b.snapshot.lineage?.version ?? 0),
     )
+  }
+
+  /**
+   * Parse, migrate, and certify a stored snapshot record. The ancestor
+   * chain is verified first: a snapshot with a lineage parent can only
+   * be certified against its parent's signature, so a tampered ancestor
+   * invalidates every descendant. Tampered or malformed files are
+   * rejected loudly.
+   */
+  private async loadVerified(
+    label: string,
+    content: string,
+    visited: Set<string>,
+  ): Promise<StoredSnapshot> {
+    let raw: StoredSnapshot
+    try {
+      raw = JSON.parse(content, reviver) as StoredSnapshot
+    } catch (err) {
+      throw new Error(
+        `INVARIANT_VIOLATION: snapshot ${label} is malformed: ${err instanceof Error ? err.message : String(err)}`,
+      )
+    }
+
+    let stored: StoredSnapshot
+    try {
+      stored = migrateStoredSnapshot(raw)
+    } catch (err) {
+      throw new Error(
+        `INVARIANT_VIOLATION: snapshot ${label} cannot be loaded: ${err instanceof Error ? err.message : String(err)}`,
+      )
+    }
+
+    const parentId = stored.snapshot?.lineage?.parentId
+    let parent: ApprovedMissionModelSnapshot | undefined
+    if (typeof parentId === "string" && parentId.length > 0) {
+      if (visited.has(parentId)) {
+        throw new Error(`INVARIANT_VIOLATION: snapshot lineage cycle detected at ${parentId}`)
+      }
+      visited.add(parentId)
+      const parentContent = await this.fs.readFile(this.fileName(parentId))
+      if (parentContent === undefined) {
+        throw new Error(
+          `INVARIANT_VIOLATION: snapshot ${label} references missing lineage parent ${parentId}`,
+        )
+      }
+      parent = (await this.loadVerified(parentId, parentContent, visited)).snapshot
+    }
+
+    const violations = certifySnapshot(stored, parent)
+    if (violations.length > 0) {
+      throw new Error(
+        `INVARIANT_VIOLATION: snapshot ${label} failed certification: ${violations.join("; ")}`,
+      )
+    }
+
+    return stored
   }
 
   private fileName(snapshotId: string): string {

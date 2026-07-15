@@ -33,6 +33,7 @@ import type {
 import { MissionIntake } from "./intake.js"
 import { buildSnapshotLineage } from "./snapshot-lineage.js"
 import { validateProposalGraph } from "./proposal-graph-validator.js"
+import { signSnapshot, SNAPSHOT_SCHEMA_VERSION } from "./snapshot-integrity.js"
 
 export class MissionStudio {
   private intake: MissionIntake
@@ -505,8 +506,8 @@ export class MissionStudio {
 
     const snapshot: ApprovedMissionModelSnapshot = {
       id: this.hash(`approved-${session.id}-${session.worldModel.version}`),
-      version: "1.0.0",
-      signature: this.sign(session),
+      version: SNAPSHOT_SCHEMA_VERSION,
+      signature: "",
       sessionId: session.id,
       worldModel: session.worldModel,
       proposals,
@@ -515,6 +516,7 @@ export class MissionStudio {
     }
 
     snapshot.lineage = buildSnapshotLineage(snapshot, parentSnapshot, actor)
+    snapshot.signature = signSnapshot(snapshot, parentSnapshot?.signature)
 
     return {
       success: true,
@@ -843,17 +845,6 @@ export class MissionStudio {
 
   private edgeId(kind: string, source: string, target: string): string {
     return this.hash(`edge-${kind}-${source}-${target}`)
-  }
-
-  private sign(session: PlanningSession): string {
-    const data = JSON.stringify({
-      sessionId: session.id,
-      version: session.worldModel.version,
-      nodeCount: session.worldModel.nodes.size,
-      evidenceCount: session.evidence.evidence.length,
-      unknownCount: session.unknowns.length,
-    })
-    return crypto.createHash("sha256").update(data).digest("hex")
   }
 
   private hash(input: string): string {

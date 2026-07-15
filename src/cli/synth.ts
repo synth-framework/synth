@@ -39,7 +39,7 @@ const COMMANDS = [
   { name: "govern", description: "Run the full governance pipeline" },
   { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
   { name: "status", description: "Report the current project state" },
-  { name: "mission", description: "Mission Studio operations (create, approve)" },
+  { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "expedition", description: "Planning operations (create)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay)" },
@@ -585,7 +585,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   })) as {
     status: string
     decision?: { approved: boolean; reason?: string; confidence?: number }
-    result?: { success?: boolean; error?: string; data?: { id?: string; proposals?: unknown } }
+    result?: { success?: boolean; error?: string; session?: PlanningSession; data?: { id?: string; proposals?: unknown } }
     proposals?: unknown
     error?: string
   }
@@ -613,6 +613,25 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
 
   const approvedData = approveResult.result?.data
 
+  // Persist the approved snapshot as an immutable, certified artifact.
+  let snapshotPersisted = false
+  let snapshotNote: string | undefined
+  if (approvedData) {
+    try {
+      await ctx.api.missionStudioOperation({
+        operation: "saveSnapshot",
+        params: { snapshot: approvedData, session: approveResult.result?.session ?? session },
+      })
+      snapshotPersisted = true
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("already exists")) {
+        snapshotNote = "snapshot already persisted"
+      } else {
+        throw err
+      }
+    }
+  }
+
   printJson({
     status: "ok",
     kind: "MissionApprovalDecision",
@@ -622,8 +641,97 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     },
     draftId,
     snapshotId: approvedData?.id,
+    snapshotPersisted,
+    ...(snapshotNote ? { note: snapshotNote } : {}),
     proposals: approvedData?.proposals,
-    nextStep: "synth genesis from snapshot or continue planning expeditions",
+    nextStep: `synth mission snapshot ${approvedData?.id ?? "<snapshot-id>"} to inspect the persisted snapshot`,
+  })
+}
+
+async function cmdMissionSnapshot(args: string[], flags: Record<string, string | boolean>) {
+  const snapshotId =
+    args[0] && args[0] !== "list" ? args[0] : typeof flags.id === "string" ? flags.id : ""
+
+  const ctx = await bootstrap({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+
+  if (!snapshotId) {
+    let listResult: { status: string; snapshots?: Array<Record<string, any>>; error?: string }
+    try {
+      listResult = (await ctx.api.missionStudioOperation({
+        operation: "listSnapshots",
+        params: {},
+      })) as typeof listResult
+    } catch (err) {
+      // The snapshot store certifies on load: a throw means a stored
+      // snapshot is tampered or malformed.
+      printJson({
+        status: "error",
+        kind: "MissionSnapshotList",
+        error: err instanceof Error ? err.message : String(err),
+      })
+      process.exit(1)
+    }
+
+    if (listResult.status !== "ok") {
+      printError(`Snapshot listing failed: ${listResult.error || JSON.stringify(listResult)}`)
+    }
+
+    printJson({
+      status: "ok",
+      kind: "MissionSnapshotList",
+      count: listResult.snapshots?.length ?? 0,
+      snapshots: (listResult.snapshots ?? []).map((s) => ({
+        snapshotId: s.id,
+        version: s.version,
+        sessionId: s.sessionId,
+        lineageId: s.lineage?.lineageId,
+        lineageVersion: s.lineage?.version,
+        parentId: s.lineage?.parentId,
+        approvedAt: s.lineage?.approvedAt,
+        approvedBy: s.lineage?.approvedBy,
+      })),
+    })
+    return
+  }
+
+  let getResult: { status: string; snapshot?: Record<string, any>; error?: string }
+  try {
+    getResult = (await ctx.api.missionStudioOperation({
+      operation: "getSnapshot",
+      params: { snapshotId },
+    })) as typeof getResult
+  } catch (err) {
+    // The snapshot store certifies on load: a throw means the
+    // snapshot failed signature or structural verification.
+    printJson({
+      status: "error",
+      kind: "MissionSnapshotInspection",
+      snapshotId,
+      signatureValid: false,
+      error: err instanceof Error ? err.message : String(err),
+    })
+    process.exit(1)
+  }
+
+  if (getResult.status !== "ok" || !getResult.snapshot) {
+    printError(getResult.error || `snapshot not found: ${snapshotId}`)
+  }
+
+  const snapshot = getResult.snapshot
+  printJson({
+    status: "ok",
+    kind: "MissionSnapshotInspection",
+    snapshotId: snapshot.id,
+    version: snapshot.version,
+    sessionId: snapshot.sessionId,
+    timestamp: snapshot.timestamp,
+    lineage: snapshot.lineage ?? null,
+    proposals: Array.isArray(snapshot.proposals) ? snapshot.proposals.length : 0,
+    signatureValid: true,
+    certification: { violations: [] },
   })
 }
 
@@ -771,9 +879,10 @@ async function main() {
       const sub = positional[1]
       if (sub === "create") await cmdMissionCreate(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
+      else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id>",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission snapshot [<snapshot-id> | list]",
         )
       break
     }
