@@ -22,6 +22,7 @@ All — operators, agents, developers, architects.
 | [Discovery Schema](confidence-model.md) | Discovery entity schema |
 | [Confidence Model](confidence-model.md) | Planning confidence formula |
 | [Replay Specification](replay-specification.md) | Replay algorithm specification |
+| [Snapshot Storage](snapshot-storage.md) | Approved snapshot storage contract, signatures, and certification |
 
 ## Knowledge Establishes
 Technical specifications for quick reference.

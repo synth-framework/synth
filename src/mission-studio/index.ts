@@ -22,6 +22,13 @@ export {
   getSnapshotLineage,
 } from "./snapshot-lineage.js"
 export { validateProposalGraph } from "./proposal-graph-validator.js"
+export {
+  SNAPSHOT_SCHEMA_VERSION,
+  canonicalizeSnapshot,
+  signSnapshot,
+  certifySnapshot,
+  migrateStoredSnapshot,
+} from "./snapshot-integrity.js"
 export type {
   SnapshotDiff,
   NodeChange,
