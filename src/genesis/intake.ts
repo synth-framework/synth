@@ -8,6 +8,8 @@ import { Registry } from "../capability/registry.js"
 import { ExecutionGate } from "../control/execution-gate.js"
 import { rebuildState } from "../runtime/replay.js"
 import { computeEventHash } from "../core/hash.js"
+import { buildGenesisIntegrityProof, certifyGenesisIntake } from "./certification.js"
+import type { GenesisCertificationReport, GenesisIntegrityProof } from "./certification.js"
 
 export type GenesisInput = {
   projectName: string
@@ -35,6 +37,8 @@ export type GenesisResult = {
   checkpointBaseline: Array<{ partition: number; offset: number }>
   systemId: string
   capabilitiesRegistered: number
+  certification: GenesisCertificationReport
+  integrityProof: GenesisIntegrityProof
 }
 
 export class GenesisIntake {
@@ -173,6 +177,13 @@ export class GenesisIntake {
       previousHash = event.eventHash
     }
 
+    // Certify the seed event graph BEFORE anything is committed
+    // through the single mutation authority (EXP-HARDEN-003).
+    const certification = certifyGenesisIntake({ seedEvents })
+    if (certification.result === "rejected") {
+      throw new Error(`GENESIS_CERTIFICATION_FAILED: ${certification.violations.join("; ")}`)
+    }
+
     // Commit all seed events through the single mutation authority
     await this.gate.executeGenesis(seedEvents)
 
@@ -195,6 +206,8 @@ export class GenesisIntake {
       checkpointBaseline,
       systemId: input.systemId,
       capabilitiesRegistered: capabilities.length,
+      certification,
+      integrityProof: buildGenesisIntegrityProof({ report: certification, events: seedEvents }),
     }
   }
 
