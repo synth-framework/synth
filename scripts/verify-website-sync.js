@@ -93,6 +93,21 @@ async function main() {
     errors.push("quick-start.html does not mention synth mission approve")
   }
 
+  // Canonical repository check: every GitHub URL on the website must
+  // point at the canonical repository. Wrong-org links rotted once
+  // before (22 dead links to synth-dev/synth-v2) and passed unnoticed.
+  const CANONICAL_REPO = "https://github.com/synth-framework/synth"
+  const websiteFiles = (await fs.readdir(WEBSITE_DIR)).filter((f) => f.endsWith(".html"))
+  for (const file of websiteFiles) {
+    const html = await readFile(path.join(WEBSITE_DIR, file))
+    const githubUrls = html.match(/https:\/\/github\.com\/[^"'\s<]+/g) || []
+    for (const url of githubUrls) {
+      if (!url.startsWith(CANONICAL_REPO)) {
+        errors.push(`${file}: non-canonical GitHub URL: ${url}`)
+      }
+    }
+  }
+
   if (errors.length === 0) {
     console.log("✅ Website content is synchronized with README and operator docs.")
     process.exit(0)

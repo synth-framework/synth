@@ -69,12 +69,33 @@ async function testWebsiteSyncScriptExists() {
   assert(content.includes("README.md"), "Website sync verifier must reference README.md")
   assert(content.includes("website/index.html"), "Website sync verifier must reference website/index.html")
   assert(content.includes("synth validate"), "Website sync verifier must check for synth validate")
+  assert(content.includes("https://github.com/synth-framework/synth"), "Website sync verifier must check GitHub URLs against the canonical repository")
 }
 
 async function testWebsiteSyncPasses() {
   const result = runScript(VERIFY_WEBSITE_SYNC_PATH)
   assert(result.status === 0, `verify-website-sync.js must pass on this project:\n${result.stdout}\n${result.stderr}`)
   assert(result.stdout.includes("Website content is synchronized"), "verify-website-sync.js should report success")
+}
+
+async function testWebsiteSyncDetectsNonCanonicalRepoUrl() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-site-"))
+  try {
+    await fs.mkdir(path.join(tmpDir, "website"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, "README.md"), "> **Tagline**\n", "utf-8")
+    await fs.writeFile(path.join(tmpDir, "website", "index.html"), "<html></html>", "utf-8")
+    await fs.writeFile(path.join(tmpDir, "website", "quick-start.html"), "<html></html>", "utf-8")
+    await fs.writeFile(
+      path.join(tmpDir, "website", "docs.html"),
+      '<a href="https://github.com/synth-dev/synth-v2">old org</a>',
+      "utf-8",
+    )
+    const result = runScript(VERIFY_WEBSITE_SYNC_PATH, tmpDir)
+    assert(result.status !== 0, "verify-website-sync.js must fail on non-canonical GitHub URL")
+    assert(result.stdout.includes("non-canonical GitHub URL"), "Should report the non-canonical URL")
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
 }
 
 async function testVersionVerificationScriptExists() {
@@ -107,6 +128,9 @@ async function main() {
 
   await testWebsiteSyncPasses()
   console.log("✓ website synchronization check passes on this project")
+
+  await testWebsiteSyncDetectsNonCanonicalRepoUrl()
+  console.log("✓ website synchronization check detects non-canonical GitHub URL")
 
   await testVersionVerificationScriptExists()
   console.log("✓ version synchronization script exists and is configured")
