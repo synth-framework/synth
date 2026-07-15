@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Narrative — Synth</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="docs.html">Docs</a>
+        <a href="quick-start.html">Quick Start</a>
+        <a href="examples.html">Examples</a>
+        <a href="mission-studio.html">Mission Studio</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="community.html">Community</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>What SYNTH Is</h1>
+      <p>SYNTH is the <strong>AI-native execution platform for governed software engineering</strong>.</p>
+    </section>
+
+    <section>
+      <h2>The SYNTH Promise</h2>
+      <blockquote>
+        <p><strong>Every decision is recorded, every action is governed, and every state is provable.</strong></p>
+      </blockquote>
+      <p>If an action cannot be explained from approved intent and replayed from immutable evidence, it does not happen in SYNTH.</p>
+    </section>
+
+    <section>
+      <h2>The Problem</h2>
+      <p>Modern software development increasingly relies on AI, but the reasoning, approvals, and execution history behind generated changes are fragmented across chats, pull requests, terminals, and human memory. As AI capabilities grow, trust cannot depend on reviewing every line of generated code.</p>
+      <p>Today, when an AI agent changes a codebase, we rely on:</p>
+      <ul>
+        <li><strong>Pull requests</strong> to capture intent — but they describe <em>what changed</em>, not <em>why</em>.</li>
+        <li><strong>CI/CD</strong> to validate output — but it checks only the final artifact, not the reasoning that produced it.</li>
+        <li><strong>Chat threads</strong> to record decisions — but they are fragmented, mutable, and disappear into history.</li>
+        <li><strong>Code review</strong> to enforce judgment — but it cannot scale when AI generates changes faster than humans can read them.</li>
+      </ul>
+      <p>The result is a growing gap between <em>what we meant</em>, <em>what was done</em>, and <em>what we can prove</em>.</p>
+      <p><strong>SYNTH closes that gap by making intent, approval, execution, and evidence part of a single deterministic system.</strong></p>
+    </section>
+
+    <section>
+      <h2>What SYNTH Is Not</h2>
+      <ul>
+        <li><strong>SYNTH is not an AI model.</strong> It does not generate code. It governs and records the execution of work proposed by humans or AI agents.</li>
+        <li><strong>SYNTH is not a replacement for Git.</strong> Git records what changed. SYNTH records why it changed, how it was approved, and that the result matches the approved intent.</li>
+        <li><strong>SYNTH is not a CI/CD platform.</strong> CI/CD validates output after the fact. SYNTH governs execution before and during the work and verifies it through Replay.</li>
+        <li><strong>SYNTH is not a project management tool.</strong> Missions and Expeditions may resemble tasks, but SYNTH is concerned with execution evidence and deterministic state, not scheduling or resource allocation.</li>
+        <li><strong>SYNTH is not a coding assistant.</strong> Coding assistants generate changes. SYNTH makes those changes accountable, replayable, and governable.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Why SYNTH Is Different</h2>
+      <p>SYNTH is not a better CI/CD tool, a smarter IDE plugin, or another AI coding assistant. It is a different category: an <strong>execution platform</strong> that makes human-AI collaboration observable, deterministic, and governable.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Dimension</th><th>CI/CD</th><th>AI Assistant</th><th>Git</th><th>SYNTH</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Captures intent</td><td>No</td><td>Partial</td><td>No</td><td>Yes</td></tr>
+            <tr><td>Records reasoning</td><td>No</td><td>No</td><td>No</td><td>Yes</td></tr>
+            <tr><td>Verifies execution</td><td>Output tests</td><td>Output diffs</td><td>Diff history</td><td>Replay from events</td></tr>
+            <tr><td>Governed by approved plan</td><td>No</td><td>No</td><td>No</td><td>Yes</td></tr>
+            <tr><td>Designed for AI agents</td><td>No</td><td>Stateless</td><td>No</td><td>Yes</td></tr>
+            <tr><td>Deterministic outcomes</td><td>Sometimes</td><td>No</td><td>No</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>CI/CD checks whether the code compiles. Git records what changed. AI assistants generate changes. SYNTH proves <em>why</em> the change was made, <em>how</em> it was approved, and <em>that</em> the result matches the approved intent.</p>
+    </section>
+
+    <section>
+      <h2>The AI-Native Workflow</h2>
+      <p>SYNTH assumes that AI agents are first-class participants in software engineering, not accessories to human work.</p>
+      <ol class="steps">
+        <li><strong>Human describes intent</strong> — "Refactor the authentication module to use capability providers."</li>
+        <li><strong>AI gathers evidence</strong> — scans the codebase, identifies boundaries, proposes Expeditions.</li>
+        <li><strong>Human reviews and approves</strong> — the Plan becomes authoritative.</li>
+        <li><strong>AI executes through SYNTH</strong> — the CLI is an execution surface for agents, not a manual tool.</li>
+        <li><strong>Every action becomes an Event</strong> — appended to the immutable event log.</li>
+        <li><strong>Replay verifies the State</strong> — anyone can reconstruct what was done and why.</li>
+      </ol>
+      <p>The CLI is real, but it is not the primary interface. The primary interface is natural-language intent transformed into deterministic execution.</p>
+    </section>
+
+    <section>
+      <h2>The Narrative Ladder</h2>
+      <p>All public SYNTH communication progresses through five levels. Skipping a level creates confusion.</p>
+      <ol class="steps">
+        <li><strong>What problem exists?</strong> AI agents can write software faster than humans can review, but our tools for intent, reasoning, and proof have not kept pace.</li>
+        <li><strong>Why does SYNTH solve it?</strong> SYNTH makes human-AI collaboration accountable by recording intent, governing execution against approved plans, and letting anyone replay history.</li>
+        <li><strong>How does it work?</strong> Intent becomes a Mission. A Mission becomes Expeditions. Expeditions produce Evidence and approved Plans. Execution happens through Events that update State. Replay verifies State from Events.</li>
+        <li><strong>How do I use it?</strong> Install SYNTH, initialize a project, create a Mission Draft, approve it, and let SYNTH guide validation and governance. AI agents can drive the same CLI surface.</li>
+        <li><strong>How is it implemented?</strong> SYNTH is built around a frozen architecture: API → ExecutionGate → Runtime → Domain → EventStore. Protected Assets ensure the execution model remains invariant.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Plain-Language Definitions</h2>
+
+      <h3>Mission</h3>
+      <p><strong>Definition:</strong> A clearly defined objective that describes <strong>what</strong> should be achieved, not <strong>how</strong> it should be implemented.</p>
+      <p><strong>In SYNTH:</strong> A Mission is the starting point for any significant work. It answers the question, "What are we trying to accomplish?"</p>
+      <p><strong>Why it matters:</strong> Without a stated mission, AI-generated work drifts toward local optima. A Mission keeps execution aligned with human intent.</p>
+
+      <h3>Expedition</h3>
+      <p><strong>Definition:</strong> A bounded investigation or build that moves a Mission forward.</p>
+      <p><strong>In SYNTH:</strong> Expeditions have objectives, acceptance criteria, risks, and a definition of done. They are the unit of planned work.</p>
+      <p><strong>Why it matters:</strong> Breaking work into expeditions makes approval, execution, and replay tractable.</p>
+
+      <h3>Evidence</h3>
+      <p><strong>Definition:</strong> What you know and how confidently you know it.</p>
+      <p><strong>In SYNTH:</strong> Evidence is gathered before decisions are made. It makes approval explicit rather than assumed.</p>
+      <p><strong>Why it matters:</strong> AI can generate plausible plans quickly, but plans without evidence are guesses.</p>
+
+      <h3>Plan</h3>
+      <p><strong>Definition:</strong> The approved path forward, ready to execute.</p>
+      <p><strong>In SYNTH:</strong> A Plan is authoritative. Work that does not match the Plan is rejected by the ExecutionGate.</p>
+      <p><strong>Why it matters:</strong> The Plan is the contract between human judgment and execution.</p>
+
+      <h3>Event</h3>
+      <p><strong>Definition:</strong> An immutable record that something happened.</p>
+      <p><strong>In SYNTH:</strong> Events are append-only. Once recorded, they cannot be changed, only superseded by later Events.</p>
+      <p><strong>Why it matters:</strong> Immutability makes history trustworthy. If events can be edited, replay becomes meaningless.</p>
+
+      <h3>State</h3>
+      <p><strong>Definition:</strong> The current picture, derived from Events.</p>
+      <p><strong>In SYNTH:</strong> State is not edited directly. It is rebuilt by applying Events.</p>
+      <p><strong>Why it matters:</strong> Deriving State from Events means the current picture is always provable.</p>
+
+      <h3>Replay</h3>
+      <p><strong>Definition:</strong> The ability to reconstruct exactly how software was produced, step by step, from recorded evidence.</p>
+      <p><strong>In SYNTH:</strong> Replay proves that the current State matches the event history.</p>
+      <p><strong>Why it matters:</strong> Replay turns accountability from a claim into a procedure.</p>
+
+      <h3>Determinism</h3>
+      <p><strong>Definition:</strong> The property that the same approved Plan, executed under the same conditions, always produces the same observable result.</p>
+      <p><strong>In SYNTH:</strong> Missions execute through deterministic governance and replay.</p>
+      <p><strong>Why it matters:</strong> Teams can trust AI-generated software because the process is explainable and reproducible.</p>
+
+      <h3>Governance</h3>
+      <p><strong>Definition:</strong> The rules that determine whether proposed work is acceptable before it becomes part of the system.</p>
+      <p><strong>In SYNTH:</strong> Governance checks actions against the approved Plan before they are recorded as Events.</p>
+      <p><strong>Why it matters:</strong> Governance prevents execution drift.</p>
+
+      <h3>Projection</h3>
+      <p><strong>Definition:</strong> A deterministic transformation from one or more authoritative sources into another representation.</p>
+      <p><strong>In SYNTH:</strong> README, documentation, website content, and API references are projections of the same constitutional sources.</p>
+      <p><strong>Why it matters:</strong> Projections keep public content consistent across every surface.</p>
+    </section>
+
+    <section>
+      <h2>Frequently Confused Concepts</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>SYNTH Concept</th><th>Not The Same As</th><th>Why</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mission</td><td>Issue / Ticket</td><td>A Mission is a strategic objective, not a work item to be closed.</td></tr>
+            <tr><td>Expedition</td><td>Sprint / Task</td><td>An Expedition has evidence and acceptance, not just a timebox.</td></tr>
+            <tr><td>Evidence</td><td>Logs / Notes</td><td>Evidence is gathered <em>before</em> approval, not recorded afterward.</td></tr>
+            <tr><td>Plan</td><td>Spec / Design Doc</td><td>A Plan is authoritative and governs execution.</td></tr>
+            <tr><td>Event</td><td>Log Entry</td><td>Events are immutable and define State.</td></tr>
+            <tr><td>State</td><td>Database</td><td>State is derived from Events and can be rebuilt.</td></tr>
+            <tr><td>Replay</td><td>Git History</td><td>Git shows what changed. Replay proves the current State from events.</td></tr>
+            <tr><td>Governance</td><td>Code Review</td><td>Governance checks before execution. Code review happens after.</td></tr>
+            <tr><td>Determinism</td><td>Repeatability</td><td>Determinism includes governance decisions, not just output.</td></tr>
+            <tr><td>Projection</td><td>Documentation</td><td>A projection is a deterministic build artifact.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Canonical Statements</h2>
+      <p><strong>Identity:</strong> "SYNTH is the AI-native execution platform for governed software engineering."</p>
+      <p><strong>Value:</strong> "Every decision is recorded, every action is governed, and every state is provable."</p>
+      <p><strong>Workflow:</strong> "Human intent becomes an approved Mission, decomposed into Expeditions, executed through Events, and verified by Replay."</p>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="index.html">← Back to Synth</a></p>
+  </footer>
+</body>
+</html>
