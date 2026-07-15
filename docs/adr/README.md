@@ -20,3 +20,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-012 — Runtime & Package Capability](ADR-012-runtime-package-capability.md)
 - [ADR-013 — Forge Capability](ADR-013-forge-capability.md)
 - [ADR-014 — Secrets & Identity Capability](ADR-014-secrets-identity-capability.md)
+- [ADR-015 — Discovery Evidence & Replay Integration](ADR-015-discovery-evidence-replay.md)
