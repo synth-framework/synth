@@ -26,6 +26,7 @@ Genesis / Execution
 
 ## Expected agent behavior
 
+0. Run `node scripts/generate-capability-report.js` and read the Capability Report. Plan against discovered capabilities — never assume Git, npm, GitHub, or any specific tool unless the report lists it as supported (ADR-016).
 1. Run `synth mission create --subject "..." --purpose "..."`.
 2. Capture the returned `draftId` and `proposals`.
 3. Report:

@@ -73,6 +73,16 @@ After a Mission is approved, create Expeditions:
 synth expedition create --mission "Mission Name" --subject "Expedition Subject" --goal "What this expedition proves or builds"
 ```
 
+## Environment capability planning
+
+Before planning a Mission or Expedition, read the Environment Capability Report:
+
+```bash
+node scripts/generate-capability-report.js
+```
+
+Plan against discovered capabilities, never assumed ones. Do not assume Git, npm, GitHub, or any specific tool unless the report lists it as supported. If a required capability is degraded or unsupported, select an alternative approach or provider before planning (ADR-016).
+
 ## Validate work
 
 For local iteration, run the adaptive validator first. It analyzes your change and executes only the validations that could be affected:
