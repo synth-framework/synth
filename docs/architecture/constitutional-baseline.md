@@ -20,6 +20,7 @@
 **Process & Tool Capability ADR:** [ADR-011 — Process & Tool Capability](../adr/ADR-011-process-tool-capability.md)
 **Runtime & Package Capability ADR:** [ADR-012 — Runtime & Package Capability](../adr/ADR-012-runtime-package-capability.md)
 **Forge Capability ADR:** [ADR-013 — Forge Capability](../adr/ADR-013-forge-capability.md)
+**Secrets & Identity Capability ADR:** [ADR-014 — Secrets & Identity Capability](../adr/ADR-014-secrets-identity-capability.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -155,6 +156,7 @@ Filesystem Capability ADR: ADR-010
 Process & Tool Capability ADR: ADR-011
 Runtime & Package Capability ADR: ADR-012
 Forge Capability ADR: ADR-013
+Secrets & Identity Capability ADR: ADR-014
 Proof schema: synth-proof-v1
 ATL target: ATL-7
 ```
