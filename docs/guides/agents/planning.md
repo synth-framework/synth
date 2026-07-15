@@ -20,6 +20,16 @@ Agent planning follows the PCE (Planning Cognition Engine) pipeline:
 Intent → Classify → Question → Extract Knowledge → Synthesize → Permit → Commit
 ```
 
+## Stage 0: Environment Discovery
+
+Before classifying intent, run environment discovery and read the Capability Report:
+
+```bash
+node scripts/generate-capability-report.js
+```
+
+Plan against discovered capabilities, never assumed ones. Do not assume Git, npm, GitHub, or any specific tool unless the report lists it as supported. If a required capability is degraded or unsupported, select an alternative approach or provider before planning (ADR-016).
+
 ## Stage 1: Intent Classification
 
 Classify the operator's request:
@@ -68,6 +78,7 @@ Dispatch through the CommandBus. The single mutation authority records the event
 2. No objectives without knowledge extracted
 3. No expedition without clear goal
 4. No commitment without permit
+5. No plan step against an unsupported or unverified capability
 
 ## Anti-Patterns
 
@@ -88,3 +99,4 @@ Dispatch through the CommandBus. The single mutation authority records the event
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-06-28 | Initial stable release |
+| 1.1.0 | 2026-07-15 | Stage 0 Environment Discovery and capability planning rule (ADR-016) |

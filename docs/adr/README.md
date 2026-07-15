@@ -21,3 +21,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-013 — Forge Capability](ADR-013-forge-capability.md)
 - [ADR-014 — Secrets & Identity Capability](ADR-014-secrets-identity-capability.md)
 - [ADR-015 — Discovery Evidence & Replay Integration](ADR-015-discovery-evidence-replay.md)
+- [ADR-016 — AI Environment Planning](ADR-016-ai-environment-planning.md)
