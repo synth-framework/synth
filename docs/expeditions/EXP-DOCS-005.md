@@ -1,6 +1,6 @@
 # EXP-DOCS-005 — Example Synchronization
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-008 — Documentation & Projections  
@@ -87,12 +87,12 @@ Run documentation integrity checks and the full validation plan.
 
 ## Definition of Done
 
-- [ ] Per-example audit verdicts recorded.
-- [ ] Stale example documentation updated.
-- [ ] Executable examples pass under the current build.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes.
-- [ ] Expedition is accepted.
+- [x] Per-example audit verdicts recorded.
+- [x] Stale example documentation updated.
+- [x] Executable examples pass under the current build.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI proof check).
+- [x] Expedition is accepted.
 
 ---
 
@@ -106,6 +106,26 @@ Run documentation integrity checks and the full validation plan.
 
 ---
 
+## Audit Verdicts
+
+| Example | Verdict |
+|---|---|
+| `examples/README.md` | **Stale** — omitted `first-contact/` and `_shared/`; implied generated artifacts are tracked. Updated |
+| `todo/` | Current — accurate; passes |
+| `blog/` | Current — accurate; passes |
+| `crm/` | Current — "adapter-style integration" refers to domain integration patterns, not superseded architecture; passes |
+| `legacy-node/` | Current — migration mission accurate; passes |
+| `polyglot/` | Current — language-agnostic analysis accurate; passes |
+| `monolith/` | Current — scale example accurate; passes |
+| `first-contact/` | Current — canonical recorded journey, already post-PROGRAM-009; passes (32 events, matching the canonical journey) |
+| `_shared/` | Runner code, no documentation. Recorded observation below |
+
+---
+
 ## Completion Notes
 
-Pending.
+- All seven executable examples pass `npm run govern` under the current build (exit 0; events and proof artifacts produced; `first-contact` reproduces the canonical 32-event journey).
+- `examples/README.md` updated: `first-contact/` and `_shared/` added; expected outputs clarified as local build artifacts.
+- **Projection Rule alignment:** `examples/*/docs-generated/` contained 49 tracked projection outputs, stale relative to the current knowledge base — regenerating them produced whole-knowledge-base dumps (installer flags, validation rules) into every example's README. Per the Projection Rule (EXP-PROGRAM-008 / EXP-DOCS-001), projection outputs are build artifacts, not authoritative state. The 49 files were untracked and `examples/*/docs-generated/` was added to `.gitignore`. No test, script, workflow, or package script consumes these files; `tests/brownfield-validation.test.js` passes (6/6 examples).
+- **Recorded observation (deferred, not a docs issue):** the shared example runner (`examples/_shared/run-example.js`) creates events outside the Genesis lineage — the ID-linking defect class already identified for the Constitutional Hardening Program. Out of scope here.
+- Documentation integrity checks pass: `docs:check-links`, `docs:verify-projection`, `docs:verify-website-sync`.
