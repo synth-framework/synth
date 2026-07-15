@@ -1,6 +1,6 @@
 # EXP-PROGRAM-007 — Environment Independence Program
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -158,25 +158,32 @@ All work in this Program stays in the Allowed column:
 
 ## Definition of Done
 
-- [ ] EXP-ENV-001 completed and accepted.
-- [ ] EXP-ENV-002 completed and accepted.
-- [ ] EXP-ENV-003 completed and accepted.
-- [ ] EXP-ENV-004 completed and accepted.
-- [ ] EXP-ENV-005 completed and accepted.
-- [ ] EXP-ENV-006 completed and accepted.
-- [ ] EXP-ENV-007 completed and accepted.
-- [ ] EXP-ENV-008 completed and accepted.
-- [ ] EXP-ENV-009 completed and accepted.
-- [ ] EXP-ENV-010 completed and accepted.
-- [ ] EXP-ENV-011 completed and accepted.
-- [ ] EXP-ENV-012 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-ENV-001 completed and accepted.
+- [x] EXP-ENV-002 completed and accepted.
+- [x] EXP-ENV-003 completed and accepted.
+- [x] EXP-ENV-004 completed and accepted.
+- [x] EXP-ENV-005 completed and accepted.
+- [x] EXP-ENV-006 completed and accepted.
+- [x] EXP-ENV-007 completed and accepted.
+- [x] EXP-ENV-008 completed and accepted.
+- [x] EXP-ENV-009 completed and accepted.
+- [x] EXP-ENV-010 completed and accepted.
+- [x] EXP-ENV-011 completed and accepted.
+- [x] EXP-ENV-012 completed and accepted.
+- [x] Program accepted.
 
 ---
 
 ## Completion Notes
 
-Program created. No expeditions have started.
+**Program accepted 2026-07-15** after full review of the expedition chain and the completion report.
+
+- **Expeditions:** 12/12 Completed (EXP-ENV-001 … EXP-ENV-012), each delivered through its own PR (#53–#66), each passing the full `npm run govern` pipeline via the Proof Gate workflow.
+- **ADRs:** ADR-006 through ADR-017 — Environment Discovery Framework, Capability Graph Model, six capability interfaces, Discovery Evidence & Replay Integration, AI Environment Planning, and Constitutional Compliance & Core Boundary Enforcement. All registered in `docs/adr/README.md` and `docs/architecture/constitutional-baseline.md`.
+- **Outcome:** the SYNTH Core contains no direct environment dependencies — mechanically enforced on every govern run by `scripts/audit-core-boundary.js`. Discovery is replayable constitutional evidence (`synth-discovery-evidence-v1`, verified in the proof gate). AI agents plan against the Capability Report (`synth-capability-report-v1`), not assumptions.
+- **Constitutional compliance:** the freeze held throughout. No event types added, Replay engine untouched, `synth-proof-v1` object unchanged. One Protected Asset modification (`FileSystemSnapshotStore`) performed under the approved EXP-ENV-012 Architecture Expedition per ADR-004, behavior verified unchanged.
+- **Recorded gaps (follow-up candidates, not compliance debt):** provider registry covers 6/12 families (Environment, Workspace, Tool, Network, Secrets, Identity await provider/rule registration); out-of-Core layers (`src/infra`, `src/cli`, `src/adapters`, `src/workspace`) migrate incrementally as an optimization (ADR-017 §3); Forge write operations deferred per ADR-013. These gaps are seed input to the Constitutional Hardening Program.
+- **Acceptance note:** the governance boundary exposed a semantic integrity defect (identity linking) through First Contact execution before production usage — evidence that the governance model works as designed. That defect set is the initial evidence for EXP-PROGRAM-010.
 
 ---
 
