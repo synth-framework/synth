@@ -174,5 +174,6 @@ Environment capabilities are discovered, not dispatched: the Environment Layer o
 
 - [07 - Capability Model](../architecture/07-capability-model.md) -- How capabilities work
 - [16 - Extension Model](../architecture/16-extension-model.md) -- Adding capabilities
+- [Environment Layer Reference](environment-layer.md) -- Environment Layer architecture, providers, and discovery evidence
 - [ADR-006](../adr/ADR-006-environment-discovery-framework.md) -- Environment Discovery Framework
 - [ADR-007](../adr/ADR-007-capability-graph-model.md) -- Capability Graph Model

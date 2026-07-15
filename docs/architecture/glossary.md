@@ -44,6 +44,10 @@ The property that given the same inputs, the system always produces the same out
 
 The pure logic layer that defines entity lifecycles and state transitions. The domain contains no side effects, no I/O, and no reference to infrastructure. See [05 - Component Model](05-component-model.md).
 
+## Environment Layer
+
+The boundary between SYNTH Core and the execution environment. It observes the environment, classifies it, resolves capability providers, and produces replayable discovery evidence, so that Core logic never depends on a specific platform, runtime, or toolchain. See [Environment Layer Reference](../reference/environment-layer.md).
+
 ## Event
 
 An immutable record of something that happened in the system. Events have a type, payload, timestamp, transaction ID, capability, and actor. Events are the only mechanism for state mutation. See [09 - Event Model](09-event-model.md).
