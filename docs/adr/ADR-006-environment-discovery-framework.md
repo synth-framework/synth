@@ -1,6 +1,6 @@
 # ADR-006 — Environment Discovery Framework
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-07-15
 **Author:** Synth Architecture
 **Deciders:** Synth Architecture
