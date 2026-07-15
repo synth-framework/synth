@@ -88,4 +88,4 @@ SYNTH can discover a fresh environment and produce a replayable evidence artifac
 - Added `test:environment-discovery` npm script and included it in `test:all`.
 - Verified TypeScript compilation with `npm run build`.
 - Verified tests pass with `node tests/environment-discovery.test.js`.
-- Expedition accepted via PR #44.
+- Expedition accepted via PR #53.
