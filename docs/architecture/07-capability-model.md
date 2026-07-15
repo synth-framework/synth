@@ -4,6 +4,17 @@
 
 Capabilities are the fundamental unit of action in Synth. Every mutation is performed through a registered capability. This document describes how capabilities work, how they are registered, discovered, executed, and isolated.
 
+## Two Capability Layers
+
+SYNTH distinguishes two capability layers:
+
+| Layer | Purpose | State effect | Governance |
+|-------|---------|--------------|------------|
+| **Domain capabilities** | Mutate canonical state (Work Items, Plans, Milestones, Projects) | Emit events through the ExecutionGate | Capability Registry, frozen at seal; PolicyEngine authorization |
+| **Environment capabilities** | Describe and interact with the execution environment | Never mutate canonical state; produce replayable discovery evidence | Environment Layer ([ADR-006](../adr/ADR-006-environment-discovery-framework.md)), Capability Graph ([ADR-007](../adr/ADR-007-capability-graph-model.md)) |
+
+This page primarily describes domain capabilities. Environment capabilities — the twelve canonical families such as Workspace, Filesystem, Revision, and Forge — are enumerated in the [Capability Reference](../reference/capability-reference.md) and governed by [ADR-006](../adr/ADR-006-environment-discovery-framework.md) through [ADR-017](../adr/ADR-017-constitutional-compliance-core-boundary.md).
+
 ## What Is a Capability?
 
 A capability is a named, versioned contract between the system and its users. It declares:
@@ -83,6 +94,19 @@ Capabilities are isolated from each other. Each capability:
 
 Cross-capability effects occur only through the shared state of entities. For example, `CompleteWorkItem` and `StartWorkItem` both operate on the `WorkItem` entity, but they are separate capabilities with separate validation, policy evaluation, and execution paths.
 
+## The Capability Graph
+
+The Environment Layer models environment capabilities as a directed, acyclic **Capability Graph** ([ADR-007](../adr/ADR-007-capability-graph-model.md)):
+
+- **Capability nodes** — one per canonical family (`cap:Filesystem`, `cap:Revision`, ...). Each records its family, schema version, whether it is required for execution, and human-readable metadata.
+- **Provider nodes** — concrete providers (`prov:git-revision`, `prov:node-filesystem`, ...) that satisfy one or more families.
+- **`satisfies` edges** — provider → capability: the provider can satisfy the capability.
+- **`requires` edges** — capability → capability: a capability depends on another (for example, Forge requires Revision and Network; Revision requires Filesystem).
+
+The graph is serializable, versioned, and replayable. Provider resolution is deterministic: identical discovery evidence always selects the same providers. Resolution failures are recorded as first-class graph artifacts rather than thrown as ambient errors.
+
+The canonical family catalog and dependency edges live in `src/environment/graph.ts`; the family list and provider contracts are documented in the [Capability Reference](../reference/capability-reference.md).
+
 ## Capability Extension
 
 New capabilities can be added by:
@@ -117,3 +141,7 @@ The freeze-after-seal mechanism ensures that dynamic loading does not compromise
 - [05 - Component Model](05-component-model.md) -- CapabilityRegistry description
 - [08 - Governance](08-governance.md) -- How policies govern capabilities
 - [16 - Extension Model](16-extension-model.md) -- Adding new capabilities
+- [Capability Reference](../reference/capability-reference.md) -- Domain and environment capability families
+- [ADR-006](../adr/ADR-006-environment-discovery-framework.md) -- Environment Discovery Framework
+- [ADR-007](../adr/ADR-007-capability-graph-model.md) -- Capability Graph Model
+- [ADR-017](../adr/ADR-017-constitutional-compliance-core-boundary.md) -- Constitutional Compliance and Core Boundary
