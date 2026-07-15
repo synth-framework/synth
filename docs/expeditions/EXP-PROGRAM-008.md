@@ -1,6 +1,6 @@
 # EXP-PROGRAM-008 — Documentation & Projections
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -129,12 +129,12 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 ## Definition of Done
 
 - [x] EXP-DOCS-001 completed and accepted.
-- [ ] EXP-DOCS-002 completed and accepted.
-- [ ] EXP-DOCS-003 completed and accepted.
-- [ ] EXP-DOCS-004 completed and accepted.
-- [ ] EXP-DOCS-005 completed and accepted.
-- [ ] EXP-DOCS-006 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-DOCS-002 completed and accepted.
+- [x] EXP-DOCS-003 completed and accepted.
+- [x] EXP-DOCS-004 completed and accepted.
+- [x] EXP-DOCS-005 completed and accepted.
+- [x] EXP-DOCS-006 completed and accepted.
+- [x] Program accepted.
 
 ---
 
@@ -147,6 +147,16 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - Program accepted and closed.
 
 Program reopened on 2026-07-15 to synchronize the documentation surface with the Environment Layer architecture delivered by EXP-PROGRAM-007. EXP-DOCS-001 remains completed and accepted; EXP-DOCS-002 through EXP-DOCS-006 extend the program scope to capability model documentation, agent planning guides, the Environment Layer reference, example synchronization, and website projection verification.
+
+Reopening completed on 2026-07-15:
+
+- EXP-DOCS-002 documented all twelve environment capability families and the Capability Graph in the capability reference and architecture pages (PR #69).
+- EXP-DOCS-003 aligned the agent handbook and index with environment discovery and capability-aware planning; full audit verdicts recorded (PR #70).
+- EXP-DOCS-004 published the Environment Layer Reference with the provider registration matrix and honestly recorded gaps (PR #71).
+- EXP-DOCS-005 verified all seven examples, untracked 49 projection outputs per the Projection Rule, and updated the examples index (PR #72).
+- EXP-DOCS-006 migrated 22 dead website links to the canonical repository, added the new references to the website docs index, and extended website sync verification with a canonical-repository check (PR #73).
+
+Program accepted and re-closed via PRs #68–#74. No Protected Assets modified.
 
 ---
 
