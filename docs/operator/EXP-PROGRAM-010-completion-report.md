@@ -72,7 +72,7 @@ Mapping constitutional principles to the expeditions that hardened them and the 
 |---|---|---|
 | Mission Studio never mutates runtime state; approval is explicit | HARDEN-001 | `validateProposalGraph` seals snapshots at `MissionStudio.approve()` |
 | Approved snapshots are constitutional artifacts | HARDEN-002 | `src/mission-studio/snapshot-integrity.ts`; signatures, chaining, certification-on-load; `docs/reference/snapshot-storage.md` |
-| Execution state mutates only through the ExecutionGate | HARDEN-003 | `src/genesis/certification.ts` — Genesis certifies at both commit paths |
+| State mutates only through a single governed execution boundary | HARDEN-003 | `src/genesis/certification.ts` — Genesis certifies at both commit paths |
 | Replay is deterministic | HARDEN-004 | `consistent` semantics preserved; additive `graphValid` / `graphViolations`; `--strict-graph` |
 | Graph Integrity as first-class proof | HARDEN-005 | P6 in `scripts/generate-proof.js` / `verify-proof.js`; `docs/governance.md` |
 | Every validation becomes a permanent regression guard | HARDEN-006 | Regression suites; `InMemoryEventStore` footgun eliminated |
