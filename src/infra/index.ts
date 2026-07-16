@@ -9,7 +9,7 @@ export * from "./git-adapter.js"
 export * from "./filesystem.js"
 export * from "./event-store.guard.js"
 
-import { EventStore, PartitionStore, SegmentStore } from "./event-store.js"
+import { EventStore, InMemoryEventStore, PartitionStore, SegmentStore } from "./event-store.js"
 import { StateStore, InMemoryStateStore, type IStateStore } from "./state-store.js"
 import { CheckpointStore, InMemoryCheckpointStore, type ICheckpointStore } from "./checkpoint-store.js"
 import { GitAdapterImpl, GitAdapterStub } from "./git-adapter.js"
@@ -42,7 +42,14 @@ export async function createInfra(config: InfraConfig = {}): Promise<Infra> {
   const gitEnabled = config.gitEnabled !== false
   const isFile = persistence === "file"
 
-  const eventStore = createGuardedEventStore(EventStore.createAuthorized(config.eventLogPath))
+  // Memory persistence must never fall back to the default canonical log
+  // path (EXP-HARDEN-006): the event store, like every other store, is
+  // genuinely in-memory when persistence is not "file".
+  const eventStore = createGuardedEventStore(
+    isFile
+      ? EventStore.createAuthorized(config.eventLogPath)
+      : new InMemoryEventStore()
+  )
   const partitionStore = new PartitionStore(partitionCount, config.streamDir)
   const segmentStore = new SegmentStore(1000, config.streamDir)
 

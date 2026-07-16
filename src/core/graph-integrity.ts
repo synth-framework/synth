@@ -100,7 +100,9 @@ function isNonEmptyString(value: unknown): value is string {
  * Validate the Work Item → Objective edge carried by WORK_ITEM_GENERATED
  * events. The objectiveId parent is required and must resolve to an
  * objective materialized by replay; the expeditionId parent (redundant,
- * derivable via the objective) is validated when present. Canonical
+ * derivable via the objective) is validated when present. A generated
+ * work item identity must not collide with the mission/expedition/
+ * objective identity space (cross-kind clash, EXP-HARDEN-006). Canonical
  * WORK_ITEM_CREATED events are out of scope here: their payloads carry
  * no objective reference (see work-item-objective-membership below).
  */
@@ -138,6 +140,24 @@ function validateGeneratedWorkItems(
       })
     } else {
       seen.add(id)
+    }
+
+    // Cross-kind identity clash with the mission/expedition/objective
+    // space materialized by replay (EXP-HARDEN-006).
+    const clashKind = state.missions[id]
+      ? "mission"
+      : state.expeditions[id]
+        ? "expedition"
+        : state.objectives[id]
+          ? "objective"
+          : undefined
+    if (clashKind) {
+      violations.push({
+        kind: "duplicate-creation",
+        message: `Event log identity ${id} is used as both ${clashKind} and generatedWorkItem`,
+        aggregateKind: "generatedWorkItem",
+        aggregateId: id,
+      })
     }
 
     const objectiveId = workItem?.objectiveId
