@@ -1,6 +1,6 @@
 # EXP-DISC-001 — Status That Answers
 
-**Status:** Completed (pending acceptance)  
+**Status:** Accepted  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-012 — Runtime Self-Description  

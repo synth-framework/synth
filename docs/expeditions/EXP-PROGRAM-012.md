@@ -140,7 +140,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-DISC-001 completed and accepted.
+- [x] EXP-DISC-001 completed and accepted.
 - [ ] EXP-DISC-002 completed and accepted.
 - [ ] EXP-DISC-003 completed and accepted.
 - [ ] EXP-DISC-004 completed and accepted.
