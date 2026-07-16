@@ -1,7 +1,8 @@
 # EXP-PROGRAM-011 — Completion Report
 
 **Program:** EXP-PROGRAM-011 — Operator Trust & CLI Integrity
-**Status:** Completed — pending acceptance
+**Status:** Accepted
+**Accepted:** 2026-07-16
 **Era:** II — Adoption
 
 ---
@@ -123,4 +124,4 @@ The next adoption layer is discoverability (EXP-PROGRAM-012) and continuity (EXP
 - ✅ All four EXP-TRUST expeditions completed and merged (implementation PRs #90, #93, #95, #97 — CI `proof` green).
 - ✅ Every expedition chartered before implementation; one charter (#91) amended post-merge (#92) when the implementation seam revealed an Event Model conflict — the process worked as designed.
 - ✅ TaskPRO findings N1, N2, N3, N9 resolved with permanent regression guards.
-- ⬜ Program accepted. *(pending — the operator's act)*
+- ✅ Program accepted.
