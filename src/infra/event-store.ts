@@ -30,7 +30,7 @@ export class EventStore {
     return new EventStore(filePath, EVENT_STORE_WRITE_TOKEN)
   }
 
-  private ensureAuthorized(): void {
+  protected ensureAuthorized(): void {
     if (!this.authorized) {
       throw new IllegalMutationError(
         "ILLEGAL_EVENTSTORE_WRITE: EventStore writes must pass through the ExecutionGate. " +
@@ -76,6 +76,46 @@ export class EventStore {
   async getLastEvent(): Promise<SynthEvent | null> {
     const events = await this.loadAll()
     return events.length > 0 ? events[events.length - 1] : null
+  }
+}
+
+/** In-memory event store (memory persistence mode).
+ *  Never touches the filesystem: `persistence: "memory"` must not fall
+ *  back to the default canonical log path (EXP-HARDEN-006). Carries the
+ *  same write authorization as the file-backed store, so ExecutionGate
+ *  remains the single mutation authority. */
+export class InMemoryEventStore extends EventStore {
+  private events: SynthEvent[] = []
+
+  constructor() {
+    super(undefined, EVENT_STORE_WRITE_TOKEN)
+  }
+
+  async initialize(): Promise<void> {}
+
+  async append(event: SynthEvent): Promise<void> {
+    this.ensureAuthorized()
+    this.events.push(JSON.parse(JSON.stringify(event)))
+  }
+
+  async appendBatch(events: SynthEvent[]): Promise<void> {
+    this.ensureAuthorized()
+    for (const event of events) {
+      this.events.push(JSON.parse(JSON.stringify(event)))
+    }
+  }
+
+  async loadAll(): Promise<SynthEvent[]> {
+    return this.events.map((event) => JSON.parse(JSON.stringify(event)))
+  }
+
+  async count(): Promise<number> {
+    return this.events.length
+  }
+
+  async getLastEvent(): Promise<SynthEvent | null> {
+    const last = this.events[this.events.length - 1]
+    return last ? JSON.parse(JSON.stringify(last)) : null
   }
 }
 

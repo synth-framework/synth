@@ -7,6 +7,7 @@
 // ============================================================
 
 import { spawnSync } from "child_process"
+import crypto from "crypto"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
@@ -116,9 +117,40 @@ async function testCheckFailsOnIncompleteArchive() {
 }
 
 async function testRepairScriptDerivesConsistentReport() {
-  const result = runScript(REPAIR_PATH)
-  assert(result.status === 0, `repair-first-contact-archive.js must succeed:\n${result.stdout}\n${result.stderr}`)
-  assert(result.stdout.includes("consistent"), "Repair should report a consistent replay report")
+  // The repair script writes replay-report.json in place, so it must run
+  // against a tmpdir mirror — never the committed archive. A test may not
+  // modify examples/; the archive is immutable evidence (EXP-HARDEN-006).
+  const realReport = path.join(ARCHIVE_DIR, "replay-report.json")
+  const realHashBefore = crypto.createHash("sha256").update(await fs.readFile(realReport)).digest("hex")
+
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-repair-"))
+  try {
+    await fs.mkdir(path.join(tmpDir, "examples", "first-contact", "recorded-journey"), { recursive: true })
+    await fs.cp(
+      ARCHIVE_DIR,
+      path.join(tmpDir, "examples", "first-contact", "recorded-journey", "evidence-archive"),
+      { recursive: true },
+    )
+
+    const result = runScript(REPAIR_PATH, [], tmpDir)
+    assert(result.status === 0, `repair-first-contact-archive.js must succeed:\n${result.stdout}\n${result.stderr}`)
+    assert(result.stdout.includes("consistent"), "Repair should report a consistent replay report")
+
+    const repaired = JSON.parse(
+      await fs.readFile(
+        path.join(tmpDir, "examples", "first-contact", "recorded-journey", "evidence-archive", "replay-report.json"),
+        "utf-8",
+      ),
+    )
+    assert(repaired.consistent === true, "Repaired report must be consistent")
+    assert(repaired.chainValid === true, "Repaired report must have a valid chain")
+    assert(repaired.eventCount === 32, `Repaired report must cover 32 events, got ${repaired.eventCount}`)
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+
+  const realHashAfter = crypto.createHash("sha256").update(await fs.readFile(realReport)).digest("hex")
+  assert(realHashAfter === realHashBefore, "committed replay-report.json must stay byte-identical")
 }
 
 async function main() {

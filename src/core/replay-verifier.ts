@@ -208,10 +208,17 @@ export class ReplayVerifier {
   /**
    * Check that replayed state satisfies structural invariants.
    * These properties must hold regardless of event content.
+   *
+   * EXP-HARDEN-006: mission/expedition/objective status enums are
+   * validated alongside workItem/plan (deferred from EXP-HARDEN-004).
+   * The enums mirror src/types/state.ts exactly.
    */
   private checkStructuralConsistency(state: {
     workItems: Record<string, unknown>
     plans: Record<string, unknown>
+    missions: Record<string, unknown>
+    expeditions: Record<string, unknown>
+    objectives: Record<string, unknown>
   }): ReplayDivergence[] {
     const diffs: ReplayDivergence[] = []
 
@@ -226,6 +233,27 @@ export class ReplayVerifier {
       const p = plan as Record<string, unknown>
       if (!["draft", "active", "completed", "deprecated"].includes(p.status as string)) {
         diffs.push({ key: `plan.${id}.status`, live: p.status, replayed: "valid_status_required" })
+      }
+    }
+
+    for (const [id, mission] of Object.entries(state.missions)) {
+      const m = mission as Record<string, unknown>
+      if (!["draft", "active", "completed", "archived"].includes(m.status as string)) {
+        diffs.push({ key: `mission.${id}.status`, live: m.status, replayed: "valid_status_required" })
+      }
+    }
+
+    for (const [id, expedition] of Object.entries(state.expeditions)) {
+      const e = expedition as Record<string, unknown>
+      if (!["draft", "approved", "executing", "completed", "cancelled"].includes(e.status as string)) {
+        diffs.push({ key: `expedition.${id}.status`, live: e.status, replayed: "valid_status_required" })
+      }
+    }
+
+    for (const [id, objective] of Object.entries(state.objectives)) {
+      const o = objective as Record<string, unknown>
+      if (!["draft", "completed"].includes(o.status as string)) {
+        diffs.push({ key: `objective.${id}.status`, live: o.status, replayed: "valid_status_required" })
       }
     }
 
