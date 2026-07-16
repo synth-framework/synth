@@ -84,16 +84,18 @@ These confirmations arrived **after** the fixes shipped — the hardening progra
 - The event-sourced core absorbed memory-mode writes, direct-API writes, and a patched CLI — final log is chain-valid, replay-consistent, graph-valid under the hardened verifier **(O)**.
 - Exemplary agent debugging methodology (A/B `echo` experiments isolating the recursion source) **(O)**.
 
-## 7. Proposed follow-on programs (proposals, not yet scheduled)
+## 7. Proposed follow-on programs (chartered 2026-07-16)
 
-**EXP-PROGRAM-011 — Operator Trust & CLI Integrity** *(proposed)*
+The three programs below are now chartered: `docs/expeditions/EXP-PROGRAM-011.md`, `EXP-PROGRAM-012.md`, `EXP-PROGRAM-013.md`. The charters govern; this section is preserved as the original proposal record. One addition made at chartering time: EXP-DISC-006 (Repository Identity), from the program-acceptance discussion.
+
+**EXP-PROGRAM-011 — Operator Trust & CLI Integrity** *(chartered)*
 
 - EXP-TRUST-001 — Govern recursion guard (cycle detection, prescriptive failure, safe bootstrap scaffolding). *(N1)*
 - EXP-TRUST-002 — Draft integrity & computed confidence (fingerprinted drafts; approval recomputes confidence from evidence; tamper → rejection event). *(N2)*
 - EXP-TRUST-003 — Evidence path (`synth mission evidence add …`; rejections reference the exact command). *(N3)*
 - EXP-TRUST-004 — Decision events (`MISSION_APPROVAL_REJECTED` persisted; draft `approvalState` synchronized). *(N9)*
 
-**EXP-PROGRAM-012 — Runtime Self-Description** *(proposed)*
+**EXP-PROGRAM-012 — Runtime Self-Description** *(chartered)*
 
 - EXP-DISC-001 — Status that answers (ids, names, states, next actions; build on `explain`). *(N5)*
 - EXP-DISC-002 — Extraction reporting (files scanned/matched/concepts; zero-extraction warning; extension filter documented or broadened). *(N4)*
@@ -101,7 +103,7 @@ These confirmations arrived **after** the fixes shipped — the hardening progra
 - EXP-DISC-004 — Clean machine output (`--json` without bootstrap log noise). *(N5)*
 - EXP-DISC-005 — Runtime integrity (`doctor` verifies installed dist hashes). *(N6)* **(S)**
 
-**EXP-PROGRAM-013 — Cognitive Continuity** *(proposed)*
+**EXP-PROGRAM-013 — Cognitive Continuity** *(chartered)*
 
 - EXP-CONT-001 — `synth explain resume`: generated "what happened / what was decided / what's next" for an agent with zero conversation history. *(N8)* **(S in form, O in need)**
 - EXP-CONT-002 — Interruption benchmark: intentional kill-at-checkpoint matrix measuring the Repository Authority Index. *(N8)* **(S)**
