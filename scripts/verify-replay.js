@@ -14,6 +14,8 @@
 //
 // Flags:
 //   --strict-graph   fail loudly when the aggregate graph is invalid
+//   --log <path>     verify an alternate event log instead of the repo's
+//                    canonical data/event-log.jsonl
 // ============================================================
 
 import { bootstrap } from "../dist/core/bootstrap.js"
@@ -22,13 +24,21 @@ import { rebuildState } from "../dist/runtime/replay.js"
 
 async function main() {
   const strictGraph = process.argv.includes("--strict-graph")
+  const logFlagIndex = process.argv.indexOf("--log")
+  const eventLogPath = logFlagIndex !== -1 ? process.argv[logFlagIndex + 1] : undefined
+  if (logFlagIndex !== -1 && !eventLogPath) {
+    console.error("\n  ❌ FATAL: --log requires a path")
+    process.exit(1)
+  }
 
   console.log("\n═══════════════════════════════════════════════════")
   console.log("  SYNTH: Replay Verification (Layer 4)")
   console.log("═══════════════════════════════════════════════════\n")
 
   const ctx = await bootstrap({
-    infra: { persistence: "file" },
+    infra: eventLogPath
+      ? { persistence: "file", eventLogPath }
+      : { persistence: "file" },
     skipGenesis: true,
   })
 
@@ -37,6 +47,7 @@ async function main() {
   const verifier = createReplayVerifier(ctx.infra.eventStore, ctx.infra.stateStore)
   const result = await verifier.verify()
 
+  console.log(`  Log:              ${eventLogPath ?? "data/event-log.jsonl"}`)
   console.log(`  Events:           ${result.eventCount}`)
   console.log(`  Chain valid:      ${result.chainValid ? "✅" : "❌"}`)
   console.log(`  Operational hash: ${result.liveHash ?? "none"}`)

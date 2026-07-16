@@ -242,45 +242,48 @@ test("graph violations never feed the legacy consistent verdict", async () => {
 // Legacy log: warnings by default, failure under strict mode
 // ============================================================
 
-test("legacy data/event-log.jsonl: consistent, but graph violations reported", async () => {
-  const verifier = createReplayVerifier(new EventStore(LEGACY_LOG), new InMemoryStateStore())
-  const result = await verifier.verify()
+// The legacy log is local, uncommitted runtime state (data/ is gitignored),
+// so this test runs only where the file exists. Exact violation counts drift
+// locally as suites append events; the pinned 206-violation profile of the
+// 215-event log is documented in docs/expeditions/EXP-HARDEN-004.md. The
+// environment-independent defective-log checks below use the committed
+// first-contact archive instead.
+test(
+  "legacy data/event-log.jsonl: consistent, but graph violations reported",
+  { skip: !fs.existsSync(LEGACY_LOG) && "requires local data/event-log.jsonl (gitignored runtime state)" },
+  async () => {
+    const verifier = createReplayVerifier(new EventStore(LEGACY_LOG), new InMemoryStateStore())
+    const result = await verifier.verify()
 
-  // The legacy determinism verdict is untouched.
-  assert.strictEqual(result.consistent, true)
-  assert.strictEqual(result.chainValid, true)
-  assert.strictEqual(result.eventCount, 215)
+    // The legacy determinism verdict is untouched.
+    assert.strictEqual(result.consistent, true)
+    assert.strictEqual(result.chainValid, true)
 
-  // The known pre-HARDEN-001 pollution is reported, not hidden.
-  // 43 creation events per aggregate share one identity (42 duplicates
-  // each), 39 expeditions + 39 objectives reference unknown parents,
-  // and the two first-registered nodes are unreachable orphans.
-  assert.strictEqual(result.graphValid, false)
-  assert.strictEqual(result.graphViolations.length, 206)
-  assert.strictEqual(violationsOfKind(result.graphViolations, "duplicate-creation").length, 126)
-  assert.strictEqual(violationsOfKind(result.graphViolations, "broken-parent-reference").length, 78)
-  assert.strictEqual(violationsOfKind(result.graphViolations, "orphan-aggregate").length, 2)
-  // Last-write-wins healed the final state, so navigation resolves.
-  assert.strictEqual(violationsOfKind(result.graphViolations, "broken-navigation").length, 0)
-})
+    // The known pre-HARDEN-001 pollution is reported, not hidden.
+    assert.strictEqual(result.graphValid, false)
+    assert.ok(result.graphViolations.length > 0)
+    assert.ok(violationsOfKind(result.graphViolations, "duplicate-creation").length > 0)
+    assert.ok(violationsOfKind(result.graphViolations, "broken-parent-reference").length > 0)
+  },
+)
 
-test("verify-replay.js default mode passes the legacy log with warnings", () => {
-  const run = spawnSync(process.execPath, ["scripts/verify-replay.js"], {
+test("verify-replay.js default mode passes a polluted log with warnings", () => {
+  const run = spawnSync(process.execPath, ["scripts/verify-replay.js", "--log", FIRST_CONTACT_ARCHIVE], {
     cwd: process.cwd(),
     encoding: "utf-8",
   })
   assert.strictEqual(run.status, 0, run.stderr)
-  assert.match(run.stdout, /Graph valid:\s+⚠️\s+206 violation\(s\)/)
+  assert.match(run.stdout, /Graph valid:\s+⚠️\s+36 violation\(s\)/)
   assert.match(run.stdout, /Replay verification PASSED/)
 })
 
-test("verify-replay.js --strict-graph fails loudly on the legacy log", () => {
-  const run = spawnSync(process.execPath, ["scripts/verify-replay.js", "--strict-graph"], {
+test("verify-replay.js --strict-graph fails loudly on a polluted log", () => {
+  const run = spawnSync(process.execPath, ["scripts/verify-replay.js", "--strict-graph", "--log", FIRST_CONTACT_ARCHIVE], {
     cwd: process.cwd(),
     encoding: "utf-8",
   })
   assert.strictEqual(run.status, 1)
-  assert.match(run.stdout, /206 violation\(s\)/)
+  assert.match(run.stdout, /36 violation\(s\)/)
   assert.match(run.stdout, /Replay graph verification FAILED \(--strict-graph\)/)
 })
 

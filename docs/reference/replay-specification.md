@@ -105,6 +105,9 @@ consistency verdict:
 - `scripts/verify-replay.js --strict-graph` exits 1 when the graph is
   invalid. Strict mode is the enforcement path; default mode is the
   deliberate, documented grandfathering of legacy logs.
+- `scripts/verify-replay.js --log <path>` verifies an alternate event log
+  instead of the repository's canonical `data/event-log.jsonl`, so any
+  archived or fixture log can be checked in either mode.
 
 ## Version History
 
