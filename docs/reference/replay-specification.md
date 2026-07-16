@@ -6,7 +6,7 @@ Prerequisites: none
 Knowledge Establishes: The formal specification of the Synth replay algorithm
 Depends On: none
 Builds Toward: none (terminal reference)
-Version: 1.0.0
+Version: 1.1.0
 Status: stable
 ---
 
@@ -69,8 +69,49 @@ verifyChain(events):
   return { valid: true }
 ```
 
+## Graph Invariants
+
+Replay proves determinism; these invariants prove correctness of the
+mission/expedition/objective aggregate graph. They are validated by
+`validateAggregateGraph` (replay engine) and reported by the Replay
+Verifier as `graphValid` / `graphViolations` (EXP-HARDEN-004).
+
+1. **Parent resolution.** Every expedition's `missionId` resolves to a
+   mission created in the log; every objective's `expeditionId` resolves
+   to an expedition created in the log. Resolution is
+   order-insensitive: the parent may be created anywhere in the log.
+2. **Parent presence.** Every expedition has a `missionId`; every
+   objective has an `expeditionId`.
+3. **Unique identity.** No aggregate identity is created more than once,
+   and no identity is shared across aggregate kinds.
+4. **Acyclicity.** Parent chains never loop.
+5. **Connectivity.** Every aggregate is reachable from a mission root;
+   no orphan aggregates exist.
+6. **Navigation.** After replay, `state.missions[expedition.missionId]`
+   exists for every expedition and `state.expeditions[objective.expeditionId]`
+   exists for every objective.
+
+### Enforcement model
+
+Graph violations are **reported separately** from the legacy
+consistency verdict:
+
+- `consistent` remains `chainValid && divergences.length === 0` and is
+  unaffected by graph violations.
+- `graphValid` / `graphViolations` carry graph correctness. Default
+  tooling (`scripts/verify-replay.js`, `npm run verify`) prints them as
+  warnings and exits 0, because historical logs polluted before
+  EXP-HARDEN-001 are preserved as immutable forensic evidence.
+- `scripts/verify-replay.js --strict-graph` exits 1 when the graph is
+  invalid. Strict mode is the enforcement path; default mode is the
+  deliberate, documented grandfathering of legacy logs.
+- `scripts/verify-replay.js --log <path>` verifies an alternate event log
+  instead of the repository's canonical `data/event-log.jsonl`, so any
+  archived or fixture log can be checked in either mode.
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-06-28 | Initial stable release |
+| 1.1.0 | 2026-07-15 | Graph invariants and enforcement model (EXP-HARDEN-004) |
