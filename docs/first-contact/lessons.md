@@ -1,4 +1,4 @@
-> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive/). Do not edit by hand; regenerate with `node scripts/generate-first-contact-projection.js`.
+> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive-b/) (Archive B, hardened pipeline). Do not edit by hand; regenerate with `node scripts/generate-first-contact-projection.js`.
 
 # First Contact — Lessons
 
@@ -28,4 +28,4 @@ This record demonstrates a governed execution path. It is not yet evidence that 
 
 ## The honest reading
 
-A consistent replay proves this history is intact and this state descends from it. It does not by itself prove that every aggregate relationship in every mission is validated — that is the purpose of the Constitutional Hardening Program (EXP-PROGRAM-010).
+A consistent replay proves this history is intact and this state descends from it. Since the Constitutional Hardening Program (EXP-PROGRAM-010), this recording (Archive B) also proves the aggregate graph is validated end to end: replay verification runs graph validation, and this archive reports 0 violations under `--strict-graph` — see [Evidence](evidence.md) for the Archive A/B comparison. What a single 32-event journey does not prove is scale: larger missions, longer histories, and multi-expedition execution remain the subject of continued validation.

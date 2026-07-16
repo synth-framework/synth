@@ -2,6 +2,9 @@ import { runExample } from "../../_shared/run-example.js"
 
 await runExample({
   name: "first-contact",
+  // EXP-FIRSTCONTACT-009: re-record the canonical journey on the hardened
+  // pipeline into Archive B. Re-running this script re-records the archive.
+  record: { archive: "recorded-journey/evidence-archive-b" },
   mission: {
     subject: "Space Mission Tracking Application",
     purpose: "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",

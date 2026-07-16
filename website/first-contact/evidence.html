@@ -61,12 +61,34 @@
         <li><code>commands.json</code> — what was actually typed</li>
         <li><code>proof.json</code> — whether governance accepted it</li>
         <li><code>replay-report.json</code> — whether state matches history</li>
+        <li><code>snapshots/</code> — the approved plan, signed and certified</li>
       </ul>
+    </section>
+    <section>
+      <h2>Two recordings, one journey</h2>
+      <p>Archive A is the original pre-hardening recording, preserved immutably as forensic evidence. Archive B is the same canonical Mission re-executed on the hardened pipeline. This comparison is derived from both archives — not hand-authored.</p>
+      <table>
+        <thead><tr><th>Property</th><th>Archive A (pre-hardening)</th><th>Archive B (hardened)</th></tr></thead>
+        <tbody>
+          <tr><td>Recorded</td><td>2026-07-15T01:50:11.541Z</td><td>2026-07-16T03:58:02.246Z</td></tr>
+          <tr><td>Events</td><td>32</td><td>32</td></tr>
+          <tr><td>Event type census</td><td>12 types</td><td>identical to A</td></tr>
+          <tr><td>Replay</td><td>consistent, chain valid</td><td>consistent, chain valid</td></tr>
+          <tr><td>Live state hash == replayed hash</td><td><code>707567213</code> == <code>707567213</code></td><td><code>1824574964</code> == <code>1824574964</code></td></tr>
+          <tr><td>Aggregate graph violations</td><td>36</td><td>0</td></tr>
+          <tr><td>— <code>broken-navigation</code></td><td>12</td><td>0</td></tr>
+          <tr><td>— <code>broken-parent-reference</code></td><td>12</td><td>0</td></tr>
+          <tr><td>— <code>orphan-aggregate</code></td><td>12</td><td>0</td></tr>
+          <tr><td><code>--strict-graph</code> verdict</td><td>fails</td><td>passes</td></tr>
+          <tr><td>Snapshot artifact persisted</td><td>no</td><td>yes</td></tr>
+          <tr><td><code>graphValid</code> in proof</td><td>absent</td><td>true</td></tr>
+        </tbody>
+      </table>
     </section>
   </main>
 
   <footer>
-    <p>Projected from the <a href="https://github.com/synth-framework/synth/tree/main/examples/first-contact/recorded-journey/evidence-archive">canonical evidence archive</a> · <a href="../index.html">← Back to Synth</a></p>
+    <p>Projected from the <a href="https://github.com/synth-framework/synth/tree/main/examples/first-contact/recorded-journey/evidence-archive-b">canonical evidence archive</a> (Archive B, hardened pipeline) · <a href="../index.html">← Back to Synth</a></p>
   </footer>
 </body>
 </html>

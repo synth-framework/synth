@@ -6,7 +6,14 @@
 // public documentation and website experiences.
 //
 // Authoritative source:
+//   examples/first-contact/recorded-journey/evidence-archive-b/
+//   (Archive B — the canonical journey re-recorded on the hardened
+//   pipeline, EXP-FIRSTCONTACT-009)
+//
+// Comparison source (read-only):
 //   examples/first-contact/recorded-journey/evidence-archive/
+//   (Archive A — the original pre-hardening recording, preserved
+//   immutably as forensic evidence, PROGRAM-010 finding F2)
 //
 // Outputs (committed, regeneration-verified):
 //   docs/first-contact/*.md
@@ -27,12 +34,13 @@ import path from "path"
 import os from "os"
 import { deriveReplayReport } from "./repair-first-contact-archive.js"
 
-const ARCHIVE_REL = path.join("examples", "first-contact", "recorded-journey", "evidence-archive")
+const ARCHIVE_REL = path.join("examples", "first-contact", "recorded-journey", "evidence-archive-b")
+const ARCHIVE_A_REL = path.join("examples", "first-contact", "recorded-journey", "evidence-archive")
 const RECORD_REL = path.join("examples", "first-contact", "README.md")
 const DOCS_OUT_REL = path.join("docs", "first-contact")
 const SITE_OUT_REL = path.join("website", "first-contact")
 
-const PROJECTION_BANNER_MD = `> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive/). Do not edit by hand; regenerate with \`node scripts/generate-first-contact-projection.js\`.`
+const PROJECTION_BANNER_MD = `> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive-b/) (Archive B, hardened pipeline). Do not edit by hand; regenerate with \`node scripts/generate-first-contact-projection.js\`.`
 
 const PROJECTION_BANNER_HTML = `<!-- Projection notice: generated from the canonical First Contact evidence archive. Do not edit by hand; regenerate with node scripts/generate-first-contact-projection.js -->`
 
@@ -44,8 +52,8 @@ async function readJson(file) {
   return JSON.parse(await fs.readFile(file, "utf-8"))
 }
 
-async function loadArchive(root) {
-  const archiveDir = path.join(root, ARCHIVE_REL)
+async function loadArchive(root, archiveRel = ARCHIVE_REL) {
+  const archiveDir = path.join(root, archiveRel)
   const required = ["timeline.json", "commands.json", "events.jsonl", "proof.json", "replay-report.json"]
   for (const name of required) {
     try {
@@ -78,9 +86,9 @@ async function loadArchive(root) {
 }
 
 /** Re-derive the replay report and compare it with the archived one. */
-async function verifyArchiveIntegrity(root) {
-  const derived = await deriveReplayReport(path.join(root, ARCHIVE_REL))
-  const archived = await readJson(path.join(root, ARCHIVE_REL, "replay-report.json"))
+async function verifyArchiveIntegrity(root, archiveRel = ARCHIVE_REL) {
+  const derived = await deriveReplayReport(path.join(root, archiveRel))
+  const archived = await readJson(path.join(root, archiveRel, "replay-report.json"))
   const mismatches = []
   for (const key of ["consistent", "chainValid", "eventCount", "liveHash", "replayHash"]) {
     if (derived[key] !== archived[key]) {
@@ -88,7 +96,7 @@ async function verifyArchiveIntegrity(root) {
     }
   }
   if (mismatches.length > 0) {
-    throw new Error(`ARCHIVE_INTEGRITY_FAILURE:\n  ${mismatches.join("\n  ")}`)
+    throw new Error(`ARCHIVE_INTEGRITY_FAILURE (${archiveRel}):\n  ${mismatches.join("\n  ")}`)
   }
   return derived
 }
@@ -111,6 +119,81 @@ function eventTypeDistribution(events) {
   const counts = new Map()
   for (const event of events) counts.set(event.type, (counts.get(event.type) || 0) + 1)
   return [...counts.entries()]
+}
+
+function violationCensus(violations) {
+  const counts = new Map()
+  for (const v of violations) counts.set(v.kind, (counts.get(v.kind) || 0) + 1)
+  return counts
+}
+
+function sameEventCensus(aEvents, bEvents) {
+  const a = eventTypeDistribution(aEvents)
+  const bCounts = new Map(eventTypeDistribution(bEvents))
+  if (a.length !== bCounts.size) return false
+  return a.every(([type, count]) => bCounts.get(type) === count)
+}
+
+/**
+ * Derive the Archive A / Archive B comparison from both evidence archives
+ * (EXP-FIRSTCONTACT-009). Archive A is the pre-hardening recording,
+ * preserved immutably; Archive B is the same canonical Mission re-executed
+ * on the hardened pipeline. Every value comes from an archive artifact or
+ * from a fresh derivation through the frozen Replay engine — nothing here
+ * is hand-authored.
+ */
+function deriveComparison(archiveA, derivedA, archiveB) {
+  const aViolations = violationCensus(derivedA.graphViolations)
+  const bViolations = violationCensus(archiveB.replayReport.graphViolations)
+  const summarize = (proof, report, graphValid, graphViolations) => ({
+    recordedAt: proof.generatedAt,
+    eventCount: report.eventCount,
+    consistent: report.consistent,
+    chainValid: report.chainValid,
+    liveHash: report.liveHash,
+    replayHash: report.replayHash,
+    graphValid,
+    graphViolationCount: graphViolations.length,
+    snapshotPersisted: proof.artifacts.snapshotPersisted === true,
+    proofGraphValid: proof.artifacts.graphValid,
+  })
+  return {
+    a: summarize(archiveA.proof, archiveA.replayReport, derivedA.graphValid, derivedA.graphViolations),
+    b: summarize(archiveB.proof, archiveB.replayReport, archiveB.replayReport.graphValid, archiveB.replayReport.graphViolations),
+    violationKinds: [...new Set([...aViolations.keys(), ...bViolations.keys()])].sort(),
+    aViolations: Object.fromEntries(aViolations),
+    bViolations: Object.fromEntries(bViolations),
+    aEventTypeCount: eventTypeDistribution(archiveA.events).length,
+    censusIdentical: sameEventCensus(archiveA.events, archiveB.events),
+  }
+}
+
+/** Render one comparison table row as Markdown. */
+function comparisonRowMd(label, aValue, bValue) {
+  return `| ${label} | ${aValue} | ${bValue} |`
+}
+
+/** Build the A/B comparison rows shared by the docs and site projections. */
+function comparisonRows(comparison) {
+  const { a, b } = comparison
+  const yesNo = (v) => (v ? "yes" : "no")
+  const rows = [
+    ["Recorded", a.recordedAt, b.recordedAt],
+    ["Events", a.eventCount, b.eventCount],
+    ["Event type census", `${comparison.aEventTypeCount} types`, comparison.censusIdentical ? "identical to A" : "DIFFERENT"],
+    ["Replay", `${a.consistent ? "consistent" : "INCONSISTENT"}, chain ${a.chainValid ? "valid" : "INVALID"}`, `${b.consistent ? "consistent" : "INCONSISTENT"}, chain ${b.chainValid ? "valid" : "INVALID"}`],
+    ["Live state hash == replayed hash", `\`${a.liveHash}\` == \`${a.replayHash}\``, `\`${b.liveHash}\` == \`${b.replayHash}\``],
+    ["Aggregate graph violations", a.graphViolationCount, b.graphViolationCount],
+    ...comparison.violationKinds.map((kind) => [
+      `— \`${kind}\``,
+      comparison.aViolations[kind] ?? 0,
+      comparison.bViolations[kind] ?? 0,
+    ]),
+    ["`--strict-graph` verdict", a.graphValid ? "passes" : "fails", b.graphValid ? "passes" : "fails"],
+    ["Snapshot artifact persisted", yesNo(a.snapshotPersisted), yesNo(b.snapshotPersisted)],
+    ["`graphValid` in proof", a.proofGraphValid === undefined ? "absent" : a.proofGraphValid, b.proofGraphValid === undefined ? "absent" : b.proofGraphValid],
+  ]
+  return rows
 }
 
 function commandsForEpisode(commands, episode) {
@@ -154,7 +237,7 @@ This is the canonical First Contact journey: one complete SYNTH execution, recor
 
 ## Evidence source
 
-Every statement in these documents derives from the canonical evidence archive at \`examples/first-contact/recorded-journey/evidence-archive/\`. The archive contains the immutable event log (\`events.jsonl\`), the journey timeline, the executed commands, the proof artifact, and the replay report.
+Every statement in these documents derives from the canonical evidence archive at \`examples/first-contact/recorded-journey/evidence-archive-b/\` (Archive B, hardened pipeline). The archive contains the immutable event log (\`events.jsonl\`), the journey timeline, the executed commands, the proof artifact, the replay report, and the signed snapshot artifacts. The [Evidence](evidence.md) page also carries the derived comparison against Archive A, the preserved pre-hardening recording.
 `
 }
 
@@ -218,15 +301,16 @@ Event types and counts are computed from \`events.jsonl\`. Episode ordering come
 `
 }
 
-function renderEvidence({ proof, events, replayReport }) {
+function renderEvidence({ proof, events, replayReport, comparison }) {
   const distribution = eventTypeDistribution(events)
   const rows = distribution.map(([type, count]) => `| \`${type}\` | ${count} |`).join("\n")
   const projections = proof.artifacts.documentationProjections.map((p) => `- \`${p}\``).join("\n")
+  const comparisonTable = comparisonRows(comparison).map(([label, a, b]) => comparisonRowMd(label, a, b)).join("\n")
   return `${PROJECTION_BANNER_MD}
 
 # First Contact — The Evidence
 
-The canonical evidence archive lives at \`examples/first-contact/recorded-journey/evidence-archive/\`. Each artifact answers a different question.
+The canonical evidence archive lives at \`examples/first-contact/recorded-journey/evidence-archive-b/\` (Archive B, hardened pipeline). Each artifact answers a different question.
 
 | Artifact | Question it answers |
 |---|---|
@@ -235,6 +319,7 @@ The canonical evidence archive lives at \`examples/first-contact/recorded-journe
 | \`commands.json\` | What was actually typed? Every human and AI command, per episode |
 | \`proof.json\` | Did the governed pipeline accept it? The proof verdict |
 | \`replay-report.json\` | Does the state match the history? The replay verification |
+| \`snapshots/\` | Was the approved plan preserved? Signed, certified snapshot artifacts |
 
 ## Event distribution
 
@@ -250,6 +335,8 @@ ${rows}
 - Execution intents: ${proof.artifacts.executionIntents}
 - Total events: ${proof.artifacts.eventCount}
 - Replay consistent: ${proof.artifacts.replayConsistent}
+- Graph valid: ${proof.artifacts.graphValid}
+- Snapshot persisted: ${proof.artifacts.snapshotPersisted}
 - Overall verdict: **${proof.overall.passed ? "PASS" : "FAIL"}**
 
 Documentation projections produced during the journey:
@@ -262,6 +349,18 @@ ${projections}
 - Chain valid: ${replayReport.chainValid}
 - Live state hash: \`${replayReport.liveHash}\`
 - Replayed state hash: \`${replayReport.replayHash}\`
+- Graph valid: ${replayReport.graphValid}
+- Graph violations: ${replayReport.graphViolations.length}
+
+## Two recordings, one journey
+
+Archive A (\`examples/first-contact/recorded-journey/evidence-archive/\`) is the original pre-hardening recording, preserved immutably as forensic evidence (EXP-PROGRAM-010 finding F2; integrity hash-pinned and verified in CI). Archive B is the same canonical Mission re-executed on the hardened pipeline (EXP-FIRSTCONTACT-009). This comparison is derived from both archives and from fresh replay derivations through the frozen engine — it is not hand-authored.
+
+| Property | Archive A (pre-hardening) | Archive B (hardened) |
+|---|---|---|
+${comparisonTable}
+
+Cross-recording hashes differ because event identities are minted per execution; determinism is proven within each recording (live hash equals replayed hash). Archive A's violations are historical evidence of the defects EXP-PROGRAM-010 corrected; Archive B demonstrates the correction on the same mission.
 `
 }
 
@@ -295,7 +394,7 @@ The 32 events are not a story about the execution — they _are_ the execution. 
 `
 }
 
-function renderLessons({ knownLimitations, proof }) {
+function renderLessons({ knownLimitations, proof, replayReport }) {
   return `${PROJECTION_BANNER_MD}
 
 # First Contact — Lessons
@@ -312,7 +411,7 @@ ${knownLimitations}
 
 ## The honest reading
 
-A consistent replay proves this history is intact and this state descends from it. It does not by itself prove that every aggregate relationship in every mission is validated — that is the purpose of the Constitutional Hardening Program (EXP-PROGRAM-010).
+A consistent replay proves this history is intact and this state descends from it. Since the Constitutional Hardening Program (EXP-PROGRAM-010), this recording (Archive B) also proves the aggregate graph is validated end to end: replay verification runs graph validation, and this archive reports ${replayReport.graphViolations.length} violations under \`--strict-graph\` — see [Evidence](evidence.md) for the Archive A/B comparison. What a single 32-event journey does not prove is scale: larger missions, longer histories, and multi-expedition execution remain the subject of continued validation.
 `
 }
 
@@ -360,7 +459,7 @@ ${body}
   </main>
 
   <footer>
-    <p>Projected from the <a href="https://github.com/synth-framework/synth/tree/main/examples/first-contact/recorded-journey/evidence-archive">canonical evidence archive</a> · <a href="../index.html">← Back to Synth</a></p>
+    <p>Projected from the <a href="https://github.com/synth-framework/synth/tree/main/examples/first-contact/recorded-journey/evidence-archive-b">canonical evidence archive</a> (Archive B, hardened pipeline) · <a href="../index.html">← Back to Synth</a></p>
   </footer>
 </body>
 </html>
@@ -387,10 +486,14 @@ function commandList(items) {
 }
 
 function renderSitePages(archive) {
-  const { timeline, commands, proof, replayReport, events } = archive
+  const { timeline, commands, proof, replayReport, events, comparison } = archive
   const ep = (n) => timeline.timeline.find((e) => e.episode === n)
   const mission = missionCreatedPayload(events)
   const distribution = eventTypeDistribution(events)
+  const inlineCode = (text) => escapeHtml(text).replace(/`([^`]+)`/g, "<code>$1</code>")
+  const comparisonTableRows = comparisonRows(comparison)
+    .map(([label, a, b]) => `          <tr><td>${inlineCode(label)}</td><td>${inlineCode(a)}</td><td>${inlineCode(b)}</td></tr>`)
+    .join("\n")
 
   const pages = {}
 
@@ -449,7 +552,15 @@ ${distribution.map(([t, n]) => `          <tr><td><code>${escapeHtml(t)}</code><
         <li><code>commands.json</code> — what was actually typed</li>
         <li><code>proof.json</code> — whether governance accepted it</li>
         <li><code>replay-report.json</code> — whether state matches history</li>
+        <li><code>snapshots/</code> — the approved plan, signed and certified</li>
       </ul>`),
+      section("Two recordings, one journey", `      <p>Archive A is the original pre-hardening recording, preserved immutably as forensic evidence. Archive B is the same canonical Mission re-executed on the hardened pipeline. This comparison is derived from both archives — not hand-authored.</p>
+      <table>
+        <thead><tr><th>Property</th><th>Archive A (pre-hardening)</th><th>Archive B (hardened)</th></tr></thead>
+        <tbody>
+${comparisonTableRows}
+        </tbody>
+      </table>`),
     ].join("\n"),
   })
 
@@ -477,7 +588,7 @@ ${distribution.map(([t, n]) => `          <tr><td><code>${escapeHtml(t)}</code><
     body: [
       section("Proof", para(`The governed pipeline accepted the journey. Overall verdict: ${proof.overall.passed ? "PASS" : "FAIL"}. Seeded events: ${proof.artifacts.seededEvents}. Execution intents: ${proof.artifacts.executionIntents}. Total events: ${proof.artifacts.eventCount}.`)),
       section("Your Turn", para(ep(8).description) + "\n" + commandList(commandsForEpisode(commands, 8))),
-      section("Known limitations", `      <p>This journey validates Mission creation, Expedition execution, event sourcing, replay integrity, and proof generation. Aggregate relationship validation, snapshot persistence, and lineage enforcement are the subject of the Constitutional Hardening Program.</p>`),
+      section("Known limitations", `      <p>This recording (Archive B) runs on the hardened pipeline: aggregate relationship validation, signed snapshot persistence, and graph-integrity proof are exercised and passing — see <a href="evidence.html">The Evidence</a> for the Archive A/B comparison. What a single 32-event journey does not prove is scale: larger missions and longer histories remain the subject of continued validation.</p>`),
     ].join("\n"),
   })
 
@@ -491,8 +602,13 @@ ${distribution.map(([t, n]) => `          <tr><td><code>${escapeHtml(t)}</code><
 async function buildOutputs(root) {
   const archive = await loadArchive(root)
   await verifyArchiveIntegrity(root)
+  // Archive A is loaded read-only for the A/B comparison; its archived
+  // replay report is integrity-checked against the frozen engine too.
+  const archiveA = await loadArchive(root, ARCHIVE_A_REL)
+  const derivedA = await verifyArchiveIntegrity(root, ARCHIVE_A_REL)
+  const comparison = deriveComparison(archiveA, derivedA, archive)
   const knownLimitations = await loadKnownLimitations(root)
-  const ctx = { ...archive, knownLimitations }
+  const ctx = { ...archive, comparison, knownLimitations }
 
   const docs = {
     "overview.md": renderOverview(ctx),
@@ -502,7 +618,7 @@ async function buildOutputs(root) {
     "replay.md": renderReplay(ctx),
     "lessons.md": renderLessons(ctx),
   }
-  const site = renderSitePages(archive)
+  const site = renderSitePages(ctx)
 
   const outputs = new Map()
   for (const [name, content] of Object.entries(docs)) {

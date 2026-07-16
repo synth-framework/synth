@@ -1,0 +1,16 @@
+# Archive A — Integrity Pin
+#
+# Pinned: 2026-07-16 (EXP-FIRSTCONTACT-009, Phase 1)
+# Reason: this archive is immutable pre-hardening forensic evidence
+#         (EXP-PROGRAM-010 finding F2). Its 36 known semantic graph
+#         violations are preserved deliberately; the archive is never
+#         regenerated or overwritten.
+#
+# Verify with: node scripts/verify-first-contact-archive-a.js
+# Or manually: shasum -a 256 -c archive-a.sha256   (from this directory)
+33312180289de015cf7108ac13965ee58ffb2d1dcd03277e492cdaaba7f9ce8c  README.md
+d26b32d5253e5a62d0c4e43aaca8e2a7bfd582ae84f0bf442f7defd641cd120b  commands.json
+24539417be478d08cc21416a8be18b662724fb29403184691460b841a4b9944c  events.jsonl
+a79e934f22b1a1f62e19184518be2b7a8bf2125d25b5c4054630a9afb9306b9f  proof.json
+004da23be032a355ec6977678168387314a9ad1477c46bf8b0a11b6bb72e0dc8  replay-report.json
+ed0d7eb41ecb638fb09d823e761f445233993f642b2dc9218ab7b6c6b572598d  timeline.json
