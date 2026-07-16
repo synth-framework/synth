@@ -1015,7 +1015,16 @@ async function main() {
     return
   }
 
-  const { positional, flags } = parseArgs(process.argv)
+  // EXP-DISC-004: --json requests machine-clean output. Suppress diagnostic
+  // INFO/WARN/DEBUG logs to stderr; ERROR logs are still emitted.
+  const jsonFlag = rawArgs.includes("--json")
+  if (jsonFlag) {
+    process.env.SYNTH_QUIET_LOGS = "1"
+  }
+
+  const filteredArgs = rawArgs.filter((arg) => arg !== "--json")
+  const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
+
   const command = positional[0]
 
   switch (command) {
