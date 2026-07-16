@@ -1,6 +1,6 @@
 # EXP-DISC-001 — Status That Answers
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-012 — Runtime Self-Description  
@@ -158,12 +158,12 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Definition of Done
 
-- [ ] `synth status` returns an `OperatorBriefing` with phase, summary, missions, active expeditions, blockers, and ranked next actions.
-- [ ] Phase detection is deterministic and pinned by fixtures for all lifecycle states.
-- [ ] No next action is listed without its exact CLI command and reason.
-- [ ] All derived values come from replayable evidence (events, state, drafts, snapshots, decisions).
-- [ ] Regression guards wired into `test:all`.
-- [ ] Documentation integrity checks pass.
+- [x] `synth status` returns an `OperatorBriefing` with phase, summary, missions, active expeditions, blockers, and ranked next actions.
+- [x] Phase detection is deterministic and pinned by fixtures for all lifecycle states.
+- [x] No next action is listed without its exact CLI command and reason.
+- [x] All derived values come from replayable evidence (events, state, drafts, snapshots, decisions).
+- [x] Regression guards wired into `test:all`.
+- [x] Documentation integrity checks pass.
 - [ ] `npm run govern` passes (via CI `proof` check).
 - [ ] Expedition is accepted.
 
@@ -181,4 +181,17 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Completion Notes
 
-*(pending)*
+- Implemented `src/cli/status-briefing.ts`: a deterministic `OperatorBriefing` projection consumed by `synth status`.
+- `synth status` now emits `kind: "OperatorBriefing"` with lifecycle `phase`, human `summary`, `missions`, `activeExpeditions`, `blockers`, and ranked `nextActions`.
+- Phase detection covers `uninitialized`, `planning`, `approved`, `executing`, `blocked`, and `complete`.
+- All values are derived from replayable evidence: canonical state, event count, Mission Draft files (`data/drafts`), and snapshot store (`data/snapshots`). No hand-authored status file is consulted.
+- Added regression guards in `tests/operator-briefing.test.js` covering:
+  - uninitialized directory,
+  - initialized project with no Mission,
+  - Mission Draft below the approval threshold,
+  - approved Mission with no Expeditions,
+  - executing Expedition,
+  - blocked work item.
+- Wired `test:operator-briefing` into `test:all`.
+- Local validation passed: build, typecheck, fixture suite, `synth-cli`, `draft-integrity`, `public-vocabulary-audit`, `explain-observability`, `verify-expedition-governance`, and `check-links`.
+- Full governance validation (`npm run govern`) deferred to CI `proof` job per project workflow.
