@@ -66,6 +66,7 @@ synth explain replay
 - `synth validate` runs only the checks affected by your change.
 - `npm run govern` produces the canonical proof that everything is healthy.
 - `synth explain replay` verifies that the current state is consistent with its event history.
+- `synth explain all` inspects the aggregate graph, snapshot lineage, and replay diagnostics in one read-only command (add `--log <path>` for any example or project, `--json` for machine output; subcommands: `lineage`, `proposals`, `snapshots`, `graph`, `diagnostics`, `status`).
 
 ---
 
