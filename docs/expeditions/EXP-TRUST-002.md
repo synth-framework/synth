@@ -46,11 +46,13 @@ The constitutional invariant (EXP-PROGRAM-011): **no artifact that influences in
 synth mission create
         │
         ├──► draft written (data/drafts/<id>.json)
-        └──► draft fingerprint anchored in the event log  (MISSION_DRAFT_CREATED)
+        └──► immutable draft integrity record written      (planning layer)
+             data/drafts/<id>.integrity.json — fingerprint + chain link
         │
 synth mission approve --draft-id …
         │
-        ├──► re-fingerprint on-disk draft, compare with anchor
+        ├──► load integrity record (missing → prescriptive rejection)
+        ├──► re-fingerprint on-disk draft, compare with record
         ├──► recompute confidence from the draft's evidence (engine.computeConfidence)
         ├──► compare recomputed vs stored confidence
         │
@@ -59,15 +61,17 @@ match + above threshold  →  approval proceeds (unchanged path)
 any divergence           →  prescriptive rejection, never approval
 ```
 
-In scope: draft fingerprinting with event-log anchoring, confidence recompute at approval, tamper rejection with a paved road, regression guards.
+In scope: draft fingerprinting with a planning-layer integrity anchor, confidence recompute at approval, tamper rejection with a paved road, regression guards.
 
-Out of scope: confidence threshold values (drift is guarded, not lowered); persisting the *rejection* as an Event (EXP-TRUST-004); the `synth mission evidence add` command (EXP-TRUST-003 — the rejection message references the intended remediation path by name); the Event Model structure itself.
+Out of scope: confidence threshold values (drift is guarded, not lowered); persisting the *rejection* as an Event (EXP-TRUST-004); the `synth mission evidence add` command (EXP-TRUST-003 — the rejection message references the intended remediation path by name); the Event Model, the event log, and ExecutionGate.
+
+**Design note (post-charter investigation).** The charter originally anchored the fingerprint in a `MISSION_DRAFT_CREATED` event in `data/event-log.jsonl`. Investigation showed every event-log write flows exclusively through `ExecutionGate` (guarded `EventStore`, bypass-audited), so CLI-originated planning events would require a registered capability, validator, policy, and a file-backed bootstrap — an execution-state mutation path for a planning artifact. The established planning-layer precedent is `FileSystemSnapshotStore` (EXP-HARDEN-002): immutable write-once artifacts, persisted through the Environment Layer filesystem provider, certified at read. The fingerprint anchor follows that precedent; forgery still requires rewriting a chained, certified record — and the constitutional boundary stays exactly where the freeze put it.
 
 ---
 
 ## Deliverables
 
-1. **Canonical draft fingerprint** — a deterministic fingerprint over the draft's decision-relevant content (observations, evidence, unknowns, questions, world model, confidence), serialized with the same exclusion discipline as `snapshot-integrity.ts` (volatile wall-clock metadata excluded). Anchored at creation in a `MISSION_DRAFT_CREATED` event appended to `data/event-log.jsonl` through the existing event-append infrastructure — forgery then requires breaking the replay hash chain, not editing one file.
+1. **Canonical draft fingerprint + integrity record** — a deterministic fingerprint over the draft's decision-relevant content (observations, evidence, unknowns, questions, world model, confidence), serialized with the same exclusion discipline as `snapshot-integrity.ts` (volatile wall-clock metadata excluded). Persisted at creation as an immutable, write-once `data/drafts/<id>.integrity.json` record through the Environment Layer filesystem provider (the `FileSystemSnapshotStore` pattern): each record chains the fingerprint-hash of the previous integrity record (`genesis` for the first), so rewriting history mid-chain invalidates every successor. Forgery requires rewriting a chained, certified record — not editing one file.
 
 2. **Recomputed confidence at approval** — `MissionStudioEngine.approve()` recomputes confidence from the draft's own observations, evidence, and unknowns using the existing pure `computeConfidence` (`engine.ts:328`), and the recomputed value — not the stored field — gates the threshold decision and is what gets reported.
 
@@ -106,7 +110,7 @@ Codify the TaskPRO forgery and the blocking-unknown deletion as failing fixtures
 
 ### Phase 2 — Fingerprint anchor
 
-Implement canonical draft fingerprinting and the `MISSION_DRAFT_CREATED` event-log anchor at `synth mission create`.
+Implement canonical draft fingerprinting and the immutable, chained integrity record written at `synth mission create`.
 
 ### Phase 3 — Recompute at approval
 
@@ -127,9 +131,9 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 | Risk | Mitigation |
 |---|---|
 | Recompute diverges from create-time values for legitimate drafts (normalization non-idempotent, float serialization) | `computeConfidence` is pure (verified: no clock, no randomness); recompute uses exactly the inputs the draft carries; fixture asserts an untouched draft recomputes to its stored value |
-| Replay rejects an unknown event type | Verify replay tolerates `MISSION_DRAFT_CREATED` without changing replay semantics; add a replay-tolerance fixture before wiring creation |
-| Fresh project without an event log | `mission create` already scaffolds `data/`; the anchor initializes the event log on first use, same pattern as `ensureDraftsDir` |
+| Drafts created before this expedition have no integrity record | Approval rejects prescriptively: the record is missing, so the draft cannot be certified — paved road is to create a new Mission Draft from current evidence |
 | Fingerprint canonicalization instability (key order, formatting) | Canonical serialization with sorted keys and the exclusion rules from `snapshot-integrity.ts`; round-trip fixture (create → approve unmodified) must pass |
+| Integrity record deleted after creation | Missing record is treated as uncertifiable and rejected; deletion does not silently pass |
 | Rejection message leaks implementation vocabulary | Public vocabulary only; vocabulary audit gate applies |
 
 ---
@@ -140,7 +144,7 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 - [ ] Blocking-unknown deletion fixture rejected prescriptively.
 - [ ] Untouched draft approves identically to rc.2 behavior.
 - [ ] Approval decisions and output use recomputed confidence only.
-- [ ] Draft fingerprint anchored in the event log at creation; replay tolerates the event.
+- [ ] Draft fingerprint anchored in an immutable, chained integrity record at creation; missing or divergent records reject at approval.
 - [ ] Regression guards wired into `test:all`.
 - [ ] Documentation integrity checks pass.
 - [ ] `npm run govern` passes (via CI `proof` check).
