@@ -17,6 +17,7 @@ import { checkGovernDelegation } from "./govern-delegation.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
+import { buildOperatorBriefing } from "./status-briefing.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
 import type { PlanningObservation } from "../planning/observation.js"
@@ -470,20 +471,8 @@ async function cmdStatus() {
     },
   })
 
-  const state = await ctx.runtime.getState()
-  const eventCount = await ctx.runtime.getEventCount()
-
-  printJson({
-    status: "ok",
-    project: ctx.genesis ? "initialized" : "not initialized",
-    eventCount,
-    stateHash: state.stateHash,
-    version: await getVersion(),
-    missions: Object.keys(state.missions || {}).length,
-    expeditions: Object.keys(state.expeditions || {}).length,
-    objectives: Object.keys(state.objectives || {}).length,
-    workItems: Object.keys(state.workItems || {}).length,
-  })
+  const briefing = await buildOperatorBriefing(process.cwd(), ctx)
+  printJson(briefing)
 }
 
 function makeObservation(type: string, subject: string, overrides: Record<string, unknown> = {}): PlanningObservation {
