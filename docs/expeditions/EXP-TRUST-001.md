@@ -1,6 +1,6 @@
 # EXP-TRUST-001 — Govern Recursion Guard
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-011 — Operator Trust & CLI Integrity  
@@ -129,13 +129,13 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Definition of Done
 
-- [ ] Loop A fixture fails prescriptively in under 10 seconds (was: ~102 s hang → vacuous governance).
-- [ ] Delegation guard active at every `npm run govern` spawn point.
-- [ ] Static pre-flight refuses cyclic govern scripts before spawning.
-- [ ] Bootstrap prints/scaffolds a paved road; anti-cycle warning present.
-- [ ] Regression guards wired into `test:all`.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
+- [x] Loop A fixture fails prescriptively in under 10 seconds (was: ~102 s hang → vacuous governance).
+- [x] Delegation guard active at every `npm run govern` spawn point.
+- [x] Static pre-flight refuses cyclic govern scripts before spawning.
+- [x] Bootstrap prints/scaffolds a paved road; anti-cycle warning present.
+- [x] Regression guards wired into `test:all`.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check).
 - [ ] Expedition is accepted.
 
 ---
@@ -152,4 +152,17 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Completion Notes
 
-*(pending)*
+Implemented exactly as scoped, with two independent guard layers in a new module, `src/cli/govern-delegation.ts`:
+
+- **Marker layer** — every guarded delegation stamps `SYNTH_GOVERN_DEPTH` into the child environment (`depth + 1`); a delegation attempt at depth ≥ 1, or with a malformed marker, is refused before spawning.
+- **Static layer** — before delegating, the target project's `package.json` `govern` script is inspected and refused when it matches `npm run govern`, `synth[.js] govern`, or `synth[.js] validate` (the adaptive validator can also delegate, so all `synth validate` forms are refused). The refusal quotes the offending script and prescribes the safe alternative.
+
+Both layers are wired at all four `npm run govern` spawn points: `synth govern` (`cmdGovern`), `synth validate --full` (`runGovernAndExit`), the adaptive validator's govern step (`executeValidationPlan`), and `synth bootstrap --approve` intake (`runGovern` in `bootstrap-apply.ts`). CLI refusals surface through the standard JSON error path (`printError` / rejected command); bootstrap records the refusal in `governOutput` and reports `status: "error"`.
+
+The bootstrap skip message is now a paved road: it prescribes a safe govern script (`"govern": "npm test"`) and explicitly warns against pointing `govern` at `synth govern`, `synth validate`, or `npm run govern`, with the reason.
+
+Regression guards live in `tests/govern-recursion-guard.test.js` (wired into `test:all` as `test:govern-recursion-guard`, 23 assertions): Loop A verbatim (`"govern": "synth govern"`), the `npm run govern` self-loop, the transitive loop (`synth validate --full`), legitimate-script pass-through with guard silence, marker-layer isolation (`SYNTH_GOVERN_DEPTH=1` refuses a safe script without executing it), and the bootstrap intake path. Fixtures are self-limiting (counter-bounded shims) so even an unguarded regression terminates instead of hanging, and the delegation marker is scrubbed from the fixture environment so the suite is deterministic whether the pipeline was entered via `npm run govern` or `synth govern`. Observed: cyclic fixtures die in ~1 s with zero delegation hops (was ~102 s hang).
+
+Repo self-check: the repository's own `govern` script (`npm run build && npm run test:all && npm run proof`) matches no cyclic pattern, so the guard stays silent for SYNTH itself.
+
+Evidence: CI `proof` check on the implementing PR (full `npm run govern`).

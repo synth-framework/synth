@@ -10,6 +10,7 @@ import path from "path"
 import { spawn } from "child_process"
 import { bootstrap } from "../core/bootstrap.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
+import { checkGovernDelegation } from "./govern-delegation.js"
 
 export type BootstrapOptions = {
   approve: boolean
@@ -182,11 +183,14 @@ async function scaffoldExample(targetDir: string, projectName: string) {
 }
 
 async function runGovern(targetDir: string): Promise<{ success: boolean; output: string }> {
+  const verdict = checkGovernDelegation(targetDir)
+  if (!verdict.allowed) return { success: false, output: verdict.message }
   return new Promise((resolve) => {
     const child = spawn("npm", ["run", "govern"], {
       cwd: targetDir,
       stdio: "pipe",
       shell: true,
+      env: verdict.childEnv,
     })
 
     let output = ""
@@ -246,7 +250,14 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
 
   // Only run govern if the project already has package.json with govern script.
   const packageJsonPath = path.join(resolvedDir, "package.json")
-  let governResult = { success: true, output: "No package.json found; govern skipped." }
+  let governResult = {
+    success: true,
+    output: [
+      "No package.json found; govern skipped.",
+      "To enable governance, add a package.json with a \"govern\" script running the project's own validation (e.g. \"govern\": \"npm test\").",
+      "Do not point \"govern\" at \"synth govern\", \"synth validate\", or \"npm run govern\" — they delegate back to \"npm run govern\" and would recurse.",
+    ].join(" "),
+  }
   try {
     await fs.access(packageJsonPath)
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"))
