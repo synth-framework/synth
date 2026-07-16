@@ -14,11 +14,19 @@
 //   Operational state == pure fold of immutable history
 //
 // This proves the system is event-sourced, not merely event-storing.
+//
+// EXP-HARDEN-004 adds a second, separate tier: graph correctness.
+// The aggregate graph of the full event log and the post-replay
+// navigation of the replayed state are validated and reported as
+// `graphValid` / `graphViolations`. Graph violations never feed the
+// legacy `consistent` verdict, so deterministic-but-polluted legacy
+// logs stay green by default; strict consumers enforce `graphValid`.
 // ============================================================
 
 import { EventStore } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
-import { rebuildState } from "../runtime/replay.js"
+import { rebuildState, validateAggregateGraph } from "../runtime/replay.js"
+import type { AggregateGraphViolation } from "../runtime/replay.js"
 import type { SynthEvent } from "../types/index.js"
 import { computeEventHash, stableStringify } from "./hash.js"
 
@@ -46,6 +54,14 @@ export type ReplayCheckResult = {
   eventCount: number
   divergences: ReplayDivergence[]
   explanation: string
+  /**
+   * EXP-HARDEN-004: true when the event log's aggregate graph and
+   * post-replay navigation are free of violations. Reported separately
+   * from `consistent`; violations are warnings unless a strict
+   * consumer (e.g. verify-replay.js --strict-graph) enforces them.
+   */
+  graphValid: boolean
+  graphViolations: AggregateGraphViolation[]
 }
 
 /** Verifies that operational state matches replayed state. */
@@ -142,6 +158,13 @@ export class ReplayVerifier {
     // Structural invariant checks on replayed state
     divergences.push(...this.checkStructuralConsistency(replayedState))
 
+    // Graph-integrity checks (EXP-HARDEN-004). These validate the
+    // aggregate graph of the full event log and post-replay navigation.
+    // They are reported in their own fields and deliberately do NOT feed
+    // `divergences` or `consistent`, keeping the legacy verdict stable.
+    const graphViolations = validateAggregateGraph(events, replayedState)
+    const graphValid = graphViolations.length === 0
+
     // Hash comparison with live state
     if (liveHash !== null && liveHash !== replayedState.stateHash) {
       divergences.push({
@@ -177,6 +200,8 @@ export class ReplayVerifier {
       eventCount: events.length,
       divergences,
       explanation,
+      graphValid,
+      graphViolations,
     }
   }
 

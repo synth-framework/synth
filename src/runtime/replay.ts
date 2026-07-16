@@ -377,3 +377,255 @@ export function computeStateHash(state: CanonicalState): string {
 export function statesEqual(a: CanonicalState, b: CanonicalState): boolean {
   return a.stateHash === b.stateHash
 }
+
+// ============================================================
+// Aggregate Graph Validation (EXP-HARDEN-004)
+// ============================================================
+// Replay proves determinism; these checks prove correctness of the
+// mission/expedition/objective graph carried by an event log.
+//
+// The validator is pure and additive: it observes events and replayed
+// state but never changes replay semantics, the event model, or event
+// payload schemas. applyEvent and rebuildState are untouched.
+//
+// Invariants (docs/reference/replay-specification.md — Graph Invariants):
+//   1. Every expedition references a mission created in the log.
+//   2. Every objective references an expedition created in the log.
+//   3. No aggregate identity is created more than once.
+//   4. Parent chains are acyclic.
+//   5. Every aggregate is reachable from a mission root (no orphans).
+//   6. Post-replay navigation resolves: state.missions[expedition.missionId]
+//      and state.expeditions[objective.expeditionId] exist.
+//
+// Parent references are validated against every creation in the log
+// (order-insensitive), mirroring the Genesis seed-graph certifier
+// (src/genesis/certification.ts) idioms.
+// ============================================================
+
+/** A single graph-integrity violation found in an event log or replayed state. */
+export type AggregateGraphViolation = {
+  kind:
+    | "malformed-creation"
+    | "duplicate-creation"
+    | "missing-parent-reference"
+    | "broken-parent-reference"
+    | "cycle"
+    | "orphan-aggregate"
+    | "broken-navigation"
+  message: string
+  aggregateKind: "mission" | "expedition" | "objective"
+  aggregateId: string
+  parentId?: string
+}
+
+type AggregateGraphNode = {
+  id: string
+  kind: "mission" | "expedition" | "objective"
+  parentId?: string
+}
+
+type CreationRecord = {
+  node: AggregateGraphNode
+  eventType: string
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0
+}
+
+function creationPayload(
+  event: SynthEvent,
+  key: string,
+): { id?: unknown; missionId?: unknown; expeditionId?: unknown } | undefined {
+  const payload = event.payload as Record<string, unknown> | undefined
+  if (!payload || typeof payload !== "object") return undefined
+  const value = payload[key]
+  if (!value || typeof value !== "object") return undefined
+  return value as { id?: unknown; missionId?: unknown; expeditionId?: unknown }
+}
+
+const CREATION_EVENTS: Array<{
+  eventType: string
+  payloadKey: string
+  kind: AggregateGraphNode["kind"]
+  parentKey?: "missionId" | "expeditionId"
+  parentKind?: AggregateGraphNode["kind"]
+}> = [
+  { eventType: "MISSION_CREATED", payloadKey: "mission", kind: "mission" },
+  { eventType: "EXPEDITION_CREATED", payloadKey: "expedition", kind: "expedition", parentKey: "missionId", parentKind: "mission" },
+  { eventType: "OBJECTIVE_ADDED", payloadKey: "objective", kind: "objective", parentKey: "expeditionId", parentKind: "expedition" },
+]
+
+/**
+ * Validate the aggregate graph carried by an event log, plus — when the
+ * replayed state is provided — post-replay navigation invariants.
+ * Returns every violation found; an empty list means the graph is fully
+ * connected and navigable.
+ */
+export function validateAggregateGraph(
+  events: SynthEvent[],
+  state?: CanonicalState,
+): AggregateGraphViolation[] {
+  const violations: AggregateGraphViolation[] = []
+  const nodes = new Map<string, AggregateGraphNode>()
+  const creations: CreationRecord[] = []
+
+  // Pass 1: index every creation event, flag malformed payloads and
+  // duplicate identities. First registration wins for the node map, so
+  // cycle and reachability checks see a single parent per identity.
+  for (const event of events) {
+    for (const spec of CREATION_EVENTS) {
+      if (event.type !== spec.eventType) continue
+      const entity = creationPayload(event, spec.payloadKey)
+      const id = entity?.id
+      if (!isNonEmptyString(id)) {
+        violations.push({
+          kind: "malformed-creation",
+          message: `${spec.eventType} event is missing its ${spec.payloadKey} payload id`,
+          aggregateKind: spec.kind,
+          aggregateId: "",
+        })
+        break
+      }
+      const parentId = spec.parentKey && isNonEmptyString(entity?.[spec.parentKey])
+        ? (entity?.[spec.parentKey] as string)
+        : undefined
+      const node: AggregateGraphNode = { id, kind: spec.kind, parentId }
+      creations.push({ node, eventType: spec.eventType })
+
+      const existing = nodes.get(id)
+      if (existing) {
+        violations.push({
+          kind: "duplicate-creation",
+          message:
+            existing.kind === spec.kind
+              ? `Duplicate ${spec.kind} identity in event log: ${id}`
+              : `Event log identity ${id} is used as both ${existing.kind} and ${spec.kind}`,
+          aggregateKind: spec.kind,
+          aggregateId: id,
+        })
+      } else {
+        nodes.set(id, node)
+      }
+      break
+    }
+  }
+
+  // Pass 2: every creation's parent reference must resolve to an
+  // aggregate of the expected kind somewhere in the log.
+  for (const { node, eventType } of creations) {
+    if (node.kind === "mission") continue
+    const parentKind = node.kind === "expedition" ? "mission" : "expedition"
+    if (!node.parentId) {
+      violations.push({
+        kind: "missing-parent-reference",
+        message: `${eventType} ${node.id} has no ${parentKind} parent`,
+        aggregateKind: node.kind,
+        aggregateId: node.id,
+      })
+      continue
+    }
+    const parent = nodes.get(node.parentId)
+    if (!parent) {
+      violations.push({
+        kind: "broken-parent-reference",
+        message: `${eventType} ${node.id} references unknown ${parentKind} ${node.parentId}`,
+        aggregateKind: node.kind,
+        aggregateId: node.id,
+        parentId: node.parentId,
+      })
+    } else if (parent.kind !== parentKind) {
+      const article = (word: string) => (/^[aeiou]/.test(word) ? "an" : "a")
+      violations.push({
+        kind: "broken-parent-reference",
+        message: `${eventType} ${node.id} parent ${node.parentId} is ${article(parent.kind)} ${parent.kind}, not ${article(parentKind)} ${parentKind}`,
+        aggregateKind: node.kind,
+        aggregateId: node.id,
+        parentId: node.parentId,
+      })
+    }
+  }
+
+  // Pass 3: cycles — follow parent pointers with a seen-set.
+  for (const node of nodes.values()) {
+    const seen = new Set<string>([node.id])
+    let current = node
+    while (current.parentId) {
+      const parent = nodes.get(current.parentId)
+      if (!parent) break
+      if (seen.has(parent.id)) {
+        violations.push({
+          kind: "cycle",
+          message: `Event log contains a cycle reaching ${parent.id}`,
+          aggregateKind: node.kind,
+          aggregateId: node.id,
+          parentId: parent.id,
+        })
+        break
+      }
+      seen.add(parent.id)
+      current = parent
+    }
+  }
+
+  // Pass 4: reachability — every node must reach a mission root.
+  const children = new Map<string, string[]>()
+  for (const node of nodes.values()) {
+    if (node.parentId && nodes.has(node.parentId)) {
+      const siblings = children.get(node.parentId) || []
+      siblings.push(node.id)
+      children.set(node.parentId, siblings)
+    }
+  }
+  const reachable = new Set<string>()
+  const queue = Array.from(nodes.values())
+    .filter((node) => node.kind === "mission")
+    .map((node) => node.id)
+  while (queue.length > 0) {
+    const current = queue.shift()!
+    if (reachable.has(current)) continue
+    reachable.add(current)
+    for (const child of children.get(current) || []) {
+      queue.push(child)
+    }
+  }
+  for (const node of nodes.values()) {
+    if (!reachable.has(node.id)) {
+      violations.push({
+        kind: "orphan-aggregate",
+        message: `Event log node ${node.id} (${node.kind}) is not reachable from any mission root`,
+        aggregateKind: node.kind,
+        aggregateId: node.id,
+      })
+    }
+  }
+
+  // Pass 5: post-replay navigation — the materialized state must
+  // resolve every parent reference it carries.
+  if (state) {
+    for (const expedition of Object.values(state.expeditions)) {
+      if (!state.missions[expedition.missionId]) {
+        violations.push({
+          kind: "broken-navigation",
+          message: `Replayed state navigation broken: expedition ${expedition.id} references mission ${expedition.missionId} missing from state.missions`,
+          aggregateKind: "expedition",
+          aggregateId: expedition.id,
+          parentId: expedition.missionId,
+        })
+      }
+    }
+    for (const objective of Object.values(state.objectives)) {
+      if (!state.expeditions[objective.expeditionId]) {
+        violations.push({
+          kind: "broken-navigation",
+          message: `Replayed state navigation broken: objective ${objective.id} references expedition ${objective.expeditionId} missing from state.expeditions`,
+          aggregateKind: "objective",
+          aggregateId: objective.id,
+          parentId: objective.expeditionId,
+        })
+      }
+    }
+  }
+
+  return violations
+}
