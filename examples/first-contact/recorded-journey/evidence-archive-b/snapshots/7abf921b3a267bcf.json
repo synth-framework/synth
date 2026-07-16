@@ -1,0 +1,1987 @@
+{
+  "snapshot": {
+    "id": "7abf921b3a267bcf",
+    "version": "1.0.0",
+    "signature": "bbd0216f4da922465e65df37a1fecee6fd60d866af92aa11d1f07594dd7eaf1f",
+    "sessionId": "35f36d7ed670c3cc",
+    "worldModel": {
+      "version": 1,
+      "nodes": {
+        "__type": "Map",
+        "value": [
+          [
+            "ecc3dfafd712f91f",
+            {
+              "id": "ecc3dfafd712f91f",
+              "kind": "mission",
+              "name": "Space Mission Tracking Application",
+              "description": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",
+              "purpose": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",
+              "expeditionIds": [],
+              "observationIds": [
+                "obs-mission-space-mission-tracking-application"
+              ],
+              "evidenceRefs": [
+                "f5209451e23fc67b"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "14a4b028b257002f",
+            {
+              "id": "14a4b028b257002f",
+              "kind": "expedition",
+              "name": "Design Data Model",
+              "description": "Design the data model for missions, crew, and launch windows.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Design the data model for missions, crew, and launch windows.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-design-data-model"
+              ],
+              "evidenceRefs": [
+                "851152cf2cd69e20"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "efa773e0ac1a4092",
+            {
+              "id": "efa773e0ac1a4092",
+              "kind": "expedition",
+              "name": "Scaffold Application",
+              "description": "Scaffold the application structure and core modules.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Scaffold the application structure and core modules.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-scaffold-application"
+              ],
+              "evidenceRefs": [
+                "e41a9b7502f6853a"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "550880ef676c7f2a",
+            {
+              "id": "550880ef676c7f2a",
+              "kind": "expedition",
+              "name": "Implement Mission Views",
+              "description": "Implement mission listing and detail views.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Implement mission listing and detail views.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-implement-mission-views"
+              ],
+              "evidenceRefs": [
+                "0ecdb393691857c6"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "c92d52ba1b0c3bf3",
+            {
+              "id": "c92d52ba1b0c3bf3",
+              "kind": "expedition",
+              "name": "Implement Crew Workflow",
+              "description": "Add crew assignment workflow.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Add crew assignment workflow.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-implement-crew-workflow"
+              ],
+              "evidenceRefs": [
+                "70f362cb1fb64532"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "03e13a9d08fe1293",
+            {
+              "id": "03e13a9d08fe1293",
+              "kind": "expedition",
+              "name": "Validate Implementation",
+              "description": "Validate the implementation with the operator and generate documentation.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Validate the implementation with the operator and generate documentation.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-validate-implementation"
+              ],
+              "evidenceRefs": [
+                "710fdd5d15d8eed9"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "714c936a46bd1285",
+            {
+              "id": "714c936a46bd1285",
+              "kind": "objective",
+              "name": "Define Mission Entity",
+              "title": "Define the mission entity with id, name, status, and launch window.",
+              "expeditionId": "14a4b028b257002f",
+              "observationIds": [
+                "obs-objective-define-mission-entity"
+              ],
+              "evidenceRefs": [
+                "b473d8ef8a1f9f93"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "cc233891b4baae41",
+            {
+              "id": "cc233891b4baae41",
+              "kind": "objective",
+              "name": "Define Crew Entity",
+              "title": "Define the crew entity with id, name, and role.",
+              "expeditionId": "14a4b028b257002f",
+              "observationIds": [
+                "obs-objective-define-crew-entity"
+              ],
+              "evidenceRefs": [
+                "b773ecd3c29526ae"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "b832dcb9bd6d87c9",
+            {
+              "id": "b832dcb9bd6d87c9",
+              "kind": "objective",
+              "name": "Create Project Layout",
+              "title": "Create the project layout and entry points.",
+              "expeditionId": "efa773e0ac1a4092",
+              "observationIds": [
+                "obs-objective-create-project-layout"
+              ],
+              "evidenceRefs": [
+                "ae075d72fa66acf0"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "4ee3da6f122b464a",
+            {
+              "id": "4ee3da6f122b464a",
+              "kind": "objective",
+              "name": "List Missions",
+              "title": "Implement the mission listing view.",
+              "expeditionId": "550880ef676c7f2a",
+              "observationIds": [
+                "obs-objective-list-missions"
+              ],
+              "evidenceRefs": [
+                "f2e43a2c687277cf"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "2950245c965b6da0",
+            {
+              "id": "2950245c965b6da0",
+              "kind": "objective",
+              "name": "Show Mission Detail",
+              "title": "Implement the mission detail view.",
+              "expeditionId": "550880ef676c7f2a",
+              "observationIds": [
+                "obs-objective-show-mission-detail"
+              ],
+              "evidenceRefs": [
+                "a703555bffec84ee"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "24ceb9f8917faee2",
+            {
+              "id": "24ceb9f8917faee2",
+              "kind": "objective",
+              "name": "Assign Crew",
+              "title": "Implement crew assignment to missions.",
+              "expeditionId": "c92d52ba1b0c3bf3",
+              "observationIds": [
+                "obs-objective-assign-crew"
+              ],
+              "evidenceRefs": [
+                "e7941e2cb927ce2f"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "14924f57da5f1ff3",
+            {
+              "id": "14924f57da5f1ff3",
+              "kind": "objective",
+              "name": "Run Validation",
+              "title": "Run validation and generate proof.",
+              "expeditionId": "03e13a9d08fe1293",
+              "observationIds": [
+                "obs-objective-run-validation"
+              ],
+              "evidenceRefs": [
+                "cedac1d2e2d28d2d"
+              ],
+              "confidence": 0.8
+            }
+          ]
+        ]
+      },
+      "edges": [
+        {
+          "id": "f2341367592c19b5",
+          "source": "14a4b028b257002f",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-design-data-model"
+          ]
+        },
+        {
+          "id": "2e792c3a8da399f6",
+          "source": "efa773e0ac1a4092",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-scaffold-application"
+          ]
+        },
+        {
+          "id": "43addf48be57ca17",
+          "source": "550880ef676c7f2a",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-implement-mission-views"
+          ]
+        },
+        {
+          "id": "003ce5ed17b9be47",
+          "source": "c92d52ba1b0c3bf3",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-implement-crew-workflow"
+          ]
+        },
+        {
+          "id": "31e82634505132cc",
+          "source": "03e13a9d08fe1293",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-validate-implementation"
+          ]
+        },
+        {
+          "id": "af90a8de0be0b94a",
+          "source": "14a4b028b257002f",
+          "target": "714c936a46bd1285",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-define-mission-entity"
+          ]
+        },
+        {
+          "id": "f1eeeab517e4d4f3",
+          "source": "14a4b028b257002f",
+          "target": "cc233891b4baae41",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-define-crew-entity"
+          ]
+        },
+        {
+          "id": "30ff3f73a81cff40",
+          "source": "efa773e0ac1a4092",
+          "target": "b832dcb9bd6d87c9",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-create-project-layout"
+          ]
+        },
+        {
+          "id": "c48de14e2600dbcf",
+          "source": "550880ef676c7f2a",
+          "target": "4ee3da6f122b464a",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-list-missions"
+          ]
+        },
+        {
+          "id": "117ed34273900679",
+          "source": "550880ef676c7f2a",
+          "target": "2950245c965b6da0",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-show-mission-detail"
+          ]
+        },
+        {
+          "id": "2d8311a72b34cdf8",
+          "source": "c92d52ba1b0c3bf3",
+          "target": "24ceb9f8917faee2",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-assign-crew"
+          ]
+        },
+        {
+          "id": "4851071ea8c78ac4",
+          "source": "03e13a9d08fe1293",
+          "target": "14924f57da5f1ff3",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-run-validation"
+          ]
+        }
+      ],
+      "evidence": {
+        "evidence": [
+          {
+            "id": "f5209451e23fc67b",
+            "observationId": "obs-mission-space-mission-tracking-application",
+            "source": "example-runner",
+            "description": "mission observation from example-runner",
+            "snippet": "{\"subject\":\"Space Mission Tracking Application\",\"name\":\"Space Mission Tracking Application\",\"purpose\":\"Track space missions, crew assignments, and launch windows with a simple, realistic implementatio",
+            "fingerprint": "962776987ea91c42",
+            "immutable": true
+          },
+          {
+            "id": "851152cf2cd69e20",
+            "observationId": "obs-expedition-design-data-model",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Design Data Model\",\"name\":\"Design Data Model\",\"goal\":\"Design the data model for missions, crew, and launch windows.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "1bc9be6f838a51c3",
+            "immutable": true
+          },
+          {
+            "id": "e41a9b7502f6853a",
+            "observationId": "obs-expedition-scaffold-application",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Scaffold Application\",\"name\":\"Scaffold Application\",\"goal\":\"Scaffold the application structure and core modules.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "aa4bcd6a57be3b45",
+            "immutable": true
+          },
+          {
+            "id": "0ecdb393691857c6",
+            "observationId": "obs-expedition-implement-mission-views",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Implement Mission Views\",\"name\":\"Implement Mission Views\",\"goal\":\"Implement mission listing and detail views.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "ba0b8e8a699a3237",
+            "immutable": true
+          },
+          {
+            "id": "70f362cb1fb64532",
+            "observationId": "obs-expedition-implement-crew-workflow",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Implement Crew Workflow\",\"name\":\"Implement Crew Workflow\",\"goal\":\"Add crew assignment workflow.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "3f823c7bafeefd8f",
+            "immutable": true
+          },
+          {
+            "id": "710fdd5d15d8eed9",
+            "observationId": "obs-expedition-validate-implementation",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Validate Implementation\",\"name\":\"Validate Implementation\",\"goal\":\"Validate the implementation with the operator and generate documentation.\",\"missionSubject\":\"Space Mission Tracking Applic",
+            "fingerprint": "0cdc05a11c356d5f",
+            "immutable": true
+          },
+          {
+            "id": "b473d8ef8a1f9f93",
+            "observationId": "obs-objective-define-mission-entity",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Define Mission Entity\",\"name\":\"Define Mission Entity\",\"title\":\"Define the mission entity with id, name, status, and launch window.\",\"expeditionSubject\":\"Design Data Model\"}",
+            "fingerprint": "35e2cc4c0637c466",
+            "immutable": true
+          },
+          {
+            "id": "b773ecd3c29526ae",
+            "observationId": "obs-objective-define-crew-entity",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Define Crew Entity\",\"name\":\"Define Crew Entity\",\"title\":\"Define the crew entity with id, name, and role.\",\"expeditionSubject\":\"Design Data Model\"}",
+            "fingerprint": "378222c39723e961",
+            "immutable": true
+          },
+          {
+            "id": "ae075d72fa66acf0",
+            "observationId": "obs-objective-create-project-layout",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Create Project Layout\",\"name\":\"Create Project Layout\",\"title\":\"Create the project layout and entry points.\",\"expeditionSubject\":\"Scaffold Application\"}",
+            "fingerprint": "5af6e2f3a62ae1d4",
+            "immutable": true
+          },
+          {
+            "id": "f2e43a2c687277cf",
+            "observationId": "obs-objective-list-missions",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"List Missions\",\"name\":\"List Missions\",\"title\":\"Implement the mission listing view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+            "fingerprint": "d89b8f5a4d3dc9ea",
+            "immutable": true
+          },
+          {
+            "id": "a703555bffec84ee",
+            "observationId": "obs-objective-show-mission-detail",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Show Mission Detail\",\"name\":\"Show Mission Detail\",\"title\":\"Implement the mission detail view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+            "fingerprint": "a6ee2d300409c3bb",
+            "immutable": true
+          },
+          {
+            "id": "e7941e2cb927ce2f",
+            "observationId": "obs-objective-assign-crew",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Assign Crew\",\"name\":\"Assign Crew\",\"title\":\"Implement crew assignment to missions.\",\"expeditionSubject\":\"Implement Crew Workflow\"}",
+            "fingerprint": "2f4292647cf9d72b",
+            "immutable": true
+          },
+          {
+            "id": "cedac1d2e2d28d2d",
+            "observationId": "obs-objective-run-validation",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Run Validation\",\"name\":\"Run Validation\",\"title\":\"Run validation and generate proof.\",\"expeditionSubject\":\"Validate Implementation\"}",
+            "fingerprint": "52fd790c07aba583",
+            "immutable": true
+          }
+        ],
+        "byObservationId": {
+          "__type": "Map",
+          "value": [
+            [
+              "obs-mission-space-mission-tracking-application",
+              {
+                "id": "f5209451e23fc67b",
+                "observationId": "obs-mission-space-mission-tracking-application",
+                "source": "example-runner",
+                "description": "mission observation from example-runner",
+                "snippet": "{\"subject\":\"Space Mission Tracking Application\",\"name\":\"Space Mission Tracking Application\",\"purpose\":\"Track space missions, crew assignments, and launch windows with a simple, realistic implementatio",
+                "fingerprint": "962776987ea91c42",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-design-data-model",
+              {
+                "id": "851152cf2cd69e20",
+                "observationId": "obs-expedition-design-data-model",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Design Data Model\",\"name\":\"Design Data Model\",\"goal\":\"Design the data model for missions, crew, and launch windows.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "1bc9be6f838a51c3",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-scaffold-application",
+              {
+                "id": "e41a9b7502f6853a",
+                "observationId": "obs-expedition-scaffold-application",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Scaffold Application\",\"name\":\"Scaffold Application\",\"goal\":\"Scaffold the application structure and core modules.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "aa4bcd6a57be3b45",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-implement-mission-views",
+              {
+                "id": "0ecdb393691857c6",
+                "observationId": "obs-expedition-implement-mission-views",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Implement Mission Views\",\"name\":\"Implement Mission Views\",\"goal\":\"Implement mission listing and detail views.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "ba0b8e8a699a3237",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-implement-crew-workflow",
+              {
+                "id": "70f362cb1fb64532",
+                "observationId": "obs-expedition-implement-crew-workflow",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Implement Crew Workflow\",\"name\":\"Implement Crew Workflow\",\"goal\":\"Add crew assignment workflow.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "3f823c7bafeefd8f",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-validate-implementation",
+              {
+                "id": "710fdd5d15d8eed9",
+                "observationId": "obs-expedition-validate-implementation",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Validate Implementation\",\"name\":\"Validate Implementation\",\"goal\":\"Validate the implementation with the operator and generate documentation.\",\"missionSubject\":\"Space Mission Tracking Applic",
+                "fingerprint": "0cdc05a11c356d5f",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-define-mission-entity",
+              {
+                "id": "b473d8ef8a1f9f93",
+                "observationId": "obs-objective-define-mission-entity",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Define Mission Entity\",\"name\":\"Define Mission Entity\",\"title\":\"Define the mission entity with id, name, status, and launch window.\",\"expeditionSubject\":\"Design Data Model\"}",
+                "fingerprint": "35e2cc4c0637c466",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-define-crew-entity",
+              {
+                "id": "b773ecd3c29526ae",
+                "observationId": "obs-objective-define-crew-entity",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Define Crew Entity\",\"name\":\"Define Crew Entity\",\"title\":\"Define the crew entity with id, name, and role.\",\"expeditionSubject\":\"Design Data Model\"}",
+                "fingerprint": "378222c39723e961",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-create-project-layout",
+              {
+                "id": "ae075d72fa66acf0",
+                "observationId": "obs-objective-create-project-layout",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Create Project Layout\",\"name\":\"Create Project Layout\",\"title\":\"Create the project layout and entry points.\",\"expeditionSubject\":\"Scaffold Application\"}",
+                "fingerprint": "5af6e2f3a62ae1d4",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-list-missions",
+              {
+                "id": "f2e43a2c687277cf",
+                "observationId": "obs-objective-list-missions",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"List Missions\",\"name\":\"List Missions\",\"title\":\"Implement the mission listing view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+                "fingerprint": "d89b8f5a4d3dc9ea",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-show-mission-detail",
+              {
+                "id": "a703555bffec84ee",
+                "observationId": "obs-objective-show-mission-detail",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Show Mission Detail\",\"name\":\"Show Mission Detail\",\"title\":\"Implement the mission detail view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+                "fingerprint": "a6ee2d300409c3bb",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-assign-crew",
+              {
+                "id": "e7941e2cb927ce2f",
+                "observationId": "obs-objective-assign-crew",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Assign Crew\",\"name\":\"Assign Crew\",\"title\":\"Implement crew assignment to missions.\",\"expeditionSubject\":\"Implement Crew Workflow\"}",
+                "fingerprint": "2f4292647cf9d72b",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-run-validation",
+              {
+                "id": "cedac1d2e2d28d2d",
+                "observationId": "obs-objective-run-validation",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Run Validation\",\"name\":\"Run Validation\",\"title\":\"Run validation and generate proof.\",\"expeditionSubject\":\"Validate Implementation\"}",
+                "fingerprint": "52fd790c07aba583",
+                "immutable": true
+              }
+            ]
+          ]
+        }
+      },
+      "unknowns": [],
+      "confidence": {
+        "overall": 0.8500000000000001,
+        "observationCoverage": 1,
+        "evidenceQuality": 0.8,
+        "consistency": 1,
+        "completeness": 1,
+        "inferenceDepth": 1,
+        "unknownImpact": 0,
+        "contradictionCount": 0
+      },
+      "planningDecisions": []
+    },
+    "proposals": [
+      {
+        "id": "e08f2d03ab2f8562",
+        "kind": "mission",
+        "name": "Space Mission Tracking Application",
+        "description": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",
+        "purpose": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",
+        "evidenceRefs": [
+          "f5209451e23fc67b"
+        ],
+        "observationIds": [
+          "obs-mission-space-mission-tracking-application"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from mission observation obs-mission-space-mission-tracking-application"
+      },
+      {
+        "id": "64036a66c7199430",
+        "kind": "expedition",
+        "name": "Design Data Model",
+        "description": "Design the data model for missions, crew, and launch windows.",
+        "missionId": "e08f2d03ab2f8562",
+        "goal": "Design the data model for missions, crew, and launch windows.",
+        "evidenceRefs": [
+          "851152cf2cd69e20"
+        ],
+        "observationIds": [
+          "obs-expedition-design-data-model"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from expedition observation obs-expedition-design-data-model"
+      },
+      {
+        "id": "6ee7f63c3d5ddf93",
+        "kind": "expedition",
+        "name": "Scaffold Application",
+        "description": "Scaffold the application structure and core modules.",
+        "missionId": "e08f2d03ab2f8562",
+        "goal": "Scaffold the application structure and core modules.",
+        "evidenceRefs": [
+          "e41a9b7502f6853a"
+        ],
+        "observationIds": [
+          "obs-expedition-scaffold-application"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from expedition observation obs-expedition-scaffold-application"
+      },
+      {
+        "id": "8e3680e9c714e5fe",
+        "kind": "expedition",
+        "name": "Implement Mission Views",
+        "description": "Implement mission listing and detail views.",
+        "missionId": "e08f2d03ab2f8562",
+        "goal": "Implement mission listing and detail views.",
+        "evidenceRefs": [
+          "0ecdb393691857c6"
+        ],
+        "observationIds": [
+          "obs-expedition-implement-mission-views"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from expedition observation obs-expedition-implement-mission-views"
+      },
+      {
+        "id": "8fc5df452d5c2e76",
+        "kind": "expedition",
+        "name": "Implement Crew Workflow",
+        "description": "Add crew assignment workflow.",
+        "missionId": "e08f2d03ab2f8562",
+        "goal": "Add crew assignment workflow.",
+        "evidenceRefs": [
+          "70f362cb1fb64532"
+        ],
+        "observationIds": [
+          "obs-expedition-implement-crew-workflow"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from expedition observation obs-expedition-implement-crew-workflow"
+      },
+      {
+        "id": "1058c616f77712c3",
+        "kind": "expedition",
+        "name": "Validate Implementation",
+        "description": "Validate the implementation with the operator and generate documentation.",
+        "missionId": "e08f2d03ab2f8562",
+        "goal": "Validate the implementation with the operator and generate documentation.",
+        "evidenceRefs": [
+          "710fdd5d15d8eed9"
+        ],
+        "observationIds": [
+          "obs-expedition-validate-implementation"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from expedition observation obs-expedition-validate-implementation"
+      },
+      {
+        "id": "8b67f0a1b9da66fd",
+        "kind": "objective",
+        "name": "Define Mission Entity",
+        "expeditionId": "64036a66c7199430",
+        "title": "Define the mission entity with id, name, status, and launch window.",
+        "evidenceRefs": [
+          "b473d8ef8a1f9f93"
+        ],
+        "observationIds": [
+          "obs-objective-define-mission-entity"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-define-mission-entity"
+      },
+      {
+        "id": "a63e089676f0aa80",
+        "kind": "objective",
+        "name": "Define Crew Entity",
+        "expeditionId": "64036a66c7199430",
+        "title": "Define the crew entity with id, name, and role.",
+        "evidenceRefs": [
+          "b773ecd3c29526ae"
+        ],
+        "observationIds": [
+          "obs-objective-define-crew-entity"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-define-crew-entity"
+      },
+      {
+        "id": "5af271a065e63e6c",
+        "kind": "objective",
+        "name": "Create Project Layout",
+        "expeditionId": "6ee7f63c3d5ddf93",
+        "title": "Create the project layout and entry points.",
+        "evidenceRefs": [
+          "ae075d72fa66acf0"
+        ],
+        "observationIds": [
+          "obs-objective-create-project-layout"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-create-project-layout"
+      },
+      {
+        "id": "ddc04d481bd474be",
+        "kind": "objective",
+        "name": "List Missions",
+        "expeditionId": "8e3680e9c714e5fe",
+        "title": "Implement the mission listing view.",
+        "evidenceRefs": [
+          "f2e43a2c687277cf"
+        ],
+        "observationIds": [
+          "obs-objective-list-missions"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-list-missions"
+      },
+      {
+        "id": "043fefdb74de78b2",
+        "kind": "objective",
+        "name": "Show Mission Detail",
+        "expeditionId": "8e3680e9c714e5fe",
+        "title": "Implement the mission detail view.",
+        "evidenceRefs": [
+          "a703555bffec84ee"
+        ],
+        "observationIds": [
+          "obs-objective-show-mission-detail"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-show-mission-detail"
+      },
+      {
+        "id": "057f28cb67e14ca2",
+        "kind": "objective",
+        "name": "Assign Crew",
+        "expeditionId": "8fc5df452d5c2e76",
+        "title": "Implement crew assignment to missions.",
+        "evidenceRefs": [
+          "e7941e2cb927ce2f"
+        ],
+        "observationIds": [
+          "obs-objective-assign-crew"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-assign-crew"
+      },
+      {
+        "id": "aa9ee2f68933fc2e",
+        "kind": "objective",
+        "name": "Run Validation",
+        "expeditionId": "1058c616f77712c3",
+        "title": "Run validation and generate proof.",
+        "evidenceRefs": [
+          "cedac1d2e2d28d2d"
+        ],
+        "observationIds": [
+          "obs-objective-run-validation"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from objective observation obs-objective-run-validation"
+      }
+    ],
+    "timestamp": 1784174282520,
+    "lineage": {
+      "lineageId": "7e41b3f572a9ac8f",
+      "version": 1,
+      "approvedAt": 1784174282520
+    }
+  },
+  "session": {
+    "id": "35f36d7ed670c3cc",
+    "createdAt": 1784174282514,
+    "observations": [
+      {
+        "id": "obs-mission-space-mission-tracking-application",
+        "sourceAdapter": "example-runner",
+        "type": "mission",
+        "payload": {
+          "subject": "Space Mission Tracking Application",
+          "name": "Space Mission Tracking Application",
+          "purpose": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation."
+        },
+        "evidenceReference": "evidence-mission-Space Mission Tracking Application",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-expedition-design-data-model",
+        "sourceAdapter": "example-runner",
+        "type": "expedition",
+        "payload": {
+          "subject": "Design Data Model",
+          "name": "Design Data Model",
+          "goal": "Design the data model for missions, crew, and launch windows.",
+          "missionSubject": "Space Mission Tracking Application"
+        },
+        "evidenceReference": "evidence-expedition-Design Data Model",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-expedition-scaffold-application",
+        "sourceAdapter": "example-runner",
+        "type": "expedition",
+        "payload": {
+          "subject": "Scaffold Application",
+          "name": "Scaffold Application",
+          "goal": "Scaffold the application structure and core modules.",
+          "missionSubject": "Space Mission Tracking Application"
+        },
+        "evidenceReference": "evidence-expedition-Scaffold Application",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-expedition-implement-mission-views",
+        "sourceAdapter": "example-runner",
+        "type": "expedition",
+        "payload": {
+          "subject": "Implement Mission Views",
+          "name": "Implement Mission Views",
+          "goal": "Implement mission listing and detail views.",
+          "missionSubject": "Space Mission Tracking Application"
+        },
+        "evidenceReference": "evidence-expedition-Implement Mission Views",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-expedition-implement-crew-workflow",
+        "sourceAdapter": "example-runner",
+        "type": "expedition",
+        "payload": {
+          "subject": "Implement Crew Workflow",
+          "name": "Implement Crew Workflow",
+          "goal": "Add crew assignment workflow.",
+          "missionSubject": "Space Mission Tracking Application"
+        },
+        "evidenceReference": "evidence-expedition-Implement Crew Workflow",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-expedition-validate-implementation",
+        "sourceAdapter": "example-runner",
+        "type": "expedition",
+        "payload": {
+          "subject": "Validate Implementation",
+          "name": "Validate Implementation",
+          "goal": "Validate the implementation with the operator and generate documentation.",
+          "missionSubject": "Space Mission Tracking Application"
+        },
+        "evidenceReference": "evidence-expedition-Validate Implementation",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-objective-define-mission-entity",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "Define Mission Entity",
+          "name": "Define Mission Entity",
+          "title": "Define the mission entity with id, name, status, and launch window.",
+          "expeditionSubject": "Design Data Model"
+        },
+        "evidenceReference": "evidence-objective-Define Mission Entity",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-objective-define-crew-entity",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "Define Crew Entity",
+          "name": "Define Crew Entity",
+          "title": "Define the crew entity with id, name, and role.",
+          "expeditionSubject": "Design Data Model"
+        },
+        "evidenceReference": "evidence-objective-Define Crew Entity",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-objective-create-project-layout",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "Create Project Layout",
+          "name": "Create Project Layout",
+          "title": "Create the project layout and entry points.",
+          "expeditionSubject": "Scaffold Application"
+        },
+        "evidenceReference": "evidence-objective-Create Project Layout",
+        "confidence": "high",
+        "timestamp": 1784174282489
+      },
+      {
+        "id": "obs-objective-list-missions",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "List Missions",
+          "name": "List Missions",
+          "title": "Implement the mission listing view.",
+          "expeditionSubject": "Implement Mission Views"
+        },
+        "evidenceReference": "evidence-objective-List Missions",
+        "confidence": "high",
+        "timestamp": 1784174282490
+      },
+      {
+        "id": "obs-objective-show-mission-detail",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "Show Mission Detail",
+          "name": "Show Mission Detail",
+          "title": "Implement the mission detail view.",
+          "expeditionSubject": "Implement Mission Views"
+        },
+        "evidenceReference": "evidence-objective-Show Mission Detail",
+        "confidence": "high",
+        "timestamp": 1784174282490
+      },
+      {
+        "id": "obs-objective-assign-crew",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "Assign Crew",
+          "name": "Assign Crew",
+          "title": "Implement crew assignment to missions.",
+          "expeditionSubject": "Implement Crew Workflow"
+        },
+        "evidenceReference": "evidence-objective-Assign Crew",
+        "confidence": "high",
+        "timestamp": 1784174282490
+      },
+      {
+        "id": "obs-objective-run-validation",
+        "sourceAdapter": "example-runner",
+        "type": "objective",
+        "payload": {
+          "subject": "Run Validation",
+          "name": "Run Validation",
+          "title": "Run validation and generate proof.",
+          "expeditionSubject": "Validate Implementation"
+        },
+        "evidenceReference": "evidence-objective-Run Validation",
+        "confidence": "high",
+        "timestamp": 1784174282490
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "f5209451e23fc67b",
+          "observationId": "obs-mission-space-mission-tracking-application",
+          "source": "example-runner",
+          "description": "mission observation from example-runner",
+          "snippet": "{\"subject\":\"Space Mission Tracking Application\",\"name\":\"Space Mission Tracking Application\",\"purpose\":\"Track space missions, crew assignments, and launch windows with a simple, realistic implementatio",
+          "fingerprint": "962776987ea91c42",
+          "immutable": true
+        },
+        {
+          "id": "851152cf2cd69e20",
+          "observationId": "obs-expedition-design-data-model",
+          "source": "example-runner",
+          "description": "expedition observation from example-runner",
+          "snippet": "{\"subject\":\"Design Data Model\",\"name\":\"Design Data Model\",\"goal\":\"Design the data model for missions, crew, and launch windows.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+          "fingerprint": "1bc9be6f838a51c3",
+          "immutable": true
+        },
+        {
+          "id": "e41a9b7502f6853a",
+          "observationId": "obs-expedition-scaffold-application",
+          "source": "example-runner",
+          "description": "expedition observation from example-runner",
+          "snippet": "{\"subject\":\"Scaffold Application\",\"name\":\"Scaffold Application\",\"goal\":\"Scaffold the application structure and core modules.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+          "fingerprint": "aa4bcd6a57be3b45",
+          "immutable": true
+        },
+        {
+          "id": "0ecdb393691857c6",
+          "observationId": "obs-expedition-implement-mission-views",
+          "source": "example-runner",
+          "description": "expedition observation from example-runner",
+          "snippet": "{\"subject\":\"Implement Mission Views\",\"name\":\"Implement Mission Views\",\"goal\":\"Implement mission listing and detail views.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+          "fingerprint": "ba0b8e8a699a3237",
+          "immutable": true
+        },
+        {
+          "id": "70f362cb1fb64532",
+          "observationId": "obs-expedition-implement-crew-workflow",
+          "source": "example-runner",
+          "description": "expedition observation from example-runner",
+          "snippet": "{\"subject\":\"Implement Crew Workflow\",\"name\":\"Implement Crew Workflow\",\"goal\":\"Add crew assignment workflow.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+          "fingerprint": "3f823c7bafeefd8f",
+          "immutable": true
+        },
+        {
+          "id": "710fdd5d15d8eed9",
+          "observationId": "obs-expedition-validate-implementation",
+          "source": "example-runner",
+          "description": "expedition observation from example-runner",
+          "snippet": "{\"subject\":\"Validate Implementation\",\"name\":\"Validate Implementation\",\"goal\":\"Validate the implementation with the operator and generate documentation.\",\"missionSubject\":\"Space Mission Tracking Applic",
+          "fingerprint": "0cdc05a11c356d5f",
+          "immutable": true
+        },
+        {
+          "id": "b473d8ef8a1f9f93",
+          "observationId": "obs-objective-define-mission-entity",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"Define Mission Entity\",\"name\":\"Define Mission Entity\",\"title\":\"Define the mission entity with id, name, status, and launch window.\",\"expeditionSubject\":\"Design Data Model\"}",
+          "fingerprint": "35e2cc4c0637c466",
+          "immutable": true
+        },
+        {
+          "id": "b773ecd3c29526ae",
+          "observationId": "obs-objective-define-crew-entity",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"Define Crew Entity\",\"name\":\"Define Crew Entity\",\"title\":\"Define the crew entity with id, name, and role.\",\"expeditionSubject\":\"Design Data Model\"}",
+          "fingerprint": "378222c39723e961",
+          "immutable": true
+        },
+        {
+          "id": "ae075d72fa66acf0",
+          "observationId": "obs-objective-create-project-layout",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"Create Project Layout\",\"name\":\"Create Project Layout\",\"title\":\"Create the project layout and entry points.\",\"expeditionSubject\":\"Scaffold Application\"}",
+          "fingerprint": "5af6e2f3a62ae1d4",
+          "immutable": true
+        },
+        {
+          "id": "f2e43a2c687277cf",
+          "observationId": "obs-objective-list-missions",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"List Missions\",\"name\":\"List Missions\",\"title\":\"Implement the mission listing view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+          "fingerprint": "d89b8f5a4d3dc9ea",
+          "immutable": true
+        },
+        {
+          "id": "a703555bffec84ee",
+          "observationId": "obs-objective-show-mission-detail",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"Show Mission Detail\",\"name\":\"Show Mission Detail\",\"title\":\"Implement the mission detail view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+          "fingerprint": "a6ee2d300409c3bb",
+          "immutable": true
+        },
+        {
+          "id": "e7941e2cb927ce2f",
+          "observationId": "obs-objective-assign-crew",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"Assign Crew\",\"name\":\"Assign Crew\",\"title\":\"Implement crew assignment to missions.\",\"expeditionSubject\":\"Implement Crew Workflow\"}",
+          "fingerprint": "2f4292647cf9d72b",
+          "immutable": true
+        },
+        {
+          "id": "cedac1d2e2d28d2d",
+          "observationId": "obs-objective-run-validation",
+          "source": "example-runner",
+          "description": "objective observation from example-runner",
+          "snippet": "{\"subject\":\"Run Validation\",\"name\":\"Run Validation\",\"title\":\"Run validation and generate proof.\",\"expeditionSubject\":\"Validate Implementation\"}",
+          "fingerprint": "52fd790c07aba583",
+          "immutable": true
+        }
+      ],
+      "byObservationId": {
+        "__type": "Map",
+        "value": [
+          [
+            "obs-mission-space-mission-tracking-application",
+            {
+              "id": "f5209451e23fc67b",
+              "observationId": "obs-mission-space-mission-tracking-application",
+              "source": "example-runner",
+              "description": "mission observation from example-runner",
+              "snippet": "{\"subject\":\"Space Mission Tracking Application\",\"name\":\"Space Mission Tracking Application\",\"purpose\":\"Track space missions, crew assignments, and launch windows with a simple, realistic implementatio",
+              "fingerprint": "962776987ea91c42",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-expedition-design-data-model",
+            {
+              "id": "851152cf2cd69e20",
+              "observationId": "obs-expedition-design-data-model",
+              "source": "example-runner",
+              "description": "expedition observation from example-runner",
+              "snippet": "{\"subject\":\"Design Data Model\",\"name\":\"Design Data Model\",\"goal\":\"Design the data model for missions, crew, and launch windows.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+              "fingerprint": "1bc9be6f838a51c3",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-expedition-scaffold-application",
+            {
+              "id": "e41a9b7502f6853a",
+              "observationId": "obs-expedition-scaffold-application",
+              "source": "example-runner",
+              "description": "expedition observation from example-runner",
+              "snippet": "{\"subject\":\"Scaffold Application\",\"name\":\"Scaffold Application\",\"goal\":\"Scaffold the application structure and core modules.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+              "fingerprint": "aa4bcd6a57be3b45",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-expedition-implement-mission-views",
+            {
+              "id": "0ecdb393691857c6",
+              "observationId": "obs-expedition-implement-mission-views",
+              "source": "example-runner",
+              "description": "expedition observation from example-runner",
+              "snippet": "{\"subject\":\"Implement Mission Views\",\"name\":\"Implement Mission Views\",\"goal\":\"Implement mission listing and detail views.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+              "fingerprint": "ba0b8e8a699a3237",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-expedition-implement-crew-workflow",
+            {
+              "id": "70f362cb1fb64532",
+              "observationId": "obs-expedition-implement-crew-workflow",
+              "source": "example-runner",
+              "description": "expedition observation from example-runner",
+              "snippet": "{\"subject\":\"Implement Crew Workflow\",\"name\":\"Implement Crew Workflow\",\"goal\":\"Add crew assignment workflow.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+              "fingerprint": "3f823c7bafeefd8f",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-expedition-validate-implementation",
+            {
+              "id": "710fdd5d15d8eed9",
+              "observationId": "obs-expedition-validate-implementation",
+              "source": "example-runner",
+              "description": "expedition observation from example-runner",
+              "snippet": "{\"subject\":\"Validate Implementation\",\"name\":\"Validate Implementation\",\"goal\":\"Validate the implementation with the operator and generate documentation.\",\"missionSubject\":\"Space Mission Tracking Applic",
+              "fingerprint": "0cdc05a11c356d5f",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-define-mission-entity",
+            {
+              "id": "b473d8ef8a1f9f93",
+              "observationId": "obs-objective-define-mission-entity",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"Define Mission Entity\",\"name\":\"Define Mission Entity\",\"title\":\"Define the mission entity with id, name, status, and launch window.\",\"expeditionSubject\":\"Design Data Model\"}",
+              "fingerprint": "35e2cc4c0637c466",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-define-crew-entity",
+            {
+              "id": "b773ecd3c29526ae",
+              "observationId": "obs-objective-define-crew-entity",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"Define Crew Entity\",\"name\":\"Define Crew Entity\",\"title\":\"Define the crew entity with id, name, and role.\",\"expeditionSubject\":\"Design Data Model\"}",
+              "fingerprint": "378222c39723e961",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-create-project-layout",
+            {
+              "id": "ae075d72fa66acf0",
+              "observationId": "obs-objective-create-project-layout",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"Create Project Layout\",\"name\":\"Create Project Layout\",\"title\":\"Create the project layout and entry points.\",\"expeditionSubject\":\"Scaffold Application\"}",
+              "fingerprint": "5af6e2f3a62ae1d4",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-list-missions",
+            {
+              "id": "f2e43a2c687277cf",
+              "observationId": "obs-objective-list-missions",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"List Missions\",\"name\":\"List Missions\",\"title\":\"Implement the mission listing view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+              "fingerprint": "d89b8f5a4d3dc9ea",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-show-mission-detail",
+            {
+              "id": "a703555bffec84ee",
+              "observationId": "obs-objective-show-mission-detail",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"Show Mission Detail\",\"name\":\"Show Mission Detail\",\"title\":\"Implement the mission detail view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+              "fingerprint": "a6ee2d300409c3bb",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-assign-crew",
+            {
+              "id": "e7941e2cb927ce2f",
+              "observationId": "obs-objective-assign-crew",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"Assign Crew\",\"name\":\"Assign Crew\",\"title\":\"Implement crew assignment to missions.\",\"expeditionSubject\":\"Implement Crew Workflow\"}",
+              "fingerprint": "2f4292647cf9d72b",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-objective-run-validation",
+            {
+              "id": "cedac1d2e2d28d2d",
+              "observationId": "obs-objective-run-validation",
+              "source": "example-runner",
+              "description": "objective observation from example-runner",
+              "snippet": "{\"subject\":\"Run Validation\",\"name\":\"Run Validation\",\"title\":\"Run validation and generate proof.\",\"expeditionSubject\":\"Validate Implementation\"}",
+              "fingerprint": "52fd790c07aba583",
+              "immutable": true
+            }
+          ]
+        ]
+      }
+    },
+    "questions": [],
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.8500000000000001,
+      "observationCoverage": 1,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "worldModel": {
+      "version": 1,
+      "nodes": {
+        "__type": "Map",
+        "value": [
+          [
+            "ecc3dfafd712f91f",
+            {
+              "id": "ecc3dfafd712f91f",
+              "kind": "mission",
+              "name": "Space Mission Tracking Application",
+              "description": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",
+              "purpose": "Track space missions, crew assignments, and launch windows with a simple, realistic implementation.",
+              "expeditionIds": [],
+              "observationIds": [
+                "obs-mission-space-mission-tracking-application"
+              ],
+              "evidenceRefs": [
+                "f5209451e23fc67b"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "14a4b028b257002f",
+            {
+              "id": "14a4b028b257002f",
+              "kind": "expedition",
+              "name": "Design Data Model",
+              "description": "Design the data model for missions, crew, and launch windows.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Design the data model for missions, crew, and launch windows.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-design-data-model"
+              ],
+              "evidenceRefs": [
+                "851152cf2cd69e20"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "efa773e0ac1a4092",
+            {
+              "id": "efa773e0ac1a4092",
+              "kind": "expedition",
+              "name": "Scaffold Application",
+              "description": "Scaffold the application structure and core modules.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Scaffold the application structure and core modules.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-scaffold-application"
+              ],
+              "evidenceRefs": [
+                "e41a9b7502f6853a"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "550880ef676c7f2a",
+            {
+              "id": "550880ef676c7f2a",
+              "kind": "expedition",
+              "name": "Implement Mission Views",
+              "description": "Implement mission listing and detail views.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Implement mission listing and detail views.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-implement-mission-views"
+              ],
+              "evidenceRefs": [
+                "0ecdb393691857c6"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "c92d52ba1b0c3bf3",
+            {
+              "id": "c92d52ba1b0c3bf3",
+              "kind": "expedition",
+              "name": "Implement Crew Workflow",
+              "description": "Add crew assignment workflow.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Add crew assignment workflow.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-implement-crew-workflow"
+              ],
+              "evidenceRefs": [
+                "70f362cb1fb64532"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "03e13a9d08fe1293",
+            {
+              "id": "03e13a9d08fe1293",
+              "kind": "expedition",
+              "name": "Validate Implementation",
+              "description": "Validate the implementation with the operator and generate documentation.",
+              "missionId": "ecc3dfafd712f91f",
+              "goal": "Validate the implementation with the operator and generate documentation.",
+              "objectiveIds": [],
+              "observationIds": [
+                "obs-expedition-validate-implementation"
+              ],
+              "evidenceRefs": [
+                "710fdd5d15d8eed9"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "714c936a46bd1285",
+            {
+              "id": "714c936a46bd1285",
+              "kind": "objective",
+              "name": "Define Mission Entity",
+              "title": "Define the mission entity with id, name, status, and launch window.",
+              "expeditionId": "14a4b028b257002f",
+              "observationIds": [
+                "obs-objective-define-mission-entity"
+              ],
+              "evidenceRefs": [
+                "b473d8ef8a1f9f93"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "cc233891b4baae41",
+            {
+              "id": "cc233891b4baae41",
+              "kind": "objective",
+              "name": "Define Crew Entity",
+              "title": "Define the crew entity with id, name, and role.",
+              "expeditionId": "14a4b028b257002f",
+              "observationIds": [
+                "obs-objective-define-crew-entity"
+              ],
+              "evidenceRefs": [
+                "b773ecd3c29526ae"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "b832dcb9bd6d87c9",
+            {
+              "id": "b832dcb9bd6d87c9",
+              "kind": "objective",
+              "name": "Create Project Layout",
+              "title": "Create the project layout and entry points.",
+              "expeditionId": "efa773e0ac1a4092",
+              "observationIds": [
+                "obs-objective-create-project-layout"
+              ],
+              "evidenceRefs": [
+                "ae075d72fa66acf0"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "4ee3da6f122b464a",
+            {
+              "id": "4ee3da6f122b464a",
+              "kind": "objective",
+              "name": "List Missions",
+              "title": "Implement the mission listing view.",
+              "expeditionId": "550880ef676c7f2a",
+              "observationIds": [
+                "obs-objective-list-missions"
+              ],
+              "evidenceRefs": [
+                "f2e43a2c687277cf"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "2950245c965b6da0",
+            {
+              "id": "2950245c965b6da0",
+              "kind": "objective",
+              "name": "Show Mission Detail",
+              "title": "Implement the mission detail view.",
+              "expeditionId": "550880ef676c7f2a",
+              "observationIds": [
+                "obs-objective-show-mission-detail"
+              ],
+              "evidenceRefs": [
+                "a703555bffec84ee"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "24ceb9f8917faee2",
+            {
+              "id": "24ceb9f8917faee2",
+              "kind": "objective",
+              "name": "Assign Crew",
+              "title": "Implement crew assignment to missions.",
+              "expeditionId": "c92d52ba1b0c3bf3",
+              "observationIds": [
+                "obs-objective-assign-crew"
+              ],
+              "evidenceRefs": [
+                "e7941e2cb927ce2f"
+              ],
+              "confidence": 0.8
+            }
+          ],
+          [
+            "14924f57da5f1ff3",
+            {
+              "id": "14924f57da5f1ff3",
+              "kind": "objective",
+              "name": "Run Validation",
+              "title": "Run validation and generate proof.",
+              "expeditionId": "03e13a9d08fe1293",
+              "observationIds": [
+                "obs-objective-run-validation"
+              ],
+              "evidenceRefs": [
+                "cedac1d2e2d28d2d"
+              ],
+              "confidence": 0.8
+            }
+          ]
+        ]
+      },
+      "edges": [
+        {
+          "id": "f2341367592c19b5",
+          "source": "14a4b028b257002f",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-design-data-model"
+          ]
+        },
+        {
+          "id": "2e792c3a8da399f6",
+          "source": "efa773e0ac1a4092",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-scaffold-application"
+          ]
+        },
+        {
+          "id": "43addf48be57ca17",
+          "source": "550880ef676c7f2a",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-implement-mission-views"
+          ]
+        },
+        {
+          "id": "003ce5ed17b9be47",
+          "source": "c92d52ba1b0c3bf3",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-implement-crew-workflow"
+          ]
+        },
+        {
+          "id": "31e82634505132cc",
+          "source": "03e13a9d08fe1293",
+          "target": "ecc3dfafd712f91f",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-expedition-validate-implementation"
+          ]
+        },
+        {
+          "id": "af90a8de0be0b94a",
+          "source": "14a4b028b257002f",
+          "target": "714c936a46bd1285",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-define-mission-entity"
+          ]
+        },
+        {
+          "id": "f1eeeab517e4d4f3",
+          "source": "14a4b028b257002f",
+          "target": "cc233891b4baae41",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-define-crew-entity"
+          ]
+        },
+        {
+          "id": "30ff3f73a81cff40",
+          "source": "efa773e0ac1a4092",
+          "target": "b832dcb9bd6d87c9",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-create-project-layout"
+          ]
+        },
+        {
+          "id": "c48de14e2600dbcf",
+          "source": "550880ef676c7f2a",
+          "target": "4ee3da6f122b464a",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-list-missions"
+          ]
+        },
+        {
+          "id": "117ed34273900679",
+          "source": "550880ef676c7f2a",
+          "target": "2950245c965b6da0",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-show-mission-detail"
+          ]
+        },
+        {
+          "id": "2d8311a72b34cdf8",
+          "source": "c92d52ba1b0c3bf3",
+          "target": "24ceb9f8917faee2",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-assign-crew"
+          ]
+        },
+        {
+          "id": "4851071ea8c78ac4",
+          "source": "03e13a9d08fe1293",
+          "target": "14924f57da5f1ff3",
+          "relation": "parent_of",
+          "observationIds": [
+            "obs-objective-run-validation"
+          ]
+        }
+      ],
+      "evidence": {
+        "evidence": [
+          {
+            "id": "f5209451e23fc67b",
+            "observationId": "obs-mission-space-mission-tracking-application",
+            "source": "example-runner",
+            "description": "mission observation from example-runner",
+            "snippet": "{\"subject\":\"Space Mission Tracking Application\",\"name\":\"Space Mission Tracking Application\",\"purpose\":\"Track space missions, crew assignments, and launch windows with a simple, realistic implementatio",
+            "fingerprint": "962776987ea91c42",
+            "immutable": true
+          },
+          {
+            "id": "851152cf2cd69e20",
+            "observationId": "obs-expedition-design-data-model",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Design Data Model\",\"name\":\"Design Data Model\",\"goal\":\"Design the data model for missions, crew, and launch windows.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "1bc9be6f838a51c3",
+            "immutable": true
+          },
+          {
+            "id": "e41a9b7502f6853a",
+            "observationId": "obs-expedition-scaffold-application",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Scaffold Application\",\"name\":\"Scaffold Application\",\"goal\":\"Scaffold the application structure and core modules.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "aa4bcd6a57be3b45",
+            "immutable": true
+          },
+          {
+            "id": "0ecdb393691857c6",
+            "observationId": "obs-expedition-implement-mission-views",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Implement Mission Views\",\"name\":\"Implement Mission Views\",\"goal\":\"Implement mission listing and detail views.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "ba0b8e8a699a3237",
+            "immutable": true
+          },
+          {
+            "id": "70f362cb1fb64532",
+            "observationId": "obs-expedition-implement-crew-workflow",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Implement Crew Workflow\",\"name\":\"Implement Crew Workflow\",\"goal\":\"Add crew assignment workflow.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+            "fingerprint": "3f823c7bafeefd8f",
+            "immutable": true
+          },
+          {
+            "id": "710fdd5d15d8eed9",
+            "observationId": "obs-expedition-validate-implementation",
+            "source": "example-runner",
+            "description": "expedition observation from example-runner",
+            "snippet": "{\"subject\":\"Validate Implementation\",\"name\":\"Validate Implementation\",\"goal\":\"Validate the implementation with the operator and generate documentation.\",\"missionSubject\":\"Space Mission Tracking Applic",
+            "fingerprint": "0cdc05a11c356d5f",
+            "immutable": true
+          },
+          {
+            "id": "b473d8ef8a1f9f93",
+            "observationId": "obs-objective-define-mission-entity",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Define Mission Entity\",\"name\":\"Define Mission Entity\",\"title\":\"Define the mission entity with id, name, status, and launch window.\",\"expeditionSubject\":\"Design Data Model\"}",
+            "fingerprint": "35e2cc4c0637c466",
+            "immutable": true
+          },
+          {
+            "id": "b773ecd3c29526ae",
+            "observationId": "obs-objective-define-crew-entity",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Define Crew Entity\",\"name\":\"Define Crew Entity\",\"title\":\"Define the crew entity with id, name, and role.\",\"expeditionSubject\":\"Design Data Model\"}",
+            "fingerprint": "378222c39723e961",
+            "immutable": true
+          },
+          {
+            "id": "ae075d72fa66acf0",
+            "observationId": "obs-objective-create-project-layout",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Create Project Layout\",\"name\":\"Create Project Layout\",\"title\":\"Create the project layout and entry points.\",\"expeditionSubject\":\"Scaffold Application\"}",
+            "fingerprint": "5af6e2f3a62ae1d4",
+            "immutable": true
+          },
+          {
+            "id": "f2e43a2c687277cf",
+            "observationId": "obs-objective-list-missions",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"List Missions\",\"name\":\"List Missions\",\"title\":\"Implement the mission listing view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+            "fingerprint": "d89b8f5a4d3dc9ea",
+            "immutable": true
+          },
+          {
+            "id": "a703555bffec84ee",
+            "observationId": "obs-objective-show-mission-detail",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Show Mission Detail\",\"name\":\"Show Mission Detail\",\"title\":\"Implement the mission detail view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+            "fingerprint": "a6ee2d300409c3bb",
+            "immutable": true
+          },
+          {
+            "id": "e7941e2cb927ce2f",
+            "observationId": "obs-objective-assign-crew",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Assign Crew\",\"name\":\"Assign Crew\",\"title\":\"Implement crew assignment to missions.\",\"expeditionSubject\":\"Implement Crew Workflow\"}",
+            "fingerprint": "2f4292647cf9d72b",
+            "immutable": true
+          },
+          {
+            "id": "cedac1d2e2d28d2d",
+            "observationId": "obs-objective-run-validation",
+            "source": "example-runner",
+            "description": "objective observation from example-runner",
+            "snippet": "{\"subject\":\"Run Validation\",\"name\":\"Run Validation\",\"title\":\"Run validation and generate proof.\",\"expeditionSubject\":\"Validate Implementation\"}",
+            "fingerprint": "52fd790c07aba583",
+            "immutable": true
+          }
+        ],
+        "byObservationId": {
+          "__type": "Map",
+          "value": [
+            [
+              "obs-mission-space-mission-tracking-application",
+              {
+                "id": "f5209451e23fc67b",
+                "observationId": "obs-mission-space-mission-tracking-application",
+                "source": "example-runner",
+                "description": "mission observation from example-runner",
+                "snippet": "{\"subject\":\"Space Mission Tracking Application\",\"name\":\"Space Mission Tracking Application\",\"purpose\":\"Track space missions, crew assignments, and launch windows with a simple, realistic implementatio",
+                "fingerprint": "962776987ea91c42",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-design-data-model",
+              {
+                "id": "851152cf2cd69e20",
+                "observationId": "obs-expedition-design-data-model",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Design Data Model\",\"name\":\"Design Data Model\",\"goal\":\"Design the data model for missions, crew, and launch windows.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "1bc9be6f838a51c3",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-scaffold-application",
+              {
+                "id": "e41a9b7502f6853a",
+                "observationId": "obs-expedition-scaffold-application",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Scaffold Application\",\"name\":\"Scaffold Application\",\"goal\":\"Scaffold the application structure and core modules.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "aa4bcd6a57be3b45",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-implement-mission-views",
+              {
+                "id": "0ecdb393691857c6",
+                "observationId": "obs-expedition-implement-mission-views",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Implement Mission Views\",\"name\":\"Implement Mission Views\",\"goal\":\"Implement mission listing and detail views.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "ba0b8e8a699a3237",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-implement-crew-workflow",
+              {
+                "id": "70f362cb1fb64532",
+                "observationId": "obs-expedition-implement-crew-workflow",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Implement Crew Workflow\",\"name\":\"Implement Crew Workflow\",\"goal\":\"Add crew assignment workflow.\",\"missionSubject\":\"Space Mission Tracking Application\"}",
+                "fingerprint": "3f823c7bafeefd8f",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-expedition-validate-implementation",
+              {
+                "id": "710fdd5d15d8eed9",
+                "observationId": "obs-expedition-validate-implementation",
+                "source": "example-runner",
+                "description": "expedition observation from example-runner",
+                "snippet": "{\"subject\":\"Validate Implementation\",\"name\":\"Validate Implementation\",\"goal\":\"Validate the implementation with the operator and generate documentation.\",\"missionSubject\":\"Space Mission Tracking Applic",
+                "fingerprint": "0cdc05a11c356d5f",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-define-mission-entity",
+              {
+                "id": "b473d8ef8a1f9f93",
+                "observationId": "obs-objective-define-mission-entity",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Define Mission Entity\",\"name\":\"Define Mission Entity\",\"title\":\"Define the mission entity with id, name, status, and launch window.\",\"expeditionSubject\":\"Design Data Model\"}",
+                "fingerprint": "35e2cc4c0637c466",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-define-crew-entity",
+              {
+                "id": "b773ecd3c29526ae",
+                "observationId": "obs-objective-define-crew-entity",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Define Crew Entity\",\"name\":\"Define Crew Entity\",\"title\":\"Define the crew entity with id, name, and role.\",\"expeditionSubject\":\"Design Data Model\"}",
+                "fingerprint": "378222c39723e961",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-create-project-layout",
+              {
+                "id": "ae075d72fa66acf0",
+                "observationId": "obs-objective-create-project-layout",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Create Project Layout\",\"name\":\"Create Project Layout\",\"title\":\"Create the project layout and entry points.\",\"expeditionSubject\":\"Scaffold Application\"}",
+                "fingerprint": "5af6e2f3a62ae1d4",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-list-missions",
+              {
+                "id": "f2e43a2c687277cf",
+                "observationId": "obs-objective-list-missions",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"List Missions\",\"name\":\"List Missions\",\"title\":\"Implement the mission listing view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+                "fingerprint": "d89b8f5a4d3dc9ea",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-show-mission-detail",
+              {
+                "id": "a703555bffec84ee",
+                "observationId": "obs-objective-show-mission-detail",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Show Mission Detail\",\"name\":\"Show Mission Detail\",\"title\":\"Implement the mission detail view.\",\"expeditionSubject\":\"Implement Mission Views\"}",
+                "fingerprint": "a6ee2d300409c3bb",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-assign-crew",
+              {
+                "id": "e7941e2cb927ce2f",
+                "observationId": "obs-objective-assign-crew",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Assign Crew\",\"name\":\"Assign Crew\",\"title\":\"Implement crew assignment to missions.\",\"expeditionSubject\":\"Implement Crew Workflow\"}",
+                "fingerprint": "2f4292647cf9d72b",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-objective-run-validation",
+              {
+                "id": "cedac1d2e2d28d2d",
+                "observationId": "obs-objective-run-validation",
+                "source": "example-runner",
+                "description": "objective observation from example-runner",
+                "snippet": "{\"subject\":\"Run Validation\",\"name\":\"Run Validation\",\"title\":\"Run validation and generate proof.\",\"expeditionSubject\":\"Validate Implementation\"}",
+                "fingerprint": "52fd790c07aba583",
+                "immutable": true
+              }
+            ]
+          ]
+        }
+      },
+      "unknowns": [],
+      "confidence": {
+        "overall": 0.8500000000000001,
+        "observationCoverage": 1,
+        "evidenceQuality": 0.8,
+        "consistency": 1,
+        "completeness": 1,
+        "inferenceDepth": 1,
+        "unknownImpact": 0,
+        "contradictionCount": 0
+      },
+      "planningDecisions": []
+    },
+    "planningDecisions": [],
+    "approvalState": "draft"
+  }
+}

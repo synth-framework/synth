@@ -12,6 +12,12 @@
 //     expeditions: [{ subject: "Task API", goal: "...", missionSubject: "Todo Tracker" }],
 //     objectives: [{ subject: "Add Task", title: "...", expeditionSubject: "Task API" }],
 //   })
+//
+// Optional: pass `record: { archive: "<path relative to example dir>" }` to
+// also produce a self-contained evidence archive (events.jsonl, replay
+// report re-derived from the archived file, certified snapshot artifact,
+// proof). Recording is strict: replay inconsistency or aggregate graph
+// violations fail the run. Re-running replaces the archive.
 // ============================================================
 
 import fs from "fs/promises"
@@ -20,6 +26,9 @@ import os from "os"
 import { bootstrap } from "../../dist/core/bootstrap.js"
 import { createReplayVerifier } from "../../dist/core/replay-verifier.js"
 import { documentFromKnowledgeBase } from "../../dist/documentation/documentation-expedition.js"
+import { EventStore } from "../../dist/infra/event-store.js"
+import { InMemoryStateStore } from "../../dist/infra/state-store.js"
+import { rebuildState } from "../../dist/runtime/replay.js"
 
 function makeObservation(type, subject, overrides = {}) {
   return {
@@ -33,7 +42,7 @@ function makeObservation(type, subject, overrides = {}) {
   }
 }
 
-export async function runExample({ name, mission, expeditions, objectives }) {
+export async function runExample({ name, mission, expeditions, objectives, record }) {
   const exampleDir = path.join(process.cwd())
   const dataDir = path.join(exampleDir, "data")
   const proofDir = path.join(exampleDir, "proof")
@@ -42,6 +51,14 @@ export async function runExample({ name, mission, expeditions, objectives }) {
   await fs.rm(dataDir, { recursive: true, force: true })
   await fs.mkdir(dataDir, { recursive: true })
   await fs.mkdir(proofDir, { recursive: true })
+
+  // Re-recording is idempotent: a previous archive at the same path is
+  // replaced by the new recording.
+  const archiveDir = record?.archive ? path.join(exampleDir, record.archive) : undefined
+  if (archiveDir) {
+    await fs.rm(archiveDir, { recursive: true, force: true })
+    await fs.mkdir(archiveDir, { recursive: true })
+  }
 
   const report = {
     schema: "synth-example-proof-v1",
@@ -150,18 +167,66 @@ export async function runExample({ name, mission, expeditions, objectives }) {
     executionIntents: executionIntents.length,
     replayConsistent: replayResult.consistent,
     eventCount: replayResult.eventCount,
-    stateHash: replayResult.stateHash,
+    stateHash: replayResult.replayHash,
     documentationProjections: projections.map((p) => p.filename),
   }
   report.overall = { passed: true }
 
+  if (archiveDir) {
+    // Persist the approved snapshot through the governed API (snapshot
+    // storage contract), then re-load it: the store certifies signature,
+    // proposal graph, and schema version on every load.
+    const saveResult = await ctx.api.missionStudioOperation({
+      operation: "saveSnapshot",
+      params: { snapshot, session: sessionResult.session },
+    })
+    if (saveResult.status !== "ok") throw new Error(`Snapshot persistence failed: ${saveResult.error}`)
+    const certified = await ctx.api.missionStudioOperation({
+      operation: "getSnapshot",
+      params: { snapshotId: snapshot.id },
+    })
+    if (certified.status !== "ok") throw new Error(`Snapshot certification failed: ${certified.error}`)
+
+    // Archive the immutable event log exactly as recorded.
+    const recordedEvents = await ctx.infra.eventStore.loadAll()
+    const eventsPath = path.join(archiveDir, "events.jsonl")
+    await fs.writeFile(eventsPath, recordedEvents.map((event) => JSON.stringify(event)).join("\n") + "\n", "utf-8")
+
+    // Re-derive the replay report from the archived file itself, proving
+    // the archive round-trips through the frozen Replay engine. Recording
+    // mode is strict: graph violations fail the recording.
+    const archivedEventStore = new EventStore(eventsPath)
+    const archivedEvents = await archivedEventStore.loadAll()
+    const archivedStateStore = new InMemoryStateStore()
+    await archivedStateStore.save(rebuildState(archivedEvents))
+    const archiveReport = await createReplayVerifier(archivedEventStore, archivedStateStore).verify()
+    if (!archiveReport.consistent) throw new Error("Archived replay verification failed")
+    if (!archiveReport.graphValid) {
+      throw new Error(`Archived aggregate graph invalid: ${archiveReport.graphViolations.length} violation(s)`)
+    }
+    await fs.writeFile(path.join(archiveDir, "replay-report.json"), JSON.stringify(archiveReport, null, 2) + "\n", "utf-8")
+
+    report.artifacts.archive = record.archive
+    report.artifacts.snapshotPersisted = true
+    report.artifacts.graphValid = archiveReport.graphValid
+  }
+
   const proofPath = path.join(proofDir, `proof-${new Date().toISOString().replace(/[:.]/g, "-")}.json`)
   await fs.writeFile(proofPath, JSON.stringify(report, null, 2), "utf-8")
 
+  if (archiveDir) {
+    // Copy the certified snapshot artifact and the execution proof.
+    const snapshotFile = `${snapshot.id.replace(/[^a-zA-Z0-9_-]/g, "_")}.json`
+    await fs.mkdir(path.join(archiveDir, "snapshots"), { recursive: true })
+    await fs.copyFile(path.join(dataDir, "snapshots", snapshotFile), path.join(archiveDir, "snapshots", snapshotFile))
+    await fs.copyFile(proofPath, path.join(archiveDir, "proof.json"))
+  }
+
   console.log(`\n  Example '${name}' certified`)
   console.log(`  Events: ${replayResult.eventCount}`)
-  console.log(`  State hash: ${replayResult.stateHash}`)
+  console.log(`  State hash: ${replayResult.replayHash}`)
   console.log(`  Proof: ${proofPath}`)
+  if (archiveDir) console.log(`  Archive: ${archiveDir}`)
 
   return report
 }

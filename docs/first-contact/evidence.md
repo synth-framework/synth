@@ -1,8 +1,8 @@
-> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive/). Do not edit by hand; regenerate with `node scripts/generate-first-contact-projection.js`.
+> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive-b/) (Archive B, hardened pipeline). Do not edit by hand; regenerate with `node scripts/generate-first-contact-projection.js`.
 
 # First Contact — The Evidence
 
-The canonical evidence archive lives at `examples/first-contact/recorded-journey/evidence-archive/`. Each artifact answers a different question.
+The canonical evidence archive lives at `examples/first-contact/recorded-journey/evidence-archive-b/` (Archive B, hardened pipeline). Each artifact answers a different question.
 
 | Artifact | Question it answers |
 |---|---|
@@ -11,6 +11,7 @@ The canonical evidence archive lives at `examples/first-contact/recorded-journey
 | `commands.json` | What was actually typed? Every human and AI command, per episode |
 | `proof.json` | Did the governed pipeline accept it? The proof verdict |
 | `replay-report.json` | Does the state match the history? The replay verification |
+| `snapshots/` | Was the approved plan preserved? Signed, certified snapshot artifacts |
 
 ## Event distribution
 
@@ -32,11 +33,13 @@ The canonical evidence archive lives at `examples/first-contact/recorded-journey
 ## Proof summary
 
 - Example: `first-contact`
-- Snapshot: `467ac6bb90ff18fb`
+- Snapshot: `7abf921b3a267bcf`
 - Seeded events: 25
 - Execution intents: 6
 - Total events: 32
 - Replay consistent: true
+- Graph valid: true
+- Snapshot persisted: true
 - Overall verdict: **PASS**
 
 Documentation projections produced during the journey:
@@ -53,5 +56,28 @@ Documentation projections produced during the journey:
 
 - Consistent: true
 - Chain valid: true
-- Live state hash: `707567213`
-- Replayed state hash: `707567213`
+- Live state hash: `1824574964`
+- Replayed state hash: `1824574964`
+- Graph valid: true
+- Graph violations: 0
+
+## Two recordings, one journey
+
+Archive A (`examples/first-contact/recorded-journey/evidence-archive/`) is the original pre-hardening recording, preserved immutably as forensic evidence (EXP-PROGRAM-010 finding F2; integrity hash-pinned and verified in CI). Archive B is the same canonical Mission re-executed on the hardened pipeline (EXP-FIRSTCONTACT-009). This comparison is derived from both archives and from fresh replay derivations through the frozen engine — it is not hand-authored.
+
+| Property | Archive A (pre-hardening) | Archive B (hardened) |
+|---|---|---|
+| Recorded | 2026-07-15T01:50:11.541Z | 2026-07-16T03:58:02.246Z |
+| Events | 32 | 32 |
+| Event type census | 12 types | identical to A |
+| Replay | consistent, chain valid | consistent, chain valid |
+| Live state hash == replayed hash | `707567213` == `707567213` | `1824574964` == `1824574964` |
+| Aggregate graph violations | 36 | 0 |
+| — `broken-navigation` | 12 | 0 |
+| — `broken-parent-reference` | 12 | 0 |
+| — `orphan-aggregate` | 12 | 0 |
+| `--strict-graph` verdict | fails | passes |
+| Snapshot artifact persisted | no | yes |
+| `graphValid` in proof | absent | true |
+
+Cross-recording hashes differ because event identities are minted per execution; determinism is proven within each recording (live hash equals replayed hash). Archive A's violations are historical evidence of the defects EXP-PROGRAM-010 corrected; Archive B demonstrates the correction on the same mission.

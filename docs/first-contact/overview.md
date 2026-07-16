@@ -1,4 +1,4 @@
-> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive/). Do not edit by hand; regenerate with `node scripts/generate-first-contact-projection.js`.
+> **Projection notice.** This document is a deterministic projection of the [canonical First Contact evidence archive](../../examples/first-contact/recorded-journey/evidence-archive-b/) (Archive B, hardened pipeline). Do not edit by hand; regenerate with `node scripts/generate-first-contact-projection.js`.
 
 # First Contact — Overview
 
@@ -21,4 +21,4 @@ This is the canonical First Contact journey: one complete SYNTH execution, recor
 
 ## Evidence source
 
-Every statement in these documents derives from the canonical evidence archive at `examples/first-contact/recorded-journey/evidence-archive/`. The archive contains the immutable event log (`events.jsonl`), the journey timeline, the executed commands, the proof artifact, and the replay report.
+Every statement in these documents derives from the canonical evidence archive at `examples/first-contact/recorded-journey/evidence-archive-b/` (Archive B, hardened pipeline). The archive contains the immutable event log (`events.jsonl`), the journey timeline, the executed commands, the proof artifact, the replay report, and the signed snapshot artifacts. The [Evidence](evidence.md) page also carries the derived comparison against Archive A, the preserved pre-hardening recording.

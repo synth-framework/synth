@@ -36,7 +36,7 @@ All of these commands are **read-only**. They never modify the Event history, th
 Every command accepts `--log <path>` to inspect a different Event history than the current project's:
 
 ```bash
-synth explain all --log examples/first-contact/recorded-journey/evidence-archive/events.jsonl
+synth explain all --log examples/first-contact/recorded-journey/evidence-archive-b/events.jsonl
 ```
 
 State, checkpoint, and snapshot locations are derived from the directory that contains the given log, so any example or project directory works the same way as the current one.

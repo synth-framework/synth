@@ -15,7 +15,8 @@ import os from "os"
 const PROJECT_ROOT = process.cwd()
 const GENERATOR_PATH = path.resolve(PROJECT_ROOT, "scripts", "generate-first-contact-projection.js")
 const REPAIR_PATH = path.resolve(PROJECT_ROOT, "scripts", "repair-first-contact-archive.js")
-const ARCHIVE_DIR = path.resolve(PROJECT_ROOT, "examples", "first-contact", "recorded-journey", "evidence-archive")
+const ARCHIVE_A_DIR = path.resolve(PROJECT_ROOT, "examples", "first-contact", "recorded-journey", "evidence-archive")
+const ARCHIVE_DIR = path.resolve(PROJECT_ROOT, "examples", "first-contact", "recorded-journey", "evidence-archive-b")
 
 function runScript(scriptPath, args = [], cwd = PROJECT_ROOT) {
   const result = spawnSync("node", [scriptPath, ...args], {
@@ -43,6 +44,13 @@ async function testArchiveIsCompleteAndIntact() {
   assert(report.consistent === true, "Archived replay report must be consistent")
   assert(report.chainValid === true, "Archived replay report must have a valid chain")
   assert(report.eventCount === 32, `Archived replay report must cover 32 events, got ${report.eventCount}`)
+  assert(report.graphValid === true, "Archive B replay report must have a valid aggregate graph")
+  assert(report.graphViolations.length === 0, `Archive B must have zero graph violations, got ${report.graphViolations.length}`)
+  const proof = JSON.parse(await fs.readFile(path.join(ARCHIVE_DIR, "proof.json"), "utf-8"))
+  assert(proof.artifacts.snapshotPersisted === true, "Archive B proof must record snapshot persistence")
+  assert(proof.artifacts.graphValid === true, "Archive B proof must record graph validity")
+  const snapshots = await fs.readdir(path.join(ARCHIVE_DIR, "snapshots")).catch(() => [])
+  assert(snapshots.some((name) => name.endsWith(".json")), "Archive B must contain a signed snapshot artifact")
 }
 
 async function testProjectionCheckPasses() {
@@ -76,11 +84,16 @@ async function testProjectionIsDeterministic() {
 async function testCheckDetectsDrift() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-drift-"))
   try {
-    // Mirror the archive and committed outputs into the fixture
+    // Mirror both archives and committed outputs into the fixture
     await fs.mkdir(path.join(tmpDir, "examples", "first-contact", "recorded-journey"), { recursive: true })
     await fs.cp(
       path.join(PROJECT_ROOT, "examples", "first-contact", "recorded-journey", "evidence-archive"),
       path.join(tmpDir, "examples", "first-contact", "recorded-journey", "evidence-archive"),
+      { recursive: true },
+    )
+    await fs.cp(
+      path.join(PROJECT_ROOT, "examples", "first-contact", "recorded-journey", "evidence-archive-b"),
+      path.join(tmpDir, "examples", "first-contact", "recorded-journey", "evidence-archive-b"),
       { recursive: true },
     )
     await fs.copyFile(
@@ -120,14 +133,14 @@ async function testRepairScriptDerivesConsistentReport() {
   // The repair script writes replay-report.json in place, so it must run
   // against a tmpdir mirror — never the committed archive. A test may not
   // modify examples/; the archive is immutable evidence (EXP-HARDEN-006).
-  const realReport = path.join(ARCHIVE_DIR, "replay-report.json")
+  const realReport = path.join(ARCHIVE_A_DIR, "replay-report.json")
   const realHashBefore = crypto.createHash("sha256").update(await fs.readFile(realReport)).digest("hex")
 
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-repair-"))
   try {
     await fs.mkdir(path.join(tmpDir, "examples", "first-contact", "recorded-journey"), { recursive: true })
     await fs.cp(
-      ARCHIVE_DIR,
+      ARCHIVE_A_DIR,
       path.join(tmpDir, "examples", "first-contact", "recorded-journey", "evidence-archive"),
       { recursive: true },
     )
