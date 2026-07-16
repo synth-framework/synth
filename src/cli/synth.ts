@@ -13,6 +13,7 @@ import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
+import { checkGovernDelegation } from "./govern-delegation.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -271,11 +272,14 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
 }
 
 function runGovernAndExit(): Promise<void> {
+  const verdict = checkGovernDelegation(process.cwd())
+  if (!verdict.allowed) printError(verdict.message)
   return new Promise<void>((resolve) => {
     const child = spawn("npm", ["run", "govern"], {
       stdio: "inherit",
       shell: true,
       cwd: process.cwd(),
+      env: verdict.childEnv,
     })
     child.on("close", (code) => {
       process.exit(code ?? 1)
@@ -296,11 +300,27 @@ async function executeValidationPlan(scripts: string[]): Promise<ValidationExecu
 
   for (const script of scripts) {
     const scriptStart = Date.now()
+    let childEnv: NodeJS.ProcessEnv | undefined
+    if (script === "govern") {
+      const verdict = checkGovernDelegation(process.cwd())
+      if (!verdict.allowed) {
+        console.error(verdict.message)
+        results.push({ script, status: 1, durationMs: Date.now() - scriptStart })
+        return {
+          success: false,
+          results,
+          failedScript: script,
+          totalDurationMs: Date.now() - start,
+        }
+      }
+      childEnv = verdict.childEnv
+    }
     const args = script === "govern" ? ["run", "govern"] : ["run", script]
     const result = spawnSync("npm", args, {
       stdio: "inherit",
       shell: true,
       cwd: process.cwd(),
+      ...(childEnv ? { env: childEnv } : {}),
     })
     const durationMs = Date.now() - scriptStart
     results.push({ script, status: result.status ?? 1, durationMs })
@@ -404,11 +424,14 @@ async function cmdBootstrap(args: string[], flags: Record<string, string | boole
 }
 
 function cmdGovern() {
+  const verdict = checkGovernDelegation(process.cwd())
+  if (!verdict.allowed) return Promise.reject(new Error(verdict.message))
   return new Promise<void>((resolve, reject) => {
     const child = spawn("npm", ["run", "govern"], {
       stdio: "inherit",
       shell: true,
       cwd: process.cwd(),
+      env: verdict.childEnv,
     })
     child.on("close", (code) => {
       if (code === 0) resolve()
