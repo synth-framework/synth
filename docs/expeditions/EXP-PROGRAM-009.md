@@ -177,6 +177,12 @@ Canonical First Contact Experience
 │       Adoption Expedition
 │       Remaining projection targets, deferred behind the EXP-PROGRAM-010 hardening boundary.
 │
+├── EXP-FIRSTCONTACT-009  Canonical Journey Re-recording
+│       Adoption Expedition
+│       Re-record the canonical Mission on the hardened pipeline (Archive B),
+│       preserving Archive A as immutable historical evidence. Inserted at
+│       EXP-PROGRAM-010 acceptance; blocks 008, 005, 006.
+│
 ├── EXP-FIRSTCONTACT-005  Interactive Replay Experience
 │       Adoption Expedition
 │       Allow newcomers to observe the canonical Mission through Replay.
@@ -234,8 +240,9 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [ ] EXP-FIRSTCONTACT-001 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-002 completed and accepted.
 - [x] EXP-FIRSTCONTACT-003 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-007 completed and accepted.
+- [x] EXP-FIRSTCONTACT-007 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-008 completed and accepted.
+- [ ] EXP-FIRSTCONTACT-009 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-005 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-006 completed and accepted.
 - [ ] Program accepted.
@@ -245,6 +252,8 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 ## Completion Notes
 
 Program restructured to treat First Contact as a constitutional asset with a canonical journey and deterministic projection system.
+
+2026-07-16 — EXP-PROGRAM-010 accepted; the hardening boundary is crossed. EXP-FIRSTCONTACT-009 (Canonical Journey Re-recording) inserted ahead of the deferred expeditions: the canonical Mission will be re-executed on the hardened pipeline to produce Archive B, with Archive A preserved as immutable forensic evidence. EXP-FIRSTCONTACT-008, 005, and 006 resume behind 009.
 
 ---
 

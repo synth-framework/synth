@@ -1,6 +1,6 @@
 # EXP-PROGRAM-010 — Constitutional Hardening Program
 
-**Status:** Active  
+**Status:** Accepted — Constitutional objectives achieved (2026-07-16)  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -267,20 +267,32 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-HARDEN-001 completed and accepted.
-- [ ] EXP-HARDEN-002 completed and accepted.
-- [ ] EXP-HARDEN-003 completed and accepted.
-- [ ] EXP-HARDEN-004 completed and accepted.
-- [ ] EXP-HARDEN-005 completed and accepted.
-- [ ] EXP-HARDEN-006 completed and accepted.
-- [ ] EXP-HARDEN-007 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-HARDEN-001 completed and accepted.
+- [x] EXP-HARDEN-002 completed and accepted.
+- [x] EXP-HARDEN-003 completed and accepted.
+- [x] EXP-HARDEN-004 completed and accepted.
+- [x] EXP-HARDEN-005 completed and accepted.
+- [x] EXP-HARDEN-006 completed and accepted.
+- [x] EXP-HARDEN-007 completed and accepted.
+- [x] Program accepted.
 
 ---
 
 ## Completion Notes
 
-Program created. No expeditions have started.
+**Accepted 2026-07-16 — Constitutional objectives achieved.**
+
+All seven expeditions merged (PRs #77–#83, CI `proof` green, 122 new hardening tests). The implementation was corrected to meet the frozen Constitution; the Constitution was not modified. Full evidence in `docs/expeditions/EXP-PROGRAM-010-completion-report.md`.
+
+Findings dispositions:
+
+- **F1 (WorkItem → Objective event-model edge):** Accepted Constitutional Gap. Routed to ADR → event-model evolution → v2.1. Not implementation debt.
+- **F2 (legacy forensic logs):** Preserved immutable — local 215-event log (206 pinned violations) and First Contact Archive A (32 events, 36 violations). History is not regenerated; the defects are evidence that governance worked.
+- **F3 (confidence thresholds):** Unchanged; Mission Studio confidence remains evidence-driven.
+
+External validation: the TaskPRO first-contact field experiment (rc.1, Windows, autonomous agent) independently confirmed the HARDEN-002 / 006 / 007 failure classes in the wild, and the hardened verifier certifies its event log clean (`docs/expeditions/EXP-PROGRAM-010-evidence-annex-taskpro.md`).
+
+Follow-on: EXP-FIRSTCONTACT-009 re-records the canonical journey on the hardened pipeline, preserving Archive A as historical evidence.
 
 ---
 
@@ -288,6 +300,8 @@ Program created. No expeditions have started.
 
 | Document | Relationship |
 |---|---|
+| `docs/expeditions/EXP-PROGRAM-010-completion-report.md` | Completion report with Constitution Provenance Matrix and findings dispositions. |
+| `docs/expeditions/EXP-PROGRAM-010-evidence-annex-taskpro.md` | External field evidence (TaskPRO rc.1 experiment) and follow-on program proposals. |
 | `docs/adr/ADR-004-synth-eras-and-protected-assets.md` | Eras, Protected Assets, and Post-Freeze Rule. |
 | `docs/reference/public-vocabulary.md` | Canonical seven-concept vocabulary. |
 | `docs/expeditions/EXP-PROGRAM-009.md` | Canonical First Contact Experience; source of deferred defects. |
