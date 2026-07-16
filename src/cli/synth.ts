@@ -14,6 +14,7 @@ import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
+import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -567,13 +568,16 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
 
   const draftsDir = await ensureDraftsDir()
   const draftPath = path.join(draftsDir, `${session.id}.json`)
-  await fs.writeFile(draftPath, JSON.stringify(serializePlanningSession(session), null, 2), "utf-8")
+  const serialized = serializePlanningSession(session)
+  await fs.writeFile(draftPath, JSON.stringify(serialized, null, 2), "utf-8")
+  await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
 
   printJson({
     status: "ok",
     kind: "MissionDraft",
     draftId: session.id,
     draftPath,
+    integrity: "certified",
     subject,
     purpose,
     confidence: session.confidence,
@@ -588,12 +592,19 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
-  const draftPath = path.join(process.cwd(), "data", "drafts", `${draftId}.json`)
+  const draftsDir = path.join(process.cwd(), "data", "drafts")
+  const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
   try {
     draftData = JSON.parse(await fs.readFile(draftPath, "utf-8"))
   } catch {
     printError(`Draft not found: ${draftPath}`)
+  }
+
+  // Drafts are editable artifacts; certify before trusting anything (EXP-TRUST-002).
+  const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
+  if (!integrity.ok) {
+    printError(integrity.message)
   }
 
   const session = deserializePlanningSession(draftData)
@@ -626,7 +637,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
       decision: {
         approved: false,
         reason: decision?.reason || "Approval denied by Mission Studio",
-        confidence: session.confidence.overall,
+        confidence: decision?.confidence ?? session.confidence.overall,
       },
       draftId,
       proposals: approveResult.proposals ?? [],
@@ -661,7 +672,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     kind: "MissionApprovalDecision",
     decision: {
       approved: true,
-      confidence: session.confidence.overall,
+      confidence: decision?.confidence ?? session.confidence.overall,
     },
     draftId,
     snapshotId: approvedData?.id,

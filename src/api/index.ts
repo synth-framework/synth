@@ -242,7 +242,7 @@ export class SynthAPI {
             decision: {
               approved: false,
               reason: result.error,
-              confidence: session.confidence?.overall,
+              confidence: result.session?.confidence?.overall ?? session.confidence?.overall,
             },
             proposals: this.missionStudio.proposeMissions(session),
           }
@@ -251,7 +251,7 @@ export class SynthAPI {
           status: "ok",
           decision: {
             approved: true,
-            confidence: session.confidence?.overall,
+            confidence: result.session?.confidence?.overall ?? session.confidence?.overall,
           },
           result,
         }
