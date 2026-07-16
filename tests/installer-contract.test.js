@@ -6,6 +6,7 @@
 // ============================================================
 
 import { spawnSync } from "child_process"
+import fs from "fs/promises"
 import path from "path"
 
 const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
@@ -101,6 +102,22 @@ async function testDefaultBaseUrl() {
   assert(result.stdout.includes("Base URL:   https://synth-framework.github.io/synth"), "Must use default base URL")
 }
 
+async function testPosixShContract() {
+  // The public contract is `curl ... | sh`. On Debian/Ubuntu `sh` is dash,
+  // which rejects bash-only constructs such as `set -o pipefail` and
+  // `**` arithmetic. This pipes the script to `sh` exactly as the published
+  // install command does; on Linux CI it executes under dash.
+  const script = await fs.readFile(INSTALLER_PATH, "utf-8")
+  const result = spawnSync("sh", ["-s", "--", "--dry-run"], {
+    input: script,
+    cwd: process.cwd(),
+    encoding: "utf-8",
+    timeout: 30000,
+  })
+  assert(result.status === 0, `installer must run under POSIX sh (dash-safe), exit ${result.status}:\n${result.stderr}`)
+  assert(result.stdout.includes("Installation plan"), "POSIX sh run must print the installation plan")
+}
+
 async function main() {
   console.log("Running installer contract tests...")
 
@@ -136,6 +153,9 @@ async function main() {
 
   await testDefaultBaseUrl()
   console.log("✓ Default base URL is correct")
+
+  await testPosixShContract()
+  console.log("✓ Installer executes under POSIX sh (curl | sh contract)")
 
   console.log("\nAll installer contract tests passed.")
 }
