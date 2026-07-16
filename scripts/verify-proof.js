@@ -44,6 +44,7 @@ function validateSchema(proof) {
     "proofs.p1Structural.passed",
     "proofs.p2Replay.passed",
     "proofs.p2Determinism.passed",
+    "proofs.p6GraphIntegrity.passed",
     "proofs.p4Adversarial.passed",
     "overall.passed",
   ]

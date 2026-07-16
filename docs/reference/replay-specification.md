@@ -6,7 +6,7 @@ Prerequisites: none
 Knowledge Establishes: The formal specification of the Synth replay algorithm
 Depends On: none
 Builds Toward: none (terminal reference)
-Version: 1.1.0
+Version: 1.2.0
 Status: stable
 ---
 
@@ -74,7 +74,10 @@ verifyChain(events):
 Replay proves determinism; these invariants prove correctness of the
 mission/expedition/objective aggregate graph. They are validated by
 `validateAggregateGraph` (replay engine) and reported by the Replay
-Verifier as `graphValid` / `graphViolations` (EXP-HARDEN-004).
+Verifier as `graphValid` / `graphViolations` (EXP-HARDEN-004). The full
+formal model — including work-item membership, the provability
+boundary, and the proof artifact contract — lives in
+[Graph Integrity](graph-integrity.md) (EXP-HARDEN-005).
 
 1. **Parent resolution.** Every expedition's `missionId` resolves to a
    mission created in the log; every objective's `expeditionId` resolves
@@ -115,3 +118,4 @@ consistency verdict:
 |---------|------|---------|
 | 1.0.0 | 2026-06-28 | Initial stable release |
 | 1.1.0 | 2026-07-15 | Graph invariants and enforcement model (EXP-HARDEN-004) |
+| 1.2.0 | 2026-07-16 | Pointer to the first-class Graph Integrity model (EXP-HARDEN-005) |

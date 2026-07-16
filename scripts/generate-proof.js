@@ -82,6 +82,15 @@ async function runDeterminismProof() {
   }
 }
 
+async function runGraphIntegrityProof() {
+  try {
+    execSync("node scripts/verify-graph-integrity.js", { stdio: "pipe" })
+    return { passed: true, detail: "Reference execution produced a fully valid aggregate graph" }
+  } catch {
+    return { passed: false, detail: "Graph integrity violations detected in reference execution" }
+  }
+}
+
 async function runAdversarialProof() {
   try {
     execSync("node scripts/audit-adversarial.js", { stdio: "pipe" })
@@ -108,6 +117,8 @@ async function main() {
   console.log("  - replay proof complete")
   const determinism = await runDeterminismProof()
   console.log("  - determinism proof complete")
+  const graphIntegrity = await runGraphIntegrityProof()
+  console.log("  - graph integrity proof complete")
   const adversarial = await runAdversarialProof()
   console.log("  - adversarial proof complete")
 
@@ -155,6 +166,7 @@ async function main() {
       p1Structural: structural,
       p2Replay: replay,
       p2Determinism: determinism,
+      p6GraphIntegrity: graphIntegrity,
       p4Adversarial: adversarial,
     },
     reproduction: {
@@ -165,11 +177,12 @@ async function main() {
       note: "Run from a clean checkout at the referenced commit. Timestamps and file paths are expected to differ; hashes must match.",
     },
     overall: {
-      passed: structural.passed && replay.passed && determinism.passed && adversarial.passed,
+      passed: structural.passed && replay.passed && determinism.passed && graphIntegrity.passed && adversarial.passed,
       summary: [
         `P1 Structural: ${structural.passed ? "PASS" : "FAIL"}`,
         `P2 Replay: ${replay.passed ? "PASS" : "FAIL"}`,
         `P2 Determinism: ${determinism.passed ? "PASS" : "FAIL"}`,
+        `P6 Graph Integrity: ${graphIntegrity.passed ? "PASS" : "FAIL"}`,
         `P4 Adversarial: ${adversarial.passed ? "PASS" : "FAIL"}`,
       ],
     },
@@ -188,6 +201,7 @@ async function main() {
   console.log(`  P1 Structural:  ${structural.passed ? "PASS" : "FAIL"}`)
   console.log(`  P2 Replay:      ${replay.passed ? "PASS" : "FAIL"}`)
   console.log(`  P2 Determinism: ${determinism.passed ? "PASS" : "FAIL"}`)
+  console.log(`  P6 Graph:       ${graphIntegrity.passed ? "PASS" : "FAIL"}`)
   console.log(`  P4 Adversarial: ${adversarial.passed ? "PASS" : "FAIL"}`)
   console.log(`\n  Proof written: ${outPath}`)
 

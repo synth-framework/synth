@@ -22,6 +22,7 @@ All — operators, agents, developers, architects.
 | [Discovery Schema](confidence-model.md) | Discovery entity schema |
 | [Confidence Model](confidence-model.md) | Planning confidence formula |
 | [Replay Specification](replay-specification.md) | Replay algorithm specification |
+| [Graph Integrity](graph-integrity.md) | Aggregate graph invariants, provability boundary, and proof contract |
 | [Snapshot Storage](snapshot-storage.md) | Approved snapshot storage contract, signatures, and certification |
 
 ## Knowledge Establishes
@@ -35,5 +36,6 @@ Technical specifications for quick reference.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2.0 | 2026-07-16 | Graph Integrity reference added (EXP-HARDEN-005) |
 | 1.1.0 | 2026-06-28 | KBI-001 planning schemas added |
 | 1.0.0 | 2026-06-28 | Initial release |
