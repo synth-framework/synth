@@ -26,7 +26,13 @@
 # GitHub Pages, a custom domain, or a future CDN without modification.
 # ============================================================
 
-set -euo pipefail
+set -eu
+# POSIX sh (dash) lacks pipefail; enable it where supported (bash).
+# The public contract pipes this script to `sh`, so bash-only options
+# must not be set unconditionally.
+if (set -o pipefail) 2>/dev/null; then
+  set -o pipefail
+fi
 
 DEFAULT_BASE_URL="https://synth-framework.github.io/synth"
 INSTALLER_BASE_URL="${SYNTH_INSTALLER_BASE_URL:-${DEFAULT_BASE_URL}}"
@@ -420,7 +426,7 @@ install_package() {
       exit_code=$?
       log "Installation attempt ${attempt} failed with exit code ${exit_code}"
       if [ "$attempt" -lt "$max_attempts" ]; then
-        local backoff=$((2 ** attempt))
+        local backoff=$((1 << attempt))
         log "Retrying in ${backoff} seconds..."
         sleep "$backoff"
       fi
