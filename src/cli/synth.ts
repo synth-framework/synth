@@ -641,7 +641,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
       },
       draftId,
       proposals: approveResult.proposals ?? [],
-      nextStep: `Add more evidence and create a new Mission Draft`,
+      nextStep: `synth mission evidence add --draft-id ${draftId} --subject <subject> [--purpose <purpose>] [--confidence <level>] to create a successor draft with more evidence, then synth mission approve --draft-id <new-id>`,
     })
     return
   }
@@ -680,6 +680,81 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     ...(snapshotNote ? { note: snapshotNote } : {}),
     proposals: approvedData?.proposals,
     nextStep: `synth mission snapshot ${approvedData?.id ?? "<snapshot-id>"} to inspect the persisted snapshot`,
+  })
+}
+
+const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain"]
+
+async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
+  const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
+  if (!draftId) printError("--draft-id is required")
+  const subject = typeof flags.subject === "string" ? flags.subject : ""
+  if (!subject) printError("--subject is required")
+  const purpose = typeof flags.purpose === "string" ? flags.purpose : undefined
+  const confidence = typeof flags.confidence === "string" ? flags.confidence : "high"
+  if (!EVIDENCE_CONFIDENCE_LEVELS.includes(confidence)) {
+    printError(`Unknown confidence level: "${confidence}". Valid levels: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}`)
+  }
+
+  const draftsDir = path.join(process.cwd(), "data", "drafts")
+  const draftPath = path.join(draftsDir, `${draftId}.json`)
+  let draftData: any
+  try {
+    draftData = JSON.parse(await fs.readFile(draftPath, "utf-8"))
+  } catch {
+    printError(`Draft not found: ${draftPath}. Run synth mission create --subject <subject> --purpose <purpose> to create a Mission Draft.`)
+  }
+
+  // Drafts are certified artifacts; a tampered draft cannot be extended (EXP-TRUST-002).
+  const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
+  if (!integrity.ok) {
+    printError(integrity.message)
+  }
+
+  // Drafts are immutable: adding evidence creates a successor draft (EXP-TRUST-003).
+  const observation = makeObservation("evidence", subject, {
+    description: purpose ?? subject,
+    ...(purpose ? { purpose } : {}),
+  })
+  observation.confidence = confidence as PlanningObservation["confidence"]
+
+  const existing = Array.isArray(draftData.observations) ? (draftData.observations as PlanningObservation[]) : []
+  const dedupKey = `${observation.id}-${observation.sourceAdapter}-${observation.type}`
+  if (existing.some((obs) => `${obs.id}-${obs.sourceAdapter}-${obs.type}` === dedupKey)) {
+    printError(`This evidence is already present in draft "${draftId}"; nothing to add. Approve the draft, or add different evidence.`)
+  }
+
+  const ctx = await bootstrap({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+
+  const sessionResult = (await ctx.api.missionStudioOperation({
+    operation: "startSession",
+    params: { observations: [...existing, observation] },
+  })) as { status: string; session?: PlanningSession; error?: string }
+
+  if (sessionResult.status !== "ok" || !sessionResult.session) {
+    printError(`Mission Studio session failed: ${JSON.stringify(sessionResult)}`)
+  }
+
+  const session = sessionResult.session
+  const serialized = serializePlanningSession(session)
+  const successorPath = path.join(draftsDir, `${session.id}.json`)
+  await fs.writeFile(successorPath, JSON.stringify(serialized, null, 2), "utf-8")
+  await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
+
+  printJson({
+    status: "ok",
+    kind: "MissionDraft",
+    draftId: session.id,
+    draftPath: successorPath,
+    supersedes: draftId,
+    integrity: "certified",
+    confidence: session.confidence,
+    unknowns: session.unknowns,
+    questions: session.questions,
+    nextStep: `synth mission approve --draft-id ${session.id}`,
   })
 }
 
@@ -924,10 +999,11 @@ async function main() {
       const sub = positional[1]
       if (sub === "create") await cmdMissionCreate(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
+      else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission snapshot [<snapshot-id> | list]",
         )
       break
     }

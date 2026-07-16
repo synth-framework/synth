@@ -1,6 +1,6 @@
 # EXP-TRUST-003 — Evidence Path
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-011 — Operator Trust & CLI Integrity  
@@ -134,13 +134,13 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Definition of Done
 
-- [ ] `synth mission evidence add` produces a certified successor draft with recomputed confidence.
-- [ ] Successor draft approves end-to-end through the normal path.
-- [ ] Tampered or uncertifiable source draft is rejected prescriptively.
-- [ ] Below-threshold rejection names the executable evidence command.
-- [ ] Regression guards wired into `test:all`.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
+- [x] `synth mission evidence add` produces a certified successor draft with recomputed confidence.
+- [x] Successor draft approves end-to-end through the normal path.
+- [x] Tampered or uncertifiable source draft is rejected prescriptively.
+- [x] Below-threshold rejection names the executable evidence command.
+- [x] Regression guards wired into `test:all`.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check).
 - [ ] Expedition is accepted.
 
 ---
@@ -156,4 +156,12 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Completion Notes
 
-*(pending)*
+Implemented as chartered: the legitimate path through the confidence gate, built on the immutability model from EXP-TRUST-002.
+
+- **`synth mission evidence add --draft-id … --subject … [--purpose …] [--confidence …]`** (`cmdMissionEvidenceAdd` in `src/cli/synth.ts`) — certifies the source draft first (a tampered or uncertifiable draft cannot be extended; the rejection is the EXP-TRUST-002 one); refuses duplicate evidence prescriptively (the observation's dedup key already present → "already present in draft"); validates the confidence flag against the five levels; then rebuilds the Mission Studio session from the draft's observations plus the new evidence and writes the successor draft with its own chained integrity record. `MissionIntake.normalize` is idempotent and evidence fingerprints derive from stored observation timestamps, so the rebuild is deterministic.
+- **Successor-draft semantics** — drafts are immutable; the output prints the new `draftId`, `supersedes`, recomputed `confidence`, and exactly one next step (approval of the new draft). Observed in fixtures: confidence moves honestly (0.67 → 0.69 for one high-confidence observation) — levels are inputs, recompute still gates.
+- **Rejection sweep** — the below-threshold (and blocking-unknowns) approval rejection now names the executable remediation: `synth mission evidence add --draft-id <id> --subject <subject> …` followed by approval of the successor. Tamper rejections keep naming `synth mission create`. "Draft not found" names the create command. Usage text documents the new subcommand.
+
+Regression guards: `tests/evidence-path.test.js` (13 assertions, wired into `test:all` as `test:evidence-path`) — the N3 dead-end verbatim (rejection names the command and the operator's draft), successor creation with recomputed confidence, chained successors keeping the integrity chain certifiable, tampered-source rejection, duplicate-evidence refusal, and invalid-confidence refusal. Neighbor suites re-run green: synth-cli, draft-integrity, mission-studio. Core boundary audit clean.
+
+Evidence: CI `proof` check on the implementing PR (full `npm run govern`).
