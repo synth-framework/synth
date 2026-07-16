@@ -476,16 +476,22 @@ export class MissionStudio {
     parentSnapshot?: ApprovedMissionModelSnapshot,
     actor?: string,
   ): MissionStudioResult<ApprovedMissionModelSnapshot> {
+    // Computed confidence is authoritative (EXP-TRUST-002): the stored
+    // field rides an editable artifact and is never trusted. Every return
+    // path carries the certified session so callers report computed values.
+    const computedConfidence = this.computeConfidence(session.observations, session.evidence, session.unknowns)
+    const certifiedSession: PlanningSession = { ...session, confidence: computedConfidence }
+
     const unknownsBlock = this.config.unknownsBlockApproval && session.unknowns.some((u) => u.blocking)
     if (unknownsBlock) {
-      return { success: false, session, error: "Blocking unknowns prevent approval" }
+      return { success: false, session: certifiedSession, error: "Blocking unknowns prevent approval" }
     }
 
-    if (session.confidence.overall < this.config.approvalThreshold) {
+    if (computedConfidence.overall < this.config.approvalThreshold) {
       return {
         success: false,
-        session,
-        error: `Confidence ${session.confidence.overall.toFixed(2)} below threshold ${this.config.approvalThreshold}`,
+        session: certifiedSession,
+        error: `Confidence ${computedConfidence.overall.toFixed(2)} below threshold ${this.config.approvalThreshold}`,
       }
     }
 
@@ -499,7 +505,7 @@ export class MissionStudio {
     if (proposalGraphViolations.length > 0) {
       return {
         success: false,
-        session,
+        session: certifiedSession,
         error: `Invalid proposal graph: ${proposalGraphViolations.join("; ")}`,
       }
     }
@@ -521,7 +527,7 @@ export class MissionStudio {
     return {
       success: true,
       session: {
-        ...session,
+        ...certifiedSession,
         approvalState: "approved",
       },
       data: snapshot,

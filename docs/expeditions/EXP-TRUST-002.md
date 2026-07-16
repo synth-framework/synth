@@ -1,6 +1,6 @@
 # EXP-TRUST-002 — Draft Integrity & Computed Confidence
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-011 — Operator Trust & CLI Integrity  
@@ -140,14 +140,14 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Definition of Done
 
-- [ ] TaskPRO forgery fixture (edited `overall`) rejected prescriptively.
-- [ ] Blocking-unknown deletion fixture rejected prescriptively.
-- [ ] Untouched draft approves identically to rc.2 behavior.
-- [ ] Approval decisions and output use recomputed confidence only.
-- [ ] Draft fingerprint anchored in an immutable, chained integrity record at creation; missing or divergent records reject at approval.
-- [ ] Regression guards wired into `test:all`.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
+- [x] TaskPRO forgery fixture (edited `overall`) rejected prescriptively.
+- [x] Blocking-unknown deletion fixture rejected prescriptively.
+- [x] Untouched draft approves identically to rc.2 behavior.
+- [x] Approval decisions and output use recomputed confidence only.
+- [x] Draft fingerprint anchored in an immutable, chained integrity record at creation; missing or divergent records reject at approval.
+- [x] Regression guards wired into `test:all`.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check).
 - [ ] Expedition is accepted.
 
 ---
@@ -155,7 +155,7 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 ## Implementation Plan
 
 1. Codify the forgery fixtures as failing tests.
-2. Implement the fingerprint + `MISSION_DRAFT_CREATED` anchor at creation.
+2. Implement the fingerprint + immutable chained integrity record at creation.
 3. Implement recompute-at-approval and stored/computed verification.
 4. Implement the prescriptive tamper rejection.
 5. Wire regression guards; request acceptance.
@@ -164,4 +164,12 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Completion Notes
 
-*(pending)*
+Implemented as chartered (with the anchor amendment): two independent guarantees, one planning-layer.
+
+- **Integrity record** — new module `src/mission-studio/draft-integrity.ts`. `synth mission create` now writes an immutable, write-once `data/drafts/<id>.integrity.json` alongside the draft: a canonical-content fingerprint (sorted-key serialization over the decision-relevant fields, volatile session metadata excluded, mirroring `snapshot-integrity.ts`) chained to the previous record's hash (`genesis` for the first). Records follow the `FileSystemSnapshotStore` precedent — planning-layer persistence, certified at read, no execution-state mutation path.
+- **Certification at approval** — `synth mission approve` verifies before trusting anything: missing record → prescriptive rejection (uncertifiable draft; recreate from current evidence); fingerprint divergence → "Draft integrity violation" rejection; chain walk (one genesis, one successor per record, all reachable) → "integrity chain is broken" rejection. All three pave the road to `synth mission create`.
+- **Computed confidence** — `MissionStudio.approve()` recomputes confidence from the session's own observations/evidence/unknowns via the pure `computeConfidence` and returns the certified session on every path, so the API (`approveModel`) and CLI report computed values only. The stored field is never read for decisions or output. A side benefit: forging `overall` now fails *two* ways (fingerprint mismatch at the CLI, recomputation at the engine).
+
+Regression guards: `tests/draft-integrity.test.js` (17 assertions, wired into `test:all` as `test:draft-integrity`) — the TaskPRO forgery verbatim (edited `overall: 0.67→0.95` rejected), hand-crafted draft with no record rejected, input edit rejected, integrity-chain break rejected, untouched draft keeps exact rc.2 behavior (below-threshold rejection, guard silent), engine-level forge does not approve and cites the recomputed score, forged confidence does not bypass blocking unknowns, and a determinism round-trip (recompute reproduces the stored score). Neighboring suites re-run green: mission-studio, snapshot-lineage, proposal-graph, snapshot-integrity, mission-builder, genesis-snapshot-bridge, synth-cli.
+
+Evidence: CI `proof` check on the implementing PR (full `npm run govern`).
