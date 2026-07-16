@@ -18,9 +18,17 @@
       "name": "Agent Experience",
       "description": "Adoption-era expeditions focused on AI-first distribution and first-contact experience."
     },
+    "CONT": {
+      "name": "Cognitive Continuity",
+      "description": "Continuity-of-intent expeditions (resume briefing, interruption benchmark, regression journey)."
+    },
     "DET": {
       "name": "Determinism",
       "description": "Determinism and replay integrity expeditions."
+    },
+    "DISC": {
+      "name": "Runtime Self-Description",
+      "description": "Discoverability and self-description expeditions (status, extraction reporting, introspection, repository identity)."
     },
     "DOCS": {
       "name": "Documentation & Projections",
@@ -61,6 +69,10 @@
     "SMA": {
       "name": "Semantic Migration",
       "description": "Semantic migration and canonical-language expeditions."
+    },
+    "TRUST": {
+      "name": "Operator Trust & CLI Integrity",
+      "description": "Operator trust expeditions (govern recursion guard, draft integrity, evidence path, decision events)."
     },
     "VAL": {
       "name": "Validation",
