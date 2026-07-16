@@ -28,6 +28,7 @@ All operator docs use the seven public concepts: Mission, Expedition, Evidence, 
 | 12 | [FAQ](12-faq.md) | Common questions |
 | 13 | [Operator Journey](13-operator-journey.md) | The complete end-to-end journey |
 | 14 | [Local vs CI Validation](14-local-vs-ci-validation.md) | Fast local validation and the merge gate |
+| 15 | [Observability](15-observability.md) | Inspecting lineage, snapshots, graph health, and replay diagnostics |
 
 ## Knowledge Establishes
 How humans interact with Synth systems productively and correctly.

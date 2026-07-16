@@ -13,6 +13,7 @@ import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
+import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
 import type { PlanningObservation } from "../planning/observation.js"
@@ -42,7 +43,7 @@ const COMMANDS = [
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "expedition", description: "Planning operations (create)" },
   { name: "docs", description: "Documentation operations (generate)" },
-  { name: "explain", description: "Explain operations (replay)" },
+  { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, all)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -791,14 +792,24 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
   printJson(result)
 }
 
-async function cmdExplainReplay() {
+async function cmdExplainReplay(flags: Record<string, string | boolean>) {
+  // --log <path> (EXP-HARDEN-007): inspect any example/project log;
+  // state/checkpoint paths derive from the log's directory.
+  const paths = resolveExplainPaths(flags)
+  if (typeof flags.log === "string") {
+    try {
+      await fs.access(paths.logPath)
+    } catch {
+      printError(`event log not found: ${flags.log}`)
+    }
+  }
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: path.join(process.cwd(), "data", "event-log.jsonl"),
-      statePath: path.join(process.cwd(), "data", "canonical-state.json"),
-      checkpointPath: path.join(process.cwd(), "data", "checkpoint.json"),
+      eventLogPath: paths.logPath,
+      statePath: paths.statePath,
+      checkpointPath: paths.checkpointPath,
     },
   })
 
@@ -903,8 +914,8 @@ async function main() {
 
     case "explain": {
       const sub = positional[1]
-      if (sub === "replay") await cmdExplainReplay()
-      else printError("Usage: synth explain replay")
+      if (sub === "replay") await cmdExplainReplay(flags)
+      else await cmdExplainObservability(sub, flags)
       break
     }
 

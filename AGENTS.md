@@ -137,6 +137,7 @@ If `data/` is lost or corrupted, replay can reconstruct state from the event log
 | `synth expedition create --mission ... --subject ... --goal ...` | Create Expedition proposals |
 | `synth docs generate` | Regenerate public documentation |
 | `synth explain replay` | Verify replay consistency |
+| `synth explain all [--log <path>]` | Inspect aggregate graph, snapshot lineage, and replay diagnostics (read-only) |
 | `synth validate` | Analyze changes and run the minimum sound validation plan |
 | `synth validate --dry-run` | Preview the validation plan without executing |
 | `synth validate --full` | Run the full `npm run govern` pipeline |
