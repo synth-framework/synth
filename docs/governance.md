@@ -37,6 +37,9 @@ Replay ──▶ P2 Behavioral (state reconstruction + hash-chain)
 Determinism ──▶ P5 Reproducibility
    │
    ▼
+Graph ──▶ P6 Graph Integrity (reference execution)
+   │
+   ▼
 Adversarial ──▶ P4 Adversarial
    │
    ▼
@@ -114,6 +117,7 @@ ADR template: `docs/adr/ADR-TEMPLATE.md`
 | P2 Behavioral | `npm run test:determinism` | Identical commands produce identical fingerprints + state hashes. |
 | P3 Historical | `npm run test:skr` | Legacy aliases replay correctly. |
 | P4 Adversarial | `npm run test:adversarial` | All attacks blocked or detected. |
+| P6 Graph Integrity | embedded in `npm run proof` | Fresh reference execution produces a fully valid aggregate graph (`scripts/verify-graph-integrity.js`). |
 | P5 Reproducibility | embedded in `npm run proof` | Build hash + replay hash reproducible. |
 
 ---
