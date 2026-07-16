@@ -1,6 +1,6 @@
 # EXP-PROGRAM-011 — Operator Trust & CLI Integrity
 
-**Status:** Completed (pending acceptance)  
+**Status:** Accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -132,11 +132,11 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-TRUST-001 completed and accepted.
-- [ ] EXP-TRUST-002 completed and accepted.
-- [ ] EXP-TRUST-003 completed and accepted.
-- [ ] EXP-TRUST-004 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-TRUST-001 completed and accepted.
+- [x] EXP-TRUST-002 completed and accepted.
+- [x] EXP-TRUST-003 completed and accepted.
+- [x] EXP-TRUST-004 completed and accepted.
+- [x] Program accepted.
 
 ---
 

@@ -138,7 +138,7 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 - [x] Regression guards wired into `test:all`.
 - [x] Documentation integrity checks pass.
 - [x] `npm run govern` passes (via CI `proof` check).
-- [ ] Expedition is accepted.
+- [x] Expedition is accepted.
 
 ---
 
