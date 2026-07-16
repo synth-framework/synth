@@ -24,7 +24,7 @@ Confidence, approval state, and draft integrity are now computed and certified, 
 
 1. **Every rejection is a design surface.** A gate without a legitimate path through it manufactures illegitimate behavior — the program both closed the illegitimate paths (recursion, forgery) and opened the legitimate ones (paved-road guidance, `synth mission evidence add`).
 2. **Trust-relevant values are computed, never read.** Approval recomputes confidence from the draft's own evidence; approval state derives from the decision record; stored fields are never authoritative.
-3. **Planning-layer integrity is a first-class mechanism.** Immutable, hash-chained, certified-at-read records — integrity records, decision records — give planning artifacts the same tamper-evidence discipline snapshots already had, without touching the ExecutionGate / Event Model boundary.
+3. **Planning-layer integrity is a first-class mechanism.** Immutable, hash-chained, certified-at-read records — integrity records, decision records — give planning artifacts the same tamper-evidence discipline snapshots already had, without touching the single governed execution boundary or the event model.
 
 ---
 
@@ -56,7 +56,7 @@ All implementation PRs merged with the CI `proof` check green. **70 new regressi
 
 | Chronology step | rc.1 outcome | Now |
 |---|---|---|
-| Bootstrap reports no package.json | "govern skipped", no guidance | Paved road: prescribes a safe `govern` script and warns against the cyclic ones |
+| `synth bootstrap` reports no package.json | "govern skipped", no guidance | Paved road: prescribes a safe `govern` script and warns against the cyclic ones |
 | Agent writes `"govern": "synth govern"` | ~102 s recursion, seven killed tasks | Prescriptive refusal in ~1 s, zero delegation hops, naming the cycle and the safe fix |
 | Agent edits draft confidence 0.67 → 0.85 | Approval accepts the forgery | "Draft integrity violation" rejection; the engine recomputes anyway |
 | Confidence gate says "add more evidence" | No such command exists | `synth mission evidence add` — named in the rejection, produces a certified successor draft |
@@ -69,7 +69,7 @@ All implementation PRs merged with the CI `proof` check green. **70 new regressi
 
 | Program Invariant | Expedition | Evidence |
 |---|---|---|
-| Every rejection needs a paved road | TRUST-001, TRUST-003 | Bootstrap paved road; evidence command; rejection sweep; fixtures assert the named command |
+| Every rejection needs a paved road | TRUST-001, TRUST-003 | `synth bootstrap` paved road; evidence command; rejection sweep; fixtures assert the named command |
 | No artifact that influences interpretation may be manually authoritative | TRUST-002 | Integrity records + recomputed confidence; forgery fixtures |
 | Confidence is recomputed from evidence at approval time | TRUST-002 | `engine.approve()`; API/CLI report computed only; determinism round-trip fixture |
 | Every gate rejection names an executable remediation | TRUST-001, TRUST-003 | Messages quote the offending script / name `mission evidence add` / name `mission create` |
