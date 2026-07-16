@@ -1,6 +1,6 @@
 # EXP-PROGRAM-010 — Evidence Annex: TaskPRO First-Contact Field Experiment
 
-**Annex to:** `docs/expeditions/EXP-PROGRAM-010-completion-report.md`
+**Annex to:** `docs/operator/EXP-PROGRAM-010-completion-report.md`
 **Experiment:** SYNTH `2.0.0-rc.1` zero-shot first contact — fresh Windows machine, Cursor Agent (Gemini 3.5 Flash), no SYNTH-specific prompting, no fine-tuning
 **Workspace:** `Docs/` + `UI/` only (non-canonical layout, `.md.txt` knowledge files)
 **Analysis date:** 2026-07-16

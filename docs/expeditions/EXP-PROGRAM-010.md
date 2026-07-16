@@ -290,7 +290,7 @@ Findings dispositions:
 - **F2 (legacy forensic logs):** Preserved immutable — local 215-event log (206 pinned violations) and First Contact Archive A (32 events, 36 violations). History is not regenerated; the defects are evidence that governance worked.
 - **F3 (confidence thresholds):** Unchanged; Mission Studio confidence remains evidence-driven.
 
-External validation: the TaskPRO first-contact field experiment (rc.1, Windows, autonomous agent) independently confirmed the HARDEN-002 / 006 / 007 failure classes in the wild, and the hardened verifier certifies its event log clean (`docs/expeditions/EXP-PROGRAM-010-evidence-annex-taskpro.md`).
+External validation: the TaskPRO first-contact field experiment (rc.1, Windows, autonomous agent) independently confirmed the HARDEN-002 / 006 / 007 failure classes in the wild, and the hardened verifier certifies its event log clean (`docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md`).
 
 Follow-on: EXP-FIRSTCONTACT-009 re-records the canonical journey on the hardened pipeline, preserving Archive A as historical evidence.
 
@@ -300,8 +300,8 @@ Follow-on: EXP-FIRSTCONTACT-009 re-records the canonical journey on the hardened
 
 | Document | Relationship |
 |---|---|
-| `docs/expeditions/EXP-PROGRAM-010-completion-report.md` | Completion report with Constitution Provenance Matrix and findings dispositions. |
-| `docs/expeditions/EXP-PROGRAM-010-evidence-annex-taskpro.md` | External field evidence (TaskPRO rc.1 experiment) and follow-on program proposals. |
+| `docs/operator/EXP-PROGRAM-010-completion-report.md` | Completion report with Constitution Provenance Matrix and findings dispositions. |
+| `docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md` | External field evidence (TaskPRO rc.1 experiment) and follow-on program proposals. |
 | `docs/adr/ADR-004-synth-eras-and-protected-assets.md` | Eras, Protected Assets, and Post-Freeze Rule. |
 | `docs/reference/public-vocabulary.md` | Canonical seven-concept vocabulary. |
 | `docs/expeditions/EXP-PROGRAM-009.md` | Canonical First Contact Experience; source of deferred defects. |

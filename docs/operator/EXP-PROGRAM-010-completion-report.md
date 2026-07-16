@@ -137,7 +137,7 @@ The hardened verifier and graph tooling were run against the experiment's event 
 
 The experiment also surfaced **new** findings that do not reopen this program (govern recursion, draft-artifact integrity, CLI self-description). They are recorded with proposed follow-on programs in the evidence annex.
 
-**Annex:** `docs/expeditions/EXP-PROGRAM-010-evidence-annex-taskpro.md`
+**Annex:** `docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md`
 
 ---
 
