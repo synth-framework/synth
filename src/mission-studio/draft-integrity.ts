@@ -11,13 +11,14 @@
 // fingerprint and the hash of the previous record. Records form
 // a chain: rewriting or deleting history invalidates every
 // successor. Follows the FileSystemSnapshotStore precedent —
-// planning-layer persistence, certified at read, outside the
+// planning-layer persistence through the Environment Layer
+// filesystem provider, certified at read, outside the
 // execution-state mutation authority.
 // ============================================================
 
 import crypto from "crypto"
-import fs from "fs/promises"
-import path from "path"
+import type { FilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
 
 const RECORD_SCHEMA = "synth-draft-integrity-v1"
 const RECORD_SUFFIX = ".integrity.json"
@@ -82,22 +83,19 @@ function hashRecord(record: DraftIntegrityRecord): string {
   )
 }
 
-function recordPath(draftsDir: string, draftId: string): string {
-  return path.join(draftsDir, `${draftId}${RECORD_SUFFIX}`)
+function recordName(draftId: string): string {
+  return `${draftId}${RECORD_SUFFIX}`
 }
 
-async function loadRecords(draftsDir: string): Promise<DraftIntegrityRecord[]> {
-  let entries: string[]
-  try {
-    entries = await fs.readdir(draftsDir)
-  } catch {
-    return []
-  }
+async function loadRecords(fs: FilesystemProvider): Promise<DraftIntegrityRecord[]> {
+  const entries = await fs.listDirectory(".")
   const records: DraftIntegrityRecord[] = []
   for (const entry of entries) {
     if (!entry.endsWith(RECORD_SUFFIX)) continue
+    const content = await fs.readFile(entry)
+    if (content === undefined) continue
     try {
-      const raw = JSON.parse(await fs.readFile(path.join(draftsDir, entry), "utf8")) as DraftIntegrityRecord
+      const raw = JSON.parse(content) as DraftIntegrityRecord
       if (raw.schema === RECORD_SCHEMA && typeof raw.draftId === "string") {
         records.push(raw)
       }
@@ -124,16 +122,15 @@ export async function writeDraftIntegrityRecord(
   draftsDir: string,
   draftId: string,
   serializedDraft: Record<string, unknown>,
+  fsProvider?: FilesystemProvider,
 ): Promise<DraftIntegrityRecord> {
-  const file = recordPath(draftsDir, draftId)
-  try {
-    await fs.access(file)
+  const fs = fsProvider ?? createPosixFilesystemProvider(draftsDir)
+  const name = recordName(draftId)
+  if (await fs.pathExists(name)) {
     throw new Error(`INVARIANT_VIOLATION: draft integrity record ${draftId} already exists`)
-  } catch (err) {
-    if (err instanceof Error && err.message.startsWith("INVARIANT_VIOLATION")) throw err
   }
 
-  const records = await loadRecords(draftsDir)
+  const records = await loadRecords(fs)
   const previous = chainTip(records)
   const record: DraftIntegrityRecord = {
     schema: RECORD_SCHEMA,
@@ -142,7 +139,7 @@ export async function writeDraftIntegrityRecord(
     previousHash: previous ? hashRecord(previous) : "genesis",
     createdAt: Date.now(),
   }
-  await fs.writeFile(file, JSON.stringify(record, null, 2), "utf-8")
+  await fs.writeFile(name, JSON.stringify(record, null, 2))
   return record
 }
 
@@ -155,8 +152,10 @@ export async function verifyDraftIntegrity(
   draftsDir: string,
   draftId: string,
   serializedDraft: Record<string, unknown>,
+  fsProvider?: FilesystemProvider,
 ): Promise<DraftIntegrityVerdict> {
-  const records = await loadRecords(draftsDir)
+  const fs = fsProvider ?? createPosixFilesystemProvider(draftsDir)
+  const records = await loadRecords(fs)
   const record = records.find((r) => r.draftId === draftId)
 
   if (!record) {
