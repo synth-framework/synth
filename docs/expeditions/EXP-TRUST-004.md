@@ -1,6 +1,6 @@
 # EXP-TRUST-004 — Decision Events
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-011 — Operator Trust & CLI Integrity  
@@ -129,15 +129,15 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Definition of Done
 
-- [ ] Approval rejection persisted with reason and computed confidence.
-- [ ] Approval persisted; integrity rejection persisted.
-- [ ] Draft approval state derives from the record; re-approval idempotent and prescriptive.
-- [ ] Editing the draft's `approvalState` field changes nothing.
-- [ ] `synth mission decisions` lists the record with chain verification.
-- [ ] Chain deletion or tampering detected prescriptively.
-- [ ] Regression guards wired into `test:all`.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
+- [x] Approval rejection persisted with reason and computed confidence.
+- [x] Approval persisted; integrity rejection persisted.
+- [x] Draft approval state derives from the record; re-approval idempotent and prescriptive.
+- [x] Editing the draft's `approvalState` field changes nothing.
+- [x] `synth mission decisions` lists the record with chain verification.
+- [x] Chain deletion or tampering detected prescriptively.
+- [x] Regression guards wired into `test:all`.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check).
 - [ ] Expedition is accepted.
 
 ---
@@ -154,4 +154,14 @@ Regression guards wired into `test:all`; fixture suite green; full validation vi
 
 ## Completion Notes
 
-*(pending)*
+Implemented as chartered, on the planning-layer reading the TRUST-002 amendment established.
+
+- **Decision record** — new module `src/mission-studio/decision-log.ts`: append-only `data/decisions.jsonl`, one hash-chained record per decision (`MISSION_APPROVAL_APPROVED`, `MISSION_APPROVAL_REJECTED`, `MISSION_DRAFT_INTEGRITY_REJECTED`) with reason, computed confidence, snapshot id, and chain link. Chain verification (one genesis, one successor per record, all reachable) runs before every append — a broken chain is never extended silently — and at every read. Persisted through the Environment Layer filesystem provider; core-boundary clean.
+- **Shared canonicalization** — fingerprint/chain hashing semantics extracted to `src/mission-studio/canonical-json.ts`, now used by both draft integrity and the decision log, so the two chains can never drift apart.
+- **Persistence at every outcome** — integrity rejections append before the CLI reports; approval rejections and approvals append before the decision is printed (`decisionRecorded: true` in output). A sufficiently evidenced draft (two evidence additions, 0.67 → 0.71) approves end-to-end and persists its approval with the computed confidence.
+- **Approval-state synchronization** — re-approval is idempotent: the CLI consults the record, reports "already approved" with the original decision timestamp and snapshot id, and never duplicates a snapshot. The editable `approvalState` field in the draft JSON is never consulted (covered by a forgery fixture).
+- **Read surface** — `synth mission decisions [--draft-id <id>]` lists the record; a broken chain exits non-zero naming the chain.
+
+Regression guards: `tests/decision-events.test.js` (17 assertions, wired into `test:all` as `test:decision-events`) — the N9 amnesia verbatim (rejection survives the shell, with computed confidence and gate reason), approval persistence, integrity-rejection persistence, idempotent re-approval with exactly one recorded approval, approvalState-field forgery ignored, the read surface and its filter, and chain-deletion detection. Neighbor suites re-run green: synth-cli, draft-integrity, evidence-path, mission-studio, mission-studio-snapshot-integrity.
+
+Evidence: CI `proof` check on the implementing PR (full `npm run govern`).

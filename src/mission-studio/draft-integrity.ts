@@ -16,9 +16,9 @@
 // execution-state mutation authority.
 // ============================================================
 
-import crypto from "crypto"
 import type { FilesystemProvider } from "../environment/filesystem-capability.js"
 import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import { canonicalHash } from "./canonical-json.js"
 
 const RECORD_SCHEMA = "synth-draft-integrity-v1"
 const RECORD_SUFFIX = ".integrity.json"
@@ -46,41 +46,23 @@ export type DraftIntegrityRecord = {
 
 export type DraftIntegrityVerdict = { ok: true } | { ok: false; message: string }
 
-function sha256(data: string): string {
-  return crypto.createHash("sha256").update(data).digest("hex")
-}
-
-function canonicalize(value: unknown): unknown {
-  if (value === null || typeof value !== "object") return value
-  if (Array.isArray(value)) return value.map(canonicalize)
-  const sorted: Record<string, unknown> = {}
-  for (const key of Object.keys(value as Record<string, unknown>).sort()) {
-    sorted[key] = canonicalize((value as Record<string, unknown>)[key])
-  }
-  return sorted
-}
-
 /** Fingerprint of a serialized draft's decision-relevant content. */
 export function fingerprintDraft(serializedDraft: Record<string, unknown>): string {
   const subset: Record<string, unknown> = {}
   for (const field of FINGERPRINT_FIELDS) {
     subset[field] = serializedDraft[field]
   }
-  return sha256(JSON.stringify(canonicalize(subset)))
+  return canonicalHash(subset)
 }
 
 /** Chain hash of a record's content (createdAt excluded). */
 function hashRecord(record: DraftIntegrityRecord): string {
-  return sha256(
-    JSON.stringify(
-      canonicalize({
-        schema: record.schema,
-        draftId: record.draftId,
-        fingerprint: record.fingerprint,
-        previousHash: record.previousHash,
-      }),
-    ),
-  )
+  return canonicalHash({
+    schema: record.schema,
+    draftId: record.draftId,
+    fingerprint: record.fingerprint,
+    previousHash: record.previousHash,
+  })
 }
 
 function recordName(draftId: string): string {

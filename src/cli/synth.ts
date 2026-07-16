@@ -15,6 +15,7 @@ import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
+import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -593,6 +594,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   if (!draftId) printError("--draft-id is required")
 
   const draftsDir = path.join(process.cwd(), "data", "drafts")
+  const dataDir = path.join(process.cwd(), "data")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
   try {
@@ -604,7 +606,34 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   // Drafts are editable artifacts; certify before trusting anything (EXP-TRUST-002).
   const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
   if (!integrity.ok) {
+    // Decisions are durable: the integrity rejection is recorded (EXP-TRUST-004).
+    await appendDecision(dataDir, {
+      type: "MISSION_DRAFT_INTEGRITY_REJECTED",
+      draftId,
+      reason: integrity.message,
+    })
     printError(integrity.message)
+  }
+
+  // Approval state derives from the decision record, never from the
+  // editable approvalState field (EXP-TRUST-004): re-approval is
+  // idempotent and prescriptive.
+  const priorApproval = await latestDecision(dataDir, draftId, "MISSION_APPROVAL_APPROVED")
+  if (priorApproval) {
+    printJson({
+      status: "ok",
+      kind: "MissionApprovalDecision",
+      decision: {
+        approved: true,
+        confidence: priorApproval.confidence,
+      },
+      draftId,
+      snapshotId: priorApproval.snapshotId,
+      snapshotPersisted: false,
+      note: `Draft already approved (decision recorded at ${new Date(priorApproval.timestamp).toISOString()}); no duplicate snapshot created.`,
+      nextStep: `synth mission snapshot ${priorApproval.snapshotId ?? "<snapshot-id>"} to inspect the persisted snapshot`,
+    })
+    return
   }
 
   const session = deserializePlanningSession(draftData)
@@ -631,15 +660,23 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
 
   const decision = approveResult.decision
   if (!decision?.approved) {
+    const reason = decision?.reason || "Approval denied by Mission Studio"
+    await appendDecision(dataDir, {
+      type: "MISSION_APPROVAL_REJECTED",
+      draftId,
+      reason,
+      confidence: decision?.confidence ?? session.confidence.overall,
+    })
     printJson({
       status: "ok",
       kind: "MissionApprovalDecision",
       decision: {
         approved: false,
-        reason: decision?.reason || "Approval denied by Mission Studio",
+        reason,
         confidence: decision?.confidence ?? session.confidence.overall,
       },
       draftId,
+      decisionRecorded: true,
       proposals: approveResult.proposals ?? [],
       nextStep: `synth mission evidence add --draft-id ${draftId} --subject <subject> [--purpose <purpose>] [--confidence <level>] to create a successor draft with more evidence, then synth mission approve --draft-id <new-id>`,
     })
@@ -667,6 +704,13 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     }
   }
 
+  await appendDecision(dataDir, {
+    type: "MISSION_APPROVAL_APPROVED",
+    draftId,
+    confidence: decision?.confidence ?? session.confidence.overall,
+    ...(approvedData?.id ? { snapshotId: approvedData.id } : {}),
+  })
+
   printJson({
     status: "ok",
     kind: "MissionApprovalDecision",
@@ -675,6 +719,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
       confidence: decision?.confidence ?? session.confidence.overall,
     },
     draftId,
+    decisionRecorded: true,
     snapshotId: approvedData?.id,
     snapshotPersisted,
     ...(snapshotNote ? { note: snapshotNote } : {}),
@@ -684,6 +729,24 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
 }
 
 const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain"]
+
+async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
+  const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : undefined
+  const dataDir = path.join(process.cwd(), "data")
+  const { records, chainValid } = await listDecisions(dataDir, draftId)
+  if (!chainValid) {
+    printError(
+      "Mission decision record chain is broken: a recorded decision is missing, altered, or duplicated. " +
+        "Inspect data/decisions.jsonl; the record is tamper-evident by design.",
+    )
+  }
+  printJson({
+    status: "ok",
+    kind: "MissionDecisions",
+    decisions: records,
+    ...(draftId ? { draftId } : {}),
+  })
+}
 
 async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
@@ -1000,10 +1063,11 @@ async function main() {
       if (sub === "create") await cmdMissionCreate(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
       else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)
+      else if (sub === "decisions") await cmdMissionDecisions(flags)
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
         )
       break
     }
