@@ -19,6 +19,7 @@ import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-stud
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
+import { cmdExplainResume } from "./resume-briefing.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -1154,6 +1155,7 @@ async function main() {
       const sub = positional[1]
       if (sub === "replay") await cmdExplainReplay(flags)
       else if (sub === "identity") await cmdExplainIdentity(flags)
+      else if (sub === "resume") await cmdExplainResume(flags)
       else await cmdExplainObservability(sub, flags)
       break
     }

@@ -127,7 +127,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-CONT-001 completed and accepted.
+- [x] EXP-CONT-001 completed (pending acceptance).
 - [ ] EXP-CONT-002 completed and accepted.
 - [ ] EXP-CONT-003 completed and accepted.
 - [ ] Program accepted.
