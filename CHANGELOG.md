@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EXP-CONT-001 — Resume Briefing (`synth explain resume`): deterministic projection of "what happened / what was decided / what is next" from replayable evidence for zero-history operators.
 - EXP-CONT-002 — Interruption Benchmark (`scripts/interruption-benchmark.js`): kill-at-checkpoint matrix measuring the Repository Authority Index (RAI); baseline aggregate RAI 0.87.
 - EXP-CONT-003 — TaskPRO Regression Journey (`scripts/taskpro-regression.js`): re-runs the canonical first-contact scenario and asserts that N1–N6/N8 failure modes are prevented or paved on the hardened build.
+- EXP-GOV-002 — Governance Record (`synth explain governance`): deterministic projection of governance transitions (initialization, approval, governance_update, verification, bootstrap, reconciliation) from replay.
 - `synth explain resume` now reads certified `ApprovedMissionModelSnapshot` artifacts so that missions approved through Mission Studio are reconstructable even before they are emitted to the event log.
 - `docs/reference/repository-authority-index.md` — RAI definition and scoring rubric.
 - EXP-PROGRAM-013 — Cognitive Continuity Program chartered (EXP-CONT-001, EXP-CONT-002, EXP-CONT-003).
+- EXP-PROGRAM-014 — Governance Maturation Program chartered (EXP-GOV-002, EXP-GOV-003, EXP-GOV-004, EXP-GOV-005).
 
 ## [2.0.0-rc.3] — 2026-07-17
 

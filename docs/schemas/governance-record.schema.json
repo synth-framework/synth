@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://synth-framework.github.io/synth/schemas/governance-record.schema.json",
+  "title": "GovernanceRecord",
+  "description": "A deterministic projection of a governance transition from the SYNTH event log.",
+  "type": "object",
+  "required": ["id", "type", "summary", "eventId", "timestamp", "transactionId", "actor"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable record identifier derived from the source event."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["initialization", "governance_update", "bootstrap", "approval", "verification", "reconciliation"],
+      "description": "Kind of governance transition."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable summary of the transition."
+    },
+    "eventId": {
+      "type": "string",
+      "description": "Id of the source event."
+    },
+    "timestamp": {
+      "type": "number",
+      "description": "Event timestamp."
+    },
+    "transactionId": {
+      "type": "string",
+      "description": "Event transaction id."
+    },
+    "actor": {
+      "type": "string",
+      "description": "Event capability/actor that produced the transition."
+    },
+    "subjectId": {
+      "type": "string",
+      "description": "Optional aggregate id the record concerns."
+    },
+    "subjectName": {
+      "type": "string",
+      "description": "Optional subject name or title."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional record-specific metadata."
+    }
+  },
+  "additionalProperties": false
+}

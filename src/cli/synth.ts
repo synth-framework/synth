@@ -20,6 +20,7 @@ import { appendDecision, latestDecision, listDecisions } from "../mission-studio
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
+import { cmdExplainGovernance } from "./explain-governance.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -50,7 +51,7 @@ const COMMANDS = [
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "expedition", description: "Planning operations (create)" },
   { name: "docs", description: "Documentation operations (generate)" },
-  { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, all)" },
+  { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -1156,6 +1157,7 @@ async function main() {
       if (sub === "replay") await cmdExplainReplay(flags)
       else if (sub === "identity") await cmdExplainIdentity(flags)
       else if (sub === "resume") await cmdExplainResume(flags)
+      else if (sub === "governance") await cmdExplainGovernance(flags)
       else await cmdExplainObservability(sub, flags)
       break
     }
