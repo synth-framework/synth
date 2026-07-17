@@ -7,22 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-rc.3] — 2026-07-17
+
+The Era II adoption baseline release: Runtime Self-Description is complete, and the CLI can now be trusted, understood, and resumed by a new reasoning system.
+
 ### Added
-- EXP-PROGRAM-002 — SYNTH Public Release Program.
-- EXP-REL-001 — Repository Organization with file naming conventions.
-- EXP-REL-002 — Public Documentation (README, Mission Studio Guide, Examples Guide, FAQ).
-- EXP-REL-003 — Example Certification (Todo, Blog, CRM, Legacy Node, Polyglot, Monolith).
-- EXP-REL-004 — Website (static site under `website/`).
-- EXP-REL-005 — Open Source Readiness (LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, templates, release workflow).
+- EXP-PROGRAM-012 — Runtime Self-Description Program (6 expeditions): Operator Briefing (`synth status`), Extraction Reporting, Adapter Introspection (`synth adapter info`), Clean Machine Output (`--json`), Runtime Integrity (`synth doctor` dist verification), Repository Identity (`synth explain identity`).
+- `synth docs generate` returns extraction counts and warns loudly when Markdown files match but zero concepts are extracted.
+- `synth adapter info <name>` exposes adapter metadata, state, and health without reading source.
+- Global `--json` flag suppresses bootstrap diagnostic logs for machine-clean CLI output.
+- `synth doctor` verifies installed `dist/` files against a build-time SHA-256 manifest.
+- `synth explain identity` projects repository kind, phase, authority, expected inputs/outputs, and transformation direction from replayable evidence.
+
+### Fixed
+- `--json` is now correctly propagated to `synth explain` subcommands.
 
 ## [2.0.0-rc.2] — 2026-07-16
 
 The Era I certification release: architecture validation closes, and the first-contact adoption baseline is frozen as historical evidence. Certification-style release notes are published with the GitHub release.
 
 ### Added
+- EXP-PROGRAM-002 — SYNTH Public Release Program.
 - EXP-PROGRAM-010 — Constitutional Hardening Program (7 expeditions): proposal-graph sealing in Mission Studio, signed and certified snapshot artifacts, Genesis intake certification, semantic replay verification, P6 Graph Integrity as a constitutional proof dimension, hardening observability (`synth explain`), permanent regression suites.
 - EXP-FIRSTCONTACT-009 — Canonical Journey Re-recording: Archive B (hardened pipeline; 32 events; zero aggregate graph violations under `--strict-graph`; signed snapshot artifact) alongside hash-pinned Archive A (36 violations preserved immutably as forensic evidence); derived Archive A/B comparison projected to docs and website; reproducible recording harness (`record` mode in the shared example runner).
 - EXP-PROGRAM-011 / 012 / 013 — Chartered adoption programs: Operator Trust & CLI Integrity, Runtime Self-Description, Cognitive Continuity (dependency-chained).
+- EXP-REL-001 — Repository Organization with file naming conventions.
+- EXP-REL-002 — Public Documentation (README, Mission Studio Guide, Examples Guide, FAQ).
+- EXP-REL-003 — Example Certification (Todo, Blog, CRM, Legacy Node, Polyglot, Monolith).
+- EXP-REL-004 — Website (static site under `website/`).
+- EXP-REL-005 — Open Source Readiness (LICENSE, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, templates, release workflow).
 - TaskPRO first-contact field experiment evidence annex: independent zero-shot audit (rc.1, Windows, autonomous AI agent) characterizing the trust, discoverability, and continuity gaps that Programs 011–013 answer.
 
 ### Fixed
