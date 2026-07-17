@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - EXP-CONT-001 — Resume Briefing (`synth explain resume`): deterministic projection of "what happened / what was decided / what is next" from replayable evidence for zero-history operators.
+- EXP-CONT-003 — TaskPRO Regression Journey (`scripts/taskpro-regression.js`): re-runs the canonical first-contact scenario and asserts that N1–N6/N8 failure modes are prevented or paved on the hardened build.
+- `synth explain resume` now reads certified `ApprovedMissionModelSnapshot` artifacts so that missions approved through Mission Studio are reconstructable even before they are emitted to the event log.
 - EXP-PROGRAM-013 — Cognitive Continuity Program chartered (EXP-CONT-001, EXP-CONT-002, EXP-CONT-003).
 
 ## [2.0.0-rc.3] — 2026-07-17

@@ -14,7 +14,9 @@ import path from "path"
 import { bootstrap } from "../core/bootstrap.js"
 import { rebuildState } from "../runtime/replay.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
+import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import type { SynthEvent, CanonicalState } from "../types/index.js"
+import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
 
 export const RESUME_BRIEFING_VERSION = 1
 
@@ -107,24 +109,41 @@ async function readEventLog(logPath: string): Promise<SynthEvent[]> {
   }
 }
 
-async function listSnapshots(snapshotsDir: string): Promise<{ id: string; timestamp?: number }[]> {
+async function loadSnapshots(snapshotsDir: string): Promise<StoredSnapshot[]> {
   if (!(await pathExists(snapshotsDir))) return []
-  const entries = await fs.readdir(snapshotsDir)
-  const snapshots: { id: string; timestamp?: number }[] = []
-  for (const entry of entries) {
-    if (!entry.endsWith(".json")) continue
-    const snapshotPath = path.join(snapshotsDir, entry)
-    try {
-      const raw = JSON.parse(await fs.readFile(snapshotPath, "utf-8"))
-      snapshots.push({
-        id: raw.id || path.basename(entry, ".json"),
-        timestamp: raw.timestamp || raw.createdAt,
-      })
-    } catch {
-      // Ignore unreadable snapshots.
+  try {
+    const store = createFileSystemSnapshotStore(snapshotsDir)
+    return await store.list()
+  } catch {
+    return []
+  }
+}
+
+async function listSnapshotSummaries(snapshotsDir: string): Promise<{ id: string; timestamp?: number }[]> {
+  const stored = await loadSnapshots(snapshotsDir)
+  return stored
+    .map((s) => ({
+      id: s.snapshot.id,
+      timestamp: s.snapshot.timestamp,
+    }))
+    .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
+}
+
+function getApprovedMissionsFromSnapshots(stored: StoredSnapshot[]): Array<{ id: string; name: string; approvedAt: number }> {
+  const missions: Array<{ id: string; name: string; approvedAt: number }> = []
+  for (const s of stored) {
+    if (!s.snapshot.worldModel?.nodes) continue
+    for (const node of s.snapshot.worldModel.nodes.values() as IterableIterator<WorldModelNode>) {
+      if (node.kind === "mission") {
+        missions.push({
+          id: node.id,
+          name: node.name,
+          approvedAt: s.snapshot.timestamp,
+        })
+      }
     }
   }
-  return snapshots.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
+  return missions
 }
 
 function extractName(payload: any): string | undefined {
@@ -421,6 +440,67 @@ function deriveRepositoryKind(state: CanonicalState): string {
   return "SYNTH project with active Expedition work"
 }
 
+function mergeSnapshotState(
+  state: CanonicalState | undefined,
+  storedSnapshots: StoredSnapshot[],
+): CanonicalState | undefined {
+  if (!state && storedSnapshots.length === 0) return undefined
+
+  const approvedMissions = getApprovedMissionsFromSnapshots(storedSnapshots)
+  if (approvedMissions.length === 0) return state
+
+  const base: CanonicalState = state ?? {
+    version: 1,
+    stateHash: "snapshot-derived",
+    workItems: {},
+    plans: {},
+    milestones: {},
+    projects: {},
+    missions: {},
+    expeditions: {},
+    objectives: {},
+    discoveries: {},
+    decisions: {},
+    generatedWorkItems: {},
+    executions: {},
+    lastEventOffset: 0,
+  }
+
+  for (const mission of approvedMissions) {
+    if (base.missions[mission.id]) {
+      base.missions[mission.id].status = "active"
+    } else {
+      base.missions[mission.id] = {
+        id: mission.id,
+        name: mission.name,
+        purpose: "Approved from snapshot",
+        status: "active",
+        expeditions: [],
+        metadata: { source: "ApprovedMissionModelSnapshot" },
+        createdAt: mission.approvedAt,
+        updatedAt: mission.approvedAt,
+      }
+    }
+  }
+
+  return base
+}
+
+function buildSnapshotTimeline(storedSnapshots: StoredSnapshot[]): TimelineEntry[] {
+  const entries: TimelineEntry[] = []
+  for (const s of storedSnapshots) {
+    for (const mission of getApprovedMissionsFromSnapshots([s])) {
+      entries.push({
+        at: mission.approvedAt,
+        type: "MISSION_APPROVED",
+        summary: `Mission "${mission.name}" approved (snapshot)`,
+        ids: [mission.id],
+      })
+    }
+  }
+  return entries.sort((a, b) => a.at - b.at)
+}
+
 /**
  * Build a Resume Briefing from the current working directory.
  * Every field is derived from replayable evidence (events, state, decisions,
@@ -439,7 +519,9 @@ export async function buildResumeBriefing(
   const manifestExists = await pathExists(manifestPath)
 
   const events = await readEventLog(logPath)
-  const state = events.length > 0 ? rebuildState(events) : ((await readJsonMaybe(statePath)) as CanonicalState | undefined)
+  const eventState = events.length > 0 ? rebuildState(events) : ((await readJsonMaybe(statePath)) as CanonicalState | undefined)
+  const storedSnapshots = await loadSnapshots(snapshotsDir)
+  const state = mergeSnapshotState(eventState, storedSnapshots)
 
   if (!state && !manifestExists) {
     return {
@@ -464,13 +546,14 @@ export async function buildResumeBriefing(
     }
   }
 
+  const { entries: decisionEntries, chainValid: decisionChainValid } = await buildDecisions(dataDir)
+  const snapshotSummaries = await listSnapshotSummaries(snapshotsDir)
+
   // Manifest exists but no events/state yet: project is initialized and
   // waiting for its first Mission. Still read the decision log so that a
   // broken chain is surfaced even before the first Mission is created.
   if (!state) {
-    const { entries: decisionEntries, chainValid: decisionChainValid } = await buildDecisions(dataDir)
-    const snapshots = await listSnapshots(snapshotsDir)
-    const warnings = detectWarnings(events, undefined, decisionChainValid, snapshots, dataDir)
+    const warnings = detectWarnings(events, undefined, decisionChainValid, snapshotSummaries, dataDir)
     return {
       status: "ok",
       kind: "ResumeBriefing",
@@ -493,11 +576,16 @@ export async function buildResumeBriefing(
     }
   }
 
-  const { entries: decisionEntries, chainValid: decisionChainValid } = await buildDecisions(dataDir)
-  const snapshots = await listSnapshots(snapshotsDir)
-  const timeline = buildTimeline(events)
+  const eventTimeline = buildTimeline(events)
+  const snapshotTimeline = buildSnapshotTimeline(storedSnapshots)
+  // Merge timelines, avoiding duplicate MISSION_APPROVED entries for the same mission.
+  const approvedIdsFromEvents = new Set(eventTimeline.filter((e) => e.type === "MISSION_APPROVED").flatMap((e) => e.ids))
+  const timeline = [...eventTimeline, ...snapshotTimeline.filter((e) => !approvedIdsFromEvents.has(e.ids[0]))].sort(
+    (a, b) => a.at - b.at,
+  )
+
   const nextActions = deriveNextActions(state)
-  const warnings = detectWarnings(events, state, decisionChainValid, snapshots, dataDir)
+  const warnings = detectWarnings(events, state, decisionChainValid, snapshotSummaries, dataDir)
 
   return {
     status: "ok",
