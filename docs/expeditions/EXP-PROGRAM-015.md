@@ -1,6 +1,6 @@
 # EXP-PROGRAM-015 — Repository Versioning Capability
 
-**Status:** Draft  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

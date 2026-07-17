@@ -19,6 +19,7 @@ export type CapabilityFamily =
   | "Forge"
   | "Secrets"
   | "Identity"
+  | "Versioning"
 
 /** Confidence level assigned to a discovery observation */
 export type DiscoveryConfidence = "none" | "low" | "medium" | "high" | "certain"
