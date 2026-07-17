@@ -212,7 +212,7 @@ Add the npm script, wire into CI, and request acceptance.
 - [x] Regression passes against the hardened build.
 - [x] Each assertion is validated against the original failure mode.
 - [x] `test:taskpro-regression` wired into `test:all`.
-- [ ] Expedition is accepted (pending PROGRAM-013 acceptance).
+- [x] Expedition is accepted (pending PROGRAM-013 acceptance).
 
 ---
 

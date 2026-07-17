@@ -1,6 +1,6 @@
 # EXP-CONT-002 — Interruption Benchmark
 
-**Status:** Draft  
+**Status:** Completed (pending program acceptance)  
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-013 — Cognitive Continuity  
@@ -180,12 +180,12 @@ Publish the RAI definition and the first benchmark report.
 
 ## Definition of Done
 
-- [ ] RAI dimensions and scoring rubric documented.
-- [ ] `scripts/interruption-benchmark.js` runs end to end.
-- [ ] Baseline RAI report generated and committed.
-- [ ] `bench:interruption` wired into `package.json`.
-- [ ] CI runs the benchmark as an informational check.
-- [ ] Expedition is accepted.
+- [x] RAI dimensions and scoring rubric documented.
+- [x] `scripts/interruption-benchmark.js` runs end to end.
+- [x] Baseline RAI report generated and committed.
+- [x] `bench:interruption` wired into `package.json` and `test:all`.
+- [x] CI runs the benchmark as an informational check (exit 0, output recorded).
+- [ ] Expedition is accepted (pending PROGRAM-013 acceptance).
 
 ---
 
@@ -201,4 +201,39 @@ Publish the RAI definition and the first benchmark report.
 
 ## Completion Notes
 
-*To be filled after implementation and acceptance.*
+Implemented as scoped:
+
+- **RAI Definition** — `docs/reference/repository-authority-index.md` defines the five dimensions (Identity, Mission, Decisions, Next Action, Confidence), the 0/0.5/1.0 scoring rubric, the six kill-at-checkpoints (A–F), and the interpretation ranges.
+- **Baseline report** — `docs/reference/repository-authority-index-baseline.json` records the first aggregate RAI measurement.
+- **Benchmark harness** — `scripts/interruption-benchmark.js` creates a disposable project, advances it through checkpoints A–F, kills the process at each checkpoint, and scores a fresh zero-history reconstruction using only public CLI commands.
+- **CI wiring** — `bench:interruption` added to `package.json` and wired into `test:all`; the harness always exits 0 so it acts as an informational measurement, not a hard gate.
+
+Baseline results:
+
+```text
+A: after init              RAI 0.60
+B: after mission draft     RAI 0.60
+C: after mission approved  RAI 1.00
+D: after expedition created   RAI 1.00
+E: after expedition completed RAI 1.00
+F: after proof check       RAI 1.00
+
+Aggregate RAI: 0.87
+```
+
+The lower scores at checkpoints A and B are expected: no Mission exists yet, so the Mission and Decisions dimensions are necessarily 0. The benchmark confirms that once a Mission is approved (checkpoint C onward), the repository alone fully reconstructs intent.
+
+Local verification:
+
+```bash
+npm run typecheck                      # PASS
+npm run build                          # PASS
+npm run test:resume-briefing           # PASS (6/6)
+npm run test:taskpro-regression        # PASS (14/14)
+npm run bench:interruption             # PASS (aggregate RAI 0.87)
+npm run test:operator-briefing         # PASS
+npm run test:repository-identity       # PASS
+npm run test:explain-observability     # PASS (25/25)
+```
+
+Full `npm run govern` is pending CI run as requested.
