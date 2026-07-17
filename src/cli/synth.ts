@@ -8,6 +8,7 @@
 
 import fs from "fs/promises"
 import path from "path"
+import crypto from "crypto"
 import { spawn, spawnSync } from "child_process"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
@@ -17,6 +18,7 @@ import { checkGovernDelegation } from "./govern-delegation.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
+import { cmdExplainIdentity } from "./repository-identity.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -47,7 +49,7 @@ const COMMANDS = [
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "expedition", description: "Planning operations (create)" },
   { name: "docs", description: "Documentation operations (generate)" },
-  { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, all)" },
+  { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, all)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -123,6 +125,53 @@ async function cmdVersion() {
   printJson({ status: "ok", version, name: "synth", schema: "synth-cli-v1" })
 }
 
+async function verifyDistIntegrity(): Promise<{ ok: boolean; detail: string }> {
+  const manifestPath = path.resolve(__dirname, "..", "dist-manifest.json")
+  try {
+    await fs.access(manifestPath)
+  } catch {
+    return { ok: false, detail: "No dist manifest found; run 'npm run build'" }
+  }
+
+  let manifest: any
+  try {
+    manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
+  } catch {
+    return { ok: false, detail: "dist manifest is not valid JSON" }
+  }
+
+  if (manifest.schema !== "synth-dist-manifest-v1") {
+    return { ok: false, detail: `Unknown dist manifest schema: ${manifest.schema}` }
+  }
+
+  const distDir = path.resolve(__dirname, "..")
+  const expectedFiles = Object.entries<string>(manifest.files ?? {})
+  let mismatches = 0
+  let missing = 0
+  for (const [rel, expectedHash] of expectedFiles) {
+    const filePath = path.join(distDir, rel)
+    let actualHash: string
+    try {
+      actualHash = crypto.createHash("sha256").update(await fs.readFile(filePath)).digest("hex")
+    } catch {
+      missing++
+      continue
+    }
+    if (actualHash !== expectedHash) {
+      mismatches++
+    }
+  }
+
+  if (missing > 0 || mismatches > 0) {
+    return {
+      ok: false,
+      detail: `${missing} missing file(s), ${mismatches} modified file(s) in dist/`,
+    }
+  }
+
+  return { ok: true, detail: `${expectedFiles.length} dist file(s) verified` }
+}
+
 async function cmdDoctor() {
   const REQUIRED_NODE_MAJOR = 20
   const checks: Record<string, { ok: boolean; detail: string }> = {}
@@ -162,7 +211,19 @@ async function cmdDoctor() {
     detail: hasManifest ? manifestPath : "No SYNTH project manifest found in current directory",
   }
 
+  // Installed dist integrity (EXP-DISC-005)
+  checks.distIntegrity = await verifyDistIntegrity()
+
   const allOk = Object.values(checks).every((c) => c.ok)
+  const nextSteps: string[] = []
+  if (!checks.distIntegrity.ok) {
+    nextSteps.push("npm run build")
+  }
+  if (hasManifest) {
+    nextSteps.push("synth status", "synth mission create --subject '...' --purpose '...'")
+  } else {
+    nextSteps.push("synth init --name 'Project Name'")
+  }
 
   printJson({
     status: allOk ? "ok" : "warning",
@@ -170,9 +231,7 @@ async function cmdDoctor() {
     version,
     healthy: allOk,
     checks,
-    nextSteps: hasManifest
-      ? ["synth status", "synth mission create --subject '...' --purpose '...'"]
-      : ["synth init --name 'Project Name'"],
+    nextSteps,
   })
 }
 
@@ -1015,7 +1074,23 @@ async function main() {
     return
   }
 
-  const { positional, flags } = parseArgs(process.argv)
+  // EXP-DISC-004: --json requests machine-clean output. Suppress diagnostic
+  // INFO/WARN/DEBUG logs to stderr; ERROR logs are still emitted.
+  const jsonFlag = rawArgs.includes("--json")
+  if (jsonFlag) {
+    process.env.SYNTH_QUIET_LOGS = "1"
+  }
+
+  const filteredArgs = rawArgs.filter((arg) => arg !== "--json")
+  const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
+
+  // Propagate the global --json flag to subcommands that need to know it
+  // (e.g., synth explain ... --json), while still keeping it out of the
+  // positional arguments passed to delegated CLIs.
+  if (jsonFlag) {
+    flags.json = true
+  }
+
   const command = positional[0]
 
   switch (command) {
@@ -1078,6 +1153,7 @@ async function main() {
     case "explain": {
       const sub = positional[1]
       if (sub === "replay") await cmdExplainReplay(flags)
+      else if (sub === "identity") await cmdExplainIdentity(flags)
       else await cmdExplainObservability(sub, flags)
       break
     }

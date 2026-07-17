@@ -20,6 +20,7 @@ export {
   documentFromKnowledgeBase,
   extractDirectoryKnowledge,
 } from "./documentation-expedition.js"
+export type { ExtractionSummary } from "./documentation-expedition.js"
 export type {
   MarkdownKnowledge,
   Concept,

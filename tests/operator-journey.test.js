@@ -232,7 +232,7 @@ test("Operator Journey completes end-to-end and produces certification evidence"
   // ============================================================
   const t8 = now()
   const outDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-operator-journey-docs-"))
-  const projections = await documentFromKnowledgeBase(path.join(process.cwd(), "docs"), outDir)
+  const { projections, summary } = await documentFromKnowledgeBase(path.join(process.cwd(), "docs"), outDir)
   stepTimes.documentation = now() - t8
 
   const expectedFiles = [
@@ -253,6 +253,7 @@ test("Operator Journey completes end-to-end and produces certification evidence"
   await fs.rm(outDir, { recursive: true, force: true })
 
   report.artifacts.documentationProjections = projections.map((p) => p.filename)
+  report.artifacts.extractionSummary = summary
   report.steps.push({ step: "documentation", durationMs: stepTimes.documentation, status: "ok" })
 
   // ============================================================

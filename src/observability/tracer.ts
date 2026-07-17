@@ -118,10 +118,12 @@ export class Logger {
   }
 
   info(message: string, meta?: Record<string, unknown>): void {
+    if (process.env.SYNTH_QUIET_LOGS === "1") return
     this.log("INFO", message, meta)
   }
 
   warn(message: string, meta?: Record<string, unknown>): void {
+    if (process.env.SYNTH_QUIET_LOGS === "1") return
     this.log("WARN", message, meta)
   }
 
@@ -130,6 +132,7 @@ export class Logger {
   }
 
   debug(message: string, meta?: Record<string, unknown>): void {
+    if (process.env.SYNTH_QUIET_LOGS === "1") return
     this.log("DEBUG", message, meta)
   }
 

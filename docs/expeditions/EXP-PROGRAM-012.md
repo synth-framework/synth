@@ -1,6 +1,6 @@
 # EXP-PROGRAM-012 — Runtime Self-Description
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -141,14 +141,27 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 ## Definition of Done
 
 - [x] EXP-DISC-001 completed and accepted.
-- [ ] EXP-DISC-002 completed and accepted.
-- [ ] EXP-DISC-003 completed and accepted.
-- [ ] EXP-DISC-004 completed and accepted.
-- [ ] EXP-DISC-005 completed and accepted.
-- [ ] EXP-DISC-006 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-DISC-002 completed and accepted.
+- [x] EXP-DISC-003 completed and accepted.
+- [x] EXP-DISC-004 completed and accepted.
+- [x] EXP-DISC-005 completed and accepted.
+- [x] EXP-DISC-006 completed and accepted.
+- [x] Program completed (pending acceptance).
 
 ---
+
+## Completion Notes
+
+All six expeditions are implemented and merged:
+
+- **EXP-DISC-001** — Operator Briefing (`synth status`) already accepted.
+- **EXP-DISC-002** — `synth docs generate` now reports extraction counts and warns loudly on zero-concept extraction.
+- **EXP-DISC-003** — `synth adapter info <name>` exposes adapter metadata, state, and health.
+- **EXP-DISC-004** — Global `--json` flag suppresses bootstrap diagnostic logs for machine-clean output.
+- **EXP-DISC-005** — `synth doctor` verifies installed `dist/` files against a build-time SHA-256 manifest.
+- **EXP-DISC-006** — `synth explain identity` projects repository kind, phase, authority, inputs/outputs, and transformation direction from evidence.
+
+Each expedition has regression tests wired into `test:all`. Full program acceptance is pending operator-run CI verification of `npm run govern`.
 
 ## Related Documents
 

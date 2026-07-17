@@ -13,11 +13,21 @@ import { buildKnowledgeGraph } from "./knowledge-graph.js"
 import { normalizeGraph } from "./normalizer.js"
 import { projectAll } from "./projections/engine.js"
 
+export type ExtractionSummary = {
+  filesScanned: number
+  filesMatched: number
+  conceptsExtracted: number
+  projectionsGenerated: number
+  zeroExtractionWarning: boolean
+}
+
 /**
  * Extract knowledge from all Markdown files under a directory.
  */
-export async function extractDirectoryKnowledge(dir: string): Promise<MarkdownKnowledge[]> {
+export async function extractDirectoryKnowledge(dir: string): Promise<{ sources: MarkdownKnowledge[]; filesScanned: number; filesMatched: number }> {
   const sources: MarkdownKnowledge[] = []
+  let filesScanned = 0
+  let filesMatched = 0
 
   async function walk(current: string): Promise<void> {
     let entries: Dirent[]
@@ -33,16 +43,20 @@ export async function extractDirectoryKnowledge(dir: string): Promise<MarkdownKn
         // Skip generated output directories to avoid re-ingesting derived docs.
         if (entry.name === "generated") continue
         await walk(fullPath)
-      } else if (entry.isFile() && entry.name.endsWith(".md")) {
-        const content = await fs.readFile(fullPath, "utf-8")
-        const relativePath = path.relative(dir, fullPath)
-        sources.push(extractMarkdownKnowledge(relativePath, content))
+      } else if (entry.isFile()) {
+        filesScanned++
+        if (entry.name.endsWith(".md")) {
+          filesMatched++
+          const content = await fs.readFile(fullPath, "utf-8")
+          const relativePath = path.relative(dir, fullPath)
+          sources.push(extractMarkdownKnowledge(relativePath, content))
+        }
       }
     }
   }
 
   await walk(dir)
-  return sources
+  return { sources, filesScanned, filesMatched }
 }
 
 /**
@@ -81,8 +95,8 @@ export async function documentFromKnowledgeBase(
   knowledgeBaseDir: string,
   outDir: string,
   linkPrefix?: string,
-): Promise<Projection[]> {
-  const sources = await extractDirectoryKnowledge(knowledgeBaseDir)
+): Promise<{ projections: Projection[]; summary: ExtractionSummary }> {
+  const { sources, filesScanned, filesMatched } = await extractDirectoryKnowledge(knowledgeBaseDir)
   // Generated projections live in outDir; source links must resolve back to
   // the knowledge base. Compute the relative prefix once and prepend it to
   // every source identifier so links like `architecture/01-introduction.md`
@@ -90,5 +104,14 @@ export async function documentFromKnowledgeBase(
   const computedPrefix = linkPrefix ?? path.relative(outDir, knowledgeBaseDir).replace(/\\/g, "/")
   const prefix = computedPrefix ? `${computedPrefix}/` : ""
   const sourcesWithLinks = sources.map((s) => ({ ...s, id: `${prefix}${s.id}` }))
-  return runDocumentationExpedition(sourcesWithLinks, outDir)
+  const graph = normalizeGraph(buildKnowledgeGraph(sourcesWithLinks))
+  const projections = await runDocumentationExpedition(sourcesWithLinks, outDir)
+  const summary: ExtractionSummary = {
+    filesScanned,
+    filesMatched,
+    conceptsExtracted: graph.concepts.length,
+    projectionsGenerated: projections.length,
+    zeroExtractionWarning: filesMatched > 0 && graph.concepts.length === 0,
+  }
+  return { projections, summary }
 }

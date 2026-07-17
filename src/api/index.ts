@@ -315,8 +315,15 @@ export class SynthAPI {
         const knowledgeBaseDir = String(params.knowledgeBaseDir || "./docs")
         const outDir = String(params.outDir || "./docs/generated")
         const linkPrefix = typeof params.linkPrefix === "string" ? params.linkPrefix : undefined
-        const projections = await documentFromKnowledgeBase(knowledgeBaseDir, outDir, linkPrefix)
-        return { status: "ok", projections: projections.map((p) => ({ filename: p.filename, title: p.title })) }
+        const { projections, summary } = await documentFromKnowledgeBase(knowledgeBaseDir, outDir, linkPrefix)
+        return {
+          status: summary.zeroExtractionWarning ? "warning" : "ok",
+          summary,
+          projections: projections.map((p) => ({ filename: p.filename, title: p.title })),
+          ...(summary.zeroExtractionWarning
+            ? { warning: "Zero concepts extracted from matched Markdown files. Check that source files contain headings, lists, or identifiable concepts." }
+            : {}),
+        }
       }
       default:
         return { status: "error", error: `Unknown documentation operation: ${operation}` }

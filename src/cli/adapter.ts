@@ -41,6 +41,19 @@ async function main() {
       break
     }
 
+    case "info": {
+      const name = adapterName || "repository"
+      const adapter = registry.create(name)
+      console.log(JSON.stringify({
+        status: "ok",
+        name,
+        metadata: adapter.metadata,
+        state: adapter.state,
+        health: adapter.health,
+      }, null, 2))
+      break
+    }
+
     case "enable": {
       const name = adapterName || "repository"
       const adapter = registry.create(name)
