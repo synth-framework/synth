@@ -74,6 +74,10 @@
       "name": "Operator Trust & CLI Integrity",
       "description": "Operator trust expeditions (govern recursion guard, draft integrity, evidence path, decision events)."
     },
+    "VCS": {
+      "name": "Repository Versioning",
+      "description": "Version control capability and adapter expeditions (Git, GitHub, generic repository operations)."
+    },
     "VAL": {
       "name": "Validation",
       "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."
