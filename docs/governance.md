@@ -118,6 +118,16 @@ Any change that moves a concern across one of these boundaries requires an ADR.
 
 ---
 
+## Projection Model
+
+The [Projection Model](architecture/projection-model.md) defines how SYNTH outputs are derived from the event log. It classifies every artifact as source of truth, canonical state, recomputed projection, cached projection, source input artifact, or bootstrap artifact. Governance enforces the three projection invariants:
+
+- A projection may never be edited as a source artifact.
+- A cached projection is valid only if its `sourceStateHash` matches current state.
+- No canonical fact may exist in more than one mutable location.
+
+---
+
 ## Audit Pipeline
 
 | Proof Class | Script | Gate |
