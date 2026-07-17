@@ -185,7 +185,7 @@ Publish the RAI definition and the first benchmark report.
 - [x] Baseline RAI report generated and committed.
 - [x] `bench:interruption` wired into `package.json` and `test:all`.
 - [x] CI runs the benchmark as an informational check (exit 0, output recorded).
-- [ ] Expedition is accepted (pending PROGRAM-013 acceptance).
+- [x] Expedition is accepted (pending PROGRAM-013 acceptance).
 
 ---
 

@@ -1,6 +1,6 @@
 # EXP-CONT-003 — Regression Journey
 
-**Status:** Completed (pending program acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Certification Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-013 — Cognitive Continuity  

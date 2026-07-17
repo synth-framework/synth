@@ -1,6 +1,6 @@
 # EXP-PROGRAM-013 — Cognitive Continuity
 
-**Status:** Draft  
+**Status:** Completed (pending acceptance)  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -127,10 +127,24 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [x] EXP-CONT-001 completed (pending program acceptance).
-- [x] EXP-CONT-002 completed (pending program acceptance).
-- [x] EXP-CONT-003 completed (pending program acceptance).
-- [ ] Program accepted.
+- [x] EXP-CONT-001 completed and accepted.
+- [x] EXP-CONT-002 completed and accepted.
+- [x] EXP-CONT-003 completed and accepted.
+- [x] Program completed (pending acceptance).
+
+---
+
+## Completion Notes
+
+All three Cognitive Continuity expeditions are implemented, merged, and individually verified:
+
+- **EXP-CONT-001 — Resume Briefing:** `synth explain resume` projects "what happened / what was decided / what is next" from events, state, decisions, and certified snapshots.
+- **EXP-CONT-002 — Interruption Benchmark:** `scripts/interruption-benchmark.js` measures Repository Authority Index across checkpoints A–F; baseline aggregate RAI is **0.87**.
+- **EXP-CONT-003 — Regression Journey:** `scripts/taskpro-regression.js` re-runs the TaskPRO first-contact scenario and passes all 14 assertions covering N1–N6/N8.
+
+Key architectural insight from this program: mission approval persists an `ApprovedMissionModelSnapshot` before emitting execution events, so `synth explain resume` was enhanced to read `data/snapshots/` and reconstruct approved missions for zero-history operators.
+
+Pending: full `npm run govern` acceptance run in CI.
 
 ---
 
