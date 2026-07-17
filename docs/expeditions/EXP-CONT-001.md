@@ -1,6 +1,6 @@
 # EXP-CONT-001 — Resume Briefing
 
-**Status:** Draft  
+**Status:** Completed (pending program acceptance)  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-013 — Cognitive Continuity  
@@ -211,9 +211,9 @@ Run full governance pipeline and request acceptance.
 - [x] Regression tests cover uninitialized, initialized, approved, executing, and broken-decision states.
 - [x] Continuity warnings are emitted for fragile or inconsistent state.
 - [x] Output is deterministic across repeated invocations on unchanged state.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
-- [ ] Expedition is accepted.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check on PR #105).
+- [ ] Expedition is accepted (pending PROGRAM-013 acceptance).
 
 ---
 
