@@ -191,4 +191,10 @@ All architecture documents, implementation code, tests, and operational procedur
 
 ---
 
+## Related Documents
+
+- [Constitutional Layer Boundaries](constitutional-layer-boundaries.md) — boundary definitions for Governance, Implementation, Expedition, and Bootstrap.
+
+---
+
 *Adopted as the foundational architecture of Synth v2.*

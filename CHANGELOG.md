@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/reference/repository-authority-index.md` — RAI definition and scoring rubric.
 - EXP-PROGRAM-013 — Cognitive Continuity Program chartered (EXP-CONT-001, EXP-CONT-002, EXP-CONT-003).
 - EXP-PROGRAM-014 — Governance Maturation Program chartered (EXP-GOV-002, EXP-GOV-003, EXP-GOV-004, EXP-GOV-005).
+- EXP-GOV-003 — Constitutional Layer Boundaries (`docs/architecture/constitutional-layer-boundaries.md`): defines Governance vs. Implementation vs. Expedition vs. Bootstrap, with E1-derived examples and a decision matrix.
 
 ## [2.0.0-rc.3] — 2026-07-17
 

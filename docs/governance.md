@@ -108,6 +108,16 @@ ADR template: `docs/adr/ADR-TEMPLATE.md`
 
 ---
 
+## Constitutional Layer Boundaries
+
+Governance owns **semantics** (what is permitted, what is true, what must be proven). Implementation owns **mechanics** (how code runs, which tools are used, how adapters observe the world). Expedition is the authorized engineering unit that produces evidence, and Bootstrap is the one-time transformation that creates the initial governance record.
+
+For the authoritative boundary definitions, examples from the first governed bootstrap, and the decision matrix used to classify concerns, see [Constitutional Layer Boundaries](architecture/constitutional-layer-boundaries.md).
+
+Any change that moves a concern across one of these boundaries requires an ADR.
+
+---
+
 ## Audit Pipeline
 
 | Proof Class | Script | Gate |

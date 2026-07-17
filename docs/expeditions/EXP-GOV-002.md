@@ -1,6 +1,6 @@
 # EXP-GOV-002 — Replay as the Constitutional Source of Truth
 
-**Status:** Completed (pending program acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-014 — Governance Maturation  
@@ -147,7 +147,7 @@ Regression guards, documentation, full validation.
 - [x] Regression guards wired into `test:all`.
 - [x] Documentation integrity checks pass.
 - [x] `npm run govern` passes (via CI `proof` check).
-- [ ] Expedition is accepted (pending PROGRAM-014 acceptance).
+- [x] Expedition is accepted.
 
 ---
 
