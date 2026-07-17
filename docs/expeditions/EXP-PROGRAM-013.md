@@ -1,6 +1,6 @@
 # EXP-PROGRAM-013 — Cognitive Continuity
 
-**Status:** Completed (pending acceptance)  
+**Status:** Accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -130,7 +130,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [x] EXP-CONT-001 completed and accepted.
 - [x] EXP-CONT-002 completed and accepted.
 - [x] EXP-CONT-003 completed and accepted.
-- [x] Program completed (pending acceptance).
+- [x] Program accepted.
 
 ---
 
@@ -144,7 +144,11 @@ All three Cognitive Continuity expeditions are implemented, merged, and individu
 
 Key architectural insight from this program: mission approval persists an `ApprovedMissionModelSnapshot` before emitting execution events, so `synth explain resume` was enhanced to read `data/snapshots/` and reconstruct approved missions for zero-history operators.
 
-Pending: full `npm run govern` acceptance run in CI.
+Program accepted after CI `proof` check passed on the implementing PRs:
+- PR #105 (EXP-CONT-001)
+- PR #106 (EXP-CONT-003 + snapshot-aware resume)
+- PR #107 (EXP-CONT-002)
+- PR #108 (program status finalization)
 
 ---
 
