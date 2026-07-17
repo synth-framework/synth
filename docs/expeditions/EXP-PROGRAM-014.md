@@ -141,7 +141,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [x] EXP-GOV-002 completed and accepted.
 - [x] EXP-GOV-003 completed and accepted.
 - [x] EXP-GOV-004 completed and accepted.
-- [ ] EXP-GOV-005 completed and accepted.
+- [x] EXP-GOV-005 completed and accepted.
 - [ ] Program accepted.
 
 ---
