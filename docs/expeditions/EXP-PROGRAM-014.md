@@ -1,6 +1,6 @@
 # EXP-PROGRAM-014 — Governance Maturation
 
-**Status:** Draft  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -142,7 +142,20 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [x] EXP-GOV-003 completed and accepted.
 - [x] EXP-GOV-004 completed and accepted.
 - [x] EXP-GOV-005 completed and accepted.
-- [ ] Program accepted.
+- [x] Program accepted.
+
+---
+
+## Completion Notes
+
+All four expeditions were completed and accepted:
+
+- **EXP-GOV-002** formalized the Governance Record as a replay-derived projection.
+- **EXP-GOV-003** published `docs/architecture/constitutional-layer-boundaries.md`, defining Governance, Implementation, Expedition, and Bootstrap layers with a decision matrix and E1 examples.
+- **EXP-GOV-004** published `docs/architecture/projection-model.md`, establishing source of truth, canonical state, projections, cached projections, and forbidden duplication.
+- **EXP-GOV-005** shipped `synth verify`, an executable verification engine with six checks and regression guards wired into `npm run govern`.
+
+The Constitutional Freeze, public vocabulary, and governance kernel were preserved throughout. All proofs pass in CI.
 
 ---
 
