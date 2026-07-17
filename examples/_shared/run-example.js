@@ -141,7 +141,7 @@ export async function runExample({ name, mission, expeditions, objectives, recor
   // Links must resolve from the final published docs directory, not the
   // temporary build directory, because the files are moved after generation.
   const linkPrefix = path.relative(docsOutDir, knowledgeBaseDir).replace(/\\/g, "/")
-  const projections = await documentFromKnowledgeBase(knowledgeBaseDir, tmpDocsDir, linkPrefix)
+  const { projections, summary } = await documentFromKnowledgeBase(knowledgeBaseDir, tmpDocsDir, linkPrefix)
   const expectedFiles = ["README.md", "ARCHITECTURE.md", "API.md", "OPERATOR_GUIDE.md", "DEVELOPER_GUIDE.md", "ARCHITECT_GUIDE.md", "AI_CONTEXT.md"]
   for (const file of expectedFiles) {
     const content = await fs.readFile(path.join(tmpDocsDir, file), "utf-8")
@@ -169,6 +169,7 @@ export async function runExample({ name, mission, expeditions, objectives, recor
     eventCount: replayResult.eventCount,
     stateHash: replayResult.replayHash,
     documentationProjections: projections.map((p) => p.filename),
+    extractionSummary: summary,
   }
   report.overall = { passed: true }
 
