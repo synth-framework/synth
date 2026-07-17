@@ -138,7 +138,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-GOV-002 completed and accepted.
+- [x] EXP-GOV-002 completed (pending program acceptance).
 - [ ] EXP-GOV-003 completed and accepted.
 - [ ] EXP-GOV-004 completed and accepted.
 - [ ] EXP-GOV-005 completed and accepted.

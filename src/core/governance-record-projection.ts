@@ -1,0 +1,140 @@
+// ============================================================
+// SYNTH v2 — Governance Record Projection (EXP-GOV-002)
+// ============================================================
+// Derives the Governance Record lineage from a replayable event log.
+// Every GovernanceRecord is a deterministic projection of one or more
+// events; no record is authored by hand.
+//
+// Mapping rules (extensible):
+//   SYSTEM_GENESIS            → initialization
+//   MISSION_APPROVED          → approval
+//   EXPEDITION_COMPLETED      → governance_update
+//   POLICY_EVALUATED          → verification
+//   capability === "Bootstrap" → bootstrap
+// ============================================================
+
+import type { SynthEvent } from "../types/index.js"
+import type { GovernanceRecord, GovernanceRecordLineage } from "../types/governance-record.js"
+
+function extractName(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object") return undefined
+  const p = payload as Record<string, any>
+  for (const key of ["mission", "expedition", "workItem", "objective", "plan", "project"]) {
+    const nested = p[key]
+    if (nested && typeof nested === "object") {
+      return nested.name || nested.title || nested.id
+    }
+  }
+  return p.name || p.title || undefined
+}
+
+function extractId(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== "object") return undefined
+  const p = payload as Record<string, any>
+  for (const key of ["missionId", "expeditionId", "workItemId", "objectiveId", "planId", "projectId", "id"]) {
+    const value = p[key]
+    if (typeof value === "string") return value
+  }
+  for (const key of ["mission", "expedition", "workItem", "objective", "plan", "project"]) {
+    const nested = p[key]
+    if (nested && typeof nested === "object" && typeof nested.id === "string") {
+      return nested.id
+    }
+  }
+  return undefined
+}
+
+/**
+ * Derive a GovernanceRecord from a single event, or return undefined
+ * when the event does not represent a governance transition.
+ */
+export function deriveGovernanceRecord(event: SynthEvent): GovernanceRecord | undefined {
+  const payload = (event.payload ?? {}) as Record<string, any>
+  const subjectId = extractId(payload)
+  const subjectName = extractName(payload)
+
+  switch (event.type) {
+    case "SYSTEM_GENESIS":
+      return {
+        id: `governance-initialization-${event.id}`,
+        type: "initialization",
+        summary: "System genesis",
+        eventId: event.id,
+        timestamp: event.timestamp,
+        transactionId: event.transactionId,
+        actor: event.actor,
+        metadata: payload,
+      }
+
+    case "MISSION_APPROVED":
+      return {
+        id: `governance-approval-${event.id}`,
+        type: "approval",
+        summary: subjectName ? `Mission "${subjectName}" approved` : "Mission approved",
+        eventId: event.id,
+        timestamp: event.timestamp,
+        transactionId: event.transactionId,
+        actor: event.actor,
+        subjectId,
+        subjectName,
+      }
+
+    case "EXPEDITION_COMPLETED":
+      return {
+        id: `governance-update-${event.id}`,
+        type: "governance_update",
+        summary: subjectName ? `Expedition "${subjectName}" completed` : "Expedition completed",
+        eventId: event.id,
+        timestamp: event.timestamp,
+        transactionId: event.transactionId,
+        actor: event.actor,
+        subjectId,
+        subjectName,
+      }
+
+    case "POLICY_EVALUATED":
+      return {
+        id: `governance-verification-${event.id}`,
+        type: "verification",
+        summary: `Policy ${(payload as any).policyId ?? "unknown"} evaluated`,
+        eventId: event.id,
+        timestamp: event.timestamp,
+        transactionId: event.transactionId,
+        actor: event.actor,
+        subjectId: (payload as any).policyId,
+      }
+
+    default:
+      if (event.capability === "Bootstrap" || event.actor === "bootstrap") {
+        return {
+          id: `governance-bootstrap-${event.id}`,
+          type: "bootstrap",
+          summary: `Bootstrap transition: ${event.type}`,
+          eventId: event.id,
+          timestamp: event.timestamp,
+          transactionId: event.transactionId,
+          actor: event.actor,
+          subjectId,
+          subjectName,
+        }
+      }
+      return undefined
+  }
+}
+
+/**
+ * Build the complete Governance Record lineage from an event log.
+ */
+export function deriveGovernanceRecords(events: SynthEvent[]): GovernanceRecordLineage {
+  const records: GovernanceRecord[] = []
+  for (const event of events) {
+    const record = deriveGovernanceRecord(event)
+    if (record) records.push(record)
+  }
+  return {
+    status: "ok",
+    kind: "GovernanceRecordLineage",
+    recordCount: records.length,
+    records,
+  }
+}
