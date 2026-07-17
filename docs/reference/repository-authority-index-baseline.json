@@ -1,0 +1,198 @@
+{
+  "status": "OK",
+  "aggregateRai": 0.8666666666666667,
+  "checkpoints": [
+    {
+      "name": "A: after init",
+      "expected": "project initialized; create mission",
+      "rai": 0.6,
+      "scores": [
+        {
+          "name": "Identity",
+          "score": 1,
+          "reason": "full identity projection available"
+        },
+        {
+          "name": "Mission",
+          "score": 0,
+          "reason": "no mission reconstructable"
+        },
+        {
+          "name": "Decisions",
+          "score": 0,
+          "reason": "no decisions recorded"
+        },
+        {
+          "name": "Next Action",
+          "score": 1,
+          "reason": "explicit next action: synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+        },
+        {
+          "name": "Confidence",
+          "score": 1,
+          "reason": "state appears consistent"
+        }
+      ]
+    },
+    {
+      "name": "B: after mission draft",
+      "expected": "mission draft exists; gather evidence",
+      "rai": 0.6,
+      "scores": [
+        {
+          "name": "Identity",
+          "score": 1,
+          "reason": "full identity projection available"
+        },
+        {
+          "name": "Mission",
+          "score": 0,
+          "reason": "no mission reconstructable"
+        },
+        {
+          "name": "Decisions",
+          "score": 0,
+          "reason": "no decisions recorded"
+        },
+        {
+          "name": "Next Action",
+          "score": 1,
+          "reason": "explicit next action: synth mission evidence add --draft-id 91eb2a3d87c1e3e4 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+        },
+        {
+          "name": "Confidence",
+          "score": 1,
+          "reason": "state appears consistent"
+        }
+      ]
+    },
+    {
+      "name": "C: after mission approved",
+      "expected": "mission approved; create expedition",
+      "rai": 1,
+      "scores": [
+        {
+          "name": "Identity",
+          "score": 1,
+          "reason": "full identity projection available"
+        },
+        {
+          "name": "Mission",
+          "score": 1,
+          "reason": "active mission \"Benchmark Mission\" reconstructed"
+        },
+        {
+          "name": "Decisions",
+          "score": 1,
+          "reason": "durable decisions reconstructable"
+        },
+        {
+          "name": "Next Action",
+          "score": 1,
+          "reason": "explicit next action: synth expedition create --mission f3c53555e2b96c01 --subject \"<expedition>\" --goal \"<goal>\""
+        },
+        {
+          "name": "Confidence",
+          "score": 1,
+          "reason": "state appears consistent"
+        }
+      ]
+    },
+    {
+      "name": "D: after expedition created",
+      "expected": "expedition exists; continue execution",
+      "rai": 1,
+      "scores": [
+        {
+          "name": "Identity",
+          "score": 1,
+          "reason": "full identity projection available"
+        },
+        {
+          "name": "Mission",
+          "score": 1,
+          "reason": "active mission \"Benchmark Mission\" reconstructed"
+        },
+        {
+          "name": "Decisions",
+          "score": 1,
+          "reason": "durable decisions reconstructable"
+        },
+        {
+          "name": "Next Action",
+          "score": 1,
+          "reason": "explicit next action: synth expedition create --mission f3c53555e2b96c01 --subject \"<expedition>\" --goal \"<goal>\""
+        },
+        {
+          "name": "Confidence",
+          "score": 1,
+          "reason": "state appears consistent"
+        }
+      ]
+    },
+    {
+      "name": "E: after expedition completed",
+      "expected": "expedition complete; continue or archive",
+      "rai": 1,
+      "scores": [
+        {
+          "name": "Identity",
+          "score": 1,
+          "reason": "full identity projection available"
+        },
+        {
+          "name": "Mission",
+          "score": 1,
+          "reason": "active mission \"Benchmark Mission\" reconstructed"
+        },
+        {
+          "name": "Decisions",
+          "score": 1,
+          "reason": "durable decisions reconstructable"
+        },
+        {
+          "name": "Next Action",
+          "score": 1,
+          "reason": "explicit next action: synth expedition create --mission f3c53555e2b96c01 --subject \"<expedition>\" --goal \"<goal>\""
+        },
+        {
+          "name": "Confidence",
+          "score": 1,
+          "reason": "state appears consistent"
+        }
+      ]
+    },
+    {
+      "name": "F: after proof check",
+      "expected": "governance proof verified; cycle complete",
+      "rai": 1,
+      "scores": [
+        {
+          "name": "Identity",
+          "score": 1,
+          "reason": "full identity projection available"
+        },
+        {
+          "name": "Mission",
+          "score": 1,
+          "reason": "active mission \"Benchmark Mission\" reconstructed"
+        },
+        {
+          "name": "Decisions",
+          "score": 1,
+          "reason": "durable decisions reconstructable"
+        },
+        {
+          "name": "Next Action",
+          "score": 1,
+          "reason": "explicit next action: synth expedition create --mission f3c53555e2b96c01 --subject \"<expedition>\" --goal \"<goal>\""
+        },
+        {
+          "name": "Confidence",
+          "score": 1,
+          "reason": "replay consistent"
+        }
+      ]
+    }
+  ]
+}
