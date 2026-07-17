@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EXP-PROGRAM-014 — Governance Maturation Program chartered (EXP-GOV-002, EXP-GOV-003, EXP-GOV-004, EXP-GOV-005).
 - EXP-GOV-003 — Constitutional Layer Boundaries (`docs/architecture/constitutional-layer-boundaries.md`): defines Governance vs. Implementation vs. Expedition vs. Bootstrap, with E1-derived examples and a decision matrix.
 - EXP-GOV-004 — Projection Model (`docs/architecture/projection-model.md`): taxonomy of source of truth, canonical state, projections, cached projections, and forbidden duplication, with artifact classification table and E1 answers.
+- EXP-GOV-005 — Verification Engine (`synth verify`): executable governance invariant verification with six checks (replay integrity, projection consistency, evidence referential integrity, assertion provenance, governance invariants, drift), structured report with prescriptive `nextStep`, and regression tests wired into `npm run govern`.
 
 ## [2.0.0-rc.3] — 2026-07-17
 

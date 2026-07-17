@@ -21,6 +21,7 @@ import { cmdExplainObservability, resolveExplainPaths } from "./explain-observab
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
+import { cmdVerify } from "./verify.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { buildValidationPlan } from "../validation/planner.js"
@@ -47,6 +48,7 @@ const COMMANDS = [
   { name: "bootstrap", description: "Transform a repository into a Synth project" },
   { name: "govern", description: "Run the full governance pipeline" },
   { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
+  { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "expedition", description: "Planning operations (create)" },
@@ -1118,6 +1120,10 @@ async function main() {
 
     case "validate":
       await cmdValidate(flags)
+      break
+
+    case "verify":
+      await cmdVerify()
       break
 
     case "status":
