@@ -1,6 +1,6 @@
 # EXP-GOV-003 — Constitutional Layer Boundaries
 
-**Status:** Draft  
+**Status:** Completed and accepted  
 **Kind:** Documentation Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-014 — Governance Maturation  
@@ -126,12 +126,12 @@ Run documentation integrity checks and governance verification.
 
 ## Definition of Done
 
-- [ ] `docs/architecture/constitutional-layer-boundaries.md` exists and defines the four layers.
-- [ ] Decision matrix covers at least the five E1 examples.
-- [ ] Cross-references added from constitution, governance, and relevant expeditions.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
-- [ ] Expedition is accepted.
+- [x] `docs/architecture/constitutional-layer-boundaries.md` exists and defines the four layers.
+- [x] Decision matrix covers at least the five E1 examples.
+- [x] Cross-references added from constitution, governance, and relevant expeditions.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check).
+- [x] Expedition is accepted.
 
 ---
 
@@ -147,4 +147,4 @@ Run documentation integrity checks and governance verification.
 
 ## Completion Notes
 
-*(pending)*
+Document `docs/architecture/constitutional-layer-boundaries.md` formalizes the four layers and maps the five E1 examples. Cross-references were added from the Architectural Constitution, the Governance Specification, and this expedition file. Documentation integrity checks and CI `proof` passed. Expedition accepted.
