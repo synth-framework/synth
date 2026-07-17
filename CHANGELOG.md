@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- EXP-CONT-001 — Resume Briefing (`synth explain resume`): deterministic projection of "what happened / what was decided / what is next" from replayable evidence for zero-history operators.
+- EXP-PROGRAM-013 — Cognitive Continuity Program chartered (EXP-CONT-001, EXP-CONT-002, EXP-CONT-003).
+
 ## [2.0.0-rc.3] — 2026-07-17
 
 The Era II adoption baseline release: Runtime Self-Description is complete, and the CLI can now be trusted, understood, and resumed by a new reasoning system.
