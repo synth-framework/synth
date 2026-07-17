@@ -1,6 +1,6 @@
 # EXP-GOV-004 — Projection Model
 
-**Status:** Draft  
+**Status:** Completed and accepted  
 **Kind:** Documentation / Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-014 — Governance Maturation  
@@ -133,14 +133,14 @@ Link from constitution and governance docs; run integrity checks.
 
 ## Definition of Done
 
-- [ ] `docs/architecture/projection-model.md` exists and defines the projection taxonomy.
-- [ ] E1 projection questions are answered explicitly.
-- [ ] Classification table covers all listed artifacts.
-- [ ] Governance invariants are documented.
-- [ ] Cross-references added from constitution and governance docs.
-- [ ] Documentation integrity checks pass.
-- [ ] `npm run govern` passes (via CI `proof` check).
-- [ ] Expedition is accepted.
+- [x] `docs/architecture/projection-model.md` exists and defines the projection taxonomy.
+- [x] E1 projection questions are answered explicitly.
+- [x] Classification table covers all listed artifacts.
+- [x] Governance invariants are documented.
+- [x] Cross-references added from constitution and governance docs.
+- [x] Documentation integrity checks pass.
+- [x] `npm run govern` passes (via CI `proof` check).
+- [x] Expedition is accepted.
 
 ---
 
@@ -156,4 +156,4 @@ Link from constitution and governance docs; run integrity checks.
 
 ## Completion Notes
 
-*(pending)*
+Document `docs/architecture/projection-model.md` defines the projection taxonomy, authority rules, invalidation rules, and artifact classification table. The four E1 projection questions are answered explicitly. Cross-references were added from the Architectural Constitution and the Governance Specification. Documentation integrity checks and CI `proof` passed. Expedition accepted.
