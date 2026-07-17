@@ -1084,6 +1084,13 @@ async function main() {
   const filteredArgs = rawArgs.filter((arg) => arg !== "--json")
   const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
 
+  // Propagate the global --json flag to subcommands that need to know it
+  // (e.g., synth explain ... --json), while still keeping it out of the
+  // positional arguments passed to delegated CLIs.
+  if (jsonFlag) {
+    flags.json = true
+  }
+
   const command = positional[0]
 
   switch (command) {
