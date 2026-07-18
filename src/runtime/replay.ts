@@ -459,7 +459,7 @@ export function rebuildStateFromOffset(events: SynthEvent[], startOffset: number
 }
 
 export function computeStateHash(state: CanonicalState): string {
-  const data = {
+  const data: Record<string, unknown> = {
     v: state.version,
     workItems: Object.keys(state.workItems).sort(),
     plans: Object.keys(state.plans).sort(),
@@ -470,8 +470,14 @@ export function computeStateHash(state: CanonicalState): string {
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
-    executionIntents: Object.keys(state.executionIntents).sort(),
-    executionGraphs: Object.keys(state.executionGraphs).sort(),
+  }
+  // Backward-compatible hash: only include new collections when populated.
+  // Logs recorded before EXP-EXEC-001 have empty execution collections.
+  if (Object.keys(state.executionIntents).length > 0) {
+    data.executionIntents = Object.keys(state.executionIntents).sort()
+  }
+  if (Object.keys(state.executionGraphs).length > 0) {
+    data.executionGraphs = Object.keys(state.executionGraphs).sort()
   }
   const str = JSON.stringify(data)
   let hash = 0
