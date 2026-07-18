@@ -41,7 +41,19 @@ export type StateEvent =
   | { type: "PLAN_CREATED"; planId: string; name: string }
   | { type: "MILESTONE_CREATED"; milestoneId: string; planId: string; name: string }
   | { type: "PROJECT_CREATED"; projectId: string; name: string }
-  | { type: "PROJECT_INITIALIZED"; projectId: string; name: string; governanceVersion: string }
+  | {
+      type: "PROJECT_INITIALIZED"
+      projectId: string
+      name: string
+      governanceVersion: string
+      sourceType?: string
+      sourceLocation?: string
+      declaredIntent?: string
+      adapterId?: string
+      adapterVersion?: string
+      evidenceReference?: string
+      projectModel?: Record<string, unknown>
+    }
   | { type: "MISSION_CREATED"; missionId: string; name: string }
   | { type: "MISSION_APPROVED"; missionId: string }
   | { type: "MISSION_COMPLETED"; missionId: string }

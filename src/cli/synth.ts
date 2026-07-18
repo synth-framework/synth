@@ -16,6 +16,10 @@ import { createReplayVerifier } from "../core/replay-verifier.js"
 import { Logger } from "../observability/tracer.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
+import { createInitializationEngine } from "../initialization/engine.js"
+import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
+import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
+import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
@@ -459,6 +463,11 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   const synthDir = path.join(targetDir, ".synth")
   const dataDir = path.join(targetDir, ".synth", "data")
   const governanceVersion = "2.1"
+  const projectId = crypto.randomUUID()
+
+  const sourceType = typeof flags.source === "string" ? flags.source : "filesystem"
+  const sourceLocation = typeof flags["source-location"] === "string" ? flags["source-location"] : targetDir
+  const declaredIntent = typeof flags["declared-intent"] === "string" ? flags["declared-intent"] : undefined
 
   await fs.mkdir(synthDir, { recursive: true })
   await fs.mkdir(dataDir, { recursive: true })
@@ -507,18 +516,51 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   // duplicate PROJECT_INITIALIZED event.
   const currentState = await ctx.runtime.getState()
   if (currentState.lifecycle !== "initialized") {
-    const initResult = await ctx.api.handleIntent({
+    // Resolve an initialization adapter, collect evidence, and build a
+    // governed ProjectModel before recording the transition.
+    const engine = createInitializationEngine({
+      adapters: [createFilesystemInitializationAdapter(targetDir)],
+    })
+
+    const initResult = await engine.initialize({
+      projectId,
+      projectName,
+      sourceType: sourceType as import("../adapters/initialization-adapter.js").SourceType,
+      sourceLocation,
+      declaredIntent,
+    })
+
+    if (!initResult.success) {
+      printError(`Initialization failed: ${initResult.errors?.join(", ") || "unknown error"}`)
+    }
+
+    const evidenceStore = createInitializationEvidenceStore(createPosixFilesystemProvider(targetDir))
+    const evidenceReference = await evidenceStore.persist(
+      projectId,
+      projectName,
+      initResult.evidence,
+      initResult.model,
+    )
+
+    const handleResult = await ctx.api.handleIntent({
       actor: "synth-cli",
       capability: "InitializeProject",
       payload: {
-        projectId: crypto.randomUUID(),
+        projectId,
         name: projectName,
         governanceVersion,
+        sourceType,
+        sourceLocation,
+        declaredIntent,
+        adapterId: initResult.evidence.adapterId,
+        adapterVersion: initResult.evidence.adapterVersion,
+        evidenceReference,
+        projectModel: initResult.model,
       },
     })
 
-    if (initResult.status !== "ok") {
-      printError(`Project initialization failed: ${initResult.error || JSON.stringify(initResult)}`)
+    if (handleResult.status !== "ok") {
+      printError(`Project initialization failed: ${handleResult.error || JSON.stringify(handleResult)}`)
     }
   }
 
