@@ -542,7 +542,7 @@ export type AggregateGraphViolation = {
   parentId?: string
 }
 
-type AggregateGraphNode = {
+export type AggregateGraphNode = {
   id: string
   kind: "mission" | "expedition" | "objective"
   parentId?: string
@@ -557,7 +557,7 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0
 }
 
-function creationPayload(
+export function creationPayload(
   event: SynthEvent,
   key: string,
 ): { id?: unknown; missionId?: unknown; expeditionId?: unknown } | undefined {
@@ -568,7 +568,7 @@ function creationPayload(
   return value as { id?: unknown; missionId?: unknown; expeditionId?: unknown }
 }
 
-const CREATION_EVENTS: Array<{
+export const CREATION_EVENTS: Array<{
   eventType: string
   payloadKey: string
   kind: AggregateGraphNode["kind"]
