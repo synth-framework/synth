@@ -20,6 +20,11 @@ export type IntentExecutionResult = {
   error?: string
 }
 
+/** Descriptor returned by a versioning handler for branch operations */
+export type VersioningBranchResult = {
+  commit: string
+}
+
 /** Capability handler injected by the caller */
 export type CapabilityHandler = (intent: ExecutionIntent) => Promise<IntentExecutionResult>
 
@@ -120,6 +125,79 @@ export async function executeGraph(
       options
     )
   )
+
+  // Create an isolated expedition branch before executing any intents.
+  // The branch is derived from the expedition identity and switched to
+  // through the registered versioning capability.
+  if (graph.branch && options.handlers.versioning) {
+    const branchIntent: ExecutionIntent = {
+      id: `${graph.expeditionId}/branch`,
+      expeditionId: graph.expeditionId,
+      objectiveId: "",
+      workItemId: "",
+      sequence: -1,
+      capability: "versioning",
+      operation: "switchRevision",
+      target: graph.branch,
+      payload: { branch: graph.branch, createBranch: true },
+      dependencies: [],
+      verification: { kind: "none", target: "" },
+    }
+
+    events.push(
+      makeEvent(
+        "EXECUTION_INTENT_CREATED",
+        {
+          intentId: branchIntent.id,
+          expeditionId: branchIntent.expeditionId,
+          objectiveId: branchIntent.objectiveId,
+          workItemId: branchIntent.workItemId,
+          sequence: branchIntent.sequence,
+          capability: branchIntent.capability,
+          operation: branchIntent.operation,
+          target: branchIntent.target,
+          dependencies: branchIntent.dependencies,
+        },
+        options
+      )
+    )
+
+    events.push(
+      makeEvent(
+        "EXECUTION_INTENT_STARTED",
+        { intentId: branchIntent.id, expeditionId: branchIntent.expeditionId },
+        options
+      )
+    )
+
+    let branchResult: IntentExecutionResult
+    try {
+      branchResult = await options.handlers.versioning(branchIntent)
+    } catch (err) {
+      branchResult = { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
+
+    if (!branchResult.success) {
+      const reason = branchResult.error ?? "Branch creation failed"
+      events.push(
+        makeEvent(
+          "EXECUTION_INTENT_FAILED",
+          { intentId: branchIntent.id, expeditionId: branchIntent.expeditionId, reason },
+          options
+        )
+      )
+      return events
+    }
+
+    const baseCommit = (branchResult.result as VersioningBranchResult | undefined)?.commit ?? ""
+    events.push(
+      makeEvent(
+        "EXPEDITION_BRANCH_CREATED",
+        { expeditionId: graph.expeditionId, branch: graph.branch, baseCommit },
+        options
+      )
+    )
+  }
 
   for (const intentId of graph.ordered) {
     const intent = graph.intents.find((i) => i.id === intentId)

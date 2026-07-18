@@ -1,6 +1,6 @@
 # EXP-EXEC-003 — Branch-per-Expedition Workflow
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -28,8 +28,8 @@ Use the VersioningCapability to create an isolated branch for each approved Expe
 
 ## Definition of Done
 
-- [ ] Branch naming scheme implemented.
-- [ ] Branch creation integrated with runtime.
-- [ ] Regression tests pass.
+- [x] Branch naming scheme implemented.
+- [x] Branch creation integrated with runtime.
+- [x] Regression tests pass.
 - [ ] PR opened and CI checks pass.
 - [ ] Expedition accepted.

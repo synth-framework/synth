@@ -5,6 +5,7 @@
 export {
   synthesizeIntents,
   buildIntentGraph,
+  deriveExpeditionBranch,
   type SynthesisInput,
   type SynthesisResult,
 } from "./intent-synthesizer.js"
