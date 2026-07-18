@@ -1,6 +1,7 @@
 # EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program
 
-**Status:** Proposed  
+**Status:** Active  
+**Started:** 2026-07-18  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

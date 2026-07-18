@@ -1,6 +1,7 @@
 # EXP-ENV-013 — Co-locate Runtime Data Under `.synth/`
 
-**Status:** Proposed  
+**Status:** Active  
+**Started:** 2026-07-18  
 **Kind:** Environment Independence / Repository Layout  
 **Priority:** High  
 **Program:** EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program  
