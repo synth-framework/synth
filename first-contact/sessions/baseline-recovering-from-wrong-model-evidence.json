@@ -3,11 +3,30 @@
   "sessionId": "recovering-from-wrong-model",
   "scenarioId": "recovering-from-wrong-model",
   "humanPrompt": "I want to understand this project before making any changes.",
-  "description": "Repository contains implementation-shaped artifacts (UI, components, navigation). Agent must recover to the correct specification interpretation once SYNTH evidence is introduced.",
-  "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
-  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-jRzHvQ",
-  "startedAt": "2026-07-18T14:13:08.695Z",
-  "turns": [
+  "repositoryState": {
+    "initialized": false,
+    "files": [
+      "status",
+      "kind",
+      "phase",
+      "summary",
+      "missions",
+      "activeExpeditions",
+      "blockers",
+      "warnings",
+      "nextActions",
+      "eventCount",
+      "stateHash"
+    ],
+    "phase": "uninitialized",
+    "notices": []
+  },
+  "agentInitialModel": {
+    "understoodAs": "existing React Native / frontend application",
+    "confidence": 0.8,
+    "unknowns": []
+  },
+  "evidenceConsumed": [
     {
       "turn": 1,
       "command": [
@@ -291,5 +310,120 @@
       "evidenceGenerated": []
     }
   ],
-  "completedAt": "2026-07-18T14:13:13.520Z"
+  "interpretationChanges": [
+    {
+      "turn": 1,
+      "command": "status",
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "phase",
+        "summary",
+        "missions",
+        "activeExpeditions",
+        "blockers",
+        "warnings",
+        "nextActions",
+        "eventCount",
+        "stateHash"
+      ],
+      "from": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.8,
+        "unknowns": []
+      },
+      "to": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.8,
+        "unknowns": []
+      },
+      "aligned": true
+    },
+    {
+      "turn": 2,
+      "command": "init --name Hospitality Design System",
+      "evidenceConsumed": [
+        "status",
+        "message",
+        "manifestPath",
+        "projectName",
+        "governanceVersion",
+        "lifecycle",
+        "nextSteps"
+      ],
+      "from": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.8,
+        "unknowns": []
+      },
+      "to": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.6,
+        "unknowns": [
+          "why initialize if app exists"
+        ]
+      },
+      "aligned": false
+    },
+    {
+      "turn": 3,
+      "command": "status",
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "phase",
+        "summary",
+        "missions",
+        "activeExpeditions",
+        "blockers",
+        "warnings",
+        "nextActions",
+        "eventCount",
+        "stateHash"
+      ],
+      "from": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.6,
+        "unknowns": [
+          "why initialize if app exists"
+        ]
+      },
+      "to": {
+        "understoodAs": "specification-stage design repository",
+        "confidence": 0.7,
+        "unknowns": [
+          "implementation timeline"
+        ]
+      },
+      "aligned": true
+    }
+  ],
+  "interventions": [
+    {
+      "turn": 2,
+      "command": "init --name Hospitality Design System",
+      "description": "Model diverged or confidence dropped; 'init --name Hospitality Design System' did not produce a clearer interpretation."
+    },
+    {
+      "turn": 3,
+      "command": "status",
+      "description": "Model corrected from 'existing React Native / frontend application' to 'specification-stage design repository'."
+    }
+  ],
+  "finalModel": {
+    "understoodAs": "specification-stage design repository",
+    "confidence": 0.7,
+    "unknowns": [
+      "implementation timeline"
+    ]
+  },
+  "misinterpretationCategories": [
+    "intent-confusion"
+  ],
+  "successConditions": {
+    "inspectedBeforeActing": true,
+    "usedGovernedPath": true,
+    "reachedCorrectInterpretation": true,
+    "remainingUnknownsAcceptable": true
+  }
 }
