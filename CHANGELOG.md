@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EXP-PROGRAM-015 — Repository Versioning Capability Program completed and accepted (EXP-VCS-001 through EXP-VCS-005).
 - EXP-PROGRAM-016 — Governed Expedition Execution Program chartered (EXP-EXEC-001 through EXP-EXEC-005).
 - EXP-EXEC-001 — Execution Intent Model: architecture specification and types bridging approved Expedition planning to governed repository execution.
+- EXP-EXEC-002 — Work Item Runtime: intent synthesizer and execution runtime that dispatch ExecutionIntents to injected capability handlers and emit lifecycle events.
 - EXP-VCS-001 — Versioning Capability Contract: generic repository-versioning operations (`initializeRepository`, `createRevision`, `switchRevision`, `integrateRevision`, `publishRevision`, `createSnapshot`, `compareRevisions`, `history`, `synchronize`) and observation types; Git provided as the reference mapping.
 - EXP-VCS-002 — Git Versioning Adapter (`src/environment/git-versioning-provider.ts`): reference implementation of the `VersioningCapability` using Git operations invoked through the Environment Process capability; registered as `git-versioning` provider.
 - EXP-VCS-003 — GitHub Forge Adapter (`src/environment/forge-capability.ts`): extends `ForgeProvider` with remote mutations (`createPullRequest`, `mergePullRequest`, `forkRepository`) implemented via the `gh` CLI; credentials remain delegated to `gh`.
