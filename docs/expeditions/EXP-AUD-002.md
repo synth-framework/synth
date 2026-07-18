@@ -2,6 +2,7 @@
 
 **Status:** Completed  
 **Priority:** High  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Depends On:** `docs/architecture/constitution.md`, EXP-SMA-001, EXP-DET-001  
 **Blocks:** EXP-GOV-001
 

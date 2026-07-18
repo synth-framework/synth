@@ -2,6 +2,7 @@
 
 **Status:** Accepted  
 **Kind:** Constitutional Specification  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Authority:** Synth Architectural Constitution  
 **Scope:** All Synth adapters, present and future
 

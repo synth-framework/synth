@@ -3,6 +3,7 @@
 **Status:** Completed
 **Kind:** Constitutional Adapter Contract
 **Priority:** Critical
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Depends On:** EXP-ADP-000, EXP-MST-001
 **Blocks:** EXP-ADP-005, EXP-ADP-006, EXP-ADP-007, EXP-ADP-008, EXP-ADP-009, EXP-ADP-010, EXP-ADP-011, EXP-ADP-012, EXP-ADP-013, EXP-ADP-014, EXP-ADP-015, EXP-ADP-016, EXP-ADP-017
 

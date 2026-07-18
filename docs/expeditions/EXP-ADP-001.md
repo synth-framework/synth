@@ -2,6 +2,7 @@
 
 **Status:** Completed  
 **Priority:** High  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Depends On:** EXP-GOV-001, Constitutional Baseline  
 **Blocks:** Future adapter specifications (GitHub, Docker, Kubernetes, etc.)
 
