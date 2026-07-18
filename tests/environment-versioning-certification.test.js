@@ -116,7 +116,7 @@ test("certification: createSnapshot captures working tree state", async () => {
   try {
     await commitFile(ctx, root, "stable.txt", "stable", "stable")
     await writeFile(join(root, "wip.txt"), "work in progress", "utf-8")
-    const snapshot = await provider.createSnapshot(ctx, root, { label: "wip" })
+    const snapshot = await provider.createSnapshot(ctx, root, { label: "wip", includeUntracked: true })
     assert.strictEqual(snapshot.system, "git")
     assert.strictEqual(snapshot.label, "wip")
     assert.ok(snapshot.commit)
