@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-07-18
+
+The First Contact Learning System Release.
+
+### Agent First Contact Learning System
+
+Completed EXP-FIRSTCONTACT-011, turning the First Contact experience into an evidence-driven learning system.
+
+- Canonical `ConversationPattern` artifacts derived from observed first-contact sessions.
+- Pattern extraction, validation, promotion, and persistence in `src/first-contact/patterns.ts`.
+- `scripts/extract-conversation-patterns.js` to generate patterns from session evidence.
+- Quick-start Markdown projections generated from canonical patterns into `docs/first-contact/quick-start/`.
+- `scripts/generate-first-contact-quickstart.js` with `--check` drift detection.
+- First Contact Experience v2 specification and agent onboarding contract in `docs/first-contact/experience-v2.md`.
+- New tests: `tests/first-contact-patterns.test.js`, `tests/first-contact-quickstart.test.js`.
+
+### Governance Cleanup
+
+Marked completed in their charters: EXP-GOV-007, EXP-GOV-008, EXP-GOV-009, EXP-INIT-001, EXP-EXEC-002, EXP-EXEC-003, EXP-EXEC-005.
+
 ## [2.1.0] — 2026-07-18
 
 The Runtime Boundary Release. SYNTH now stores governed project runtime data under `.synth/data/` while keeping the source repository independent of `.synth/`.
