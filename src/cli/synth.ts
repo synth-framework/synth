@@ -14,6 +14,7 @@ import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { runBootstrap } from "./bootstrap-apply.js"
+import { writeAgentArtifacts } from "./agent-artifacts.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
@@ -27,6 +28,7 @@ import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impac
 import { getRuntimeDataDir } from "../infra/paths.js"
 import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 import { buildValidationPlan } from "../validation/planner.js"
+import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { PlanningSession } from "../mission-studio/types.js"
 
@@ -53,7 +55,7 @@ const COMMANDS = [
   { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
-  { name: "expedition", description: "Planning operations (create)" },
+  { name: "expedition", description: "Expedition lifecycle (create, start, complete)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
@@ -114,6 +116,34 @@ function parseArgs(argv: string[]) {
   }
 
   return { positional, flags }
+}
+
+async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]) {
+  const ctx = await bootstrap(config)
+  // Capabilities are registered during genesis; when genesis is skipped
+  // (the normal CLI path) we register them explicitly so that the CLI
+  // can invoke capabilities through the ExecutionGate.
+  for (const name of ctx.capabilityRegistry.list()) {
+    const cap = ctx.capabilityRegistry.resolve(name)
+    if (cap) {
+      ctx.runtime.registerCapability(cap)
+    }
+  }
+  return ctx
+}
+
+function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState) {
+  return validateAgentAction(action, state)
+}
+
+function printGateBlock(result: Extract<ReturnType<typeof validateAgentAction>, { decision: "BLOCK" }>): never {
+  printJson({
+    status: "error",
+    kind: "LifecycleBlocked",
+    reason: result.reason,
+    requiredAction: result.requiredAction,
+  })
+  process.exit(1)
 }
 
 async function getVersion(): Promise<string> {
@@ -460,6 +490,8 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   // Ensure runtime data directory exists for event log
   await fs.mkdir(dataDir, { recursive: true })
 
+  await writeAgentArtifacts(synthDir, projectName)
+
   printJson({
     status: "ok",
     message: "Synth project initialized",
@@ -650,6 +682,16 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
+  const gateCtx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+  const state = await gateCtx.runtime.getState()
+  const intake = gateDecision({ kind: "mission.approve" }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
   const dataDir = await ensureRuntimeDataDir(process.cwd())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
@@ -810,6 +852,16 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
   if (!draftId) printError("--draft-id is required")
   const subject = typeof flags.subject === "string" ? flags.subject : ""
   if (!subject) printError("--subject is required")
+
+  const gateCtx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+  const state = await gateCtx.runtime.getState()
+  const intake = gateDecision({ kind: "mission.evidence.add" }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
   const purpose = typeof flags.purpose === "string" ? flags.purpose : undefined
   const confidence = typeof flags.confidence === "string" ? flags.confidence : "high"
   if (!EVIDENCE_CONFIDENCE_LEVELS.includes(confidence)) {
@@ -972,10 +1024,16 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const goal = typeof flags.goal === "string" ? flags.goal : ""
   if (!missionSubject || !subject) printError("--mission and --subject are required")
 
-  const ctx = await bootstrap({
+  const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
+
+  const state = await ctx.runtime.getState()
+  const intake = gateDecision({ kind: "expedition.create" }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
 
   const observations = [
     makeObservation("mission", missionSubject, { purpose: "Auto-created from CLI" }),
@@ -1001,6 +1059,85 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     expeditionSubject: subject,
     goal,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
+  })
+}
+
+async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
+  const expeditionId = typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : ""
+  if (!expeditionId) printError("--expedition-id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = gateDecision({ kind: "expedition.start", expeditionId }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "StartExpedition",
+    payload: { id: expeditionId },
+  })
+
+  if (result.status !== "ok") {
+    printJson({
+      status: "error",
+      kind: "ExpeditionStartFailed",
+      expeditionId,
+      error: result.error || "Unknown execution gate error",
+    })
+    process.exit(1)
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionStarted",
+    expeditionId,
+    result: result.result,
+    nextStep: `synth expedition complete --expedition-id ${expeditionId}`,
+  })
+}
+
+async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
+  const expeditionId = typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : ""
+  if (!expeditionId) printError("--expedition-id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = gateDecision({ kind: "expedition.complete", expeditionId }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CompleteExpedition",
+    payload: { id: expeditionId },
+  })
+
+  if (result.status !== "ok") {
+    printJson({
+      status: "error",
+      kind: "ExpeditionCompleteFailed",
+      expeditionId,
+      error: result.error || "Unknown execution gate error",
+    })
+    process.exit(1)
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionCompleted",
+    expeditionId,
+    result: result.result,
   })
 }
 
@@ -1157,7 +1294,12 @@ async function main() {
     case "expedition": {
       const sub = positional[1]
       if (sub === "create") await cmdExpeditionCreate(flags)
-      else printError("Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal>")
+      else if (sub === "start") await cmdExpeditionStart(flags)
+      else if (sub === "complete") await cmdExpeditionComplete(flags)
+      else
+        printError(
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> | synth expedition start --expedition-id <id> | synth expedition complete --expedition-id <id>",
+        )
       break
     }
 
