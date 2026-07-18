@@ -1,11 +1,12 @@
 # EXP-VCS-004 — Repository State Observations
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Implementation Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-015 — Repository Versioning Capability  
 **Depends On:** EXP-VCS-001 (Versioning Capability Contract), EXP-VCS-002 (Git Versioning Adapter)  
-**Blocks:** EXP-VCS-005
+**Blocks:** EXP-VCS-005  
+**Accepted:** 2026-07-17
 
 ---
 
@@ -37,5 +38,9 @@ Make repository state observable to Mission Studio by emitting read-only version
 - [x] All versioning observation types emitted by the discovery rule.
 - [x] Observations integrated with discovery evidence.
 - [x] Regression tests implemented.
-- [ ] PR opened and CI checks pass.
-- [ ] Expedition accepted.
+- [x] PR opened and CI checks pass.
+- [x] Expedition accepted.
+
+## Completion Notes
+
+`versioningRule` in `src/environment/rules.ts` emits read-only repository-state observations (`versioning.repository`, `versioning.branch`, `versioning.commit`, `versioning.remote`, `versioning.divergence`, `versioning.pullRequest`) into discovery evidence. Mission Studio can consume these observations without invoking Git directly.
