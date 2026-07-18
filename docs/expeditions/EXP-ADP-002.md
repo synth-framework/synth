@@ -2,6 +2,7 @@
 
 **Status:** Completed  
 **Kind:** Integration Adapter  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **External System:** Yes  
 **Priority:** Medium  
 **Depends On:** EXP-ADP-000, EXP-GOV-001  

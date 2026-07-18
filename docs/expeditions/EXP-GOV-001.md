@@ -2,6 +2,7 @@
 
 **Status:** Completed  
 **Priority:** High  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Depends On:** EXP-SMA-001, EXP-DET-001, EXP-AUD-002  
 **Blocks:** None (final foundational expedition)
 

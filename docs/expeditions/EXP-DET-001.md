@@ -2,6 +2,7 @@
 
 **Status:** Completed  
 **Priority:** High  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Depends On:** `docs/architecture/constitution.md` Article II, `docs/EXP-AUD-002-zero-trust-architecture-verification.md` AUD-009, EXP-SMA-001  
 **Blocks:** EXP-AUD-002, EXP-GOV-001
 

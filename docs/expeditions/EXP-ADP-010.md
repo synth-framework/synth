@@ -2,6 +2,7 @@
 
 **Status:** Completed  
 **Kind:** Intelligence Adapter  
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **External System:** No  
 **Priority:** High  
 **Depends On:** EXP-ADP-OBS-001, EXP-ADP-005, EXP-ADP-006, EXP-ADP-007, EXP-ADP-008, EXP-ADP-009  

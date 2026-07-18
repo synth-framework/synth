@@ -3,6 +3,7 @@
 **Status:** Completed
 **Kind:** Planning
 **Priority:** Medium
+**Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Depends On:** EXP-ADP-000, EXP-ADP-OBS-001, EXP-ADP-016
 **Blocks:** Mission Studio interactive approval
 
