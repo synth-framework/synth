@@ -125,6 +125,28 @@ export const githubForgeProvider: CapabilityProvider = {
   },
 }
 
+export const gitVersioningProvider: CapabilityProvider = {
+  name: "git-versioning",
+  version: "1.0.0",
+  capabilities: [
+    { family: "Versioning", priority: 100, confidence: "high" },
+  ],
+  evaluate: async (ctx: ObservationContext): Promise<ProviderSuitability> => {
+    const hasGit = await ctx.pathExists(".git")
+    const gitVersion = await ctx.execTool("git", ["--version"])
+    return {
+      family: "Versioning",
+      providerName: "git-versioning",
+      available: hasGit && gitVersion !== undefined,
+      confidence: hasGit && gitVersion ? "high" : "none",
+      reason: hasGit && gitVersion
+        ? "Git repository and git executable detected"
+        : "Git repository or executable not detected",
+      metadata: { hasGit, gitVersion: gitVersion?.trim().split("\n")[0] },
+    }
+  },
+}
+
 /** Reference provider set for the default SYNTH environment */
 export function createReferenceProviders(): CapabilityProvider[] {
   return [
@@ -133,5 +155,6 @@ export function createReferenceProviders(): CapabilityProvider[] {
     npmPackageProvider,
     nodeRuntimeProvider,
     githubForgeProvider,
+    gitVersioningProvider,
   ]
 }
