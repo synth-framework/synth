@@ -47,15 +47,18 @@ async function safePathExists(path: string): Promise<boolean> {
   }
 }
 
-async function safeExecTool(command: string, args: string[]): Promise<string | undefined> {
-  try {
-    const { stdout } = await execFileAsync(command, args, {
-      timeout: 5000,
-      windowsHide: true,
-    })
-    return stdout
-  } catch {
-    return undefined
+function makeSafeExecTool(cwd: string): (command: string, args: string[]) => Promise<string | undefined> {
+  return async (command: string, args: string[]): Promise<string | undefined> => {
+    try {
+      const { stdout } = await execFileAsync(command, args, {
+        cwd,
+        timeout: 5000,
+        windowsHide: true,
+      })
+      return stdout
+    } catch {
+      return undefined
+    }
   }
 }
 
@@ -71,7 +74,7 @@ export function createNodeObservationContext(basePath?: string): ObservationCont
     listDirectory: async (path: string) => safeListDirectory(resolve(root, path)),
     pathExists: async (path: string) => safePathExists(resolve(root, path)),
     readEnv,
-    execTool: safeExecTool,
+    execTool: makeSafeExecTool(root),
     cwd: root,
   }
 }
