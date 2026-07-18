@@ -54,6 +54,16 @@ export type StateEvent =
   | { type: "DECISION_ACCEPTED"; decisionId: string }
   | { type: "DECISION_REJECTED"; decisionId: string }
   | { type: "SYSTEM_GENESIS"; payload: unknown }
+  // Execution intent lifecycle (EXP-EXEC-001)
+  | { type: "EXECUTION_INTENT_CREATED"; intentId: string; expeditionId: string; objectiveId: string; workItemId: string; capability: string; operation: string }
+  | { type: "EXECUTION_INTENT_GRAPH_CREATED"; expeditionId: string; intentIds: string[]; edgeCount: number }
+  | { type: "EXPEDITION_BRANCH_CREATED"; expeditionId: string; branch: string; baseCommit: string }
+  | { type: "EXECUTION_INTENT_STARTED"; intentId: string; expeditionId: string }
+  | { type: "EXECUTION_INTENT_COMPLETED"; intentId: string; expeditionId: string; resultSummary?: string }
+  | { type: "EXECUTION_INTENT_FAILED"; intentId: string; expeditionId: string; reason: string }
+  | { type: "EXECUTION_INTENT_ROLLEDBACK"; intentId: string; expeditionId: string }
+  | { type: "EXPEDITION_EXECUTION_COMMITTED"; expeditionId: string; commit: string }
+  | { type: "EXPEDITION_EXECUTION_PROJECTED"; expeditionId: string; projectionType: "pull_request" | "patch" | "diff"; projectionUrl?: string }
 
 /** Execution events — represent transaction lifecycle */
 export type ExecutionEvent =
