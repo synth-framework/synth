@@ -132,6 +132,11 @@ export function synthesizeIntents(input: SynthesisInput): SynthesisResult {
   }
 }
 
+/** Derive a deterministic, isolated branch name for an expedition. */
+export function deriveExpeditionBranch(expeditionId: string): string {
+  return `exp/${expeditionId}`
+}
+
 /** Build an ExecutionIntentGraph from a sequence of synthesized intent lists. */
 export function buildIntentGraph(
   expeditionId: string,
