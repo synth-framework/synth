@@ -1,6 +1,7 @@
 # EXP-EXEC-004 — Commit-as-Evidence
 
-**Status:** Active  
+**Status:** Accepted  
+**Merged:** PR #127
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -31,5 +32,9 @@ Map completed Work Items to VersioningCapability revisions, ensuring every commi
 - [x] Commit strategy selected and documented.
 - [x] Commit integration implemented.
 - [x] Regression tests pass.
-- [ ] PR opened and CI checks pass.
-- [ ] Expedition accepted.
+- [x] PR opened and CI checks pass.
+- [x] Expedition accepted.
+
+## Completion Notes
+
+Merged via PR #127. The runtime creates one revision per expedition after all intents succeed, using a commit message that correlates the expedition and its objectives. The resulting commit hash is recorded in `EXPEDITION_EXECUTION_COMMITTED`.
