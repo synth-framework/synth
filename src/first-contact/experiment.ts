@@ -53,6 +53,34 @@ export interface RunOptions {
   sessionId?: string
 }
 
+/** A single entry in the intent reconstruction log. */
+export interface IntentReconstructionEntry {
+  turn: number
+  command: string
+  intent?: string
+  understoodAs: string
+  confidence: number
+  unknowns: string[]
+  evidenceConsumed: string[]
+  modelDelta?: { from: string; to: string }
+}
+
+/** A failure-taxonomy classification for a session. */
+export interface FailureTaxonomyEntry {
+  category: "intent-confusion" | "missing-context" | "governance-confusion" | "vocabulary-mismatch" | "none"
+  severity: "low" | "medium" | "high"
+  description: string
+}
+
+/** Derived report from a session artifact. */
+export interface SessionReport {
+  schemaVersion: "1.0.0"
+  sessionId: string
+  scenarioId: string
+  intentReconstruction: IntentReconstructionEntry[]
+  failureTaxonomy: FailureTaxonomyEntry[]
+}
+
 function nowIso(): string {
   return new Date().toISOString()
 }
@@ -198,8 +226,52 @@ export async function saveSessionArtifact(
 ): Promise<string> {
   await fs.mkdir(outputDir, { recursive: true })
   const filename = `${nowIso().replace(/[:.]/g, "-")}-${artifact.sessionId}.json`
+  return saveSessionArtifactAs(artifact, outputDir, filename)
+}
+
+/**
+ * Persist a session artifact to disk with an explicit filename.
+ *
+ * Returns the path of the written file.
+ */
+export async function saveSessionArtifactAs(
+  artifact: SessionArtifact,
+  outputDir: string,
+  filename: string,
+): Promise<string> {
+  await fs.mkdir(outputDir, { recursive: true })
   const filePath = path.join(outputDir, filename)
   await fs.writeFile(filePath, JSON.stringify(artifact, null, 2), "utf-8")
+  return filePath
+}
+
+/**
+ * Persist a session report to disk next to its artifact.
+ *
+ * Returns the path of the written file.
+ */
+export async function saveSessionReport(
+  report: SessionReport,
+  outputDir: string,
+): Promise<string> {
+  await fs.mkdir(outputDir, { recursive: true })
+  const filename = `${nowIso().replace(/[:.]/g, "-")}-${report.sessionId}-report.json`
+  return saveSessionReportAs(report, outputDir, filename)
+}
+
+/**
+ * Persist a session report to disk with an explicit filename.
+ *
+ * Returns the path of the written file.
+ */
+export async function saveSessionReportAs(
+  report: SessionReport,
+  outputDir: string,
+  filename: string,
+): Promise<string> {
+  await fs.mkdir(outputDir, { recursive: true })
+  const filePath = path.join(outputDir, filename)
+  await fs.writeFile(filePath, JSON.stringify(report, null, 2), "utf-8")
   return filePath
 }
 
@@ -263,3 +335,136 @@ export function computeSemanticAlignmentScore(artifact: SessionArtifact): {
     overall,
   }
 }
+
+/**
+ * Reconstruct the agent's intent model across the session.
+ *
+ * Produces a chronological log of how the agent's understanding changed
+ * with each piece of evidence, including the model delta between turns.
+ */
+export function reconstructIntent(artifact: SessionArtifact): IntentReconstructionEntry[] {
+  const entries: IntentReconstructionEntry[] = []
+  let previousUnderstoodAs = "unknown repository"
+
+  for (const turn of artifact.turns) {
+    const reasoning = turn.agentReasoningState ?? { understoodAs: previousUnderstoodAs, confidence: 0, unknowns: [] }
+    const understoodAs = reasoning.understoodAs || previousUnderstoodAs
+    const evidenceConsumed = Object.keys(turn.outputs).filter(
+      (key) => key !== "agentSession" && key !== "agentReasoningState",
+    )
+
+    const entry: IntentReconstructionEntry = {
+      turn: turn.turn,
+      command: turn.command.join(" "),
+      intent: turn.intent,
+      understoodAs,
+      confidence: reasoning.confidence ?? 0,
+      unknowns: reasoning.unknowns ?? [],
+      evidenceConsumed,
+    }
+
+    if (understoodAs !== previousUnderstoodAs) {
+      entry.modelDelta = { from: previousUnderstoodAs, to: understoodAs }
+    }
+
+    entries.push(entry)
+    previousUnderstoodAs = understoodAs
+  }
+
+  return entries
+}
+
+/**
+ * Classify a session against the first-contact failure taxonomy.
+ *
+ * Categories mirror the misinterpretation patterns observed in the
+ * Windows agent experiment and the canonical scenarios:
+ *   - intent-confusion: the agent models the project as the wrong kind of thing
+ *   - missing-context: the request is underspecified and the agent lacks criteria
+ *   - governance-confusion: the agent treats SYNTH/project boundaries incorrectly
+ *   - vocabulary-mismatch: a feature request is treated as an immediate coding task
+ */
+export function classifySession(artifact: SessionArtifact, scenario?: Scenario): FailureTaxonomyEntry[] {
+  const entries: FailureTaxonomyEntry[] = []
+  const turns = artifact.turns
+  const lastTurn = turns[turns.length - 1]
+  const finalReasoning = lastTurn?.agentReasoningState
+  const commands = turns.map((t) => t.command[0] || "")
+
+  // Intent confusion: agent settles on "application" / "React Native" when the
+  // repository is actually a specification or design repository.
+  const applicationSignals = ["application", "react native", "frontend app", "mobile app"]
+  const confusedTurn = turns.find((t) =>
+    applicationSignals.some((signal) => (t.agentReasoningState?.understoodAs || "").toLowerCase().includes(signal)),
+  )
+  if (confusedTurn) {
+    entries.push({
+      category: "intent-confusion",
+      severity: artifact.scenarioId === "recovering-from-wrong-model" ? "medium" : "high",
+      description: `Turn ${confusedTurn.turn} models the project as an implementation (${confusedTurn.agentReasoningState?.understoodAs}).`,
+    })
+  }
+
+  // Missing context: ambiguous request or persistent critical unknowns.
+  const criticalUnknowns = ["target outcome", "user impact", "current limitations", "acceptance criteria"]
+  const finalUnknowns = finalReasoning?.unknowns ?? []
+  const missingCritical = criticalUnknowns.filter((u) => finalUnknowns.some((fu) => fu.toLowerCase().includes(u)))
+  if (missingCritical.length > 0 || artifact.scenarioId === "ambiguous-request") {
+    entries.push({
+      category: "missing-context",
+      severity: missingCritical.length > 2 ? "high" : "medium",
+      description: `Session ends with unresolved context: ${missingCritical.join(", ") || "ambiguous human prompt"}.`,
+    })
+  }
+
+  // Vocabulary mismatch: a feature request is not channeled through a Mission/Expedition.
+  const isFeatureRequest =
+    artifact.humanPrompt.toLowerCase().includes("add") ||
+    artifact.humanPrompt.toLowerCase().includes("authentication") ||
+    scenario?.id === "create-new-capability"
+  const hasGovernedChange = commands.some((c) => c === "mission" || c === "expedition")
+  if (isFeatureRequest && !hasGovernedChange) {
+    entries.push({
+      category: "vocabulary-mismatch",
+      severity: "high",
+      description: "Feature request was not translated into a governed Mission/Expedition.",
+    })
+  }
+
+  // Governance confusion: the agent edits files or runs non-SYNTH commands before inspecting.
+  const nonSynthCommands = turns.filter(
+    (t) => !["status", "explain", "mission", "expedition", "docs", "init", "validate", "verify"].includes(t.command[0] || ""),
+  )
+  if (nonSynthCommands.length > 0) {
+    entries.push({
+      category: "governance-confusion",
+      severity: "medium",
+      description: `Turns ${nonSynthCommands.map((t) => t.turn).join(", ")} used commands outside the SYNTH governance surface.`,
+    })
+  }
+
+  if (entries.length === 0) {
+    entries.push({
+      category: "none",
+      severity: "low",
+      description: "No first-contact failure patterns detected in the scripted trajectory.",
+    })
+  }
+
+  return entries
+}
+
+/**
+ * Build a derived session report from an artifact and its source scenario.
+ */
+export function buildSessionReport(artifact: SessionArtifact, scenario?: Scenario): SessionReport {
+  return {
+    schemaVersion: "1.0.0",
+    sessionId: artifact.sessionId,
+    scenarioId: artifact.scenarioId,
+    intentReconstruction: reconstructIntent(artifact),
+    failureTaxonomy: classifySession(artifact, scenario),
+  }
+}
+
+

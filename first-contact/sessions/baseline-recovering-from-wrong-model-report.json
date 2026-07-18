@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0.0",
+  "sessionId": "recovering-from-wrong-model",
+  "scenarioId": "recovering-from-wrong-model",
+  "intentReconstruction": [
+    {
+      "turn": 1,
+      "command": "status",
+      "intent": "Initial inspection before any SYNTH evidence exists.",
+      "understoodAs": "existing React Native / frontend application",
+      "confidence": 0.8,
+      "unknowns": [],
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "phase",
+        "summary",
+        "missions",
+        "activeExpeditions",
+        "blockers",
+        "warnings",
+        "nextActions",
+        "eventCount",
+        "stateHash"
+      ],
+      "modelDelta": {
+        "from": "unknown repository",
+        "to": "existing React Native / frontend application"
+      }
+    },
+    {
+      "turn": 2,
+      "command": "init --name Hospitality Design System",
+      "intent": "Initialize SYNTH governance so intent-shaped evidence becomes visible.",
+      "understoodAs": "existing React Native / frontend application",
+      "confidence": 0.6,
+      "unknowns": [
+        "why initialize if app exists"
+      ],
+      "evidenceConsumed": [
+        "status",
+        "message",
+        "manifestPath",
+        "projectName",
+        "governanceVersion",
+        "lifecycle",
+        "nextSteps"
+      ]
+    },
+    {
+      "turn": 3,
+      "command": "status",
+      "intent": "Re-evaluate interpretation after SYNTH initialization evidence is available.",
+      "understoodAs": "specification-stage design repository",
+      "confidence": 0.7,
+      "unknowns": [
+        "implementation timeline"
+      ],
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "phase",
+        "summary",
+        "missions",
+        "activeExpeditions",
+        "blockers",
+        "warnings",
+        "nextActions",
+        "eventCount",
+        "stateHash"
+      ],
+      "modelDelta": {
+        "from": "existing React Native / frontend application",
+        "to": "specification-stage design repository"
+      }
+    }
+  ],
+  "failureTaxonomy": [
+    {
+      "category": "intent-confusion",
+      "severity": "medium",
+      "description": "Turn 1 models the project as an implementation (existing React Native / frontend application)."
+    }
+  ]
+}

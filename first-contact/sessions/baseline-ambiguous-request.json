@@ -1,0 +1,193 @@
+{
+  "schemaVersion": "1.0.0",
+  "sessionId": "ambiguous-request",
+  "scenarioId": "ambiguous-request",
+  "humanPrompt": "Make the app better.",
+  "description": "Agent receives an underspecified request and must surface uncertainty rather than generate changes.",
+  "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
+  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-kvf7qw",
+  "startedAt": "2026-07-18T14:02:28.648Z",
+  "turns": [
+    {
+      "turn": 1,
+      "command": [
+        "status"
+      ],
+      "intent": "Check current state before interpreting the request.",
+      "agentReasoningState": {
+        "understoodAs": "ambiguous improvement request",
+        "confidence": 0.1,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "agentSession": "ambiguous-request",
+        "agentReasoningState": {
+          "understoodAs": "ambiguous improvement request",
+          "confidence": 0.1,
+          "unknowns": [
+            "target outcome",
+            "user impact",
+            "current limitations",
+            "acceptance criteria"
+          ]
+        },
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {},
+      "evidenceGenerated": []
+    },
+    {
+      "turn": 2,
+      "command": [
+        "explain"
+      ],
+      "intent": "Gather enough context to identify what 'better' could mean.",
+      "agentReasoningState": {
+        "understoodAs": "ambiguous improvement request on specification-stage project",
+        "confidence": 0.2,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "status": "error",
+        "error": "Usage: synth explain <replay|lineage|proposals|snapshots|graph|diagnostics|status|all> [--log <path>] [--json] [--summary]"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {},
+      "evidenceGenerated": []
+    }
+  ],
+  "completedAt": "2026-07-18T14:02:35.362Z"
+}

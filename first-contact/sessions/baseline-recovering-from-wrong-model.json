@@ -1,0 +1,295 @@
+{
+  "schemaVersion": "1.0.0",
+  "sessionId": "recovering-from-wrong-model",
+  "scenarioId": "recovering-from-wrong-model",
+  "humanPrompt": "I want to understand this project before making any changes.",
+  "description": "Repository contains implementation-shaped artifacts (UI, components, navigation). Agent must recover to the correct specification interpretation once SYNTH evidence is introduced.",
+  "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
+  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-aEXrY9",
+  "startedAt": "2026-07-18T14:02:35.392Z",
+  "turns": [
+    {
+      "turn": 1,
+      "command": [
+        "status"
+      ],
+      "intent": "Initial inspection before any SYNTH evidence exists.",
+      "agentReasoningState": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.8,
+        "unknowns": []
+      },
+      "inputs": {},
+      "outputs": {
+        "agentSession": "recovering-from-wrong-model",
+        "agentReasoningState": {
+          "understoodAs": "existing React Native / frontend application",
+          "confidence": 0.8,
+          "unknowns": []
+        },
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "uninitialized",
+        "summary": "No SYNTH project found in this directory.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth init --name \"<project>\"",
+            "reason": "No SYNTH project manifest found in current directory",
+            "priority": 1
+          }
+        ],
+        "eventCount": 0,
+        "stateHash": "0"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "uninitialized",
+        "summary": "No SYNTH project found in this directory.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth init --name \"<project>\"",
+            "reason": "No SYNTH project manifest found in current directory",
+            "priority": 1
+          }
+        ],
+        "eventCount": 0,
+        "stateHash": "0"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "uninitialized",
+        "summary": "No SYNTH project found in this directory.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth init --name \"<project>\"",
+            "reason": "No SYNTH project manifest found in current directory",
+            "priority": 1
+          }
+        ],
+        "eventCount": 0,
+        "stateHash": "0"
+      },
+      "stateChange": {},
+      "evidenceGenerated": []
+    },
+    {
+      "turn": 2,
+      "command": [
+        "init",
+        "--name",
+        "Hospitality Design System"
+      ],
+      "intent": "Initialize SYNTH governance so intent-shaped evidence becomes visible.",
+      "agentReasoningState": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.6,
+        "unknowns": [
+          "why initialize if app exists"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "agentSession": "recovering-from-wrong-model",
+        "agentReasoningState": {
+          "understoodAs": "existing React Native / frontend application",
+          "confidence": 0.6,
+          "unknowns": [
+            "why initialize if app exists"
+          ]
+        },
+        "status": "ok",
+        "message": "Synth project initialized",
+        "manifestPath": "/private/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-aEXrY9/.synth/manifest.json",
+        "projectName": "Hospitality Design System",
+        "governanceVersion": "2.1",
+        "lifecycle": "initialized",
+        "nextSteps": [
+          "synth docs generate",
+          "synth mission create --subject '...' --purpose '...'",
+          "synth mission approve --draft-id <draft-id>",
+          "npm run govern"
+        ]
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "uninitialized",
+        "summary": "No SYNTH project found in this directory.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth init --name \"<project>\"",
+            "reason": "No SYNTH project manifest found in current directory",
+            "priority": 1
+          }
+        ],
+        "eventCount": 0,
+        "stateHash": "0"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "evidenceGenerated": []
+    },
+    {
+      "turn": 3,
+      "command": [
+        "status"
+      ],
+      "intent": "Re-evaluate interpretation after SYNTH initialization evidence is available.",
+      "agentReasoningState": {
+        "understoodAs": "specification-stage design repository",
+        "confidence": 0.7,
+        "unknowns": [
+          "implementation timeline"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "agentSession": "recovering-from-wrong-model",
+        "agentReasoningState": {
+          "understoodAs": "specification-stage design repository",
+          "confidence": 0.7,
+          "unknowns": [
+            "implementation timeline"
+          ]
+        },
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {},
+      "evidenceGenerated": []
+    }
+  ],
+  "completedAt": "2026-07-18T14:02:46.044Z"
+}
