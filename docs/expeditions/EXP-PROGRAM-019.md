@@ -1,6 +1,7 @@
 # EXP-PROGRAM-019 — Universal Initialization
 
-**Status:** Proposed  
+**Status:** Accepted  
+**Accepted:** 2026-07-18  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -12,7 +13,7 @@
 **Product Impact:** High  
 **Execution Impact:** Medium  
 **Depends On:** EXP-PROGRAM-009 — Canonical First Contact Experience, EXP-GOV-008 — Initialization as a Governed State Transition  
-**Blocks:** Future adoption programs that require deterministic initial project context
+**Blocks:** EXP-INIT-001 — Adapter-based Project Bootstrap; future adoption programs that require deterministic initial project context
 
 ---
 
@@ -28,7 +29,7 @@ The solution is not smarter agents. It is a better initialization handshake.
 
 ## Purpose
 
-Establish a minimal, natural-language-driven project initialization experience where SYNTH can bootstrap any project from an external knowledge source through adapter discovery.
+Establish the deterministic initialization substrate for SYNTH: a minimal, natural-language-driven project initialization experience where SYNTH transforms an unknown external project context into a governed SYNTH project model.
 
 The operator provides:
 
@@ -50,29 +51,38 @@ Replayability
 
 This Program introduces **no new governance concepts** and **no new public vocabulary**. It only establishes the first low-friction state transition.
 
+> **Distinction from First Contact:** `EXP-PROGRAM-009` owns the human/agent first-contact *experience*; `EXP-PROGRAM-019` owns the deterministic initialization *mechanism* underneath it.
+
 > **Constitutional Rule:** This Program completes without touching Protected Assets.
 
 ---
 
 ## Mission
 
-Deliver the universal initialization experience and the minimum adapter contract required to make it work, so that SYNTH can bootstrap understanding from any supported source without domain-coupled adapters or project-specific inference.
+Deliver the universal initialization experience and the minimum `InitializationAdapter` contract required to make it work, so that SYNTH can bootstrap a governed project model from any supported source without domain-coupled adapters or project-specific inference.
 
 ---
 
 ## Program Composition
 
 ```
+EXP-PROGRAM-009
+Canonical First Contact Experience
+        |
+        |   experience layer
+        v
 EXP-PROGRAM-019
 Universal Initialization
-│
-├── EXP-INIT-001  Adapter-based Project Bootstrap
-│       Adoption Expedition
-│       Implement the first-contact initialization path from source declaration to initial state.
-│
-└── EXP-INIT-002  Initialization Evidence & Replay
-        Adoption Expedition
-        Ensure initialization produces evidence and can be replayed deterministically.
+        |
+        |   mechanism layer
+        |
+        ├── EXP-INIT-001  Adapter-based Project Bootstrap
+        │       Adoption Expedition
+        │       Transform external project context into a governed SYNTH project model.
+        │
+        └── EXP-INIT-002  Initialization Evidence & Replay
+                Adoption Expedition
+                Ensure initialization produces evidence and can be replayed deterministically.
 ```
 
 ---
@@ -101,13 +111,14 @@ All work in this Program stays in the Allowed column:
 | Allowed | Forbidden |
 |---|---|
 | Natural-language initialization flow for `synth init` | Project-specific adapters |
-| Generic `SourceAdapter` contract | Automatic application generation |
-| Adapter discovery, inventory, classification, extraction, normalization | Architecture inference engine |
-| Initial project model creation | Autonomous coding |
-| Evidence-backed initialization output | New governance concepts |
-| Replayable initialization transition | New public vocabulary |
-| Integration with existing resolver/status projection | SYNTH redesign |
-| Tests for initialization paths | Replacement for expeditions |
+| Generic `InitializationAdapter` contract | A competing `SourceAdapter` abstraction |
+| Adapter discovery, extraction, normalization into a project model | Automatic application generation |
+| Initial governed project model creation | Architecture inference engine |
+| Evidence-backed initialization output | Autonomous coding |
+| Replayable initialization transition | New governance concepts |
+| Integration with existing resolver/status projection | New public vocabulary |
+| Tests for initialization paths | SYNTH redesign |
+| Reuse of lower-level adapters (filesystem, repository, knowledge) | Replacement for expeditions |
 
 ---
 
@@ -116,22 +127,25 @@ All work in this Program stays in the Allowed column:
 1. `npm run govern` remains the canonical final verification.
 2. Initialization must produce a `PROJECT_INITIALIZED` event (EXP-GOV-008).
 3. Initialization must not create fake missions, expeditions, or work items.
-4. The adapter contract is source-agnostic; domain knowledge lives in normalized knowledge, not in adapters.
-5. After initialization, the source type is indistinguishable to the rest of SYNTH.
-6. Initialization must be replayable from input + adapter selection + evidence.
+4. The `InitializationAdapter` contract is source-agnostic; domain knowledge lives in the normalized project model, not in adapters.
+5. **SYNTH initialization must be source-agnostic. Adapters may vary by input source, but the resulting governed project model must be identical regardless of whether initialization begins from a knowledge directory, repository, specification set, or existing codebase.**
+6. After initialization, the source type is indistinguishable to the rest of SYNTH.
+7. Initialization must be replayable from input + adapter selection + evidence.
+8. The physical storage boundary remains `.synth/data/`; conceptual separations (`state`, `evidence`, `knowledge`, `replay`) live underneath it, not as sibling directories.
 
 ---
 
 ## Success Criteria
 
 - A user can initialize a SYNTH project with a natural-language source declaration.
-- SYNTH resolves the declared source to a generic `SourceAdapter`.
-- The adapter produces an inventory and normalized knowledge model.
+- SYNTH resolves the declared source to a generic `InitializationAdapter`.
+- The adapter transforms external project context into a governed SYNTH project model.
 - Initialization emits a `PROJECT_INITIALIZED` event and produces evidence artifacts.
 - `synth status` reports the correct initial phase and semantic context.
 - Initialization replay reconstructs the same initial state.
 - No Protected Asset is modified.
 - Existing `synth init` behavior remains available or is migrated cleanly.
+- The physical storage boundary remains `.synth/data/`.
 
 ---
 
