@@ -100,7 +100,11 @@ Environment-specific guides:
 - [Windsurf](windsurf.md)
 - [MCP-compatible agents](mcp.md) — future
 
-See also the [Agent Prompt Book](prompts/prompt-book.md) for ready-to-use prompts.
+See also:
+
+- [Agent Prompt Book](prompts/prompt-book.md) for ready-to-use prompts
+- [Agent Update Checklist — v2.1.0 Runtime Data Boundary](update-checklist-v2-1-0.md)
+- [Migrating Runtime Data to `.synth/data/`](migrating-runtime-data-to-synth.md)
 
 ## Public vocabulary
 

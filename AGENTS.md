@@ -43,7 +43,7 @@ npx @synth-framework/synth --version
 synth init --name "Project Name"
 ```
 
-This creates `.synth/manifest.json` and the required `data/` directory.
+This creates `.synth/manifest.json` and the required `.synth/data/` directory for governed projects. Ungoverned directories continue to use repo-root `data/`.
 
 ## Mission lifecycle
 
@@ -123,7 +123,7 @@ Use this to verify that the current state is consistent with the event history.
 
 ## Recover from interruption
 
-If `data/` is lost or corrupted, replay can reconstruct state from the event log. Ensure `npm run govern` still passes after recovery.
+If `.synth/data/` (or `data/` for ungoverned directories) is lost or corrupted, replay can reconstruct state from the event log. Ensure `npm run govern` still passes after recovery.
 
 ## Common commands
 
