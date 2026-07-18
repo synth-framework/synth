@@ -344,7 +344,20 @@ export function createDefaultCapabilities(): Capability[] {
     {
       name: "InitializeProject",
       description: "Initialize the current directory as a SYNTH project",
-      inputSchema: { required: ["projectId", "name", "governanceVersion"], types: { projectId: "string", name: "string", governanceVersion: "string" } },
+      inputSchema: {
+        required: ["projectId", "name", "governanceVersion"],
+        types: {
+          projectId: "string",
+          name: "string",
+          governanceVersion: "string",
+          sourceType: "string",
+          sourceLocation: "string",
+          declaredIntent: "string",
+          adapterId: "string",
+          adapterVersion: "string",
+          evidenceReference: "string",
+        },
+      },
       outputSchema: { events: ["PROJECT_INITIALIZED"], resultType: "ProjectInitialization" },
       preconditions: [],
       postconditions: [],
@@ -355,12 +368,33 @@ export function createDefaultCapabilities(): Capability[] {
         const projectId = String(intent.payload.projectId)
         const name = String(intent.payload.name)
         const governanceVersion = String(intent.payload.governanceVersion)
+
+        const optionalString = (value: unknown): string | undefined =>
+          typeof value === "string" && value.length > 0 ? value : undefined
+
+        const payload: Record<string, unknown> = { projectId, name, governanceVersion }
+        const sourceType = optionalString(intent.payload.sourceType)
+        const sourceLocation = optionalString(intent.payload.sourceLocation)
+        const declaredIntent = optionalString(intent.payload.declaredIntent)
+        const adapterId = optionalString(intent.payload.adapterId)
+        const adapterVersion = optionalString(intent.payload.adapterVersion)
+        const evidenceReference = optionalString(intent.payload.evidenceReference)
+        const projectModel = intent.payload.projectModel as Record<string, unknown> | undefined
+
+        if (sourceType) payload.sourceType = sourceType
+        if (sourceLocation) payload.sourceLocation = sourceLocation
+        if (declaredIntent) payload.declaredIntent = declaredIntent
+        if (adapterId) payload.adapterId = adapterId
+        if (adapterVersion) payload.adapterVersion = adapterVersion
+        if (evidenceReference) payload.evidenceReference = evidenceReference
+        if (projectModel) payload.projectModel = projectModel
+
         return {
           events: [{
             type: "PROJECT_INITIALIZED",
-            payload: { projectId, name, governanceVersion },
+            payload,
           }],
-          result: { projectId, name, governanceVersion },
+          result: { projectId, name, governanceVersion, sourceType, adapterId, evidenceReference },
         }
       },
     },
