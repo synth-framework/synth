@@ -12,7 +12,14 @@
 
 ## Objective
 
-Implement and validate the first-contact initialization path: a user declares a source, SYNTH resolves a generic `InitializationAdapter`, and the adapter transforms the external project context into a governed SYNTH project model.
+Deliver the **contract-only milestone** for universal initialization: define the `InitializationAdapter` and `ProjectModel` contracts and validate that they satisfy the semantic equivalence invariant.
+
+This milestone produces exactly two things:
+
+1. The `InitializationAdapter` contract — how external input sources become governed evidence.
+2. The `ProjectModel` contract — the semantic attractor that reduces interpretive entropy.
+
+No repository scanning, no AI implementation, no source-specific adapters, and no CLI wiring are in scope yet. The goal is to make the initialization boundary stable before any code generation begins.
 
 > **Initialization is not repository ingestion. Initialization is the controlled transition from an unknown project context into a governed SYNTH project model.**
 
@@ -95,126 +102,82 @@ The user should never choose `--repository`, `--docs`, `--filesystem`, or `--arc
 
 ## Outcomes
 
-### Outcome 1 — Natural Language Initialization Flow
+### Outcome 1 — InitializationAdapter Contract
 
-Extend `synth init` to accept a free-form source declaration.
+Define the universal adapter boundary. The adapter answers:
 
-- Accept input interactively or via a single `--source-description` flag.
-- Parse intent: "new project", "knowledge under ./knowledge", "clone URL", "source under ./workspace".
-- Do not expose adapter names to the user.
+> "Given an input source, can I produce governed evidence?"
 
-### Outcome 2 — Initialization Adapter Contract
+Not:
 
-Create the universal adapter boundary that transforms external project context into a SYNTH project model.
+> "Can I understand the project?"
+
+Proposed contract shape:
 
 ```ts
 interface InitializationAdapter {
-  name: string
-  canHandle(context: InitializationContext): boolean | number
-  identify(context: InitializationContext): Promise<ProjectSignal>
-  extract(context: InitializationContext): Promise<KnowledgeArtifact[]>
-  normalize(artifacts: KnowledgeArtifact[]): Promise<ProjectModel>
+  id: string
+  version: string
+  canHandle(input: InitializationInput): boolean
+  collectEvidence(input: InitializationInput): Promise<InitializationEvidence>
 }
 ```
 
-The `InitializationAdapter` does **not** answer "where did this information come from?" It answers:
+The adapter returns `InitializationEvidence`, not domain-specific types like `ReactNativeProject` or `BackendService`. Adapters are evidence translators.
 
-> "How do we transform an external project context into a SYNTH initialization model?"
+### Outcome 2 — ProjectModel Contract
 
-It does not own governance, lifecycle, state transitions, or expedition creation. It only converts reality into a model.
+Define the semantic attractor. The `ProjectModel` is the governed intermediate representation that every adapter converges on.
 
-Lower-level adapters (`filesystem`, `repository`, `knowledge-extraction`) may be reused by an `InitializationAdapter`, but the initialization contract sits above them and remains source-agnostic.
+Proposed contract shape:
 
-### Outcome 3 — Adapter Resolution
-
-Given a source declaration, the Initialization Engine resolves the best adapter:
-
-```
-Source declaration
-        ↓
-Initialization Engine
-        ↓
-AdapterRegistry.canHandle()
-        ↓
-Highest-confidence InitializationAdapter
-        ↓
-identify() → extract() → normalize()
-        ↓
-ProjectModel
-        ↓
-PROJECT_INITIALIZED event
-        ↓
-Canonical SYNTH State
+```ts
+interface ProjectModel {
+  identity: ProjectIdentity
+  intent: ProjectIntent
+  lifecycleStage: LifecycleStage
+  domains: DomainModel[]
+  constraints: Constraint[]
+  evidence: EvidenceReference[]
+  confidence: ConfidenceScore
+}
 ```
 
-If no adapter can handle the source, block and explain.
+Notice what is absent: framework, language, database, repository structure, deployment platform. Those belong to later expeditions.
 
-The engine owns the transition:
+### Outcome 3 — Semantic Equivalence Validation
 
-```
-Unknown Repository
-        |
-        v
-PROJECT_INITIALIZED
-        |
-        v
-Canonical SYNTH State
-```
+Make the interpretive-entropy rule testable. Given the same intent expressed through different adapters, the resulting `ProjectModel` must be equivalent.
 
-### Outcome 4 — Initial Project Model Creation
+Example:
 
-Every initialization produces a first SYNTH state. The initial state includes:
+- `FilesystemAdapter` over a `./knowledge` directory
+- `ConversationAdapter` with natural-language intent
 
-- `PROJECT_INITIALIZED` event with source metadata.
-- Manifest with `governanceVersion`.
-- Governed project model (`ProjectModel`) carrying project identity, source type, repository intent, lifecycle state, and detected capabilities.
-- Evidence artifact describing the source, adapter, inventory, and classification.
+Both must converge to:
 
-The physical storage boundary remains `.synth/data/`. Conceptual separations live underneath it:
-
-```
-.synth/
-    data/
-        state/          # current equilibrium (canonical-state.json)
-        evidence/       # proof supporting transitions
-        knowledge/      # extracted project model
-        replay/         # transformation history (event-log.jsonl)
+```json
+{
+  "projectType": "Specification-stage project",
+  "intent": "Build hospitality automation platform",
+  "implementation": null
+}
 ```
 
-The output is a first SYNTH state. Not a project conversion. Not implementation. Not generation.
+Not diverge into source-specific interpretations.
 
-### Outcome 5 — Semantic Attractor
+### Outcome 4 — Governance Tests
 
-Initialization creates the semantic context that agents need. The result is a governed project model, not a list of discovered files.
+Establish tests that prove initialization obeys its constraints:
 
-Example outputs:
+- Initialization cannot create expeditions.
+- Initialization cannot modify project artifacts.
+- Initialization produces evidence only.
+- Missing evidence remains unknown rather than hallucinated.
 
-**Knowledge repository**
+### Outcome 5 — Versioning Strategy
 
-```
-Project Type: Knowledge Repository
-Intent: Specification → Implementation
-Current State: Design Phase
-Next Transition: Architecture Formation
-```
-
-**Existing repository**
-
-```
-Project Type: Application Repository
-Intent: Continue Development
-Current State: Implementation Phase
-```
-
-**Git repository clone**
-
-```
-Project Type: Existing Software System
-Intent: Maintenance / Evolution
-Current State: Operational
-```
-
-This directly addresses the Windows experiment failure mode.
+Define how the `InitializationAdapter` and `ProjectModel` contracts evolve without breaking replay. The version field in the adapter contract and a schema version in the project model are the starting points.
 
 ---
 
@@ -252,36 +215,29 @@ The expedition only establishes the initial semantic handshake.
 ```
 src/
  ├── adapters/
- │    └── initialization-adapter.ts      # universal contract
- │    └── initialization-registry.ts     # adapter resolution
- │    └── filesystem-initialization-adapter.ts
- │    └── git-initialization-adapter.ts
- │    └── archive-initialization-adapter.ts
- │
- ├── cli/
- │    └── init-dialogue.ts               # natural language intake
+ │    └── initialization-adapter.ts      # InitializationAdapter contract
  │
  ├── initialization/
- │    └── engine.ts                      # orchestrates identify → extract → normalize → emit event
- │    └── project-model.ts               # governed project model shape
- │    └── evidence-builder.ts
+ │    └── project-model.ts               # ProjectModel contract + semantic validator
  │
  tests/
- └── initialization-cli.test.js
- └── initialization-adapter.test.js
+ └── initialization-adapter-contract.test.js
 ```
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] `synth init` accepts a natural-language source declaration.
-- [ ] SYNTH resolves the declaration to a generic `InitializationAdapter`.
-- [ ] The adapter transforms external project context into a governed `ProjectModel`.
-- [ ] Initialization emits a `PROJECT_INITIALIZED` event.
-- [ ] `synth status` reports the correct initial phase and semantic context after initialization.
-- [ ] Initialization evidence is written under `.synth/data/evidence/` and is inspectable.
-- [ ] Existing `synth init --name` behavior is preserved or cleanly migrated.
+- [ ] `InitializationAdapter` interface exists with `id`, `version`, `canHandle(input)`, and `collectEvidence(input)`.
+- [ ] `InitializationInput` and `InitializationEvidence` types exist.
+- [ ] `ProjectModel` interface/schema exists with `identity`, `intent`, `lifecycleStage`, `domains`, `constraints`, `evidence`, and `confidence`.
+- [ ] `LifecycleStage` is a closed union of allowed stages.
+- [ ] Semantic equivalence: stub adapters with equivalent intent produce equivalent `ProjectModel` instances.
+- [ ] No implementation assumptions: the `ProjectModel` builder rejects or strips framework, language, database, deployment, and platform fields.
+- [ ] Missing evidence remains unknown: partial or empty evidence yields `lifecycleStage: "unknown"` and empty arrays rather than hallucinated values.
+- [ ] Initialization cannot create expeditions, missions, or work items: `ProjectModel` has no such fields and the validator refuses evidence containing them.
+- [ ] Versioning strategy: `InitializationAdapter.version` and `ProjectModel.schemaVersion` fields exist.
+- [ ] Contracts compile, contract tests pass, and `npm run build` succeeds.
 - [ ] No Protected Asset is modified.
 - [ ] The physical storage boundary remains `.synth/data/`.
 
@@ -291,10 +247,10 @@ src/
 
 This expedition is complete when:
 
-- A user can initialize a SYNTH project by declaring a source.
-- The system resolves a generic `InitializationAdapter`, transforms the external context into a governed project model, produces evidence, and emits a replayable initialization event.
-- `synth status` on the initialized project reports the correct semantic context and phase.
-- The resulting governed project model is identical regardless of input source type.
+- The `InitializationAdapter` and `ProjectModel` contracts are stable and type-checked.
+- Tests prove that equivalent intent across different adapter shapes converges to the same governed project model.
+- Tests prove that initialization cannot introduce implementation assumptions or create expeditions/missions.
+- The resulting governed project model is source-agnostic and schema-versioned.
 - All tests pass and `npm run govern` succeeds.
 
 ---
