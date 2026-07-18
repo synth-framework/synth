@@ -1,6 +1,6 @@
 # EXP-PROGRAM-004 — First Contact Program
 
-**Status:** Completed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -60,9 +60,13 @@ First Contact Program
 │       Adoption Expedition
 │       Make the repository the single source of truth for docs and website.
 │
-└── EXP-AX-005  Public Release Polish
+├── EXP-AX-005  Public Release Polish
+│       Adoption Expedition
+│       Prepare the repository for external users: badges, demos, example gallery.
+│
+└── EXP-DISCOVERY-001  Repository Discovery & Brownfield Genesis
         Adoption Expedition
-        Prepare the repository for external users: badges, demos, example gallery.
+        Introduce a deterministic, read-only Discovery phase before governance begins.
 ```
 
 ---
@@ -114,11 +118,12 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 
 ## Governance
 
+- The Program was reopened on 2026-07-18 to add EXP-DISCOVERY-001.
 - The Program is sequenced. Dependencies are explicit in each Expedition.
 - No Expedition may be promoted to executing without approval.
 - No implementation work may proceed outside an approved Expedition.
 - Each Expedition must produce evidence that satisfies its Definition of Done.
-- The Program completes when EXP-AX-005 is accepted.
+- The Program completes when EXP-DISCOVERY-001 is accepted.
 
 ---
 
@@ -141,11 +146,13 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 - [x] EXP-AX-003 completed and accepted.
 - [x] EXP-AX-004 completed and accepted.
 - [x] EXP-AX-005 completed and accepted (quick-start media deferred to follow-up).
+- [ ] EXP-DISCOVERY-001 completed and accepted.
 - [x] AGENTS.md is published at repository root.
 - [x] README is aligned with the AI-native experience.
 - [x] Website and documentation synchronization is verified.
 - [x] Public release polish is in place.
 - [x] `npm run govern` passes without architectural changes.
+- [ ] Brownfield entry path requires an approved Discovery baseline.
 
 ---
 
