@@ -26,6 +26,10 @@
       "name": "Determinism",
       "description": "Determinism and replay integrity expeditions."
     },
+    "DISCOVERY": {
+      "name": "Repository Discovery",
+      "description": "Read-only discovery and brownfield baseline expeditions that establish an evidence-backed project model before governance begins."
+    },
     "DISC": {
       "name": "Runtime Self-Description",
       "description": "Discoverability and self-description expeditions (status, extraction reporting, introspection, repository identity)."
