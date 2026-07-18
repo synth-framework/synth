@@ -1,7 +1,8 @@
 # EXP-FIRSTCONTACT-011 — Agent First Contact Learning System
 
-**Status:** Accepted  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
@@ -396,9 +397,11 @@ Generate `docs/first-contact/quick-start/` as projections of canonical `Conversa
 
 Implemented in `scripts/generate-first-contact-quickstart.js` and tested in `tests/first-contact-quickstart.test.js`.
 
-### EXP-FIRSTCONTACT-011-F — First Contact Experience v2 Specification
+### EXP-FIRSTCONTACT-011-F — First Contact Experience v2 Specification ✅
 
 Document the self-improving first-contact system design.
+
+Authored in `docs/first-contact/experience-v2.md`.
 
 ---
 
@@ -429,7 +432,7 @@ Promote a pattern from provisional to canonical only when it passes:
 
 Generate `docs/first-contact/quick-start/` Markdown projections from canonical `ConversationPattern` artifacts.
 
-### Phase 6 — Specify v2 experience
+### Phase 6 — Specify v2 experience ✅
 
 Produce the First Contact Experience v2 specification and onboarding contract.
 
