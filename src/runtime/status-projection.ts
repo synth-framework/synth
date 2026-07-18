@@ -72,7 +72,7 @@ function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {
     }
   }
 
-  if (phase === "planning" && missions.length === 0 && !latestDraft) {
+  if ((phase === "initialized" || phase === "planning") && missions.length === 0 && !latestDraft) {
     blockers.push({
       kind: "no-mission",
       description: "Project is initialized but has no Mission draft.",
@@ -181,6 +181,8 @@ function deriveSummary(ctx: ResolvedGovernanceContext): string {
   switch (phase) {
     case "uninitialized":
       return "No SYNTH project found in this directory."
+    case "initialized":
+      return "Project initialized; create a Mission to begin planning."
     case "planning": {
       if (latestDraft) {
         const name = missions.find((m) => m.status === "draft")?.name || "Mission"

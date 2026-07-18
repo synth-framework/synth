@@ -458,12 +458,15 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
   const synthDir = path.join(targetDir, ".synth")
   const dataDir = path.join(targetDir, ".synth", "data")
+  const governanceVersion = "2.1"
 
   await fs.mkdir(synthDir, { recursive: true })
+  await fs.mkdir(dataDir, { recursive: true })
 
   const manifest = {
     schema: "synth-bootstrap-manifest-v1",
     version: await getVersion(),
+    governanceVersion,
     projectName,
     root: targetDir,
     generatedAt: new Date().toISOString(),
@@ -488,8 +491,36 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   const manifestPath = path.join(synthDir, "manifest.json")
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf-8")
 
-  // Ensure runtime data directory exists for event log
-  await fs.mkdir(dataDir, { recursive: true })
+  // Bootstrap a file-backed runtime in the target directory so the
+  // initialization itself is recorded as a replayable governance event.
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: {
+      persistence: "file",
+      eventLogPath: path.join(dataDir, "event-log.jsonl"),
+      statePath: path.join(dataDir, "canonical-state.json"),
+      checkpointPath: path.join(dataDir, "checkpoints.json"),
+    },
+  })
+
+  // Idempotency: if the project is already initialized, do not emit a
+  // duplicate PROJECT_INITIALIZED event.
+  const currentState = await ctx.runtime.getState()
+  if (currentState.lifecycle !== "initialized") {
+    const initResult = await ctx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "InitializeProject",
+      payload: {
+        projectId: crypto.randomUUID(),
+        name: projectName,
+        governanceVersion,
+      },
+    })
+
+    if (initResult.status !== "ok") {
+      printError(`Project initialization failed: ${initResult.error || JSON.stringify(initResult)}`)
+    }
+  }
 
   await writeAgentArtifacts(synthDir, projectName)
 
@@ -498,6 +529,8 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     message: "Synth project initialized",
     manifestPath,
     projectName,
+    governanceVersion,
+    lifecycle: "initialized",
     nextSteps: [
       "synth docs generate",
       "synth mission create --subject '...' --purpose '...'",
@@ -613,6 +646,18 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   const purpose = typeof flags.purpose === "string" ? flags.purpose : ""
   if (!subject) printError("--subject is required")
 
+  // Resolve the project's actual governance state before allowing intent
+  // capture. The resolver is the single authority for lifecycle phase.
+  const gateCtx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await gateCtx.runtime.getState()
+  const intake = gateDecision({ kind: "mission.create" }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
@@ -661,9 +706,10 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
+  // Resolve the project's actual governance state before allowing approval.
   const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
-    infra: { persistence: "memory" },
+    infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
   const intake = gateDecision({ kind: "mission.approve" }, state)
@@ -832,9 +878,10 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
   const subject = typeof flags.subject === "string" ? flags.subject : ""
   if (!subject) printError("--subject is required")
 
+  // Resolve the project's actual governance state before allowing evidence add.
   const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
-    infra: { persistence: "memory" },
+    infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
   const intake = gateDecision({ kind: "mission.evidence.add" }, state)
@@ -1003,16 +1050,22 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const goal = typeof flags.goal === "string" ? flags.goal : ""
   if (!missionSubject || !subject) printError("--mission and --subject are required")
 
-  const ctx = await bootstrapWithCapabilities({
+  // Resolve the project's actual governance state before allowing expedition
+  // proposal. Planning itself remains in-memory.
+  const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
-    infra: { persistence: "memory" },
+    infra: { persistence: "file" },
   })
-
-  const state = await ctx.runtime.getState()
+  const state = await gateCtx.runtime.getState()
   const intake = gateDecision({ kind: "expedition.create" }, state)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
 
   const observations = [
     makeObservation("mission", missionSubject, { purpose: "Auto-created from CLI" }),
@@ -1045,9 +1098,11 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   const expeditionId = typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : ""
   if (!expeditionId) printError("--expedition-id is required")
 
+  // Use the project's actual event log so the StartExpedition event is
+  // persisted and replayable.
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
-    infra: { persistence: "memory" },
+    infra: { persistence: "file" },
   })
 
   const state = await ctx.runtime.getState()
@@ -1085,9 +1140,11 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   const expeditionId = typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : ""
   if (!expeditionId) printError("--expedition-id is required")
 
+  // Use the project's actual event log so the CompleteExpedition event is
+  // persisted and replayable.
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
-    infra: { persistence: "memory" },
+    infra: { persistence: "file" },
   })
 
   const state = await ctx.runtime.getState()

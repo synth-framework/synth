@@ -39,7 +39,7 @@ export type NextAction = {
   priority: number
 }
 
-export type OperatorPhase = "uninitialized" | "planning" | "approved" | "executing" | "blocked" | "complete"
+export type OperatorPhase = "uninitialized" | "initialized" | "planning" | "approved" | "executing" | "blocked" | "complete"
 
 export type OperatorBriefing =
   | {

@@ -41,6 +41,7 @@ export type StateEvent =
   | { type: "PLAN_CREATED"; planId: string; name: string }
   | { type: "MILESTONE_CREATED"; milestoneId: string; planId: string; name: string }
   | { type: "PROJECT_CREATED"; projectId: string; name: string }
+  | { type: "PROJECT_INITIALIZED"; projectId: string; name: string; governanceVersion: string }
   | { type: "MISSION_CREATED"; missionId: string; name: string }
   | { type: "MISSION_APPROVED"; missionId: string }
   | { type: "MISSION_COMPLETED"; missionId: string }

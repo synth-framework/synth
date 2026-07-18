@@ -778,8 +778,9 @@ test("P2: state store hash integrity on save/load cycle", async () => {
 test("Expedition: capability registry includes Expedition capabilities", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
-  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, and PCE capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 25, `Registry must have 25 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, and PCE capabilities
+  assert.equal(ctx.capabilityRegistry.size(), 26, `Registry must have 26 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
   assert.ok(ctx.capabilityRegistry.has("CreateExpedition"), "Registry must have CreateExpedition")
   assert.ok(ctx.capabilityRegistry.has("AddObjective"), "Registry must have AddObjective")

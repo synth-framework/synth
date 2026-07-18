@@ -341,6 +341,29 @@ export function createDefaultCapabilities(): Capability[] {
         return { events: [{ type: "PROJECT_CREATED", payload: { project } }], result: project }
       },
     },
+    {
+      name: "InitializeProject",
+      description: "Initialize the current directory as a SYNTH project",
+      inputSchema: { required: ["projectId", "name", "governanceVersion"], types: { projectId: "string", name: "string", governanceVersion: "string" } },
+      outputSchema: { events: ["PROJECT_INITIALIZED"], resultType: "ProjectInitialization" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: ["project_not_initialized"],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const projectId = String(intent.payload.projectId)
+        const name = String(intent.payload.name)
+        const governanceVersion = String(intent.payload.governanceVersion)
+        return {
+          events: [{
+            type: "PROJECT_INITIALIZED",
+            payload: { projectId, name, governanceVersion },
+          }],
+          result: { projectId, name, governanceVersion },
+        }
+      },
+    },
 
     // Planning capabilities (PCE)
     {

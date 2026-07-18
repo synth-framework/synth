@@ -21,6 +21,7 @@ export type DraftSummary = {
 
 export type GovernancePhase =
   | "uninitialized"
+  | "initialized"
   | "planning"
   | "approved"
   | "executing"
