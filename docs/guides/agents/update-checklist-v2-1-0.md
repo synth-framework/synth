@@ -11,7 +11,7 @@ Status: stable
 
 # Agent Update Checklist — v2.1.0 Runtime Data Boundary
 
-Synth v2.1.0 moves runtime data for governed projects from the repository-root `data/` directory into `.synth/data/`. This checklist is for agents that operate Synth projects — including the TaskPRO-style autonomous execution agent — to update their path assumptions and operational behavior.
+Synth v2.1.0 moves runtime data for governed projects from the repository-root `data/` directory into `.synth/data/`. This checklist is for agents that operate Synth projects to update their path assumptions and operational behavior.
 
 ## Core rule
 
