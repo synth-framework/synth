@@ -50,6 +50,7 @@ export type OperatorBriefing =
       missions: MissionBrief[]
       activeExpeditions: ActiveExpeditionBrief[]
       blockers: Blocker[]
+      warnings: Blocker[]
       nextActions: NextAction[]
       eventCount: number
       stateHash: string

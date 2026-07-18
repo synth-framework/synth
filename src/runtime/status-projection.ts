@@ -48,6 +48,16 @@ function findDraftId(ctx: ResolvedGovernanceContext): string | undefined {
   )
 }
 
+function deriveWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
+  return ctx.derived.divergences
+    .filter((d) => d.severity === "warning")
+    .map((d) => ({
+      kind: d.kind,
+      description: d.description,
+      remediation: `Inspect ${d.artifact || "governance artifacts"} and follow the recovery guidance.`,
+    }))
+}
+
 function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {
   const blockers: Blocker[] = []
   const phase = ctx.derived.phase
@@ -89,15 +99,6 @@ function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {
         remediation: `synth explain diagnostics --work-item ${workItem.id}`,
       })
     }
-  }
-
-  for (const divergence of ctx.derived.divergences) {
-    if (divergence.severity !== "warning") continue
-    blockers.push({
-      kind: divergence.kind,
-      description: divergence.description,
-      remediation: `Inspect ${divergence.artifact || "governance artifacts"} and follow the recovery guidance.`,
-    })
   }
 
   return blockers
@@ -224,6 +225,7 @@ export function toOperatorBriefing(
     missions: deriveMissions(ctx),
     activeExpeditions: deriveActiveExpeditions(ctx),
     blockers: deriveBlockers(ctx),
+    warnings: deriveWarnings(ctx),
     nextActions: [toNextAction(ctx, transition)],
     eventCount: ctx.authoritative.events.length,
     stateHash: ctx.authoritative.replayedState.stateHash,

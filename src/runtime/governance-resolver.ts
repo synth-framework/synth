@@ -32,7 +32,11 @@ import type {
   GovernanceResolutionFailure,
   GovernanceResolutionResult,
   ResolvedGovernanceContext,
+  StateDivergence,
 } from "./governance-types.js"
+import { buildCanonicalState } from "./canonical-state-builder.js"
+import type { NormalizationNotice } from "./historical-normalizer.js"
+import type { ReferenceResolutionNotice } from "./reference-resolver.js"
 import type { FilesystemProvider } from "../environment/filesystem-capability.js"
 import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
 
@@ -222,6 +226,34 @@ function toFailure(
   }
 }
 
+function deduplicateDivergences(divergences: StateDivergence[]): StateDivergence[] {
+  const seen = new Set<string>()
+  return divergences.filter((d) => {
+    const key = `${d.kind}:${d.description}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+function normalizationToDivergence(notice: NormalizationNotice): StateDivergence {
+  return {
+    kind: notice.kind,
+    severity: notice.severity,
+    description: notice.message,
+    artifact: notice.aggregateKind,
+  }
+}
+
+function referenceToDivergence(notice: ReferenceResolutionNotice): StateDivergence {
+  return {
+    kind: notice.kind,
+    severity: notice.severity === "info" ? "warning" : notice.severity,
+    description: notice.message,
+    artifact: notice.aggregateKind,
+  }
+}
+
 /**
  * Resolve the governance context for a working directory.
  * This is the only supported entry point for reading governance artifacts.
@@ -247,22 +279,48 @@ export async function resolveGovernanceContext(
     snapshots = []
   }
 
-  const eventReplayedState = events.length > 0 ? rebuildState(events) : createEmptyState()
+  // EXP-GOV-007: canonical state is derived through the resolver pipeline.
+  // Historical duplicates, identity aliases, and recoverable references are
+  // normalized deterministically before validation.
+  const buildResult = buildCanonicalState(events)
 
-  // Validate against the event-log replay before merging lower-authority
+  if (!buildResult.success) {
+    return toFailure(
+      buildResult.diagnostic,
+      "Inspect the unresolved references. If the ambiguity is historical, add an alias or accept the inferred mapping. If it is genuine, resolve the conflicting artifacts in the event log.",
+      buildResult.report.unresolvedReferences.map((n) => ({
+        kind: "unresolved-reference",
+        severity: "error" as const,
+        description: n.message,
+        artifact: n.aggregateKind,
+      })),
+    )
+  }
+
+  const replayedStateBeforeSnapshots = buildResult.state
+
+  // Validate against the normalized event-log replay before merging lower-authority
   // snapshots. Snapshots that add new approved missions are allowed;
   // snapshots that contradict the event log are surfaced as conflicts.
   const { divergences, graphViolations } = validateConsistency({
-    events,
+    events: buildResult.report.normalizedEvents,
     persistedState,
-    replayedState: eventReplayedState,
+    replayedState: replayedStateBeforeSnapshots,
     decisions,
     snapshots,
   })
 
-  const replayedState = mergeSnapshotState(eventReplayedState, snapshots)
+  const replayedState = mergeSnapshotState(replayedStateBeforeSnapshots, snapshots)
 
-  const errors = divergences.filter((d) => d.severity === "error")
+  const allDivergences: StateDivergence[] = deduplicateDivergences([
+    ...divergences,
+    ...buildResult.report.normalizationNotices.map(normalizationToDivergence),
+    ...buildResult.report.referenceNotices
+      .filter((n) => n.kind !== "resolved")
+      .map(referenceToDivergence),
+  ])
+
+  const errors = allDivergences.filter((d) => d.severity === "error")
   if (errors.length > 0) {
     return toFailure(
       "Governance artifacts are inconsistent with the authoritative event log.",
@@ -297,7 +355,7 @@ export async function resolveGovernanceContext(
       activeMission,
       activeExpedition,
       latestDraft,
-      divergences,
+      divergences: allDivergences,
       graphViolations,
     },
   }
