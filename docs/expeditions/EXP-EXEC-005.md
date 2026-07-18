@@ -1,6 +1,6 @@
 # EXP-EXEC-005 — Pull Request Projection
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -28,8 +28,8 @@ Surface completed Expedition output as a pull request or equivalent review bound
 
 ## Definition of Done
 
-- [ ] Pull request creation implemented.
-- [ ] Projection metadata recorded in replay.
-- [ ] Regression tests pass.
+- [x] Pull request creation implemented.
+- [x] Projection metadata recorded in replay.
+- [x] Regression tests pass.
 - [ ] PR opened and CI checks pass.
 - [ ] Expedition accepted.

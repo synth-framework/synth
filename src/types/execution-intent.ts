@@ -60,6 +60,9 @@ export type ExecutionIntentGraph = {
   /** Isolated execution branch */
   branch: string
 
+  /** Base branch the expedition branched from */
+  baseBranch?: string
+
   /** Flat list of all intents */
   intents: ExecutionIntent[]
 
