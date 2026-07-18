@@ -1,12 +1,13 @@
 # EXP-VCS-001 — Versioning Capability Contract
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-015 — Repository Versioning Capability  
 **Depends On:** EXP-PROGRAM-007 (Environment Independence), EXP-PROGRAM-014 (Governance Maturation)  
 **Blocks:** EXP-VCS-002, EXP-VCS-003, EXP-VCS-004, EXP-VCS-005  
-**Evidence:** `docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md` (N1: recursion from ungoverned `package.json` `govern` script; agent-created files outside SYNTH boundary)
+**Evidence:** `docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md` (N1: recursion from ungoverned `package.json` `govern` script; agent-created files outside SYNTH boundary)  
+**Accepted:** 2026-07-17
 
 ---
 
@@ -238,10 +239,10 @@ Commit the architecture note and request program-steward acceptance.
 - [x] `src/environment/index.ts` exports the new module.
 - [x] `Versioning` added to `CapabilityFamily` in `src/environment/types.ts`.
 - [x] Provider registration contract is documented.
-- [ ] Downstream expeditions (EXP-VCS-002, EXP-VCS-003) confirm the contract is sufficient.
+- [x] Downstream expeditions (EXP-VCS-002, EXP-VCS-003, EXP-VCS-004, EXP-VCS-005) confirm the contract is sufficient.
 - [x] CHANGELOG updated.
-- [ ] PR opened and CI checks pass.
-- [ ] Expedition accepted.
+- [x] PR opened and CI checks pass.
+- [x] Expedition accepted.
 
 ---
 
@@ -259,4 +260,4 @@ Commit the architecture note and request program-steward acceptance.
 
 ## Completion Notes
 
-*(pending)*
+Contract delivered and validated by downstream implementation. `VersioningCapability` operations (`initializeRepository`, `createRevision`, `switchRevision`, `integrateRevision`, `publishRevision`, `createSnapshot`, `compareRevisions`, `history`, `synchronize`) and observation types (`versioning.repository`, `versioning.branch`, `versioning.commit`, `versioning.remote`, `versioning.pullRequest`, `versioning.divergence`) proved sufficient for the Git adapter, GitHub forge adapter, observation rule, and deterministic certification suite without contract changes.

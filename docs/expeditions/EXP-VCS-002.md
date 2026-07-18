@@ -1,11 +1,12 @@
 # EXP-VCS-002 — Git Versioning Adapter
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-015 — Repository Versioning Capability  
 **Depends On:** EXP-VCS-001 (Versioning Capability Contract)  
-**Blocks:** EXP-VCS-004, EXP-VCS-005
+**Blocks:** EXP-VCS-004, EXP-VCS-005  
+**Accepted:** 2026-07-17
 
 ---
 
@@ -39,6 +40,10 @@ Implement the `VersioningCapability` contract using Git as the reference provide
 - [x] `GitVersioningProvider` implemented.
 - [x] Provider registered in the reference provider set.
 - [x] Regression tests implemented and wired into `test:all`.
-- [ ] Certification tests pass (pending EXP-VCS-005).
-- [ ] PR opened and CI checks pass.
-- [ ] Expedition accepted.
+- [x] Certification tests pass (EXP-VCS-005 accepted).
+- [x] PR opened and CI checks pass.
+- [x] Expedition accepted.
+
+## Completion Notes
+
+Reference Git adapter implemented in `src/environment/git-versioning-provider.ts` and registered as `git-versioning`. All `VersioningCapability` operations execute through the Environment Process capability with `git -C <root>` invocation. Deterministic certification tests in EXP-VCS-005 pass in CI.
