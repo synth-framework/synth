@@ -21,10 +21,17 @@ import fs from "fs/promises"
 import path from "path"
 
 const PATTERNS_DIR_REL = path.join("first-contact", "conversation-patterns")
+const SESSIONS_DIR_REL = path.join("first-contact", "sessions")
 const OUT_DIR_REL = path.join("docs", "first-contact", "quick-start")
 const INDEX_REL = path.join(OUT_DIR_REL, "README.md")
 
-const PROJECTION_BANNER = `> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with \`node scripts/generate-first-contact-quickstart.js\`.`
+function relativeToOut(targetRel) {
+  // All generated files live directly in OUT_DIR_REL, so the relative path
+  // from any generated file to a repo-root target is the same.
+  return path.relative(OUT_DIR_REL, targetRel).replace(/\\/g, "/") + "/"
+}
+
+const PROJECTION_BANNER = `> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](${relativeToOut(PATTERNS_DIR_REL)}) artifacts. Do not edit by hand; regenerate with \`node scripts/generate-first-contact-quickstart.js\`.`
 
 function toFilename(id) {
   return `${id.replace(/[\s_/]+/g, "-")}.md`
@@ -125,7 +132,9 @@ function renderPattern(pattern) {
     lines.push("## Supporting evidence")
     lines.push("")
     for (const ev of pattern.supportingEvidence) {
-      lines.push(`- Session \`${ev.sessionId}\` — [evidence](${ev.evidencePath})`)
+      const evidenceRel = path.join(SESSIONS_DIR_REL, path.basename(ev.evidencePath))
+      const evidenceHref = path.relative(OUT_DIR_REL, evidenceRel).replace(/\\/g, "/")
+      lines.push(`- Session \`${ev.sessionId}\` — [evidence](${evidenceHref})`)
     }
     lines.push("")
   }

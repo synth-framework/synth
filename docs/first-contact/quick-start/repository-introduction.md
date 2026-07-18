@@ -1,4 +1,4 @@
-> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with `node scripts/generate-first-contact-quickstart.js`.
+> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with `node scripts/generate-first-contact-quickstart.js`.
 
 # I want to understand this project before making any changes.
 
@@ -58,4 +58,4 @@
 
 ## Supporting evidence
 
-- Session `repository-introduction` — [evidence](../sessions/baseline-repository-introduction-evidence.json)
+- Session `repository-introduction` — [evidence](../../../first-contact/sessions/baseline-repository-introduction-evidence.json)

@@ -1,4 +1,4 @@
-> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with `node scripts/generate-first-contact-quickstart.js`.
+> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with `node scripts/generate-first-contact-quickstart.js`.
 
 # First Contact — Quick Start Scenarios
 

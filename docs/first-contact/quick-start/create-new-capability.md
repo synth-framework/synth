@@ -1,4 +1,4 @@
-> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with `node scripts/generate-first-contact-quickstart.js`.
+> **Projection notice.** This document is a deterministic projection of the canonical [ConversationPattern](../../../first-contact/conversation-patterns/) artifacts. Do not edit by hand; regenerate with `node scripts/generate-first-contact-quickstart.js`.
 
 # I need to add authentication to this project.
 
@@ -58,4 +58,4 @@
 
 ## Supporting evidence
 
-- Session `create-new-capability` — [evidence](../sessions/baseline-create-new-capability-evidence.json)
+- Session `create-new-capability` — [evidence](../../../first-contact/sessions/baseline-create-new-capability-evidence.json)
