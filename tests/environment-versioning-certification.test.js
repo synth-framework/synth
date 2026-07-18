@@ -27,9 +27,11 @@ async function makeTempRepo() {
   const root = await realpath(dir)
   const ctx = createNodeObservationContext(root)
   await provider.initializeRepository(ctx, root)
-  // Create an initial commit so the default branch exists and is not "HEAD".
+  // Explicitly create and commit to a named default branch so tests can rely on it.
+  await ctx.execTool("git", ["checkout", "-b", "main"])
   await writeFile(join(root, "README.md"), "# cert", "utf-8")
-  await provider.createRevision(ctx, root, { message: "initial", includeUntracked: true })
+  await ctx.execTool("git", ["add", "."])
+  await ctx.execTool("git", ["commit", "-m", "initial"])
   return { root, ctx }
 }
 
