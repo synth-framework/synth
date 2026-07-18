@@ -90,7 +90,10 @@ test("certification: switchRevision moves between branches", async () => {
     assert.strictEqual(featureRev[0].message, "on feature")
 
     await provider.switchRevision(ctx, root, { branch: defaultBranch })
+    const currentBranch = (await ctx.execTool("git", ["rev-parse", "--abbrev-ref", "HEAD"]))?.trim()
     const mainRev = await provider.history(ctx, root)
+    console.log({ defaultBranch, currentBranch, messages: mainRev.map((h) => h.message) })
+    assert.strictEqual(currentBranch, defaultBranch)
     assert.strictEqual(mainRev[0].message, `on ${defaultBranch}`)
   } finally {
     await cleanup(root)
