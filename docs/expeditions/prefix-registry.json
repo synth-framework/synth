@@ -50,6 +50,10 @@
       "name": "Constitutional Hardening",
       "description": "Constitutional hardening expeditions (Mission Studio, Snapshot, Genesis, Replay, Graph Integrity, Validation, Observability)."
     },
+    "INIT": {
+      "name": "Initialization",
+      "description": "Universal project initialization expeditions (adapter contracts, source-agnostic bootstrap, semantic attractor)."
+    },
     "INSTALL": {
       "name": "Installation & Distribution",
       "description": "Installation, distribution, and bootstrap installer expeditions."
