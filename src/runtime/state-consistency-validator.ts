@@ -11,6 +11,7 @@ import type { DecisionLogRead } from "../mission-studio/decision-log.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
 import { computeStateHash, validateAggregateGraph } from "./replay.js"
 import type { StateDivergence } from "./governance-types.js"
+import type { HistoricalAliasRegistry } from "./historical-aliases.js"
 
 export type ValidateConsistencyInput = {
   events: SynthEvent[]
@@ -18,6 +19,7 @@ export type ValidateConsistencyInput = {
   replayedState: CanonicalState
   decisions: DecisionLogRead
   snapshots: StoredSnapshot[]
+  aliasRegistry?: HistoricalAliasRegistry
 }
 
 export type ValidateConsistencyOutput = {
@@ -43,10 +45,10 @@ function getApprovedMissionsFromSnapshots(stored: StoredSnapshot[]): Array<{ id:
 }
 
 export function validateConsistency(input: ValidateConsistencyInput): ValidateConsistencyOutput {
-  const { events, persistedState, replayedState, decisions, snapshots } = input
+  const { events, persistedState, replayedState, decisions, snapshots, aliasRegistry } = input
   const divergences: StateDivergence[] = []
 
-  const graphViolations = validateAggregateGraph(events, replayedState)
+  const graphViolations = validateAggregateGraph(events, replayedState, aliasRegistry)
   if (graphViolations.length > 0) {
     for (const violation of graphViolations) {
       divergences.push({

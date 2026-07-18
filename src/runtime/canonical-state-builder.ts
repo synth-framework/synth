@@ -17,6 +17,8 @@ import { rebuildState, createEmptyState } from "./replay.js"
 import { normalizeHistoricalEvents, type NormalizationNotice } from "./historical-normalizer.js"
 import { resolveIdentities, type IdentityRegistry } from "./identity-resolver.js"
 import { resolveReferences, type ReferenceResolutionNotice } from "./reference-resolver.js"
+import type { HistoricalAliasRegistry } from "./historical-aliases.js"
+import { createEmptyHistoricalAliasRegistry } from "./historical-aliases.js"
 
 export type CanonicalStateBuildReport = {
   /** Events after normalization and reference resolution */
@@ -52,12 +54,20 @@ export type CanonicalStateBuildResult =
  *   2. Resolve canonical identities.
  *   3. Resolve parent references (with recovery heuristics).
  *   4. Replay the derived stream into canonical state.
+ *
+ * An optional historical alias registry lets the pipeline interpret known
+ * legacy duplicate identities and parent-reference aliases without mutating
+ * the event log.
  */
-export function buildCanonicalState(events: SynthEvent[]): CanonicalStateBuildResult {
-  const { events: normalizedEvents, notices: normalizationNotices } = normalizeHistoricalEvents(events)
+export function buildCanonicalState(
+  events: SynthEvent[],
+  aliasRegistry?: HistoricalAliasRegistry,
+): CanonicalStateBuildResult {
+  const aliases = aliasRegistry ?? createEmptyHistoricalAliasRegistry()
+  const { events: normalizedEvents, notices: normalizationNotices } = normalizeHistoricalEvents(events, aliases)
   const { registry: identityRegistry, notices: identityNotices } = resolveIdentities(normalizedEvents)
   const { events: resolvedEvents, notices: referenceNotices, unresolved: unresolvedReferences } =
-    resolveReferences(normalizedEvents, identityRegistry)
+    resolveReferences(normalizedEvents, identityRegistry, aliases)
 
   const state = resolvedEvents.length > 0 ? rebuildState(resolvedEvents) : createEmptyState()
 

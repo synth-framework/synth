@@ -52,7 +52,7 @@ export type GovernanceRule = {
 
 export type StateDivergence = {
   kind: string
-  severity: "warning" | "error"
+  severity: "info" | "warning" | "error"
   description: string
   artifact?: string
 }

@@ -17,6 +17,8 @@
 
 import type { SynthEvent } from "../types/index.js"
 import { CREATION_EVENTS, creationPayload, type AggregateGraphNode } from "./replay.js"
+import type { HistoricalAliasRegistry } from "./historical-aliases.js"
+import { identityKey, isKnownAlias } from "./historical-aliases.js"
 
 export type NormalizationKind =
   | "duplicate-identity"
@@ -46,18 +48,22 @@ export type HistoricalNormalizationResult = {
   canonicalIdentities: Map<string, { kind: AggregateGraphNode["kind"]; canonicalEventId: string }>
 }
 
-function identityKey(kind: AggregateGraphNode["kind"], id: string): string {
-  return `${kind}:${id}`
-}
-
 /**
  * Normalize a raw event stream for canonical state derivation.
  *
  * Duplicate creation events for the same aggregate identity are collapsed.
  * The first occurrence is kept as the canonical creation; subsequent
  * identical occurrences are recorded as duplicate-identity notices.
+ *
+ * When a historical alias registry is provided, duplicate events whose
+ * event ids are registered aliases of the same canonical identity do not
+ * produce warnings. This lets the resolver interpret legacy genesis seed
+ * events without mutating the event log.
  */
-export function normalizeHistoricalEvents(events: SynthEvent[]): HistoricalNormalizationResult {
+export function normalizeHistoricalEvents(
+  events: SynthEvent[],
+  aliasRegistry?: HistoricalAliasRegistry,
+): HistoricalNormalizationResult {
   const normalized: SynthEvent[] = []
   const notices: NormalizationNotice[] = []
   const canonicalIdentities = new Map<string, { kind: AggregateGraphNode["kind"]; canonicalEventId: string }>()
@@ -92,14 +98,25 @@ export function normalizeHistoricalEvents(events: SynthEvent[]): HistoricalNorma
         // re-creations may repeat the same aggregate id with different
         // timestamps. We collapse them to the earliest event and record a
         // warning; the identity resolver decides the canonical identity.
-        notices.push({
-          kind: "duplicate-identity",
-          severity: "warning",
-          aggregateKind: spec.kind,
-          aggregateId: id,
-          message: `Duplicate ${spec.kind} identity in event log: ${id}`,
-          provenance: { eventIds: [existing.canonicalEventId, event.id] },
-        })
+        //
+        // If both events are registered aliases of the same canonical
+        // identity, the duplicate is known historical metadata and does not
+        // require a warning.
+        const knownAlias =
+          aliasRegistry !== undefined &&
+          isKnownAlias(aliasRegistry, spec.kind, id, existing.canonicalEventId) &&
+          isKnownAlias(aliasRegistry, spec.kind, id, event.id)
+
+        if (!knownAlias) {
+          notices.push({
+            kind: "duplicate-identity",
+            severity: "warning",
+            aggregateKind: spec.kind,
+            aggregateId: id,
+            message: `Duplicate ${spec.kind} identity in event log: ${id}`,
+            provenance: { eventIds: [existing.canonicalEventId, event.id] },
+          })
+        }
       } else {
         // First time seeing this identity. Check for cross-kind reuse.
         let crossKindConflict = false

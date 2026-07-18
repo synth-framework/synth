@@ -243,13 +243,12 @@ test("graph violations never feed the legacy consistent verdict", async () => {
 // ============================================================
 
 // The legacy log is local, uncommitted runtime state (data/ is gitignored),
-// so this test runs only where the file exists. Exact violation counts drift
-// locally as suites append events; the pinned 206-violation profile of the
-// 215-event log is documented in docs/expeditions/EXP-HARDEN-004.md. The
-// environment-independent defective-log checks below use the committed
-// first-contact archive instead.
+// so this test runs only where the file exists. EXP-GOV-009 registered the
+// known genesis-seed duplicate identities as historical aliases, so the
+// 215-event log now replays with a clean graph. The environment-independent
+// defective-log checks below use the committed first-contact archive instead.
 test(
-  "legacy data/event-log.jsonl: consistent, but graph violations reported",
+  "legacy data/event-log.jsonl: consistent and graph clean after EXP-GOV-009 aliases",
   { skip: !fs.existsSync(LEGACY_LOG) && "requires local data/event-log.jsonl (gitignored runtime state)" },
   async () => {
     const verifier = createReplayVerifier(new EventStore(LEGACY_LOG), new InMemoryStateStore())
@@ -259,11 +258,10 @@ test(
     assert.strictEqual(result.consistent, true)
     assert.strictEqual(result.chainValid, true)
 
-    // The known pre-HARDEN-001 pollution is reported, not hidden.
-    assert.strictEqual(result.graphValid, false)
-    assert.ok(result.graphViolations.length > 0)
-    assert.ok(violationsOfKind(result.graphViolations, "duplicate-creation").length > 0)
-    assert.ok(violationsOfKind(result.graphViolations, "broken-parent-reference").length > 0)
+    // EXP-GOV-009: historical aliases suppress duplicate-creation and
+    // broken-parent-reference warnings for the genesis seed duplicates.
+    assert.strictEqual(result.graphValid, true)
+    assert.strictEqual(result.graphViolations.length, 0)
   },
 )
 

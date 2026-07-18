@@ -23,12 +23,19 @@
 // logs stay green by default; strict consumers enforce `graphValid`.
 // ============================================================
 
+
 import { EventStore } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
 import { rebuildState, validateAggregateGraph } from "../runtime/replay.js"
 import type { AggregateGraphViolation } from "../runtime/replay.js"
 import type { SynthEvent } from "../types/index.js"
 import { computeEventHash, stableStringify } from "./hash.js"
+import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import {
+  loadHistoricalAliasRegistry,
+  createEmptyHistoricalAliasRegistry,
+  type HistoricalAliasRegistry,
+} from "../runtime/historical-aliases.js"
 
 /** Detailed divergence between operational and replayed state. */
 export type ReplayDivergence = {
@@ -162,7 +169,11 @@ export class ReplayVerifier {
     // aggregate graph of the full event log and post-replay navigation.
     // They are reported in their own fields and deliberately do NOT feed
     // `divergences` or `consistent`, keeping the legacy verdict stable.
-    const graphViolations = validateAggregateGraph(events, replayedState)
+    const dataDir = this.eventStore.getDataDir()
+    const aliasRegistry = dataDir
+      ? await loadHistoricalAliasRegistry(createPosixFilesystemProvider(dataDir))
+      : createEmptyHistoricalAliasRegistry()
+    const graphViolations = validateAggregateGraph(events, replayedState, aliasRegistry)
     const graphValid = graphViolations.length === 0
 
     // Hash comparison with live state
