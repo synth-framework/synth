@@ -16,15 +16,17 @@ import { createGitVersioningProvider, createNodeObservationContext } from "../di
 
 const provider = createGitVersioningProvider()
 
+// Ensure Git commits have author/committer metadata in environments without global config.
+process.env.GIT_AUTHOR_NAME = process.env.GIT_AUTHOR_NAME || "Synth Cert"
+process.env.GIT_AUTHOR_EMAIL = process.env.GIT_AUTHOR_EMAIL || "cert@synth.local"
+process.env.GIT_COMMITTER_NAME = process.env.GIT_COMMITTER_NAME || "Synth Cert"
+process.env.GIT_COMMITTER_EMAIL = process.env.GIT_COMMITTER_EMAIL || "cert@synth.local"
+
 async function makeTempRepo() {
   const dir = await mkdtemp(join(tmpdir(), "synth-vcs-cert-"))
   const root = await realpath(dir)
   const ctx = createNodeObservationContext(root)
   await provider.initializeRepository(ctx, root)
-  // Configure git user for commits.
-  const gitCtx = createNodeObservationContext(root)
-  await gitCtx.execTool("git", ["config", "user.email", "cert@synth.local"])
-  await gitCtx.execTool("git", ["config", "user.name", "Synth Cert"])
   return { root, ctx }
 }
 
