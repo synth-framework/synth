@@ -1,6 +1,8 @@
 # EXP-FIRSTCONTACT-010 — Agent Ground Truth Discovery
 
-**Status:** Proposed  
+**Status:** Accepted  
+**Accepted:** 2026-07-18  
+**Started:** 2026-07-18  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  

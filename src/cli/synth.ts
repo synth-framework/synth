@@ -85,8 +85,32 @@ const ADAPTER_NAMES = [
   "wizard",
 ]
 
+let agentTelemetry: Record<string, unknown> = {}
+
+function setAgentTelemetry(flags: Record<string, string | boolean>) {
+  const telemetry: Record<string, unknown> = {}
+  if (typeof flags["agent-session"] === "string" && flags["agent-session"].length > 0) {
+    telemetry.agentSession = flags["agent-session"]
+  }
+  if (
+    typeof flags["agent-reasoning-state"] === "string" &&
+    flags["agent-reasoning-state"].length > 0
+  ) {
+    try {
+      telemetry.agentReasoningState = JSON.parse(flags["agent-reasoning-state"])
+    } catch {
+      telemetry.agentReasoningState = { parseError: flags["agent-reasoning-state"] }
+    }
+  }
+  agentTelemetry = telemetry
+}
+
 function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
+  if (Object.keys(agentTelemetry).length === 0) {
+    console.log(JSON.stringify(obj, null, 2))
+  } else {
+    console.log(JSON.stringify({ ...agentTelemetry, ...(obj as Record<string, unknown>) }, null, 2))
+  }
 }
 
 function printError(error: string, code = 1): never {
@@ -1319,6 +1343,11 @@ async function main() {
   if (jsonFlag) {
     flags.json = true
   }
+
+  // EXP-FIRSTCONTACT-010: when running as part of an agent first-contact
+  // experiment, merge telemetry (agent session and reasoning state) into
+  // every JSON response so the CLI acts as an experimental sensor.
+  setAgentTelemetry(flags)
 
   const command = positional[0]
 

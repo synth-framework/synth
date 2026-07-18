@@ -188,9 +188,21 @@ Canonical First Contact Experience
 │       Allow newcomers to observe the canonical Mission through Replay.
 │       Deferred behind the EXP-PROGRAM-010 hardening boundary.
 │
-└── EXP-FIRSTCONTACT-006  Comprehension Validation
+├── EXP-FIRSTCONTACT-006  Comprehension Validation
+│       Adoption Expedition
+│       Validate that the First Contact experience consistently communicates SYNTH.
+│
+├── EXP-FIRSTCONTACT-010  Agent Ground Truth Discovery
+│       Adoption Expedition
+│       Discover the minimum environmental signals required for an autonomous agent
+│       to correctly infer project intent and execute governed SYNTH workflows.
+│       Status: Accepted
+│
+└── EXP-FIRSTCONTACT-011  Agent First Contact Learning System
         Adoption Expedition
-        Validate that the First Contact experience consistently communicates SYNTH.
+        Transform observed agent trajectories into validated quick-start
+        conversation patterns and a self-improving first-contact system.
+        Status: Proposed
 ```
 
 ---
@@ -245,6 +257,8 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [ ] EXP-FIRSTCONTACT-009 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-005 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-006 completed and accepted.
+- [ ] EXP-FIRSTCONTACT-010 completed and accepted.
+- [ ] EXP-FIRSTCONTACT-011 completed and accepted.
 - [ ] Program accepted.
 
 ---
