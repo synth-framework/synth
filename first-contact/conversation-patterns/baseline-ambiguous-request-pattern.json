@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "ambiguous-request",
+  "title": "Make the app better.",
+  "trigger": "Make the app better.",
+  "preconditions": {
+    "initialized": true,
+    "phase": "initialized",
+    "files": [
+      "status",
+      "kind",
+      "phase",
+      "summary",
+      "missions",
+      "activeExpeditions",
+      "blockers",
+      "warnings",
+      "nextActions",
+      "eventCount",
+      "stateHash"
+    ],
+    "repositoryStateSummary": "initialized project; phase: initialized"
+  },
+  "trajectory": [
+    {
+      "turn": 1,
+      "command": "status",
+      "intent": "Check current state before interpreting the request.",
+      "expectedReasoningState": {
+        "understoodAs": "ambiguous improvement request",
+        "confidence": 0.1,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "decisionPoint": false
+    },
+    {
+      "turn": 2,
+      "command": "explain",
+      "intent": "Gather enough context to identify what 'better' could mean.",
+      "expectedReasoningState": {
+        "understoodAs": "ambiguous improvement request on specification-stage project",
+        "confidence": 0.2,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "decisionPoint": false
+    }
+  ],
+  "decisionPoints": [
+    {
+      "turn": 2,
+      "description": "Model corrected from 'ambiguous improvement request' to 'ambiguous improvement request on specification-stage project' via 'explain'."
+    }
+  ],
+  "successfulPrompts": [
+    "status — Check current state before interpreting the request.",
+    "explain — Gather enough context to identify what 'better' could mean."
+  ],
+  "antiPatterns": [
+    "Proceeding with an ambiguous request without clarifying scope."
+  ],
+  "misinterpretationCategories": [
+    "missing-context"
+  ],
+  "confidence": 0.3,
+  "status": "rejected",
+  "supportingEvidence": [
+    {
+      "sessionId": "ambiguous-request",
+      "scenarioId": "ambiguous-request",
+      "evidencePath": "../sessions/baseline-ambiguous-request-evidence.json"
+    }
+  ]
+}

@@ -32,6 +32,7 @@ import {
   saveFirstContactEvidence,
 } from "../dist/first-contact/evidence.js"
 
+
 function parseArgs(argv) {
   const args = argv.slice(2)
   const flags = {}

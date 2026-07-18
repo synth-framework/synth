@@ -1,7 +1,8 @@
 # EXP-INIT-001 — Adapter-based Project Bootstrap
 
-**Status:** Accepted  
+**Status:** Completed  
 **Accepted:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Adoption / Initialization  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-019 — Universal Initialization  
@@ -228,17 +229,17 @@ src/
 
 ## Acceptance Criteria
 
-- [ ] `InitializationAdapter` interface exists with `id`, `version`, `canHandle(input)`, and `collectEvidence(input)`.
-- [ ] `InitializationInput` and `InitializationEvidence` types exist.
-- [ ] `ProjectModel` interface/schema exists with `identity`, `intent`, `lifecycleStage`, `domains`, `constraints`, `evidence`, and `confidence`.
-- [ ] `LifecycleStage` is a closed union of allowed stages.
-- [ ] Semantic equivalence: stub adapters with equivalent intent produce equivalent `ProjectModel` instances.
-- [ ] No implementation assumptions: the `ProjectModel` builder rejects or strips framework, language, database, deployment, and platform fields.
-- [ ] Missing evidence remains unknown: partial or empty evidence yields `lifecycleStage: "unknown"` and empty arrays rather than hallucinated values.
-- [ ] Initialization cannot create expeditions, missions, or work items: `ProjectModel` has no such fields and the validator refuses evidence containing them.
-- [ ] Versioning strategy: `InitializationAdapter.version` and `ProjectModel.schemaVersion` fields exist.
-- [ ] Contracts compile, contract tests pass, and `npm run build` succeeds.
-- [ ] No Protected Asset is modified.
+- [x] `InitializationAdapter` interface exists with `id`, `version`, `canHandle(input)`, and `collectEvidence(input)`.
+- [x] `InitializationInput` and `InitializationEvidence` types exist.
+- [x] `ProjectModel` interface/schema exists with `identity`, `intent`, `lifecycleStage`, `domains`, `constraints`, `evidence`, and `confidence`.
+- [x] `LifecycleStage` is a closed union of allowed stages.
+- [x] Semantic equivalence: stub adapters with equivalent intent produce equivalent `ProjectModel` instances.
+- [x] No implementation assumptions: the `ProjectModel` builder rejects or strips framework, language, database, deployment, and platform fields.
+- [x] Missing evidence remains unknown: partial or empty evidence yields `lifecycleStage: "unknown"` and empty arrays rather than hallucinated values.
+- [x] Initialization cannot create expeditions, missions, or work items: `ProjectModel` has no such fields and the validator refuses evidence containing them.
+- [x] Versioning strategy: `InitializationAdapter.version` and `ProjectModel.schemaVersion` fields exist.
+- [x] Contracts compile, contract tests pass, and `npm run build` succeeds.
+- [x] No Protected Asset is modified.
 - [ ] The physical storage boundary remains `.synth/data/`.
 
 ---
@@ -272,6 +273,16 @@ Before acceptance, verify the following pending or recent work does not invalida
 6. **EXP-PROGRAM-016 — Governed Expedition Execution**: Initialization produces the initial state that expedition execution later mutates. The `ProjectModel` and canonical state format must be compatible with expedition execution.
 
 ---
+
+## Completion Notes
+
+**Completed:** 2026-07-18  
+**Merged:** [#150](https://github.com/synth-framework/synth/pull/150)
+
+- Defined `InitializationAdapter` contract in `src/adapters/initialization-adapter.ts`.
+- Defined `ProjectModel` contract, lifecycle stages, and semantic validator in `src/initialization/project-model.ts`.
+- Added governance tests proving source-agnostic convergence, no implementation assumptions, and no expedition/mission creation during initialization.
+- Contract tests compile and pass; `npm run build` succeeds.
 
 ## Related Documents
 

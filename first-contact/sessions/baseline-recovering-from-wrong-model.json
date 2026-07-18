@@ -5,8 +5,8 @@
   "humanPrompt": "I want to understand this project before making any changes.",
   "description": "Repository contains implementation-shaped artifacts (UI, components, navigation). Agent must recover to the correct specification interpretation once SYNTH evidence is introduced.",
   "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
-  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-jRzHvQ",
-  "startedAt": "2026-07-18T14:13:08.695Z",
+  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-FwZoxi",
+  "startedAt": "2026-07-18T14:41:59.021Z",
   "turns": [
     {
       "turn": 1,
@@ -113,7 +113,7 @@
         },
         "status": "ok",
         "message": "Synth project initialized",
-        "manifestPath": "/private/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-jRzHvQ/.synth/manifest.json",
+        "manifestPath": "/private/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-FwZoxi/.synth/manifest.json",
         "projectName": "Hospitality Design System",
         "governanceVersion": "2.1",
         "lifecycle": "initialized",
@@ -291,5 +291,5 @@
       "evidenceGenerated": []
     }
   ],
-  "completedAt": "2026-07-18T14:13:13.520Z"
+  "completedAt": "2026-07-18T14:42:04.929Z"
 }

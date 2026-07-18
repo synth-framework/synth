@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "create-new-capability",
+  "title": "I need to add authentication to this project.",
+  "trigger": "I need to add authentication to this project.",
+  "preconditions": {
+    "initialized": true,
+    "phase": "initialized",
+    "files": [
+      "status",
+      "kind",
+      "phase",
+      "summary",
+      "missions",
+      "activeExpeditions",
+      "blockers",
+      "warnings",
+      "nextActions",
+      "eventCount",
+      "stateHash"
+    ],
+    "repositoryStateSummary": "initialized project; phase: initialized"
+  },
+  "trajectory": [
+    {
+      "turn": 1,
+      "command": "status",
+      "intent": "Establish current state before proposing a change.",
+      "expectedReasoningState": {
+        "understoodAs": "feature request: authentication",
+        "confidence": 0.3,
+        "unknowns": [
+          "existing identity model",
+          "governance state"
+        ]
+      },
+      "decisionPoint": false
+    },
+    {
+      "turn": 2,
+      "command": "explain",
+      "intent": "Understand existing decisions and project boundaries.",
+      "expectedReasoningState": {
+        "understoodAs": "system transformation requiring governed change",
+        "confidence": 0.5,
+        "unknowns": [
+          "mission alignment",
+          "expedition scope"
+        ]
+      },
+      "decisionPoint": false
+    },
+    {
+      "turn": 3,
+      "command": "mission create --subject Authentication --purpose Add identity and access control to the hospitality platform",
+      "intent": "Create a governed mission for the capability.",
+      "expectedReasoningState": {
+        "understoodAs": "governed transformation: authentication mission",
+        "confidence": 0.75,
+        "unknowns": [
+          "approval path"
+        ]
+      },
+      "decisionPoint": false
+    }
+  ],
+  "decisionPoints": [
+    {
+      "turn": 2,
+      "description": "Model corrected from 'feature request: authentication' to 'system transformation requiring governed change' via 'explain'."
+    },
+    {
+      "turn": 3,
+      "description": "Model corrected from 'system transformation requiring governed change' to 'governed transformation: authentication mission' via 'mission create --subject Authentication --purpose Add identity and access control to the hospitality platform'."
+    }
+  ],
+  "successfulPrompts": [
+    "status — Establish current state before proposing a change.",
+    "explain — Understand existing decisions and project boundaries.",
+    "mission create --subject Authentication --purpose Add identity and access control to the hospitality platform — Create a governed mission for the capability."
+  ],
+  "antiPatterns": [],
+  "misinterpretationCategories": [
+    "none"
+  ],
+  "confidence": 1,
+  "status": "canonical",
+  "supportingEvidence": [
+    {
+      "sessionId": "create-new-capability",
+      "scenarioId": "create-new-capability",
+      "evidencePath": "../sessions/baseline-create-new-capability-evidence.json"
+    }
+  ]
+}

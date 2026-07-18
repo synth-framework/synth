@@ -1,6 +1,7 @@
 # EXP-FIRSTCONTACT-011 — Agent First Contact Learning System
 
-**Status:** Proposed  
+**Status:** Accepted  
+**Started:** 2026-07-18  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
@@ -257,20 +258,40 @@ Repository Intent Clarification.
 
 ---
 
+## Canonical Artifacts
+
+The reusable knowledge lives as deterministic, evidence-backed artifacts:
+
+```text
+first-contact/
+ └── conversation-patterns/
+      ├── repository-discovery.json
+      ├── architecture-exploration.json
+      ├── implementation-start.json
+      ├── documentation-project.json
+      └── recovery-patterns.json
+```
+
 ## Output Artifacts
 
 The expedition produces:
 
 ```text
+first-contact/
+ └── conversation-patterns/          # canonical, evidence-backed patterns
+      └── *.json
+
 docs/
  └── first-contact/
-      ├── quick-start/
-      │    ├── repository-discovery.md
-      │    ├── architecture-exploration.md
-      │    ├── implementation-start.md
-      │    ├── documentation-project.md
-      │    └── recovery-patterns.md
+      └── quick-start/                # projections of canonical patterns
+           ├── repository-discovery.md
+           ├── architecture-exploration.md
+           ├── implementation-start.md
+           ├── documentation-project.md
+           └── recovery-patterns.md
 ```
+
+Documentation is a projection; `conversation-patterns/*.json` is the source of truth.
 
 ---
 
@@ -349,23 +370,27 @@ This connects directly to the earlier principle:
 
 ## Deliverables
 
-### EXP-FIRSTCONTACT-011-A — First Contact Evidence Schema
+### EXP-FIRSTCONTACT-011-A — First Contact Evidence Schema ✅
 
 Define the schema for `FirstContactEvidence` artifacts.
 
-### EXP-FIRSTCONTACT-011-B — Agent Experiment Runner
+### EXP-FIRSTCONTACT-011-B — Agent Experiment Runner ✅
 
 Create a harness for executing controlled agent sessions and capturing trajectories.
 
 ### EXP-FIRSTCONTACT-011-C — Conversation Pattern Extractor
 
-Identify reusable trajectory correction patterns from successful sessions.
+Produce deterministic `ConversationPattern` artifacts from `FirstContactEvidence`.
 
-### EXP-FIRSTCONTACT-011-D — Quick Start Library
+### EXP-FIRSTCONTACT-011-D — Pattern Validation
 
-Generate the `docs/first-contact/quick-start/` conversation patterns.
+Verify minimum evidence count, confidence threshold, deterministic extraction, and absence of conflicting trajectories before a pattern is promoted from provisional to canonical.
 
-### EXP-FIRSTCONTACT-011-E — First Contact Experience v2 Specification
+### EXP-FIRSTCONTACT-011-E — Projection Layer
+
+Generate `docs/first-contact/quick-start/` as projections of canonical `ConversationPattern` artifacts.
+
+### EXP-FIRSTCONTACT-011-F — First Contact Experience v2 Specification
 
 Document the self-improving first-contact system design.
 
@@ -373,23 +398,32 @@ Document the self-improving first-contact system design.
 
 ## Phases
 
-### Phase 1 — Define evidence schema
+### Phase 1 — Define evidence schema ✅
 
 Establish the `FirstContactEvidence` structure and taxonomy categories.
 
-### Phase 2 — Build experiment runner
+### Phase 2 — Build experiment runner ✅
 
-Create the harness and run controlled sessions across diverse repository types.
+Create the harness, run controlled sessions across diverse repository types, and generate baseline evidence artifacts.
 
-### Phase 3 — Extract patterns
+### Phase 3 — Pattern extraction
 
-Analyze successful trajectories and produce the misinterpretation taxonomy.
+Produce deterministic `ConversationPattern` artifacts from `FirstContactEvidence`. Every field must trace back to evidence; the extractor must not invent.
 
-### Phase 4 — Generate quick-start library
+### Phase 4 — Pattern validation
 
-Convert validated patterns into reusable conversation examples.
+Promote a pattern from provisional to canonical only when it passes:
 
-### Phase 5 — Specify v2 experience
+- minimum evidence count
+- confidence threshold
+- deterministic extraction
+- no conflicting trajectories
+
+### Phase 5 — Projection layer
+
+Generate `docs/first-contact/quick-start/` Markdown projections from canonical `ConversationPattern` artifacts.
+
+### Phase 6 — Specify v2 experience
 
 Produce the First Contact Experience v2 specification and onboarding contract.
 
@@ -402,7 +436,8 @@ Produce the First Contact Experience v2 specification and onboarding contract.
 - First Contact intent
 - Evidence model
 - Agent trajectory capture
-- Quick-start derivation process
+- ConversationPattern artifact and derivation process
+- Quick-start projection process
 
 ### Not included
 

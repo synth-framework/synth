@@ -1,8 +1,9 @@
 # EXP-GOV-009 — Historical Event Normalization & Program Migration
 
-**Status:** Accepted  
+**Status:** Completed  
 **Accepted:** 2026-07-18  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Governance / Migration  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -147,6 +148,16 @@ EXP-FIRSTCONTACT-010
 EXP-GOV-007 established the resolver pipeline. EXP-GOV-009 uses that pipeline to register historical aliases and complete the governance foundation. Once the foundation is clean, First Contact can collect agent trajectories against a repository whose replay is warning-free.
 
 ---
+
+## Completion Notes
+
+**Completed:** 2026-07-18  
+**Merged:** [#155](https://github.com/synth-framework/synth/pull/155)
+
+- Added canonical identity registry (`src/runtime/historical-aliases.ts`) for the legacy genesis seed mission/expedition/objective IDs.
+- Resolver integration suppresses duplicate-creation and recovered-orphan warnings for registered aliases.
+- Historical events remain immutable; interpretation now evolves through the registry instead of requiring event mutation.
+- `npm run govern` passes with no actionable graph violations.
 
 ## Related Documents
 

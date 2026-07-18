@@ -1,7 +1,8 @@
 # EXP-GOV-007 — Canonical State Resolution & Status Authority
 
-**Status:** Accepted  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Governance / Runtime  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -317,13 +318,23 @@ Initialization evidence and replay depend on a trusted state authority. EXP-GOV-
 
 ---
 
+## Completion Notes
+
+**Completed:** 2026-07-18  
+**Merged:** [#152](https://github.com/synth-framework/synth/pull/152)
+
+- Historical normalizer, identity resolver, reference resolver, canonical state builder, and status projection implemented under `src/runtime/`.
+- `synth status` now resolves deterministically against the current repository history; legacy duplicate identities and recovered orphan references are handled as warnings rather than failures.
+- Replay graph integrity tests pass; resolver output is deterministic.
+- `npm run govern` passes.
+
 ## Definition of Done
 
-- [ ] Charter accepted.
-- [ ] Historical normalizer implemented and tested.
-- [ ] Identity resolver implemented and tested.
-- [ ] Reference resolver implemented and tested.
-- [ ] Canonical state builder integrated with `status`.
-- [ ] `synth status` resolves successfully on current repository history.
-- [ ] Irrecoverable ambiguity produces structured failure.
-- [ ] `npm run govern` passes.
+- [x] Charter accepted.
+- [x] Historical normalizer implemented and tested.
+- [x] Identity resolver implemented and tested.
+- [x] Reference resolver implemented and tested.
+- [x] Canonical state builder integrated with `status`.
+- [x] `synth status` resolves successfully on current repository history.
+- [x] Irrecoverable ambiguity produces structured failure.
+- [x] `npm run govern` passes.
