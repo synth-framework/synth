@@ -1,6 +1,6 @@
 # EXP-REL-006 — v2.0.0 Release Certification
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Certification Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-002 — SYNTH Public Release Program  
@@ -40,9 +40,9 @@ Validate that the public release artifact for SYNTH v2.0.0 matches the governed 
 - [x] CLI executable verified (`synth --version` reports `2.0.0`).
 - [x] Clean install test passed (packed tarball installs and runs in an isolated directory).
 - [x] Replay verification passed (`synth explain replay` reports consistent state).
-- [ ] Git tag `v2.0.0` created.
-- [ ] Expedition accepted.
-- [ ] Release published.
+- [x] Git tag `v2.0.0` created.
+- [x] Expedition accepted.
+- [x] Release published.
 
 ## Completion Notes
 
@@ -54,4 +54,12 @@ Release certification completed locally:
 - `synth explain replay` reports consistent state.
 - Packed tarball installs and executes in an isolated directory.
 
-The `verify-version-sync` script reports the latest tag is `v2.0.0-rc.3`; this will be resolved by creating the `v2.0.0` tag after the release prep PR is merged. Full `npm run govern` validation will be performed in CI.
+Release certification finalized in CI:
+
+- Tag `v2.0.0` created on merge commit `f720177`.
+- Release workflow run `29631564603` passed:
+  - `npm run govern` green.
+  - `npm publish` succeeded; `@synth-framework/synth@2.0.0` is live.
+  - Installation certification passed on `ubuntu-latest` and `macos-latest`.
+  - GitHub Release created with proof artifact attached.
+- `npm view @synth-framework/synth version` confirms `2.0.0`.
