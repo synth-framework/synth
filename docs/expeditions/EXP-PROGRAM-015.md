@@ -142,10 +142,10 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-VCS-001 completed and accepted.
-- [ ] EXP-VCS-002 completed and accepted.
-- [ ] EXP-VCS-003 completed and accepted.
-- [ ] EXP-VCS-004 completed and accepted.
+- [x] EXP-VCS-001 completed and accepted.
+- [x] EXP-VCS-002 completed and accepted.
+- [x] EXP-VCS-003 completed and accepted.
+- [x] EXP-VCS-004 completed and accepted.
 - [ ] EXP-VCS-005 completed and accepted.
 - [ ] Program accepted.
 

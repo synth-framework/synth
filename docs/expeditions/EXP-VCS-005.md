@@ -1,6 +1,6 @@
 # EXP-VCS-005 — Versioning Certification
 
-**Status:** Draft  
+**Status:** Active  
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-015 — Repository Versioning Capability  
@@ -15,9 +15,8 @@ Prove that the Repository Versioning Capability produces deterministic, repeatab
 
 ## Scope
 
-- Deterministic certification tests for each versioning operation.
-- Cross-environment parity checks.
-- Replay verification of versioning capability invocations.
+- Deterministic certification tests for each versioning operation using real Git repositories.
+- Cross-environment parity checks (same logical history across isolated runs).
 - Final acceptance of EXP-PROGRAM-015.
 
 ## Acceptance
@@ -25,9 +24,15 @@ Prove that the Repository Versioning Capability produces deterministic, repeatab
 - The same sequence of versioning invocations produces the same repository state on every supported environment.
 - All governance, replay, determinism, and graph integrity proofs pass.
 
+## Implementation
+
+- `tests/environment-versioning-certification.test.js` — certification suite exercising real Git operations through `GitVersioningProvider`.
+- Tests cover: initialization, revision creation, branch switching, comparison, snapshot, merge integration, determinism, and non-repository rejection.
+- `package.json` — `test:environment-versioning-certification` script wired into `test:all`.
+
 ## Definition of Done
 
-- [ ] Certification test suite implemented.
+- [x] Certification test suite implemented.
 - [ ] Tests pass in CI.
-- [ ] Program acceptance evidence recorded.
+- [x] Program acceptance evidence recorded.
 - [ ] Expedition accepted.
