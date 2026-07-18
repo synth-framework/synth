@@ -1,12 +1,13 @@
 # EXP-GOV-006 — Agent Lifecycle Enforcement
 
-**Status:** Active  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Governance / Runtime Enforcement  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
 **Depends On:** EXP-PROGRAM-016, EXP-REL-006  
-**Blocks:** Future agent-executed expeditions
+**Blocks:** EXP-GOV-007
 
 ---
 
