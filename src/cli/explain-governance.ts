@@ -11,6 +11,8 @@ import fs from "fs/promises"
 import path from "path"
 import { deriveGovernanceRecords } from "../core/governance-record-projection.js"
 import type { GovernanceRecordLineage } from "../types/governance-record.js"
+import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
 
 function printJson(obj: unknown) {
   console.log(JSON.stringify(obj, null, 2))
@@ -43,10 +45,13 @@ export async function cmdExplainGovernance(flags: Record<string, string | boolea
   }
 
   const cwd = process.cwd()
-  const logPath = logFlag ? path.resolve(cwd, logFlag) : path.join(cwd, "data", "event-log.jsonl")
+  await ensureRuntimeDataDir(cwd)
+  const dataDir = getRuntimeDataDir(cwd)
+  const defaultLogPath = path.join(dataDir, "event-log.jsonl")
+  const logPath = logFlag ? path.resolve(cwd, logFlag) : defaultLogPath
 
   if (!(await fs.access(logPath).then(() => true).catch(() => false))) {
-    fail(`event log not found: ${logFlag ?? "data/event-log.jsonl"}`)
+    fail(`event log not found: ${logFlag ?? path.relative(cwd, defaultLogPath)}`)
   }
 
   const events = await readEventLog(logPath)

@@ -6,9 +6,10 @@ import { promises as fs } from "fs"
 import path from "path"
 import type { CanonicalState, Transaction, CapabilityInvocation } from "../types/index.js"
 import { computeStateHash } from "../runtime/replay.js"
+import { getRuntimeDataDir } from "./paths.js"
 
-const STATE_FILE = path.join(process.cwd(), "data", "canonical-state.json")
-const SNAPSHOTS_DIR = path.join(process.cwd(), "data", "snapshots")
+const STATE_FILE = path.join(getRuntimeDataDir(process.cwd()), "canonical-state.json")
+const SNAPSHOTS_DIR = path.join(getRuntimeDataDir(process.cwd()), "snapshots")
 
 /** State store interface */
 export interface IStateStore {

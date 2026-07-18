@@ -12,6 +12,8 @@ import { CheckpointStore } from "../infra/checkpoint-store.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
+import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 import type { VerificationContext, DecisionRecord } from "./types.js"
 
 async function pathExists(target: string): Promise<boolean> {
@@ -32,7 +34,8 @@ async function listDraftIds(draftsDir: string): Promise<string[]> {
 }
 
 export async function buildVerificationContext(cwd: string): Promise<VerificationContext> {
-  const dataDir = path.join(cwd, "data")
+  await ensureRuntimeDataDir(cwd)
+  const dataDir = getRuntimeDataDir(cwd)
   const eventLogPath = path.join(dataDir, "event-log.jsonl")
   const statePath = path.join(dataDir, "canonical-state.json")
   const checkpointPath = path.join(dataDir, "checkpoints.json")

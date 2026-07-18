@@ -7,7 +7,7 @@
 // after creation must be detected.
 //
 // Every draft carries an immutable, write-once integrity record
-// (data/drafts/<id>.integrity.json) holding a canonical-content
+// (<runtime-data-dir>/drafts/<id>.integrity.json) holding a canonical-content
 // fingerprint and the hash of the previous record. Records form
 // a chain: rewriting or deleting history invalidates every
 // successor. Follows the FileSystemSnapshotStore precedent —

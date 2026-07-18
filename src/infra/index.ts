@@ -8,6 +8,8 @@ export * from "./checkpoint-store.js"
 export * from "./git-adapter.js"
 export * from "./filesystem.js"
 export * from "./event-store.guard.js"
+export * from "./paths.js"
+export * from "./migrate-data-dir.js"
 
 import { EventStore, InMemoryEventStore, PartitionStore, SegmentStore } from "./event-store.js"
 import { StateStore, InMemoryStateStore, type IStateStore } from "./state-store.js"

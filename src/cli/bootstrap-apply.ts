@@ -82,8 +82,9 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
 
 async function initSynthProject(targetDir: string, projectName: string) {
   const synthDir = path.join(targetDir, ".synth")
+  const dataDir = path.join(targetDir, ".synth", "data")
   await fs.mkdir(synthDir, { recursive: true })
-  await fs.mkdir(path.join(targetDir, "data"), { recursive: true })
+  await fs.mkdir(dataDir, { recursive: true })
 
   const version = "2.0.0" // bootstrap does not need to read package.json; manifest will be regenerated on init
   const manifest = {
@@ -114,7 +115,7 @@ async function initSynthProject(targetDir: string, projectName: string) {
       docs: "docs/",
       generatedDocs: "docs/generated/",
       examples: "examples/",
-      data: "data/",
+      data: ".synth/data/",
       proof: "proof/",
       src: "src/",
       tests: "tests/",

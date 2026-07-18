@@ -12,6 +12,8 @@
 
 import fs from "fs/promises"
 import path from "path"
+import { getRuntimeDataDir } from "../infra/paths.js"
+import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 
 export type RepositoryIdentity = {
   status: "ok"
@@ -80,12 +82,13 @@ async function countEventLog(eventLogPath: string): Promise<number> {
  * evidence every time the command runs.
  */
 export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryIdentity> {
+  const dataDir = getRuntimeDataDir(cwd)
   const manifest = await readJsonMaybe(path.join(cwd, ".synth", "manifest.json"))
-  const state = await readJsonMaybe(path.join(cwd, "data", "canonical-state.json"))
-  const eventCount = await countEventLog(path.join(cwd, "data", "event-log.jsonl"))
+  const state = await readJsonMaybe(path.join(dataDir, "canonical-state.json"))
+  const eventCount = await countEventLog(path.join(dataDir, "event-log.jsonl"))
 
-  const drafts = (await listMaybe(path.join(cwd, "data", "drafts"))).filter((f) => f.endsWith(".json"))
-  const snapshots = (await listMaybe(path.join(cwd, "data", "snapshots"))).filter((f) => f.endsWith(".json"))
+  const drafts = (await listMaybe(path.join(dataDir, "drafts"))).filter((f) => f.endsWith(".json"))
+  const snapshots = (await listMaybe(path.join(dataDir, "snapshots"))).filter((f) => f.endsWith(".json"))
   const expeditionFiles = (await listMaybe(path.join(cwd, "docs", "expeditions"))).filter(
     (f) => f.startsWith("EXP-") && f.endsWith(".md"),
   )
@@ -184,6 +187,8 @@ export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryId
  * CLI handler for `synth explain identity`.
  */
 export async function cmdExplainIdentity(_flags: Record<string, string | boolean>): Promise<void> {
-  const identity = await buildRepositoryIdentity(process.cwd())
+  const cwd = process.cwd()
+  await ensureRuntimeDataDir(cwd)
+  const identity = await buildRepositoryIdentity(cwd)
   printJson(identity)
 }

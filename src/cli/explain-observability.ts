@@ -50,10 +50,15 @@ import type { GraphIntegrityViolation } from "../core/graph-integrity.js"
 import type { ReplayAttributionReport } from "../core/replay-attribution.js"
 import type { StoredSnapshot } from "../mission-studio/types.js"
 import type { CanonicalState, SynthEvent } from "../types/index.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
+import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 
 export const EXPLAIN_OBSERVABILITY_VERSION = 1
 
-const DEFAULT_LOG_DISPLAY = path.join("data", "event-log.jsonl")
+const DEFAULT_LOG_DISPLAY = path.posix.join(
+  path.relative(process.cwd(), getRuntimeDataDir(process.cwd())).replace(/\\/g, "/") || ".",
+  "event-log.jsonl",
+)
 
 // ============================================================
 // Small local helpers (mirroring src/cli/synth.ts idioms)
@@ -99,8 +104,8 @@ export type ExplainPaths = {
 /**
  * Resolve the log under inspection and derive its project paths.
  * With no --log this is exactly the cmdExplainReplay path set
- * (data/event-log.jsonl + data/canonical-state.json +
- * data/checkpoint.json); with --log the same files are derived next
+ * (<runtime-data-dir>/event-log.jsonl + <runtime-data-dir>/canonical-state.json +
+ * <runtime-data-dir>/checkpoint.json); with --log the same files are derived next
  * to the given log, so any example or project directory works.
  */
 export function resolveExplainPaths(flags: Record<string, string | boolean>): ExplainPaths {
@@ -899,6 +904,10 @@ export async function cmdExplainObservability(
   if (!sub || !["lineage", "proposals", "snapshots", "graph", "diagnostics", "status", "all"].includes(sub)) {
     fail(USAGE)
   }
+
+  // Migrate legacy data/ into .synth/data/ for governed projects before
+  // resolving any default paths.
+  await ensureRuntimeDataDir(process.cwd())
 
   const json = flagOn(flags, "json")
   const summary = flagOn(flags, "summary")

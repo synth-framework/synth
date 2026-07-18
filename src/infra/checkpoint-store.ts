@@ -5,8 +5,9 @@
 import { promises as fs } from "fs"
 import path from "path"
 import type { ConsumerCheckpoint } from "../types/index.js"
+import { getRuntimeDataDir } from "./paths.js"
 
-const CHECKPOINT_FILE = path.join(process.cwd(), "data", "checkpoints.json")
+const CHECKPOINT_FILE = path.join(getRuntimeDataDir(process.cwd()), "checkpoints.json")
 
 export interface ICheckpointStore {
   initialize(): Promise<void>
