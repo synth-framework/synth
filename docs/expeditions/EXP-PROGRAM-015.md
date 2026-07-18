@@ -1,6 +1,6 @@
 # EXP-PROGRAM-015 — Repository Versioning Capability
 
-**Status:** Active  
+**Status:** Accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -13,7 +13,8 @@
 **Execution Impact:** Low  
 **Depends On:** EXP-PROGRAM-007, EXP-PROGRAM-014  
 **Blocks:** None  
-**Evidence:** `docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md` (N1 recursion from `package.json` `govern` script; need for safe repository-level operations)
+**Evidence:** `docs/operator/EXP-PROGRAM-010-evidence-annex-taskpro.md` (N1 recursion from `package.json` `govern` script; need for safe repository-level operations)  
+**Accepted:** 2026-07-17
 
 ---
 
@@ -146,14 +147,27 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [x] EXP-VCS-002 completed and accepted.
 - [x] EXP-VCS-003 completed and accepted.
 - [x] EXP-VCS-004 completed and accepted.
-- [ ] EXP-VCS-005 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-VCS-005 completed and accepted.
+- [x] Program accepted.
 
 ---
 
 ## Completion Notes
 
-*(pending)*
+All five expeditions completed and merged via PR #121. The Repository Versioning Capability is now a first-class environment capability:
+
+- **EXP-VCS-001** established the generic `VersioningCapability` contract.
+- **EXP-VCS-002** delivered the Git reference adapter (`src/environment/git-versioning-provider.ts`).
+- **EXP-VCS-003** delivered the GitHub Forge remote mutations on top of the Forge capability.
+- **EXP-VCS-004** added repository-state observations via `versioningRule`.
+- **EXP-VCS-005** added deterministic certification tests (`tests/environment-versioning-certification.test.js`) proving repeatable repository state across isolated runs.
+
+Two implementation defects were discovered and corrected during certification:
+
+1. `createNodeObservationContext` in `src/environment/node-context.ts` did not pass the configured `cwd` to `execFileAsync`, causing `execTool` calls to run in `process.cwd()` rather than the observation context root. Fixed by creating a closure-bound `execTool` that carries the context root.
+2. The certification test for `createSnapshot` wrote an untracked file but did not request `includeUntracked: true`, leaving the file in the working tree after the stash. Fixed by passing `includeUntracked: true` in the test.
+
+The program preserves the Constitutional Freeze: no changes were made to Mission Studio, Genesis, Replay, ExecutionGate, the Event Model, the Capability Model, the Constitutional Baseline, or the public vocabulary.
 
 ---
 
