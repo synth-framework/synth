@@ -1,4 +1,4 @@
-# EXP-RELEASE-001 — v2.0.0 Release Certification
+# EXP-REL-006 — v2.0.0 Release Certification
 
 **Status:** Active  
 **Kind:** Certification Expedition  
