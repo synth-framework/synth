@@ -49,6 +49,7 @@ test("default rules cover all expected capability families", () => {
   assert.ok(families.has("Process"))
   assert.ok(families.has("Tool"))
   assert.ok(families.has("Forge"))
+  assert.ok(families.has("Versioning"))
 })
 
 test("discovery produces a canonical evidence artifact", async () => {
@@ -232,6 +233,109 @@ test("Node observation context can be created", () => {
   assert.strictEqual(typeof ctx.readEnv, "function")
   assert.strictEqual(typeof ctx.execTool, "function")
   assert.strictEqual(ctx.cwd, process.cwd())
+})
+
+test("versioning detection emits repository observation", async () => {
+  const ctx = makeInMemoryContext(
+    {
+      "/test/.git/config": `[remote "origin"]\n\turl = https://github.com/example/repo.git\n`,
+    },
+    {
+      "/test": [".git"],
+      "/test/.git": ["config"],
+    },
+    {
+      "node --version": "v20.0.0",
+      "git rev-parse --abbrev-ref HEAD": "main\n",
+      "git rev-parse HEAD": "abc123\n",
+      "git log -1 --pretty=format:%s": "initial commit",
+      "git log -1 --pretty=format:%an": "alice",
+      "git log -1 --pretty=format:%ai": "2026-01-01T00:00:00+00:00",
+      "git status --porcelain=v1": "",
+      "git rev-list --left-right --count HEAD...@{upstream}": "2\t3\n",
+    },
+  )
+
+  const orchestrator = createDiscoveryOrchestrator()
+  const result = await orchestrator.discover(ctx)
+
+  const repoObs = result.evidence.observations.find((o) => o.name === "versioning.repository")
+  assert.ok(repoObs)
+  assert.strictEqual(repoObs.value.system, "git")
+  assert.strictEqual(repoObs.value.present, true)
+  assert.strictEqual(repoObs.value.branch, "main")
+  assert.strictEqual(repoObs.value.commit, "abc123")
+  assert.strictEqual(repoObs.value.clean, true)
+  assert.strictEqual(repoObs.value.remotes.length, 1)
+
+  const branchObs = result.evidence.observations.find((o) => o.name === "versioning.branch")
+  assert.ok(branchObs)
+  assert.strictEqual(branchObs.value.current, "main")
+  assert.strictEqual(branchObs.value.divergence.ahead, 2)
+  assert.strictEqual(branchObs.value.divergence.behind, 3)
+
+  const commitObs = result.evidence.observations.find((o) => o.name === "versioning.commit")
+  assert.ok(commitObs)
+  assert.strictEqual(commitObs.value.commit, "abc123")
+  assert.strictEqual(commitObs.value.message, "initial commit")
+  assert.strictEqual(commitObs.value.author, "alice")
+
+  const remoteObs = result.evidence.observations.find((o) => o.name === "versioning.remote")
+  assert.ok(remoteObs)
+  assert.strictEqual(remoteObs.value.name, "origin")
+  assert.strictEqual(remoteObs.value.url, "https://github.com/example/repo.git")
+
+  const divergenceObs = result.evidence.observations.find((o) => o.name === "versioning.divergence")
+  assert.ok(divergenceObs)
+  assert.strictEqual(divergenceObs.value.ahead, 2)
+  assert.strictEqual(divergenceObs.value.behind, 3)
+})
+
+test("versioning detection emits pull request observations from gh", async () => {
+  const ctx = makeInMemoryContext(
+    {},
+    {
+      "/test": [".git"],
+      "/test/.git": [],
+    },
+    {
+      "node --version": "v20.0.0",
+      "git rev-parse --abbrev-ref HEAD": "main\n",
+      "git rev-parse HEAD": "abc123\n",
+      "git log -1 --pretty=format:%s": "",
+      "git log -1 --pretty=format:%an": "",
+      "git log -1 --pretty=format:%ai": "",
+      "git status --porcelain=v1": "",
+      "git rev-list --left-right --count HEAD...@{upstream}": "0\t0\n",
+      "gh pr list --json number,title,state,headRefName,baseRefName,url --limit 10": JSON.stringify([
+        { number: 42, title: "Feature", state: "OPEN", headRefName: "feature", baseRefName: "main", url: "https://github.com/x/y/pull/42" },
+      ]),
+    },
+  )
+
+  const orchestrator = createDiscoveryOrchestrator()
+  const result = await orchestrator.discover(ctx)
+
+  const prObs = result.evidence.observations.find((o) => o.name === "versioning.pullRequest")
+  assert.ok(prObs)
+  assert.strictEqual(prObs.value.number, 42)
+  assert.strictEqual(prObs.value.title, "Feature")
+  assert.strictEqual(prObs.value.state, "OPEN")
+})
+
+test("versioning detection handles non-repository gracefully", async () => {
+  const ctx = makeInMemoryContext(
+    {},
+    { "/test": [] },
+    { "node --version": "v20.0.0" },
+  )
+
+  const orchestrator = createDiscoveryOrchestrator()
+  const result = await orchestrator.discover(ctx)
+
+  const repoObs = result.evidence.observations.find((o) => o.name === "versioning.repository")
+  assert.ok(repoObs)
+  assert.strictEqual(repoObs.value.present, false)
 })
 
 test("Node environment metadata exposes platform info", () => {
