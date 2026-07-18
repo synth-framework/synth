@@ -305,6 +305,187 @@ export const environmentRule: DiscoveryRule = {
   },
 }
 
+export const versioningRule: DiscoveryRule = {
+  id: "env.versioning.detect",
+  family: "Versioning",
+  description: "Detect repository versioning state from Git and optional forge observations",
+  observe: async (ctx: ObservationContext): Promise<DiscoveryObservation | DiscoveryObservation[]> => {
+    const hasGit = await ctx.pathExists(".git")
+    if (!hasGit) {
+      return obs(
+        "obs-versioning-detect",
+        "env.versioning.detect",
+        "Versioning",
+        "versioning.repository",
+        {
+          system: "git",
+          root: ctx.cwd,
+          present: false,
+          remotes: [],
+          clean: false,
+        },
+        "medium",
+        { hasGit },
+      )
+    }
+
+    const branchOutput = await ctx.execTool("git", ["rev-parse", "--abbrev-ref", "HEAD"])
+    const branch = branchOutput?.trim() || undefined
+    const commitOutput = await ctx.execTool("git", ["rev-parse", "HEAD"])
+    const commit = commitOutput?.trim() || ""
+    const messageOutput = await ctx.execTool("git", ["log", "-1", "--pretty=format:%s"])
+    const authorOutput = await ctx.execTool("git", ["log", "-1", "--pretty=format:%an"])
+    const timestampOutput = await ctx.execTool("git", ["log", "-1", "--pretty=format:%ai"])
+
+    const porcelain = await ctx.execTool("git", ["status", "--porcelain=v1"])
+    const clean = !porcelain
+
+    const gitConfig = await ctx.readFile(".git/config")
+    const remotes: Array<{ name: string; url: string; access: "read" | "write" | "none" }> = []
+    if (gitConfig) {
+      const lines = gitConfig.split("\n")
+      let currentRemote: string | undefined
+      for (const line of lines) {
+        const sectionMatch = /^\[remote "([^"]+)"\]$/.exec(line)
+        if (sectionMatch) {
+          currentRemote = sectionMatch[1]
+          continue
+        }
+        const urlMatch = /^\s*url\s*=\s*(.+)$/.exec(line)
+        if (urlMatch && currentRemote) {
+          remotes.push({ name: currentRemote, url: urlMatch[1].trim(), access: "write" })
+          currentRemote = undefined
+        }
+      }
+    }
+
+    const ab = await ctx.execTool("git", ["rev-list", "--left-right", "--count", "HEAD...@{upstream}"])
+    let ahead = 0
+    let behind = 0
+    if (ab) {
+      const parts = ab.trim().split(/\s+/)
+      if (parts.length === 2) {
+        ahead = Number.parseInt(parts[0], 10) || 0
+        behind = Number.parseInt(parts[1], 10) || 0
+      }
+    }
+
+    const observations: DiscoveryObservation[] = []
+
+    observations.push(obs(
+      "obs-versioning-repository",
+      "env.versioning.detect",
+      "Versioning",
+      "versioning.repository",
+      {
+        system: "git",
+        root: ctx.cwd,
+        present: true,
+        branch,
+        commit,
+        remotes: remotes.map((r) => ({ name: r.name, url: r.url })),
+        clean,
+      },
+      "high",
+      { hasGit, remoteCount: remotes.length },
+    ))
+
+    if (branch) {
+      observations.push(obs(
+        "obs-versioning-branch",
+        "env.versioning.detect",
+        "Versioning",
+        "versioning.branch",
+        {
+          current: branch,
+          others: [],
+          divergence: { ahead, behind, hasConflict: false },
+        },
+        "high",
+        { branch },
+      ))
+    }
+
+    if (commit) {
+      observations.push(obs(
+        "obs-versioning-commit",
+        "env.versioning.detect",
+        "Versioning",
+        "versioning.commit",
+        {
+          system: "git",
+          root: ctx.cwd,
+          branch,
+          commit,
+          message: messageOutput?.trim() || undefined,
+          author: authorOutput?.trim() || undefined,
+          timestamp: timestampOutput?.trim() || undefined,
+          parents: [],
+        },
+        "high",
+        { commit },
+      ))
+    }
+
+    for (const remote of remotes) {
+      observations.push(obs(
+        `obs-versioning-remote-${remote.name}`,
+        "env.versioning.detect",
+        "Versioning",
+        "versioning.remote",
+        remote,
+        "high",
+        { remoteName: remote.name },
+      ))
+    }
+
+    observations.push(obs(
+      "obs-versioning-divergence",
+      "env.versioning.detect",
+      "Versioning",
+      "versioning.divergence",
+      { ahead, behind, hasConflict: false },
+      "medium",
+      { hasUpstream: remotes.length > 0 },
+    ))
+
+    // Optionally discover open pull requests through gh if available.
+    const ghPrs = await ctx.execTool("gh", ["pr", "list", "--json", "number,title,state,headRefName,baseRefName,url", "--limit", "10"])
+    if (ghPrs) {
+      try {
+        const prs = JSON.parse(ghPrs) as Array<Record<string, unknown>>
+        if (Array.isArray(prs)) {
+          for (const pr of prs) {
+            const number = typeof pr.number === "number" ? pr.number : undefined
+            const title = typeof pr.title === "string" ? pr.title : undefined
+            const state = typeof pr.state === "string" ? pr.state : undefined
+            if (number === undefined || !title || !state) continue
+            observations.push(obs(
+              `obs-versioning-pr-${number}`,
+              "env.versioning.detect",
+              "Versioning",
+              "versioning.pullRequest",
+              {
+                number,
+                title,
+                state,
+                source: typeof pr.headRefName === "string" ? pr.headRefName : undefined,
+                target: typeof pr.baseRefName === "string" ? pr.baseRefName : undefined,
+              },
+              "high",
+              { number },
+            ))
+          }
+        }
+      } catch {
+        // Ignore malformed gh output.
+      }
+    }
+
+    return observations
+  },
+}
+
 /** Default rule set executed by the discovery orchestrator */
 export function createDefaultDiscoveryRules(): DiscoveryRule[] {
   return [
@@ -317,5 +498,6 @@ export function createDefaultDiscoveryRules(): DiscoveryRule[] {
     processRule,
     toolRule,
     forgeRule,
+    versioningRule,
   ]
 }
