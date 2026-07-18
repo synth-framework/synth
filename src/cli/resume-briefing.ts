@@ -3,7 +3,7 @@
 // ============================================================
 // Deterministic "what happened / what was decided / what is next?"
 // surface for `synth explain resume`. All values are projections of
-// replayable evidence: events, state, decisions, and snapshots.
+// the runtime governance model produced by the Governance Resolver.
 //
 // Usage:
 //   synth explain resume [--json]
@@ -11,10 +11,12 @@
 
 import fs from "fs/promises"
 import path from "path"
-import { bootstrap } from "../core/bootstrap.js"
-import { rebuildState } from "../runtime/replay.js"
-import { listDecisions } from "../mission-studio/decision-log.js"
-import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
+import {
+  resolveGovernanceContext,
+  isGovernanceResolutionFailure,
+} from "../runtime/governance-resolver.js"
+import { deriveValidTransition } from "../runtime/transition-engine.js"
+import { toResumeNextAction } from "../runtime/status-projection.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
 import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 import type { SynthEvent, CanonicalState } from "../types/index.js"
@@ -74,78 +76,6 @@ function printJson(obj: unknown) {
 function fail(error: string): never {
   printJson({ status: "error", error })
   process.exit(1)
-}
-
-async function pathExists(target: string): Promise<boolean> {
-  try {
-    await fs.access(target)
-    return true
-  } catch {
-    return false
-  }
-}
-
-async function readJsonMaybe(target: string): Promise<Record<string, any> | undefined> {
-  try {
-    return JSON.parse(await fs.readFile(target, "utf-8"))
-  } catch {
-    return undefined
-  }
-}
-
-async function readEventLog(logPath: string): Promise<SynthEvent[]> {
-  try {
-    const text = await fs.readFile(logPath, "utf-8")
-    const events: SynthEvent[] = []
-    for (const line of text.split("\n")) {
-      if (!line.trim()) continue
-      try {
-        events.push(JSON.parse(line))
-      } catch {
-        // Skip malformed lines; warnings are emitted separately.
-      }
-    }
-    return events
-  } catch {
-    return []
-  }
-}
-
-async function loadSnapshots(snapshotsDir: string): Promise<StoredSnapshot[]> {
-  if (!(await pathExists(snapshotsDir))) return []
-  try {
-    const store = createFileSystemSnapshotStore(snapshotsDir)
-    return await store.list()
-  } catch {
-    return []
-  }
-}
-
-async function listSnapshotSummaries(snapshotsDir: string): Promise<{ id: string; timestamp?: number }[]> {
-  const stored = await loadSnapshots(snapshotsDir)
-  return stored
-    .map((s) => ({
-      id: s.snapshot.id,
-      timestamp: s.snapshot.timestamp,
-    }))
-    .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
-}
-
-function getApprovedMissionsFromSnapshots(stored: StoredSnapshot[]): Array<{ id: string; name: string; approvedAt: number }> {
-  const missions: Array<{ id: string; name: string; approvedAt: number }> = []
-  for (const s of stored) {
-    if (!s.snapshot.worldModel?.nodes) continue
-    for (const node of s.snapshot.worldModel.nodes.values() as IterableIterator<WorldModelNode>) {
-      if (node.kind === "mission") {
-        missions.push({
-          id: node.id,
-          name: node.name,
-          approvedAt: s.snapshot.timestamp,
-        })
-      }
-    }
-  }
-  return missions
 }
 
 function extractName(payload: any): string | undefined {
@@ -259,162 +189,58 @@ function buildTimeline(events: SynthEvent[], maxEntries = 20): TimelineEntry[] {
   return deduped.slice(-maxEntries)
 }
 
-async function buildDecisions(dataDir: string): Promise<{ entries: DecisionEntry[]; chainValid: boolean }> {
-  const { records, chainValid } = await listDecisions(dataDir)
-  const entries = records.map((d) => ({
-    at: d.timestamp,
-    type: d.type,
-    draftId: d.draftId,
-    reason: d.reason,
-    confidence: d.confidence,
-  }))
-  return { entries, chainValid }
+function getApprovedMissionsFromSnapshots(stored: StoredSnapshot[]): Array<{ id: string; name: string; approvedAt: number }> {
+  const missions: Array<{ id: string; name: string; approvedAt: number }> = []
+  for (const s of stored) {
+    if (!s.snapshot.worldModel?.nodes) continue
+    for (const node of s.snapshot.worldModel.nodes.values() as IterableIterator<WorldModelNode>) {
+      if (node.kind === "mission") {
+        missions.push({
+          id: node.id,
+          name: node.name,
+          approvedAt: s.snapshot.timestamp,
+        })
+      }
+    }
+  }
+  return missions
 }
 
-function derivePhase(state: CanonicalState): string {
-  const missions = Object.values(state.missions || {})
-  const expeditions = Object.values(state.expeditions || {})
-  const workItems = Object.values(state.workItems || {})
-
-  if (missions.length === 0) return "uninitialized"
-
-  const hasBlockedWorkItem = workItems.some((w) => w.status === "blocked")
-  if (hasBlockedWorkItem) return "blocked"
-
-  const activeExecution = expeditions.some((e) => e.status === "executing") || workItems.some((w) => w.status === "active")
-  if (activeExecution) return "executing"
-
-  const activeMissions = missions.filter((m) => m.status === "active")
-  if (activeMissions.length > 0) return "approved"
-
-  const allTerminal = missions.every((m) => m.status === "completed" || m.status === "archived")
-  if (allTerminal) return "complete"
-
-  return "planning"
-}
-
-function deriveNextActions(state: CanonicalState): NextActionEntry[] {
-  const actions: NextActionEntry[] = []
-  const phase = derivePhase(state)
-  const missions = Object.values(state.missions || {})
-  const expeditions = Object.values(state.expeditions || {})
-  const activeMissions = missions.filter((m) => m.status === "active")
-  const draftMissions = missions.filter((m) => m.status === "draft")
-  const activeExpeditions = expeditions.filter((e) => e.status === "approved" || e.status === "executing")
-  const blockedWorkItems = Object.values(state.workItems || {}).filter((w) => w.status === "blocked")
-
-  if (phase === "uninitialized") {
-    actions.push({
-      command: "synth init --name \"<project>\"",
-      reason: "Initialize a SYNTH project",
-      priority: 1,
-    })
-    return actions
-  }
-
-  if (blockedWorkItems.length > 0) {
-    actions.push({
-      command: "synth explain diagnostics",
-      reason: "A work item is blocked; diagnose the blocker",
-      priority: 1,
-    })
-  }
-
-  if (phase === "planning") {
-    if (draftMissions.length > 0) {
-      actions.push({
-        command: `synth mission approve --draft-id ${draftMissions[0].id}`,
-        reason: "Approve the Mission draft once confidence is sufficient",
-        priority: 1,
-      })
-    } else {
-      actions.push({
-        command: "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
-        reason: "Create the first Mission draft",
-        priority: 1,
+function buildSnapshotTimeline(storedSnapshots: StoredSnapshot[]): TimelineEntry[] {
+  const entries: TimelineEntry[] = []
+  for (const s of storedSnapshots) {
+    for (const mission of getApprovedMissionsFromSnapshots([s])) {
+      entries.push({
+        at: mission.approvedAt,
+        type: "MISSION_APPROVED",
+        summary: `Mission "${mission.name}" approved (snapshot)`,
+        ids: [mission.id],
       })
     }
-    return actions
   }
-
-  if (phase === "approved") {
-    const targetMission = activeMissions[0]
-    if (targetMission && activeExpeditions.length === 0) {
-      actions.push({
-        command: `synth expedition create --mission ${targetMission.id} --subject \"<expedition>\" --goal \"<goal>\"`,
-        reason: `Approved Mission "${targetMission.name}" has no active Expeditions`,
-        priority: 1,
-      })
-    } else if (targetMission) {
-      actions.push({
-        command: `synth explain status`,
-        reason: `Review active expeditions for Mission "${targetMission.name}"`,
-        priority: 1,
-      })
-    }
-    return actions
-  }
-
-  if (phase === "executing") {
-    actions.push({
-      command: "synth explain status",
-      reason: "Inspect active execution and next pending step",
-      priority: 1,
-    })
-    actions.push({
-      command: "synth explain replay",
-      reason: "Verify replay consistency of recent execution",
-      priority: 2,
-    })
-    return actions
-  }
-
-  if (phase === "complete") {
-    actions.push({
-      command: "synth mission archive --id <mission-id>",
-      reason: "Archive completed Missions",
-      priority: 1,
-    })
-    return actions
-  }
-
-  return actions
+  return entries.sort((a, b) => a.at - b.at)
 }
 
-function detectWarnings(
-  events: SynthEvent[],
-  state: CanonicalState | undefined,
-  decisionChainValid: boolean,
-  snapshots: { id: string; timestamp?: number }[],
-  dataDir: string,
-): Warning[] {
+function deriveRepositoryKind(state: CanonicalState): string {
+  const missions = Object.values(state.missions || {})
+  const expeditions = Object.values(state.expeditions || {})
+  if (missions.length === 0 && expeditions.length === 0) return "Uninitialized SYNTH project"
+  if (missions.length > 0 && expeditions.length === 0) return "SYNTH project with Mission, no Expeditions"
+  return "SYNTH project with active Expedition work"
+}
+
+function detectWarnings(ctx: import("../runtime/governance-types.js").ResolvedGovernanceContext): Warning[] {
   const warnings: Warning[] = []
 
-  if (!decisionChainValid) {
+  for (const divergence of ctx.derived.divergences) {
+    if (divergence.severity !== "warning") continue
     warnings.push({
-      kind: "decision-chain-broken",
-      description: "The decision log chain is broken; recorded approvals may not be trustworthy.",
+      kind: divergence.kind,
+      description: divergence.description,
     })
   }
 
-  if (!state) return warnings
-
-  const activeMissions = Object.values(state.missions || {}).filter((m) => m.status === "active")
-  if (activeMissions.length > 0 && snapshots.length === 0) {
-    warnings.push({
-      kind: "approved-mission-no-snapshot",
-      description: `Active mission "${activeMissions[0].name}" has no certified snapshot artifact.`,
-    })
-  }
-
-  const stateEventCount = state.lastEventOffset ?? 0
-  if (events.length > stateEventCount) {
-    warnings.push({
-      kind: "state-lags-events",
-      description: `Canonical state (${stateEventCount} events) lags the event log (${events.length} events).`,
-    })
-  }
-
+  const state = ctx.authoritative.replayedState
   const completedExpeditions = Object.values(state.expeditions || {}).filter((e) => e.status === "completed")
   const acceptedDecisions = new Set(
     Object.values(state.decisions || {})
@@ -434,101 +260,56 @@ function detectWarnings(
   return warnings
 }
 
-function deriveRepositoryKind(state: CanonicalState): string {
-  const missions = Object.values(state.missions || {})
-  const expeditions = Object.values(state.expeditions || {})
-  if (missions.length === 0 && expeditions.length === 0) return "Uninitialized SYNTH project"
-  if (missions.length > 0 && expeditions.length === 0) return "SYNTH project with Mission, no Expeditions"
-  return "SYNTH project with active Expedition work"
-}
-
-function mergeSnapshotState(
-  state: CanonicalState | undefined,
-  storedSnapshots: StoredSnapshot[],
-): CanonicalState | undefined {
-  if (!state && storedSnapshots.length === 0) return undefined
-
-  const approvedMissions = getApprovedMissionsFromSnapshots(storedSnapshots)
-  if (approvedMissions.length === 0) return state
-
-  const base: CanonicalState = state ?? {
-    version: 1,
-    stateHash: "snapshot-derived",
-    workItems: {},
-    plans: {},
-    milestones: {},
-    projects: {},
-    missions: {},
-    expeditions: {},
-    objectives: {},
-    discoveries: {},
-    decisions: {},
-    generatedWorkItems: {},
-    executions: {},
-    executionIntents: {},
-    executionGraphs: {},
-    lastEventOffset: 0,
-  }
-
-  for (const mission of approvedMissions) {
-    if (base.missions[mission.id]) {
-      base.missions[mission.id].status = "active"
-    } else {
-      base.missions[mission.id] = {
-        id: mission.id,
-        name: mission.name,
-        purpose: "Approved from snapshot",
-        status: "active",
-        expeditions: [],
-        metadata: { source: "ApprovedMissionModelSnapshot" },
-        createdAt: mission.approvedAt,
-        updatedAt: mission.approvedAt,
-      }
-    }
-  }
-
-  return base
-}
-
-function buildSnapshotTimeline(storedSnapshots: StoredSnapshot[]): TimelineEntry[] {
-  const entries: TimelineEntry[] = []
-  for (const s of storedSnapshots) {
-    for (const mission of getApprovedMissionsFromSnapshots([s])) {
-      entries.push({
-        at: mission.approvedAt,
-        type: "MISSION_APPROVED",
-        summary: `Mission "${mission.name}" approved (snapshot)`,
-        ids: [mission.id],
-      })
-    }
-  }
-  return entries.sort((a, b) => a.at - b.at)
-}
-
 /**
  * Build a Resume Briefing from the current working directory.
- * Every field is derived from replayable evidence (events, state, decisions,
- * snapshots). No mutable status file or hand-authored narrative is consulted.
+ * Every field is derived from the ResolvedGovernanceContext produced by
+ * the Governance Resolver. No mutable status file or hand-authored
+ * narrative is consulted.
  */
 export async function buildResumeBriefing(
   cwd: string,
   overrides?: { logPath?: string; statePath?: string; snapshotsDir?: string },
 ): Promise<ResumeBriefing> {
-  const runtimeDataDir = getRuntimeDataDir(cwd)
-  const logPath = overrides?.logPath ?? path.join(runtimeDataDir, "event-log.jsonl")
-  const statePath = overrides?.statePath ?? path.join(runtimeDataDir, "canonical-state.json")
-  const snapshotsDir = overrides?.snapshotsDir ?? path.join(runtimeDataDir, "snapshots")
-  const dataDir = path.dirname(logPath)
+  const dataDir = overrides?.logPath
+    ? path.dirname(path.resolve(cwd, overrides.logPath))
+    : getRuntimeDataDir(cwd)
 
-  const manifestPath = path.join(cwd, ".synth", "manifest.json")
-  const manifestExists = await pathExists(manifestPath)
+  const result = await resolveGovernanceContext(cwd, { dataDir })
 
-  const events = await readEventLog(logPath)
-  const eventState = events.length > 0 ? rebuildState(events) : ((await readJsonMaybe(statePath)) as CanonicalState | undefined)
-  const storedSnapshots = await loadSnapshots(snapshotsDir)
-  const state = mergeSnapshotState(eventState, storedSnapshots)
+  if (isGovernanceResolutionFailure(result)) {
+    // Resume is a diagnostic command; even when resolution fails we
+    // return a structured error shape so the operator can inspect it.
+    return {
+      status: "ok",
+      kind: "ResumeBriefing",
+      version: RESUME_BRIEFING_VERSION,
+      context: {
+        repositoryKind: "Uninitialized repository",
+        phase: "uninitialized",
+        eventCount: 0,
+      },
+      whatHappened: [],
+      whatWasDecided: [],
+      whatIsNext: [
+        {
+          command: "synth explain replay",
+          reason: result.diagnostic,
+          priority: 1,
+        },
+      ],
+      warnings: [
+        {
+          kind: "governance-resolution-failed",
+          description: `${result.diagnostic} Recovery: ${result.recovery}`,
+        },
+      ],
+    }
+  }
 
-  if (!state && !manifestExists) {
+  const { authoritative, derived } = result
+  const { events, replayedState, decisions, snapshots } = authoritative
+
+  if (!derived.phase || derived.phase === "uninitialized") {
     return {
       status: "ok",
       kind: "ResumeBriefing",
@@ -551,61 +332,40 @@ export async function buildResumeBriefing(
     }
   }
 
-  const { entries: decisionEntries, chainValid: decisionChainValid } = await buildDecisions(dataDir)
-  const snapshotSummaries = await listSnapshotSummaries(snapshotsDir)
-
-  // Manifest exists but no events/state yet: project is initialized and
-  // waiting for its first Mission. Still read the decision log so that a
-  // broken chain is surfaced even before the first Mission is created.
-  if (!state) {
-    const warnings = detectWarnings(events, undefined, decisionChainValid, snapshotSummaries, dataDir)
-    return {
-      status: "ok",
-      kind: "ResumeBriefing",
-      version: RESUME_BRIEFING_VERSION,
-      context: {
-        repositoryKind: "SYNTH project",
-        phase: "planning",
-        eventCount: 0,
-      },
-      whatHappened: [],
-      whatWasDecided: decisionEntries,
-      whatIsNext: [
-        {
-          command: "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
-          reason: "Create the first Mission draft",
-          priority: 1,
-        },
-      ],
-      warnings,
-    }
-  }
-
   const eventTimeline = buildTimeline(events)
-  const snapshotTimeline = buildSnapshotTimeline(storedSnapshots)
-  // Merge timelines, avoiding duplicate MISSION_APPROVED entries for the same mission.
-  const approvedIdsFromEvents = new Set(eventTimeline.filter((e) => e.type === "MISSION_APPROVED").flatMap((e) => e.ids))
+  const snapshotTimeline = buildSnapshotTimeline(snapshots)
+  const approvedIdsFromEvents = new Set(
+    eventTimeline.filter((e) => e.type === "MISSION_APPROVED").flatMap((e) => e.ids),
+  )
   const timeline = [...eventTimeline, ...snapshotTimeline.filter((e) => !approvedIdsFromEvents.has(e.ids[0]))].sort(
     (a, b) => a.at - b.at,
   )
 
-  const nextActions = deriveNextActions(state)
-  const warnings = detectWarnings(events, state, decisionChainValid, snapshotSummaries, dataDir)
+  const decisionEntries = decisions.records.map((d) => ({
+    at: d.timestamp,
+    type: d.type,
+    draftId: d.draftId,
+    reason: d.reason,
+    confidence: d.confidence,
+  }))
+
+  const transition = deriveValidTransition(result)
+  const warnings = detectWarnings(result)
 
   return {
     status: "ok",
     kind: "ResumeBriefing",
     version: RESUME_BRIEFING_VERSION,
     context: {
-      repositoryKind: deriveRepositoryKind(state),
-      phase: derivePhase(state),
+      repositoryKind: deriveRepositoryKind(replayedState),
+      phase: derived.phase,
       eventCount: events.length,
-      stateHash: state.stateHash,
+      stateHash: replayedState.stateHash,
       lastEventAt: events.length > 0 ? events[events.length - 1].timestamp : undefined,
     },
     whatHappened: timeline,
     whatWasDecided: decisionEntries,
-    whatIsNext: nextActions,
+    whatIsNext: [toResumeNextAction(result, transition)],
     warnings,
   }
 }
@@ -620,7 +380,9 @@ export async function cmdExplainResume(flags: Record<string, string | boolean>):
   }
 
   const cwd = process.cwd()
-  await ensureRuntimeDataDir(cwd)
+  if (!logFlag) {
+    await ensureRuntimeDataDir(cwd)
+  }
   const overrides = logFlag
     ? {
         logPath: path.resolve(cwd, logFlag),

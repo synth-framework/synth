@@ -13,6 +13,7 @@ import { spawn, spawnSync } from "child_process"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
+import { Logger } from "../observability/tracer.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
@@ -542,36 +543,14 @@ function cmdGovern() {
 }
 
 async function cmdStatus() {
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
-  const eventLogPath = path.join(dataDir, "event-log.jsonl")
-  const statePath = path.join(dataDir, "canonical-state.json")
-  const checkpointPath = path.join(dataDir, "checkpoint.json")
-
-  let hasExistingEvents = false
-  try {
-    await fs.access(eventLogPath)
-    hasExistingEvents = true
-  } catch {
-    hasExistingEvents = false
-  }
-
-  const ctx = await bootstrap({
-    skipGenesis: hasExistingEvents,
-    infra: {
-      persistence: "file",
-      eventLogPath,
-      statePath,
-      checkpointPath,
-    },
-    genesis: {
-      projectName: DEFAULT_PROJECT_NAME,
-      systemId: "synth-cli-status",
-      partitions: 1,
-    },
-  })
-
-  const briefing = await buildOperatorBriefing(process.cwd(), ctx)
+  await ensureRuntimeDataDir(process.cwd())
+  const logger = new Logger("status")
+  logger.info("Resolving governance context for operator briefing")
+  const briefing = await buildOperatorBriefing(process.cwd())
   printJson(briefing)
+  if (briefing.status === "error") {
+    process.exit(1)
+  }
 }
 
 function makeObservation(type: string, subject: string, overrides: Record<string, unknown> = {}): PlanningObservation {
