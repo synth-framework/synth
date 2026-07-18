@@ -1,7 +1,8 @@
 # EXP-PROGRAM-019 — Universal Initialization
 
-**Status:** Accepted  
+**Status:** Completed  
 **Accepted:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -151,9 +152,9 @@ All work in this Program stays in the Allowed column:
 
 ## Definition of Done
 
-- [ ] EXP-INIT-001 completed and accepted.
-- [ ] EXP-INIT-002 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-INIT-001 completed and accepted.
+- [x] EXP-INIT-002 completed and accepted.
+- [x] Program accepted.
 
 ---
 

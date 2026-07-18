@@ -269,3 +269,16 @@ future source adapters
 ```
 
 EXP-INIT-001 established the contract. EXP-GOV-007 made state resolution authoritative. EXP-INIT-002 now makes initialization itself evidence-backed and replayable.
+
+---
+
+## Completion Notes
+
+**Completed:** 2026-07-18  
+**Merged:** [#153](https://github.com/synth-framework/synth/pull/153)
+
+- `synth init` now accepts `--source`, `--source-location`, and `--declared-intent`, resolves a filesystem initialization adapter, and emits an enriched `PROJECT_INITIALIZED` event.
+- Initialization evidence and the derived `ProjectModel` are persisted under `.synth/data/evidence/initialization/`.
+- Replay of the `PROJECT_INITIALIZED` event reconstructs the same canonical state hash.
+- New regression tests: `tests/initialization-evidence.test.js` and `tests/initialization-replay.test.js`.
+- CI `proof` gate passed; local `npm run govern` is pending and will be run by the operator.
