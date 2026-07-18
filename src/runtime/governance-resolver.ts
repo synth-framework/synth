@@ -15,11 +15,13 @@
 // persistence, and a fresh resolution pass.
 // ============================================================
 
-import fs from "fs/promises"
-import path from "path"
 import type { SynthEvent, CanonicalState, Mission } from "../types/index.js"
 import { rebuildState, createEmptyState } from "./replay.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
+import {
+  getRuntimeDataDir,
+  getRuntimeSnapshotDir,
+  hasManifest,
+} from "../infra/paths.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
@@ -31,34 +33,28 @@ import type {
   GovernanceResolutionResult,
   ResolvedGovernanceContext,
 } from "./governance-types.js"
-
-const MANIFEST_FILE = ".synth/manifest.json"
+import type { FilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
 
 export type ResolveGovernanceContextOptions = {
   dataDir?: string
 }
 
-async function pathExists(target: string): Promise<boolean> {
+async function readJsonMaybe<T>(fs: FilesystemProvider, filePath: string): Promise<T | undefined> {
   try {
-    await fs.access(target)
-    return true
-  } catch {
-    return false
-  }
-}
-
-async function readJsonMaybe<T>(target: string): Promise<T | undefined> {
-  try {
-    return JSON.parse(await fs.readFile(target, "utf-8")) as T
+    const text = await fs.readFile(filePath)
+    if (text === undefined) return undefined
+    return JSON.parse(text) as T
   } catch {
     return undefined
   }
 }
 
-async function readEventLog(logPath: string): Promise<SynthEvent[]> {
-  if (!(await pathExists(logPath))) return []
+async function readEventLog(fs: FilesystemProvider, logPath: string): Promise<SynthEvent[]> {
+  if (!(await fs.pathExists(logPath))) return []
   try {
-    const text = await fs.readFile(logPath, "utf-8")
+    const text = await fs.readFile(logPath)
+    if (text === undefined) return []
     const events: SynthEvent[] = []
     for (const line of text.split("\n")) {
       if (!line.trim()) continue
@@ -74,22 +70,24 @@ async function readEventLog(logPath: string): Promise<SynthEvent[]> {
   }
 }
 
-async function loadDrafts(dataDir: string): Promise<DraftSummary[]> {
-  const draftsDir = path.join(dataDir, "drafts")
-  if (!(await pathExists(draftsDir))) return []
+async function loadDrafts(fs: FilesystemProvider): Promise<DraftSummary[]> {
+  const draftsDir = "drafts"
+  if (!(await fs.pathExists(draftsDir))) return []
 
-  const entries = await fs.readdir(draftsDir)
+  const entries = await fs.listDirectory(draftsDir)
   const drafts: DraftSummary[] = []
 
   for (const entry of entries) {
     if (!entry.endsWith(".json") || entry.endsWith(".integrity.json")) continue
-    const draftPath = path.join(draftsDir, entry)
+    const draftPath = `${draftsDir}/${entry}`
     try {
-      const content = JSON.parse(await fs.readFile(draftPath, "utf-8"))
+      const text = await fs.readFile(draftPath)
+      if (text === undefined) continue
+      const content = JSON.parse(text)
       const confidence = content.confidence?.overall ?? 0
       const unknowns = Array.isArray(content.unknowns) ? content.unknowns : []
       drafts.push({
-        id: content.id || path.basename(entry, ".json"),
+        id: content.id || entry.replace(/\.json$/, ""),
         confidence: typeof confidence === "number" ? confidence : 0,
         unknowns: unknowns.length,
         blockingUnknowns: unknowns.filter((u: any) => u.blocking).length,
@@ -225,21 +223,19 @@ export async function resolveGovernanceContext(
   rootDir: string,
   options?: ResolveGovernanceContextOptions,
 ): Promise<GovernanceResolutionResult> {
-  const manifestPath = path.join(rootDir, MANIFEST_FILE)
-  const manifestExists = await pathExists(manifestPath)
+  const manifestExists = hasManifest(rootDir)
 
   const dataDir = options?.dataDir ?? getRuntimeDataDir(rootDir)
-  const logPath = path.join(dataDir, "event-log.jsonl")
-  const statePath = path.join(dataDir, "canonical-state.json")
-  const snapshotsDir = path.join(dataDir, "snapshots")
+  const rootFs = createPosixFilesystemProvider(rootDir)
+  const dataFs = createPosixFilesystemProvider(dataDir)
 
-  const events = await readEventLog(logPath)
-  const persistedState = (await readJsonMaybe<CanonicalState>(statePath)) ?? null
-  const decisions = await listDecisions(dataDir)
+  const events = await readEventLog(dataFs, "event-log.jsonl")
+  const persistedState = (await readJsonMaybe<CanonicalState>(dataFs, "canonical-state.json")) ?? null
+  const decisions = await listDecisions(dataDir, undefined, dataFs)
 
   let snapshots: StoredSnapshot[] = []
   try {
-    snapshots = await createFileSystemSnapshotStore(snapshotsDir).list()
+    snapshots = await createFileSystemSnapshotStore(getRuntimeSnapshotDir(rootDir)).list()
   } catch {
     snapshots = []
   }
@@ -268,7 +264,7 @@ export async function resolveGovernanceContext(
     )
   }
 
-  const drafts = await loadDrafts(dataDir)
+  const drafts = await loadDrafts(dataFs)
   const latestDraft = drafts[0]
 
   const phase = derivePhase(manifestExists, replayedState, latestDraft)
