@@ -7,33 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- EXP-CONT-001 — Resume Briefing (`synth explain resume`): deterministic projection of "what happened / what was decided / what is next" from replayable evidence for zero-history operators.
-- EXP-CONT-002 — Interruption Benchmark (`scripts/interruption-benchmark.js`): kill-at-checkpoint matrix measuring the Repository Authority Index (RAI); baseline aggregate RAI 0.87.
-- EXP-CONT-003 — TaskPRO Regression Journey (`scripts/taskpro-regression.js`): re-runs the canonical first-contact scenario and asserts that N1–N6/N8 failure modes are prevented or paved on the hardened build.
-- EXP-GOV-002 — Governance Record (`synth explain governance`): deterministic projection of governance transitions (initialization, approval, governance_update, verification, bootstrap, reconciliation) from replay.
-- `synth explain resume` now reads certified `ApprovedMissionModelSnapshot` artifacts so that missions approved through Mission Studio are reconstructable even before they are emitted to the event log.
-- `docs/reference/repository-authority-index.md` — RAI definition and scoring rubric.
-- EXP-PROGRAM-013 — Cognitive Continuity Program chartered (EXP-CONT-001, EXP-CONT-002, EXP-CONT-003).
-- EXP-PROGRAM-014 — Governance Maturation Program chartered (EXP-GOV-002, EXP-GOV-003, EXP-GOV-004, EXP-GOV-005).
-- EXP-GOV-003 — Constitutional Layer Boundaries (`docs/architecture/constitutional-layer-boundaries.md`): defines Governance vs. Implementation vs. Expedition vs. Bootstrap, with E1-derived examples and a decision matrix.
-- EXP-GOV-004 — Projection Model (`docs/architecture/projection-model.md`): taxonomy of source of truth, canonical state, projections, cached projections, and forbidden duplication, with artifact classification table and E1 answers.
-- EXP-GOV-005 — Verification Engine (`synth verify`): executable governance invariant verification with six checks (replay integrity, projection consistency, evidence referential integrity, assertion provenance, governance invariants, drift), structured report with prescriptive `nextStep`, and regression tests wired into `npm run govern`.
-- EXP-PROGRAM-014 — Governance Maturation Program completed and accepted (EXP-GOV-002 through EXP-GOV-005).
-- EXP-PROGRAM-012 — Runtime Self-Description Program marked completed and accepted.
-- EXP-PROGRAM-013 — Cognitive Continuity Program marked completed and accepted.
-- EXP-PROGRAM-015 — Repository Versioning Capability Program completed and accepted (EXP-VCS-001 through EXP-VCS-005).
-- EXP-PROGRAM-016 — Governed Expedition Execution Program chartered (EXP-EXEC-001 through EXP-EXEC-005).
-- EXP-EXEC-001 — Execution Intent Model: architecture specification and types bridging approved Expedition planning to governed repository execution.
-- EXP-EXEC-002 — Work Item Runtime: intent synthesizer and execution runtime that dispatch ExecutionIntents to injected capability handlers and emit lifecycle events.
-- EXP-EXEC-003 — Branch-per-Expedition Workflow: deterministic `exp/<expedition-id>` branch naming and runtime integration that creates and switches to an isolated expedition branch through the `VersioningCapability` before executing intents, recording the base commit in replay.
-- EXP-EXEC-004 — Commit-as-Evidence: per-expedition revision creation through `VersioningCapability`, recording the resulting commit hash in `EXPEDITION_EXECUTION_COMMITTED` with a commit message correlating the expedition and its objectives.
-- EXP-EXEC-005 — Pull Request Projection: after a successful commit, the runtime invokes the `ForgeCapability` to create a pull request, recording the PR locator in `EXPEDITION_EXECUTION_PROJECTED` with deterministic title and body derived from the expedition and its objectives.
-- EXP-VCS-001 — Versioning Capability Contract: generic repository-versioning operations (`initializeRepository`, `createRevision`, `switchRevision`, `integrateRevision`, `publishRevision`, `createSnapshot`, `compareRevisions`, `history`, `synchronize`) and observation types; Git provided as the reference mapping.
-- EXP-VCS-002 — Git Versioning Adapter (`src/environment/git-versioning-provider.ts`): reference implementation of the `VersioningCapability` using Git operations invoked through the Environment Process capability; registered as `git-versioning` provider.
-- EXP-VCS-003 — GitHub Forge Adapter (`src/environment/forge-capability.ts`): extends `ForgeProvider` with remote mutations (`createPullRequest`, `mergePullRequest`, `forkRepository`) implemented via the `gh` CLI; credentials remain delegated to `gh`.
-- EXP-VCS-004 — Repository State Observations (`src/environment/rules.ts`): new `versioningRule` emits `versioning.repository`, `versioning.branch`, `versioning.commit`, `versioning.remote`, `versioning.divergence`, and `versioning.pullRequest` observations into discovery evidence.
-- EXP-VCS-005 — Versioning Certification (`tests/environment-versioning-certification.test.js`): deterministic certification suite proving real Git operations through `GitVersioningProvider` produce consistent, repeatable repository state.
+## [2.0.0] — 2026-07-18
+
+The Governed Execution Release. SYNTH 2.0 is now capable of transforming approved Expeditions into governed repository changes.
+
+### Execution Pipeline
+
+Completed the path from approved Expedition to repository artifact.
+
+- **Execution Intent Model** — introduced explicit execution contracts between planning and runtime; added `ExecutionIntent`, `ExecutionIntentGraph`, and execution lifecycle events.
+- **Work Item Runtime** — added deterministic execution dispatch through injected capabilities with lifecycle event emission.
+- **Branch-per-Expedition Workflow** — Expeditions now receive isolated repository branches via `VersioningCapability`, recording the base commit in replay.
+- **Commit-as-Evidence** — repository revisions are recorded as execution evidence via `EXPEDITION_EXECUTION_COMMITTED` events.
+- **Pull Request Projection** — added `ForgeCapability` integration; pull requests are projected execution artifacts recorded via `EXPEDITION_EXECUTION_PROJECTED` events.
+
+### Repository Versioning Capability
+
+Repository operations are now modeled as governed capabilities.
+
+- Generic `VersioningCapability` contract.
+- Git reference adapter (`src/environment/git-versioning-provider.ts`).
+- GitHub Forge adapter (`src/environment/forge-capability.ts`).
+- Repository state observations: branches, commits, remotes, divergence, pull requests.
+- Deterministic certification tests for repeatable repository state.
+
+### Governance Maturation
+
+Improved system verification and replay capabilities.
+
+- `synth verify` — executable verification engine with six checks.
+- Constitutional layer boundary documentation.
+- Projection model documentation.
+- Governance Record replay projection.
+
+### Cognitive Continuity
+
+Improved operator recovery and zero-history understanding.
+
+- `synth explain resume` — resume briefing from replayable evidence.
+- Interruption benchmark with Repository Authority Index measurement (RAI 0.87 baseline).
+- TaskPRO regression journey.
+
+### Runtime Self-Description
+
+Improved runtime transparency.
+
+- Operator briefing (`synth status`).
+- Adapter introspection (`synth adapter info`).
+- Clean `--json` machine output.
+- Runtime integrity checks (`synth doctor`).
+- Repository identity detection (`synth explain identity`).
+
+### Internal Milestones
+
+Completed and accepted:
+
+- EXP-PROGRAM-012 — Runtime Self-Description
+- EXP-PROGRAM-013 — Cognitive Continuity
+- EXP-PROGRAM-014 — Governance Maturation
+- EXP-PROGRAM-015 — Repository Versioning Capability
+- EXP-PROGRAM-016 — Governed Expedition Execution
+
+All accepted, merged, and passing CI.
 
 ## [2.0.0-rc.3] — 2026-07-17
 
@@ -70,7 +105,9 @@ The Era I certification release: architecture validation closes, and the first-c
 - Mission Studio proposal parent references (identity-space defect producing the 36 graph violations preserved in Archive A).
 - Example runner proof `stateHash` (was `undefined`).
 
-## [2.0.0] — 2026-07-12
+## [2.0.0-rc.1] — 2026-07-12
+
+Architecture freeze and certification milestone. This marker represents the v2 kernel freeze and initial public vocabulary baseline, not a published npm package release.
 
 ### Added
 - Synth v2 freeze.
