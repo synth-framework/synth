@@ -7,7 +7,7 @@
 //
 // Usage:
 //   node scripts/first-contact-experiment.js --scenario repository-introduction
-//   node scripts/first-contact-experiment.js --all --output ./first-contact/sessions
+//   node scripts/first-contact-experiment.js --all --output ./first-contact/sessions [--deterministic]
 //
 // The runner creates a temporary repository, executes the scenario turns
 // through the synth CLI, and writes a session artifact + score.
@@ -15,13 +15,16 @@
 
 import path from "path"
 import fs from "fs/promises"
+import crypto from "crypto"
 import {
   canonicalScenarios,
   getScenario,
 } from "../dist/first-contact/scenarios.js"
 import {
   runScenario,
-  saveSessionArtifact,
+  saveSessionArtifactAs,
+  saveSessionReportAs,
+  buildSessionReport,
   computeSemanticAlignmentScore,
 } from "../dist/first-contact/experiment.js"
 
@@ -43,6 +46,8 @@ function parseArgs(argv) {
   return flags
 }
 
+
+
 async function main() {
   const flags = parseArgs(process.argv)
   const cliPath = path.resolve(process.cwd(), "dist", "cli", "synth.js")
@@ -63,21 +68,32 @@ async function main() {
     }
     scenarios = [scenario]
   } else {
-    console.error("Usage: node scripts/first-contact-experiment.js --scenario <id> | --all [--output <dir>]")
+    console.error("Usage: node scripts/first-contact-experiment.js --scenario <id> | --all [--output <dir>] [--deterministic]")
     console.error(`Available scenarios: ${canonicalScenarios.map((s) => s.id).join(", ")}`)
     process.exit(1)
   }
 
   await fs.mkdir(outputDir, { recursive: true })
 
+  const deterministic = flags.deterministic === true
   const results = []
   for (const scenario of scenarios) {
     console.error(`Running scenario: ${scenario.id}`)
-    const artifact = await runScenario(scenario, { cliPath })
-    const filePath = await saveSessionArtifact(artifact, outputDir)
+    const sessionId = deterministic ? scenario.id : crypto.randomUUID()
+    const artifact = await runScenario(scenario, { cliPath, sessionId })
+    const artifactFilename = deterministic
+      ? `baseline-${scenario.id}.json`
+      : `${new Date().toISOString().replace(/[:.]/g, "-")}-${artifact.sessionId}.json`
+    const reportFilename = deterministic
+      ? `baseline-${scenario.id}-report.json`
+      : `${new Date().toISOString().replace(/[:.]/g, "-")}-${artifact.sessionId}-report.json`
+    const filePath = await saveSessionArtifactAs(artifact, outputDir, artifactFilename)
+    const report = buildSessionReport(artifact, scenario)
+    const reportPath = await saveSessionReportAs(report, outputDir, reportFilename)
     const score = computeSemanticAlignmentScore(artifact)
-    results.push({ scenarioId: scenario.id, artifactPath: filePath, score })
-    console.error(`  -> ${filePath}`)
+    results.push({ scenarioId: scenario.id, artifactPath: filePath, reportPath, score })
+    console.error(`  -> artifact: ${filePath}`)
+    console.error(`  -> report:   ${reportPath}`)
   }
 
   console.log(JSON.stringify({ status: "ok", outputDir, results }, null, 2))

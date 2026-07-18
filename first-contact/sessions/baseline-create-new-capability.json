@@ -1,0 +1,323 @@
+{
+  "schemaVersion": "1.0.0",
+  "sessionId": "create-new-capability",
+  "scenarioId": "create-new-capability",
+  "humanPrompt": "I need to add authentication to this project.",
+  "description": "Agent receives a feature request and must align it with the governed lifecycle before creating an expedition.",
+  "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
+  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-oEEoSE",
+  "startedAt": "2026-07-18T14:02:22.075Z",
+  "turns": [
+    {
+      "turn": 1,
+      "command": [
+        "status"
+      ],
+      "intent": "Establish current state before proposing a change.",
+      "agentReasoningState": {
+        "understoodAs": "feature request: authentication",
+        "confidence": 0.3,
+        "unknowns": [
+          "existing identity model",
+          "governance state"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "agentSession": "create-new-capability",
+        "agentReasoningState": {
+          "understoodAs": "feature request: authentication",
+          "confidence": 0.3,
+          "unknowns": [
+            "existing identity model",
+            "governance state"
+          ]
+        },
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {},
+      "evidenceGenerated": []
+    },
+    {
+      "turn": 2,
+      "command": [
+        "explain"
+      ],
+      "intent": "Understand existing decisions and project boundaries.",
+      "agentReasoningState": {
+        "understoodAs": "system transformation requiring governed change",
+        "confidence": 0.5,
+        "unknowns": [
+          "mission alignment",
+          "expedition scope"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "status": "error",
+        "error": "Usage: synth explain <replay|lineage|proposals|snapshots|graph|diagnostics|status|all> [--log <path>] [--json] [--summary]"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {},
+      "evidenceGenerated": []
+    },
+    {
+      "turn": 3,
+      "command": [
+        "mission",
+        "create",
+        "--subject",
+        "Authentication",
+        "--purpose",
+        "Add identity and access control to the hospitality platform"
+      ],
+      "intent": "Create a governed mission for the capability.",
+      "agentReasoningState": {
+        "understoodAs": "governed transformation: authentication mission",
+        "confidence": 0.75,
+        "unknowns": [
+          "approval path"
+        ]
+      },
+      "inputs": {},
+      "outputs": {
+        "agentSession": "create-new-capability",
+        "agentReasoningState": {
+          "understoodAs": "governed transformation: authentication mission",
+          "confidence": 0.75,
+          "unknowns": [
+            "approval path"
+          ]
+        },
+        "status": "ok",
+        "kind": "MissionDraft",
+        "draftId": "cd7e46b8d2c7d0bb",
+        "draftPath": "/private/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-oEEoSE/.synth/data/drafts/cd7e46b8d2c7d0bb.json",
+        "integrity": "certified",
+        "subject": "Authentication",
+        "purpose": "Add identity and access control to the hospitality platform",
+        "confidence": {
+          "overall": 0.67,
+          "observationCoverage": 0.1,
+          "evidenceQuality": 0.8,
+          "consistency": 1,
+          "completeness": 1,
+          "inferenceDepth": 1,
+          "unknownImpact": 0,
+          "contradictionCount": 0
+        },
+        "unknowns": [],
+        "questions": [],
+        "proposals": [
+          {
+            "id": "660d413e046bef50",
+            "kind": "mission",
+            "name": "Authentication",
+            "description": "Add identity and access control to the hospitality platform",
+            "purpose": "Add identity and access control to the hospitality platform",
+            "evidenceRefs": [
+              "6413513c5954845d"
+            ],
+            "observationIds": [
+              "obs-mission-authentication"
+            ],
+            "confidence": 0.8,
+            "rationale": "Proposed from mission observation obs-mission-authentication"
+          }
+        ],
+        "nextStep": "synth mission approve --draft-id cd7e46b8d2c7d0bb"
+      },
+      "stateBefore": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "initialized",
+        "summary": "Project initialized; create a Mission to begin planning.",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "no-mission",
+            "description": "Project is initialized but has no Mission draft.",
+            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
+            "reason": "Project initialized; create a Mission to begin planning",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateAfter": {
+        "status": "ok",
+        "kind": "OperatorBriefing",
+        "phase": "planning",
+        "summary": "Mission is awaiting approval (confidence 0.67).",
+        "missions": [],
+        "activeExpeditions": [],
+        "blockers": [
+          {
+            "kind": "low-confidence",
+            "description": "Mission draft \"cd7e46b8d2c7d0bb\" confidence is 0.67 (threshold 0.7).",
+            "remediation": "synth mission evidence add --draft-id cd7e46b8d2c7d0bb --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+          }
+        ],
+        "warnings": [],
+        "nextActions": [
+          {
+            "command": "synth mission evidence add --draft-id cd7e46b8d2c7d0bb --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]",
+            "reason": "Mission draft needs more evidence before approval",
+            "priority": 1
+          }
+        ],
+        "eventCount": 1,
+        "stateHash": "1641409079"
+      },
+      "stateChange": {
+        "phase": "planning",
+        "summary": "Mission is awaiting approval (confidence 0.67).",
+        "blockers": [
+          {
+            "kind": "low-confidence",
+            "description": "Mission draft \"cd7e46b8d2c7d0bb\" confidence is 0.67 (threshold 0.7).",
+            "remediation": "synth mission evidence add --draft-id cd7e46b8d2c7d0bb --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+          }
+        ],
+        "nextActions": [
+          {
+            "command": "synth mission evidence add --draft-id cd7e46b8d2c7d0bb --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]",
+            "reason": "Mission draft needs more evidence before approval",
+            "priority": 1
+          }
+        ]
+      },
+      "evidenceGenerated": []
+    }
+  ],
+  "completedAt": "2026-07-18T14:02:28.640Z"
+}
