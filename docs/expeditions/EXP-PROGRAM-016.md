@@ -1,6 +1,7 @@
 # EXP-PROGRAM-016 — Governed Expedition Execution
 
-**Status:** Chartered  
+**Status:** Accepted  
+**Accepted:** 2026-07-18
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -144,18 +145,26 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-EXEC-001 completed and accepted.
-- [ ] EXP-EXEC-002 completed and accepted.
-- [ ] EXP-EXEC-003 completed and accepted.
-- [ ] EXP-EXEC-004 completed and accepted.
-- [ ] EXP-EXEC-005 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-EXEC-001 completed and accepted.
+- [x] EXP-EXEC-002 completed and accepted.
+- [x] EXP-EXEC-003 completed and accepted.
+- [x] EXP-EXEC-004 completed and accepted.
+- [x] EXP-EXEC-005 completed and accepted.
+- [x] Program accepted.
 
 ---
 
 ## Completion Notes
 
-*(pending)*
+All five expeditions completed and merged via PRs #124–#128. Governed Expedition Execution is now a first-class capability:
+
+- **EXP-EXEC-001** established the `ExecutionIntent` and `ExecutionIntentGraph` model, event types, and replay projections.
+- **EXP-EXEC-002** delivered the Work Item Runtime (`src/execution/runtime.ts`) that dispatches intents to injected capability handlers and emits lifecycle events.
+- **EXP-EXEC-003** added deterministic `exp/<expedition-id>` branch creation through `VersioningCapability`, recording the base commit in replay.
+- **EXP-EXEC-004** added per-expedition revision creation, recording the resulting commit hash in `EXPEDITION_EXECUTION_COMMITTED`.
+- **EXP-EXEC-005** added pull-request projection through `ForgeCapability`, recording the PR locator in `EXPEDITION_EXECUTION_PROJECTED`.
+
+The program preserves the Constitutional Freeze: no changes were made to Mission Studio, Genesis, Replay, ExecutionGate, the Event Model envelope, the Capability Model itself, the Constitutional Baseline, or the public vocabulary.
 
 ---
 
