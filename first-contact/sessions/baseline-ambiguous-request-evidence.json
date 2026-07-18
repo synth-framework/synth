@@ -1,38 +1,64 @@
 {
   "schemaVersion": "1.0.0",
-  "sessionId": "repository-introduction",
-  "scenarioId": "repository-introduction",
-  "humanPrompt": "I want to understand this project before making any changes.",
-  "description": "Agent enters a SYNTH-governed knowledge repository and discovers project intent through status, explain, and docs commands.",
-  "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
-  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-eDBwoH",
-  "startedAt": "2026-07-18T14:12:51.559Z",
-  "turns": [
+  "sessionId": "ambiguous-request",
+  "scenarioId": "ambiguous-request",
+  "humanPrompt": "Make the app better.",
+  "repositoryState": {
+    "initialized": true,
+    "files": [
+      "status",
+      "kind",
+      "phase",
+      "summary",
+      "missions",
+      "activeExpeditions",
+      "blockers",
+      "warnings",
+      "nextActions",
+      "eventCount",
+      "stateHash"
+    ],
+    "phase": "initialized",
+    "notices": []
+  },
+  "agentInitialModel": {
+    "understoodAs": "ambiguous improvement request",
+    "confidence": 0.1,
+    "unknowns": [
+      "target outcome",
+      "user impact",
+      "current limitations",
+      "acceptance criteria"
+    ]
+  },
+  "evidenceConsumed": [
     {
       "turn": 1,
       "command": [
         "status"
       ],
-      "intent": "Determine the current governance state of the repository.",
+      "intent": "Check current state before interpreting the request.",
       "agentReasoningState": {
-        "understoodAs": "unknown repository",
+        "understoodAs": "ambiguous improvement request",
         "confidence": 0.1,
         "unknowns": [
-          "project purpose",
-          "lifecycle phase",
-          "next valid action"
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
         ]
       },
       "inputs": {},
       "outputs": {
-        "agentSession": "repository-introduction",
+        "agentSession": "ambiguous-request",
         "agentReasoningState": {
-          "understoodAs": "unknown repository",
+          "understoodAs": "ambiguous improvement request",
           "confidence": 0.1,
           "unknowns": [
-            "project purpose",
-            "lifecycle phase",
-            "next valid action"
+            "target outcome",
+            "user impact",
+            "current limitations",
+            "acceptance criteria"
           ]
         },
         "status": "ok",
@@ -117,13 +143,15 @@
       "command": [
         "explain"
       ],
-      "intent": "Read the operator briefing to understand project intent and constraints.",
+      "intent": "Gather enough context to identify what 'better' could mean.",
       "agentReasoningState": {
-        "understoodAs": "governed project with documentation",
-        "confidence": 0.4,
+        "understoodAs": "ambiguous improvement request on specification-stage project",
+        "confidence": 0.2,
         "unknowns": [
-          "specific domain",
-          "active mission"
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
         ]
       },
       "inputs": {},
@@ -183,123 +211,101 @@
       },
       "stateChange": {},
       "evidenceGenerated": []
-    },
-    {
-      "turn": 3,
-      "command": [
-        "docs",
-        "generate"
-      ],
-      "intent": "Materialize documentation projections from the knowledge base.",
-      "agentReasoningState": {
-        "understoodAs": "specification-stage hospitality automation platform",
-        "confidence": 0.7,
-        "unknowns": [
-          "implementation plan"
-        ]
-      },
-      "inputs": {},
-      "outputs": {
-        "agentSession": "repository-introduction",
-        "agentReasoningState": {
-          "understoodAs": "specification-stage hospitality automation platform",
-          "confidence": 0.7,
-          "unknowns": [
-            "implementation plan"
-          ]
-        },
-        "status": "ok",
-        "summary": {
-          "filesScanned": 1,
-          "filesMatched": 1,
-          "conceptsExtracted": 1,
-          "projectionsGenerated": 7,
-          "zeroExtractionWarning": false
-        },
-        "projections": [
-          {
-            "filename": "README.md",
-            "title": "README"
-          },
-          {
-            "filename": "ARCHITECTURE.md",
-            "title": "Architecture"
-          },
-          {
-            "filename": "API.md",
-            "title": "API Reference"
-          },
-          {
-            "filename": "OPERATOR_GUIDE.md",
-            "title": "Operator Guide"
-          },
-          {
-            "filename": "DEVELOPER_GUIDE.md",
-            "title": "Developer Guide"
-          },
-          {
-            "filename": "ARCHITECT_GUIDE.md",
-            "title": "Architect Guide"
-          },
-          {
-            "filename": "AI_CONTEXT.md",
-            "title": "AI Context"
-          }
-        ]
-      },
-      "stateBefore": {
-        "status": "ok",
-        "kind": "OperatorBriefing",
-        "phase": "initialized",
-        "summary": "Project initialized; create a Mission to begin planning.",
-        "missions": [],
-        "activeExpeditions": [],
-        "blockers": [
-          {
-            "kind": "no-mission",
-            "description": "Project is initialized but has no Mission draft.",
-            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
-          }
-        ],
-        "warnings": [],
-        "nextActions": [
-          {
-            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
-            "reason": "Project initialized; create a Mission to begin planning",
-            "priority": 1
-          }
-        ],
-        "eventCount": 1,
-        "stateHash": "1641409079"
-      },
-      "stateAfter": {
-        "status": "ok",
-        "kind": "OperatorBriefing",
-        "phase": "initialized",
-        "summary": "Project initialized; create a Mission to begin planning.",
-        "missions": [],
-        "activeExpeditions": [],
-        "blockers": [
-          {
-            "kind": "no-mission",
-            "description": "Project is initialized but has no Mission draft.",
-            "remediation": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\""
-          }
-        ],
-        "warnings": [],
-        "nextActions": [
-          {
-            "command": "synth mission create --subject \"<mission>\" --purpose \"<purpose>\"",
-            "reason": "Project initialized; create a Mission to begin planning",
-            "priority": 1
-          }
-        ],
-        "eventCount": 1,
-        "stateHash": "1641409079"
-      },
-      "stateChange": {},
-      "evidenceGenerated": []
     }
   ],
-  "completedAt": "2026-07-18T14:12:58.138Z"
+  "interpretationChanges": [
+    {
+      "turn": 1,
+      "command": "status",
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "phase",
+        "summary",
+        "missions",
+        "activeExpeditions",
+        "blockers",
+        "warnings",
+        "nextActions",
+        "eventCount",
+        "stateHash"
+      ],
+      "from": {
+        "understoodAs": "ambiguous improvement request",
+        "confidence": 0.1,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "to": {
+        "understoodAs": "ambiguous improvement request",
+        "confidence": 0.1,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "aligned": true
+    },
+    {
+      "turn": 2,
+      "command": "explain",
+      "evidenceConsumed": [
+        "status",
+        "error"
+      ],
+      "from": {
+        "understoodAs": "ambiguous improvement request",
+        "confidence": 0.1,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "to": {
+        "understoodAs": "ambiguous improvement request on specification-stage project",
+        "confidence": 0.2,
+        "unknowns": [
+          "target outcome",
+          "user impact",
+          "current limitations",
+          "acceptance criteria"
+        ]
+      },
+      "aligned": true
+    }
+  ],
+  "interventions": [
+    {
+      "turn": 2,
+      "command": "explain",
+      "description": "Model corrected from 'ambiguous improvement request' to 'ambiguous improvement request on specification-stage project'."
+    }
+  ],
+  "finalModel": {
+    "understoodAs": "ambiguous improvement request on specification-stage project",
+    "confidence": 0.2,
+    "unknowns": [
+      "target outcome",
+      "user impact",
+      "current limitations",
+      "acceptance criteria"
+    ]
+  },
+  "misinterpretationCategories": [
+    "missing-context"
+  ],
+  "successConditions": {
+    "inspectedBeforeActing": true,
+    "usedGovernedPath": false,
+    "reachedCorrectInterpretation": false,
+    "remainingUnknownsAcceptable": false
+  }
 }

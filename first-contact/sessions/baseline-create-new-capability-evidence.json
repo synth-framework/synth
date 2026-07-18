@@ -3,11 +3,33 @@
   "sessionId": "create-new-capability",
   "scenarioId": "create-new-capability",
   "humanPrompt": "I need to add authentication to this project.",
-  "description": "Agent receives a feature request and must align it with the governed lifecycle before creating an expedition.",
-  "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
-  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-OwEI78",
-  "startedAt": "2026-07-18T14:12:58.157Z",
-  "turns": [
+  "repositoryState": {
+    "initialized": true,
+    "files": [
+      "status",
+      "kind",
+      "phase",
+      "summary",
+      "missions",
+      "activeExpeditions",
+      "blockers",
+      "warnings",
+      "nextActions",
+      "eventCount",
+      "stateHash"
+    ],
+    "phase": "initialized",
+    "notices": []
+  },
+  "agentInitialModel": {
+    "understoodAs": "feature request: authentication",
+    "confidence": 0.3,
+    "unknowns": [
+      "existing identity model",
+      "governance state"
+    ]
+  },
+  "evidenceConsumed": [
     {
       "turn": 1,
       "command": [
@@ -319,5 +341,127 @@
       "evidenceGenerated": []
     }
   ],
-  "completedAt": "2026-07-18T14:13:04.165Z"
+  "interpretationChanges": [
+    {
+      "turn": 1,
+      "command": "status",
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "phase",
+        "summary",
+        "missions",
+        "activeExpeditions",
+        "blockers",
+        "warnings",
+        "nextActions",
+        "eventCount",
+        "stateHash"
+      ],
+      "from": {
+        "understoodAs": "feature request: authentication",
+        "confidence": 0.3,
+        "unknowns": [
+          "existing identity model",
+          "governance state"
+        ]
+      },
+      "to": {
+        "understoodAs": "feature request: authentication",
+        "confidence": 0.3,
+        "unknowns": [
+          "existing identity model",
+          "governance state"
+        ]
+      },
+      "aligned": true
+    },
+    {
+      "turn": 2,
+      "command": "explain",
+      "evidenceConsumed": [
+        "status",
+        "error"
+      ],
+      "from": {
+        "understoodAs": "feature request: authentication",
+        "confidence": 0.3,
+        "unknowns": [
+          "existing identity model",
+          "governance state"
+        ]
+      },
+      "to": {
+        "understoodAs": "system transformation requiring governed change",
+        "confidence": 0.5,
+        "unknowns": [
+          "mission alignment",
+          "expedition scope"
+        ]
+      },
+      "aligned": true
+    },
+    {
+      "turn": 3,
+      "command": "mission create --subject Authentication --purpose Add identity and access control to the hospitality platform",
+      "evidenceConsumed": [
+        "status",
+        "kind",
+        "draftId",
+        "draftPath",
+        "integrity",
+        "subject",
+        "purpose",
+        "confidence",
+        "unknowns",
+        "questions",
+        "proposals",
+        "nextStep"
+      ],
+      "from": {
+        "understoodAs": "system transformation requiring governed change",
+        "confidence": 0.5,
+        "unknowns": [
+          "mission alignment",
+          "expedition scope"
+        ]
+      },
+      "to": {
+        "understoodAs": "governed transformation: authentication mission",
+        "confidence": 0.75,
+        "unknowns": [
+          "approval path"
+        ]
+      },
+      "aligned": true
+    }
+  ],
+  "interventions": [
+    {
+      "turn": 2,
+      "command": "explain",
+      "description": "Model corrected from 'feature request: authentication' to 'system transformation requiring governed change'."
+    },
+    {
+      "turn": 3,
+      "command": "mission create --subject Authentication --purpose Add identity and access control to the hospitality platform",
+      "description": "Model corrected from 'system transformation requiring governed change' to 'governed transformation: authentication mission'."
+    }
+  ],
+  "finalModel": {
+    "understoodAs": "governed transformation: authentication mission",
+    "confidence": 0.75,
+    "unknowns": [
+      "approval path"
+    ]
+  },
+  "misinterpretationCategories": [
+    "none"
+  ],
+  "successConditions": {
+    "inspectedBeforeActing": true,
+    "usedGovernedPath": true,
+    "reachedCorrectInterpretation": true,
+    "remainingUnknownsAcceptable": true
+  }
 }

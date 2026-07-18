@@ -27,6 +27,10 @@ import {
   buildSessionReport,
   computeSemanticAlignmentScore,
 } from "../dist/first-contact/experiment.js"
+import {
+  extractFirstContactEvidence,
+  saveFirstContactEvidence,
+} from "../dist/first-contact/evidence.js"
 
 function parseArgs(argv) {
   const args = argv.slice(2)
@@ -90,10 +94,16 @@ async function main() {
     const filePath = await saveSessionArtifactAs(artifact, outputDir, artifactFilename)
     const report = buildSessionReport(artifact, scenario)
     const reportPath = await saveSessionReportAs(report, outputDir, reportFilename)
+    const evidence = extractFirstContactEvidence(artifact)
+    const evidenceFilename = deterministic
+      ? `baseline-${scenario.id}-evidence.json`
+      : `${new Date().toISOString().replace(/[:.]/g, "-")}-${artifact.sessionId}-evidence.json`
+    const evidencePath = await saveFirstContactEvidence(evidence, outputDir, evidenceFilename)
     const score = computeSemanticAlignmentScore(artifact)
-    results.push({ scenarioId: scenario.id, artifactPath: filePath, reportPath, score })
+    results.push({ scenarioId: scenario.id, artifactPath: filePath, reportPath, evidencePath, score })
     console.error(`  -> artifact: ${filePath}`)
     console.error(`  -> report:   ${reportPath}`)
+    console.error(`  -> evidence: ${evidencePath}`)
   }
 
   console.log(JSON.stringify({ status: "ok", outputDir, results }, null, 2))

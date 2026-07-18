@@ -1,15 +1,16 @@
 // ============================================================
 // First Contact Experiment Tests
 // ============================================================
-// Regression guards for EXP-FIRSTCONTACT-010:
+// Regression guards for EXP-FIRSTCONTACT-010 and EXP-FIRSTCONTACT-011:
 //  Phase 1:
 //   - CLI telemetry flags merge agent session and reasoning state into output.
 //   - The experiment runner produces valid session artifacts.
 //   - Canonical scenarios execute without errors and produce scores.
-//  Phase 2:
+//  Phase 2 (010):
 //   - Intent reconstruction log derives model changes from an artifact.
 //   - Failure taxonomy classifies canonical misinterpretation patterns.
-// ============================================================
+//  Phase 2 (011):
+//   - Evidence extraction derives FirstContactEvidence from a session artifact.
 
 import { spawnSync } from "child_process"
 import fs from "fs/promises"
@@ -20,6 +21,7 @@ import {
   classifySession,
   buildSessionReport,
 } from "../dist/first-contact/experiment.js"
+import { extractFirstContactEvidence } from "../dist/first-contact/evidence.js"
 import { repositoryIntroductionScenario } from "../dist/first-contact/scenarios.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
@@ -259,12 +261,64 @@ function testFailureTaxonomy() {
   console.log("[PASS] failure taxonomy classifies canonical patterns")
 }
 
+// ------------------------------------------------------------
+// Fixture: evidence extraction derives FirstContactEvidence
+// ------------------------------------------------------------
+function testExtractFirstContactEvidence() {
+  const artifact = {
+    schemaVersion: "1.0.0",
+    sessionId: "evidence-test",
+    scenarioId: "repository-introduction",
+    humanPrompt: "I want to understand this project before making any changes.",
+    description: "test",
+    cliPath: "node",
+    repositoryRoot: "/tmp",
+    startedAt: new Date().toISOString(),
+    turns: [
+      {
+        turn: 1,
+        command: ["status"],
+        intent: "Determine state.",
+        agentReasoningState: { understoodAs: "unknown repository", confidence: 0.1, unknowns: ["purpose"] },
+        inputs: {},
+        outputs: { status: "ok", phase: "initialized" },
+        stateBefore: { README: "", packageJson: "" },
+        stateAfter: {},
+        stateChange: {},
+        evidenceGenerated: [],
+      },
+      {
+        turn: 2,
+        command: ["explain"],
+        intent: "Read briefing.",
+        agentReasoningState: { understoodAs: "governed project", confidence: 0.6, unknowns: [] },
+        inputs: {},
+        outputs: { explanation: "..." },
+        stateBefore: {},
+        stateAfter: {},
+        stateChange: {},
+        evidenceGenerated: [],
+      },
+    ],
+  }
+
+  const evidence = extractFirstContactEvidence(artifact)
+  assert(evidence.schemaVersion === "1.0.0", "evidence schemaVersion should be 1.0.0")
+  assert(evidence.scenarioId === "repository-introduction", "scenarioId should be preserved")
+  assert(evidence.agentInitialModel.understoodAs === "unknown repository", "initial model should match first turn")
+  assert(evidence.finalModel.understoodAs === "governed project", "final model should match last turn")
+  assert(evidence.interpretationChanges.length >= 1, "should record at least one interpretation change")
+  assert(evidence.successConditions.inspectedBeforeActing === true, "status + explain counts as inspection")
+  console.log("[PASS] evidence extraction derives FirstContactEvidence")
+}
+
 async function main() {
   await testCliTelemetryFlags()
   await testRunnerProducesSessionArtifact()
   await testAllScenariosRun()
   testReconstructIntent()
   testFailureTaxonomy()
+  testExtractFirstContactEvidence()
   console.log("\n[FIRST CONTACT EXPERIMENT] All tests passed")
 }
 
