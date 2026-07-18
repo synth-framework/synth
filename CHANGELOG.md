@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EXP-PROGRAM-014 — Governance Maturation Program completed and accepted (EXP-GOV-002 through EXP-GOV-005).
 - EXP-PROGRAM-012 — Runtime Self-Description Program marked completed and accepted.
 - EXP-PROGRAM-013 — Cognitive Continuity Program marked completed and accepted.
-- EXP-PROGRAM-015 — Repository Versioning Capability Program marked active.
+- EXP-PROGRAM-015 — Repository Versioning Capability Program completed and accepted (EXP-VCS-001 through EXP-VCS-005).
 - EXP-VCS-001 — Versioning Capability Contract: generic repository-versioning operations (`initializeRepository`, `createRevision`, `switchRevision`, `integrateRevision`, `publishRevision`, `createSnapshot`, `compareRevisions`, `history`, `synchronize`) and observation types; Git provided as the reference mapping.
 - EXP-VCS-002 — Git Versioning Adapter (`src/environment/git-versioning-provider.ts`): reference implementation of the `VersioningCapability` using Git operations invoked through the Environment Process capability; registered as `git-versioning` provider.
 - EXP-VCS-003 — GitHub Forge Adapter (`src/environment/forge-capability.ts`): extends `ForgeProvider` with remote mutations (`createPullRequest`, `mergePullRequest`, `forkRepository`) implemented via the `gh` CLI; credentials remain delegated to `gh`.

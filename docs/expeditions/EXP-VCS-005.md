@@ -1,11 +1,12 @@
 # EXP-VCS-005 — Versioning Certification
 
-**Status:** Active  
+**Status:** Accepted  
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-015 — Repository Versioning Capability  
 **Depends On:** EXP-VCS-002, EXP-VCS-003, EXP-VCS-004  
-**Blocks:** None
+**Blocks:** None  
+**Merged:** PR #121
 
 ---
 
@@ -33,6 +34,6 @@ Prove that the Repository Versioning Capability produces deterministic, repeatab
 ## Definition of Done
 
 - [x] Certification test suite implemented.
-- [ ] Tests pass in CI.
+- [x] Tests pass in CI.
 - [x] Program acceptance evidence recorded.
-- [ ] Expedition accepted.
+- [x] Expedition accepted.
