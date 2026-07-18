@@ -1,6 +1,6 @@
 # EXP-EXEC-004 — Commit-as-Evidence
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -28,8 +28,8 @@ Map completed Work Items to VersioningCapability revisions, ensuring every commi
 
 ## Definition of Done
 
-- [ ] Commit strategy selected and documented.
-- [ ] Commit integration implemented.
-- [ ] Regression tests pass.
+- [x] Commit strategy selected and documented.
+- [x] Commit integration implemented.
+- [x] Regression tests pass.
 - [ ] PR opened and CI checks pass.
 - [ ] Expedition accepted.

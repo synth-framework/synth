@@ -300,5 +300,83 @@ export async function executeGraph(
     )
   }
 
+  // Commit the expedition's changes as a VersioningCapability revision.
+  // The commit message correlates the revision with the expedition and its
+  // objectives so that repository history reflects Expedition structure.
+  if (options.handlers.versioning) {
+    const objectiveIds = [...new Set(graph.intents.map((i) => i.objectiveId).filter(Boolean))]
+    const commitMessage = objectiveIds.length > 0
+      ? `expedition(${graph.expeditionId}): ${objectiveIds.join(", ")}`
+      : `expedition(${graph.expeditionId})`
+
+    const commitIntent: ExecutionIntent = {
+      id: `${graph.expeditionId}/commit`,
+      expeditionId: graph.expeditionId,
+      objectiveId: "",
+      workItemId: "",
+      sequence: -2,
+      capability: "versioning",
+      operation: "createRevision",
+      target: graph.branch ?? "",
+      payload: { message: commitMessage, branch: graph.branch, includeUntracked: true },
+      dependencies: [],
+      verification: { kind: "none", target: "" },
+    }
+
+    events.push(
+      makeEvent(
+        "EXECUTION_INTENT_CREATED",
+        {
+          intentId: commitIntent.id,
+          expeditionId: commitIntent.expeditionId,
+          objectiveId: commitIntent.objectiveId,
+          workItemId: commitIntent.workItemId,
+          sequence: commitIntent.sequence,
+          capability: commitIntent.capability,
+          operation: commitIntent.operation,
+          target: commitIntent.target,
+          dependencies: commitIntent.dependencies,
+        },
+        options
+      )
+    )
+
+    events.push(
+      makeEvent(
+        "EXECUTION_INTENT_STARTED",
+        { intentId: commitIntent.id, expeditionId: commitIntent.expeditionId },
+        options
+      )
+    )
+
+    let commitResult: IntentExecutionResult
+    try {
+      commitResult = await options.handlers.versioning(commitIntent)
+    } catch (err) {
+      commitResult = { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
+
+    if (!commitResult.success) {
+      const reason = commitResult.error ?? "Commit failed"
+      events.push(
+        makeEvent(
+          "EXECUTION_INTENT_FAILED",
+          { intentId: commitIntent.id, expeditionId: commitIntent.expeditionId, reason },
+          options
+        )
+      )
+      return events
+    }
+
+    const commitHash = (commitResult.result as VersioningBranchResult | undefined)?.commit ?? ""
+    events.push(
+      makeEvent(
+        "EXPEDITION_EXECUTION_COMMITTED",
+        { expeditionId: graph.expeditionId, commit: commitHash },
+        options
+      )
+    )
+  }
+
   return events
 }

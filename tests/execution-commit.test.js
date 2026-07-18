@@ -1,9 +1,8 @@
-// EXP-EXEC-003 — Branch-per-Expedition Workflow regression tests
+// EXP-EXEC-004 — Commit-as-Evidence regression tests
 
 import {
   synthesizeIntents,
   buildIntentGraph,
-  deriveExpeditionBranch,
   executeGraph,
 } from "../dist/execution/index.js"
 import assert from "node:assert"
@@ -50,14 +49,7 @@ function makeObjective(id, expeditionId) {
   }
 }
 
-test("deriveExpeditionBranch: produces deterministic branch name", () => {
-  assert.strictEqual(deriveExpeditionBranch("EXP-1"), "exp/EXP-1")
-  assert.strictEqual(deriveExpeditionBranch("EXP-123"), "exp/EXP-123")
-  // Deterministic: same input produces same output.
-  assert.strictEqual(deriveExpeditionBranch("EXP-1"), "exp/EXP-1")
-})
-
-test("executeGraph: creates expedition branch before executing intents", async () => {
+test("executeGraph: commits expedition changes after intents complete", async () => {
   const intents = synthesizeIntents({
     expedition: makeExpedition("EXP-1"),
     objective: makeObjective("OBJ-1", "EXP-1"),
@@ -72,9 +64,6 @@ test("executeGraph: creates expedition branch before executing intents", async (
       filesystem: async () => ({ success: true }),
       versioning: async (intent) => {
         if (intent.operation === "switchRevision") {
-          assert.strictEqual(intent.target, "exp/EXP-1")
-          assert.strictEqual(intent.payload.branch, "exp/EXP-1")
-          assert.strictEqual(intent.payload.createBranch, true)
           return { success: true, result: { commit: "baseabc123" } }
         }
         if (intent.operation === "createRevision") {
@@ -90,17 +79,58 @@ test("executeGraph: creates expedition branch before executing intents", async (
     timestamp: 1,
   })
 
-  const branchCreated = events.find((e) => e.type === "EXPEDITION_BRANCH_CREATED")
-  assert.ok(branchCreated, "EXPEDITION_BRANCH_CREATED event missing")
-  assert.strictEqual(branchCreated.payload.expeditionId, "EXP-1")
-  assert.strictEqual(branchCreated.payload.branch, "exp/EXP-1")
-  assert.strictEqual(branchCreated.payload.baseCommit, "baseabc123")
-
-  const completed = events.filter((e) => e.type === "EXECUTION_INTENT_COMPLETED")
-  assert.strictEqual(completed.length, 1)
+  const committed = events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED")
+  assert.ok(committed, "EXPEDITION_EXECUTION_COMMITTED event missing")
+  assert.strictEqual(committed.payload.expeditionId, "EXP-1")
+  assert.strictEqual(committed.payload.commit, "resultdef456")
 })
 
-test("executeGraph: halts when branch creation fails", async () => {
+test("executeGraph: commit message includes multiple objectives", async () => {
+  const r1 = synthesizeIntents({
+    expedition: makeExpedition("EXP-1"),
+    objective: makeObjective("OBJ-1", "EXP-1"),
+    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
+    baseBranch: "main",
+    sequenceStart: 0,
+  })
+  const r2 = synthesizeIntents({
+    expedition: makeExpedition("EXP-1"),
+    objective: makeObjective("OBJ-2", "EXP-1"),
+    workItem: makeWorkItem("WI-2", { operation: "writeFile", target: "b.txt", content: "b" }),
+    baseBranch: "main",
+    sequenceStart: r1.nextSequence,
+  })
+
+  const graph = buildIntentGraph("EXP-1", "exp/EXP-1", [r1.intents, r2.intents])
+
+  let capturedMessage = ""
+  const events = await executeGraph(graph, {
+    handlers: {
+      filesystem: async () => ({ success: true }),
+      versioning: async (intent) => {
+        if (intent.operation === "switchRevision") {
+          return { success: true, result: { commit: "baseabc123" } }
+        }
+        if (intent.operation === "createRevision") {
+          capturedMessage = String(intent.payload.message)
+          return { success: true, result: { commit: "resultdef456" } }
+        }
+        throw new Error(`Unexpected versioning operation: ${intent.operation}`)
+      },
+    },
+    actor: "test",
+    transactionId: "tx-1",
+    timestamp: 1,
+  })
+
+  assert.ok(events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED"))
+  assert.ok(
+    capturedMessage.includes("OBJ-1") && capturedMessage.includes("OBJ-2"),
+    `Expected commit message to include both objectives, got: ${capturedMessage}`
+  )
+})
+
+test("executeGraph: halts when commit fails", async () => {
   const intents = synthesizeIntents({
     expedition: makeExpedition("EXP-1"),
     objective: makeObjective("OBJ-1", "EXP-1"),
@@ -113,25 +143,30 @@ test("executeGraph: halts when branch creation fails", async () => {
   const events = await executeGraph(graph, {
     handlers: {
       filesystem: async () => ({ success: true }),
-      versioning: async () => ({ success: false, error: "branch already exists" }),
+      versioning: async (intent) => {
+        if (intent.operation === "switchRevision") {
+          return { success: true, result: { commit: "baseabc123" } }
+        }
+        if (intent.operation === "createRevision") {
+          return { success: false, error: "nothing to commit" }
+        }
+        throw new Error(`Unexpected versioning operation: ${intent.operation}`)
+      },
     },
     actor: "test",
     transactionId: "tx-1",
     timestamp: 1,
   })
 
-  const branchCreated = events.find((e) => e.type === "EXPEDITION_BRANCH_CREATED")
-  assert.ok(!branchCreated, "EXPEDITION_BRANCH_CREATED should not be emitted on failure")
+  const committed = events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED")
+  assert.ok(!committed, "EXPEDITION_EXECUTION_COMMITTED should not be emitted on commit failure")
 
   const failed = events.find((e) => e.type === "EXECUTION_INTENT_FAILED")
   assert.ok(failed)
-  assert.ok(String(failed.payload.reason).includes("branch already exists"))
-
-  const completed = events.filter((e) => e.type === "EXECUTION_INTENT_COMPLETED")
-  assert.strictEqual(completed.length, 0)
+  assert.ok(String(failed.payload.reason).includes("nothing to commit"))
 })
 
-test("executeGraph: skips branch creation when no versioning handler is provided", async () => {
+test("executeGraph: skips commit when no versioning handler is provided", async () => {
   const intents = synthesizeIntents({
     expedition: makeExpedition("EXP-1"),
     objective: makeObjective("OBJ-1", "EXP-1"),
@@ -150,8 +185,8 @@ test("executeGraph: skips branch creation when no versioning handler is provided
     timestamp: 1,
   })
 
-  const branchCreated = events.find((e) => e.type === "EXPEDITION_BRANCH_CREATED")
-  assert.ok(!branchCreated, "EXPEDITION_BRANCH_CREATED should not be emitted without versioning handler")
+  const committed = events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED")
+  assert.ok(!committed, "EXPEDITION_EXECUTION_COMMITTED should not be emitted without versioning handler")
 
   const completed = events.filter((e) => e.type === "EXECUTION_INTENT_COMPLETED")
   assert.strictEqual(completed.length, 1)
