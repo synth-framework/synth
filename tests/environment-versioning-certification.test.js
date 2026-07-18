@@ -76,16 +76,17 @@ test("certification: createRevision captures file changes deterministically", as
 test("certification: switchRevision moves between branches", async () => {
   const { root, ctx } = await makeTempRepo()
   try {
-    await commitFile(ctx, root, "main.txt", "main", "on main")
+    const defaultBranch = (await ctx.execTool("git", ["rev-parse", "--abbrev-ref", "HEAD"]))?.trim() || "main"
+    await commitFile(ctx, root, `${defaultBranch}.txt`, defaultBranch, `on ${defaultBranch}`)
     await provider.switchRevision(ctx, root, { branch: "feature", createBranch: true })
     await commitFile(ctx, root, "feature.txt", "feature", "on feature")
 
     const featureRev = await provider.history(ctx, root)
     assert.strictEqual(featureRev[0].message, "on feature")
 
-    await provider.switchRevision(ctx, root, { branch: "main" })
+    await provider.switchRevision(ctx, root, { branch: defaultBranch })
     const mainRev = await provider.history(ctx, root)
-    assert.strictEqual(mainRev[0].message, "on main")
+    assert.strictEqual(mainRev[0].message, `on ${defaultBranch}`)
   } finally {
     await cleanup(root)
   }
@@ -126,12 +127,13 @@ test("certification: createSnapshot captures working tree state", async () => {
 test("certification: integrateRevision merges branches", async () => {
   const { root, ctx } = await makeTempRepo()
   try {
+    const defaultBranch = (await ctx.execTool("git", ["rev-parse", "--abbrev-ref", "HEAD"]))?.trim() || "main"
     await commitFile(ctx, root, "base.txt", "base", "base")
     await provider.switchRevision(ctx, root, { branch: "feature", createBranch: true })
     await commitFile(ctx, root, "feature.txt", "feature", "feature work")
-    await provider.switchRevision(ctx, root, { branch: "main" })
+    await provider.switchRevision(ctx, root, { branch: defaultBranch })
 
-    const result = await provider.integrateRevision(ctx, root, "feature", "main")
+    const result = await provider.integrateRevision(ctx, root, "feature", defaultBranch)
     assert.strictEqual(result.success, true)
     assert.ok(result.resultCommit)
     assert.strictEqual(result.conflictedFiles?.length, 0)
@@ -149,11 +151,12 @@ test("certification: repeated identical sequence produces equivalent repository 
   async function runSequence() {
     const { root, ctx } = await makeTempRepo()
     try {
+      const defaultBranch = (await ctx.execTool("git", ["rev-parse", "--abbrev-ref", "HEAD"]))?.trim() || "main"
       await commitFile(ctx, root, "a.txt", "a", "first")
       await provider.switchRevision(ctx, root, { branch: "dev", createBranch: true })
       await commitFile(ctx, root, "b.txt", "b", "second")
-      await provider.switchRevision(ctx, root, { branch: "main" })
-      await provider.integrateRevision(ctx, root, "dev", "main")
+      await provider.switchRevision(ctx, root, { branch: defaultBranch })
+      await provider.integrateRevision(ctx, root, "dev", defaultBranch)
       const history = await provider.history(ctx, root)
       return history.map((h) => h.message)
     } finally {
