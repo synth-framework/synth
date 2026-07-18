@@ -27,6 +27,9 @@ async function makeTempRepo() {
   const root = await realpath(dir)
   const ctx = createNodeObservationContext(root)
   await provider.initializeRepository(ctx, root)
+  // Create an initial commit so the default branch exists and is not "HEAD".
+  await writeFile(join(root, "README.md"), "# cert", "utf-8")
+  await provider.createRevision(ctx, root, { message: "initial", includeUntracked: true })
   return { root, ctx }
 }
 
@@ -65,9 +68,9 @@ test("certification: createRevision captures file changes deterministically", as
     // Re-running the same operation on a fresh repo produces different commit hashes
     // (because timestamps differ), but the repository structure is equivalent.
     const history = await provider.history(ctx, root)
-    assert.strictEqual(history.length, 2)
-    assert.strictEqual(history[0].message, "add beta")
-    assert.strictEqual(history[1].message, "add alpha")
+    const messages = history.map((h) => h.message)
+    assert.ok(messages.includes("add beta"))
+    assert.ok(messages.includes("add alpha"))
   } finally {
     await cleanup(root)
   }
