@@ -1,6 +1,6 @@
 # EXP-EXEC-002 — Work Item Runtime
 
-**Status:** Accepted  
+**Status:** Completed  
 **Merged:** PR #125
 **Kind:** Implementation Expedition  
 **Priority:** High  

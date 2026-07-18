@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "recovering-from-wrong-model",
+  "title": "I want to understand this project before making any changes.",
+  "trigger": "I want to understand this project before making any changes.",
+  "preconditions": {
+    "initialized": false,
+    "phase": "uninitialized",
+    "files": [
+      "status",
+      "kind",
+      "phase",
+      "summary",
+      "missions",
+      "activeExpeditions",
+      "blockers",
+      "warnings",
+      "nextActions",
+      "eventCount",
+      "stateHash"
+    ],
+    "repositoryStateSummary": "uninitialized directory; phase: uninitialized"
+  },
+  "trajectory": [
+    {
+      "turn": 1,
+      "command": "status",
+      "intent": "Initial inspection before any SYNTH evidence exists.",
+      "expectedReasoningState": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.8,
+        "unknowns": []
+      },
+      "decisionPoint": false
+    },
+    {
+      "turn": 2,
+      "command": "init --name Hospitality Design System",
+      "intent": "Initialize SYNTH governance so intent-shaped evidence becomes visible.",
+      "expectedReasoningState": {
+        "understoodAs": "existing React Native / frontend application",
+        "confidence": 0.6,
+        "unknowns": [
+          "why initialize if app exists"
+        ]
+      },
+      "decisionPoint": true
+    },
+    {
+      "turn": 3,
+      "command": "status",
+      "intent": "Re-evaluate interpretation after SYNTH initialization evidence is available.",
+      "expectedReasoningState": {
+        "understoodAs": "specification-stage design repository",
+        "confidence": 0.7,
+        "unknowns": [
+          "implementation timeline"
+        ]
+      },
+      "decisionPoint": false
+    }
+  ],
+  "decisionPoints": [
+    {
+      "turn": 2,
+      "description": "Divergence from 'existing React Native / frontend application' to 'existing React Native / frontend application' after 'init --name Hospitality Design System'."
+    },
+    {
+      "turn": 3,
+      "description": "Model corrected from 'existing React Native / frontend application' to 'specification-stage design repository' via 'status'."
+    }
+  ],
+  "successfulPrompts": [
+    "status — Initial inspection before any SYNTH evidence exists.",
+    "status — Re-evaluate interpretation after SYNTH initialization evidence is available."
+  ],
+  "antiPatterns": [
+    "Assuming 'existing React Native / frontend application' before establishing 'existing React Native / frontend application'.",
+    "Treating a specification repository as an incomplete application."
+  ],
+  "misinterpretationCategories": [
+    "intent-confusion"
+  ],
+  "confidence": 1,
+  "status": "canonical",
+  "supportingEvidence": [
+    {
+      "sessionId": "recovering-from-wrong-model",
+      "scenarioId": "recovering-from-wrong-model",
+      "evidencePath": "../sessions/baseline-recovering-from-wrong-model-evidence.json"
+    }
+  ]
+}

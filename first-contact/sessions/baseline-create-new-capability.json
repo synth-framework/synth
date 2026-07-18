@@ -5,8 +5,8 @@
   "humanPrompt": "I need to add authentication to this project.",
   "description": "Agent receives a feature request and must align it with the governed lifecycle before creating an expedition.",
   "cliPath": "/Users/dev/Projects/synth-v2/dist/cli/synth.js",
-  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-OwEI78",
-  "startedAt": "2026-07-18T14:12:58.157Z",
+  "repositoryRoot": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-tD4kob",
+  "startedAt": "2026-07-18T14:41:45.063Z",
   "turns": [
     {
       "turn": 1,
@@ -212,8 +212,8 @@
         },
         "status": "ok",
         "kind": "MissionDraft",
-        "draftId": "1529617e1a64ecb0",
-        "draftPath": "/private/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-OwEI78/.synth/data/drafts/1529617e1a64ecb0.json",
+        "draftId": "c4e4d6e16d7d890e",
+        "draftPath": "/private/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-first-contact-tD4kob/.synth/data/drafts/c4e4d6e16d7d890e.json",
         "integrity": "certified",
         "subject": "Authentication",
         "purpose": "Add identity and access control to the hospitality platform",
@@ -231,7 +231,7 @@
         "questions": [],
         "proposals": [
           {
-            "id": "0ea86e587e118289",
+            "id": "3b813723ebabc857",
             "kind": "mission",
             "name": "Authentication",
             "description": "Add identity and access control to the hospitality platform",
@@ -246,7 +246,7 @@
             "rationale": "Proposed from mission observation obs-mission-authentication"
           }
         ],
-        "nextStep": "synth mission approve --draft-id 1529617e1a64ecb0"
+        "nextStep": "synth mission approve --draft-id c4e4d6e16d7d890e"
       },
       "stateBefore": {
         "status": "ok",
@@ -283,14 +283,14 @@
         "blockers": [
           {
             "kind": "low-confidence",
-            "description": "Mission draft \"1529617e1a64ecb0\" confidence is 0.67 (threshold 0.7).",
-            "remediation": "synth mission evidence add --draft-id 1529617e1a64ecb0 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+            "description": "Mission draft \"c4e4d6e16d7d890e\" confidence is 0.67 (threshold 0.7).",
+            "remediation": "synth mission evidence add --draft-id c4e4d6e16d7d890e --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
           }
         ],
         "warnings": [],
         "nextActions": [
           {
-            "command": "synth mission evidence add --draft-id 1529617e1a64ecb0 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]",
+            "command": "synth mission evidence add --draft-id c4e4d6e16d7d890e --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]",
             "reason": "Mission draft needs more evidence before approval",
             "priority": 1
           }
@@ -304,13 +304,13 @@
         "blockers": [
           {
             "kind": "low-confidence",
-            "description": "Mission draft \"1529617e1a64ecb0\" confidence is 0.67 (threshold 0.7).",
-            "remediation": "synth mission evidence add --draft-id 1529617e1a64ecb0 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+            "description": "Mission draft \"c4e4d6e16d7d890e\" confidence is 0.67 (threshold 0.7).",
+            "remediation": "synth mission evidence add --draft-id c4e4d6e16d7d890e --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
           }
         ],
         "nextActions": [
           {
-            "command": "synth mission evidence add --draft-id 1529617e1a64ecb0 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]",
+            "command": "synth mission evidence add --draft-id c4e4d6e16d7d890e --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]",
             "reason": "Mission draft needs more evidence before approval",
             "priority": 1
           }
@@ -319,5 +319,5 @@
       "evidenceGenerated": []
     }
   ],
-  "completedAt": "2026-07-18T14:13:04.165Z"
+  "completedAt": "2026-07-18T14:41:53.447Z"
 }

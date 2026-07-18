@@ -1,7 +1,8 @@
 # EXP-GOV-008 — Initialization as a Governed State Transition
 
-**Status:** Proposed  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Governance / Runtime  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -338,6 +339,18 @@ The following artifacts SHALL NOT be modified by this expedition:
 
 ---
 
+## Completion Notes
+
+**Completed:** 2026-07-18  
+**Subsumed by:** EXP-INIT-002 evidence-backed initialization and replay (#153)
+
+- `PROJECT_INITIALIZED` event is defined, emitted by `synth init` and `synth bootstrap --approve`, and replayed to phase `initialized`.
+- The manifest carries `governanceVersion`.
+- The resolver recognizes the `initialized` lifecycle phase.
+- Mutation commands (`synth mission create/approve/evidence add`, `synth expedition create/start/complete`) resolve actual project state through file-backed persistence rather than empty memory state.
+- Initialization replay tests pass in CI.
+- One deferred item remains: routing `synth verify` and `synth explain replay` through a resolver-derived context instead of their current specialized artifact reading. This is a future refactoring opportunity, not a blocker.
+
 ## Definition of Done
 
 - [x] `PROJECT_INITIALIZED` event type defined and documented.
@@ -348,7 +361,7 @@ The following artifacts SHALL NOT be modified by this expedition:
 - [x] Mutation commands resolve actual project state before acting (`synth mission create/approve/evidence add`, `synth expedition create/start/complete` now use file-backed persistence instead of empty memory state).
 - [ ] `synth verify` and `synth explain replay` refactored to consume resolver-derived context instead of reimplementing artifact reading (deferred to follow-up; current verification engine has specialized verifier/checkpoint needs).
 - [x] Regression tests added.
-- [ ] Expedition accepted.
+- [x] Expedition accepted.
 
 ---
 
