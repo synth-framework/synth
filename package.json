@@ -1,6 +1,6 @@
 {
   "name": "@synth-framework/synth",
-  "version": "2.0.0-rc.3",
+  "version": "2.0.0",
   "description": "AI-native deterministic execution system for engineering work",
   "type": "module",
   "main": "dist/main.js",
