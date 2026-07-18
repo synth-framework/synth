@@ -20,6 +20,8 @@
 import type { SynthEvent } from "../types/index.js"
 import { CREATION_EVENTS, creationPayload, type AggregateGraphNode } from "./replay.js"
 import type { IdentityRegistry } from "./identity-resolver.js"
+import type { HistoricalAliasRegistry } from "./historical-aliases.js"
+import { getCanonicalId } from "./historical-aliases.js"
 
 export type ReferenceResolutionKind = "resolved" | "recovered-alias" | "recovered-unique-candidate" | "unresolved"
 
@@ -77,10 +79,16 @@ function findOnlyCandidate(registry: IdentityRegistry, kind: AggregateGraphNode[
 
 /**
  * Resolve parent references in creation events against the identity registry.
+ *
+ * If a parent reference does not match a canonical identity directly, an
+ * optional historical alias registry is consulted. A registered alias is
+ * recovered to its canonical id with an info-level notice rather than a
+ * warning.
  */
 export function resolveReferences(
   events: SynthEvent[],
   registry: IdentityRegistry,
+  aliasRegistry?: HistoricalAliasRegistry,
 ): ReferenceResolutionResult {
   const resolvedEvents: SynthEvent[] = []
   const notices: ReferenceResolutionNotice[] = []
@@ -144,8 +152,35 @@ export function resolveReferences(
         break
       }
 
-      // 2. Legacy alias lookup (placeholder for future alias registry)
-      // No alias map yet; fall through.
+      // 2. Legacy alias lookup
+      const canonicalAliasId = aliasRegistry ? getCanonicalId(aliasRegistry, parentKind, parentId) : undefined
+      if (canonicalAliasId) {
+        const notice: ReferenceResolutionNotice = {
+          kind: "recovered-alias",
+          severity: "info",
+          aggregateKind: spec.kind,
+          aggregateId: id,
+          referenceName: parentKey,
+          originalReference: parentId,
+          resolvedReference: canonicalAliasId,
+          message: `${spec.kind} ${id} references historical alias ${parentId}; resolved to canonical ${parentKind} ${canonicalAliasId}`,
+          provenance: { eventId: event.id, reason: "historical-alias-registry" },
+        }
+        notices.push(notice)
+
+        const payload = event.payload as Record<string, unknown>
+        resolvedEvents.push({
+          ...event,
+          payload: {
+            ...payload,
+            [spec.payloadKey]: {
+              ...entity,
+              [parentKey]: canonicalAliasId,
+            },
+          },
+        })
+        break
+      }
 
       // 3. Unique-candidate inference
       const onlyCandidate = findOnlyCandidate(registry, parentKind)

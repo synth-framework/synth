@@ -39,6 +39,7 @@ import type { NormalizationNotice } from "./historical-normalizer.js"
 import type { ReferenceResolutionNotice } from "./reference-resolver.js"
 import type { FilesystemProvider } from "../environment/filesystem-capability.js"
 import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import { loadHistoricalAliasRegistry, type HistoricalAliasRegistry } from "./historical-aliases.js"
 
 export type ResolveGovernanceContextOptions = {
   dataDir?: string
@@ -248,7 +249,7 @@ function normalizationToDivergence(notice: NormalizationNotice): StateDivergence
 function referenceToDivergence(notice: ReferenceResolutionNotice): StateDivergence {
   return {
     kind: notice.kind,
-    severity: notice.severity === "info" ? "warning" : notice.severity,
+    severity: notice.severity,
     description: notice.message,
     artifact: notice.aggregateKind,
   }
@@ -271,6 +272,7 @@ export async function resolveGovernanceContext(
   const events = await readEventLog(dataFs, "event-log.jsonl")
   const persistedState = (await readJsonMaybe<CanonicalState>(dataFs, "canonical-state.json")) ?? null
   const decisions = await listDecisions(dataDir, undefined, dataFs)
+  const historicalAliases = await loadHistoricalAliasRegistry(dataFs)
 
   let snapshots: StoredSnapshot[] = []
   try {
@@ -282,7 +284,7 @@ export async function resolveGovernanceContext(
   // EXP-GOV-007: canonical state is derived through the resolver pipeline.
   // Historical duplicates, identity aliases, and recoverable references are
   // normalized deterministically before validation.
-  const buildResult = buildCanonicalState(events)
+  const buildResult = buildCanonicalState(events, historicalAliases)
 
   if (!buildResult.success) {
     return toFailure(
@@ -308,6 +310,7 @@ export async function resolveGovernanceContext(
     replayedState: replayedStateBeforeSnapshots,
     decisions,
     snapshots,
+    aliasRegistry: historicalAliases,
   })
 
   const replayedState = mergeSnapshotState(replayedStateBeforeSnapshots, snapshots)

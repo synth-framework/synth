@@ -21,9 +21,20 @@ export class EventStore {
   private filePath: string
   private authorized: boolean
 
-  constructor(filePath: string = EVENT_LOG_FILE, authToken?: symbol) {
-    this.filePath = filePath
+  constructor(filePath?: string, authToken?: symbol) {
+    this.filePath = filePath ?? EVENT_LOG_FILE
     this.authorized = authToken === EVENT_STORE_WRITE_TOKEN
+  }
+
+  /** Return the canonical event log path, or undefined for in-memory stores. */
+  getFilePath(): string | undefined {
+    return this.filePath
+  }
+
+  /** Return the directory containing the event log, or undefined for in-memory stores. */
+  getDataDir(): string | undefined {
+    const filePath = this.getFilePath()
+    return filePath ? path.dirname(filePath) : undefined
   }
 
   /** Create an authorized EventStore instance for the guarded wrapper. */
@@ -90,6 +101,10 @@ export class InMemoryEventStore extends EventStore {
 
   constructor() {
     super(undefined, EVENT_STORE_WRITE_TOKEN)
+  }
+
+  override getFilePath(): string | undefined {
+    return undefined
   }
 
   async initialize(): Promise<void> {}

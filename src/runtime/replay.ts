@@ -16,6 +16,8 @@ import type {
   Decision,
   GeneratedWorkItem,
 } from "../types/index.js"
+import type { HistoricalAliasRegistry } from "./historical-aliases.js"
+import { getCanonicalId, identityKey } from "./historical-aliases.js"
 
 export function createEmptyState(): CanonicalState {
   return {
@@ -546,6 +548,8 @@ export type AggregateGraphNode = {
   id: string
   kind: "mission" | "expedition" | "objective"
   parentId?: string
+  /** Event id of the canonical creation event, when known. */
+  eventId?: string
 }
 
 type CreationRecord = {
@@ -586,9 +590,23 @@ export const CREATION_EVENTS: Array<{
  * Returns every violation found; an empty list means the graph is fully
  * connected and navigable.
  */
+function isKnownHistoricalDuplicate(
+  aliasRegistry: HistoricalAliasRegistry | undefined,
+  kind: AggregateGraphNode["kind"],
+  id: string,
+  firstEventId: string | undefined,
+  duplicateEventId: string,
+): boolean {
+  if (!aliasRegistry) return false
+  const entry = aliasRegistry.canonicalIdentities[identityKey(kind, id)]
+  if (!entry) return false
+  return entry.aliasEventIds.includes(duplicateEventId) && (!firstEventId || entry.aliasEventIds.includes(firstEventId))
+}
+
 export function validateAggregateGraph(
   events: SynthEvent[],
   state?: CanonicalState,
+  aliasRegistry?: HistoricalAliasRegistry,
 ): AggregateGraphViolation[] {
   const violations: AggregateGraphViolation[] = []
   const nodes = new Map<string, AggregateGraphNode>()
@@ -614,20 +632,25 @@ export function validateAggregateGraph(
       const parentId = spec.parentKey && isNonEmptyString(entity?.[spec.parentKey])
         ? (entity?.[spec.parentKey] as string)
         : undefined
-      const node: AggregateGraphNode = { id, kind: spec.kind, parentId }
+      const node: AggregateGraphNode = { id, kind: spec.kind, parentId, eventId: event.id }
       creations.push({ node, eventType: spec.eventType })
 
       const existing = nodes.get(id)
       if (existing) {
-        violations.push({
-          kind: "duplicate-creation",
-          message:
-            existing.kind === spec.kind
-              ? `Duplicate ${spec.kind} identity in event log: ${id}`
-              : `Event log identity ${id} is used as both ${existing.kind} and ${spec.kind}`,
-          aggregateKind: spec.kind,
-          aggregateId: id,
-        })
+        // Duplicate identity. If both the existing canonical event and this
+        // duplicate are registered historical aliases, the duplicate is
+        // known legacy metadata and does not require a violation.
+        if (!isKnownHistoricalDuplicate(aliasRegistry, spec.kind, id, existing.eventId, event.id)) {
+          violations.push({
+            kind: "duplicate-creation",
+            message:
+              existing.kind === spec.kind
+                ? `Duplicate ${spec.kind} identity in event log: ${id}`
+                : `Event log identity ${id} is used as both ${existing.kind} and ${spec.kind}`,
+            aggregateKind: spec.kind,
+            aggregateId: id,
+          })
+        }
       } else {
         nodes.set(id, node)
       }
@@ -635,12 +658,29 @@ export function validateAggregateGraph(
     }
   }
 
+  // Resolve historical aliases in parent references so that cycle,
+  // reachability, and navigation checks operate on canonical ids.
+  if (aliasRegistry) {
+    const resolveParent = (node: AggregateGraphNode) => {
+      if (!node.parentId) return
+      const parentKind = node.kind === "expedition" ? "mission" : "expedition"
+      const canonicalParentId = getCanonicalId(aliasRegistry, parentKind, node.parentId)
+      if (canonicalParentId) {
+        node.parentId = canonicalParentId
+      }
+    }
+    for (const node of nodes.values()) resolveParent(node)
+    for (const { node } of creations) resolveParent(node)
+  }
+
   // Pass 2: every creation's parent reference must resolve to an
-  // aggregate of the expected kind somewhere in the log.
+  // aggregate of the expected kind somewhere in the log. Historical
+  // aliases are resolved to their canonical ids before checking.
   for (const { node, eventType } of creations) {
     if (node.kind === "mission") continue
     const parentKind = node.kind === "expedition" ? "mission" : "expedition"
-    if (!node.parentId) {
+    let parentId = node.parentId
+    if (!parentId) {
       violations.push({
         kind: "missing-parent-reference",
         message: `${eventType} ${node.id} has no ${parentKind} parent`,
@@ -649,7 +689,12 @@ export function validateAggregateGraph(
       })
       continue
     }
-    const parent = nodes.get(node.parentId)
+    // Resolve historical alias to canonical id.
+    const canonicalParentId = aliasRegistry ? getCanonicalId(aliasRegistry, parentKind, parentId) : undefined
+    if (canonicalParentId) {
+      parentId = canonicalParentId
+    }
+    const parent = nodes.get(parentId)
     if (!parent) {
       violations.push({
         kind: "broken-parent-reference",
