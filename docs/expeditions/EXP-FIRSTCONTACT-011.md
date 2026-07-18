@@ -378,17 +378,23 @@ Define the schema for `FirstContactEvidence` artifacts.
 
 Create a harness for executing controlled agent sessions and capturing trajectories.
 
-### EXP-FIRSTCONTACT-011-C — Conversation Pattern Extractor
+### EXP-FIRSTCONTACT-011-C — Conversation Pattern Extractor ✅
 
 Produce deterministic `ConversationPattern` artifacts from `FirstContactEvidence`.
 
-### EXP-FIRSTCONTACT-011-D — Pattern Validation
+Implemented in `src/first-contact/patterns.ts` and `scripts/extract-conversation-patterns.js`.
+
+### EXP-FIRSTCONTACT-011-D — Pattern Validation ✅
 
 Verify minimum evidence count, confidence threshold, deterministic extraction, and absence of conflicting trajectories before a pattern is promoted from provisional to canonical.
 
-### EXP-FIRSTCONTACT-011-E — Projection Layer
+Implemented in `src/first-contact/patterns.ts` and tested in `tests/first-contact-patterns.test.js`.
+
+### EXP-FIRSTCONTACT-011-E — Projection Layer ✅
 
 Generate `docs/first-contact/quick-start/` as projections of canonical `ConversationPattern` artifacts.
+
+Implemented in `scripts/generate-first-contact-quickstart.js` and tested in `tests/first-contact-quickstart.test.js`.
 
 ### EXP-FIRSTCONTACT-011-F — First Contact Experience v2 Specification
 
@@ -406,11 +412,11 @@ Establish the `FirstContactEvidence` structure and taxonomy categories.
 
 Create the harness, run controlled sessions across diverse repository types, and generate baseline evidence artifacts.
 
-### Phase 3 — Pattern extraction
+### Phase 3 — Pattern extraction ✅
 
 Produce deterministic `ConversationPattern` artifacts from `FirstContactEvidence`. Every field must trace back to evidence; the extractor must not invent.
 
-### Phase 4 — Pattern validation
+### Phase 4 — Pattern validation ✅
 
 Promote a pattern from provisional to canonical only when it passes:
 
@@ -419,7 +425,7 @@ Promote a pattern from provisional to canonical only when it passes:
 - deterministic extraction
 - no conflicting trajectories
 
-### Phase 5 — Projection layer
+### Phase 5 — Projection layer ✅
 
 Generate `docs/first-contact/quick-start/` Markdown projections from canonical `ConversationPattern` artifacts.
 
