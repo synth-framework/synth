@@ -1,8 +1,10 @@
 # EXP-GOV-006 — Agent Lifecycle Enforcement
 
-**Status:** Proposed  
+**Status:** Active  
+**Started:** 2026-07-18  
 **Kind:** Governance / Runtime Enforcement  
 **Priority:** Critical  
+**Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
 **Depends On:** EXP-PROGRAM-016, EXP-REL-006  
 **Blocks:** Future agent-executed expeditions
 
@@ -10,7 +12,7 @@
 
 ## Objective
 
-Establish deterministic enforcement mechanisms that ensure all agent-driven work follows the SYNTH transformation lifecycle:
+Establish deterministic enforcement mechanisms — implemented as a runtime governance capability — that ensure all agent-driven work follows the SYNTH transformation lifecycle. The goal is not to teach agents SYNTH; it is to make the SYNTH-conformant path the only valid operational path:
 
 ```
 Intent
