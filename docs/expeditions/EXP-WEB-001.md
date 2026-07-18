@@ -1,6 +1,6 @@
-> **Design expedition.** This charter contains the design brief, copy, layout, and animation behavior for the SYNTH marketing homepage hero. It is an authored artifact under EXP-PROGRAM-020.
-
 # EXP-WEB-001 — Homepage Hero: Intent to Deterministic Result
+
+> **Design expedition.** This charter contains the design brief, copy, layout, and animation behavior for the SYNTH marketing homepage hero. It is an authored artifact under EXP-PROGRAM-020.
 
 **Status:** Accepted  
 **Started:** 2026-07-18  

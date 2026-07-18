@@ -90,6 +90,10 @@
       "name": "Validation",
       "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."
     },
+    "WEB": {
+      "name": "Website Experience",
+      "description": "Public website expeditions (homepage, scenario pages, design system, onboarding surfaces)."
+    },
     "PROGRAM": {
       "name": "Program",
       "description": "Program-level containers that group related expeditions.",

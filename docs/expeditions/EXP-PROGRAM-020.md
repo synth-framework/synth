@@ -1,5 +1,7 @@
 # EXP-PROGRAM-020 — Website Experience
 
+> **Program charter.** This document defines the Website Experience program for the SYNTH public website and its derived onboarding surfaces.
+
 **Status:** Accepted  
 **Started:** 2026-07-18  
 **Kind:** Product Program  
