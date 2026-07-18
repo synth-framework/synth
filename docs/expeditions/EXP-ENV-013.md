@@ -1,7 +1,8 @@
 # EXP-ENV-013 — Co-locate Runtime Data Under `.synth/`
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Environment Independence / Repository Layout  
 **Priority:** High  
 **Program:** EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program  
@@ -202,5 +203,5 @@ If both `data/` and `.synth/data/` exist, `.synth/data/` is authoritative and `d
 - [x] Manifest `layout.data` updated to `".synth/data/"`.
 - [x] `.gitignore` updated to include `.synth/data/` while keeping `data/` for ungoverned projects.
 - [x] Migration path implemented and tested for existing projects.
-- [ ] Governance pipeline (`npm run govern`) passes.
-- [ ] Expedition accepted.
+- [x] Governance pipeline (`npm run govern`) passes in CI.
+- [x] Expedition accepted.

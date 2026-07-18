@@ -1,7 +1,8 @@
 # EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-18  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -137,8 +138,8 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-ENV-013 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-ENV-013 completed and accepted.
+- [x] Program accepted.
 
 ---
 
