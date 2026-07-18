@@ -114,11 +114,19 @@ export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryId
   }
 
   // --- Phase ----------------------------------------------------------
+  const lifecycle = state?.lifecycle ?? "uninitialized"
+  const activeMission = Object.values(missions).some((m: any) => m?.status === "active")
+  const executingExpedition = Object.values(state?.expeditions ?? {}).some(
+    (e: any) => e?.status === "executing",
+  )
+
   let phase: string
-  if (completedMissionCount > 0) {
+  if (completedMissionCount > 0 && !activeMission && !executingExpedition) {
     phase = "operational"
-  } else if (missionCount > 0 || eventCount > 0) {
+  } else if (activeMission || executingExpedition) {
     phase = "executing"
+  } else if (lifecycle === "initialized") {
+    phase = "planning"
   } else if (drafts.length > 0 || snapshots.length > 0) {
     phase = "planning"
   } else if (expeditionFiles.length > 0) {

@@ -117,12 +117,12 @@ async function testInitializedNoMission() {
     assert(status === 0, "explain resume should exit 0")
     const output = parseJson(stdout)
     assert(output.kind === "ResumeBriefing", "output kind should be ResumeBriefing")
-    assert(output.context.phase === "planning", `phase should be planning, got ${output.context.phase}`)
+    assert(output.context.phase === "initialized", `phase should be initialized, got ${output.context.phase}`)
     assert(output.whatIsNext.some((a) => a.command.includes("synth mission create")), "should suggest creating a mission")
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true })
   }
-  console.log("[PASS] initialized project without mission reports planning + create-mission action")
+  console.log("[PASS] initialized project without mission reports initialized + create-mission action")
 }
 
 // ------------------------------------------------------------

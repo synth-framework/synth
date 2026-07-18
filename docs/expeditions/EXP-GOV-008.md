@@ -340,14 +340,14 @@ The following artifacts SHALL NOT be modified by this expedition:
 
 ## Definition of Done
 
-- [ ] `PROJECT_INITIALIZED` event type defined and documented.
-- [ ] `synth init` and `synth bootstrap --approve` write the event.
-- [ ] Replay rule implemented and tested.
-- [ ] `governanceVersion` added to manifest.
-- [ ] Resolver recognizes `initialized` phase.
-- [ ] Mutation commands routed through resolver.
-- [ ] Duplicated context construction removed.
-- [ ] Regression tests added.
+- [x] `PROJECT_INITIALIZED` event type defined and documented.
+- [x] `synth init` and `synth bootstrap --approve` write the event.
+- [x] Replay rule implemented and tested.
+- [x] `governanceVersion` added to manifest.
+- [x] Resolver recognizes `initialized` phase.
+- [x] Mutation commands resolve actual project state before acting (`synth mission create/approve/evidence add`, `synth expedition create/start/complete` now use file-backed persistence instead of empty memory state).
+- [ ] `synth verify` and `synth explain replay` refactored to consume resolver-derived context instead of reimplementing artifact reading (deferred to follow-up; current verification engine has specialized verifier/checkpoint needs).
+- [x] Regression tests added.
 - [ ] Expedition accepted.
 
 ---

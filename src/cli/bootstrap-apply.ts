@@ -7,6 +7,7 @@
 
 import fs from "fs/promises"
 import path from "path"
+import crypto from "crypto"
 import { spawn } from "child_process"
 import { bootstrap } from "../core/bootstrap.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
@@ -84,6 +85,7 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
 async function initSynthProject(targetDir: string, projectName: string) {
   const synthDir = path.join(targetDir, ".synth")
   const dataDir = path.join(targetDir, ".synth", "data")
+  const governanceVersion = "2.1"
   await fs.mkdir(synthDir, { recursive: true })
   await fs.mkdir(dataDir, { recursive: true })
 
@@ -91,6 +93,7 @@ async function initSynthProject(targetDir: string, projectName: string) {
   const manifest = {
     schema: "synth-bootstrap-manifest-v1",
     version,
+    governanceVersion,
     projectName,
     root: targetDir,
     generatedAt: new Date().toISOString(),
@@ -129,6 +132,38 @@ async function initSynthProject(targetDir: string, projectName: string) {
   }
 
   await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2), "utf-8")
+
+  // Record the initialization as a replayable governance event.
+  const ctx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      persistence: "file",
+      eventLogPath: path.join(dataDir, "event-log.jsonl"),
+      statePath: path.join(dataDir, "canonical-state.json"),
+      checkpointPath: path.join(dataDir, "checkpoints.json"),
+    },
+  })
+  for (const name of ctx.capabilityRegistry.list()) {
+    const cap = ctx.capabilityRegistry.resolve(name)
+    if (cap) ctx.runtime.registerCapability(cap)
+  }
+
+  const currentState = await ctx.runtime.getState()
+  if (currentState.lifecycle !== "initialized") {
+    const initResult = await ctx.api.handleIntent({
+      actor: "synth-bootstrap",
+      capability: "InitializeProject",
+      payload: {
+        projectId: crypto.randomUUID(),
+        name: projectName,
+        governanceVersion,
+      },
+    })
+    if (initResult.status !== "ok") {
+      throw new Error(`Project initialization failed: ${initResult.error || JSON.stringify(initResult)}`)
+    }
+  }
+
   await writeAgentArtifacts(synthDir, projectName)
 }
 

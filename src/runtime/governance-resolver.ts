@@ -131,6 +131,7 @@ function mergeSnapshotState(
   const base: CanonicalState = state ?? {
     version: 1,
     stateHash: "snapshot-derived",
+    lifecycle: "uninitialized",
     workItems: {},
     plans: {},
     milestones: {},
@@ -191,6 +192,12 @@ function derivePhase(
   const allTerminal =
     missions.length > 0 && missions.every((m) => m.status === "completed" || m.status === "archived")
   if (allTerminal) return "complete"
+
+  // EXP-GOV-008: distinguish a freshly initialized project from one that
+  // has already entered mission planning.
+  if (state.lifecycle === "initialized" && missions.length === 0 && !latestDraft) {
+    return "initialized"
+  }
 
   return "planning"
 }

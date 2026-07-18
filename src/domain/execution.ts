@@ -129,6 +129,18 @@ export function applyDomain(
       return { events: [{ type: "PROJECT_CREATED", payload: { project } }] }
     }
 
+    case "InitializeProject": {
+      const projectId = String(intent.payload.projectId)
+      const name = String(intent.payload.name)
+      const governanceVersion = String(intent.payload.governanceVersion)
+      return {
+        events: [{
+          type: "PROJECT_INITIALIZED",
+          payload: { projectId, name, governanceVersion },
+        }],
+      }
+    }
+
     // ============================================================
     // Planning capabilities (PCE)
     // ============================================================

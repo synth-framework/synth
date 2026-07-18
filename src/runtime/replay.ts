@@ -21,6 +21,7 @@ export function createEmptyState(): CanonicalState {
   return {
     version: 0,
     stateHash: "0",
+    lifecycle: "uninitialized",
     workItems: {},
     plans: {},
     milestones: {},
@@ -186,6 +187,10 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     case "PROJECT_CREATED": {
       const project = payload.project as Project
       if (project) state.projects[project.id] = project
+      break
+    }
+    case "PROJECT_INITIALIZED": {
+      state.lifecycle = "initialized"
       break
     }
 
@@ -470,6 +475,11 @@ export function computeStateHash(state: CanonicalState): string {
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
+  }
+  // Backward-compatible hash: only include lifecycle once the project has
+  // been initialized. Empty/uninitialized states preserve their legacy hash.
+  if (state.lifecycle === "initialized") {
+    data.lifecycle = state.lifecycle
   }
   // Backward-compatible hash: only include new collections when populated.
   // Logs recorded before EXP-EXEC-001 have empty execution collections.
