@@ -21,6 +21,7 @@ A collection of tested prompts for operating Synth from an AI agent.
 - [Create a Mission](create-mission.md)
 - [Generate Expeditions](generate-expeditions.md)
 - [Validate changes](validate-changes.md)
+- [Update the Synth npm package](update-synth-package.md)
 - [Explain the Replay](explain-replay.md)
 - [Recover the interrupted Mission](recover-mission.md)
 
