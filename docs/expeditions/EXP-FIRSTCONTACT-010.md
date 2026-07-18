@@ -5,7 +5,7 @@
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
 **Depends On:** EXP-GOV-007, EXP-GOV-008  
-**Blocks:** Future agent onboarding contract and first-contact UX specification
+**Blocks:** EXP-FIRSTCONTACT-011 — Agent First Contact Learning System
 
 ---
 
