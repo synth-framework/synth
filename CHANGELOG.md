@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-07-18
+
+The Runtime Boundary Release. SYNTH now stores governed project runtime data under `.synth/data/` while keeping the source repository independent of `.synth/`.
+
+### Runtime Data Boundary
+
+- Co-located runtime authority and projections under `.synth/data/` for SYNTH-governed projects.
+- Added automatic, byte-preserving migration from legacy repo-root `data/` to `.synth/data/`.
+- Added `src/infra/paths.ts` as the single source of truth for runtime data paths.
+- Added `src/infra/migrate-data-dir.ts` for one-time migration triggered by CLI and verification commands.
+- Ungoverned directories — including the SYNTH source repository — continue to use repo-root `data/`.
+
 ## [2.0.0] — 2026-07-18
 
 The Governed Execution Release. SYNTH 2.0 is now capable of transforming approved Expeditions into governed repository changes.
