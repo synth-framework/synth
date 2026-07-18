@@ -137,6 +137,7 @@ async function testInit() {
     assert(Array.isArray(manifest.capabilities), "manifest should list capabilities")
     assert(Array.isArray(manifest.publicVocabulary), "manifest should list public vocabulary")
     assert(manifest.publicVocabulary.includes("Replay"), "vocabulary should include Replay")
+    assert(manifest.layout && manifest.layout.data === ".synth/data/", `manifest layout.data should be .synth/data/, got ${manifest.layout?.data}`)
     console.log("[PASS] synth init creates a valid bootstrap manifest")
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true })

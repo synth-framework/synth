@@ -34,7 +34,7 @@ This keeps project identity, runtime state, and derived artifacts in one obvious
 This expedition changes the layout of a **SYNTH-governed project**, not the layout of the **SYNTH source repository**.
 
 - A governed project has `.synth/manifest.json` and runtime state.
-- The SYNTH source repository currently has an empty, untracked `.synth/` directory and a `data/` directory, but it is **not** a governed project in practice: there is no `.synth/manifest.json`.
+- The SYNTH source repository has a repo-root `data/` directory but no `.synth/manifest.json`, so it is **not** a governed project in practice.
 - The compiler, build scripts, and core test suite do **not** require `.synth/` to exist. Only the CLI and runtime infrastructure use `.synth/` when operating on a governed project.
 - The path change is: *when SYNTH is managing a governed project, it stores that project's runtime data under that project's `.synth/data/` directory*.
 - If the SYNTH source repository later removes its empty `.synth/` directory, the source code will still build and pass its core tests.
@@ -118,7 +118,7 @@ Only filesystem paths and the manifest `layout.data` field change. The event log
 | `src/verification/context.ts` | `data/` assembled into context | `.synth/data/` |
 | `src/verification/checks.ts` | `data/drafts/`, `data/checkpoints.json` | `.synth/data/...` |
 | `src/core/bootstrap.ts` | default snapshot store `./data/snapshots` | `.synth/data/snapshots` |
-| `.gitignore` | ignores `data/` and `data-test/` | ignore `.synth/data/`; keep `data-test/` as test scratch |
+| `.gitignore` | ignores `data/` and `data-test/` | add `.synth/data/`; keep `data/` for ungoverned projects and `data-test/` as test scratch |
 | `data/README.md` | documents repo-root `data/` | move or rewrite for `.synth/data/` |
 
 ### Out of scope
@@ -133,14 +133,18 @@ Only filesystem paths and the manifest `layout.data` field change. The event log
 
 ### 1. Path constant consolidation
 
-Introduce a single source of truth for the runtime data directory, e.g.:
+Introduce a single source of truth for the runtime data directory in `src/infra/paths.ts`:
 
 ```ts
-// src/infra/paths.ts or equivalent
-export const RUNTIME_DATA_DIR = path.join(process.cwd(), ".synth", "data")
+export function getRuntimeDataDir(cwd: string): string {
+  if (hasManifest(cwd)) {
+    return path.join(cwd, ".synth", "data")
+  }
+  return path.join(cwd, "data")
+}
 ```
 
-All infra and CLI modules derive their file paths from this constant. This prevents the current pattern of repeating `path.join(process.cwd(), "data", ...)` in a dozen files.
+All infra and CLI modules derive their file paths from this helper. This prevents the current pattern of repeating `path.join(process.cwd(), "data", ...)` in a dozen files. The helper falls back to repo-root `data/` when no manifest exists, so the SYNTH source repository continues to build and test without `.synth/`.
 
 ### 2. Manifest layout update
 
@@ -157,6 +161,7 @@ Existing SYNTH-governed projects already have `data/` at the repository root. To
      - `event-log.jsonl`
      - `canonical-state.json`
      - `checkpoints.json`
+     - `decisions.jsonl`
      - `drafts/`
      - `snapshots/`
      - `event-stream/`
@@ -180,20 +185,22 @@ If both `data/` and `.synth/data/` exist, `.synth/data/` is authoritative and `d
 
 - `synth init` creates `.synth/data/`, not `data/`.
 - `synth bootstrap --approve` creates `.synth/data/`, not `data/`.
-- All runtime files are read from/written to `.synth/data/` by default.
+- Governed projects read/write all runtime files from `.synth/data/`.
+- Ungoverned directories (including the SYNTH source repo) continue to use repo-root `data/`.
 - Legacy projects with `data/` migrate automatically without data loss.
 - `synth explain replay` and `synth validate` continue to work on migrated projects.
+- The SYNTH source repository builds and passes core tests without a `.synth/` directory.
 - `npm run govern` passes.
 
 ---
 
 ## Definition of Done
 
-- [ ] Expedition approved.
-- [ ] Single source of truth for runtime data directory path implemented.
-- [ ] All listed source files updated to use `.synth/data/`.
-- [ ] Manifest `layout.data` updated to `".synth/data/"`.
-- [ ] `.gitignore` updated to ignore `.synth/data/` instead of `data/`.
-- [ ] Migration path implemented and tested for existing projects.
+- [x] Expedition approved.
+- [x] Single source of truth for runtime data directory path implemented.
+- [x] All listed source files updated to use `.synth/data/`.
+- [x] Manifest `layout.data` updated to `".synth/data/"`.
+- [x] `.gitignore` updated to include `.synth/data/` while keeping `data/` for ungoverned projects.
+- [x] Migration path implemented and tested for existing projects.
 - [ ] Governance pipeline (`npm run govern`) passes.
 - [ ] Expedition accepted.

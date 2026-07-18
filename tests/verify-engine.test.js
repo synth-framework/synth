@@ -38,7 +38,9 @@ function assert(condition, message) {
 }
 
 async function writeEventLog(cwd, events) {
-  const dataDir = path.join(cwd, "data")
+  // Governed projects created by `synth init` store runtime data under
+  // `.synth/data/` (EXP-ENV-013).
+  const dataDir = path.join(cwd, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
   const lines = events.map((e) => JSON.stringify(e)).join("\n") + "\n"
   await fs.writeFile(path.join(dataDir, "event-log.jsonl"), lines, "utf-8")

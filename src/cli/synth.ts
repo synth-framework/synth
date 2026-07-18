@@ -24,6 +24,8 @@ import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
+import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 import { buildValidationPlan } from "../validation/planner.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { PlanningSession } from "../mission-studio/types.js"
@@ -424,6 +426,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
   const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
   const synthDir = path.join(targetDir, ".synth")
+  const dataDir = path.join(targetDir, ".synth", "data")
 
   await fs.mkdir(synthDir, { recursive: true })
 
@@ -439,7 +442,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
       docs: "docs/",
       generatedDocs: "docs/generated/",
       examples: "examples/",
-      data: "data/",
+      data: ".synth/data/",
       proof: "proof/",
       src: "src/",
       tests: "tests/",
@@ -454,8 +457,8 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   const manifestPath = path.join(synthDir, "manifest.json")
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf-8")
 
-  // Ensure data directory exists for event log
-  await fs.mkdir(path.join(targetDir, "data"), { recursive: true })
+  // Ensure runtime data directory exists for event log
+  await fs.mkdir(dataDir, { recursive: true })
 
   printJson({
     status: "ok",
@@ -507,9 +510,10 @@ function cmdGovern() {
 }
 
 async function cmdStatus() {
-  const eventLogPath = path.join(process.cwd(), "data", "event-log.jsonl")
-  const statePath = path.join(process.cwd(), "data", "canonical-state.json")
-  const checkpointPath = path.join(process.cwd(), "data", "checkpoint.json")
+  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const eventLogPath = path.join(dataDir, "event-log.jsonl")
+  const statePath = path.join(dataDir, "canonical-state.json")
+  const checkpointPath = path.join(dataDir, "checkpoint.json")
 
   let hasExistingEvents = false
   try {
@@ -587,7 +591,8 @@ function deserializePlanningSession(data: any): PlanningSession {
 }
 
 async function ensureDraftsDir(): Promise<string> {
-  const draftsDir = path.join(process.cwd(), "data", "drafts")
+  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const draftsDir = path.join(dataDir, "drafts")
   await fs.mkdir(draftsDir, { recursive: true })
   return draftsDir
 }
@@ -645,8 +650,8 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
-  const draftsDir = path.join(process.cwd(), "data", "drafts")
-  const dataDir = path.join(process.cwd(), "data")
+  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
   try {
@@ -784,7 +789,7 @@ const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain
 
 async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : undefined
-  const dataDir = path.join(process.cwd(), "data")
+  const dataDir = await ensureRuntimeDataDir(process.cwd())
   const { records, chainValid } = await listDecisions(dataDir, draftId)
   if (!chainValid) {
     printError(
@@ -811,7 +816,8 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     printError(`Unknown confidence level: "${confidence}". Valid levels: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}`)
   }
 
-  const draftsDir = path.join(process.cwd(), "data", "drafts")
+  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
   try {
@@ -1017,6 +1023,10 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
 }
 
 async function cmdExplainReplay(flags: Record<string, string | boolean>) {
+  // Ensure runtime data is in `.synth/data/` for governed projects before
+  // inspecting any project-local log.
+  await ensureRuntimeDataDir(process.cwd())
+
   // --log <path> (EXP-HARDEN-007): inspect any example/project log;
   // state/checkpoint paths derive from the log's directory.
   const paths = resolveExplainPaths(flags)

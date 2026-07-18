@@ -65,7 +65,7 @@ async function writeManifest(dir, projectName = "Governance Record Test") {
     bootstrapped: true,
     commands: [{ name: "explain", description: "Explain operations" }],
     capabilities: [],
-    layout: { data: "data/" },
+    layout: { data: ".synth/data/" },
     publicVocabulary: ["Mission", "Expedition", "Replay"],
   }
   await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))

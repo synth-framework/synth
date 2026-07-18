@@ -15,6 +15,8 @@ import { bootstrap } from "../core/bootstrap.js"
 import { rebuildState } from "../runtime/replay.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
+import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 import type { SynthEvent, CanonicalState } from "../types/index.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
 
@@ -512,9 +514,10 @@ export async function buildResumeBriefing(
   cwd: string,
   overrides?: { logPath?: string; statePath?: string; snapshotsDir?: string },
 ): Promise<ResumeBriefing> {
-  const logPath = overrides?.logPath ?? path.join(cwd, "data", "event-log.jsonl")
-  const statePath = overrides?.statePath ?? path.join(cwd, "data", "canonical-state.json")
-  const snapshotsDir = overrides?.snapshotsDir ?? path.join(cwd, "data", "snapshots")
+  const runtimeDataDir = getRuntimeDataDir(cwd)
+  const logPath = overrides?.logPath ?? path.join(runtimeDataDir, "event-log.jsonl")
+  const statePath = overrides?.statePath ?? path.join(runtimeDataDir, "canonical-state.json")
+  const snapshotsDir = overrides?.snapshotsDir ?? path.join(runtimeDataDir, "snapshots")
   const dataDir = path.dirname(logPath)
 
   const manifestPath = path.join(cwd, ".synth", "manifest.json")
@@ -617,6 +620,7 @@ export async function cmdExplainResume(flags: Record<string, string | boolean>):
   }
 
   const cwd = process.cwd()
+  await ensureRuntimeDataDir(cwd)
   const overrides = logFlag
     ? {
         logPath: path.resolve(cwd, logFlag),

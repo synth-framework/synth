@@ -10,6 +10,7 @@
 // ============================================================
 
 import { createHash } from "node:crypto"
+import path from "node:path"
 import type { DiscoveryEvidence } from "./types.js"
 import type { FilesystemProvider } from "./filesystem-capability.js"
 import {
@@ -19,9 +20,13 @@ import {
   classifyEnvironment,
   platformFromObservations,
 } from "./orchestrator.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
 
 /** Canonical location of the discovery evidence artifact */
-export const DISCOVERY_EVIDENCE_PATH = "data/discovery-evidence.json"
+export const DISCOVERY_EVIDENCE_PATH = path.posix.join(
+  path.relative(process.cwd(), getRuntimeDataDir(process.cwd())).replace(/\\/g, "/") || ".",
+  "discovery-evidence.json",
+)
 
 /** Sections of the evidence artifact that replay re-derives */
 export type ReplayedEvidence = {

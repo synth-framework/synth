@@ -8,6 +8,7 @@
 import fs from "fs/promises"
 import path from "path"
 import type { SynthContext } from "../core/bootstrap.js"
+import { getRuntimeDataDir } from "../infra/paths.js"
 
 export type MissionBrief = {
   id: string
@@ -71,7 +72,8 @@ async function pathExists(targetPath: string): Promise<boolean> {
 }
 
 async function listDrafts(rootDir: string): Promise<DraftSummary[]> {
-  const draftsDir = path.join(rootDir, "data", "drafts")
+  const dataDir = getRuntimeDataDir(rootDir)
+  const draftsDir = path.join(dataDir, "drafts")
   if (!(await pathExists(draftsDir))) return []
 
   const entries = await fs.readdir(draftsDir)

@@ -6,9 +6,10 @@ import { promises as fs } from "fs"
 import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
 import { IllegalMutationError } from "../core/errors.js"
+import { getRuntimeDataDir } from "./paths.js"
 
-const EVENT_LOG_FILE = path.join(process.cwd(), "data", "event-log.jsonl")
-const EVENT_STREAM_DIR = path.join(process.cwd(), "data", "event-stream")
+const EVENT_LOG_FILE = path.join(getRuntimeDataDir(process.cwd()), "event-log.jsonl")
+const EVENT_STREAM_DIR = path.join(getRuntimeDataDir(process.cwd()), "event-stream")
 
 /** Module-private authorization token for EventStore writes.
  *  Only createGuardedEventStore can obtain it, ensuring writes flow

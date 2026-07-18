@@ -24,6 +24,7 @@ import { createCapabilityRegistry } from "../capability/index.js"
 import { createAdapterRegistry } from "../adapters/registry.js"
 import { GenesisIntake } from "../genesis/index.js"
 import { Registry } from "../capability/registry.js"
+import { getRuntimeSnapshotDir } from "../infra/paths.js"
 import { ExecutionGate } from "../control/execution-gate.js"
 import { Tracer, Logger } from "../observability/tracer.js"
 import { GovernanceEngine } from "../governance/governance-engine.js"
@@ -143,7 +144,11 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
 
   // === STEP 12: API LAYER ===
   logger.info("[12/13] Initializing API layer...")
-  const snapshotStore = createFileSystemSnapshotStore("./data/snapshots")
+
+  // Default snapshot store for approved mission model snapshots.
+  // Governed projects persist under `.synth/data/snapshots`; ungoverned
+  // trees (including the SYNTH source repo) fall back to `data/snapshots`.
+  const snapshotStore = createFileSystemSnapshotStore(getRuntimeSnapshotDir(process.cwd()))
   const api = createAPI(gate, planning, missionStudio, adapterRegistry, snapshotStore)
 
   // === STEP 13: GENESIS (through the single mutation authority) ===
