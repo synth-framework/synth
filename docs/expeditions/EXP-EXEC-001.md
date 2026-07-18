@@ -1,6 +1,7 @@
 # EXP-EXEC-001 — Execution Intent Model
 
-**Status:** Active  
+**Status:** Accepted  
+**Accepted:** 2026-07-18
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -140,9 +141,9 @@ Open PR, run CI, and request program-steward acceptance.
 - [x] Replay handlers for new event types added.
 - [x] Regression tests added (`tests/execution-intent.test.js`).
 - [x] CHANGELOG updated.
-- [ ] Downstream expeditions confirm the model is sufficient.
-- [ ] PR opened and CI checks pass.
-- [ ] Expedition accepted.
+- [x] Downstream expeditions confirm the model is sufficient.
+- [x] PR opened and CI checks pass.
+- [x] Expedition accepted.
 
 ---
 
@@ -160,4 +161,4 @@ Open PR, run CI, and request program-steward acceptance.
 
 ## Completion Notes
 
-*(pending)*
+Accepted as the architectural foundation for EXP-PROGRAM-016. The Execution Intent Model proved sufficient for all downstream implementation expeditions (EXP-EXEC-002 through EXP-EXEC-005) without requiring changes to the model itself. Merged via PR #124.

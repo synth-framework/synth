@@ -1,6 +1,7 @@
 # EXP-EXEC-003 — Branch-per-Expedition Workflow
 
-**Status:** Active  
+**Status:** Accepted  
+**Merged:** PR #126
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -31,5 +32,9 @@ Use the VersioningCapability to create an isolated branch for each approved Expe
 - [x] Branch naming scheme implemented.
 - [x] Branch creation integrated with runtime.
 - [x] Regression tests pass.
-- [ ] PR opened and CI checks pass.
-- [ ] Expedition accepted.
+- [x] PR opened and CI checks pass.
+- [x] Expedition accepted.
+
+## Completion Notes
+
+Merged via PR #126. Deterministic `exp/<expedition-id>` branch creation is now part of the execution runtime, recording the base commit in replay through `EXPEDITION_BRANCH_CREATED`.
