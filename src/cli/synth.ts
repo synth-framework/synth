@@ -13,6 +13,7 @@ import { spawn, spawnSync } from "child_process"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
+import { Logger } from "../observability/tracer.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
@@ -543,6 +544,8 @@ function cmdGovern() {
 
 async function cmdStatus() {
   await ensureRuntimeDataDir(process.cwd())
+  const logger = new Logger("status")
+  logger.info("Resolving governance context for operator briefing")
   const briefing = await buildOperatorBriefing(process.cwd())
   printJson(briefing)
   if (briefing.status === "error") {
