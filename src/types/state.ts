@@ -5,6 +5,8 @@
 // It is NOT primary data — it is a cached interpretation of truth.
 // ============================================================
 
+import type { ExecutionIntentState, ExecutionGraphState } from "./execution-intent.js"
+
 /** WorkItem — the canonical execution entity; smallest unit of intentional work */
 export type WorkItem = {
   id: string
@@ -151,6 +153,8 @@ export type CanonicalState = {
   decisions: Record<string, Decision>
   generatedWorkItems: Record<string, GeneratedWorkItem>
   executions: Record<string, Execution>
+  executionIntents: Record<string, ExecutionIntentState>
+  executionGraphs: Record<string, ExecutionGraphState>
   lastEventOffset: number
 }
 

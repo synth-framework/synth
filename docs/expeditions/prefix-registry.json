@@ -78,6 +78,10 @@
       "name": "Repository Versioning",
       "description": "Version control capability and adapter expeditions (Git, GitHub, generic repository operations)."
     },
+    "EXEC": {
+      "name": "Governed Expedition Execution",
+      "description": "Execution-bridge expeditions that turn approved Expedition planning into governed repository mutations."
+    },
     "VAL": {
       "name": "Validation",
       "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."

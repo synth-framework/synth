@@ -32,6 +32,8 @@ export function createEmptyState(): CanonicalState {
     decisions: {},
     generatedWorkItems: {},
     executions: {},
+    executionIntents: {},
+    executionGraphs: {},
     lastEventOffset: 0,
   }
 }
@@ -324,6 +326,110 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+
+    // Execution intent lifecycle (EXP-EXEC-001)
+    case "EXECUTION_INTENT_CREATED": {
+      const intentId = String(payload.intentId)
+      state.executionIntents[intentId] = {
+        id: intentId,
+        expeditionId: String(payload.expeditionId),
+        objectiveId: String(payload.objectiveId),
+        workItemId: String(payload.workItemId),
+        sequence: Number(payload.sequence ?? 0),
+        capability: String(payload.capability),
+        operation: String(payload.operation),
+        target: String(payload.target ?? ""),
+        status: "pending",
+        dependencies: Array.isArray(payload.dependencies) ? payload.dependencies.map(String) : [],
+      }
+      break
+    }
+    case "EXECUTION_INTENT_GRAPH_CREATED": {
+      const expeditionId = String(payload.expeditionId)
+      state.executionGraphs[expeditionId] = {
+        expeditionId,
+        branch: String(payload.branch ?? ""),
+        phase: "approved",
+        intentIds: Array.isArray(payload.intentIds) ? payload.intentIds.map(String) : [],
+      }
+      break
+    }
+    case "EXPEDITION_BRANCH_CREATED": {
+      const expeditionId = String(payload.expeditionId)
+      const graph = state.executionGraphs[expeditionId]
+      if (graph) {
+        graph.branch = String(payload.branch)
+        graph.baseCommit = String(payload.baseCommit)
+        graph.phase = "branch-created"
+      }
+      break
+    }
+    case "EXECUTION_INTENT_STARTED": {
+      const intentId = String(payload.intentId)
+      const intent = state.executionIntents[intentId]
+      if (intent) {
+        intent.status = "running"
+        intent.startedAt = event.timestamp
+      }
+      const graph = state.executionGraphs[String(payload.expeditionId)]
+      if (graph) {
+        graph.phase = "executing"
+        graph.currentIntentId = intentId
+      }
+      break
+    }
+    case "EXECUTION_INTENT_COMPLETED": {
+      const intentId = String(payload.intentId)
+      const intent = state.executionIntents[intentId]
+      if (intent) {
+        intent.status = "completed"
+        intent.completedAt = event.timestamp
+      }
+      break
+    }
+    case "EXECUTION_INTENT_FAILED": {
+      const intentId = String(payload.intentId)
+      const intent = state.executionIntents[intentId]
+      if (intent) {
+        intent.status = "failed"
+        intent.failureReason = String(payload.reason)
+        intent.completedAt = event.timestamp
+      }
+      const graph = state.executionGraphs[String(payload.expeditionId)]
+      if (graph) graph.phase = "failed"
+      break
+    }
+    case "EXECUTION_INTENT_ROLLEDBACK": {
+      const intentId = String(payload.intentId)
+      const intent = state.executionIntents[intentId]
+      if (intent) {
+        intent.status = "rolledback"
+        intent.completedAt = event.timestamp
+      }
+      const graph = state.executionGraphs[String(payload.expeditionId)]
+      if (graph) graph.phase = "rolledback"
+      break
+    }
+    case "EXPEDITION_EXECUTION_COMMITTED": {
+      const expeditionId = String(payload.expeditionId)
+      const graph = state.executionGraphs[expeditionId]
+      if (graph) {
+        graph.phase = "committed"
+        graph.resultCommit = String(payload.commit)
+      }
+      break
+    }
+    case "EXPEDITION_EXECUTION_PROJECTED": {
+      const expeditionId = String(payload.expeditionId)
+      const graph = state.executionGraphs[expeditionId]
+      if (graph) {
+        graph.phase = "projected"
+        graph.projectionType = payload.projectionType as "pull_request" | "patch" | "diff"
+        graph.projectionUrl = payload.projectionUrl ? String(payload.projectionUrl) : undefined
+      }
+      break
+    }
+
     default:
       break
   }
@@ -353,7 +459,7 @@ export function rebuildStateFromOffset(events: SynthEvent[], startOffset: number
 }
 
 export function computeStateHash(state: CanonicalState): string {
-  const data = {
+  const data: Record<string, unknown> = {
     v: state.version,
     workItems: Object.keys(state.workItems).sort(),
     plans: Object.keys(state.plans).sort(),
@@ -364,6 +470,14 @@ export function computeStateHash(state: CanonicalState): string {
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
+  }
+  // Backward-compatible hash: only include new collections when populated.
+  // Logs recorded before EXP-EXEC-001 have empty execution collections.
+  if (Object.keys(state.executionIntents).length > 0) {
+    data.executionIntents = Object.keys(state.executionIntents).sort()
+  }
+  if (Object.keys(state.executionGraphs).length > 0) {
+    data.executionGraphs = Object.keys(state.executionGraphs).sort()
   }
   const str = JSON.stringify(data)
   let hash = 0

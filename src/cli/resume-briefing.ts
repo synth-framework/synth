@@ -463,6 +463,8 @@ function mergeSnapshotState(
     decisions: {},
     generatedWorkItems: {},
     executions: {},
+    executionIntents: {},
+    executionGraphs: {},
     lastEventOffset: 0,
   }
 
