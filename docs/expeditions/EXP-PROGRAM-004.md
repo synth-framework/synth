@@ -64,9 +64,9 @@ First Contact Program
 │       Adoption Expedition
 │       Prepare the repository for external users: badges, demos, example gallery.
 │
-└── EXP-DISCOVERY-001  Repository Discovery & Brownfield Genesis
-        Adoption Expedition
-        Introduce a deterministic, read-only Discovery phase before governance begins.
+└── (promoted to EXP-PROGRAM-006)  Discovery Platform
+        Architecture Program
+        Source-agnostic evidence acquisition and observed-system understanding.
 ```
 
 ---
@@ -119,6 +119,7 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 ## Governance
 
 - The Program was reopened on 2026-07-18 to add EXP-DISCOVERY-001.
+- EXP-DISCOVERY-001 was promoted to PROGRAM-006 — Discovery Platform on 2026-07-18.
 - The Program is sequenced. Dependencies are explicit in each Expedition.
 - No Expedition may be promoted to executing without approval.
 - No implementation work may proceed outside an approved Expedition.
@@ -146,13 +147,13 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 - [x] EXP-AX-003 completed and accepted.
 - [x] EXP-AX-004 completed and accepted.
 - [x] EXP-AX-005 completed and accepted (quick-start media deferred to follow-up).
-- [ ] EXP-DISCOVERY-001 completed and accepted.
+- [x] EXP-DISCOVERY-001 promoted to PROGRAM-006 — Discovery Platform.
 - [x] AGENTS.md is published at repository root.
 - [x] README is aligned with the AI-native experience.
 - [x] Website and documentation synchronization is verified.
 - [x] Public release polish is in place.
 - [x] `npm run govern` passes without architectural changes.
-- [ ] Brownfield entry path requires an approved Discovery baseline.
+- [ ] Brownfield entry path requires an approved Discovery baseline (deferred to PROGRAM-006).
 
 ---
 

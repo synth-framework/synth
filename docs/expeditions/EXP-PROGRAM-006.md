@@ -1,46 +1,40 @@
-# EXP-PROGRAM-006 — Installation & Distribution
+# EXP-PROGRAM-006 — Discovery Platform
 
-**Status:** Completed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
-**Scope:** Canonical installation experience and distribution infrastructure  
-**Era:** II — Adoption  
-**Architecture Impact:** None  
+**Scope:** Evidence acquisition and observed-system understanding  
+**Era:** III — Architecture  
+**Architecture Impact:** High  
 **Constitutional Impact:** None  
-**Public Impact:** High  
+**Public Impact:** Medium  
 **Product Impact:** High  
-**Execution Impact:** None
+**Execution Impact:** Low
 
 ---
 
 ## Thesis
 
-> **A user should be able to install SYNTH in one command and verify it in the next.**
+> **How does SYNTH understand a system it did not create?**
 
-The public installation experience is the first contact point for humans and AI agents. AI coding assistants consume the same install command as humans, so the installer must be deterministic, versioned, and governed while remaining independent of the underlying distribution mechanism.
+Every brownfield workflow, migration, audit, and onboarding process begins with discovering what already exists. Discovery must be a first-class platform capability, not a one-off bootstrap utility.
 
 ---
 
 ## Purpose
 
-Establish the canonical installation experience for SYNTH by delivering a deterministic, versioned, and governed bootstrap installer centered around:
+Establish **Discovery** as a foundational SYNTH Capability that acquires observations from any source, preserves them as canonical evidence, synthesizes findings, and produces replayable ProjectModels without ever modifying the observed system.
 
-```bash
-curl -fsSL https://synth.dev/install.sh | sh
-```
+This program introduces a new architectural capability. It does not modify Protected Assets.
 
-The `synth.dev` URL is the aspirational canonical endpoint. Until the domain is acquired, the actual base URL is controlled by the `SYNTH_INSTALLER_BASE_URL` GitHub repository variable (for example, a GitHub Pages URL) so the installer can be published and tested without code changes.
-
-The installer acts as a bootstrap layer responsible for environment detection, distribution resolution, installation, verification, and upgrades. The Era II implementation targets npm as the distribution backend while preserving a stable public interface for future Homebrew, binary, and package-manager support.
-
-> **Constitutional Rule:** This Program completes without touching architecture.
+> **Constitutional Rule:** Discovery shall never modify the system it is observing.
 
 ---
 
 ## Mission
 
-Build an Installation Compiler that detects the environment, resolves the appropriate distribution, installs SYNTH, verifies the result, and supports deterministic upgrades — all without changing the public one-line command.
+Make SYNTH capable of understanding external systems—repositories, APIs, databases, deployments, knowledge packages, ticket systems, and more—through a source-agnostic, replayable, evidence-backed Discovery pipeline.
 
 ---
 
@@ -48,51 +42,39 @@ Build an Installation Compiler that detects the environment, resolves the approp
 
 ```
 EXP-PROGRAM-006
-Installation & Distribution
+Discovery Platform
 │
-├── EXP-INSTALL-001  Bootstrap Contract
-│       Adoption Expedition
-│       Define the permanent public installation contract.
+├── EXP-DISCOVERY-001  Source Adapter Framework
+│       Architecture Expedition
+│       Define source abstraction, adapter contract, adapter registry, and capability interface.
 │
-├── EXP-INSTALL-002  Environment Detection
-│       Adoption Expedition
-│       Create the environment discovery layer.
+├── EXP-DISCOVERY-002  Discovery Engine
+│       Architecture Expedition
+│       Implement pipeline stages, session model, synthesizer, and replay verification.
 │
-├── EXP-INSTALL-003  Distribution Resolution
-│       Adoption Expedition
-│       Determine which distribution backend to use.
+├── EXP-DISCOVERY-003  First Observation Capabilities
+│       Architecture Expedition
+│       Define ObservationCapability contract and implement Filesystem & Git capabilities.
 │
-├── EXP-INSTALL-004  Installation Engine
-│       Adoption Expedition
-│       Implement the installation workflow.
+├── EXP-DISCOVERY-004  Projection Capability Mechanism
+│       Architecture Expedition
+│       Generic projection extension point and ProjectModelProjection implementation.
 │
-├── EXP-INSTALL-005  Installation Verification
-│       Adoption Expedition
-│       Verify that installation completed successfully.
+├── EXP-DISCOVERY-005  Brownfield Genesis Integration
+│       Architecture Expedition
+│       Make bootstrap consume DiscoverySession via a provider abstraction.
 │
-├── EXP-INSTALL-006  Website Integration
-│       Adoption Expedition
-│       Publish the installer through the website deployment pipeline.
+├── EXP-DISCOVERY-006  Replay & Determinism
+│       Architecture Expedition
+│       Full provenance replay, tamper detection, and cross-run equivalence.
 │
-├── EXP-INSTALL-007  Version Manifest
-│       Adoption Expedition
-│       Generate the canonical installer manifest during release.
+├── EXP-DISCOVERY-007  IDE / MCP / Web Consumers
+│       Product Expedition
+│       Build non-CLI projections of Discovery sessions.
 │
-├── EXP-INSTALL-008  Upgrade Engine
-│       Adoption Expedition
-│       Provide deterministic upgrade behavior.
-│
-├── EXP-INSTALL-009  Installation Certification
-│       Adoption Expedition
-│       Validate installation automatically during CI.
-│
-├── EXP-INSTALL-010  Documentation & Onboarding
-│       Adoption Expedition
-│       Deliver installation documentation synchronized with the installer.
-│
-└── EXP-INSTALL-011  Website Deployment Verification
-        Adoption Expedition
-        Verify GitHub Pages deployment and installer URL availability.
+└── EXP-DISCOVERY-008  Operational Discovery
+        Architecture Expedition
+        Extend Discovery to deployments, databases, cloud, and containers.
 ```
 
 ---
@@ -120,78 +102,85 @@ All work in this Program stays in the Allowed column:
 
 | Allowed | Forbidden |
 |---|---|
-| Bootstrap installer (`install.sh`) | New architectural concepts |
-| Environment detection scripts | Changes to CLI architecture |
-| Distribution resolution | Runtime architecture changes |
-| npm / package-manager integration | Mission Studio modifications |
-| Installation verification | Execution model changes |
-| Upgrade workflow | Event model semantics changes |
-| Website / GitHub Pages publication | Capability model changes |
-| Version manifest generation | Constitutional baseline changes |
-| CI certification | Changes that invalidate replay proofs |
-| Installation documentation | Changes to deterministic execution contract |
+| New `DiscoveryCapability` and supporting modules | Changes to event model semantics |
+| Source abstraction and adapter framework | Changes to capability model governance |
+| Discovery session, evidence, findings, and ProjectModel contracts | Changes to constitutional baseline |
+| Adapter implementations for filesystem, Git, and future sources | Changes that invalidate replay proofs |
+| CLI `discover` projection | Changes to deterministic execution contract |
+| Brownfield bootstrap integration via provider | Direct bootstrap-to-Genesis coupling |
+| Documentation of the Discovery Platform | New execution semantics |
 
 ---
 
-## Invariants
+## Architectural Invariants
 
-1. `npm run govern` remains the canonical final verification.
-2. The installer public interface remains stable across distribution backend changes.
-3. Installation must be idempotent.
-4. The installer must degrade gracefully with a clear error message on unsupported platforms.
-5. All installer configuration that may change over time (e.g., domain, channel endpoints) must be resolvable from GitHub repository variables or the version manifest so the installer itself does not require a rebuild.
+1. **Discovery is a Capability, not a feature.** All interfaces consume the same `DiscoveryCapability`.
+2. **DiscoverySession is the aggregate root and is immutable after completion.** Any new discovery execution creates a new session.
+3. **Observations are immutable facts.** No interpretation.
+4. **Evidence references observations.** Evidence is provenance, not a collection.
+5. **Findings are deterministic, declarative, and immutable.** Findings may be superseded or resolved, never deleted.
+6. **Findings are session artifacts but never canonical.** They are regenerated from Evidence during replay.
+7. **Recommendations are projections.** Consumer-specific guidance is generated on demand.
+8. **ProjectModel is projection-only and never canonical.** Evidence is canonical.
+9. **Discovery exposes one API.** `DiscoveryCapability.discover(input) -> DiscoverySession`.
+10. **Discovery shall never modify the system it is observing.**
+11. **Discovery recommendations shall never modify the observed system.**
+12. **Replay verifies the full provenance chain.**
+13. **Discovery sessions have lineage.** `id`, `hash`, and optional `parentSessionId`.
+14. **Persistence, approval, and governance live outside Discovery.**
+
+---
+
+## Pipeline Stages
+
+```text
+Acquire     → adapters produce observations
+Normalize   → observations are validated and typed
+Correlate   → observations are grouped into evidence claims
+Synthesize  → findings are derived from evidence
+Project     → ProjectModel is generated from evidence and findings
+Verify      → replay checks determinism and provenance
+```
+
+Adapters participate only in **Acquire**. All downstream stages are engine-owned.
+
+---
+
+## Governance
+
+- The Program was created on 2026-07-18.
+- The Program is sequenced. Dependencies are explicit in each Expedition.
+- No Expedition may be promoted to executing without approval.
+- No implementation work may proceed outside an approved Expedition.
+- Each Expedition must produce evidence that satisfies its Definition of Done.
+- The Program completes when EXP-DISCOVERY-008 is accepted.
 
 ---
 
 ## Success Criteria
 
-- A new user installs SYNTH with one command.
-- `synth doctor` confirms a healthy installation.
-- The installer supports `--upgrade`, `--channel`, and `--version` without changing its public contract.
-- The installer is published automatically on every release.
-- CI certifies installation before a release is published.
-- Documentation reflects the current installer behavior.
+- SYNTH can discover any filesystem directory without modifying it.
+- Discovery results are replayable from evidence alone.
+- Brownfield Genesis requires and consumes an approved Discovery baseline.
+- The same Discovery pipeline can be extended to new source types without redesign.
+- CLI, Mission Studio, MCP, IDE, Web UI, and automation can consume the same DiscoveryCapability.
 - No Protected Asset is modified.
-- Architecture remains unchanged.
+- `npm run govern` passes after each Expedition.
 
 ---
 
 ## Definition of Done
 
-- [x] EXP-INSTALL-001 completed and accepted.
-- [x] EXP-INSTALL-002 completed and accepted.
-- [x] EXP-INSTALL-003 completed and accepted.
-- [x] EXP-INSTALL-004 completed and accepted.
-- [x] EXP-INSTALL-005 completed and accepted.
-- [x] EXP-INSTALL-006 completed and accepted.
-- [x] EXP-INSTALL-007 completed and accepted.
-- [x] EXP-INSTALL-008 completed and accepted.
-- [x] EXP-INSTALL-009 completed and accepted.
-- [x] EXP-INSTALL-010 completed and accepted.
-- [x] EXP-INSTALL-011 completed and accepted.
-- [x] Program accepted.
-
----
-
-## Completion Notes
-
-All expeditions completed:
-
-- EXP-INSTALL-001 through EXP-INSTALL-005 established the bootstrap installer contract, environment detection, distribution resolution, installation engine, and verification.
-- EXP-INSTALL-006 through EXP-INSTALL-008 integrated the installer with the website, added the version manifest, and implemented deterministic upgrades.
-- EXP-INSTALL-009 added CI installation certification.
-- EXP-INSTALL-010 delivered installation documentation synchronized with the installer.
-- EXP-INSTALL-011 verified website deployment and installer URL availability with a polling CI check and surfaced the install command on the landing page.
-
-Program closed. All expeditions completed:
-
-- EXP-INSTALL-001 through EXP-INSTALL-005 established the bootstrap installer contract, environment detection, distribution resolution, installation engine, and verification.
-- EXP-INSTALL-006 through EXP-INSTALL-008 integrated the installer with the website, added the version manifest, and implemented deterministic upgrades.
-- EXP-INSTALL-009 added CI installation certification.
-- EXP-INSTALL-010 delivered installation documentation synchronized with the installer.
-- EXP-INSTALL-011 verified GitHub Pages deployment and installer URL availability; deployment succeeded at `https://synth-framework.github.io/synth/install.sh`.
-
-Program accepted and closed via PRs #37, #40, #41, #43, and #44.
+- [x] EXP-DISCOVERY-001 completed and accepted.
+- [x] EXP-DISCOVERY-002 completed and accepted.
+- [x] EXP-DISCOVERY-003 completed and accepted.
+- [x] EXP-DISCOVERY-004 completed and accepted.
+- [x] EXP-DISCOVERY-005 completed and accepted.
+- [x] EXP-DISCOVERY-006 completed and accepted.
+- [x] EXP-DISCOVERY-007 completed and accepted.
+- [ ] EXP-DISCOVERY-008 completed and accepted.
+- [ ] Discovery Capability is documented as a platform pillar.
+- [ ] `npm run govern` passes.
 
 ---
 
@@ -199,8 +188,7 @@ Program accepted and closed via PRs #37, #40, #41, #43, and #44.
 
 | Document | Relationship |
 |---|---|
+| `docs/expeditions/EXP-DISCOVERY-001.md` | First expedition: Source Adapter Framework. |
+| `docs/expeditions/EXP-PROGRAM-004.md` | Preceding First Contact Program; Brownfield Discovery originated there. |
 | `docs/adr/ADR-004-synth-eras-and-protected-assets.md` | Eras, Protected Assets, and Post-Freeze Rule. |
-| `docs/adr/ADR-005-architecture-era-closure.md` | Architecture Era closure. |
-| `docs/expeditions/EXP-PROGRAM-004.md` | Preceding First Contact Program, now closed. |
-| `docs/expeditions/EXP-PROGRAM-005.md` | Preceding Adaptive Validation Program, now closed. |
-| `AGENTS.md` | AI operator contract; installers must be agent-consumable. |
+| `docs/adr/ADR-005-architecture-era-closure.md` | Architecture Era closure and strengthened Knowledge Graph Lock. |

@@ -48,11 +48,33 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
     ? "Initialize a deterministic Synth project from scratch."
     : `Adopt Synth governance for a ${analysis.repositoryType} repository with ${analysis.languages.join(", ") || "unknown language"}.`
 
+  const existingMissionObservation = analysis.observations.find(
+    (observation) => observation.type === "mission",
+  )
+
+  const missionObservation = existingMissionObservation
+    ? {
+        ...existingMissionObservation,
+        payload: {
+          ...existingMissionObservation.payload,
+          purpose: missionPurpose,
+          discoverySessionId: analysis.discoverySessionId,
+          discoverySessionHash: analysis.discoverySessionHash,
+        },
+      }
+    : makeObservation("mission", missionSubject, {
+        purpose: missionPurpose,
+        discoverySessionId: analysis.discoverySessionId,
+        discoverySessionHash: analysis.discoverySessionHash,
+      })
+
+  const nonMissionObservations = analysis.observations.filter(
+    (observation) => observation.type !== "mission",
+  )
+
   const observations = [
-    makeObservation("mission", missionSubject, { purpose: missionPurpose }),
-    ...analysis.languages.map((lang) => makeObservation("language", lang, { repositoryType: analysis.repositoryType })),
-    ...analysis.frameworks.map((fw) => makeObservation("framework", fw, { repositoryType: analysis.repositoryType })),
-    ...analysis.observations.slice(0, 20), // include top observations from adapters
+    missionObservation,
+    ...nonMissionObservations.slice(0, 20),
   ]
 
   const sessionResult = (await ctx.api.missionStudioOperation({
