@@ -11,6 +11,7 @@ import { spawn } from "child_process"
 import { bootstrap } from "../core/bootstrap.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
+import { writeAgentArtifacts } from "./agent-artifacts.js"
 
 export type BootstrapOptions = {
   approve: boolean
@@ -128,6 +129,7 @@ async function initSynthProject(targetDir: string, projectName: string) {
   }
 
   await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2), "utf-8")
+  await writeAgentArtifacts(synthDir, projectName)
 }
 
 async function generateDocs(targetDir: string) {
