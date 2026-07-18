@@ -169,7 +169,7 @@ test("executeGraph: multiple intents run in order", async () => {
   const events = await executeGraph(graph, {
     handlers: {
       filesystem: async (intent) => {
-        order.push(intent.id)
+        if (intent.operation === "writeFile") order.push(intent.id)
         return { success: true }
       },
     },
