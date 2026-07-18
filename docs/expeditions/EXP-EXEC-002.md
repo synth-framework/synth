@@ -1,6 +1,6 @@
 # EXP-EXEC-002 — Work Item Runtime
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-016 — Governed Expedition Execution  
@@ -28,9 +28,16 @@ Implement the runtime that executes `ExecutionIntent`s through the ExecutionGate
 
 ## Definition of Done
 
-- [ ] Intent Synthesizer implemented.
-- [ ] Capability dispatch implemented.
-- [ ] Transaction boundaries defined.
-- [ ] Regression tests pass.
+- [x] Intent Synthesizer implemented (`src/execution/intent-synthesizer.ts`).
+- [x] Capability dispatch implemented (`src/execution/runtime.ts`).
+- [x] Transaction boundaries defined (single Expedition graph = single event transaction).
+- [x] Regression tests implemented (`tests/execution-runtime.test.js`).
 - [ ] PR opened and CI checks pass.
 - [ ] Expedition accepted.
+
+## Implementation
+
+- `src/execution/intent-synthesizer.ts` — maps `GeneratedWorkItem` metadata to `ExecutionIntent` lists.
+- `src/execution/runtime.ts` — `executeGraph` dispatches intents to injected capability handlers, verifies results, emits lifecycle events, and halts on failure with optional rollback.
+- `src/execution/index.ts` — public API exports.
+- `tests/execution-runtime.test.js` — regression tests for synthesis, dispatch, ordering, success, and failure paths.
