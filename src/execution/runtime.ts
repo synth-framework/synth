@@ -25,6 +25,13 @@ export type VersioningBranchResult = {
   commit: string
 }
 
+/** Descriptor returned by a forge handler for pull request operations */
+export type ForgePullRequestResult = {
+  number: number
+  title: string
+  url?: string
+}
+
 /** Capability handler injected by the caller */
 export type CapabilityHandler = (intent: ExecutionIntent) => Promise<IntentExecutionResult>
 
@@ -373,6 +380,93 @@ export async function executeGraph(
       makeEvent(
         "EXPEDITION_EXECUTION_COMMITTED",
         { expeditionId: graph.expeditionId, commit: commitHash },
+        options
+      )
+    )
+  }
+
+  // Project the completed expedition as a pull request through the
+  // ForgeCapability. Human review remains the final approval boundary.
+  if (options.handlers.forge) {
+    const objectiveIds = [...new Set(graph.intents.map((i) => i.objectiveId).filter(Boolean))]
+    const prTitle = objectiveIds.length > 0
+      ? `Expedition ${graph.expeditionId}: ${objectiveIds.join(", ")}`
+      : `Expedition ${graph.expeditionId}`
+    const prBody = `Automated pull request for expedition ${graph.expeditionId}.\n\nObjectives:\n${objectiveIds.map((id) => `- ${id}`).join("\n")}`
+
+    const prIntent: ExecutionIntent = {
+      id: `${graph.expeditionId}/pr`,
+      expeditionId: graph.expeditionId,
+      objectiveId: "",
+      workItemId: "",
+      sequence: -3,
+      capability: "forge",
+      operation: "createPullRequest",
+      target: graph.branch ?? "",
+      payload: {
+        title: prTitle,
+        body: prBody,
+        headBranch: graph.branch,
+        baseBranch: graph.baseBranch ?? "main",
+      },
+      dependencies: [],
+      verification: { kind: "none", target: "" },
+    }
+
+    events.push(
+      makeEvent(
+        "EXECUTION_INTENT_CREATED",
+        {
+          intentId: prIntent.id,
+          expeditionId: prIntent.expeditionId,
+          objectiveId: prIntent.objectiveId,
+          workItemId: prIntent.workItemId,
+          sequence: prIntent.sequence,
+          capability: prIntent.capability,
+          operation: prIntent.operation,
+          target: prIntent.target,
+          dependencies: prIntent.dependencies,
+        },
+        options
+      )
+    )
+
+    events.push(
+      makeEvent(
+        "EXECUTION_INTENT_STARTED",
+        { intentId: prIntent.id, expeditionId: prIntent.expeditionId },
+        options
+      )
+    )
+
+    let prResult: IntentExecutionResult
+    try {
+      prResult = await options.handlers.forge(prIntent)
+    } catch (err) {
+      prResult = { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
+
+    if (!prResult.success) {
+      const reason = prResult.error ?? "Pull request creation failed"
+      events.push(
+        makeEvent(
+          "EXECUTION_INTENT_FAILED",
+          { intentId: prIntent.id, expeditionId: prIntent.expeditionId, reason },
+          options
+        )
+      )
+      return events
+    }
+
+    const pr = (prResult.result as ForgePullRequestResult | undefined) ?? { number: 0, title: prTitle }
+    events.push(
+      makeEvent(
+        "EXPEDITION_EXECUTION_PROJECTED",
+        {
+          expeditionId: graph.expeditionId,
+          projectionType: "pull_request",
+          projectionUrl: pr.url,
+        },
         options
       )
     )

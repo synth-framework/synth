@@ -141,7 +141,8 @@ export function deriveExpeditionBranch(expeditionId: string): string {
 export function buildIntentGraph(
   expeditionId: string,
   branch: string,
-  intentLists: ExecutionIntent[][]
+  intentLists: ExecutionIntent[][],
+  baseBranch?: string
 ): ExecutionIntentGraph {
   const intents = intentLists.flat()
   const edges: [string, string][] = []
@@ -160,6 +161,7 @@ export function buildIntentGraph(
   return {
     expeditionId,
     branch,
+    baseBranch,
     intents,
     edges,
     ordered,
