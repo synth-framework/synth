@@ -181,3 +181,120 @@ test("GitHubForgeProvider returns empty lists when gh fails", async () => {
   assert.deepStrictEqual(await forge.listPullRequests(), [])
   assert.deepStrictEqual(await forge.listReleases(), [])
 })
+
+test("GitHubForgeProvider creates a pull request", async () => {
+  const tools = createFakeTools({
+    "pr create": {
+      stdout: JSON.stringify({
+        number: 117,
+        title: "Add feature",
+        state: "OPEN",
+        headRefName: "feature",
+        baseRefName: "main",
+        url: "https://github.com/x/y/pull/117",
+      }),
+    },
+  })
+  const forge = createGitHubForgeProvider(tools)
+  const pr = await forge.createPullRequest({
+    title: "Add feature",
+    body: "Description",
+    headBranch: "feature",
+    baseBranch: "main",
+  })
+  assert.deepStrictEqual(pr, {
+    number: 117,
+    title: "Add feature",
+    state: "OPEN",
+    headBranch: "feature",
+    baseBranch: "main",
+    url: "https://github.com/x/y/pull/117",
+  })
+  const args = tools.calls[0].args
+  assert.deepStrictEqual(args.slice(0, 2), ["pr", "create"])
+  assert.ok(args.includes("--title") && args.includes("Add feature"))
+  assert.ok(args.includes("--body") && args.includes("Description"))
+  assert.ok(args.includes("--head") && args.includes("feature"))
+  assert.ok(args.includes("--base") && args.includes("main"))
+})
+
+test("GitHubForgeProvider creates a draft pull request", async () => {
+  const tools = createFakeTools({
+    "pr create": {
+      stdout: JSON.stringify({
+        number: 118,
+        title: "Draft feature",
+        state: "OPEN",
+        headRefName: "draft",
+        baseRefName: "main",
+        url: "https://github.com/x/y/pull/118",
+      }),
+    },
+  })
+  const forge = createGitHubForgeProvider(tools)
+  const pr = await forge.createPullRequest({
+    title: "Draft feature",
+    headBranch: "draft",
+    baseBranch: "main",
+    draft: true,
+  })
+  assert.strictEqual(pr?.number, 118)
+  assert.ok(tools.calls[0].args.includes("--draft"))
+})
+
+test("GitHubForgeProvider merges a pull request", async () => {
+  const tools = createFakeTools({
+    "pr merge": {
+      stdout: JSON.stringify({
+        number: 117,
+        title: "Add feature",
+        state: "MERGED",
+        headRefName: "feature",
+        baseRefName: "main",
+        url: "https://github.com/x/y/pull/117",
+      }),
+    },
+  })
+  const forge = createGitHubForgeProvider(tools)
+  const pr = await forge.mergePullRequest({ number: 117, strategy: "squash", deleteBranch: true })
+  assert.strictEqual(pr?.state, "MERGED")
+  const args = tools.calls[0].args
+  assert.deepStrictEqual(args.slice(0, 3), ["pr", "merge", "117"])
+  assert.ok(args.includes("--squash"))
+  assert.ok(args.includes("--delete-branch"))
+})
+
+test("GitHubForgeProvider forks a repository", async () => {
+  const tools = createFakeTools({
+    "repo fork": { stdout: "" },
+    "repo view": {
+      stdout: JSON.stringify({
+        name: "synth-fork",
+        owner: { login: "contributor" },
+        url: "https://github.com/contributor/synth-fork",
+        defaultBranchRef: { name: "main" },
+        description: "Fork of synth",
+      }),
+    },
+  })
+  const forge = createGitHubForgeProvider(tools)
+  const repo = await forge.forkRepository({ defaultBranchOnly: true })
+  assert.deepStrictEqual(repo, {
+    name: "synth-fork",
+    owner: "contributor",
+    url: "https://github.com/contributor/synth-fork",
+    defaultBranch: "main",
+    description: "Fork of synth",
+  })
+  const args = tools.calls[0].args
+  assert.deepStrictEqual(args.slice(0, 2), ["repo", "fork"])
+  assert.ok(args.includes("--default-branch-only"))
+})
+
+test("GitHubForgeProvider returns undefined on failed mutation", async () => {
+  const tools = createFakeTools()
+  const forge = createGitHubForgeProvider(tools)
+  assert.strictEqual(await forge.createPullRequest({ title: "x", headBranch: "a", baseBranch: "b" }), undefined)
+  assert.strictEqual(await forge.mergePullRequest({ number: 1 }), undefined)
+  assert.strictEqual(await forge.forkRepository(), undefined)
+})

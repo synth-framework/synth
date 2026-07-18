@@ -53,6 +53,29 @@ export interface ForgeListOptions {
   readonly state?: string
 }
 
+/** Options for creating a pull request */
+export interface ForgePullRequestCreateOptions {
+  readonly title: string
+  readonly body?: string
+  readonly headBranch: string
+  readonly baseBranch: string
+  readonly draft?: boolean
+}
+
+/** Options for merging a pull request */
+export interface ForgePullRequestMergeOptions {
+  readonly number: number
+  readonly strategy?: "merge" | "squash" | "rebase"
+  readonly deleteBranch?: boolean
+}
+
+/** Options for forking a repository */
+export interface ForgeForkOptions {
+  readonly owner?: string
+  readonly name?: string
+  readonly defaultBranchOnly?: boolean
+}
+
 /** Forge capability provider interface */
 export interface ForgeProvider {
   readonly name: string
@@ -61,6 +84,9 @@ export interface ForgeProvider {
   listIssues(options?: ForgeListOptions): Promise<ForgeIssue[]>
   listPullRequests(options?: ForgeListOptions): Promise<ForgePullRequest[]>
   listReleases(options?: ForgeListOptions): Promise<ForgeRelease[]>
+  createPullRequest(options: ForgePullRequestCreateOptions): Promise<ForgePullRequest | undefined>
+  mergePullRequest(options: ForgePullRequestMergeOptions): Promise<ForgePullRequest | undefined>
+  forkRepository(options?: ForgeForkOptions): Promise<ForgeRepository | undefined>
 }
 
 const DEFAULT_LIMIT = 30
@@ -204,6 +230,73 @@ export class GitHubForgeProvider implements ForgeProvider {
       })
     }
     return releases
+  }
+
+  async createPullRequest(options: ForgePullRequestCreateOptions): Promise<ForgePullRequest | undefined> {
+    const args = [
+      "pr", "create",
+      "--title", options.title,
+      "--head", options.headBranch,
+      "--base", options.baseBranch,
+      "--json", "number,title,state,headRefName,baseRefName,url",
+    ]
+    if (options.body) args.push("--body", options.body)
+    if (options.draft) args.push("--draft")
+
+    const data = asRecord(await this.ghJson(args))
+    if (!data) return undefined
+    return this.parsePullRequest(data)
+  }
+
+  async mergePullRequest(options: ForgePullRequestMergeOptions): Promise<ForgePullRequest | undefined> {
+    const args = ["pr", "merge", String(options.number), "--json", "number,title,state,headRefName,baseRefName,url"]
+    if (options.strategy) args.push(`--${options.strategy}`)
+    if (options.deleteBranch) args.push("--delete-branch")
+
+    const data = asRecord(await this.ghJson(args))
+    if (!data) return undefined
+    return this.parsePullRequest(data)
+  }
+
+  async forkRepository(options?: ForgeForkOptions): Promise<ForgeRepository | undefined> {
+    const args = ["repo", "fork"]
+    if (options?.defaultBranchOnly) args.push("--default-branch-only")
+
+    const result = await this.tools.runTool("gh", args, { cwd: this.cwd, timeoutMs: 60000 })
+    if (result.exitCode !== 0) return undefined
+
+    // After forking, read the forked repository metadata.
+    const data = asRecord(await this.ghJson([
+      "repo", "view",
+      "--json", "name,owner,url,defaultBranchRef,description",
+    ]))
+    if (!data) return undefined
+    const name = str(data.name)
+    if (!name) return undefined
+    const owner = asRecord(data.owner)
+    const defaultBranchRef = asRecord(data.defaultBranchRef)
+    return {
+      name,
+      owner: str(owner?.login),
+      url: str(data.url),
+      defaultBranch: str(defaultBranchRef?.name),
+      description: str(data.description),
+    }
+  }
+
+  private parsePullRequest(data: Record<string, unknown>): ForgePullRequest | undefined {
+    const number = num(data.number)
+    const title = str(data.title)
+    const state = str(data.state)
+    if (number === undefined || !title || !state) return undefined
+    return {
+      number,
+      title,
+      state,
+      headBranch: str(data.headRefName),
+      baseBranch: str(data.baseRefName),
+      url: str(data.url),
+    }
   }
 }
 
