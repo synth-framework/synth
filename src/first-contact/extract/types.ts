@@ -56,6 +56,7 @@ export interface FieldConfidence {
 }
 
 export interface IntentExtractionResult {
+  id?: string
   intent: ExtractedIntent
   audience: ExtractedAudience
   environment: ExtractedEnvironment

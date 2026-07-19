@@ -2,7 +2,8 @@
 
 > **Architecture expedition.** Initialize repository, manifest, Mission, and Expedition proposals only after Discovery approval.
 
-**Status:** Proposed  
+**Status:** Executing  
+**Started:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  

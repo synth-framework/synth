@@ -133,7 +133,7 @@ function checkExternalService(capability: string): CapabilityCheck {
 function checkUnknown(capability: string): CapabilityCheck {
   return {
     capability,
-    status: "UNAVAILABLE",
+    status: "MISSING",
     message: `Capability '${capability}' is not recognized by the verifier.`,
   }
 }
@@ -171,7 +171,9 @@ export class RuleBasedCapabilityVerifier implements CapabilityVerifier {
       const parsed = parseAssumption(assumption)
       const check = checkCapability(parsed)
       checks.push(check)
-      if (check.status !== "AVAILABLE") {
+      // Only MISSING or DEGRADED capabilities block materialization.
+      // UNAVAILABLE external services are surfaced as warnings, not blockers.
+      if (check.status === "MISSING" || check.status === "DEGRADED") {
         blockers.push({
           capability: check.capability,
           status: check.status,
