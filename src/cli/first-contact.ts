@@ -141,7 +141,7 @@ export async function cmdFirstContactHelp(): Promise<void> {
     status: "ok",
     name: "synth",
     namespace: "first-contact",
-    description: "Greenfield onboarding workflow: turn an idea into an approved Mission before materializing a project",
+    description: "Greenfield onboarding workflow: turn an idea into an approved Mission before materializing a project (also available as 'synth genesis')",
     usage: "synth first-contact <subcommand> [options]",
     subcommands: [
       { name: "synth first-contact start \"<intent>\"", description: "Extract intent and create a first-contact draft", args: "<intent> [--name <project-name>]" },

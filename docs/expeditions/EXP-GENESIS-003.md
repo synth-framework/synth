@@ -2,7 +2,7 @@
 
 > **Product expedition.** Verify capability feasibility, validate acceptance, and materialize the first Mission and Expedition proposals.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
@@ -81,13 +81,13 @@ Design the CLI and interactive flow for greenfield onboarding:
 
 ## Deliverables
 
-1. Capability verification framework.
-2. Architecture alternative projection engine.
-3. Acceptance criteria validation.
-4. Mission materialization pipeline.
-5. Expedition proposal generation.
-6. Greenfield CLI operator experience.
-7. ADR on Mission materialization semantics.
+1. Capability verification framework — `src/first-contact/verify/` and [`docs/reference/genesis-verification-contract.md`](../reference/genesis-verification-contract.md).
+2. Architecture alternative projection engine — `src/first-contact/project/` and [`docs/reference/genesis-verification-contract.md`](../reference/genesis-verification-contract.md).
+3. Acceptance criteria validation — enforced by `synth first-contact approve` / `synth genesis approve` and covered in [`docs/reference/genesis-verification-contract.md`](../reference/genesis-verification-contract.md).
+4. Mission materialization pipeline — `src/first-contact/materialize/` and [`docs/reference/genesis-materialization-contract.md`](../reference/genesis-materialization-contract.md).
+5. Expedition proposal generation — `src/first-contact/materialize/engine.ts` and [`docs/reference/genesis-materialization-contract.md`](../reference/genesis-materialization-contract.md).
+6. Greenfield CLI operator experience — `src/cli/first-contact.ts`, `synth genesis` alias in `src/cli/synth.ts`, and [`docs/reference/genesis-materialization-contract.md`](../reference/genesis-materialization-contract.md).
+7. ADR on Mission materialization semantics — [`docs/adr/ADR-029-genesis-validation-materialization-semantics.md`](../adr/ADR-029-genesis-validation-materialization-semantics.md).
 
 ---
 
