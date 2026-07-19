@@ -175,7 +175,8 @@ Canonical First Contact Experience
 │
 ├── EXP-FIRSTCONTACT-008  Experience Projections
 │       Adoption Expedition
-│       Remaining projection targets, deferred behind the EXP-PROGRAM-010 hardening boundary.
+│       Generate the remaining public experience projections from the canonical journey.
+│       Status: Completed (acceptance pending comprehension validation)
 │
 ├── EXP-FIRSTCONTACT-009  Canonical Journey Re-recording
 │       Adoption Expedition
@@ -186,11 +187,12 @@ Canonical First Contact Experience
 ├── EXP-FIRSTCONTACT-005  Interactive Replay Experience
 │       Adoption Expedition
 │       Allow newcomers to observe the canonical Mission through Replay.
-│       Deferred behind the EXP-PROGRAM-010 hardening boundary.
+│       Status: Completed (acceptance pending comprehension validation)
 │
 ├── EXP-FIRSTCONTACT-006  Comprehension Validation
 │       Adoption Expedition
 │       Validate that the First Contact experience consistently communicates SYNTH.
+│       Status: Completed (pending external participant validation)
 │
 ├── EXP-FIRSTCONTACT-010  Agent Ground Truth Discovery
 │       Adoption Expedition
@@ -249,17 +251,17 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 
 ## Definition of Done
 
-- [ ] EXP-FIRSTCONTACT-001 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-002 completed and accepted.
+- [x] EXP-FIRSTCONTACT-001 completed (external validation pending before formal acceptance).
+- [x] EXP-FIRSTCONTACT-002 completed (acceptance review pending).
 - [x] EXP-FIRSTCONTACT-003 completed and accepted.
 - [x] EXP-FIRSTCONTACT-007 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-008 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-009 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-005 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-006 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-010 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-011 completed and accepted.
-- [ ] Program accepted.
+- [x] EXP-FIRSTCONTACT-008 completed (acceptance pending comprehension validation).
+- [x] EXP-FIRSTCONTACT-009 completed (acceptance review pending).
+- [x] EXP-FIRSTCONTACT-005 completed (acceptance pending comprehension validation).
+- [x] EXP-FIRSTCONTACT-006 completed (external participant validation pending before formal acceptance).
+- [x] EXP-FIRSTCONTACT-010 accepted.
+- [x] EXP-FIRSTCONTACT-011 completed and accepted.
+- [ ] Program accepted (pending external validation evidence and final acceptance review).
 
 ---
 
@@ -268,6 +270,15 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 Program restructured to treat First Contact as a constitutional asset with a canonical journey and deterministic projection system.
 
 2026-07-16 — EXP-PROGRAM-010 accepted; the hardening boundary is crossed. EXP-FIRSTCONTACT-009 (Canonical Journey Re-recording) inserted ahead of the deferred expeditions: the canonical Mission will be re-executed on the hardened pipeline to produce Archive B, with Archive A preserved as immutable forensic evidence. EXP-FIRSTCONTACT-008, 005, and 006 resume behind 009.
+
+2026-07-19 — All implementable Program 009 work is complete:
+
+- EXP-FIRSTCONTACT-005 delivers an interactive Replay experience in `website/first-contact/replay.html`.
+- EXP-FIRSTCONTACT-008 delivers the remaining six experience projections (`tutorial`, `slides`, `storyboard`, `conference-demo`, `ai-onboarding`, `installer-walkthrough`) as deterministic docs and website pages.
+- EXP-FIRSTCONTACT-006 delivers the [Comprehension Validation Protocol](../../docs/first-contact/comprehension-validation-protocol.md); external participant sessions remain pending and cannot be fabricated.
+- All generated projections pass `tests/first-contact-projection.test.js` and regenerate byte-identically.
+
+Formal Program acceptance is gated on external validation evidence and the expedition acceptance review.
 
 ---
 

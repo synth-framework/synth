@@ -209,6 +209,10 @@ function escapeHtml(text) {
   return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 }
 
+function inlineCodeHtml(text) {
+  return escapeHtml(text).replace(/`([^`]+)`/g, "<code>$1</code>")
+}
+
 // ------------------------------------------------------------
 // Documentation projection (docs/first-contact/*.md)
 // ------------------------------------------------------------
@@ -234,6 +238,23 @@ This is the canonical First Contact journey: one complete SYNTH execution, recor
 | [Evidence](evidence.md) | The evidence archive: what each artifact proves |
 | [Replay](replay.md) | The replay verification of the 32-event history |
 | [Lessons](lessons.md) | What the journey validates — and what it does not yet prove |
+
+## Experience projections
+
+The same canonical evidence also drives the remaining public surfaces defined by EXP-FIRSTCONTACT-008:
+
+| Projection | Purpose |
+|---|---|
+| [Interactive tutorial](tutorial.md) and [website tutorial](../../website/first-contact/tutorial.html) | Step through the journey episode by episode |
+| [Slides](slides.md) | Talk-ready deck outline |
+| [Video storyboard](storyboard.md) | Scene-by-scene visual and audio plan |
+| [Conference demo](conference-demo.md) | Scripted live-demo narrative |
+| [AI onboarding](ai-onboarding.md) | How an AI agent should introduce SYNTH |
+| [Installer walkthrough](installer-walkthrough.md) and [website installer page](../../website/first-contact/installer.html) | First-contact copy after installation |
+
+## Validation
+
+Comprehension of the First Contact experience is measured by the [Comprehension Validation Protocol](comprehension-validation-protocol.md) (EXP-FIRSTCONTACT-006).
 
 ## Evidence source
 
@@ -391,6 +412,8 @@ ${commandBlock}
 ## What this means
 
 The 32 events are not a story about the execution — they _are_ the execution. Any state that claims to descend from this journey must replay to the same hash, bit for bit.
+
+For the interactive replay experience, see the [website replay page](../../website/first-contact/replay.html) or regenerate it with \`node scripts/generate-first-contact-projection.js\`.
 `
 }
 
@@ -412,6 +435,157 @@ ${knownLimitations}
 ## The honest reading
 
 A consistent replay proves this history is intact and this state descends from it. Since the Constitutional Hardening Program (EXP-PROGRAM-010), this recording (Archive B) also proves the aggregate graph is validated end to end: replay verification runs graph validation, and this archive reports ${replayReport.graphViolations.length} violations under \`--strict-graph\` — see [Evidence](evidence.md) for the Archive A/B comparison. What a single 32-event journey does not prove is scale: larger missions, longer histories, and multi-expedition execution remain the subject of continued validation.
+`
+}
+
+// ------------------------------------------------------------
+// EXP-FIRSTCONTACT-008 — Experience projections (docs)
+// ------------------------------------------------------------
+
+function renderTutorial({ timeline, commands, events }) {
+  const steps = timeline.timeline.map((episode) => {
+    const episodeCommands = commandsForEpisode(commands, episode.episode)
+    const commandBlock = episodeCommands.length > 0
+      ? `\n**Commands:**\n\n${episodeCommands.map((c) => `- \`${c.command}\` _(${c.actor})_`).join("\n")}\n`
+      : ""
+    const eventBlock = episode.eventTypes.length > 0
+      ? `\n**Events recorded:** ${episode.eventTypes.map((t) => `\`${t}\``).join(", ")}\n`
+      : ""
+    return `### Step ${episode.episode} — ${episode.title}\n\n${episode.description}\n${eventBlock}${commandBlock}`
+  })
+  return `${PROJECTION_BANNER_MD}
+
+# First Contact — Interactive Tutorial Projection
+
+A step-by-step guided experience derived from the canonical journey. Each step maps to one episode of the recorded Mission.
+
+${steps.join("\n\n")}
+
+## Next steps
+
+- Read the full [Journey](journey.md) for the narrative version.
+- Inspect the [Evidence](evidence.md) to see which archive artifact produced each step.
+- Try the interactive versions on the website: [Replay](../../website/first-contact/replay.html) and [Tutorial](../../website/first-contact/tutorial.html).
+`
+}
+
+function renderSlides({ timeline, commands }) {
+  const slides = timeline.timeline.map((episode) => {
+    const episodeCommands = commandsForEpisode(commands, episode.episode)
+    const commandsText = episodeCommands.length > 0
+      ? `\n\n**Speaker notes:** Commands in this episode — ${episodeCommands.map((c) => `\`${c.command}\``).join(", ")}.`
+      : ""
+    return `---\n\n## ${episode.title}\n\n${episode.description}${commandsText}`
+  })
+  return `${PROJECTION_BANNER_MD}
+
+# First Contact — Slides Projection
+
+Talk-ready deck outline, one slide per episode of the canonical journey.
+
+${slides.join("\n")}
+`
+}
+
+function renderStoryboard({ timeline, commands }) {
+  const scenes = timeline.timeline.map((episode) => {
+    const episodeCommands = commandsForEpisode(commands, episode.episode)
+    const visual = episode.eventTypes.length > 0
+      ? `Visual: events ${episode.eventTypes.map((t) => `\`${t}\``).join(", ")} appear in the replay timeline.`
+      : `Visual: the workspace shows the ${episode.title.toLowerCase()} state.`
+    const audio = episodeCommands.length > 0
+      ? `Audio: "${episodeCommands[0].purpose || episode.description}"`
+      : `Audio: "${episode.description}"`
+    return `### Scene ${episode.episode} — ${episode.title}\n\n- ${visual}\n- ${audio}\n- Duration: ~30 seconds`
+  })
+  return `${PROJECTION_BANNER_MD}
+
+# First Contact — Video Storyboard Projection
+
+Scene-by-scene storyboard derived from the recorded journey. Each scene traces to one episode in \`timeline.json\`.
+
+${scenes.join("\n\n")}
+`
+}
+
+function renderConferenceDemo({ timeline, commands }) {
+  const script = timeline.timeline.map((episode) => {
+    const episodeCommands = commandsForEpisode(commands, episode.episode)
+    const commandBlock = episodeCommands.length > 0
+      ? `\n\n**Run:**\n\n${episodeCommands.map((c) => "```\n" + c.command + "\n```").join("\n")}`
+      : ""
+    return `### ${episode.title}\n\n*Presenter:* ${episode.description}${commandBlock}`
+  })
+  return `${PROJECTION_BANNER_MD}
+
+# First Contact — Conference Demo Projection
+
+Scripted live-demo narrative. Every line traces to an episode of the canonical journey.
+
+${script.join("\n\n")}
+
+## Setup
+
+Use Archive B (\`examples/first-contact/recorded-journey/evidence-archive-b/\`) as the recorded evidence. Run the same commands from \`commands.json\` in order. The demo ends with \`synth explain replay\` showing the consistent replay verdict.
+`
+}
+
+function renderAiOnboarding({ timeline }) {
+  const concepts = timeline.timeline.map((e) => `- **${e.title}** — ${e.description}`).join("\n")
+  return `${PROJECTION_BANNER_MD}
+
+# First Contact — AI Onboarding Projection
+
+Guidance and example prompts for an AI agent introducing a newcomer to SYNTH. Derived from the canonical journey sequence in \`timeline.json\`.
+
+## System orientation
+
+When a user asks "What is SYNTH?" or "Show me how SYNTH works," follow the canonical journey instead of inventing an explanation:
+
+${concepts}
+
+## Example exchange
+
+**User:** Build me a Space Mission Tracking application.
+
+**Agent:** That sounds like a product Mission. Before generating files, I'll capture it as a SYNTH Mission and propose Expeditions. Here's the plan:
+
+1. Design Data Model
+2. Scaffold Application
+3. Implement Mission Views
+4. Implement Crew Workflow
+5. Validate Implementation
+
+Once you approve the Mission, I'll execute it through the CLI and record every step as evidence.
+
+## Stop conditions
+
+- Do not generate implementation files before Mission approval.
+- If the request is ambiguous, ask for target outcome, user impact, current limitations, and acceptance criteria.
+- Always end by offering to show the Replay proof.
+`
+}
+
+function renderInstallerWalkthrough({ commands }) {
+  const installCommands = commandsForEpisode(commands, 8)
+  const steps = installCommands.map((c, index) => `${index + 1}. **${c.purpose}**\n\n   \`\`\`\n   ${c.command}\n   \`\`\``).join("\n\n")
+  return `${PROJECTION_BANNER_MD}
+
+# First Contact — Installer Walkthrough Projection
+
+First-contact copy shown after installation. Derived from the commands executed in Episode 8 of the canonical journey.
+
+## Welcome
+
+SYNTH is installed. The fastest way to understand it is to walk through one complete Mission, recorded end to end.
+
+## Your first five minutes
+
+${steps}
+
+## What happened?
+
+You just created your first Mission. SYNTH recorded every command as an immutable Event. Run \`synth explain replay\` at any time to prove the current State matches the event history.
 `
 }
 
@@ -485,14 +659,171 @@ function commandList(items) {
   return items.map((c) => `      <p><strong>${escapeHtml(c.actor)}:</strong></p>\n${codeBlock(c.command)}`).join("\n")
 }
 
+function embedJson(value) {
+  return JSON.stringify(value).replace(/</g, "\\u003c")
+}
+
+function renderInteractiveReplayPage({ timeline, commands, events, replayReport }) {
+  const data = {
+    mission: timeline.mission,
+    episodes: timeline.timeline,
+    commands,
+    events: events.map((e) => ({ id: e.id, type: e.type })),
+    replay: {
+      consistent: replayReport.consistent,
+      chainValid: replayReport.chainValid,
+      liveHash: replayReport.liveHash,
+      replayHash: replayReport.replayHash,
+      eventCount: replayReport.eventCount,
+      explanation: replayReport.explanation,
+    },
+  }
+  const replayCommands = commandsForEpisode(commands, 7)
+  const verdictTable = `
+      <table>
+        <tbody>
+          <tr><td>Events replayed</td><td>${replayReport.eventCount}</td></tr>
+          <tr><td>Hash chain</td><td>${replayReport.chainValid ? "valid" : "INVALID"}</td></tr>
+          <tr><td>Operational hash</td><td><code>${escapeHtml(replayReport.liveHash)}</code></td></tr>
+          <tr><td>Replayed hash</td><td><code>${escapeHtml(replayReport.replayHash)}</code></td></tr>
+          <tr><td>Verdict</td><td><strong>${replayReport.consistent ? "CONSISTENT" : "INCONSISTENT"}</strong></td></tr>
+        </tbody>
+      </table>`
+  const commandBlock = commandList(replayCommands)
+  const body = [
+    section("Replay Verdict", para(replayReport.explanation) + "\n" + verdictTable),
+    section("Interactive Timeline", `
+      <p>Click an episode to see the commands and events that produced it.</p>
+      <div id="replay-timeline" class="timeline"></div>
+      <div id="replay-detail" class="timeline-detail"></div>`),
+    section("As executed", commandBlock),
+    section("What this means", para("The 32 events are not a story about the execution — they are the execution. Any state that claims to descend from this journey must replay to the same hash, bit for bit.")),
+  ].join("\n")
+
+  const page = sitePage({ title: "The Replay", hero: timeline.timeline.find((e) => e.episode === 7).description, body })
+  const script = `
+<script>
+const FC_REPLAY_DATA = ${embedJson(data)};
+(function() {
+  const container = document.getElementById('replay-timeline');
+  const detail = document.getElementById('replay-detail');
+  function eventsForEpisode(episode) {
+    const types = new Set(episode.eventTypes || []);
+    return FC_REPLAY_DATA.events.filter(e => types.has(e.type));
+  }
+  function renderEpisode(index) {
+    const episode = FC_REPLAY_DATA.episodes[index];
+    const epCommands = FC_REPLAY_DATA.commands.filter(c => c.episode === episode.episode);
+    const epEvents = eventsForEpisode(episode);
+    const isCheckpoint = episode.eventTypes.some(t => t.includes('APPROVED'));
+    let html = '<h3>Episode ' + episode.episode + ' — ' + episode.title + '</h3>';
+    html += '<p>' + episode.description + '</p>';
+    if (isCheckpoint) {
+      html += '<p class="checkpoint">🏛️ Governance checkpoint: approval recorded.</p>';
+    }
+    if (epCommands.length > 0) {
+      html += '<h4>Commands</h4>';
+      html += epCommands.map(c => '<div class="command"><strong>' + c.actor + '</strong><div class="code-block"><code>' + c.command + '</code></div>' + (c.purpose ? '<p>' + c.purpose + '</p>' : '') + '</div>').join('');
+    }
+    if (epEvents.length > 0) {
+      html += '<h4>Events (' + epEvents.length + ')</h4>';
+      html += '<ul>' + epEvents.map(e => '<li><code>' + e.type + '</code> <span class="event-id">' + e.id + '</span></li>').join('') + '</ul>';
+    }
+    detail.innerHTML = html;
+    Array.from(container.children).forEach((btn, i) => btn.classList.toggle('active', i === index));
+  }
+  FC_REPLAY_DATA.episodes.forEach((episode, index) => {
+    const btn = document.createElement('button');
+    btn.className = 'timeline-step';
+    btn.textContent = episode.episode + '. ' + episode.title;
+    btn.addEventListener('click', () => renderEpisode(index));
+    container.appendChild(btn);
+  });
+  renderEpisode(0);
+})();
+</script>
+<style>
+.timeline { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.timeline-step { background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 0.375rem; padding: 0.5rem 0.75rem; cursor: pointer; }
+.timeline-step.active { background: #18181b; color: #fff; }
+.timeline-detail { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 0.5rem; padding: 1rem; }
+.timeline-detail .code-block { margin: 0.5rem 0; }
+.timeline-detail .checkpoint { color: #047857; font-weight: 500; }
+.timeline-detail .event-id { color: #71717a; font-size: 0.875rem; }
+</style>`
+  return page.replace("</body>", script + "\n</body>")
+}
+
+function renderInteractiveTutorialPage({ timeline, commands }) {
+  const data = {
+    mission: timeline.mission,
+    episodes: timeline.timeline,
+    commands,
+  }
+  const body = section("Interactive Tutorial", `
+      <p>Use the controls to step through the canonical journey. Each step shows the episode description and the commands executed.</p>
+      <div id="tutorial-card" class="tutorial-card"></div>
+      <div class="tutorial-controls">
+        <button id="tutorial-prev">← Previous</button>
+        <span id="tutorial-progress"></span>
+        <button id="tutorial-next">Next →</button>
+      </div>`)
+  const page = sitePage({ title: "Tutorial", hero: "Step through the canonical SYNTH journey.", body })
+  const script = `
+<script>
+const FC_TUTORIAL_DATA = ${embedJson(data)};
+(function() {
+  let step = 0;
+  const card = document.getElementById('tutorial-card');
+  const progress = document.getElementById('tutorial-progress');
+  function render() {
+    const episode = FC_TUTORIAL_DATA.episodes[step];
+    const epCommands = FC_TUTORIAL_DATA.commands.filter(c => c.episode === episode.episode);
+    let html = '<h3>Step ' + episode.episode + ' — ' + episode.title + '</h3>';
+    html += '<p>' + episode.description + '</p>';
+    if (epCommands.length > 0) {
+      html += '<h4>Commands</h4>';
+      html += epCommands.map(c => '<div class="command"><strong>' + c.actor + '</strong><div class="code-block"><code>' + c.command + '</code></div>' + (c.purpose ? '<p>' + c.purpose + '</p>' : '') + '</div>').join('');
+    }
+    card.innerHTML = html;
+    progress.textContent = (step + 1) + ' / ' + FC_TUTORIAL_DATA.episodes.length;
+  }
+  document.getElementById('tutorial-prev').addEventListener('click', () => { if (step > 0) { step--; render(); } });
+  document.getElementById('tutorial-next').addEventListener('click', () => { if (step < FC_TUTORIAL_DATA.episodes.length - 1) { step++; render(); } });
+  render();
+})();
+</script>
+<style>
+.tutorial-card { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 0.5rem; padding: 1.5rem; margin: 1rem 0; }
+.tutorial-controls { display: flex; gap: 1rem; align-items: center; }
+.tutorial-controls button { background: #18181b; color: #fff; border: none; border-radius: 0.375rem; padding: 0.5rem 1rem; cursor: pointer; }
+.tutorial-controls button[disabled] { background: #d4d4d8; cursor: not-allowed; }
+</style>`
+  return page.replace("</body>", script + "\n</body>")
+}
+
+function renderInstallerWalkthroughPage({ commands }) {
+  const installCommands = commandsForEpisode(commands, 8)
+  const steps = installCommands.map((c, index) => `
+      <div class="install-step">
+        <h3>Step ${index + 1} — ${escapeHtml(c.purpose || "Command")}</h3>
+        ${codeBlock(c.command)}
+      </div>`).join("\n")
+  const body = [
+    section("Welcome", para("SYNTH is installed. The fastest way to understand it is to walk through one complete Mission, recorded end to end.")),
+    section("Your first five minutes", steps),
+    section("What happened?", para("You just created your first Mission. SYNTH recorded every command as an immutable Event. Run synth explain replay at any time to prove the current State matches the event history.")),
+  ].join("\n")
+  return sitePage({ title: "Install Walkthrough", hero: "Get from installer to first Mission.", body })
+}
+
 function renderSitePages(archive) {
   const { timeline, commands, proof, replayReport, events, comparison } = archive
   const ep = (n) => timeline.timeline.find((e) => e.episode === n)
   const mission = missionCreatedPayload(events)
   const distribution = eventTypeDistribution(events)
-  const inlineCode = (text) => escapeHtml(text).replace(/`([^`]+)`/g, "<code>$1</code>")
   const comparisonTableRows = comparisonRows(comparison)
-    .map(([label, a, b]) => `          <tr><td>${inlineCode(label)}</td><td>${inlineCode(a)}</td><td>${inlineCode(b)}</td></tr>`)
+    .map(([label, a, b]) => `          <tr><td>${inlineCodeHtml(label)}</td><td>${inlineCodeHtml(a)}</td><td>${inlineCodeHtml(b)}</td></tr>`)
     .join("\n")
 
   const pages = {}
@@ -508,8 +839,10 @@ function renderSitePages(archive) {
         <li><a href="mission.html">The Mission</a></li>
         <li><a href="expedition.html">The Expedition</a></li>
         <li><a href="evidence.html">The Evidence</a></li>
-        <li><a href="replay.html">The Replay</a></li>
+        <li><a href="replay.html">The Replay</a> (interactive timeline)</li>
         <li><a href="result.html">The Result</a></li>
+        <li><a href="tutorial.html">Interactive Tutorial</a></li>
+        <li><a href="installer.html">Install Walkthrough</a></li>
       </ul>`),
     ].join("\n"),
   })
@@ -564,23 +897,7 @@ ${comparisonTableRows}
     ].join("\n"),
   })
 
-  pages["replay.html"] = sitePage({
-    title: "The Replay",
-    hero: ep(7).description,
-    body: [
-      section("State", para(ep(6).description)),
-      section("Replay", para(ep(7).description) + "\n" + commandList(commandsForEpisode(commands, 7))),
-      section("The verdict", `      <table>
-        <tbody>
-          <tr><td>Events replayed</td><td>${replayReport.eventCount}</td></tr>
-          <tr><td>Hash chain</td><td>${replayReport.chainValid ? "valid" : "INVALID"}</td></tr>
-          <tr><td>Operational hash</td><td><code>${escapeHtml(replayReport.liveHash)}</code></td></tr>
-          <tr><td>Replayed hash</td><td><code>${escapeHtml(replayReport.replayHash)}</code></td></tr>
-          <tr><td>Verdict</td><td><strong>${replayReport.consistent ? "CONSISTENT" : "INCONSISTENT"}</strong></td></tr>
-        </tbody>
-      </table>`),
-    ].join("\n"),
-  })
+  pages["replay.html"] = renderInteractiveReplayPage({ timeline, commands, events, replayReport })
 
   pages["result.html"] = sitePage({
     title: "The Result",
@@ -591,6 +908,9 @@ ${comparisonTableRows}
       section("Known limitations", `      <p>This recording (Archive B) runs on the hardened pipeline: aggregate relationship validation, signed snapshot persistence, and graph-integrity proof are exercised and passing — see <a href="evidence.html">The Evidence</a> for the Archive A/B comparison. What a single 32-event journey does not prove is scale: larger missions and longer histories remain the subject of continued validation.</p>`),
     ].join("\n"),
   })
+
+  pages["tutorial.html"] = renderInteractiveTutorialPage({ timeline, commands })
+  pages["installer.html"] = renderInstallerWalkthroughPage({ commands })
 
   return pages
 }
@@ -617,6 +937,12 @@ async function buildOutputs(root) {
     "evidence.md": renderEvidence(ctx),
     "replay.md": renderReplay(ctx),
     "lessons.md": renderLessons(ctx),
+    "tutorial.md": renderTutorial(ctx),
+    "slides.md": renderSlides(ctx),
+    "storyboard.md": renderStoryboard(ctx),
+    "conference-demo.md": renderConferenceDemo(ctx),
+    "ai-onboarding.md": renderAiOnboarding(ctx),
+    "installer-walkthrough.md": renderInstallerWalkthrough(ctx),
   }
   const site = renderSitePages(ctx)
 
