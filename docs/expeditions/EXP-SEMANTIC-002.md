@@ -4,7 +4,7 @@
 
 > **Architecture expedition.** Define the domain ontology, ubiquitous language, bounded contexts, integrity rules, and semantic drift detection for the problem space.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-024 — Semantic Modeling  
@@ -98,9 +98,9 @@ Every change must be replayable from the inputs and decisions that produced it.
 4. Ubiquitous language generator.
 5. Domain integrity rule engine.
 6. Bounded context detection.
-7. Reference contract: `docs/reference/semantic-domain-contract.md`.
-8. ADR on Domain Modeling semantics.
-9. Regression tests.
+7. Reference contract: [`docs/reference/semantic-domain-contract.md`](../reference/semantic-domain-contract.md).
+8. ADR on Domain Modeling semantics: [`docs/adr/ADR-031-domain-modeling-semantics.md`](../adr/ADR-031-domain-modeling-semantics.md).
+9. Regression tests (`tests/semantic-domain.test.js`).
 
 ---
 
