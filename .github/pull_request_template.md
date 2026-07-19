@@ -1,23 +1,30 @@
-## Description
+## Summary
 
-Brief description of the change.
+Brief description of the change and the SYNTH concept(s) it affects (Mission, Expedition, Evidence, Plan, Event, State, Replay).
 
-## Type of change
+## Governance
 
-- [ ] Bug fix
-- [ ] Documentation improvement
-- [ ] Example addition or update
-- [ ] Release or CI change
-- [ ] Other (please describe)
+- [ ] `npm run govern` passes (or CI is green)
+- [ ] ADR updated/added if required
+- [ ] Expedition status updated
 
-## Checklist
+## Protected Assets
 
-- [ ] `npm run govern` passes locally
-- [ ] Tests pass
-- [ ] Public-facing docs use only the seven public concepts
-- [ ] No Protected Asset was modified (Mission Studio, Genesis, Replay, ExecutionGate, Capability Model, Constitutional Baseline, Public Vocabulary)
-- [ ] Related Expedition is referenced if applicable
+This change does NOT modify:
 
-## Related
+- [ ] Mission Studio
+- [ ] Genesis
+- [ ] Replay
+- [ ] ExecutionGate
+- [ ] Event Model
+- [ ] Capability Model
+- [ ] Constitutional Baseline
+- [ ] Public Vocabulary
 
-Link to related issue(s) or Expedition(s).
+If any are unchecked, this PR requires an Architecture Expedition and ADR.
+
+## Evidence
+
+- Tests added/updated
+- Relevant CLI commands verified
+- Proof artifact generated (if applicable)

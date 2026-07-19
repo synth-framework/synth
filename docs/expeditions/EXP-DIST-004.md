@@ -2,7 +2,7 @@
 
 > **Engineering expedition.** Publish SYNTH SDKs and protocol packages on npm so developers and package-aware agents can discover and install them.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Engineering Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-029 — AI Ecosystem Distribution  

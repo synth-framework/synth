@@ -2,7 +2,7 @@
 
 > **Product expedition.** Generate Cursor, Cline, Windsurf, Roo, Aider, and Continue.dev rules from the Canonical AI Capability Model so coding agents behave correctly inside SYNTH repositories.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-029 — AI Ecosystem Distribution  

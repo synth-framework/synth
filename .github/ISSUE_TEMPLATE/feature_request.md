@@ -1,30 +1,28 @@
 ---
 name: Feature request
-about: Suggest an idea for Synth
-title: "[FEATURE] "
+about: Propose a new capability for SYNTH
+title: "[FEAT] "
 labels: enhancement
-assignees: ''
+type: Feature
 ---
 
-## Is your feature request related to a problem?
+## Problem
 
-A clear and concise description of what the problem is.
+What limitation or gap does this address?
 
-## Describe the solution you'd like
+## Proposal
 
-A clear and concise description of what you want to happen.
+Describe the proposed change. If it touches Mission Studio, Genesis, Replay, ExecutionGate, the Event Model, the Capability Model, the Constitutional Baseline, or Public Vocabulary, note that it requires an Architecture Expedition and ADR.
 
-## Describe alternatives you've considered
+## Protected Asset check
 
-A clear and concise description of any alternative solutions or features you've considered.
+- [ ] This change does not modify Protected Assets.
+- [ ] This change requires an Architecture Expedition and ADR.
 
-## Era check
+## Acceptance criteria
 
-Synth v2 is in Era II — Adoption. New architectural concepts are deferred to Era III / v3. Does your request stay within the existing public vocabulary and frozen architecture?
+How would we verify this works correctly?
 
-- [ ] Yes, this is a documentation, example, or adoption improvement.
-- [ ] No, this introduces a new architectural concept.
+## Related expeditions
 
-## Additional context
-
-Add any other context or screenshots about the feature request here.
+Link any relevant Mission or Expedition.

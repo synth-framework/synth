@@ -2,7 +2,7 @@
 
 > **Engineering expedition.** Expose SYNTH capabilities through the Model Context Protocol so every MCP-capable client can discover and invoke SYNTH without platform-specific integration.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Engineering Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-029 — AI Ecosystem Distribution  

@@ -1,33 +1,31 @@
 ---
 name: Bug report
-about: Report a problem with Synth
+about: Report behavior that contradicts SYNTH's deterministic governance model
 title: "[BUG] "
 labels: bug
-assignees: ''
+type: Bug
 ---
 
 ## Describe the bug
 
-A clear and concise description of what the bug is.
+A clear, concise description of the unexpected behavior. Include the SYNTH concept(s) involved (Mission, Expedition, Evidence, Plan, Event, State, Replay).
 
-## To Reproduce
+## To reproduce
 
-Steps to reproduce the behavior:
-
-1. Go to '...'
-2. Run '...'
-3. See error
+Steps to reproduce, including the SYNTH CLI commands or API calls used.
 
 ## Expected behavior
 
-A clear and concise description of what you expected to happen.
+What should have happened under deterministic governance?
+
+## Evidence
+
+- Event log excerpt (if safe to share)
+- Replay output (`synth explain replay`)
+- Proof artifact reference
 
 ## Environment
 
-- OS:
+- SYNTH version:
 - Node version:
-- Synth version:
-
-## Additional context
-
-Add any other context about the problem here.
+- OS:

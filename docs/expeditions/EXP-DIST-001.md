@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the single source of truth from which every SYNTH skill, rules file, MCP manifest, IDE extension, website page, and documentation section is projected.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-029 — AI Ecosystem Distribution  

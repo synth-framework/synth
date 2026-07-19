@@ -156,8 +156,23 @@
   "keywords": [
     "event-sourcing",
     "deterministic",
-    "execution-system"
+    "execution-system",
+    "ai-agent",
+    "genesis-protocol",
+    "mission",
+    "expedition",
+    "governance",
+    "replay",
+    "ai-native"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synth-framework/synth.git"
+  },
+  "homepage": "https://synth.run",
+  "bugs": {
+    "url": "https://github.com/synth-framework/synth/issues"
+  },
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
