@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Integrate First Contact Discovery artifacts with replay verification and governance proofs.
 
-**Status:** Proposed  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  

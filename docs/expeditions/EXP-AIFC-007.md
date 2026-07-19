@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Initialize repository, manifest, Mission, and Expedition proposals only after Discovery approval.
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Started:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  

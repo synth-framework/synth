@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Validate runtime, language, framework, and platform assumptions before Mission creation proceeds.
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Started:** 2026-07-19  
 **Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  

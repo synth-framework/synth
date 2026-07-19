@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Extract intent, audience, constraints, and success criteria from unstructured operator input and project them into the Discovery artifact.
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Started:** 2026-07-19  
 **Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  

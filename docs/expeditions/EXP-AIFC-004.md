@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Detect ambiguity, score confidence, and generate targeted clarification questions to bring a Discovery artifact to approval readiness.
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Started:** 2026-07-19  
 **Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  
