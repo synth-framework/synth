@@ -32,6 +32,16 @@ import { cmdVerify } from "./verify.js"
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
+import {
+  cmdFirstContactHelp,
+  cmdFirstContactStart,
+  cmdFirstContactClarify,
+  cmdFirstContactProject,
+  cmdFirstContactVerify,
+  cmdFirstContactApprove,
+  cmdFirstContactMaterialize,
+  cmdFirstContactStatus,
+} from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
 import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
@@ -68,6 +78,7 @@ const COMMANDS = [
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
+  { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -2147,6 +2158,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdAdapterHelp }
     case "repair":
       return { namespace, handler: cmdRepairHelp }
+    case "first-contact":
+      return { namespace, handler: cmdFirstContactHelp }
     default:
       return undefined
   }
@@ -2167,6 +2180,19 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "docs" && sub === "generate") return "docs generate"
   if (namespace === "repair" && sub === "replay") {
     return flags.approve === true || flags.approve === "true" ? "repair replay --approve" : "repair replay"
+  }
+  if (namespace === "first-contact") {
+    if (sub === "start") return "first-contact start"
+    if (sub === "clarify") return "first-contact clarify"
+    if (sub === "project") return "first-contact project"
+    if (sub === "verify") return "first-contact verify"
+    if (sub === "approve") return "first-contact approve"
+    if (sub === "status") return "first-contact status"
+    if (sub === "materialize") {
+      if (flags["dry-run"] === true) return "first-contact materialize --dry-run"
+      if (flags.approve === true || flags.approve === "true") return "first-contact materialize --approve"
+      return "first-contact materialize"
+    }
   }
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
@@ -2342,6 +2368,22 @@ async function main() {
     case "adapter":
       await cmdAdapter(positional.slice(1))
       break
+
+    case "first-contact": {
+      const sub = positional[1]
+      if (sub === "start") await cmdFirstContactStart(positional.slice(2), flags)
+      else if (sub === "clarify") await cmdFirstContactClarify(positional.slice(2), flags)
+      else if (sub === "project") await cmdFirstContactProject(positional.slice(2), flags)
+      else if (sub === "verify") await cmdFirstContactVerify(positional.slice(2), flags)
+      else if (sub === "approve") await cmdFirstContactApprove(positional.slice(2), flags)
+      else if (sub === "materialize") await cmdFirstContactMaterialize(positional.slice(2), flags)
+      else if (sub === "status") await cmdFirstContactStatus(positional.slice(2), flags)
+      else
+        printError(
+          "Usage: synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status",
+        )
+      break
+    }
 
     default:
       printError(`Unknown command: ${command}. Run 'synth --help' for available commands.`)

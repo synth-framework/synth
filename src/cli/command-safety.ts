@@ -38,6 +38,14 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "govern", safety: "MUTATING", description: "Run the full governance pipeline", requiresApproval: true },
   { command: "repair replay", safety: "POTENTIALLY_MUTATING", description: "Propose repairs for runtime drift without mutating state" },
   { command: "repair replay --approve", safety: "MUTATING", description: "Apply repairs for runtime drift", requiresApproval: true },
+  { command: "first-contact start", safety: "PROPOSAL_ONLY", description: "Extract intent and create a first-contact proposal draft" },
+  { command: "first-contact clarify", safety: "PROPOSAL_ONLY", description: "Show or apply clarification answers to the draft" },
+  { command: "first-contact project", safety: "READ_ONLY", description: "Project architecture candidates from the draft" },
+  { command: "first-contact verify", safety: "READ_ONLY", description: "Verify capability assumptions for the selected architecture" },
+  { command: "first-contact status", safety: "READ_ONLY", description: "Report the current first-contact state" },
+  { command: "first-contact materialize --dry-run", safety: "PROPOSAL_ONLY", description: "Preview what materialization would create" },
+  { command: "first-contact approve", safety: "MUTATING", description: "Approve the first-contact draft", requiresApproval: true },
+  { command: "first-contact materialize --approve", safety: "MUTATING", description: "Materialize the approved artifact into a SYNTH project", requiresApproval: true },
 ]
 
 function normalizeCommand(command: string): string {
@@ -78,6 +86,9 @@ function suggestionForCommand(command: string): string {
   }
   if (command.startsWith("expedition")) {
     return "managing expeditions"
+  }
+  if (command.startsWith("first-contact")) {
+    return "running first-contact onboarding"
   }
   return "running this command"
 }

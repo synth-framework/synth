@@ -17,7 +17,12 @@ import type { IntentExtractionResult, TranscriptEntry } from "../extract/types.j
 import { computeConfidence } from "../extract/confidence.js"
 
 const CONFIDENCE_THRESHOLD = 0.8
-const OPTIONAL_FIELDS = ["capabilities.optional", "constraints.functional", "constraints.nonFunctional"]
+const OPTIONAL_FIELDS = [
+  "capabilities.optional",
+  "constraints.functional",
+  "constraints.nonFunctional",
+  "environment.platformConstraints",
+]
 
 function isOptionalField(field: string): boolean {
   return OPTIONAL_FIELDS.includes(field)
