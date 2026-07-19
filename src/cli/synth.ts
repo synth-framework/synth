@@ -30,6 +30,16 @@ import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
+import {
+  namespaceHelp as cmdRepoHelp,
+  cmdRepoInit,
+  cmdRepoBranchCreate,
+  cmdRepoPrOpen,
+  cmdRepoPrApprove,
+  cmdRepoPrMerge,
+  cmdRepoReleaseCreate,
+  cmdRepoStatus,
+} from "./repo.js"
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
@@ -82,6 +92,7 @@ const COMMANDS = [
   { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
   { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
   { name: "ai", description: "AI agent interoperability (refresh)" },
+  { name: "repo", description: "Repository and release governance operations" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -2211,6 +2222,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdFirstContactHelp }
     case "ai":
       return { namespace, handler: cmdAiHelp }
+    case "repo":
+      return { namespace, handler: async () => printJson(cmdRepoHelp()) }
     default:
       return undefined
   }
@@ -2245,6 +2258,15 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
       if (flags.approve === true || flags.approve === "true") return `${prefix} materialize --approve`
       return `${prefix} materialize`
     }
+  }
+  if (namespace === "repo") {
+    if (sub === "init") return "repo init"
+    if (sub === "branch" && positional[2] === "create") return "repo branch create"
+    if (sub === "pr" && positional[2] === "open") return "repo pr open"
+    if (sub === "pr" && positional[2] === "approve") return "repo pr approve"
+    if (sub === "pr" && positional[2] === "merge") return "repo pr merge"
+    if (sub === "release" && positional[2] === "create") return "repo release create"
+    if (sub === "status") return "repo status"
   }
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
@@ -2421,6 +2443,22 @@ async function main() {
       const sub = positional[1]
       if (sub === "refresh") await cmdAiRefresh()
       else printError("Usage: synth ai refresh")
+      break
+    }
+
+    case "repo": {
+      const sub = positional[1]
+      if (sub === "init") await cmdRepoInit(flags)
+      else if (sub === "branch" && positional[2] === "create") await cmdRepoBranchCreate(flags)
+      else if (sub === "pr" && positional[2] === "open") await cmdRepoPrOpen(flags)
+      else if (sub === "pr" && positional[2] === "approve") await cmdRepoPrApprove(flags)
+      else if (sub === "pr" && positional[2] === "merge") await cmdRepoPrMerge(flags)
+      else if (sub === "release" && positional[2] === "create") await cmdRepoReleaseCreate(flags)
+      else if (sub === "status") await cmdRepoStatus()
+      else
+        printError(
+          "Usage: synth repo init --forge-provider <p> --version-strategy <s> | synth repo branch create --name <n> --type <t> | synth repo pr open --head <h> --base <b> --title <t> --body-file <f> | synth repo pr approve --id <id> | synth repo pr merge --id <id> --commit <sha> | synth repo release create --tag <t> --commit <sha> | synth repo status",
+        )
       break
     }
 

@@ -270,6 +270,81 @@ export function applyDomain(
       return { events: [{ type: "DECISION_REJECTED", payload: { id: updated.id, status: updated.status } }] }
     }
 
+    // ============================================================
+    // Repository governance capabilities (EXP-PROGRAM-028)
+    // ============================================================
+    case "InitializeRepository": {
+      const repositoryId = String(intent.payload.repositoryId)
+      const defaultBranch = String(intent.payload.defaultBranch)
+      const forgeProvider = String(intent.payload.forgeProvider)
+      const versionStrategy = String(intent.payload.versionStrategy)
+      return {
+        events: [{
+          type: "REPOSITORY_INITIALIZED",
+          payload: { repositoryId, defaultBranch, forgeProvider, versionStrategy },
+        }],
+      }
+    }
+
+    case "CreateBranch": {
+      const branchName = String(intent.payload.branchName)
+      const branchType = String(intent.payload.branchType)
+      const baseBranch = typeof intent.payload.baseBranch === "string" ? intent.payload.baseBranch : undefined
+      const missionId = typeof intent.payload.missionId === "string" ? intent.payload.missionId : undefined
+      const expeditionId = typeof intent.payload.expeditionId === "string" ? intent.payload.expeditionId : undefined
+      return {
+        events: [{
+          type: "BRANCH_CREATED",
+          payload: { branchName, branchType, baseBranch, missionId, expeditionId },
+        }],
+      }
+    }
+
+    case "OpenPullRequest": {
+      const pullRequestId = String(intent.payload.pullRequestId)
+      const forgeId = String(intent.payload.forgeId)
+      const url = String(intent.payload.url)
+      const number = Number(intent.payload.number)
+      const headBranch = String(intent.payload.headBranch)
+      const baseBranch = String(intent.payload.baseBranch)
+      const title = String(intent.payload.title || "")
+      const missionId = typeof intent.payload.missionId === "string" ? intent.payload.missionId : undefined
+      const expeditionId = typeof intent.payload.expeditionId === "string" ? intent.payload.expeditionId : undefined
+      return {
+        events: [{
+          type: "PULL_REQUEST_OPENED",
+          payload: { pullRequestId, forgeId, url, number, headBranch, baseBranch, title, missionId, expeditionId },
+        }],
+      }
+    }
+
+    case "ApprovePromotion": {
+      const promotionId = String(intent.payload.promotionId)
+      const approver = String(intent.payload.approver || "operator")
+      return {
+        events: [{ type: "PROMOTION_APPROVED", payload: { promotionId, approver } }],
+      }
+    }
+
+    case "MergePullRequest": {
+      const pullRequestId = String(intent.payload.pullRequestId)
+      const commit = String(intent.payload.commit)
+      const strategy = String(intent.payload.strategy || "merge")
+      return {
+        events: [{ type: "PULL_REQUEST_MERGED", payload: { pullRequestId, commit, strategy } }],
+      }
+    }
+
+    case "CreateRelease": {
+      const releaseId = String(intent.payload.releaseId)
+      const tag = String(intent.payload.tag)
+      const targetCommit = String(intent.payload.targetCommit)
+      const evidenceReference = typeof intent.payload.evidenceReference === "string" ? intent.payload.evidenceReference : undefined
+      return {
+        events: [{ type: "RELEASE_CREATED", payload: { releaseId, tag, targetCommit, evidenceReference } }],
+      }
+    }
+
     default:
       return { events: [] }
   }

@@ -775,5 +775,214 @@ export function createDefaultCapabilities(): Capability[] {
         }
       },
     },
+
+    // Repository governance capabilities (EXP-PROGRAM-028)
+    {
+      name: "InitializeRepository",
+      description: "Initialize repository governance state",
+      inputSchema: {
+        required: ["repositoryId", "defaultBranch", "forgeProvider", "versionStrategy"],
+        types: {
+          repositoryId: "string",
+          defaultBranch: "string",
+          forgeProvider: "string",
+          versionStrategy: "string",
+        },
+      },
+      outputSchema: { events: ["REPOSITORY_INITIALIZED"], resultType: "Repository" },
+      preconditions: [
+        {
+          name: "repository_not_initialized",
+          evaluate: (_intent, state) => state.repository === undefined,
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const repositoryId = String(intent.payload.repositoryId)
+        const defaultBranch = String(intent.payload.defaultBranch)
+        const forgeProvider = String(intent.payload.forgeProvider)
+        const versionStrategy = String(intent.payload.versionStrategy)
+        return {
+          events: [{
+            type: "REPOSITORY_INITIALIZED",
+            payload: { repositoryId, defaultBranch, forgeProvider, versionStrategy },
+          }],
+          result: { repositoryId, defaultBranch, forgeProvider, versionStrategy },
+        }
+      },
+    },
+    {
+      name: "CreateBranch",
+      description: "Create a governed branch",
+      inputSchema: {
+        required: ["branchName", "branchType"],
+        types: {
+          branchName: "string",
+          branchType: "string",
+          baseBranch: "string",
+          missionId: "string",
+          expeditionId: "string",
+        },
+      },
+      outputSchema: { events: ["BRANCH_CREATED"], resultType: "RepositoryBranch" },
+      preconditions: [
+        {
+          name: "repository_initialized",
+          evaluate: (_intent, state) => state.repository !== undefined,
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const branchName = String(intent.payload.branchName)
+        const branchType = String(intent.payload.branchType)
+        const baseBranch = typeof intent.payload.baseBranch === "string" ? intent.payload.baseBranch : undefined
+        const missionId = typeof intent.payload.missionId === "string" ? intent.payload.missionId : undefined
+        const expeditionId = typeof intent.payload.expeditionId === "string" ? intent.payload.expeditionId : undefined
+        return {
+          events: [{
+            type: "BRANCH_CREATED",
+            payload: { branchName, branchType, baseBranch, missionId, expeditionId },
+          }],
+          result: { branchName, branchType, baseBranch, missionId, expeditionId },
+        }
+      },
+    },
+    {
+      name: "OpenPullRequest",
+      description: "Open a pull request as a promotion proposal",
+      inputSchema: {
+        required: ["pullRequestId", "forgeId", "url", "number", "headBranch", "baseBranch"],
+        types: {
+          pullRequestId: "string",
+          forgeId: "string",
+          url: "string",
+          number: "number",
+          headBranch: "string",
+          baseBranch: "string",
+          title: "string",
+          missionId: "string",
+          expeditionId: "string",
+        },
+      },
+      outputSchema: { events: ["PULL_REQUEST_OPENED"], resultType: "PullRequest" },
+      preconditions: [
+        {
+          name: "repository_initialized",
+          evaluate: (_intent, state) => state.repository !== undefined,
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const pullRequestId = String(intent.payload.pullRequestId)
+        const forgeId = String(intent.payload.forgeId)
+        const url = String(intent.payload.url)
+        const number = Number(intent.payload.number)
+        const headBranch = String(intent.payload.headBranch)
+        const baseBranch = String(intent.payload.baseBranch)
+        const title = String(intent.payload.title || "")
+        const missionId = typeof intent.payload.missionId === "string" ? intent.payload.missionId : undefined
+        const expeditionId = typeof intent.payload.expeditionId === "string" ? intent.payload.expeditionId : undefined
+        return {
+          events: [{
+            type: "PULL_REQUEST_OPENED",
+            payload: { pullRequestId, forgeId, url, number, headBranch, baseBranch, title, missionId, expeditionId },
+          }],
+          result: { pullRequestId, forgeId, url, number, headBranch, baseBranch, title, missionId, expeditionId },
+        }
+      },
+    },
+    {
+      name: "ApprovePromotion",
+      description: "Approve a proposed promotion",
+      inputSchema: { required: ["promotionId"], types: { promotionId: "string", approver: "string" } },
+      outputSchema: { events: ["PROMOTION_APPROVED"], resultType: "Promotion" },
+      preconditions: [
+        {
+          name: "promotion_exists",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.promotionId)
+            return Object.values(state.repository?.pullRequests ?? {}).some((pr) => pr.id === id)
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const promotionId = String(intent.payload.promotionId)
+        const approver = String(intent.payload.approver || "operator")
+        return {
+          events: [{ type: "PROMOTION_APPROVED", payload: { promotionId, approver } }],
+          result: { promotionId, approver },
+        }
+      },
+    },
+    {
+      name: "MergePullRequest",
+      description: "Merge an approved pull request",
+      inputSchema: { required: ["pullRequestId", "commit"], types: { pullRequestId: "string", commit: "string", strategy: "string" } },
+      outputSchema: { events: ["PULL_REQUEST_MERGED"], resultType: "MergeResult" },
+      preconditions: [
+        {
+          name: "pull_request_open",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.pullRequestId)
+            return state.repository?.pullRequests[id]?.state === "open"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const pullRequestId = String(intent.payload.pullRequestId)
+        const commit = String(intent.payload.commit)
+        const strategy = String(intent.payload.strategy || "merge")
+        return {
+          events: [{ type: "PULL_REQUEST_MERGED", payload: { pullRequestId, commit, strategy } }],
+          result: { pullRequestId, commit, strategy },
+        }
+      },
+    },
+    {
+      name: "CreateRelease",
+      description: "Create a governed release",
+      inputSchema: {
+        required: ["releaseId", "tag", "targetCommit"],
+        types: { releaseId: "string", tag: "string", targetCommit: "string", evidenceReference: "string" },
+      },
+      outputSchema: { events: ["RELEASE_CREATED"], resultType: "Release" },
+      preconditions: [
+        {
+          name: "repository_initialized",
+          evaluate: (_intent, state) => state.repository !== undefined,
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const releaseId = String(intent.payload.releaseId)
+        const tag = String(intent.payload.tag)
+        const targetCommit = String(intent.payload.targetCommit)
+        const evidenceReference = typeof intent.payload.evidenceReference === "string" ? intent.payload.evidenceReference : undefined
+        return {
+          events: [{ type: "RELEASE_CREATED", payload: { releaseId, tag, targetCommit, evidenceReference } }],
+          result: { releaseId, tag, targetCommit, evidenceReference },
+        }
+      },
+    },
   ]
 }

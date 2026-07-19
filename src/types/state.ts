@@ -138,6 +138,61 @@ export type Execution = {
   status: "success" | "failed" | "rolledback"
 }
 
+/** Repository branch — governed line of development */
+export type RepositoryBranch = {
+  name: string
+  type: "main" | "release" | "mission" | "expedition" | "hotfix"
+  baseBranch?: string
+  missionId?: string
+  expeditionId?: string
+  createdAt: number
+}
+
+/** Pull request — governance artifact for promotion */
+export type PullRequest = {
+  id: string
+  forgeId: string
+  url: string
+  number: number
+  title: string
+  headBranch: string
+  baseBranch: string
+  state: "open" | "closed" | "merged"
+  missionId?: string
+  expeditionId?: string
+  createdAt: number
+  updatedAt: number
+}
+
+/** Release — governed publication event */
+export type Release = {
+  id: string
+  tag: string
+  name: string
+  targetCommit: string
+  url?: string
+  evidenceReference?: string
+  createdAt: number
+}
+
+/** Repository — governed container of project history */
+export type Repository = {
+  defaultBranch: string
+  forgeProvider: string
+  branches: Record<string, RepositoryBranch>
+  pullRequests: Record<string, PullRequest>
+  releases: Record<string, Release>
+  lifecycle:
+    | "uninitialized"
+    | "initialized"
+    | "branch-created"
+    | "promotion-proposed"
+    | "promotion-approved"
+    | "merged"
+    | "released"
+  versionStrategy: "semver" | "calver" | "build" | "custom"
+}
+
 /** Canonical state — the single authoritative materialized projection */
 export type CanonicalState = {
   version: number
@@ -156,6 +211,7 @@ export type CanonicalState = {
   executions: Record<string, Execution>
   executionIntents: Record<string, ExecutionIntentState>
   executionGraphs: Record<string, ExecutionGraphState>
+  repository?: Repository
   lastEventOffset: number
 }
 

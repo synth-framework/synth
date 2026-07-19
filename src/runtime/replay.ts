@@ -15,6 +15,10 @@ import type {
   Discovery,
   Decision,
   GeneratedWorkItem,
+  Repository,
+  RepositoryBranch,
+  PullRequest,
+  Release,
 } from "../types/index.js"
 import type { HistoricalAliasRegistry } from "./historical-aliases.js"
 import { getCanonicalId, identityKey } from "./historical-aliases.js"
@@ -527,6 +531,100 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
         graph.projectionType = payload.projectionType as "pull_request" | "patch" | "diff"
         graph.projectionUrl = payload.projectionUrl ? String(payload.projectionUrl) : undefined
       }
+      break
+    }
+
+    // Repository governance lifecycle (EXP-PROGRAM-028)
+    case "REPOSITORY_INITIALIZED": {
+      state.repository = {
+        defaultBranch: String(payload.defaultBranch),
+        forgeProvider: String(payload.forgeProvider),
+        branches: {},
+        pullRequests: {},
+        releases: {},
+        lifecycle: "initialized",
+        versionStrategy: String(payload.versionStrategy) as Repository["versionStrategy"],
+      }
+      break
+    }
+    case "BRANCH_CREATED": {
+      if (!state.repository) break
+      const branchName = String(payload.branchName)
+      state.repository.branches[branchName] = {
+        name: branchName,
+        type: String(payload.branchType) as RepositoryBranch["type"],
+        baseBranch: payload.baseBranch ? String(payload.baseBranch) : undefined,
+        missionId: payload.missionId ? String(payload.missionId) : undefined,
+        expeditionId: payload.expeditionId ? String(payload.expeditionId) : undefined,
+        createdAt: event.timestamp,
+      }
+      state.repository.lifecycle = "branch-created"
+      break
+    }
+    case "PULL_REQUEST_OPENED": {
+      if (!state.repository) break
+      const pullRequestId = String(payload.pullRequestId)
+      state.repository.pullRequests[pullRequestId] = {
+        id: pullRequestId,
+        forgeId: String(payload.forgeId),
+        url: String(payload.url),
+        number: Number(payload.number),
+        title: String(payload.title || ""),
+        headBranch: String(payload.headBranch),
+        baseBranch: String(payload.baseBranch),
+        state: "open",
+        missionId: payload.missionId ? String(payload.missionId) : undefined,
+        expeditionId: payload.expeditionId ? String(payload.expeditionId) : undefined,
+        createdAt: event.timestamp,
+        updatedAt: event.timestamp,
+      }
+      state.repository.lifecycle = "promotion-proposed"
+      break
+    }
+    case "PULL_REQUEST_UPDATED": {
+      if (!state.repository) break
+      const pullRequestId = String(payload.pullRequestId)
+      const pr = state.repository.pullRequests[pullRequestId]
+      if (pr) {
+        pr.state = String(payload.state) as PullRequest["state"]
+        if (payload.title) pr.title = String(payload.title)
+        pr.updatedAt = event.timestamp
+      }
+      break
+    }
+    case "PULL_REQUEST_MERGED": {
+      if (!state.repository) break
+      const pullRequestId = String(payload.pullRequestId)
+      const pr = state.repository.pullRequests[pullRequestId]
+      if (pr) {
+        pr.state = "merged"
+        pr.updatedAt = event.timestamp
+      }
+      state.repository.lifecycle = "merged"
+      break
+    }
+    case "PROMOTION_PROPOSED": {
+      if (!state.repository) break
+      state.repository.lifecycle = "promotion-proposed"
+      break
+    }
+    case "PROMOTION_APPROVED": {
+      if (!state.repository) break
+      state.repository.lifecycle = "promotion-approved"
+      break
+    }
+    case "RELEASE_CREATED": {
+      if (!state.repository) break
+      const releaseId = String(payload.releaseId)
+      state.repository.releases[releaseId] = {
+        id: releaseId,
+        tag: String(payload.tag),
+        name: String(payload.tag),
+        targetCommit: String(payload.targetCommit),
+        evidenceReference: payload.evidenceReference ? String(payload.evidenceReference) : undefined,
+        createdAt: event.timestamp,
+      }
+      state.repository.lifecycle = "released"
       break
     }
 
