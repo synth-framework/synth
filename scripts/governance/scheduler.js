@@ -47,6 +47,7 @@ export class Scheduler {
 
     // Compute fingerprints for all checks.
     const fingerprints = new Map()
+    const plannedIds = new Set(checks.map((c) => c.id))
     for (const check of checks) {
       const fingerprint = await computeFingerprint({
         checkId: check.id,
@@ -62,7 +63,7 @@ export class Scheduler {
     const entries = []
     for (const check of checks) {
       const fingerprint = fingerprints.get(check.id)
-      const upstreamIds = check.dependencies ?? []
+      const upstreamIds = (check.dependencies ?? []).filter((id) => plannedIds.has(id))
       const upstreamFingerprints = upstreamIds.map((id) => fingerprints.get(id) ?? "")
 
       const dependencies = check.dependencies ?? []
@@ -140,6 +141,28 @@ export class Scheduler {
           entry.proof = null
           running.add(entry.checkId)
           changed = true
+        }
+      }
+    }
+
+    // Third pass: upstream enforcement. If a check is scheduled to run and it
+    // depends on another check, that dependency must also run. This ensures
+    // build steps are not skipped while downstream tests that need their
+    // outputs (e.g., dist/) are executed.
+    while (changed) {
+      changed = false
+      for (const entry of entries) {
+        if (entry.action !== "run") continue
+        const check = checks.find((c) => c.id === entry.checkId)
+        for (const dep of (check?.dependencies ?? []).filter((id) => plannedIds.has(id))) {
+          const depEntry = entries.find((e) => e.checkId === dep)
+          if (depEntry && depEntry.action !== "run") {
+            depEntry.action = "run"
+            depEntry.reason = "upstream"
+            depEntry.proof = null
+            running.add(depEntry.checkId)
+            changed = true
+          }
         }
       }
     }

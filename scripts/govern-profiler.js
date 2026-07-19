@@ -13,7 +13,7 @@ import fs from "fs"
 import fsp from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
-import { resolveChecks, isCacheable } from "./governance/check-registry.js"
+import { resolveChecks, resolveCheck, isCacheable } from "./governance/check-registry.js"
 import { buildDependencyGraph } from "./governance/dependency-graph.js"
 import { Scheduler } from "./governance/scheduler.js"
 import { detectChangedFiles } from "./governance/change-detector.js"
@@ -159,7 +159,7 @@ export async function runGovernProfile(options = {}) {
       full,
     })
 
-  const decisions = options.dryRun
+  let decisions = options.dryRun
     ? metadata.map((m) => ({
         checkId: m.id,
         action: "run",
@@ -170,6 +170,24 @@ export async function runGovernProfile(options = {}) {
         proof: null,
       }))
     : await scheduler.plan(checks.map((c) => c.checkId))
+
+  // Ensure build runs before any selected check that depends on dist/ outputs.
+  // The scheduler may skip build when source files are unchanged, but CI starts
+  // from a clean checkout where dist/ does not exist.
+  const runningChecks = new Set(decisions.filter((d) => d.action === "run").map((d) => d.checkId))
+  const needsBuild = Array.from(runningChecks).some((id) => {
+    if (id === "build") return false
+    const check = resolveCheck(id)
+    return check.dependencies?.includes("build") || id.startsWith("test:") || id === "proof"
+  })
+  if (needsBuild) {
+    const buildDecision = decisions.find((d) => d.checkId === "build")
+    if (buildDecision && buildDecision.action !== "run") {
+      buildDecision.action = "run"
+      buildDecision.reason = "upstream"
+      buildDecision.proof = null
+    }
+  }
 
   const executor = options.executor ?? ((command, args, cwd) => runCommand(command, args, cwd, options.timeoutMs))
 
@@ -406,6 +424,14 @@ async function runOrchestratorPath(options) {
   // Execute the orchestrator's planned validators.
   // Build must run before any test that imports from dist/.
   const orderedRun = [...orchestrator.plan.run]
+  const needsBuild = orderedRun.some((id) => {
+    if (id === "build") return false
+    const check = resolveCheck(id)
+    return check.dependencies?.includes("build") || id.startsWith("test:") || id === "proof"
+  })
+  if (needsBuild && !orderedRun.includes("build")) {
+    orderedRun.unshift("build")
+  }
   const buildIdx = orderedRun.indexOf("build")
   if (buildIdx > 0) {
     orderedRun.splice(buildIdx, 1)

@@ -135,6 +135,7 @@ export function resolveCheck(id) {
     determinism: "deterministic",
     validatorVersion: "1.0.0",
     algorithmVersion: "1.0.0",
+    dependencies: ["build"],
   }
 }
 
