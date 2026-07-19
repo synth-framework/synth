@@ -161,6 +161,8 @@ synth discover . --export     → writes immutable, signed baseline to .synth/di
 
 The exported artifact is read-only for all consumers. Only `synth discover --export` may write it. This preserves discovery purity while giving expeditions durable evidence.
 
+> **Discovery Contract:** `synth discover` MUST remain a pure read-only operation unless an explicit persistence option (`--export`) is supplied. This is a permanent invariant, not an implementation detail.
+
 ---
 
 ## Deliverables
@@ -198,12 +200,12 @@ Finalize the Runtime Health / Project Health split:
 
 ### 6. Discovery Export Mode
 
-Implement `synth discover <path> --export`:
+Implement `synth discover <path> --export` while preserving the permanent discovery contract:
 
-- Default `synth discover` remains read-only stdout only.
-- `--export` writes an immutable, signed, timestamped baseline to `.synth/discovery/`.
+- Default `synth discover` remains read-only stdout only; it never writes to `.synth/discovery/`.
+- `--export` is the only mode that writes an immutable, signed, timestamped baseline to `.synth/discovery/`.
 - Consumers read the baseline; they never mutate it.
-- Add certification tests for both modes.
+- Add certification tests that assert the default produces no files and `--export` produces a valid baseline.
 
 ### 7. CLI UX Certification Tests
 
@@ -280,6 +282,8 @@ A successful expedition:
 > **A diagnostic is only helpful if it names the real condition and the right layer.**
 
 > **Read-only discovery must stay read-only by default.**
+
+> **`synth discover` is pure read-only unless `--export` is explicitly supplied.**
 
 > **Machine output is single-document, deterministic, and parser-safe.**
 

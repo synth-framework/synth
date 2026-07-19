@@ -291,6 +291,72 @@ Produce `docs/adr/ADR-0XX-certification-framework.md` covering:
 
 ---
 
+## Certification Stability Policy
+
+Every certification scenario may only use:
+
+- documented public CLI commands,
+- documented artifacts,
+- documented outputs.
+
+Explicitly prohibited:
+
+- internal modules,
+- internal APIs,
+- implementation-specific state,
+- event-log editing,
+- hash recomputation,
+- test-only hooks.
+
+This policy ensures certifications validate the product rather than the implementation. As internals evolve, the certification suite continues to certify the behavior that operators and AI agents depend on.
+
+---
+
+## Certification Levels
+
+The framework defines three maturity levels:
+
+### Level 1 — Workflow Certification
+
+Normal operator journey under expected conditions.
+
+Examples:
+
+- bootstrap
+- mission creation and approval
+- expedition lifecycle
+- docs generation
+- replay verification
+
+### Level 2 — Failure Certification
+
+Injected failures and boundary conditions.
+
+Examples:
+
+- interrupted bootstrap
+- failed mission approval
+- replay corruption
+- concurrent mutations
+- missing artifacts
+
+### Level 3 — Resilience Certification
+
+Long-running operational behavior and compatibility.
+
+Examples:
+
+- upgrade compatibility
+- replay of historical repositories
+- migration between versions
+- thousands of events
+- multiple completed missions
+- recovery after interrupted upgrades
+
+These levels give SYNTH a clear maturity model rather than a single monolithic test suite.
+
+---
+
 ## Goals
 
 This expedition shall:
