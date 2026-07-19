@@ -199,4 +199,5 @@ without manual Git commands or forge-specific scripting.
 - **EXP-PROGRAM-021 — Incremental Governance** provides the performance foundation for repository validation.
 - **EXP-PROGRAM-022 — Genesis** may request repository strategy during greenfield onboarding.
 - **EXP-PROGRAM-026 — AI Agent Interoperability** agents will consume repository metadata produced by this program.
+- **EXP-PROGRAM-029 — AI Ecosystem Distribution** distributes repository templates, Actions, and release artifacts produced by this program.
 - **ADR-037 — Shell-Safe Command Construction** governs how SYNTH emits forge CLI commands.
