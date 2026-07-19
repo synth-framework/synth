@@ -117,6 +117,8 @@
     "test:govern-profiler": "node tests/govern-profiler.test.js",
     "test:governance-incremental": "node tests/governance-incremental.test.js",
     "test:governance-optimization": "node tests/governance-optimization.test.js",
+    "test:governance-orchestration": "node tests/governance-orchestration.test.js",
+    "test:synth-cli-govern-explain": "node tests/synth-cli-govern-explain.test.js",
     "test:repository-identity": "node tests/repository-identity.test.js",
     "test:resume-briefing": "node tests/resume-briefing.test.js",
     "test:taskpro-regression": "node scripts/taskpro-regression.js",

@@ -8,6 +8,8 @@
 
 import type { ImpactReport, RiskLevel } from "../governance/impact-analyzer.js"
 
+export type GovernanceClass = "documentation" | "knowledge" | "runtime" | "kernel" | "compiler" | "release" | "design" | "tests"
+
 export interface CapabilityValidationEntry {
   unitTests: string[]
   integrationTests: string[]
@@ -16,6 +18,7 @@ export interface CapabilityValidationEntry {
   lintScope: string[]
   typecheckScope: string[]
   protectedAsset?: string
+  governanceClass?: GovernanceClass
 }
 
 export interface CapabilityValidationMap {
@@ -33,6 +36,9 @@ export interface ValidationPlan {
   protectedAssetsTouched: boolean
   risk: RiskLevel
   reason: string
+  governanceClasses: GovernanceClass[]
+  explanations: Record<string, string>
+  profile?: string
 }
 
 export interface PlannerOptions {
@@ -44,6 +50,8 @@ export interface PlannerOptions {
   lintScript?: string
   /** Script name for typecheck. */
   typecheckScript?: string
+  /** Certification profile. */
+  profile?: string
 }
 
 const SCRIPT_ORDER = [
@@ -54,6 +62,75 @@ const SCRIPT_ORDER = [
   "benchmarks",
   "proofs",
 ]
+
+const GOVERNANCE_CLASS_ORDER: GovernanceClass[] = [
+  "documentation",
+  "knowledge",
+  "runtime",
+  "kernel",
+  "compiler",
+  "release",
+  "design",
+  "tests",
+]
+
+function getGovernanceClass(capability: string): GovernanceClass {
+  const normalized = capability.toLowerCase()
+  if (normalized.includes("documentation") || normalized.includes("website") || normalized === "examples") return "documentation"
+  if (
+    normalized.includes("knowledge") ||
+    normalized.includes("domain") ||
+    normalized.includes("genesis") ||
+    normalized.includes("mission") ||
+    normalized.includes("expedition") ||
+    normalized.includes("planning") ||
+    normalized.includes("objective") ||
+    normalized.includes("wizard")
+  ) {
+    return "knowledge"
+  }
+  if (
+    normalized.includes("runtime") ||
+    normalized.includes("replay") ||
+    normalized.includes("event") ||
+    normalized.includes("execution") ||
+    normalized.includes("command") ||
+    normalized.includes("core")
+  ) {
+    return "runtime"
+  }
+  if (normalized.includes("kernel") || normalized.includes("capability") || normalized.includes("policy") || normalized.includes("observability") || normalized.includes("control")) {
+    return "kernel"
+  }
+  if (normalized.includes("compiler") || (normalized.includes("adapter") && !normalized.includes("github"))) return "compiler"
+  if (normalized.includes("release") || normalized.includes("github") || normalized.includes("repository") || normalized.includes("installer") || normalized.includes("versioning")) {
+    return "release"
+  }
+  if (normalized.includes("studio") || normalized.includes("design") || normalized.includes("workspace")) return "design"
+  return "tests"
+}
+
+function getGovernanceClasses(capabilities: string[], map: CapabilityValidationMap): GovernanceClass[] {
+  const classes = new Set<GovernanceClass>()
+  for (const capability of capabilities) {
+    const entry = map.capabilities[capability]
+    if (entry?.governanceClass) {
+      classes.add(entry.governanceClass)
+    } else {
+      classes.add(getGovernanceClass(capability))
+    }
+  }
+  return GOVERNANCE_CLASS_ORDER.filter((c) => classes.has(c))
+}
+
+function getAffectedGovernanceClasses(report: ImpactReport, map: CapabilityValidationMap): GovernanceClass[] {
+  return getGovernanceClasses(report.affectedCapabilities, map)
+}
+
+function explainSkip(script: string, reason: string): string {
+  if (reason.includes("Protected Asset")) return reason
+  return `No affected capability requires '${script}'.`
+}
 
 function collectScripts(
   capabilities: string[],
@@ -178,6 +255,14 @@ function getFullGovernPlan(options: PlannerOptions, touchedAssets?: string[]): V
         : touchedAssets.join(", ")
       : "Protected Asset"
 
+  const explanations: Record<string, string> = {}
+  for (const script of run) {
+    explanations[script] = `${assetText} modified; full constitutional validation required.`
+  }
+  for (const script of skip) {
+    explanations[script] = explainSkip(script, assetText)
+  }
+
   return {
     run,
     skip,
@@ -185,6 +270,9 @@ function getFullGovernPlan(options: PlannerOptions, touchedAssets?: string[]): V
     protectedAssetsTouched: true,
     risk: "high",
     reason: `${assetText} modified; full constitutional validation required.`,
+    governanceClasses: GOVERNANCE_CLASS_ORDER,
+    explanations,
+    profile: options.profile,
   }
 }
 
@@ -203,13 +291,24 @@ export function buildValidationPlan(
   // If no capabilities were detected, run a minimal sanity check.
   if (report.affectedCapabilities.length === 0) {
     const run = ["test"].filter((s) => availableScripts.includes(s))
+    const skip = availableScripts.filter((s) => !run.includes(s))
+    const explanations: Record<string, string> = {}
+    for (const script of run) {
+      explanations[script] = "No affected capabilities detected; running minimal sanity check."
+    }
+    for (const script of skip) {
+      explanations[script] = "No affected capabilities detected; minimal sanity check sufficient."
+    }
     return {
       run,
-      skip: availableScripts.filter((s) => !run.includes(s)),
+      skip,
       confidence: 1.0,
       protectedAssetsTouched: false,
       risk: report.risk,
       reason: "No affected capabilities detected; running minimal sanity check.",
+      governanceClasses: [],
+      explanations,
+      profile: options.profile,
     }
   }
 
@@ -229,6 +328,7 @@ export function buildValidationPlan(
     }
   }
 
+  const affectedClasses = getAffectedGovernanceClasses(report, map)
   const orderedRun = orderScripts(Array.from(scripts), options)
   const skip = availableScripts.filter((s) => !orderedRun.includes(s))
 
@@ -240,6 +340,14 @@ export function buildValidationPlan(
       ? `Change affects ${report.affectedCapabilities[0]}; running mapped validations.`
       : `Change affects ${report.affectedCapabilities.length} capabilities; running mapped validations.`
 
+  const explanations: Record<string, string> = {}
+  for (const script of orderedRun) {
+    explanations[script] = reason
+  }
+  for (const script of skip) {
+    explanations[script] = explainSkip(script, reason)
+  }
+
   return {
     run: orderedRun,
     skip,
@@ -247,5 +355,8 @@ export function buildValidationPlan(
     protectedAssetsTouched: false,
     risk: report.risk,
     reason,
+    governanceClasses: affectedClasses,
+    explanations,
+    profile: options.profile,
   }
 }
