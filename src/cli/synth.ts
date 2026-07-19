@@ -9,7 +9,7 @@
 import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
-import { spawn, spawnSync } from "child_process"
+import { spawn } from "child_process"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
@@ -20,14 +20,16 @@ import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
 import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
-import { checkGovernDelegation } from "./govern-delegation.js"
+import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
+import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
+import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
@@ -192,23 +194,37 @@ async function cmdVersion() {
   printJson({ status: "ok", version, name: "synth", schema: "synth-cli-v1" })
 }
 
-async function verifyDistIntegrity(): Promise<{ ok: boolean; detail: string }> {
+type DoctorCheckResult = { ok: boolean; detail: string; nextStep?: string }
+
+async function verifyDistIntegrity(): Promise<DoctorCheckResult> {
   const manifestPath = path.resolve(__dirname, "..", "dist-manifest.json")
   try {
     await fs.access(manifestPath)
   } catch {
-    return { ok: false, detail: "No dist manifest found; run 'npm run build'" }
+    return {
+      ok: false,
+      detail: "No dist manifest found",
+      nextStep: "Run 'npm run build' to regenerate the dist manifest and compiled artifacts.",
+    }
   }
 
   let manifest: any
   try {
     manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
   } catch {
-    return { ok: false, detail: "dist manifest is not valid JSON" }
+    return {
+      ok: false,
+      detail: "dist manifest is not valid JSON",
+      nextStep: "Run 'npm run build' to regenerate the dist manifest.",
+    }
   }
 
   if (manifest.schema !== "synth-dist-manifest-v1") {
-    return { ok: false, detail: `Unknown dist manifest schema: ${manifest.schema}` }
+    return {
+      ok: false,
+      detail: `Unknown dist manifest schema: ${manifest.schema}`,
+      nextStep: "Run 'npm run build' to regenerate the dist manifest with the supported schema.",
+    }
   }
 
   const distDir = path.resolve(__dirname, "..")
@@ -233,13 +249,14 @@ async function verifyDistIntegrity(): Promise<{ ok: boolean; detail: string }> {
     return {
       ok: false,
       detail: `${missing} missing file(s), ${mismatches} modified file(s) in dist/`,
+      nextStep: "Run 'npm run build' to rebuild dist/ from source.",
     }
   }
 
   return { ok: true, detail: `${expectedFiles.length} dist file(s) verified` }
 }
 
-async function verifyReplayHealth(): Promise<{ ok: boolean; detail: string }> {
+async function verifyReplayHealth(): Promise<DoctorCheckResult> {
   try {
     await ensureRuntimeDataDir(process.cwd())
     const dataDir = await getRuntimeDataDir(process.cwd())
@@ -265,13 +282,18 @@ async function verifyReplayHealth(): Promise<{ ok: boolean; detail: string }> {
       detail: result.consistent
         ? `Event log consistent (${result.eventCount} events)`
         : `Replay inconsistent: ${result.explanation}`,
+      ...(result.consistent ? {} : { nextStep: "Run 'synth explain replay' to diagnose the inconsistency, then repair or replay from a known-good snapshot." }),
     }
   } catch (err) {
-    return { ok: false, detail: err instanceof Error ? err.message : String(err) }
+    return {
+      ok: false,
+      detail: err instanceof Error ? err.message : String(err),
+      nextStep: "Ensure the project is initialized and the event log is readable.",
+    }
   }
 }
 
-async function verifyEventChain(): Promise<{ ok: boolean; detail: string }> {
+async function verifyEventChain(): Promise<DoctorCheckResult> {
   try {
     await ensureRuntimeDataDir(process.cwd())
     const dataDir = await getRuntimeDataDir(process.cwd())
@@ -294,30 +316,40 @@ async function verifyEventChain(): Promise<{ ok: boolean; detail: string }> {
         return {
           ok: false,
           detail: `Event chain broken at offset ${i}: expected previousHash ${previousHash}, got ${event.previousHash}`,
+          nextStep: "Run 'synth explain replay' to inspect the chain, or restore the event log from a known-good backup.",
         }
       }
       previousHash = event.eventHash
     }
     return { ok: true, detail: `${events.length} event(s) chained` }
   } catch (err) {
-    return { ok: false, detail: err instanceof Error ? err.message : String(err) }
+    return {
+      ok: false,
+      detail: err instanceof Error ? err.message : String(err),
+      nextStep: "Ensure the event log is valid JSON and readable.",
+    }
   }
 }
 
-async function verifyDiscoveryBaseline(): Promise<{ ok: boolean; detail: string }> {
+async function verifyDiscoveryBaseline(): Promise<DoctorCheckResult> {
   const discoveryDir = path.join(process.cwd(), ".synth", "discovery")
   try {
     const entries = await fs.readdir(discoveryDir)
     const hasBaseline = entries.some((entry) => entry.endsWith(".json") || entry.endsWith(".jsonl"))
     return {
-      ok: hasBaseline,
-      detail: hasBaseline ? "Discovery baseline present" : "No discovery baseline found",
+      ok: true,
+      detail: hasBaseline
+        ? "Discovery baseline present"
+        : "No discovery baseline present (optional for greenfield projects; run 'synth discover --export' to create one)",
     }
   } catch {
     // Greenfield projects initialized with `synth init` do not run discovery and
     // therefore have no baseline. Treat a missing discovery directory as
     // informational rather than unhealthy so `synth doctor` remains healthy.
-    return { ok: true, detail: "No discovery baseline present (optional for greenfield projects)" }
+    return {
+      ok: true,
+      detail: "No discovery baseline present (optional for greenfield projects; run 'synth discover --export' to create one)",
+    }
   }
 }
 
@@ -328,7 +360,7 @@ async function cmdDoctor() {
   // Runtime Health — environment and installation signals
   const nodeVersion = process.version
   const nodeMajor = Number(nodeVersion.replace("v", "").split(".")[0])
-  const runtimeHealth: Record<string, { ok: boolean; detail: string }> = {
+  const runtimeHealth: Record<string, DoctorCheckResult> = {
     binary: {
       ok: true,
       detail: process.argv[1] || "unknown",
@@ -336,10 +368,12 @@ async function cmdDoctor() {
     version: {
       ok: version !== "unknown",
       detail: version,
+      ...(version === "unknown" ? { nextStep: "Reinstall the SYNTH CLI from a published package or build from source." } : {}),
     },
     node: {
       ok: nodeMajor >= REQUIRED_NODE_MAJOR,
       detail: `Node.js ${nodeVersion} (required >= ${REQUIRED_NODE_MAJOR})`,
+      ...(nodeMajor < REQUIRED_NODE_MAJOR ? { nextStep: `Upgrade Node.js to version ${REQUIRED_NODE_MAJOR} or later.` } : {}),
     },
     distIntegrity: await verifyDistIntegrity(),
   }
@@ -354,10 +388,11 @@ async function cmdDoctor() {
     hasManifest = false
   }
 
-  const projectHealth: Record<string, { ok: boolean; detail: string }> = {
+  const projectHealth: Record<string, DoctorCheckResult> = {
     manifest: {
       ok: hasManifest,
       detail: hasManifest ? manifestPath : "No SYNTH project manifest found in current directory",
+      ...(hasManifest ? {} : { nextStep: "Run 'synth init --name \"Project Name\"' to initialize a SYNTH project." }),
     },
     replay: await verifyReplayHealth(),
     eventChain: await verifyEventChain(),
@@ -368,20 +403,34 @@ async function cmdDoctor() {
   const projectOk = Object.values(projectHealth).every((c) => c.ok)
   const allOk = runtimeOk && projectOk
 
+  const runtimeNextSteps = Object.values(runtimeHealth)
+    .filter((c) => !c.ok && c.nextStep)
+    .map((c) => c.nextStep as string)
+  const projectNextSteps = Object.values(projectHealth)
+    .filter((c) => !c.ok && c.nextStep)
+    .map((c) => c.nextStep as string)
+
   const nextSteps: string[] = []
-  if (!runtimeHealth.distIntegrity.ok) {
-    nextSteps.push("npm run build")
+  if (runtimeNextSteps.length > 0) {
+    nextSteps.push("[Runtime Health]")
+    nextSteps.push(...runtimeNextSteps)
   }
-  if (hasManifest) {
-    nextSteps.push("synth status", "synth mission create --subject '...' --purpose '...'")
-  } else {
-    nextSteps.push("synth init --name 'Project Name'")
+  if (projectNextSteps.length > 0) {
+    nextSteps.push("[Project Health]")
+    nextSteps.push(...projectNextSteps)
+  }
+  if (nextSteps.length === 0) {
+    if (hasManifest) {
+      nextSteps.push("synth status", "synth mission create --subject '...' --purpose '...'")
+    } else {
+      nextSteps.push("synth init --name 'Project Name'")
+    }
   }
 
   // Maintain a backward-compatible `checks` view that flattens runtime and
   // project health signals. Some consumers (e.g. TaskPRO regression) read
   // individual checks from this top-level map.
-  const checks: Record<string, { ok: boolean; detail: string }> = { ...runtimeHealth, ...projectHealth }
+  const checks: Record<string, DoctorCheckResult> = { ...runtimeHealth, ...projectHealth }
 
   printJson({
     status: allOk ? "ok" : "warning",
@@ -401,7 +450,10 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
 
   // --full always runs the complete governance pipeline.
   if (fullMode) {
+    const verdict = checkGovernDelegation(process.cwd())
+    const delegated = verdict.allowed
     if (dryRun) {
+      const condition = delegated ? "delegated" : verdict.condition
       printJson({
         status: "ok",
         kind: "ValidationPlan",
@@ -414,12 +466,17 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
         confidence: 1.0,
         protectedAssetsTouched: true,
         reason: "Full validation requested.",
-        note: "Dry-run: would run npm run govern.",
+        note: delegated
+          ? "Dry-run: would delegate to npm run govern."
+          : `Dry-run: would use internal governance pipeline (${condition}).`,
+        govern: delegated
+          ? { delegated, condition }
+          : { delegated, condition, message: verdict.message },
       })
       return
     }
 
-    return runGovernAndExit()
+    return runGovernAndExit(verdict)
   }
 
   const diffText = typeof flags.diff === "string" ? flags.diff : getWorkingTreeDiff()
@@ -493,31 +550,92 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
   }
 }
 
-function runGovernAndExit(): Promise<void> {
-  const verdict = checkGovernDelegation(process.cwd())
-  if (!verdict.allowed) printError(verdict.message)
-  return new Promise<void>((resolve) => {
-    const child = spawn("npm", ["run", "govern"], {
-      stdio: "inherit",
-      shell: true,
-      cwd: process.cwd(),
-      env: verdict.childEnv,
+async function runInternalGovernance(condition: "missing-package-json" | "missing-govern-script"): Promise<void> {
+  const report = await runVerification(process.cwd())
+  printJson({
+    status: report.status === "error" ? "error" : "ok",
+    kind: "GovernResult",
+    delegated: false,
+    condition,
+    message: governDelegationMessage(condition),
+    report,
+  })
+  if (report.status === "error") {
+    process.exit(1)
+  }
+}
+
+interface NpmScriptResult {
+  status: number
+  stdout: string
+  stderr: string
+}
+
+/**
+ * Run an npm script while preserving the single-channel stdout contract.
+ * The child's stdout and stderr are streamed to the parent's stderr for live
+ * feedback, captured for inclusion in structured output, and never written
+ * directly to the parent's stdout.
+ */
+function runNpmScript(args: string[], env: NodeJS.ProcessEnv, cwd: string): Promise<NpmScriptResult> {
+  return new Promise((resolve) => {
+    let stdout = ""
+    let stderr = ""
+    const child = spawn(npmCommand(), args, {
+      cwd,
+      env,
+      stdio: ["inherit", "pipe", "pipe"],
+    })
+    child.stdout?.on("data", (data) => {
+      stdout += data
+    })
+    child.stderr?.on("data", (data) => {
+      stderr += data
     })
     child.on("close", (code) => {
-      process.exit(code ?? 1)
+      resolve({ status: code ?? 1, stdout, stderr })
     })
   })
 }
 
+async function runGovernAndExit(verdict = checkGovernDelegation(process.cwd())): Promise<void> {
+  if (!verdict.allowed) {
+    if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
+      return runInternalGovernance(verdict.condition)
+    }
+    printError(verdict.message)
+  }
+  const result = await runNpmScript(["run", "govern"], verdict.childEnv, process.cwd())
+  printJson({
+    status: result.status === 0 ? "ok" : "error",
+    kind: "GovernResult",
+    delegated: true,
+    condition: "delegated",
+    exitCode: result.status,
+    output: result.stdout,
+    errors: result.stderr,
+  })
+  process.exit(result.status)
+}
+
 interface ValidationExecution {
   success: boolean
-  results: Array<{ script: string; status: number; durationMs: number }>
+  results: Array<{
+    script: string
+    status: number
+    durationMs: number
+    delegated?: boolean
+    condition?: string
+    message?: string
+    output?: string
+    errors?: string
+  }>
   failedScript?: string
   totalDurationMs: number
 }
 
 async function executeValidationPlan(scripts: string[]): Promise<ValidationExecution> {
-  const results: Array<{ script: string; status: number; durationMs: number }> = []
+  const results: ValidationExecution["results"] = []
   const start = Date.now()
 
   for (const script of scripts) {
@@ -526,6 +644,26 @@ async function executeValidationPlan(scripts: string[]): Promise<ValidationExecu
     if (script === "govern") {
       const verdict = checkGovernDelegation(process.cwd())
       if (!verdict.allowed) {
+        if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
+          const report = await runVerification(process.cwd())
+          results.push({
+            script,
+            status: report.status === "error" ? 1 : 0,
+            durationMs: Date.now() - scriptStart,
+            delegated: false,
+            condition: verdict.condition,
+            message: verdict.message,
+          })
+          if (report.status === "error") {
+            return {
+              success: false,
+              results,
+              failedScript: script,
+              totalDurationMs: Date.now() - start,
+            }
+          }
+          continue
+        }
         console.error(verdict.message)
         results.push({ script, status: 1, durationMs: Date.now() - scriptStart })
         return {
@@ -538,14 +676,15 @@ async function executeValidationPlan(scripts: string[]): Promise<ValidationExecu
       childEnv = verdict.childEnv
     }
     const args = script === "govern" ? ["run", "govern"] : ["run", script]
-    const result = spawnSync("npm", args, {
-      stdio: "inherit",
-      shell: true,
-      cwd: process.cwd(),
-      ...(childEnv ? { env: childEnv } : {}),
-    })
+    const result = await runNpmScript(args, childEnv ?? process.env, process.cwd())
     const durationMs = Date.now() - scriptStart
-    results.push({ script, status: result.status ?? 1, durationMs })
+    results.push({
+      script,
+      status: result.status,
+      durationMs,
+      output: result.stdout,
+      errors: result.stderr,
+    })
 
     if (result.status !== 0) {
       return {
@@ -576,7 +715,12 @@ async function cmdHelp() {
   })
 }
 
-function namespaceHelp(namespace: string, description: string, subcommands: Array<{ name: string; description: string; args?: string }>) {
+function namespaceHelp(
+  namespace: string,
+  description: string,
+  subcommands: Array<{ name: string; description: string; args?: string }>,
+  options: { note?: string } = {},
+) {
   return {
     status: "ok",
     name: "synth",
@@ -584,7 +728,9 @@ function namespaceHelp(namespace: string, description: string, subcommands: Arra
     description,
     usage: `synth ${namespace} <subcommand> [options]`,
     subcommands,
-    note: `Run 'synth ${namespace} <subcommand> --help' for subcommand details when available.`,
+    note:
+      options.note ??
+      `Run 'synth ${namespace} <subcommand> --help' for subcommand details when available.`,
   }
 }
 
@@ -603,18 +749,52 @@ async function cmdBootstrapHelp() {
 
 async function cmdDiscoverHelp() {
   printJson(namespaceHelp("discover", "Produce a read-only analysis of a repository", [
-    { name: "synth discover <path>", description: "Run Discovery against the target directory" },
-  ]))
+    { name: "synth discover <path>", description: "Run Discovery and emit analysis as JSON to stdout (read-only, no mutation)" },
+    { name: "synth discover <path> --export", description: "Export an immutable, signed discovery baseline to .synth/discovery/", args: "--export" },
+  ], {
+    note: "Default 'synth discover' is pure read-only and never writes files. Use --export only when durable discovery evidence is required.",
+  }))
 }
 
-async function cmdDiscover(args: string[]) {
+interface DiscoveryBaseline {
+  schema: "synth-discovery-baseline-v1"
+  generatedAt: string
+  targetDir: string
+  discoverySessionId: string
+  discoverySessionHash: string
+  analysis: unknown
+  signature: string
+}
+
+function requireString(value: string | undefined, fallback: string): string {
+  return value ?? fallback
+}
+
+async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBaseline, "signature">): Promise<string> {
+  const discoveryDir = path.join(targetDir, ".synth", "discovery")
+  await fs.mkdir(discoveryDir, { recursive: true })
+
+  const canonical = JSON.stringify({ ...data, signature: "" }, Object.keys({ ...data, signature: "" }).sort())
+  const signature = crypto.createHash("sha256").update(canonical).digest("hex")
+  const baseline: DiscoveryBaseline = { ...data, signature }
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
+  const filename = `baseline-${timestamp}-${signature.slice(0, 16)}.json`
+  const baselinePath = path.join(discoveryDir, filename)
+  await fs.writeFile(baselinePath, JSON.stringify(baseline, null, 2), "utf-8")
+  return baselinePath
+}
+
+async function cmdDiscover(args: string[], flags: Record<string, string | boolean>) {
+  const exportMode = flags.export === true || flags.export === "true"
   const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
   const { analyzeRepository } = await import("./bootstrap-analyzer.js")
   const analysis = await analyzeRepository(targetDir)
-  printJson({
-    status: "ok",
-    kind: "DiscoveryResult",
+  const result = {
+    status: "ok" as const,
+    kind: "DiscoveryResult" as const,
     targetDir,
+    exported: exportMode,
     repositoryType: analysis.repositoryType,
     sourceHistory: analysis.sourceHistory,
     analysis: {
@@ -627,7 +807,26 @@ async function cmdDiscover(args: string[]) {
     agentContext: analysis.agentContext,
     discoverySessionId: analysis.discoverySessionId,
     discoverySessionHash: analysis.discoverySessionHash,
-  })
+  }
+
+  if (exportMode) {
+    const baselinePath = await writeDiscoveryBaseline(targetDir, {
+      schema: "synth-discovery-baseline-v1",
+      generatedAt: new Date().toISOString(),
+      targetDir,
+      discoverySessionId: requireString(analysis.discoverySessionId, "unknown"),
+      discoverySessionHash: requireString(analysis.discoverySessionHash, "unknown"),
+      analysis: result.analysis,
+    })
+    printJson({
+      ...result,
+      baselinePath,
+      note: "Discovery baseline exported. The artifact is read-only; consumers must not mutate it.",
+    })
+    return
+  }
+
+  printJson(result)
 }
 
 async function cmdMissionHelp() {
@@ -805,21 +1004,27 @@ async function cmdBootstrap(args: string[], flags: Record<string, string | boole
   }
 }
 
-function cmdGovern() {
+async function cmdGovern() {
   const verdict = checkGovernDelegation(process.cwd())
-  if (!verdict.allowed) return Promise.reject(new Error(verdict.message))
-  return new Promise<void>((resolve, reject) => {
-    const child = spawn("npm", ["run", "govern"], {
-      stdio: "inherit",
-      shell: true,
-      cwd: process.cwd(),
-      env: verdict.childEnv,
-    })
-    child.on("close", (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(`govern failed with exit code ${code}`))
-    })
+  if (!verdict.allowed) {
+    if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
+      return runInternalGovernance(verdict.condition)
+    }
+    return Promise.reject(new Error(verdict.message))
+  }
+  const result = await runNpmScript(["run", "govern"], verdict.childEnv, process.cwd())
+  printJson({
+    status: result.status === 0 ? "ok" : "error",
+    kind: "GovernResult",
+    delegated: true,
+    condition: "delegated",
+    exitCode: result.status,
+    output: result.stdout,
+    errors: result.stderr,
   })
+  if (result.status !== 0) {
+    process.exit(result.status)
+  }
 }
 
 async function cmdStatus() {
@@ -1595,12 +1800,28 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdDocsGenerateHelp() {
+  printJson(namespaceHelp("docs", "Documentation operations", [
+    {
+      name: "synth docs generate",
+      description: "Generate documentation projections from the knowledge base",
+      args: "[--out-dir <dir>] [--knowledge-base <dir>] [--link-prefix <prefix>]",
+    },
+  ], {
+    note: [
+      "Documentation capabilities are the kinds of documents SYNTH can produce (e.g. README, Architecture, API Reference).",
+      "Generated documentation is the set of files actually written to the output directory.",
+      "A capability is skipped when the knowledge base lacks the source material required to produce meaningful content for that projection.",
+    ].join(" "),
+  }))
+}
+
 async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
   const outDir = typeof flags["out-dir"] === "string" ? flags["out-dir"] : "./docs/generated"
   const knowledgeBaseDir = typeof flags["knowledge-base"] === "string" ? flags["knowledge-base"] : "./docs"
   const linkPrefix = typeof flags["link-prefix"] === "string" ? flags["link-prefix"] : undefined
 
-  const result = await bootstrap({
+  const result = (await bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   }).then((ctx) =>
@@ -1608,9 +1829,34 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
       operation: "generateDocs",
       params: { knowledgeBaseDir, outDir, linkPrefix },
     }),
-  )
+  )) as { status: string; summary?: unknown; projections?: Array<{ filename: string; title: string }>; warning?: string }
 
-  printJson(result)
+  const generatedFilenames = new Set(
+    Array.isArray(result.projections) ? result.projections.map((p) => p.filename) : [],
+  )
+  const produced = DOCUMENTATION_CAPABILITIES
+    .filter((cap) => generatedFilenames.has(cap.filename))
+    .map((cap) => ({ ...cap, path: path.join(outDir, cap.filename) }))
+  const skipped = DOCUMENTATION_CAPABILITIES
+    .filter((cap) => !generatedFilenames.has(cap.filename))
+    .map((cap) => ({ ...cap, reason: "No meaningful content could be projected from the knowledge base." }))
+
+  printJson({
+    ...result,
+    kind: "DocumentationGenerated",
+    capabilities: DOCUMENTATION_CAPABILITIES.map((cap) => ({
+      id: cap.id,
+      title: cap.title,
+      description: cap.description,
+    })),
+    produced,
+    skipped,
+    note: [
+      "capabilities = documentation types SYNTH knows how to generate",
+      "produced = files written during this run",
+      "skipped = capabilities not produced because source material was insufficient",
+    ].join("; "),
+  })
 }
 
 async function cmdExplainReplay(flags: Record<string, string | boolean>) {
@@ -1681,6 +1927,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdExpeditionHelp }
     case "doctor":
       return { namespace, handler: cmdDoctorHelp }
+    case "docs":
+      return { namespace, handler: cmdDocsGenerateHelp }
     case "adapter":
       return { namespace, handler: cmdAdapterHelp }
     default:
@@ -1798,7 +2046,7 @@ async function main() {
       break
 
     case "discover":
-      await cmdDiscover(positional.slice(1))
+      await cmdDiscover(positional.slice(1), flags)
       break
 
     case "govern":
