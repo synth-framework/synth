@@ -155,6 +155,164 @@ async function testAdapterDelegation() {
   console.log("[PASS] synth adapter list delegates to adapter CLI")
 }
 
+function countJsonObjects(stdout) {
+  const objects = []
+  const lines = stdout.split("\n")
+  let buffer = ""
+  for (const line of lines) {
+    buffer += line
+    try {
+      const obj = JSON.parse(buffer)
+      objects.push(obj)
+      buffer = ""
+    } catch {
+      // continue accumulating
+    }
+  }
+  return objects.length
+}
+
+async function withTempDir(fn) {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-test-"))
+  try {
+    return await fn(tmpDir)
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+}
+
+async function testGovernDelegationDiagnostics() {
+  await withTempDir(async (tmpDir) => {
+    // Project without package.json should report missing-package-json.
+    const { stdout, status } = runSynth(["validate", "--full", "--dry-run"], tmpDir)
+    assert(status === 0, "validate --full --dry-run should exit 0")
+    const output = parseJson(stdout)
+    assert(output.govern && output.govern.delegated === false, "should not delegate without package.json")
+    assert(output.govern.condition === "missing-package-json", `expected missing-package-json, got ${output.govern.condition}`)
+  })
+
+  await withTempDir(async (tmpDir) => {
+    // Project with package.json but no govern script should report missing-govern-script.
+    await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
+    const { stdout, status } = runSynth(["validate", "--full", "--dry-run"], tmpDir)
+    assert(status === 0, "validate --full --dry-run should exit 0")
+    const output = parseJson(stdout)
+    assert(output.govern && output.govern.delegated === false, "should not delegate without govern script")
+    assert(output.govern.condition === "missing-govern-script", `expected missing-govern-script, got ${output.govern.condition}`)
+  })
+
+  await withTempDir(async (tmpDir) => {
+    // Project with cyclic govern script should report cyclic-script.
+    await fs.writeFile(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify({ name: "test", version: "1.0.0", scripts: { govern: "synth govern" } }),
+      "utf-8",
+    )
+    const { stdout, status } = runSynth(["validate", "--full", "--dry-run"], tmpDir)
+    assert(status === 0, "validate --full --dry-run should exit 0")
+    const output = parseJson(stdout)
+    assert(output.govern && output.govern.delegated === false, "should not delegate with cyclic script")
+    assert(output.govern.condition === "cyclic-script", `expected cyclic-script, got ${output.govern.condition}`)
+  })
+
+  console.log("[PASS] synth validate --full --dry-run reports accurate govern delegation conditions")
+}
+
+async function testSingleChannelStdout() {
+  const commands = [
+    ["--version"],
+    ["--help"],
+    ["doctor"],
+    ["validate", "--dry-run"],
+    ["validate", "--full", "--dry-run"],
+  ]
+  for (const args of commands) {
+    const { stdout } = runSynth(args)
+    const count = countJsonObjects(stdout)
+    assert(count === 1, `command 'synth ${args.join(" ")}' should emit exactly one JSON object to stdout, got ${count}`)
+  }
+  console.log("[PASS] CLI commands emit exactly one JSON object to stdout")
+}
+
+async function testDoctorLayerSeparation() {
+  const { stdout, status } = runSynth(["doctor"])
+  assert(status === 0, "doctor command should exit 0")
+  const output = parseJson(stdout)
+  assert(output.runtimeHealth && output.runtimeHealth.distIntegrity, "doctor should include runtime distIntegrity check")
+  assert(output.projectHealth && output.projectHealth.discoveryBaseline, "doctor should include project discoveryBaseline check")
+  assert(output.nextSteps && Array.isArray(output.nextSteps), "doctor should provide nextSteps")
+  console.log("[PASS] synth doctor separates Runtime Health and Project Health with remediation steps")
+}
+
+async function testDocsGenerateCapabilities() {
+  await withTempDir(async (tmpDir) => {
+    const docsDir = path.join(tmpDir, "docs")
+    await fs.mkdir(docsDir, { recursive: true })
+    await fs.writeFile(
+      path.join(docsDir, "README.md"),
+      "# Test Project\n\nA test project for documentation generation.",
+      "utf-8",
+    )
+    const { stdout, status } = runSynth(["docs", "generate", "--out-dir", path.join(tmpDir, "docs", "generated")], tmpDir)
+    assert(status === 0, "docs generate should exit 0")
+    const output = parseJson(stdout)
+    assert(Array.isArray(output.capabilities), "docs generate should list capabilities")
+    assert(Array.isArray(output.produced), "docs generate should list produced files")
+    assert(Array.isArray(output.skipped), "docs generate should list skipped capabilities")
+    assert(output.capabilities.length > 0, "docs generate should have at least one capability")
+    assert(output.produced.length > 0, "docs generate should produce at least one file")
+  })
+  console.log("[PASS] synth docs generate distinguishes capabilities, produced, and skipped")
+}
+
+async function testDiscoverExportContract() {
+  await withTempDir(async (tmpDir) => {
+    // Default discover should not write files.
+    const { stdout, status } = runSynth(["discover", tmpDir], tmpDir)
+    assert(status === 0, "discover should exit 0")
+    const output = parseJson(stdout)
+    assert(output.exported === false, "default discover should not export")
+    const discoveryDir = path.join(tmpDir, ".synth", "discovery")
+    let hasDiscoveryDir = false
+    try {
+      await fs.access(discoveryDir)
+      hasDiscoveryDir = true
+    } catch {
+      hasDiscoveryDir = false
+    }
+    assert(!hasDiscoveryDir, "default discover should not create .synth/discovery/")
+  })
+
+  await withTempDir(async (tmpDir) => {
+    // Export mode should write a baseline.
+    const { stdout, status } = runSynth(["discover", tmpDir, "--export"], tmpDir)
+    assert(status === 0, "discover --export should exit 0")
+    const output = parseJson(stdout)
+    assert(output.exported === true, "discover --export should report exported")
+    assert(typeof output.baselinePath === "string", "discover --export should report baselinePath")
+    const baseline = JSON.parse(await fs.readFile(output.baselinePath, "utf-8"))
+    assert(baseline.schema === "synth-discovery-baseline-v1", "baseline should use correct schema")
+    assert(typeof baseline.signature === "string" && baseline.signature.length > 0, "baseline should be signed")
+  })
+
+  console.log("[PASS] synth discover respects read-only contract and --export writes a signed baseline")
+}
+
+async function testNoShellDeprecationWarning() {
+  await withTempDir(async (tmpDir) => {
+    await fs.writeFile(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify({ name: "test", version: "1.0.0", scripts: { govern: "node -e 'console.log(\"ok\")'" } }),
+      "utf-8",
+    )
+    const { stderr, status } = runSynth(["govern"], tmpDir)
+    assert(status === 0, "govern should exit 0 for a valid script")
+    assert(!stderr.includes("shell"), `stderr should not contain shell deprecation warning: ${stderr}`)
+    assert(!stderr.includes("deprecat"), `stderr should not contain deprecation warning: ${stderr}`)
+  })
+  console.log("[PASS] synth govern does not emit shell deprecation warnings")
+}
+
 async function main() {
   try {
     await fs.access(CLI_PATH)
@@ -171,6 +329,12 @@ async function main() {
   await testValidateFullDryRun()
   await testInit()
   await testAdapterDelegation()
+  await testGovernDelegationDiagnostics()
+  await testSingleChannelStdout()
+  await testDoctorLayerSeparation()
+  await testDocsGenerateCapabilities()
+  await testDiscoverExportContract()
+  await testNoShellDeprecationWarning()
 
   console.log("\n[SYNTH CLI] All tests passed")
 }
