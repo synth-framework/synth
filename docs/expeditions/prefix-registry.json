@@ -46,6 +46,10 @@
       "name": "Agent Experience",
       "description": "Adoption-era expeditions focused on AI-first distribution and first-contact experience."
     },
+    "CONVERGENCE": {
+      "name": "Architectural Convergence",
+      "description": "Program and expedition convergence-review expeditions that enforce architectural alignment before implementation."
+    },
     "CONT": {
       "name": "Cognitive Continuity",
       "description": "Continuity-of-intent expeditions (resume briefing, interruption benchmark, regression journey)."
@@ -105,6 +109,10 @@
     "MST": {
       "name": "Mission Studio",
       "description": "Mission Studio planning and cognition expeditions."
+    },
+    "OOP": {
+      "name": "Operator Optimization Pipeline",
+      "description": "Operator-aware projection and optimization expeditions for AI interaction contexts."
     },
     "PROD": {
       "name": "Productization",
