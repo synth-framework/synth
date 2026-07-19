@@ -2,8 +2,9 @@
 
 > **Discovery expedition.** This charter defines a read-only Discovery phase that establishes an evidence-backed baseline for existing projects before SYNTH governance is initialized.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-19  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-004 — First Contact Program  

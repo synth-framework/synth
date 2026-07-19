@@ -178,7 +178,9 @@ Adapters participate only in **Acquire**. All downstream stages are engine-owned
 - [x] EXP-DISCOVERY-005 completed and accepted.
 - [x] EXP-DISCOVERY-006 completed and accepted.
 - [x] EXP-DISCOVERY-007 completed and accepted.
-- [ ] EXP-DISCOVERY-008 completed and accepted.
+- [ ] EXP-DISCOVERY-008 chartered, implemented, and accepted.
+  - The existing charter references this expedition but no file exists.
+  - It must be rewritten with scoped source contracts and adapter priorities before execution.
 - [ ] Discovery Capability is documented as a platform pillar.
 - [ ] `npm run govern` passes.
 

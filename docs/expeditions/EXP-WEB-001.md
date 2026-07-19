@@ -2,13 +2,15 @@
 
 > **Design expedition.** This charter contains the design brief, copy, layout, and animation behavior for the SYNTH marketing homepage hero. It is an authored artifact under EXP-PROGRAM-020.
 
-**Status:** Accepted  
+**Status:** Rewrite  
 **Started:** 2026-07-18  
 **Kind:** Design Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-020 — Website Experience  
 **Depends On:** EXP-PROGRAM-004, EXP-PROGRAM-009  
-**Blocks:** EXP-WEB-002 scenario pages, EXP-WEB-003 design system
+**Blocks:** EXP-WEB-002 scenario pages
+
+> **Convergence note:** This expedition must be rewritten to align with EXP-HOME-001 / LDS-002 and moved under EXP-PROGRAM-027. The CLI vocabulary and visual tokens in the current charter predate the Mission Studio Design System.
 
 ---
 

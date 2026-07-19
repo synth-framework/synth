@@ -24,16 +24,18 @@ Impact:
 
 ## Purpose
 
-Own the SYNTH public website as a deterministic projection of product intent. The website is not a separate creative effort; it is the first contact surface that translates SYNTH's value proposition into an experience a visitor can understand in under one minute.
+Own the SYNTH public website **infrastructure** so that the user-facing experience built by EXP-PROGRAM-027 is deployable, discoverable, accessible, and performant.
+
+> **Convergence decision:** All user-facing homepage, scenario, and design-system work moves to EXP-PROGRAM-027 — Mission Studio Homepage. Program 020 is now the infrastructure layer beneath it.
 
 ---
 
 ## Objective
 
-- Make the SYNTH value proposition immediately comprehensible to first-time visitors.
-- Demonstrate SYNTH in action through interactive, scenario-driven hero experiences.
+- Provide production-grade hosting and deployment for the SYNTH public website.
+- Ensure the website is fast, accessible, and search-engine discoverable.
 - Keep website copy, structure, and assets synchronized with the canonical product narrative.
-- Treat design work as governed artifacts with traceable intent, evidence, and acceptance criteria.
+- Treat infrastructure decisions as governed artifacts with traceable intent, evidence, and acceptance criteria.
 
 ---
 
@@ -51,14 +53,16 @@ The homepage should answer:
 
 ### Included
 
-- Homepage hero design and copy.
-- Scenario-driven interactive demonstrations.
-- Design system decisions for the public website.
-- Projection of canonical product narrative into website pages.
+- Hosting, build, and deployment pipeline for the public website.
+- SEO, analytics, and performance instrumentation.
+- Accessibility and responsiveness certification.
 - Verification that website copy aligns with expedition charters and public vocabulary.
 
 ### Explicitly not included
 
+- Homepage hero design and copy (moved to EXP-PROGRAM-027).
+- Scenario-driven interactive demonstrations (moved to EXP-PROGRAM-027).
+- Design system decisions (superseded by EXP-HOME-001 / LDS-002).
 - Changes to SYNTH architecture, CLI, or governance model.
 - Non-public tooling or internal dashboards.
 - Rebranding outside the established SYNTH identity.
@@ -74,12 +78,17 @@ EXP-PROGRAM-004  Public Narrative
 EXP-PROGRAM-009  Canonical First Contact Experience
         |
         v
-EXP-PROGRAM-020  Website Experience
+EXP-PROGRAM-027  Mission Studio Homepage  (user-facing experience)
         |
-        +-- EXP-WEB-001  Homepage hero
-        +-- EXP-WEB-002  Scenario pages
-        +-- EXP-WEB-003  Design system
+        v
+EXP-PROGRAM-020  Website Experience  (infrastructure)
 ```
+
+**Expedition reconciliation:**
+
+- **EXP-WEB-001** — Homepage hero. **Rewrite** to align with EXP-HOME-001 / LDS-002; move under EXP-PROGRAM-027.
+- **EXP-WEB-002** — Scenario pages. **Rewrite** to align with EXP-PROGRAM-027; no file exists yet.
+- **EXP-WEB-003** — Design system. **Archive**; superseded by EXP-HOME-001 / LDS-002.
 
 ---
 
@@ -100,6 +109,7 @@ EXP-PROGRAM-020  Website Experience
 
 ## Success metrics
 
-- A first-time visitor can state SYNTH's purpose after 30 seconds on the homepage.
-- Interactive scenarios accurately reflect the behavior of `synth init`, `synth mission create`, `synth expedition create`, and `synth approve` workflows.
+- The website deploys automatically from the canonical source.
+- Core Web Vitals and accessibility audits pass.
 - Website copy passes a public-vocabulary audit.
+- Analytics and SEO metadata are present and accurate.

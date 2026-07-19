@@ -2,8 +2,9 @@
 
 > **First Contact expedition.** Improve SYNTH brownfield onboarding so that the correct transformation path is the lowest-friction path for operators and AI agents, based on evidence from the Carta Natal brownfield onboarding certification.
 
-**Status:** Executing  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-19  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-004 — First Contact Program  

@@ -18,6 +18,10 @@
       "name": "Repository & Release Governance",
       "description": "Repository state machine, branching, promotion, versioning, release, and forge adapter expeditions."
     },
+    "REVIEW": {
+      "name": "Program Convergence Review",
+      "description": "Portfolio and convergence-review expeditions that audit programs against the current architecture before implementation resumes."
+    },
     "DIST": {
       "name": "AI Ecosystem Distribution",
       "description": "Distribution of SYNTH capabilities across agents, IDEs, package managers, forges, MCP servers, websites, and documentation."

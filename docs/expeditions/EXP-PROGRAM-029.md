@@ -176,6 +176,7 @@ AI Ecosystem Distribution
 ├── EXP-DIST-002  Agent Skill Projection Pipeline
 │       Product Expedition
 │       Generate platform-specific skills from the Capability Model.
+│       Status: Charter pending; no expedition file exists.
 │
 ├── EXP-DIST-003  MCP Server
 │       Engineering Expedition
@@ -192,10 +193,12 @@ AI Ecosystem Distribution
 ├── EXP-DIST-006  GitHub Templates and Actions
 │       Product Expedition
 │       Publish repository templates, issue/PR templates, and Actions.
+│       Status: Charter pending; no expedition file exists.
 │
 └── EXP-DIST-007  Website as Discovery Surface
         Product Expedition
         Transform the homepage into an interactive Genesis experience.
+        Status: Merge — owned by EXP-PROGRAM-027 (Mission Studio Homepage).
 ```
 
 ---

@@ -2,12 +2,14 @@
 
 > **Product expedition.** Visualize the SYNTH lifecycle as an interactive flow on the homepage.
 
-**Status:** Proposed  
+**Status:** Rewrite  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-002 (Mission Workspace)  
 **Blocks:** EXP-HOME-015
+
+> **Convergence note:** This expedition must be rewritten to use the seven-concept public vocabulary (Intent → Discovery → Mission → Expedition → Governance → Replay). The term "Execution" is not part of the public vocabulary and must not appear as a homepage workflow phase.
 
 ---
 

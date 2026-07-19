@@ -94,6 +94,7 @@ Mission Studio Homepage
 ├── EXP-HOME-005  Workflow Visualization
 │       Product Expedition
 │       Visualize the SYNTH lifecycle as an interactive flow.
+│       Status: Rewrite — must use the seven-concept public vocabulary.
 │
 ├── EXP-HOME-006  Governance Visualization
 │       Product Expedition

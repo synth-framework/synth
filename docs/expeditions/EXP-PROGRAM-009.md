@@ -202,7 +202,7 @@ Canonical First Contact Experience
         Adoption Expedition
         Transform observed agent trajectories into validated quick-start
         conversation patterns and a self-improving first-contact system.
-        Status: Proposed
+        Status: Completed
 ```
 
 ---
@@ -257,8 +257,8 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [ ] EXP-FIRSTCONTACT-009 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-005 completed and accepted.
 - [ ] EXP-FIRSTCONTACT-006 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-010 completed and accepted.
-- [ ] EXP-FIRSTCONTACT-011 completed and accepted.
+- [x] EXP-FIRSTCONTACT-010 completed and accepted.
+- [x] EXP-FIRSTCONTACT-011 completed and accepted.
 - [ ] Program accepted.
 
 ---
