@@ -145,6 +145,7 @@
     "govern": "node scripts/govern-profiler.js",
     "govern:full": "node scripts/govern-profiler.js --full",
     "govern:watch": "node scripts/govern-profiler.js --watch",
+    "govern:benchmark": "node scripts/govern-benchmark.js --tag $(git branch --show-current)",
     "govern:ci": "npm ci && npm run govern",
     "test:runtime-data-migration": "node tests/runtime-data-migration.test.js"
   },

@@ -57,7 +57,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth mission evidence add --draft-id 4dd6f9ce30f7f377 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+          "reason": "explicit next action: synth mission evidence add --draft-id 97e7687afdf8044c --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
         },
         {
           "name": "Confidence",
@@ -89,7 +89,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission 13223cfdaaafe4a0 --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -121,7 +121,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission 13223cfdaaafe4a0 --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -153,7 +153,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission 13223cfdaaafe4a0 --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -185,7 +185,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission 13223cfdaaafe4a0 --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
