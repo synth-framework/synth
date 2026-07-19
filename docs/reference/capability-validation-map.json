@@ -1,398 +1,838 @@
 {
   "schema": "synth-capability-validation-map-v1",
   "description": "Maps SYNTH capabilities to the validations required to prove they are healthy. Consumed by the Validation Planner (EXP-VAL-009).",
-  "lintScope": ["src/", "tests/", "scripts/"],
-  "typecheckScope": ["src/"],
+  "lintScope": [
+    "src/",
+    "tests/",
+    "scripts/"
+  ],
+  "typecheckScope": [
+    "src/"
+  ],
   "capabilities": {
     "AdapterRegistry": {
-      "unitTests": ["test:adapter"],
+      "unitTests": [
+        "test:adapter"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/", "tests/adapter*.test.js"],
-      "typecheckScope": ["src/adapters/"]
+      "lintScope": [
+        "src/adapters/",
+        "tests/adapter*.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/"
+      ],
+      "governanceClass": "compiler"
     },
     "ArchitectureAdapter": {
-      "unitTests": ["test:architecture"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:architecture"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/architecture/", "tests/adapter-architecture.test.js"],
-      "typecheckScope": ["src/adapters/architecture/"]
+      "lintScope": [
+        "src/adapters/architecture/",
+        "tests/adapter-architecture.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/architecture/"
+      ],
+      "governanceClass": "compiler"
     },
     "BddAdapter": {
-      "unitTests": ["test:bdd"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:bdd"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/bdd/", "tests/adapter-bdd.test.js"],
-      "typecheckScope": ["src/adapters/bdd/"]
+      "lintScope": [
+        "src/adapters/bdd/",
+        "tests/adapter-bdd.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/bdd/"
+      ],
+      "governanceClass": "compiler"
     },
     "ConfidenceAdapter": {
-      "unitTests": ["test:confidence"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:confidence"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/confidence/", "tests/adapter-confidence.test.js"],
-      "typecheckScope": ["src/adapters/confidence/"]
+      "lintScope": [
+        "src/adapters/confidence/",
+        "tests/adapter-confidence.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/confidence/"
+      ],
+      "governanceClass": "compiler"
     },
     "ConversationAdapter": {
-      "unitTests": ["test:conversation"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:conversation"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/conversation/", "tests/adapter-conversation.test.js"],
-      "typecheckScope": ["src/adapters/conversation/"]
+      "lintScope": [
+        "src/adapters/conversation/",
+        "tests/adapter-conversation.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/conversation/"
+      ],
+      "governanceClass": "compiler"
     },
     "DependencyAdapter": {
-      "unitTests": ["test:dependency"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:dependency"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/dependency/", "tests/adapter-dependency.test.js"],
-      "typecheckScope": ["src/adapters/dependency/"]
+      "lintScope": [
+        "src/adapters/dependency/",
+        "tests/adapter-dependency.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/dependency/"
+      ],
+      "governanceClass": "compiler"
     },
     "DocumentAdapter": {
-      "unitTests": ["test:document"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:document"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/document/", "tests/adapter-document.test.js"],
-      "typecheckScope": ["src/adapters/document/"]
+      "lintScope": [
+        "src/adapters/document/",
+        "tests/adapter-document.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/document/"
+      ],
+      "governanceClass": "compiler"
     },
     "ExpeditionBuilderAdapter": {
-      "unitTests": ["test:expedition-builder"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:expedition-builder"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/expedition-builder/", "tests/adapter-expedition-builder.test.js"],
-      "typecheckScope": ["src/adapters/expedition-builder/"]
+      "lintScope": [
+        "src/adapters/expedition-builder/",
+        "tests/adapter-expedition-builder.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/expedition-builder/"
+      ],
+      "governanceClass": "knowledge"
     },
     "FilesystemAdapter": {
-      "unitTests": ["test:filesystem"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:filesystem"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/filesystem/", "tests/adapter-filesystem.test.js"],
-      "typecheckScope": ["src/adapters/filesystem/"]
+      "lintScope": [
+        "src/adapters/filesystem/",
+        "tests/adapter-filesystem.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/filesystem/"
+      ],
+      "governanceClass": "compiler"
     },
     "GitHubAdapter": {
-      "unitTests": ["test:github"],
+      "unitTests": [
+        "test:github"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/github/", "tests/github-adapter.test.js"],
-      "typecheckScope": ["src/adapters/github/"]
+      "lintScope": [
+        "src/adapters/github/",
+        "tests/github-adapter.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/github/"
+      ],
+      "governanceClass": "release"
     },
     "KnowledgeAdapter": {
-      "unitTests": ["test:knowledge-extraction"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:knowledge-extraction"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/knowledge/", "tests/adapter-knowledge-extraction.test.js"],
-      "typecheckScope": ["src/adapters/knowledge/"]
+      "lintScope": [
+        "src/adapters/knowledge/",
+        "tests/adapter-knowledge-extraction.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/knowledge/"
+      ],
+      "governanceClass": "knowledge"
     },
     "MissionBuilderAdapter": {
-      "unitTests": ["test:mission-builder"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:mission-builder"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/mission-builder/", "tests/adapter-mission-builder.test.js"],
-      "typecheckScope": ["src/adapters/mission-builder/"]
+      "lintScope": [
+        "src/adapters/mission-builder/",
+        "tests/adapter-mission-builder.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/mission-builder/"
+      ],
+      "governanceClass": "knowledge"
     },
     "ObjectiveBuilderAdapter": {
-      "unitTests": ["test:objective-builder"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:objective-builder"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/objective-builder/", "tests/adapter-objective-builder.test.js"],
-      "typecheckScope": ["src/adapters/objective-builder/"]
+      "lintScope": [
+        "src/adapters/objective-builder/",
+        "tests/adapter-objective-builder.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/objective-builder/"
+      ],
+      "governanceClass": "knowledge"
     },
     "RepositoryAdapter": {
-      "unitTests": ["test:adapter"],
+      "unitTests": [
+        "test:adapter"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/repository/", "tests/adapter.test.js"],
-      "typecheckScope": ["src/adapters/repository/"]
+      "lintScope": [
+        "src/adapters/repository/",
+        "tests/adapter.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/repository/"
+      ],
+      "governanceClass": "compiler"
     },
     "SpecificationAdapter": {
-      "unitTests": ["test:specification"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:specification"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/specification/", "tests/adapter-specification.test.js"],
-      "typecheckScope": ["src/adapters/specification/"]
+      "lintScope": [
+        "src/adapters/specification/",
+        "tests/adapter-specification.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/specification/"
+      ],
+      "governanceClass": "compiler"
     },
     "TddAdapter": {
-      "unitTests": ["test:tdd"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:tdd"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/tdd/", "tests/adapter-tdd.test.js"],
-      "typecheckScope": ["src/adapters/tdd/"]
+      "lintScope": [
+        "src/adapters/tdd/",
+        "tests/adapter-tdd.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/tdd/"
+      ],
+      "governanceClass": "compiler"
     },
     "WizardAdapter": {
-      "unitTests": ["test:wizard"],
-      "integrationTests": ["test:adapter"],
+      "unitTests": [
+        "test:wizard"
+      ],
+      "integrationTests": [
+        "test:adapter"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/adapters/wizard/", "tests/adapter-wizard.test.js"],
-      "typecheckScope": ["src/adapters/wizard/"]
+      "lintScope": [
+        "src/adapters/wizard/",
+        "tests/adapter-wizard.test.js"
+      ],
+      "typecheckScope": [
+        "src/adapters/wizard/"
+      ],
+      "governanceClass": "knowledge"
     },
     "CLI": {
-      "unitTests": ["test", "test:synth-cli"],
-      "integrationTests": ["test:operator-journey"],
+      "unitTests": [
+        "test",
+        "test:synth-cli"
+      ],
+      "integrationTests": [
+        "test:operator-journey"
+      ],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/cli/", "tests/synth-cli.test.js"],
-      "typecheckScope": ["src/cli/"]
+      "lintScope": [
+        "src/cli/",
+        "tests/synth-cli.test.js"
+      ],
+      "typecheckScope": [
+        "src/cli/"
+      ],
+      "governanceClass": "tests"
     },
     "CommandBus": {
-      "unitTests": ["test"],
-      "integrationTests": ["test:adversarial"],
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
-      "lintScope": ["src/command/"],
-      "typecheckScope": ["src/command/"]
+      "proofs": [
+        "test:freeze-certification"
+      ],
+      "lintScope": [
+        "src/command/"
+      ],
+      "typecheckScope": [
+        "src/command/"
+      ],
+      "governanceClass": "runtime"
     },
     "Compiler": {
-      "unitTests": ["test"],
+      "unitTests": [
+        "test"
+      ],
       "integrationTests": [],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
-      "lintScope": ["src/compiler/"],
-      "typecheckScope": ["src/compiler/"]
+      "proofs": [
+        "test:freeze-certification"
+      ],
+      "lintScope": [
+        "src/compiler/"
+      ],
+      "typecheckScope": [
+        "src/compiler/"
+      ],
+      "governanceClass": "compiler"
     },
     "Core": {
-      "unitTests": ["test"],
-      "integrationTests": ["test:replay", "test:determinism", "test:adversarial"],
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [
+        "test:replay",
+        "test:determinism",
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
-      "lintScope": ["src/core/"],
-      "typecheckScope": ["src/core/"]
+      "proofs": [
+        "test:freeze-certification"
+      ],
+      "lintScope": [
+        "src/core/"
+      ],
+      "typecheckScope": [
+        "src/core/"
+      ],
+      "governanceClass": "runtime"
     },
     "Documentation": {
-      "unitTests": ["test:documentation-integrity", "docs:check-links"],
+      "unitTests": [
+        "test:documentation-integrity",
+        "docs:check-links"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["docs/"],
-      "typecheckScope": []
+      "lintScope": [
+        "docs/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "documentation"
     },
     "DocumentationProjection": {
-      "unitTests": ["test:documentation-expedition", "test:documentation-integrity"],
+      "unitTests": [
+        "test:documentation-expedition",
+        "test:documentation-integrity"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/documentation/", "tests/documentation-expedition.test.js"],
-      "typecheckScope": ["src/documentation/"]
+      "lintScope": [
+        "src/documentation/",
+        "tests/documentation-expedition.test.js"
+      ],
+      "typecheckScope": [
+        "src/documentation/"
+      ],
+      "governanceClass": "documentation"
     },
     "Domain": {
-      "unitTests": ["test"],
-      "integrationTests": ["test:adversarial"],
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
-      "lintScope": ["src/domain/"],
-      "typecheckScope": ["src/domain/"]
+      "proofs": [
+        "test:freeze-certification"
+      ],
+      "lintScope": [
+        "src/domain/"
+      ],
+      "typecheckScope": [
+        "src/domain/"
+      ],
+      "governanceClass": "knowledge"
     },
     "EventModel": {
-      "unitTests": ["test"],
-      "integrationTests": ["test:replay", "test:determinism", "test:adversarial"],
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [
+        "test:replay",
+        "test:determinism",
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
-      "lintScope": ["src/types/event.ts"],
-      "typecheckScope": ["src/types/"]
+      "proofs": [
+        "test:freeze-certification"
+      ],
+      "lintScope": [
+        "src/types/event.ts"
+      ],
+      "typecheckScope": [
+        "src/types/"
+      ],
+      "governanceClass": "runtime"
     },
     "Examples": {
-      "unitTests": ["test:brownfield"],
+      "unitTests": [
+        "test:brownfield"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["examples/"],
-      "typecheckScope": []
+      "lintScope": [
+        "examples/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "documentation"
     },
     "Genesis": {
-      "unitTests": ["test:genesis-snapshot-bridge"],
-      "integrationTests": ["test:api-adapter-integration", "test:freeze-certification"],
+      "unitTests": [
+        "test:genesis-snapshot-bridge"
+      ],
+      "integrationTests": [
+        "test:api-adapter-integration",
+        "test:freeze-certification"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
+      "proofs": [
+        "test:freeze-certification"
+      ],
       "protectedAsset": "Genesis",
-      "lintScope": ["src/genesis/"],
-      "typecheckScope": ["src/genesis/"]
+      "lintScope": [
+        "src/genesis/"
+      ],
+      "typecheckScope": [
+        "src/genesis/"
+      ],
+      "governanceClass": "knowledge"
     },
     "Governance": {
-      "unitTests": ["test:expedition-governance", "test:impact-analyzer", "test:protected-asset-escalation"],
+      "unitTests": [
+        "test:expedition-governance",
+        "test:impact-analyzer",
+        "test:protected-asset-escalation"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/governance/", "scripts/verify-expedition-governance.js", "scripts/verify-capability-validation-map.js"],
-      "typecheckScope": ["src/governance/"]
+      "lintScope": [
+        "src/governance/",
+        "scripts/verify-expedition-governance.js",
+        "scripts/verify-capability-validation-map.js"
+      ],
+      "typecheckScope": [
+        "src/governance/"
+      ],
+      "governanceClass": "tests"
     },
     "ProtectedAssets": {
-      "unitTests": ["test:protected-asset-escalation"],
+      "unitTests": [
+        "test:protected-asset-escalation"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/governance/protected-assets.ts", "tests/protected-asset-escalation.test.js"],
-      "typecheckScope": ["src/governance/protected-assets.ts"]
+      "lintScope": [
+        "src/governance/protected-assets.ts",
+        "tests/protected-asset-escalation.test.js"
+      ],
+      "typecheckScope": [
+        "src/governance/protected-assets.ts"
+      ],
+      "governanceClass": "tests"
     },
     "MissionStudio": {
-      "unitTests": ["test:mission-studio", "test:mission-studio-snapshot-lineage", "test:mission-studio-adapter-mapper", "test:mission-studio-adapter-collector"],
-      "integrationTests": ["test:freeze-certification"],
+      "unitTests": [
+        "test:mission-studio",
+        "test:mission-studio-snapshot-lineage",
+        "test:mission-studio-adapter-mapper",
+        "test:mission-studio-adapter-collector"
+      ],
+      "integrationTests": [
+        "test:freeze-certification"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
+      "proofs": [
+        "test:freeze-certification"
+      ],
       "protectedAsset": "Mission Studio",
-      "lintScope": ["src/mission-studio/"],
-      "typecheckScope": ["src/mission-studio/"]
+      "lintScope": [
+        "src/mission-studio/"
+      ],
+      "typecheckScope": [
+        "src/mission-studio/"
+      ],
+      "governanceClass": "knowledge"
     },
     "Observability": {
-      "unitTests": ["test"],
+      "unitTests": [
+        "test"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/observability/"],
-      "typecheckScope": ["src/observability/"]
+      "lintScope": [
+        "src/observability/"
+      ],
+      "typecheckScope": [
+        "src/observability/"
+      ],
+      "governanceClass": "kernel"
     },
     "Planning": {
-      "unitTests": ["test:mission-studio"],
+      "unitTests": [
+        "test:mission-studio"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/planning/"],
-      "typecheckScope": ["src/planning/"]
+      "lintScope": [
+        "src/planning/"
+      ],
+      "typecheckScope": [
+        "src/planning/"
+      ],
+      "governanceClass": "knowledge"
     },
     "Policy": {
-      "unitTests": ["test"],
-      "integrationTests": ["test:adversarial"],
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
-      "lintScope": ["src/policy/"],
-      "typecheckScope": ["src/policy/"]
+      "proofs": [
+        "test:freeze-certification"
+      ],
+      "lintScope": [
+        "src/policy/"
+      ],
+      "typecheckScope": [
+        "src/policy/"
+      ],
+      "governanceClass": "kernel"
     },
     "Replay": {
-      "unitTests": ["test:replay"],
-      "integrationTests": ["test:determinism", "test:adversarial"],
+      "unitTests": [
+        "test:replay"
+      ],
+      "integrationTests": [
+        "test:determinism",
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
+      "proofs": [
+        "test:freeze-certification"
+      ],
       "protectedAsset": "Replay",
-      "lintScope": ["src/core/replay-verifier.ts", "src/runtime/replay.ts"],
-      "typecheckScope": ["src/core/", "src/runtime/"]
+      "lintScope": [
+        "src/core/replay-verifier.ts",
+        "src/runtime/replay.ts"
+      ],
+      "typecheckScope": [
+        "src/core/",
+        "src/runtime/"
+      ],
+      "governanceClass": "runtime"
     },
     "Runtime": {
-      "unitTests": ["test"],
-      "integrationTests": ["test:replay", "test:determinism", "test:adversarial"],
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [
+        "test:replay",
+        "test:determinism",
+        "test:adversarial"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
+      "proofs": [
+        "test:freeze-certification"
+      ],
       "protectedAsset": "Runtime",
-      "lintScope": ["src/runtime/"],
-      "typecheckScope": ["src/runtime/"]
+      "lintScope": [
+        "src/runtime/"
+      ],
+      "typecheckScope": [
+        "src/runtime/"
+      ],
+      "governanceClass": "runtime"
     },
     "SKR": {
-      "unitTests": ["test:skr"],
+      "unitTests": [
+        "test:skr"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["tests/skr/"],
-      "typecheckScope": []
+      "lintScope": [
+        "tests/skr/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
     },
     "SynthAPI": {
-      "unitTests": ["test:api-adapter-integration"],
+      "unitTests": [
+        "test:api-adapter-integration"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/api/"],
-      "typecheckScope": ["src/api/"]
+      "lintScope": [
+        "src/api/"
+      ],
+      "typecheckScope": [
+        "src/api/"
+      ],
+      "governanceClass": "tests"
     },
     "Tests": {
-      "unitTests": ["test"],
+      "unitTests": [
+        "test"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["tests/"],
-      "typecheckScope": []
+      "lintScope": [
+        "tests/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
     },
     "Validation": {
-      "unitTests": ["test:impact-analyzer", "test:validation-planner"],
+      "unitTests": [
+        "test:impact-analyzer",
+        "test:validation-planner"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/validation/", "tests/validation*.test.js"],
-      "typecheckScope": ["src/validation/"]
+      "lintScope": [
+        "src/validation/",
+        "tests/validation*.test.js"
+      ],
+      "typecheckScope": [
+        "src/validation/"
+      ],
+      "governanceClass": "tests"
     },
     "ValidationPlanner": {
-      "unitTests": ["test:validation-planner"],
+      "unitTests": [
+        "test:validation-planner"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/validation/planner.ts", "tests/validation-planner.test.js"],
-      "typecheckScope": ["src/validation/planner.ts"]
+      "lintScope": [
+        "src/validation/planner.ts",
+        "tests/validation-planner.test.js"
+      ],
+      "typecheckScope": [
+        "src/validation/planner.ts"
+      ],
+      "governanceClass": "tests"
     },
     "Scripts": {
-      "unitTests": ["test:validation-mapping"],
+      "unitTests": [
+        "test:validation-mapping"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["scripts/"],
-      "typecheckScope": []
+      "lintScope": [
+        "scripts/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
     },
     "GitHubActions": {
-      "unitTests": ["test:continuous-publication"],
+      "unitTests": [
+        "test:continuous-publication"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": [".github/"],
-      "typecheckScope": []
+      "lintScope": [
+        ".github/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "release"
     },
     "GitHooks": {
-      "unitTests": ["test:adapter"],
+      "unitTests": [
+        "test:adapter"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": [".githooks/"],
-      "typecheckScope": []
+      "lintScope": [
+        ".githooks/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
     },
     "RepositoryConfig": {
-      "unitTests": ["test:adapter"],
+      "unitTests": [
+        "test:adapter"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": [".gitignore"],
-      "typecheckScope": []
+      "lintScope": [
+        ".gitignore"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "release"
     },
     "Constitution": {
-      "unitTests": ["test:public-vocabulary-audit"],
-      "integrationTests": ["test:freeze-certification"],
+      "unitTests": [
+        "test:public-vocabulary-audit"
+      ],
+      "integrationTests": [
+        "test:freeze-certification"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
+      "proofs": [
+        "test:freeze-certification"
+      ],
       "protectedAsset": "Constitutional Baseline",
-      "lintScope": ["docs/architecture/constitution.md"],
-      "typecheckScope": []
+      "lintScope": [
+        "docs/architecture/constitution.md"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
     },
     "ArchitectureDecisionRecords": {
-      "unitTests": ["test:public-vocabulary-audit"],
-      "integrationTests": ["test:freeze-certification"],
+      "unitTests": [
+        "test:public-vocabulary-audit"
+      ],
+      "integrationTests": [
+        "test:freeze-certification"
+      ],
       "benchmarks": [],
-      "proofs": ["test:freeze-certification"],
+      "proofs": [
+        "test:freeze-certification"
+      ],
       "protectedAsset": "Constitutional Baseline",
-      "lintScope": ["docs/adr/"],
-      "typecheckScope": []
+      "lintScope": [
+        "docs/adr/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
     },
     "Website": {
-      "unitTests": ["docs:check-links"],
+      "unitTests": [
+        "docs:check-links"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["website/"],
-      "typecheckScope": []
+      "lintScope": [
+        "website/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "documentation"
     },
     "Workspace": {
-      "unitTests": ["test:operator-journey", "test:brownfield"],
+      "unitTests": [
+        "test:operator-journey",
+        "test:brownfield"
+      ],
       "integrationTests": [],
       "benchmarks": [],
       "proofs": [],
-      "lintScope": ["src/workspace/"],
-      "typecheckScope": ["src/workspace/"]
+      "lintScope": [
+        "src/workspace/"
+      ],
+      "typecheckScope": [
+        "src/workspace/"
+      ],
+      "governanceClass": "design"
     }
   }
 }

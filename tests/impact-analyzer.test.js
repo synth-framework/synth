@@ -30,8 +30,12 @@ async function testAnalyzeFiles() {
 
   assert(report.affectedCapabilities.includes("TddAdapter"), "should detect TddAdapter")
   assert(report.affectedCapabilities.includes("Tests"), "should detect Tests capability")
+  assert(report.affectedClasses.includes("compiler"), `expected compiler class, got ${report.affectedClasses.join(", ")}`)
+  assert(report.affectedClasses.includes("tests"), `expected tests class, got ${report.affectedClasses.join(", ")}`)
+  assert(report.artifactTypes.includes("source"), `expected source artifact type, got ${report.artifactTypes.join(", ")}`)
   assert(report.protectedAssets.length === 0, "should not flag Protected Assets")
   assert(report.risk === "medium", `expected medium risk, got ${report.risk}`)
+  assert(report.promotionRisk === "medium", `expected medium promotion risk, got ${report.promotionRisk}`)
   assert(report.files.length === 2, "should preserve both files")
   console.log("[PASS] analyzeFiles classifies adapter and test files")
 }

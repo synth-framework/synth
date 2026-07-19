@@ -56,7 +56,7 @@ import {
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
 import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
-import { buildValidationPlan } from "../validation/planner.js"
+import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
@@ -473,6 +473,8 @@ async function cmdDoctor() {
 async function cmdValidate(flags: Record<string, string | boolean>) {
   const fullMode = flags.full === true || flags.full === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const explain = flags.explain === true || flags.explain === "true"
+  const profile = typeof flags.profile === "string" ? flags.profile : "pull-request"
 
   // --full always runs the complete governance pipeline.
   if (fullMode) {
@@ -492,6 +494,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
         confidence: 1.0,
         protectedAssetsTouched: true,
         reason: "Full validation requested.",
+        profile,
         note: delegated
           ? "Dry-run: would delegate to npm run govern."
           : `Dry-run: would use internal governance pipeline (${condition}).`,
@@ -544,36 +547,97 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     process.exit(1)
   }
 
-  const plan = buildValidationPlan(report, map, { availableScripts })
+  const plan = buildValidationPlan(report, map, { availableScripts, profile })
+
+  // Apply certification profile filtering unless protected assets were touched
+  // or the profile requires full validation.
+  const strictProfiles = new Set(["main-branch", "release"])
+  const shouldFilterByProfile = !plan.protectedAssetsTouched && !strictProfiles.has(profile)
+  let effectiveRun = plan.run
+  let effectiveSkip = plan.skip
+  if (shouldFilterByProfile) {
+    const requiredClasses = new Set(plan.governanceClasses)
+    const classToScripts = buildClassToScriptsMap(map)
+    const requiredScripts = new Set<string>()
+    for (const cls of plan.governanceClasses) {
+      for (const script of classToScripts[cls] || []) {
+        if (availableScripts.includes(script)) {
+          requiredScripts.add(script)
+        }
+      }
+    }
+    effectiveRun = plan.run.filter((s) => requiredScripts.has(s))
+    effectiveSkip = availableScripts.filter((s) => !effectiveRun.includes(s))
+    for (const script of effectiveSkip) {
+      if (!plan.explanations[script]) {
+        plan.explanations[script] = `Excluded by certification profile '${profile}'.`
+      }
+    }
+  }
 
   if (dryRun) {
-    printJson({
+    const output: Record<string, unknown> = {
       status: "ok",
       kind: "ValidationPlan",
       ...report,
       ...plan,
+      run: effectiveRun,
+      skip: effectiveSkip,
       note: "Dry-run: plan computed but not executed.",
-    })
+    }
+    if (explain) {
+      output.explanations = plan.explanations
+    }
+    printJson(output)
     return
   }
 
   // Execute the planned validations.
-  const execution = await executeValidationPlan(plan.run)
+  const execution = await executeValidationPlan(effectiveRun)
 
-  printJson({
+  const output: Record<string, unknown> = {
     status: execution.success ? "ok" : "error",
     kind: "ValidationResult",
     ...report,
     ...plan,
+    run: effectiveRun,
+    skip: effectiveSkip,
     execution,
     note: execution.success
       ? "All planned validations passed."
       : `Planned validation failed: ${execution.failedScript}`,
-  })
+  }
+  if (explain) {
+    output.explanations = plan.explanations
+  }
+  printJson(output)
 
   if (!execution.success) {
     process.exit(1)
   }
+}
+
+function buildClassToScriptsMap(map: CapabilityValidationMap): Record<string, string[]> {
+  const classToScripts: Record<string, Set<string>> = {}
+  for (const [capability, entryUntyped] of Object.entries(map.capabilities)) {
+    const entry = entryUntyped as { governanceClass?: string; unitTests?: string[]; integrationTests?: string[]; benchmarks?: string[]; proofs?: string[] }
+    const cls = entry.governanceClass ?? "tests"
+    const scripts = new Set([
+      ...(entry.unitTests || []),
+      ...(entry.integrationTests || []),
+      ...(entry.benchmarks || []),
+      ...(entry.proofs || []),
+    ])
+    if (!classToScripts[cls]) classToScripts[cls] = new Set()
+    for (const script of scripts) {
+      classToScripts[cls].add(script)
+    }
+  }
+  const result: Record<string, string[]> = {}
+  for (const [cls, scripts] of Object.entries(classToScripts)) {
+    result[cls] = Array.from(scripts).sort()
+  }
+  return result
 }
 
 async function runInternalGovernance(condition: "missing-package-json" | "missing-govern-script"): Promise<void> {
@@ -1051,7 +1115,7 @@ async function cmdBootstrap(args: string[], flags: Record<string, string | boole
   }
 }
 
-async function cmdGovern() {
+async function cmdGovern(flags: Record<string, string | boolean>) {
   const verdict = checkGovernDelegation(process.cwd())
   if (!verdict.allowed) {
     if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
@@ -1059,7 +1123,11 @@ async function cmdGovern() {
     }
     return Promise.reject(new Error(verdict.message))
   }
-  const result = await runNpmScript(["run", "govern"], verdict.childEnv, process.cwd())
+  const args = ["run", "govern"]
+  if (flags.explain === true || flags.explain === "true") args.push("--explain")
+  if (typeof flags.profile === "string") args.push("--profile", flags.profile)
+  if (flags.full === true || flags.full === "true") args.push("--full")
+  const result = await runNpmScript(args, verdict.childEnv, process.cwd())
   printJson({
     status: result.status === 0 ? "ok" : "error",
     kind: "GovernResult",
@@ -2369,7 +2437,7 @@ async function main() {
       break
 
     case "govern":
-      await cmdGovern()
+      await cmdGovern(flags)
       break
 
     case "validate":

@@ -1,10 +1,11 @@
 // ============================================================
-// GOVERNANCE PROFILER (EXP-GOVERN-001 → EXP-GOVERN-005)
+// GOVERNANCE PROFILER (EXP-GOVERN-001 → EXP-GOVERN-005, EXP-PROGRAM-030)
 // ============================================================
 // Instruments the SYNTH governance pipeline and produces:
 //  - a structured GovernSummary with per-check timing and cache decisions
 //  - a GovernanceDependencyGraph artifact
 //  - a persisted baseline under proof/govern-baseline.json
+//  - governance class, profile, and explanation output
 // ============================================================
 
 import { spawn } from "child_process"
@@ -17,6 +18,8 @@ import { buildDependencyGraph } from "./governance/dependency-graph.js"
 import { Scheduler } from "./governance/scheduler.js"
 import { detectChangedFiles } from "./governance/change-detector.js"
 import { ParallelRunner } from "./governance/parallel-runner.js"
+import { runGovernanceOrchestrator } from "./governance/orchestrator.js"
+import { explainReason, buildExplanationReport } from "./governance/explain.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -361,6 +364,7 @@ function parseCli(argv) {
   // --force is retired; treat it as a full run for backward compatibility.
   const full = argv.includes("--full") || argv.includes("--force")
   const watch = argv.includes("--watch")
+  const explain = argv.includes("--explain")
   let changedFiles
   const changesIdx = argv.indexOf("--changes")
   if (changesIdx !== -1 && changesIdx + 1 < argv.length) {
@@ -369,9 +373,124 @@ function parseCli(argv) {
       .map((s) => s.trim())
       .filter(Boolean)
   }
+  let profile
+  const profileIdx = argv.indexOf("--profile")
+  if (profileIdx !== -1 && profileIdx + 1 < argv.length) {
+    profile = argv[profileIdx + 1]
+  }
   const maxConcurrency = parseNumberArg(argv, "--max-concurrency")
   const timeoutMs = parseNumberArg(argv, "--timeout-per-check")
-  return { dryRun, full, watch, changedFiles, maxConcurrency, timeoutMs }
+  return { dryRun, full, watch, explain, profile, changedFiles, maxConcurrency, timeoutMs }
+}
+
+async function runOrchestratorPath(options) {
+  const orchestrator = await runGovernanceOrchestrator({
+    root: REPO_ROOT,
+    changedFiles: options.changedFiles ?? detectChangedFiles({ cwd: REPO_ROOT, explicit: options.explicitChanges }),
+    full: options.full,
+    dryRun: options.dryRun,
+    explain: options.explain,
+    profile: options.profile,
+  })
+
+  if (options.dryRun) {
+    const output = {
+      ...orchestrator.summary,
+      ...(orchestrator.explanation ? { explanation: orchestrator.explanation } : {}),
+      graph: orchestrator.graph,
+    }
+    console.log(JSON.stringify(output, null, 2))
+    return { summary: orchestrator.summary, graph: orchestrator.graph, failed: false }
+  }
+
+  // Execute the orchestrator's planned validators.
+  // Build must run before any test that imports from dist/.
+  const orderedRun = [...orchestrator.plan.run]
+  const buildIdx = orderedRun.indexOf("build")
+  if (buildIdx > 0) {
+    orderedRun.splice(buildIdx, 1)
+    orderedRun.unshift("build")
+  }
+
+  const commandById = new Map(orderedRun.map((id) => [id, { command: "npm", args: ["run", id] }]))
+  const executor = (command, args, cwd) => runCommand(command, args, cwd, options.timeoutMs)
+  const results = []
+  let failed = false
+
+  for (const checkId of orderedRun) {
+    const { command, args } = commandById.get(checkId)
+    const result = await executor(command, args, REPO_ROOT)
+    results.push({ checkId, ...result, action: "run" })
+    if (result.status === "failed") {
+      failed = true
+    }
+  }
+
+  for (const checkId of orchestrator.plan.skip) {
+    results.push({ checkId, action: "skip", reason: "no-class-impact", status: "passed", durationMs: 0 })
+  }
+
+  const summary = buildSummary(results, orchestrator.summary.mode, orchestrator.summary.changedFiles)
+  const graph = orchestrator.graph
+
+  if (!options.silent) {
+    console.log("")
+    console.log("═══════════════════════════════════════════════════")
+    console.log("  SYNTH: Govern Summary")
+    console.log("═══════════════════════════════════════════════════")
+    console.log("")
+    console.log(`Mode: ${summary.mode}`)
+    console.log(`Profile: ${orchestrator.summary.profile}`)
+    if (summary.changedFiles && summary.changedFiles.length > 0) {
+      console.log(`Changed files: ${summary.changedFiles.join(", ")}`)
+    }
+    console.log(`Total duration: ${(summary.totalDurationMs / 1000).toFixed(1)}s across ${results.length} checks`)
+    console.log(`Executed: ${(summary.executedDurationMs / 1000).toFixed(1)}s, Skipped: ${summary.skippedCount} checks`)
+    console.log("")
+    for (const check of summary.checks) {
+      const actionIcon = check.action === "skip" ? "○" : check.status === "passed" ? "✓" : "✗"
+      const pad = " ".repeat(Math.max(0, 35 - check.checkId.length))
+      const reasonTag = check.action === "skip" ? `[${check.reason}]` : ""
+      console.log(`  ${actionIcon} ${check.checkId}${pad}${(check.durationMs / 1000).toFixed(1)}s (${check.percentage}%) ${reasonTag}`)
+    }
+
+    if (orchestrator.explanation) {
+      console.log("")
+      console.log("Explanation:")
+      for (const entry of orchestrator.explanation.skipped) {
+        console.log(`  ○ ${entry.checkId}: ${entry.reason}`)
+      }
+    }
+
+    if (graph.warnings.length > 0) {
+      console.log("")
+      console.log("Governance dependency warnings:")
+      for (const warning of graph.warnings) {
+        console.log(`  ⚠ ${warning}`)
+      }
+    }
+    console.log("")
+  }
+
+  if (!options.dryRun) {
+    await ensureProofDir(REPO_ROOT)
+    const baselinePath = path.join(REPO_ROOT, "proof", "govern-baseline.json")
+    const graphPath = path.join(REPO_ROOT, "proof", "govern-dependency-graph.json")
+    await fsp.writeFile(baselinePath, JSON.stringify(summary, null, 2) + "\n", "utf-8")
+    await fsp.writeFile(graphPath, JSON.stringify(graph, null, 2) + "\n", "utf-8")
+
+    if (!options.silent) {
+      console.log(`GovernSummary written to ${baselinePath}`)
+      console.log(`GovernanceDependencyGraph written to ${graphPath}`)
+      console.log("")
+    }
+  }
+
+  if (!options.silent) {
+    console.log(JSON.stringify(summary, null, 2))
+  }
+
+  return { summary, graph, failed }
 }
 
 async function main() {
@@ -380,7 +499,15 @@ async function main() {
     await watchGovern(options)
     return
   }
-  const { summary, graph, failed } = await runGovernProfile(options)
+
+  let result
+  if (options.explain || options.profile) {
+    result = await runOrchestratorPath(options)
+  } else {
+    result = await runGovernProfile(options)
+  }
+
+  const { graph, failed } = result
 
   if (graph.warnings.some((w) => w.startsWith("Cycle detected"))) {
     console.error("")
@@ -394,7 +521,7 @@ async function main() {
     process.exit(1)
   }
 
-  return summary
+  return result.summary
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

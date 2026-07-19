@@ -9,16 +9,23 @@ import { spawnSync } from "child_process"
 import { detectProtectedAssets } from "./protected-assets.js"
 
 export type RiskLevel = "low" | "medium" | "high"
+export type GovernanceClass = "documentation" | "knowledge" | "runtime" | "kernel" | "compiler" | "release" | "design" | "tests"
+export type ArtifactType = "source" | "test" | "documentation" | "configuration" | "workflow" | "example" | "unknown"
 
 export interface ImpactReport {
   files: string[]
   affectedCapabilities: string[]
+  affectedClasses: GovernanceClass[]
+  artifactTypes: ArtifactType[]
   protectedAssets: string[]
   risk: RiskLevel
+  promotionRisk: RiskLevel
 }
 
 export interface FileClassification {
   capability: string
+  governanceClass: GovernanceClass
+  artifactType: ArtifactType
   protectedAsset?: string
   risk: RiskLevel
 }
@@ -81,6 +88,8 @@ const DEFAULT_RULES: MappingRule[] = [
 
 const FALLBACK_CLASSIFICATION: FileClassification = {
   capability: "Unknown",
+  governanceClass: "tests",
+  artifactType: "unknown",
   risk: "medium",
 }
 
@@ -98,21 +107,78 @@ function classifyFile(filePath: string): FileClassification {
       const capability = typeof rule.capability === "function" ? rule.capability(match) : rule.capability
       return {
         capability,
+        governanceClass: getGovernanceClassForCapability(capability),
+        artifactType: getArtifactType(filePath),
         protectedAsset: rule.protectedAsset,
         risk: rule.risk ?? "medium",
       }
     }
   }
-  return FALLBACK_CLASSIFICATION
+  return {
+    ...FALLBACK_CLASSIFICATION,
+    governanceClass: "tests",
+    artifactType: getArtifactType(filePath),
+  }
+}
+
+function getGovernanceClassForCapability(capability: string): GovernanceClass {
+  const normalized = capability.toLowerCase()
+  if (normalized.includes("documentation") || normalized.includes("website") || normalized === "examples") return "documentation"
+  if (
+    normalized.includes("knowledge") ||
+    normalized.includes("domain") ||
+    normalized.includes("genesis") ||
+    normalized.includes("mission") ||
+    normalized.includes("expedition") ||
+    normalized.includes("planning") ||
+    normalized.includes("objective") ||
+    normalized.includes("wizard")
+  ) {
+    return "knowledge"
+  }
+  if (
+    normalized.includes("runtime") ||
+    normalized.includes("replay") ||
+    normalized.includes("event") ||
+    normalized.includes("execution") ||
+    normalized.includes("command") ||
+    normalized.includes("core")
+  ) {
+    return "runtime"
+  }
+  if (normalized.includes("kernel") || normalized.includes("capability") || normalized.includes("policy") || normalized.includes("observability") || normalized.includes("control")) {
+    return "kernel"
+  }
+  if (normalized.includes("compiler") || (normalized.includes("adapter") && !normalized.includes("github"))) return "compiler"
+  if (normalized.includes("release") || normalized.includes("github") || normalized.includes("repository") || normalized.includes("installer") || normalized.includes("versioning")) {
+    return "release"
+  }
+  if (normalized.includes("studio") || normalized.includes("design") || normalized.includes("workspace")) return "design"
+  return "tests"
+}
+
+function getArtifactType(filePath: string): ArtifactType {
+  const normalized = filePath.toLowerCase()
+  if (normalized.startsWith("tests/")) return "test"
+  if (normalized.startsWith("docs/") || normalized.startsWith("website/")) return "documentation"
+  if (normalized.startsWith(".github/") || normalized.startsWith(".githooks/")) return "workflow"
+  if (normalized.startsWith("examples/")) return "example"
+  if (normalized.match(/\.(json|yaml|yml|toml|md|txt)$/)) return "configuration"
+  if (normalized.match(/\.(ts|js|tsx|jsx|mjs|cjs)$/)) return "source"
+  return "unknown"
 }
 
 export function analyzeFiles(files: string[]): ImpactReport {
   const affectedCapabilities = new Set<string>()
+  const affectedClasses = new Set<GovernanceClass>()
+  const artifactTypes = new Set<ArtifactType>()
   let maxRisk: RiskLevel = "low"
 
   for (const file of files) {
     const classification = classifyFile(file)
     affectedCapabilities.add(classification.capability)
+    affectedClasses.add(classification.governanceClass)
+    artifactTypes.add(classification.artifactType)
     if (riskRank(classification.risk) > riskRank(maxRisk)) {
       maxRisk = classification.risk
     }
@@ -129,8 +195,11 @@ export function analyzeFiles(files: string[]): ImpactReport {
   return {
     files: Array.from(new Set(files)).sort(),
     affectedCapabilities: Array.from(affectedCapabilities).sort(),
+    affectedClasses: Array.from(affectedClasses).sort(),
+    artifactTypes: Array.from(artifactTypes).sort(),
     protectedAssets,
     risk: maxRisk,
+    promotionRisk: maxRisk,
   }
 }
 
