@@ -58,6 +58,10 @@
       "name": "First Contact & Public Identity",
       "description": "Public narrative, product identity, and first-contact experience expeditions."
     },
+    "AIFC": {
+      "name": "AI-Native First Contact",
+      "description": "Greenfield onboarding expeditions that turn unstructured operator intent into an approved Mission through deterministic Discovery."
+    },
     "GOV": {
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
