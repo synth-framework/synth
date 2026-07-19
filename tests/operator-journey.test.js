@@ -188,6 +188,7 @@ test("Operator Journey completes end-to-end and produces certification evidence"
   const executionIntents = [
     { capability: "ApproveMission", payload: { id: missionProposal.id } },
     { capability: "ApproveExpedition", payload: { id: expeditionProposal.id } },
+    { capability: "CommitExpedition", payload: { id: expeditionProposal.id } },
     { capability: "StartExpedition", payload: { id: expeditionProposal.id } },
     { capability: "CompleteObjective", payload: { id: objectiveProposal.id } },
     { capability: "CompleteExpedition", payload: { id: expeditionProposal.id } },

@@ -13,6 +13,7 @@ import { bootstrap } from "../core/bootstrap.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation } from "./govern-delegation.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
+import { generateAgentContext } from "./bootstrap-context.js"
 
 export type BootstrapOptions = {
   approve: boolean
@@ -41,12 +42,12 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
   })
 
   const missionSubject = analysis.repositoryType === "empty"
-    ? "New Synth Project"
-    : `${analysis.repositoryType.charAt(0).toUpperCase() + analysis.repositoryType.slice(1)} Repository Migration`
+    ? "Establish deterministic governance baseline"
+    : "Establish deterministic governance baseline"
 
   const missionPurpose = analysis.repositoryType === "empty"
-    ? "Initialize a deterministic Synth project from scratch."
-    : `Adopt Synth governance for a ${analysis.repositoryType} repository with ${analysis.languages.join(", ") || "unknown language"}.`
+    ? "Capture the current state of the repository, identify unknowns and inconsistencies, and produce a baseline that future Missions can build on."
+    : "Capture the current state of the repository, identify unknowns and inconsistencies, and produce a baseline that future Missions can build on."
 
   const existingMissionObservation = analysis.observations.find(
     (observation) => observation.type === "mission",
@@ -55,8 +56,11 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
   const missionObservation = existingMissionObservation
     ? {
         ...existingMissionObservation,
+        id: `obs-mission-${missionSubject.toLowerCase().replace(/\s+/g, "-")}`,
         payload: {
           ...existingMissionObservation.payload,
+          name: missionSubject,
+          subject: missionSubject,
           purpose: missionPurpose,
           discoverySessionId: analysis.discoverySessionId,
           discoverySessionHash: analysis.discoverySessionHash,
@@ -96,15 +100,25 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
     params: { observations },
   })) as { status: string; proposals?: unknown[]; error?: string }
 
+  const firstExpeditionSubject = "Brownfield Baseline Discovery"
+  const firstExpeditionGoal =
+    "Produce architecture, dependency, documentation, and capability inventories, plus a baseline snapshot and uncertainty report."
+
   return {
     missionSubject,
     missionPurpose,
+    firstExpeditionSubject,
+    firstExpeditionGoal,
     missionProposals: missionProposals.status === "ok" ? missionProposals.proposals || [] : [],
     expeditionProposals: expeditionProposals.status === "ok" ? expeditionProposals.proposals || [] : [],
   }
 }
 
-async function initSynthProject(targetDir: string, projectName: string) {
+async function initSynthProject(
+  targetDir: string,
+  projectName: string,
+  agentContext?: import("./bootstrap-context.js").AgentContext,
+) {
   const synthDir = path.join(targetDir, ".synth")
   const dataDir = path.join(targetDir, ".synth", "data")
   const governanceVersion = "2.1"
@@ -187,6 +201,16 @@ async function initSynthProject(targetDir: string, projectName: string) {
   }
 
   await writeAgentArtifacts(synthDir, projectName)
+
+  // Write the Agent Context Contract last so it takes precedence over the
+  // generic runtime orientation context.json.
+  if (agentContext) {
+    await fs.writeFile(
+      path.join(synthDir, "context.json"),
+      JSON.stringify(agentContext, null, 2),
+      "utf-8",
+    )
+  }
 }
 
 async function generateDocs(targetDir: string) {
@@ -276,6 +300,7 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
       targetDir: resolvedDir,
       projectName,
       repositoryType: analysis.repositoryType,
+      sourceHistory: analysis.sourceHistory,
       analysis: {
         languages: analysis.languages,
         frameworks: analysis.frameworks,
@@ -284,12 +309,13 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
         observationCount: analysis.observations.length,
       },
       proposals,
+      agentContext: analysis.agentContext,
       nextSteps: ["Review the proposals", "Run 'synth bootstrap --approve' to apply"],
     }
   }
 
   // Apply phase
-  await initSynthProject(resolvedDir, projectName)
+  await initSynthProject(resolvedDir, projectName, analysis.agentContext)
 
   // Generate docs only if docs directory exists; otherwise this is a fresh project.
   const docsDir = path.join(resolvedDir, "docs")

@@ -201,6 +201,16 @@ export function applyDomain(
       return { events: [{ type: "EXPEDITION_APPROVED", payload: { id: updated.id, status: updated.status } }] }
     }
 
+    case "CommitExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      if (!existing) {
+        return { events: [{ type: "EXPEDITION_COMMITTED", payload: { id, status: "committed" } }] }
+      }
+      const updated = planningLogic.commitExpedition(existing, ctx)
+      return { events: [{ type: "EXPEDITION_COMMITTED", payload: { id: updated.id, status: updated.status } }] }
+    }
+
     case "StartExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]

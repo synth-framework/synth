@@ -72,11 +72,15 @@ async function testDoctor() {
   const output = parseJson(stdout)
   assert(output.status === "ok" || output.status === "warning", "doctor status should be ok or warning")
   assert(output.healthy !== undefined, "doctor should report healthy flag")
-  assert(output.checks && output.checks.node, "doctor should include node check")
-  assert(output.checks && output.checks.version, "doctor should include version check")
-  assert(output.checks && output.checks.binary, "doctor should include binary check")
-  assert(output.checks && output.checks.manifest, "doctor should include manifest check")
-  console.log("[PASS] synth doctor reports installation health")
+  assert(output.runtimeHealth && output.runtimeHealth.node, "doctor should include runtime node check")
+  assert(output.runtimeHealth && output.runtimeHealth.version, "doctor should include runtime version check")
+  assert(output.runtimeHealth && output.runtimeHealth.binary, "doctor should include runtime binary check")
+  assert(output.runtimeHealth && output.runtimeHealth.distIntegrity, "doctor should include runtime distIntegrity check")
+  assert(output.projectHealth && output.projectHealth.manifest, "doctor should include project manifest check")
+  assert(output.projectHealth && output.projectHealth.replay, "doctor should include project replay check")
+  assert(output.projectHealth && output.projectHealth.eventChain, "doctor should include project eventChain check")
+  assert(output.projectHealth && output.projectHealth.discoveryBaseline, "doctor should include project discoveryBaseline check")
+  console.log("[PASS] synth doctor reports Runtime Health and Project Health")
 }
 
 async function testValidateDryRun() {

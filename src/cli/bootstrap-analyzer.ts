@@ -13,6 +13,8 @@
 // CLI consumer, and mapped back into the RepositoryAnalysis contract.
 // ============================================================
 
+import fs from "fs/promises"
+import path from "path"
 import {
   createConsumerRegistry,
   createDefaultDiscoverySessionProvider,
@@ -27,11 +29,13 @@ import type {
 import type {
   PlanningObservation,
 } from "../planning/observation.js"
+import type { AgentContext } from "./bootstrap-context.js"
 import {
   canonicalLanguages,
   buildObservations,
   type CliConsumerOutput,
 } from "../discovery/consumers/cli-consumer.js"
+import { generateAgentContext } from "./bootstrap-context.js"
 
 export type RepositoryType = "empty" | "node" | "python" | "polyglot" | "brownfield" | "unknown"
 
@@ -44,6 +48,10 @@ export type RepositoryAnalysis = {
   fileCount: number
   observations: PlanningObservation[]
   adapterErrors: string[]
+  /** Source history classification for the target repository. */
+  sourceHistory: AgentContext["sourceHistory"]
+  /** Agent Context Contract derived from Discovery output. */
+  agentContext?: AgentContext
   /** Discovery session provenance carried into Genesis for lineage. */
   discoverySessionId?: string
   discoverySessionHash?: string
@@ -57,6 +65,53 @@ function collectAdapterErrors(session: DiscoverySession): string[] {
   return errors
 }
 
+const SOURCE_HISTORY_SEARCH_DEPTH = 3
+
+/**
+ * Classify whether version-control history is available in the target
+ * repository, missing, or lives in an external (parent) repository.
+ */
+export async function classifySourceHistory(targetDir: string): Promise<AgentContext["sourceHistory"]> {
+  try {
+    const gitPath = path.join(targetDir, ".git")
+    const stat = await fs.stat(gitPath)
+    if (stat.isDirectory()) {
+      // Verify the Git directory is readable by looking for HEAD.
+      try {
+        await fs.access(path.join(gitPath, "HEAD"))
+        return "AVAILABLE"
+      } catch {
+        return "UNKNOWN"
+      }
+    }
+  } catch {
+    // .git does not exist in targetDir; check parent directories.
+  }
+
+  let current = targetDir
+  for (let depth = 0; depth < SOURCE_HISTORY_SEARCH_DEPTH; depth++) {
+    const parent = path.dirname(current)
+    if (parent === current) break
+    try {
+      const parentGit = path.join(parent, ".git")
+      const stat = await fs.stat(parentGit)
+      if (stat.isDirectory()) {
+        try {
+          await fs.access(path.join(parentGit, "HEAD"))
+          return "EXTERNAL"
+        } catch {
+          return "UNKNOWN"
+        }
+      }
+    } catch {
+      // continue searching upward
+    }
+    current = parent
+  }
+
+  return "MISSING"
+}
+
 function createAnalyzerRegistry() {
   const registry = createConsumerRegistry()
   registry.register(createCliConsumer())
@@ -66,6 +121,7 @@ function createAnalyzerRegistry() {
 export async function analyzeRepository(targetDir: string): Promise<RepositoryAnalysis> {
   const provider = createDefaultDiscoverySessionProvider()
   const session = await provider.discover({ targetDir })
+  const sourceHistory = await classifySourceHistory(targetDir)
 
   const projectModel = session.projections["project-model"] as ProjectModel | undefined
   if (!projectModel) {
@@ -78,6 +134,7 @@ export async function analyzeRepository(targetDir: string): Promise<RepositoryAn
       fileCount: 0,
       observations: [],
       adapterErrors: ["Discovery session did not produce a ProjectModel projection"],
+      sourceHistory,
     }
   }
 
@@ -92,6 +149,8 @@ export async function analyzeRepository(targetDir: string): Promise<RepositoryAn
   const repositoryType = consumerOutput.repositoryType as RepositoryType
   const observations = buildObservations(repositoryType, projectModel, findings)
 
+  const agentContext = generateAgentContext(projectModel, session, sourceHistory)
+
   return {
     repositoryType,
     languages: canonicalLanguages(projectModel),
@@ -103,6 +162,8 @@ export async function analyzeRepository(targetDir: string): Promise<RepositoryAn
     fileCount: projectModel.fileCount,
     observations,
     adapterErrors: collectAdapterErrors(session),
+    sourceHistory,
+    agentContext,
     discoverySessionId: session.id,
     discoverySessionHash: session.hash,
   }

@@ -129,10 +129,22 @@ export function approveExpedition(expedition: Expedition, ctx: DomainContext): E
   }
 }
 
+/** Commit an approved expedition to runtime */
+export function commitExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
+  if (expedition.status !== "approved") {
+    throw new Error("INVARIANT_VIOLATION: can only commit an approved expedition")
+  }
+  return {
+    ...expedition,
+    status: "committed",
+    updatedAt: ctx.timestamp,
+  }
+}
+
 /** Start an expedition */
 export function startExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
-  if (expedition.status !== "approved") {
-    throw new Error("INVARIANT_VIOLATION: can only start an approved expedition")
+  if (expedition.status !== "committed") {
+    throw new Error("INVARIANT_VIOLATION: can only start a committed expedition")
   }
   return {
     ...expedition,

@@ -29,13 +29,14 @@ import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
+import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
 import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 import { buildValidationPlan } from "../validation/planner.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import type { PlanningObservation } from "../planning/observation.js"
-import type { PlanningSession } from "../mission-studio/types.js"
+import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -55,12 +56,13 @@ const COMMANDS = [
   { name: "doctor", description: "Verify installation and project health" },
   { name: "init", description: "Initialize the current directory as a Synth project" },
   { name: "bootstrap", description: "Transform a repository into a Synth project" },
+  { name: "discover", description: "Produce a read-only analysis of a repository" },
   { name: "govern", description: "Run the full governance pipeline" },
   { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
   { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
-  { name: "expedition", description: "Expedition lifecycle (create, start, complete)" },
+  { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
@@ -237,32 +239,112 @@ async function verifyDistIntegrity(): Promise<{ ok: boolean; detail: string }> {
   return { ok: true, detail: `${expectedFiles.length} dist file(s) verified` }
 }
 
+async function verifyReplayHealth(): Promise<{ ok: boolean; detail: string }> {
+  try {
+    await ensureRuntimeDataDir(process.cwd())
+    const dataDir = await getRuntimeDataDir(process.cwd())
+    const logPath = path.join(dataDir, "event-log.jsonl")
+    try {
+      await fs.access(logPath)
+    } catch {
+      return { ok: true, detail: "No event log present; replay skipped" }
+    }
+    const ctx = await bootstrap({
+      skipGenesis: true,
+      infra: {
+        persistence: "file",
+        eventLogPath: logPath,
+        statePath: path.join(dataDir, "canonical-state.json"),
+        checkpointPath: path.join(dataDir, "checkpoints.json"),
+      },
+    })
+    const verifier = createReplayVerifier(ctx.infra.eventStore, ctx.infra.stateStore)
+    const result = await verifier.verify()
+    return {
+      ok: result.consistent,
+      detail: result.consistent
+        ? `Event log consistent (${result.eventCount} events)`
+        : `Replay inconsistent: ${result.explanation}`,
+    }
+  } catch (err) {
+    return { ok: false, detail: err instanceof Error ? err.message : String(err) }
+  }
+}
+
+async function verifyEventChain(): Promise<{ ok: boolean; detail: string }> {
+  try {
+    await ensureRuntimeDataDir(process.cwd())
+    const dataDir = await getRuntimeDataDir(process.cwd())
+    const logPath = path.join(dataDir, "event-log.jsonl")
+    try {
+      await fs.access(logPath)
+    } catch {
+      return { ok: true, detail: "No event log present; chain skipped" }
+    }
+    const events: string[] = (await fs.readFile(logPath, "utf-8"))
+      .split("\n")
+      .filter((line) => line.trim().length > 0)
+    if (events.length === 0) {
+      return { ok: true, detail: "Event log is empty" }
+    }
+    let previousHash = "genesis"
+    for (let i = 0; i < events.length; i++) {
+      const event = JSON.parse(events[i])
+      if (event.previousHash !== previousHash) {
+        return {
+          ok: false,
+          detail: `Event chain broken at offset ${i}: expected previousHash ${previousHash}, got ${event.previousHash}`,
+        }
+      }
+      previousHash = event.eventHash
+    }
+    return { ok: true, detail: `${events.length} event(s) chained` }
+  } catch (err) {
+    return { ok: false, detail: err instanceof Error ? err.message : String(err) }
+  }
+}
+
+async function verifyDiscoveryBaseline(): Promise<{ ok: boolean; detail: string }> {
+  const discoveryDir = path.join(process.cwd(), ".synth", "discovery")
+  try {
+    const entries = await fs.readdir(discoveryDir)
+    const hasBaseline = entries.some((entry) => entry.endsWith(".json") || entry.endsWith(".jsonl"))
+    return {
+      ok: hasBaseline,
+      detail: hasBaseline ? "Discovery baseline present" : "No discovery baseline found",
+    }
+  } catch {
+    // Greenfield projects initialized with `synth init` do not run discovery and
+    // therefore have no baseline. Treat a missing discovery directory as
+    // informational rather than unhealthy so `synth doctor` remains healthy.
+    return { ok: true, detail: "No discovery baseline present (optional for greenfield projects)" }
+  }
+}
+
 async function cmdDoctor() {
   const REQUIRED_NODE_MAJOR = 20
-  const checks: Record<string, { ok: boolean; detail: string }> = {}
+  const version = await getVersion()
 
-  // Node version
+  // Runtime Health — environment and installation signals
   const nodeVersion = process.version
   const nodeMajor = Number(nodeVersion.replace("v", "").split(".")[0])
-  checks.node = {
-    ok: nodeMajor >= REQUIRED_NODE_MAJOR,
-    detail: `Node.js ${nodeVersion} (required >= ${REQUIRED_NODE_MAJOR})`,
+  const runtimeHealth: Record<string, { ok: boolean; detail: string }> = {
+    binary: {
+      ok: true,
+      detail: process.argv[1] || "unknown",
+    },
+    version: {
+      ok: version !== "unknown",
+      detail: version,
+    },
+    node: {
+      ok: nodeMajor >= REQUIRED_NODE_MAJOR,
+      detail: `Node.js ${nodeVersion} (required >= ${REQUIRED_NODE_MAJOR})`,
+    },
+    distIntegrity: await verifyDistIntegrity(),
   }
 
-  // Binary path
-  checks.binary = {
-    ok: true,
-    detail: process.argv[1] || "unknown",
-  }
-
-  // Package version
-  const version = await getVersion()
-  checks.version = {
-    ok: version !== "unknown",
-    detail: version,
-  }
-
-  // Project manifest
+  // Project Health — repository and governance signals
   const manifestPath = path.join(process.cwd(), ".synth", "manifest.json")
   let hasManifest = false
   try {
@@ -271,17 +353,23 @@ async function cmdDoctor() {
   } catch {
     hasManifest = false
   }
-  checks.manifest = {
-    ok: hasManifest,
-    detail: hasManifest ? manifestPath : "No SYNTH project manifest found in current directory",
+
+  const projectHealth: Record<string, { ok: boolean; detail: string }> = {
+    manifest: {
+      ok: hasManifest,
+      detail: hasManifest ? manifestPath : "No SYNTH project manifest found in current directory",
+    },
+    replay: await verifyReplayHealth(),
+    eventChain: await verifyEventChain(),
+    discoveryBaseline: await verifyDiscoveryBaseline(),
   }
 
-  // Installed dist integrity (EXP-DISC-005)
-  checks.distIntegrity = await verifyDistIntegrity()
+  const runtimeOk = Object.values(runtimeHealth).every((c) => c.ok)
+  const projectOk = Object.values(projectHealth).every((c) => c.ok)
+  const allOk = runtimeOk && projectOk
 
-  const allOk = Object.values(checks).every((c) => c.ok)
   const nextSteps: string[] = []
-  if (!checks.distIntegrity.ok) {
+  if (!runtimeHealth.distIntegrity.ok) {
     nextSteps.push("npm run build")
   }
   if (hasManifest) {
@@ -290,11 +378,18 @@ async function cmdDoctor() {
     nextSteps.push("synth init --name 'Project Name'")
   }
 
+  // Maintain a backward-compatible `checks` view that flattens runtime and
+  // project health signals. Some consumers (e.g. TaskPRO regression) read
+  // individual checks from this top-level map.
+  const checks: Record<string, { ok: boolean; detail: string }> = { ...runtimeHealth, ...projectHealth }
+
   printJson({
     status: allOk ? "ok" : "warning",
     name: "synth",
     version,
     healthy: allOk,
+    runtimeHealth,
+    projectHealth,
     checks,
     nextSteps,
   })
@@ -479,6 +574,92 @@ async function cmdHelp() {
     vocabulary: PUBLIC_VOCABULARY,
     note: "All output is JSON by default for agent consumption.",
   })
+}
+
+function namespaceHelp(namespace: string, description: string, subcommands: Array<{ name: string; description: string; args?: string }>) {
+  return {
+    status: "ok",
+    name: "synth",
+    namespace,
+    description,
+    usage: `synth ${namespace} <subcommand> [options]`,
+    subcommands,
+    note: `Run 'synth ${namespace} <subcommand> --help' for subcommand details when available.`,
+  }
+}
+
+async function cmdBootstrapHelp() {
+  const help = namespaceHelp("bootstrap", "Transform a repository into a Synth project", [
+    { name: "synth bootstrap [path]", description: "Analyze repository and produce a bootstrap proposal" },
+    { name: "synth bootstrap [path] --dry-run", description: "Generate proposal without mutating state", args: "--dry-run" },
+    { name: "synth bootstrap [path] --approve", description: "Apply bootstrap and initialize governance artifacts", args: "--approve" },
+    { name: "synth bootstrap [path] --name <name>", description: "Override the project name", args: "--name <name>" },
+    { name: "synth bootstrap [path] --with-website", description: "Scaffold a static website", args: "--with-website" },
+    { name: "synth bootstrap [path] --with-example", description: "Scaffold an example directory", args: "--with-example" },
+  ])
+  help.usage = "synth bootstrap [path] [options]"
+  printJson(help)
+}
+
+async function cmdDiscoverHelp() {
+  printJson(namespaceHelp("discover", "Produce a read-only analysis of a repository", [
+    { name: "synth discover <path>", description: "Run Discovery against the target directory" },
+  ]))
+}
+
+async function cmdDiscover(args: string[]) {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const { analyzeRepository } = await import("./bootstrap-analyzer.js")
+  const analysis = await analyzeRepository(targetDir)
+  printJson({
+    status: "ok",
+    kind: "DiscoveryResult",
+    targetDir,
+    repositoryType: analysis.repositoryType,
+    sourceHistory: analysis.sourceHistory,
+    analysis: {
+      languages: analysis.languages,
+      frameworks: analysis.frameworks,
+      hasTests: analysis.hasTests,
+      fileCount: analysis.fileCount,
+      observationCount: analysis.observations.length,
+    },
+    agentContext: analysis.agentContext,
+    discoverySessionId: analysis.discoverySessionId,
+    discoverySessionHash: analysis.discoverySessionHash,
+  })
+}
+
+async function cmdMissionHelp() {
+  printJson(namespaceHelp("mission", "Mission Studio operations", [
+    { name: "synth mission create --subject <subject> --purpose <purpose>", description: "Create a Mission proposal" },
+    { name: "synth mission approve --draft-id <id>", description: "Approve a Mission draft" },
+    { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
+    { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
+    { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
+  ]))
+}
+
+async function cmdExpeditionHelp() {
+  printJson(namespaceHelp("expedition", "Expedition lifecycle operations", [
+    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal>", description: "Create an Expedition proposal (Draft)" },
+    { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
+    { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
+    { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
+    { name: "synth expedition complete --id <id> --evidence <path>", description: "Complete an executing Expedition (Executing → Completed)" },
+  ]))
+}
+
+async function cmdDoctorHelp() {
+  printJson(namespaceHelp("doctor", "Verify installation and project health", [
+    { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
+  ]))
+}
+
+async function cmdAdapterHelp() {
+  printJson(namespaceHelp("adapter", "Delegate to the adapter management CLI", [
+    { name: "synth adapter <adapter> [args...]", description: "Run an adapter-specific command" },
+  ]))
 }
 
 async function cmdInit(args: string[], flags: Record<string, string | boolean>) {
@@ -839,7 +1020,12 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   })) as {
     status: string
     decision?: { approved: boolean; reason?: string; confidence?: number }
-    result?: { success?: boolean; error?: string; session?: PlanningSession; data?: { id?: string; proposals?: unknown } }
+    result?: {
+      success?: boolean
+      error?: string
+      session?: PlanningSession
+      data?: import("../mission-studio/types.js").ApprovedMissionModelSnapshot
+    }
     proposals?: unknown
     error?: string
   }
@@ -900,6 +1086,39 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     confidence: decision?.confidence ?? session.confidence.overall,
     ...(approvedData?.id ? { snapshotId: approvedData.id } : {}),
   })
+
+  // Bridge the planning snapshot to runtime state: a Mission Studio approval
+  // certifies the model, but expeditions and replay need the mission to exist
+  // as a canonical runtime entity. Materialize it once from the approved
+  // snapshot so that `CreateExpedition` references resolve deterministically.
+  if (approvedData) {
+    const missionNode = Array.from(approvedData.worldModel.nodes.values()).find(
+      (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
+    )
+    if (missionNode) {
+      const existingMission = state.missions[missionNode.id]
+      if (!existingMission) {
+        const createMissionResult = await gateCtx.api.handleIntent({
+          actor: "synth-cli",
+          capability: "CreateMission",
+          payload: { id: missionNode.id, name: missionNode.name, purpose: missionNode.purpose },
+        })
+        if (createMissionResult.status !== "ok") {
+          printError(`Failed to create runtime mission: ${createMissionResult.error || JSON.stringify(createMissionResult)}`)
+        }
+      }
+      if (!existingMission || existingMission.status === "draft") {
+        const approveMissionResult = await gateCtx.api.handleIntent({
+          actor: "synth-cli",
+          capability: "ApproveMission",
+          payload: { id: missionNode.id },
+        })
+        if (approveMissionResult.status !== "ok") {
+          printError(`Failed to approve runtime mission: ${approveMissionResult.error || JSON.stringify(approveMissionResult)}`)
+        }
+      }
+    }
+  }
 
   printJson({
     status: "ok",
@@ -1123,14 +1342,14 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.create" }, state)
+  const intake = gateDecision({ kind: "expedition.create", missionId: missionSubject }, state)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
 
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
-    infra: { persistence: "memory" },
+    infra: { persistence: "file" },
   })
 
   const observations = [
@@ -1140,29 +1359,159 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
     params: { observations },
-  })) as { status: string; session?: unknown; error?: string }
+  })) as { status: string; session?: PlanningSession; error?: string }
 
-  if (sessionResult.status !== "ok") {
+  if (sessionResult.status !== "ok" || !sessionResult.session) {
     printError(`Mission Studio session failed: ${JSON.stringify(sessionResult)}`)
   }
 
+  const session = sessionResult.session
   const proposalsResult = (await ctx.api.missionStudioOperation({
     operation: "proposeExpeditions",
     params: { observations },
   })) as { status: string; proposals?: unknown; error?: string }
 
+  // Persist the expedition draft and create a runtime entity in draft state.
+  const draftsDir = await ensureDraftsDir()
+  const draftPath = path.join(draftsDir, `${session.id}.json`)
+  const serialized = serializePlanningSession(session)
+  await fs.writeFile(draftPath, JSON.stringify(serialized, null, 2), "utf-8")
+  await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
+
+  const expeditionId = session.id
+  const createResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateExpedition",
+    payload: { id: expeditionId, missionId: missionSubject, name: subject, goal },
+  })
+
+  if (createResult.status !== "ok") {
+    printError(`Failed to create expedition runtime entity: ${createResult.error || JSON.stringify(createResult)}`)
+  }
+
   printJson({
     status: proposalsResult.status,
+    kind: "ExpeditionDraft",
+    draftId: expeditionId,
+    draftPath,
+    integrity: "certified",
     missionSubject,
     expeditionSubject: subject,
     goal,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
+    nextStep: `synth expedition approve --draft-id ${expeditionId}`,
   })
 }
 
+async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
+  const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
+  if (!draftId) printError("--draft-id is required")
+
+  const gateCtx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await gateCtx.runtime.getState()
+  const intake = gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const draftsDir = path.join(dataDir, "drafts")
+  const draftPath = path.join(draftsDir, `${draftId}.json`)
+  let draftData: any
+  try {
+    draftData = JSON.parse(await fs.readFile(draftPath, "utf-8"))
+  } catch {
+    printError(`Draft not found: ${draftPath}`)
+  }
+
+  const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
+  if (!integrity.ok) {
+    printError(integrity.message)
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ApproveExpedition",
+    payload: { id: draftId },
+  })
+
+  if (result.status !== "ok") {
+    printJson({
+      status: "error",
+      kind: "ExpeditionApproveFailed",
+      draftId,
+      error: result.error || "Unknown execution gate error",
+    })
+    process.exit(1)
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionApproved",
+    draftId,
+    proposalId: draftId,
+    result: result.result,
+    nextStep: `synth expedition commit --proposal-id ${draftId}`,
+  })
+}
+
+async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
+  const proposalId = typeof flags["proposal-id"] === "string" ? flags["proposal-id"] : ""
+  if (!proposalId) printError("--proposal-id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CommitExpedition",
+    payload: { id: proposalId },
+  })
+
+  if (result.status !== "ok") {
+    printJson({
+      status: "error",
+      kind: "ExpeditionCommitFailed",
+      proposalId,
+      error: result.error || "Unknown execution gate error",
+    })
+    process.exit(1)
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionCommitted",
+    proposalId,
+    result: result.result,
+    nextStep: `synth expedition start --id ${proposalId}`,
+  })
+}
+
+function resolveExpeditionId(flags: Record<string, string | boolean>): string {
+  if (typeof flags.id === "string" && flags.id.length > 0) return flags.id
+  if (typeof flags["expedition-id"] === "string" && flags["expedition-id"].length > 0) return flags["expedition-id"]
+  return ""
+}
+
 async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
-  const expeditionId = typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : ""
-  if (!expeditionId) printError("--expedition-id is required")
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
 
   // Use the project's actual event log so the StartExpedition event is
   // persisted and replayable.
@@ -1198,13 +1547,13 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
     kind: "ExpeditionStarted",
     expeditionId,
     result: result.result,
-    nextStep: `synth expedition complete --expedition-id ${expeditionId}`,
+    nextStep: `synth expedition complete --id ${expeditionId}`,
   })
 }
 
 async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
-  const expeditionId = typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : ""
-  if (!expeditionId) printError("--expedition-id is required")
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
 
   // Use the project's actual event log so the CompleteExpedition event is
   // persisted and replayable.
@@ -1219,10 +1568,12 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     printGateBlock(intake)
   }
 
+  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "CompleteExpedition",
-    payload: { id: expeditionId },
+    payload: { id: expeditionId, evidencePath },
   })
 
   if (result.status !== "ok") {
@@ -1239,6 +1590,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     status: "ok",
     kind: "ExpeditionCompleted",
     expeditionId,
+    evidencePath,
     result: result.result,
   })
 }
@@ -1314,10 +1666,73 @@ async function cmdAdapter(args: string[]) {
   })
 }
 
+function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () => Promise<void> } | undefined {
+  if (rawArgs.length < 2) return undefined
+  if (!rawArgs.includes("--help") && !rawArgs.includes("-h")) return undefined
+  const namespace = rawArgs[0]
+  switch (namespace) {
+    case "bootstrap":
+      return { namespace, handler: cmdBootstrapHelp }
+    case "discover":
+      return { namespace, handler: cmdDiscoverHelp }
+    case "mission":
+      return { namespace, handler: cmdMissionHelp }
+    case "expedition":
+      return { namespace, handler: cmdExpeditionHelp }
+    case "doctor":
+      return { namespace, handler: cmdDoctorHelp }
+    case "adapter":
+      return { namespace, handler: cmdAdapterHelp }
+    default:
+      return undefined
+  }
+}
+
+function classifyInvocation(rawArgs: string[], positional: string[], flags: Record<string, string | boolean>): string {
+  if (rawArgs.length === 0 || rawArgs.includes("--help") || rawArgs.includes("-h")) return "--help"
+  if (rawArgs.includes("--version") || rawArgs.includes("-v")) return "--version"
+
+  const namespace = positional[0] || ""
+  const sub = positional[1]
+
+  if (namespace === "bootstrap") {
+    if (flags.approve === true) return "bootstrap --approve"
+    if (flags["dry-run"] === true) return "bootstrap --dry-run"
+    return "bootstrap"
+  }
+  if (namespace === "docs" && sub === "generate") return "docs generate"
+  if (namespace === "mission") {
+    if (sub === "create") return "mission create"
+    if (sub === "approve") return "mission approve"
+  }
+  if (namespace === "expedition") {
+    if (sub === "create") return "expedition create"
+    if (sub === "approve") return "expedition approve"
+    if (sub === "commit") return "expedition commit"
+    if (sub === "start") return "expedition start"
+    if (sub === "complete") return "expedition complete"
+  }
+
+  return namespace
+}
+
 async function main() {
   const rawArgs = process.argv.slice(2)
 
-  if (rawArgs.length === 0 || rawArgs.includes("--help") || rawArgs.includes("-h")) {
+  if (rawArgs.length === 0) {
+    await cmdHelp()
+    return
+  }
+
+  // EXP-BROWNFIELD-001: every command namespace owns its help.
+  // This must be checked before the generic --help handler.
+  const namespaceHelp = isNamespaceHelp(rawArgs)
+  if (namespaceHelp) {
+    await namespaceHelp.handler()
+    return
+  }
+
+  if (rawArgs.includes("--help") || rawArgs.includes("-h")) {
     await cmdHelp()
     return
   }
@@ -1334,7 +1749,11 @@ async function main() {
     process.env.SYNTH_QUIET_LOGS = "1"
   }
 
-  const filteredArgs = rawArgs.filter((arg) => arg !== "--json")
+  // EXP-BROWNFIELD-001: Discovery Safety Model flag. Treat it as a boolean
+  // sentinel and remove it from parsing so it does not consume the next
+  // positional argument.
+  const discoveryModeFlag = rawArgs.includes("--discovery-mode")
+  const filteredArgs = rawArgs.filter((arg) => arg !== "--json" && arg !== "--discovery-mode")
   const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
 
   // Propagate the global --json flag to subcommands that need to know it
@@ -1351,6 +1770,16 @@ async function main() {
 
   const command = positional[0]
 
+  // EXP-BROWNFIELD-001: Discovery Safety Model. When --discovery-mode is set
+  // or SYNTH_DISCOVERY_MODE is active, reject mutating commands.
+  const discoveryMode = discoveryModeFlag || process.env.SYNTH_DISCOVERY_MODE === "1"
+  if (discoveryMode) {
+    const invokedCommand = classifyInvocation(rawArgs, positional, flags)
+    if (!isSafeForDiscovery(invokedCommand)) {
+      assertSafeForDiscovery(invokedCommand)
+    }
+  }
+
   switch (command) {
     case "version":
       await cmdVersion()
@@ -1366,6 +1795,10 @@ async function main() {
 
     case "bootstrap":
       await cmdBootstrap(positional.slice(1), flags)
+      break
+
+    case "discover":
+      await cmdDiscover(positional.slice(1))
       break
 
     case "govern":
@@ -1401,11 +1834,13 @@ async function main() {
     case "expedition": {
       const sub = positional[1]
       if (sub === "create") await cmdExpeditionCreate(flags)
+      else if (sub === "approve") await cmdExpeditionApprove(flags)
+      else if (sub === "commit") await cmdExpeditionCommit(flags)
       else if (sub === "start") await cmdExpeditionStart(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> | synth expedition start --expedition-id <id> | synth expedition complete --expedition-id <id>",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>]",
         )
       break
     }

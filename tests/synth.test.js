@@ -779,10 +779,14 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, and PCE capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 26, `Registry must have 26 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  assert.equal(ctx.capabilityRegistry.size(), 27, `Registry must have 27 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
   assert.ok(ctx.capabilityRegistry.has("CreateExpedition"), "Registry must have CreateExpedition")
+  assert.ok(ctx.capabilityRegistry.has("ApproveExpedition"), "Registry must have ApproveExpedition")
+  assert.ok(ctx.capabilityRegistry.has("CommitExpedition"), "Registry must have CommitExpedition")
+  assert.ok(ctx.capabilityRegistry.has("StartExpedition"), "Registry must have StartExpedition")
+  assert.ok(ctx.capabilityRegistry.has("CompleteExpedition"), "Registry must have CompleteExpedition")
   assert.ok(ctx.capabilityRegistry.has("AddObjective"), "Registry must have AddObjective")
   assert.ok(ctx.capabilityRegistry.has("CompleteObjective"), "Registry must have CompleteObjective")
   assert.ok(ctx.capabilityRegistry.has("RecordDiscovery"), "Registry must have RecordDiscovery")
@@ -835,6 +839,7 @@ test("Expedition: StartExpedition transitions to executing", async () => {
   if (!ctx.isSealed) ctx.seal()
   await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-2", missionId: "M-1", name: "Test Expedition" } })
   await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-2" } })
+  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-2" } })
   const result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-2" } })
   assert.equal(result.status, "ok", `StartExpedition should succeed: ${result.error}`)
   const events = await ctx.infra.eventStore.loadAll()
@@ -896,9 +901,10 @@ test("Expedition: full expedition lifecycle", async () => {
   await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-FULL", name: "Full Test Mission", purpose: "Test full lifecycle" } })
   await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-FULL" } })
 
-  // Create and start Expedition
+  // Create, commit, and start Expedition
   await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-FULL", missionId: "M-FULL", name: "Full Expedition", goal: "Test everything" } })
   await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-FULL" } })
+  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-FULL" } })
   await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-FULL" } })
 
   // Add objectives

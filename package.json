@@ -71,7 +71,7 @@
     "test:first-contact-patterns": "node tests/first-contact-patterns.test.js",
     "test:first-contact-quickstart": "node tests/first-contact-quickstart.test.js",
     "test:first-contact-archive-a": "node scripts/verify-first-contact-archive-a.js",
-    "test:brownfield": "node tests/brownfield-validation.test.js",
+    "test:brownfield": "node tests/brownfield-validation.test.js && node tests/brownfield-certification.test.js && node tests/command-safety.test.js && node tests/expedition-lifecycle.test.js",
     "test:adoption-validation": "node tests/adoption-validation.test.js",
     "ai:benchmark:dry-run": "node scripts/ai-validation-benchmark.js",
     "ai:benchmark": "node scripts/ai-benchmark.js",

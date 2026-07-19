@@ -235,6 +235,13 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_COMMITTED": {
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "committed", updatedAt: event.timestamp }
+      }
+      break
+    }
     case "EXPEDITION_STARTED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
