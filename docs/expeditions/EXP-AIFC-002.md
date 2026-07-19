@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Design the immutable, replayable Discovery artifact that captures greenfield intent before any project state exists.
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Started:** 2026-07-19  
 **Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  

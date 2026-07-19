@@ -2,7 +2,7 @@
 
 > **Product expedition.** Certify the greenfield workflow with real operators and agents.
 
-**Status:** Proposed  
+**Status:** Completed and accepted  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  

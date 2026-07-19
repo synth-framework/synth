@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the canonical greenfield discovery workflow and approval gates before any intent-extraction or materialization work begins.
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Started:** 2026-07-19  
 **Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  

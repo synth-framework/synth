@@ -1,6 +1,6 @@
 # EXP-PROGRAM-022 — AI-Native First Contact
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

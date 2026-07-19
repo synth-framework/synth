@@ -2,7 +2,7 @@
 
 > **Product expedition.** Design the CLI and interactive flow for greenfield onboarding.
 
-**Status:** Proposed  
+**Status:** Completed and accepted  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  
