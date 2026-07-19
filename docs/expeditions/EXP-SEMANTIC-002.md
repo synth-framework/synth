@@ -4,11 +4,12 @@
 
 > **Architecture expedition.** Define the domain ontology, ubiquitous language, bounded contexts, integrity rules, and semantic drift detection for the problem space.
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-024 — Semantic Modeling  
 **Depends On:** EXP-SEMANTIC-001 (Intent Modeling Engine)
+**Completed In:** PR #196
 
 ---
 
