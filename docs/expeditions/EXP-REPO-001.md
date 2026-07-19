@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define how SYNTH treats a version control repository as a governed state machine and forges as adapter-bound subsystems.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-028 — Repository & Release Governance  

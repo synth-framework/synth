@@ -84,6 +84,15 @@ export type StateEvent =
   | { type: "EXECUTION_INTENT_ROLLEDBACK"; intentId: string; expeditionId: string }
   | { type: "EXPEDITION_EXECUTION_COMMITTED"; expeditionId: string; commit: string }
   | { type: "EXPEDITION_EXECUTION_PROJECTED"; expeditionId: string; projectionType: "pull_request" | "patch" | "diff"; projectionUrl?: string }
+  // Repository governance lifecycle (EXP-PROGRAM-028)
+  | { type: "REPOSITORY_INITIALIZED"; repositoryId: string; defaultBranch: string; forgeProvider: string; versionStrategy: string }
+  | { type: "BRANCH_CREATED"; branchName: string; branchType: string; baseBranch?: string; missionId?: string; expeditionId?: string }
+  | { type: "PULL_REQUEST_OPENED"; pullRequestId: string; forgeId: string; url: string; number: number; headBranch: string; baseBranch: string; missionId?: string; expeditionId?: string }
+  | { type: "PULL_REQUEST_UPDATED"; pullRequestId: string; state: "open" | "closed" | "merged"; title?: string }
+  | { type: "PULL_REQUEST_MERGED"; pullRequestId: string; commit: string; strategy: string }
+  | { type: "PROMOTION_PROPOSED"; promotionId: string; pullRequestId: string; from: string; to: string; evidenceReference?: string }
+  | { type: "PROMOTION_APPROVED"; promotionId: string; approver: string }
+  | { type: "RELEASE_CREATED"; releaseId: string; tag: string; targetCommit: string; evidenceReference?: string }
 
 /** Execution events — represent transaction lifecycle */
 export type ExecutionEvent =

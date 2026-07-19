@@ -1,6 +1,6 @@
 # EXP-PROGRAM-028 — Repository & Release Governance
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

@@ -55,6 +55,14 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "genesis materialize --dry-run", safety: "PROPOSAL_ONLY", description: "Alias for 'first-contact materialize --dry-run'" },
   { command: "genesis approve", safety: "MUTATING", description: "Alias for 'first-contact approve'", requiresApproval: true },
   { command: "genesis materialize --approve", safety: "MUTATING", description: "Alias for 'first-contact materialize --approve'", requiresApproval: true },
+  // Repository governance (EXP-PROGRAM-028)
+  { command: "repo init", safety: "MUTATING", description: "Initialize repository governance state", requiresApproval: true },
+  { command: "repo branch create", safety: "MUTATING", description: "Record a governed branch", requiresApproval: true },
+  { command: "repo pr open", safety: "MUTATING", description: "Open a promotion pull request", requiresApproval: true },
+  { command: "repo pr approve", safety: "MUTATING", description: "Approve a proposed promotion", requiresApproval: true },
+  { command: "repo pr merge", safety: "MUTATING", description: "Merge an approved pull request", requiresApproval: true },
+  { command: "repo release create", safety: "MUTATING", description: "Create a governed release", requiresApproval: true },
+  { command: "repo status", safety: "READ_ONLY", description: "Report repository governance state" },
 ]
 
 function normalizeCommand(command: string): string {

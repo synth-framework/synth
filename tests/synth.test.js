@@ -788,8 +788,8 @@ test("P2: state store hash integrity on save/load cycle", async () => {
 test("Expedition: capability registry includes Expedition capabilities", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
-  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, and recovery capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 28, `Registry must have 28 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, and repository governance capabilities
+  assert.equal(ctx.capabilityRegistry.size(), 34, `Registry must have 34 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
   assert.ok(ctx.capabilityRegistry.has("CreateExpedition"), "Registry must have CreateExpedition")
@@ -802,6 +802,12 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   assert.ok(ctx.capabilityRegistry.has("RecordDiscovery"), "Registry must have RecordDiscovery")
   assert.ok(ctx.capabilityRegistry.has("AcceptDecision"), "Registry must have AcceptDecision")
   assert.ok(ctx.capabilityRegistry.has("RecordRepair"), "Registry must have RecordRepair")
+  assert.ok(ctx.capabilityRegistry.has("InitializeRepository"), "Registry must have InitializeRepository")
+  assert.ok(ctx.capabilityRegistry.has("CreateBranch"), "Registry must have CreateBranch")
+  assert.ok(ctx.capabilityRegistry.has("OpenPullRequest"), "Registry must have OpenPullRequest")
+  assert.ok(ctx.capabilityRegistry.has("ApprovePromotion"), "Registry must have ApprovePromotion")
+  assert.ok(ctx.capabilityRegistry.has("MergePullRequest"), "Registry must have MergePullRequest")
+  assert.ok(ctx.capabilityRegistry.has("CreateRelease"), "Registry must have CreateRelease")
 })
 
 test("Expedition: CreateMission produces MISSION_CREATED event", async () => {
