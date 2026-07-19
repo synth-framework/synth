@@ -62,6 +62,10 @@
       "name": "AI-Native First Contact",
       "description": "Greenfield onboarding expeditions that turn unstructured operator intent into an approved Mission through deterministic Discovery."
     },
+    "GENESIS": {
+      "name": "Genesis",
+      "description": "Greenfield intent-to-Mission expeditions that capture and validate operator intent before repository materialization."
+    },
     "GOV": {
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
@@ -98,9 +102,17 @@
       "name": "Runtime Correctness",
       "description": "Runtime correctness expeditions (event guarantees, lifecycle atomicity, replay reconciliation, recovery primitives)."
     },
+    "SEMANTIC": {
+      "name": "Semantic Modeling",
+      "description": "Intent and domain semantic modeling expeditions that produce canonical semantic artifacts independent of implementation."
+    },
     "SMA": {
       "name": "Semantic Migration",
       "description": "Semantic migration and canonical-language expeditions."
+    },
+    "KNOWLEDGE": {
+      "name": "Canonical Knowledge",
+      "description": "Canonical knowledge graph and prototype-first validation expeditions."
     },
     "TRUST": {
       "name": "Operator Trust & CLI Integrity",
