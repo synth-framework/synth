@@ -1,8 +1,9 @@
 // ============================================================
-// GOVERNANCE PROFILER TESTS (EXP-GOVERN-001)
+// GOVERNANCE PROFILER TESTS (EXP-GOVERN-001 / EXP-GOVERN-002)
 // ============================================================
-// Fast tests for the GovernSummary producer. Avoids running the full pipeline;
-// verifies parsing, summary shape, and dry-run behavior.
+// Fast tests for the GovernSummary producer and dependency graph builder.
+// Avoids running the full pipeline; verifies parsing, summary shape, and
+// graph construction.
 // ============================================================
 
 import assert from "assert"
@@ -10,6 +11,8 @@ import fs from "fs/promises"
 import os from "os"
 import path from "path"
 import { loadGovernChecks, runGovernProfile } from "../scripts/govern-profiler.js"
+import { buildDependencyGraph } from "../scripts/governance/dependency-graph.js"
+import { registerCheck, resolveCheck, GOVERNANCE_MODULES } from "../scripts/governance/check-registry.js"
 
 async function withTempPackage(testAll, fn) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-profiler-"))
@@ -48,7 +51,7 @@ async function testLoadGovernChecksIgnoresNonNpmRun() {
 }
 
 async function testDryRunProducesSummary() {
-  const { summary, failed } = await runGovernProfile({ dryRun: true, silent: true })
+  const { summary, graph, failed } = await runGovernProfile({ dryRun: true, silent: true })
   assert.strictEqual(failed, false)
   assert.strictEqual(summary.kind, "GovernSummary")
   assert.strictEqual(summary.schemaVersion, "1.0.0")
@@ -61,22 +64,85 @@ async function testDryRunProducesSummary() {
     assert.ok(typeof check.checkId === "string")
     assert.ok(typeof check.durationMs === "number")
     assert.ok(typeof check.percentage === "number")
+    assert.ok(typeof check.module === "string")
     assert.ok(Array.isArray(check.inputs))
     assert.ok(Array.isArray(check.outputs))
     assert.ok(Array.isArray(check.filesTouched))
     assert.ok(Array.isArray(check.dependencies))
-    assert.strictEqual(check.cacheability, "unknown")
+    assert.ok(Array.isArray(check.protectedAssets))
+    assert.ok(typeof check.cacheability === "string")
   }
 
-  console.log("[PASS] dry-run produces a valid GovernSummary")
+  assert.strictEqual(graph.kind, "GovernanceDependencyGraph")
+  assert.ok(Array.isArray(graph.modules))
+  assert.ok(Array.isArray(graph.checks))
+  assert.ok(Array.isArray(graph.edges))
+  assert.ok(Array.isArray(graph.warnings))
+
+  console.log("[PASS] dry-run produces a valid GovernSummary and GovernanceDependencyGraph")
 }
 
 async function testPercentagesSumToOneHundred() {
   const { summary } = await runGovernProfile({ dryRun: true, silent: true })
   const total = summary.checks.reduce((sum, c) => sum + c.percentage, 0)
-  // Rounding errors can leave us at 99.9 or 100.1; accept within one tenth.
+  // Rounding errors can leave us slightly below 100; accept within one percent.
   assert.ok(total >= 99.0 && total <= 100.1, `percentages sum to ${total}`)
   console.log("[PASS] percentages sum to approximately 100")
+}
+
+async function testDependencyGraphDetectsCycles() {
+  registerCheck({
+    id: "cycle-a",
+    module: "tests",
+    inputs: [],
+    outputs: [],
+    scope: "tests",
+    protectedAssets: [],
+    dependencies: ["cycle-b"],
+  })
+  registerCheck({
+    id: "cycle-b",
+    module: "tests",
+    inputs: [],
+    outputs: [],
+    scope: "tests",
+    protectedAssets: [],
+    dependencies: ["cycle-a"],
+  })
+
+  const graph = buildDependencyGraph(["cycle-a", "cycle-b"])
+  assert.ok(graph.warnings.some((w) => w.includes("Cycle detected")))
+  console.log("[PASS] dependency graph detects cycles")
+}
+
+async function testDependencyGraphReportsGlobals() {
+  registerCheck({
+    id: "global-check",
+    module: "tests",
+    inputs: [],
+    outputs: [],
+    scope: "tests",
+    protectedAssets: [],
+  })
+
+  const graph = buildDependencyGraph(["global-check"])
+  assert.ok(graph.warnings.some((w) => w.includes("has no inputs")))
+  console.log("[PASS] dependency graph reports global checks")
+}
+
+async function testResolveCheckUsesDefaults() {
+  const check = resolveCheck("unknown-check")
+  assert.strictEqual(check.id, "unknown-check")
+  assert.strictEqual(check.module, "tests")
+  assert.ok(check.inputs.length > 0)
+  console.log("[PASS] resolveCheck returns sensible defaults for unregistered checks")
+}
+
+async function testModulesAreCanonical() {
+  assert.ok(GOVERNANCE_MODULES.includes("runtime"))
+  assert.ok(GOVERNANCE_MODULES.includes("missions"))
+  assert.ok(GOVERNANCE_MODULES.includes("governance"))
+  console.log("[PASS] canonical governance modules are defined")
 }
 
 async function main() {
@@ -84,6 +150,10 @@ async function main() {
   await testLoadGovernChecksIgnoresNonNpmRun()
   await testDryRunProducesSummary()
   await testPercentagesSumToOneHundred()
+  await testDependencyGraphDetectsCycles()
+  await testDependencyGraphReportsGlobals()
+  await testResolveCheckUsesDefaults()
+  await testModulesAreCanonical()
   console.log("\n[GOVERN PROFILER] All tests passed")
 }
 

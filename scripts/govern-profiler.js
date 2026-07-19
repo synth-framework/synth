@@ -1,22 +1,25 @@
 // ============================================================
-// GOVERNANCE PROFILER (EXP-GOVERN-001)
+// GOVERNANCE PROFILER (EXP-GOVERN-001 / EXP-GOVERN-002)
 // ============================================================
-// Instruments the SYNTH governance pipeline and produces a structured
-// GovernSummary with per-check timing. The summary is emitted to stdout and
-// persisted under proof/govern-baseline.json so future incrementality work is
-// driven by measured data rather than assumptions.
+// Instruments the SYNTH governance pipeline and produces:
+//  - a structured GovernSummary with per-check timing
+//  - a GovernanceDependencyGraph artifact
+//  - a persisted baseline under proof/govern-baseline.json
 // ============================================================
 
 import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
+import { resolveChecks } from "./governance/check-registry.js"
+import { buildDependencyGraph } from "./governance/dependency-graph.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const REPO_ROOT = path.resolve(__dirname, "..")
 const BASELINE_PATH = path.join(REPO_ROOT, "proof", "govern-baseline.json")
+const GRAPH_PATH = path.join(REPO_ROOT, "proof", "govern-dependency-graph.json")
 
 /** Parse package.json scripts into a check list matching the old `npm run govern` pipeline. */
 export async function loadGovernChecks(pkgPath = path.join(REPO_ROOT, "package.json")) {
@@ -97,17 +100,22 @@ function buildSummary(results) {
       percentage: totalDurationMs > 0 ? Math.round((r.durationMs / totalDurationMs) * 1000) / 10 : 0,
       startTime: r.startTime,
       endTime: r.endTime,
+      module: r.module,
       inputs: r.inputs,
       outputs: r.outputs,
       filesTouched: r.filesTouched,
       dependencies: r.dependencies,
       cacheability: r.cacheability,
+      protectedAssets: r.protectedAssets,
     })),
   }
 }
 
 export async function runGovernProfile(options = {}) {
   const checks = await loadGovernChecks(options.packageJsonPath)
+  const metadata = resolveChecks(checks.map((c) => c.checkId))
+  const metadataById = new Map(metadata.map((m) => [m.id, m]))
+
   const results = []
   let failed = false
 
@@ -126,14 +134,25 @@ export async function runGovernProfile(options = {}) {
       result = await runCommand(command, args, REPO_ROOT)
     }
 
+    const meta = metadataById.get(checkId) ?? {
+      module: "tests",
+      inputs: [],
+      outputs: [],
+      dependencies: [],
+      cacheability: "unknown",
+      protectedAssets: [],
+    }
+
     results.push({
       checkId,
       ...result,
-      inputs: [],
-      outputs: [],
+      module: meta.module,
+      inputs: meta.inputs,
+      outputs: meta.outputs,
       filesTouched: [],
-      dependencies: [],
-      cacheability: "unknown",
+      dependencies: meta.dependencies ?? [],
+      cacheability: meta.cacheability ?? "unknown",
+      protectedAssets: meta.protectedAssets,
     })
 
     if (result.status !== "passed") {
@@ -142,6 +161,7 @@ export async function runGovernProfile(options = {}) {
   }
 
   const summary = buildSummary(results)
+  const graph = buildDependencyGraph(checks.map((c) => c.checkId))
 
   if (!options.silent) {
     console.log("")
@@ -155,33 +175,51 @@ export async function runGovernProfile(options = {}) {
       const pad = " ".repeat(Math.max(0, 35 - check.checkId.length))
       console.log(`  ${check.status === "passed" ? "✓" : "✗"} ${check.checkId}${pad}${(check.durationMs / 1000).toFixed(1)}s (${check.percentage}%)`)
     }
+
+    if (graph.warnings.length > 0) {
+      console.log("")
+      console.log("Governance dependency warnings:")
+      for (const warning of graph.warnings) {
+        console.log(`  ⚠ ${warning}`)
+      }
+    }
     console.log("")
   }
 
   if (!options.dryRun) {
     await ensureProofDir()
     await fs.writeFile(BASELINE_PATH, JSON.stringify(summary, null, 2) + "\n", "utf-8")
+    await fs.writeFile(GRAPH_PATH, JSON.stringify(graph, null, 2) + "\n", "utf-8")
   }
 
   if (!options.silent) {
     if (!options.dryRun) {
       console.log(`GovernSummary written to ${BASELINE_PATH}`)
+      console.log(`GovernanceDependencyGraph written to ${GRAPH_PATH}`)
       console.log("")
     }
     console.log(JSON.stringify(summary, null, 2))
   }
 
-  return { summary, failed }
+  return { summary, graph, failed }
 }
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run")
-  const { summary, failed } = await runGovernProfile({ dryRun })
+  const { summary, graph, failed } = await runGovernProfile({ dryRun })
+
+  if (graph.warnings.some((w) => w.startsWith("Cycle detected"))) {
+    console.error("")
+    console.error("[GOVERN] Fatal dependency cycle detected in governance checks.")
+    process.exit(1)
+  }
+
   if (failed) {
     console.error("")
     console.error("[GOVERN] One or more checks failed.")
     process.exit(1)
   }
+
   return summary
 }
 
