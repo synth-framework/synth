@@ -34,3 +34,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-026 — Governance Lifecycle Freeze](ADR-026-governance-lifecycle-freeze.md)
 - [ADR-027 — Genesis Artifact Semantics](ADR-027-genesis-artifact-semantics.md)
 - [ADR-028 — Genesis Intent Capture Semantics](ADR-028-genesis-intent-capture-semantics.md)
+- [ADR-029 — Genesis Validation & Mission Materialization Semantics](ADR-029-genesis-validation-materialization-semantics.md)

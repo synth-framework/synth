@@ -79,6 +79,7 @@ const COMMANDS = [
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
   { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
+  { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -2167,6 +2168,7 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
     case "repair":
       return { namespace, handler: cmdRepairHelp }
     case "first-contact":
+    case "genesis":
       return { namespace, handler: cmdFirstContactHelp }
     default:
       return undefined
@@ -2189,17 +2191,18 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "repair" && sub === "replay") {
     return flags.approve === true || flags.approve === "true" ? "repair replay --approve" : "repair replay"
   }
-  if (namespace === "first-contact") {
-    if (sub === "start") return "first-contact start"
-    if (sub === "clarify") return "first-contact clarify"
-    if (sub === "project") return "first-contact project"
-    if (sub === "verify") return "first-contact verify"
-    if (sub === "approve") return "first-contact approve"
-    if (sub === "status") return "first-contact status"
+  if (namespace === "first-contact" || namespace === "genesis") {
+    const prefix = namespace
+    if (sub === "start") return `${prefix} start`
+    if (sub === "clarify") return `${prefix} clarify`
+    if (sub === "project") return `${prefix} project`
+    if (sub === "verify") return `${prefix} verify`
+    if (sub === "approve") return `${prefix} approve`
+    if (sub === "status") return `${prefix} status`
     if (sub === "materialize") {
-      if (flags["dry-run"] === true) return "first-contact materialize --dry-run"
-      if (flags.approve === true || flags.approve === "true") return "first-contact materialize --approve"
-      return "first-contact materialize"
+      if (flags["dry-run"] === true) return `${prefix} materialize --dry-run`
+      if (flags.approve === true || flags.approve === "true") return `${prefix} materialize --approve`
+      return `${prefix} materialize`
     }
   }
   if (namespace === "mission") {
@@ -2377,7 +2380,8 @@ async function main() {
       await cmdAdapter(positional.slice(1))
       break
 
-    case "first-contact": {
+    case "first-contact":
+    case "genesis": {
       const sub = positional[1]
       if (sub === "start") await cmdFirstContactStart(positional.slice(2), flags)
       else if (sub === "clarify") await cmdFirstContactClarify(positional.slice(2), flags)

@@ -223,6 +223,42 @@ async function testStatusReportsState() {
   console.log("[PASS] synth first-contact status reports state transitions")
 }
 
+async function testGenesisAliasHelp() {
+  const { stdout, status } = runSynth(["genesis", "--help"])
+  assert(status === 0, "genesis --help should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "genesis help status should be ok")
+  assert(output.namespace === "first-contact", "genesis help should report first-contact namespace")
+  assert(Array.isArray(output.subcommands), "genesis help should list subcommands")
+  console.log("[PASS] synth genesis --help lists subcommands")
+}
+
+async function testGenesisAliasStartCreatesDraft() {
+  await withTempDir(async (tmpDir) => {
+    const { stdout, status } = runSynth(["genesis", "start", "Let's build a markdown editor in TypeScript."], tmpDir)
+    assert(status === 0, "genesis start should exit 0")
+    const output = parseJson(stdout)
+    assert(output.status === "ok", "genesis start status should be ok")
+    assert(output.kind === "FirstContactDraft", "genesis start should return FirstContactDraft")
+    assert(output.intent.includes("markdown editor"), "genesis start should preserve intent")
+
+    const draftPath = path.join(tmpDir, ".synth", "first-contact", "draft.json")
+    const draft = JSON.parse(await fs.readFile(draftPath, "utf-8"))
+    assert(draft.schema === "synth-first-contact-draft-v1", "genesis draft should use correct schema")
+
+    const manifestPath = path.join(tmpDir, ".synth", "manifest.json")
+    let hasManifest = false
+    try {
+      await fs.access(manifestPath)
+      hasManifest = true
+    } catch {
+      hasManifest = false
+    }
+    assert(!hasManifest, "genesis start should not create manifest")
+  })
+  console.log("[PASS] synth genesis start creates a proposal draft without materializing")
+}
+
 async function testDiscoveryModeRejectsMaterialize() {
   await withTempDir(async (tmpDir) => {
     runSynth(["first-contact", "start", "Let's build a space mission tracker in TypeScript for the web."], tmpDir)
@@ -245,6 +281,8 @@ async function main() {
 
   await testHelpListsFirstContact()
   await testNamespaceHelp()
+  await testGenesisAliasHelp()
+  await testGenesisAliasStartCreatesDraft()
   await testStartCreatesDraft()
   await testClarifyFlow()
   await testProjectAndVerify()

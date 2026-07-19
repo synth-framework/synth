@@ -46,6 +46,15 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "first-contact materialize --dry-run", safety: "PROPOSAL_ONLY", description: "Preview what materialization would create" },
   { command: "first-contact approve", safety: "MUTATING", description: "Approve the first-contact draft", requiresApproval: true },
   { command: "first-contact materialize --approve", safety: "MUTATING", description: "Materialize the approved artifact into a SYNTH project", requiresApproval: true },
+  // `genesis` is an alias for the first-contact greenfield onboarding namespace.
+  { command: "genesis start", safety: "PROPOSAL_ONLY", description: "Alias for 'first-contact start'" },
+  { command: "genesis clarify", safety: "PROPOSAL_ONLY", description: "Alias for 'first-contact clarify'" },
+  { command: "genesis project", safety: "READ_ONLY", description: "Alias for 'first-contact project'" },
+  { command: "genesis verify", safety: "READ_ONLY", description: "Alias for 'first-contact verify'" },
+  { command: "genesis status", safety: "READ_ONLY", description: "Alias for 'first-contact status'" },
+  { command: "genesis materialize --dry-run", safety: "PROPOSAL_ONLY", description: "Alias for 'first-contact materialize --dry-run'" },
+  { command: "genesis approve", safety: "MUTATING", description: "Alias for 'first-contact approve'", requiresApproval: true },
+  { command: "genesis materialize --approve", safety: "MUTATING", description: "Alias for 'first-contact materialize --approve'", requiresApproval: true },
 ]
 
 function normalizeCommand(command: string): string {
@@ -87,7 +96,7 @@ function suggestionForCommand(command: string): string {
   if (command.startsWith("expedition")) {
     return "managing expeditions"
   }
-  if (command.startsWith("first-contact")) {
+  if (command.startsWith("first-contact") || command.startsWith("genesis")) {
     return "running first-contact onboarding"
   }
   return "running this command"
