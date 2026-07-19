@@ -1,12 +1,13 @@
 # EXP-GOVERN-006 — Governance Completion
 
-> **Architecture expedition.** Finalize Mission/Expedition lifecycle semantics, approval boundaries, and replay contracts so that Genesis builds on a stable governance platform.
+> **Architecture expedition.** Finalize the normative Mission/Expedition lifecycle contract, approval semantics, mutation boundaries, and event taxonomy so that Genesis builds on a stable governance platform.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
-**Depends On:** EXP-PROGRAM-021 (Incremental Governance), EXP-RUNTIME-001 (Runtime correctness)
+**Depends On:** EXP-PROGRAM-021 (Incremental Governance)  
+**Coordinates With:** EXP-RUNTIME-001 (Runtime correctness — implements bridges and recovery primitives; GOVERN-006 defines the contract and certifies satisfaction)
 
 ---
 
@@ -31,9 +32,9 @@ Success means governance becomes a stable platform rather than an evolving depen
 
 ## Required Change
 
-### 6.1 Freeze Mission lifecycle
+### 6.1 Define the Mission lifecycle contract
 
-Define the canonical states and transitions:
+Produce a normative contract describing canonical states, transitions, emitted events, and invalid transitions:
 
 ```text
 Draft
@@ -47,24 +48,24 @@ Executing
 Completed
 ```
 
-Each transition must emit the required runtime events or fail atomically.
+The contract is the source of truth; runtime implementation (event emission, atomicity, recovery) belongs to EXP-RUNTIME-001.
 
-### 6.2 Freeze Expedition lifecycle
+### 6.2 Define the Expedition lifecycle contract
 
-Mirror the Mission lifecycle for Expeditions with explicit transitions from approved proposal to runtime entity.
+Mirror the Mission contract for Expeditions with explicit transitions from approved proposal to runtime entity.
 
-### 6.3 Approval semantics
+### 6.3 Define approval semantics
 
-Make approval deterministic:
+Make approval deterministic in specification:
 
 - Required evidence before approval.
 - Confidence threshold semantics.
 - Unknown resolution requirements.
 - Rejection and revision path.
 
-### 6.4 Replay reconstruction
+### 6.4 Define replay reconstruction contract
 
-Ensure replay fully reconstructs governance decisions from events:
+Specify how governance decisions must be reconstructible from events:
 
 - Mission creation.
 - Mission approval.
@@ -72,45 +73,70 @@ Ensure replay fully reconstructs governance decisions from events:
 - Expedition start/commit/complete.
 - Evidence attachment.
 
-### 6.5 Event taxonomy
+### 6.5 Finalize event taxonomy
 
-Finalize the canonical event types and schemas for governance.
+Document the canonical governance event types and schemas, aligned with `src/types/event.ts`.
 
-### 6.6 Mutation boundaries
+### 6.6 Define mutation boundaries
 
-Explicitly define:
+Explicitly classify operations:
 
-- What constitutes a mutating operation.
-- Which operations require approval.
-- Which operations are safe during discovery.
-- Which operations are proposal-only.
+- `READ_ONLY` — safe during discovery.
+- `PROPOSAL_ONLY` — generates a proposal but does not mutate runtime state.
+- `MUTATING` — requires approval and mutates runtime state.
 
-### 6.7 Bootstrap contracts
+### 6.7 Finalize bootstrap contract
 
-Finalize the brownfield bootstrap contract as a normative reference for onboarding.
+Publish the brownfield bootstrap contract as a normative reference for onboarding.
+
+### 6.8 Add contract certification tests
+
+Add tests that verify the runtime satisfies the governance contract without depending on runtime internals.
 
 ---
 
 ## Deliverables
 
-1. Frozen Mission lifecycle contract.
-2. Frozen Expedition lifecycle contract.
+1. Mission lifecycle contract document.
+2. Expedition lifecycle contract document.
 3. Approval semantics specification.
-4. Governance event taxonomy.
+4. Governance event taxonomy, aligned with `src/types/event.ts`.
 5. Mutation boundary contract.
-6. Bootstrap contract finalized.
+6. Brownfield bootstrap contract finalized.
 7. ADR on governance lifecycle freeze.
+8. Certification tests verifying the runtime satisfies the contract through public CLI workflows.
 
 ---
 
 ## Acceptance Criteria
 
-- Mission lifecycle transitions emit required runtime events or fail atomically.
-- Expedition lifecycle transitions emit required runtime events or fail atomically.
-- Replay reconstructs governance decisions from events.
-- Mutation boundaries are documented and enforced.
+- The Mission lifecycle contract states, transitions, and events are documented and match `src/types/state.ts` / `src/types/event.ts`.
+- The Expedition lifecycle contract states, transitions, and events are documented and match `src/types/state.ts` / `src/types/event.ts`.
+- Approval semantics specify required evidence, confidence threshold, unknown resolution, and rejection/revision paths.
+- Replay reconstruction requirements are documented for all governance lifecycle events.
+- Mutation boundaries classify every public CLI command as `READ_ONLY`, `PROPOSAL_ONLY`, or `MUTATING`.
 - Bootstrap contract is published and testable.
+- Certification tests pass and use only public CLI commands and documented artifacts.
 - `npm run govern` passes.
+
+---
+
+## Relationship to EXP-RUNTIME-001
+
+GOVERN-006 owns the **contract** and **certification**:
+
+- What states and transitions are valid.
+- What events must appear in the log for each transition.
+- What mutation classifications apply.
+- What tests prove the contract is satisfied.
+
+RUNTIME-001 owns the **implementation**:
+
+- Atomic transition execution.
+- Event emission guarantees.
+- `synth repair replay` / `synth reconcile` recovery primitives.
+
+GOVERN-006 may add certification tests that fail if RUNTIME-001's implementation is incomplete, but it does not implement the runtime bridges itself.
 
 ---
 
