@@ -1,6 +1,6 @@
 # EXP-PROGRAM-025 — Canonical Knowledge & Validation
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -11,6 +11,7 @@
 **Public Impact:** High  
 **Product Impact:** High  
 **Execution Impact:** High
+**Completed In:** PRs #198–#199
 
 ---
 

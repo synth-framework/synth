@@ -4,11 +4,12 @@
 
 > **Architecture expedition.** Define the knowledge graph schema, projection engine, versioning, lineage, and semantic drift detection.
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-025 — Canonical Knowledge & Validation  
 **Depends On:** EXP-SEMANTIC-002 (Domain Modeling Engine)
+**Completed In:** PR #198
 
 ---
 
