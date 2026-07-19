@@ -115,8 +115,8 @@ All four are wired into `test:all`.
 
 ### Delivered
 
-1. **Capability precondition enforcement in the ExecutionGate**
-   - `ExecutionGate.execute` now evaluates every registered capability precondition before invoking the domain handler.
+1. **Capability precondition enforcement in the governance boundary**
+   - The runtime control boundary now evaluates every registered capability precondition before invoking the domain handler.
    - `CreateExpedition` fails with `PRECONDITION_FAILED: mission_exists` when the referenced mission is absent from runtime state.
    - This closes the silent-success bug where `synth expedition create` returned `ok` but emitted no `EXPEDITION_CREATED` event.
 
