@@ -1,12 +1,12 @@
-# EXP-GENESIS-001 — Genesis (Greenfield Discovery)
+# EXP-GENESIS-001 — Genesis Lifecycle & Artifact Schema
 
-> **Architecture expedition.** Define the canonical greenfield intent-to-knowledge workflow, artifact schema, clarification strategy, and Mission materialization pipeline.
+> **Architecture expedition.** Define the canonical Genesis workflow, artifact schema, and replay/governance integration.
 
 **Status:** Proposed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
-**Depends On:** EXP-GOVERN-006 (Governance Completion), EXP-PROGRAM-006 (Discovery Platform)
+**Depends On:** EXP-GOVERN-006 (Governance Completion)
 
 ---
 
@@ -25,121 +25,67 @@ Impact:
 
 A project should begin with intent, not initialization.
 
-Genesis transforms:
-
-```text
-Idea
-  ↓
-Governable Knowledge
-```
-
-before any repository exists.
+This expedition defines the Genesis lifecycle and the artifact that carries intent from raw input to Mission materialization. It does not implement extraction, classification, or validation; those are handled by EXP-GENESIS-002 and EXP-GENESIS-003.
 
 ---
 
 ## Required Change
 
-### 1.1 Intent Capture
+### 1.1 Genesis Lifecycle
 
-Accept evidence from:
-
-- Natural language
-- Documents
-- URLs
-- Images
-- Diagrams
-- Existing repositories
-
-Everything becomes evidence.
-
-### 1.2 Context Classification
-
-Determine:
+Define the canonical workflow:
 
 ```text
-Greenfield
-Brownfield
-Hybrid
-
-Internal
-Commercial
-OSS
-
-Prototype
-Production
-
-Criticality
-
-Domain
+Intent Capture
+  ↓
+Context Classification
+  ↓
+Constraint Extraction
+  ↓
+Scope Negotiation
+  ↓
+Capability Verification
+  ↓
+Mission Materialization
 ```
 
-### 1.3 Constraint Extraction
+### 1.2 Genesis Artifact Schema
 
-Capture hard constraints:
+Design the immutable, replayable artifact that records:
 
-- budget
-- timeline
-- compliance
-- existing stack
-- team experience
-- deployment targets
-- operational requirements
+- captured intent
+- context classification
+- extracted constraints
+- negotiated scope
+- unknowns and risks
+- evidence references
+- approval state
+- provenance
 
-### 1.4 Scope Negotiation
+### 1.3 Approval Gates
 
-Produce:
+Define the gates that control progression:
 
-```text
-Must Have
-Should Have
-Could Have
-Won't Have
-```
+- Intent approved
+- Scope approved
+- Feasibility verified
+- Mission approved
 
-Estimate complexity and recommend an MVP boundary before implementation planning.
+### 1.4 Replay Integration
 
-### 1.5 Domain Modeling
+Ensure Genesis artifacts integrate with replay verification:
 
-Produce an implementation-independent model:
+- every artifact is reproducible from inputs
+- every approval emits required events
+- replay reconstructs the Mission that was materialized
 
-- entities
-- relationships
-- invariants
-- aggregates
-- bounded contexts
-- ubiquitous language
+### 1.5 Governance Integration
 
-Technology remains a projection, not canonical state.
+Ensure Genesis produces inputs that governance can validate:
 
-### 1.6 Canonical Knowledge Model
-
-Replace the notion of a "living specification" with a versioned, replayable Knowledge Model from which Missions, architectures, requirements, and documentation are projected.
-
-### 1.7 Validation
-
-Before any code:
-
-- wireframes
-- acceptance criteria
-- architecture alternatives
-- prototype validation
-- runtime capability checks
-
-### 1.8 Mission Materialization
-
-Only after Genesis approval:
-
-```text
-Discovery
-  ↓
-Mission
-  ↓
-Expeditions
-  ↓
-Repository Materialization
-```
-
-No `init` before approved intent.
+- event types for Genesis lifecycle transitions
+- required evidence attachments
+- proof artifacts for capability verification
 
 ---
 
@@ -147,40 +93,35 @@ No `init` before approved intent.
 
 1. Genesis lifecycle specification.
 2. Genesis artifact schema.
-3. Intent extraction engine contract.
-4. Clarification strategy.
-5. Architecture projection engine contract.
-6. Capability verification framework.
-7. Domain model schema.
-8. Canonical Knowledge Model.
-9. Mission materialization pipeline.
-10. Greenfield operator experience.
-11. Replay and governance integration.
-12. ADR on Genesis artifact semantics.
+3. Approval gate semantics.
+4. Event taxonomy for Genesis transitions.
+5. Replay integration contract.
+6. Governance integration contract.
+7. ADR on Genesis artifact semantics.
 
 ---
 
 ## Acceptance Criteria
 
-- A user can start with "Build me a markdown editor."
-- SYNTH produces a Genesis artifact, architecture alternatives, capability verification, an approval-ready Mission, and Expedition proposals.
-- No repository state, code, or governance artifacts are generated before Mission approval.
-- Genesis artifacts are replayable and integrate with governance proofs.
-- Two independent agents produce substantially the same artifact from the same intent evidence.
+- The Genesis lifecycle is documented with explicit transitions and approval gates.
+- The Genesis artifact schema is versioned and replayable.
+- Governance events can reconstruct a Genesis session from inputs.
+- The artifact can be consumed by EXP-GENESIS-002 and EXP-GENESIS-003.
 - `npm run govern` passes.
 
 ---
 
 ## Out of Scope
 
-- Changes to Mission lifecycle semantics.
-- Changes to Expedition execution semantics.
-- Brownfield discovery (handled by EXP-BROWNFIELD-002).
-- Code generation quality as a goal.
-- IDE or editor integrations.
+- Intent extraction engine (EXP-GENESIS-002).
+- Context classification engine (EXP-GENESIS-002).
+- Capability verification framework (EXP-GENESIS-003).
+- Mission materialization pipeline (EXP-GENESIS-003).
+- Canonical intent/domain modeling (EXP-PROGRAM-024).
+- Canonical Knowledge Model (EXP-PROGRAM-025).
 
 ---
 
 ## Success Criteria
 
-Greenfield onboarding is a deterministic intent-discovery system that delays all materialization until approved intent exists.
+Genesis has a stable lifecycle and artifact schema that downstream expeditions can implement against.
