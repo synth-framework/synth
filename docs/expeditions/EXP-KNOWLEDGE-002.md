@@ -4,7 +4,7 @@
 
 > **Product expedition.** Define prototype, acceptance scenario, mock API, simulation, and runtime verification capabilities before implementation.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-025 — Canonical Knowledge & Validation  
@@ -101,9 +101,9 @@ Implementation cannot begin until:
 4. Event and state simulators.
 5. Runtime verification integration with existing capability framework.
 6. Validation report contract.
-7. Reference contract: `docs/reference/prototype-validation-contract.md`.
-8. ADR on Prototype-First Validation semantics.
-9. Regression tests.
+7. Reference contract: [`docs/reference/prototype-validation-contract.md`](../reference/prototype-validation-contract.md).
+8. ADR on Prototype-First Validation semantics: [`docs/adr/ADR-033-prototype-first-validation-semantics.md`](../adr/ADR-033-prototype-first-validation-semantics.md).
+9. Regression tests (`tests/canonical-knowledge-validation.test.js`).
 
 ---
 
