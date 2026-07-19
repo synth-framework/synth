@@ -28,6 +28,7 @@ import type {
 } from "./types.js"
 import { createFilesystemObservationCapability } from "./capabilities/filesystem-capability.js"
 import { createGitObservationCapability } from "./capabilities/git-capability.js"
+import { createOperationalArtifactObservationCapability } from "./capabilities/operational-artifact-capability.js"
 import { executeProjectionCapabilities } from "./projection-capability-executor.js"
 import { createFindingsProjectionCapability } from "./projections/findings.js"
 import { createProjectModelProjectionCapability } from "./projections/project-model-capability.js"
@@ -41,7 +42,11 @@ function createObservationId(index: number): string {
 }
 
 function defaultObservationCapabilities(): ObservationCapability[] {
-  return [createFilesystemObservationCapability(), createGitObservationCapability()]
+  return [
+    createFilesystemObservationCapability(),
+    createGitObservationCapability(),
+    createOperationalArtifactObservationCapability(),
+  ]
 }
 
 function adaptersFromCapabilities(capabilities: ObservationCapability[]): DiscoveryAdapter[] {

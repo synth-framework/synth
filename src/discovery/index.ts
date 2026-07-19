@@ -38,11 +38,25 @@ export {
   GIT_OBSERVATION_CONTRACT,
 } from "./capabilities/git-capability.js"
 export {
+  createOperationalArtifactObservationCapability,
+  createOperationalArtifactObservationCapabilityWithProvider,
+  createOperationalArtifactCorrelationCapability,
+  OPERATIONAL_ARTIFACT_CAPABILITY_ID,
+  OPERATIONAL_ARTIFACT_CAPABILITY_VERSION,
+  OPERATIONAL_ARTIFACT_OBSERVATION_CONTRACT,
+} from "./capabilities/operational-artifact-capability.js"
+export {
   createGitDiscoveryAdapter,
   createGitDiscoveryAdapterWithProvider,
   GIT_ADAPTER_ID,
   GIT_ADAPTER_VERSION,
 } from "./adapters/git-adapter.js"
+export {
+  createOperationalArtifactDiscoveryAdapter,
+  createOperationalArtifactDiscoveryAdapterWithProvider,
+  OPERATIONAL_ARTIFACT_ADAPTER_ID,
+  OPERATIONAL_ARTIFACT_ADAPTER_VERSION,
+} from "./adapters/operational-artifact-adapter.js"
 export {
   createInMemoryGitProvider,
   type GitProvider,
