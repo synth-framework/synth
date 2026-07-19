@@ -24,3 +24,6 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-016 — AI Environment Planning](ADR-016-ai-environment-planning.md)
 - [ADR-017 — Constitutional Compliance & Core Boundary Enforcement](ADR-017-constitutional-compliance-core-boundary.md)
 - [ADR-018 — npm Package Publication Through PR and Tag](ADR-018-npm-publication-through-pr-and-tag.md)
+- [ADR-019 — Greenfield Discovery Lifecycle](ADR-019-greenfield-discovery-lifecycle.md)
+- [ADR-020 — First Contact Discovery Artifact Schema](ADR-020-first-contact-artifact-schema.md)
+- [ADR-021 — Enforce Pull-Request Workflow for All Source Changes](ADR-021-enforce-pull-request-workflow.md)
