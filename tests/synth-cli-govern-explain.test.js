@@ -41,7 +41,7 @@ async function testValidateExplainDryRun() {
     "validate",
     "--dry-run",
     "--explain",
-    "--changes",
+    "--diff",
     "docs/getting-started/README.md",
   ])
   assert(status === 0, `validate --explain --dry-run should exit 0, got ${status}`)
@@ -59,7 +59,7 @@ async function testValidateProfileDocumentationOnly() {
     "--dry-run",
     "--profile",
     "pull-request",
-    "--changes",
+    "--diff",
     "docs/getting-started/README.md",
   ])
   assert(status === 0, `validate --profile pull-request should exit 0, got ${status}`)
@@ -75,7 +75,7 @@ async function testValidateFullProfile() {
     "--dry-run",
     "--profile",
     "main-branch",
-    "--changes",
+    "--diff",
     "docs/getting-started/README.md",
   ])
   assert(status === 0, `validate --profile main-branch should exit 0, got ${status}`)

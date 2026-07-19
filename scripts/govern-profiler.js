@@ -394,11 +394,13 @@ async function runOrchestratorPath(options) {
   })
 
   if (options.dryRun) {
-    console.log(JSON.stringify(orchestrator.summary, null, 2))
-    if (orchestrator.explanation) {
-      console.log(JSON.stringify(orchestrator.explanation, null, 2))
+    const output = {
+      ...orchestrator.summary,
+      ...(orchestrator.explanation ? { explanation: orchestrator.explanation } : {}),
+      graph: orchestrator.graph,
     }
-    return orchestrator.summary
+    console.log(JSON.stringify(output, null, 2))
+    return { summary: orchestrator.summary, graph: orchestrator.graph, failed: false }
   }
 
   // Execute the orchestrator's planned validators.
