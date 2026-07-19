@@ -404,12 +404,20 @@ async function runOrchestratorPath(options) {
   }
 
   // Execute the orchestrator's planned validators.
-  const commandById = new Map(orchestrator.plan.run.map((id) => [id, { command: "npm", args: ["run", id] }]))
+  // Build must run before any test that imports from dist/.
+  const orderedRun = [...orchestrator.plan.run]
+  const buildIdx = orderedRun.indexOf("build")
+  if (buildIdx > 0) {
+    orderedRun.splice(buildIdx, 1)
+    orderedRun.unshift("build")
+  }
+
+  const commandById = new Map(orderedRun.map((id) => [id, { command: "npm", args: ["run", id] }]))
   const executor = (command, args, cwd) => runCommand(command, args, cwd, options.timeoutMs)
   const results = []
   let failed = false
 
-  for (const checkId of orchestrator.plan.run) {
+  for (const checkId of orderedRun) {
     const { command, args } = commandById.get(checkId)
     const result = await executor(command, args, REPO_ROOT)
     results.push({ checkId, ...result, action: "run" })
