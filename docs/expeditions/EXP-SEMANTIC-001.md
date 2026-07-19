@@ -4,11 +4,12 @@
 
 > **Architecture expedition.** Define the intent ontology, intent graph, confidence model, ambiguity detection, and replay semantics for operator intent.
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-024 — Semantic Modeling  
 **Depends On:** EXP-GENESIS-003 (Genesis Validation & Mission Materialization)
+**Completed In:** PR #195
 
 ---
 

@@ -1,6 +1,6 @@
 # EXP-PROGRAM-024 — Semantic Modeling
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -11,6 +11,7 @@
 **Public Impact:** High  
 **Product Impact:** High  
 **Execution Impact:** High
+**Completed In:** PRs #195–#196
 
 ---
 
