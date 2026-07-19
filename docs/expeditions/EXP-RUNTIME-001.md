@@ -102,6 +102,8 @@ Responsibilities:
 - Emit repair events through the ExecutionGate so the recovery itself is replayable.
 - Never silently overwrite or delete existing events; only append compensating events.
 
+**Definition of recoverable:** recovery must not require editing `.jsonl` files, editing `.json` state, recomputing hashes, running internal scripts, or directly calling internal APIs. If any of those are required, the runtime contract is incomplete.
+
 This is an ADR-worthy design because it touches the event model, hash chain, and governance boundaries.
 
 ---
