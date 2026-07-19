@@ -143,6 +143,7 @@
     "version:verify": "node scripts/verify-version-sync.js",
     "adapter": "node dist/cli/adapter.js",
     "govern": "node scripts/govern-profiler.js",
+    "govern:full": "node scripts/govern-profiler.js --full",
     "govern:ci": "npm ci && npm run govern",
     "test:runtime-data-migration": "node tests/runtime-data-migration.test.js"
   },
