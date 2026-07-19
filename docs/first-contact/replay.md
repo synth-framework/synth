@@ -22,3 +22,5 @@ Replay re-derives the state from the event history and compares it against the o
 ## What this means
 
 The 32 events are not a story about the execution — they _are_ the execution. Any state that claims to descend from this journey must replay to the same hash, bit for bit.
+
+For the interactive replay experience, see the [website replay page](../../website/first-contact/replay.html) or regenerate it with `node scripts/generate-first-contact-projection.js`.

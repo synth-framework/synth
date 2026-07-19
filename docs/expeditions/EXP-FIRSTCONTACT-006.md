@@ -1,10 +1,10 @@
 # EXP-FIRSTCONTACT-006 — Comprehension Validation
 
-**Status:** Proposed  
+**Status:** Completed (pending external validation)  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
-**Depends On:** EXP-FIRSTCONTACT-004, EXP-FIRSTCONTACT-005  
+**Depends On:** EXP-FIRSTCONTACT-005, EXP-FIRSTCONTACT-007, EXP-FIRSTCONTACT-008  
 **Blocks:** none
 
 ---
@@ -96,15 +96,15 @@ Apply the rubric, identify gaps, and recommend adjustments to EXP-FIRSTCONTACT-0
 
 ## Definition of Done
 
-- [ ] Evaluation protocol documented.
-- [ ] Participant criteria documented.
-- [ ] Question set finalized.
-- [ ] Scoring rubric defined.
+- [x] Evaluation protocol documented.
+- [x] Participant criteria documented.
+- [x] Question set finalized.
+- [x] Scoring rubric defined.
 - [ ] At least three external participants evaluated.
 - [ ] Test artifacts recorded.
 - [ ] Validation report published.
 - [ ] Recommended adjustments applied or rejected with rationale.
-- [ ] `npm run govern` passes.
+- [x] `npm run govern` passes.
 - [ ] Expedition is accepted.
 
 ---
@@ -122,4 +122,15 @@ Apply the rubric, identify gaps, and recommend adjustments to EXP-FIRSTCONTACT-0
 
 ## Completion Notes
 
-Pending.
+Completed as part of Program 009 closure, with the exception of external participant validation which cannot be fabricated.
+
+The [Comprehension Validation Protocol](../../docs/first-contact/comprehension-validation-protocol.md) is now the authoritative procedure for validating First Contact comprehension. It includes:
+
+- Participant criteria and screening questions.
+- A standardized four-phase evaluation procedure.
+- A seven-question question set mapped to Program 009 success criteria.
+- A 3-point scoring rubric and passing criteria.
+- Failure-mode taxonomy with candidate fixes.
+- Test artifact and validation report templates.
+
+External participant sessions remain pending. Once conducted, test artifacts should be added to `first-contact/sessions/` and the validation report should be attached to the Program 009 acceptance review. Until then, the expedition is implemented but not formally accepted.

@@ -1,10 +1,10 @@
 # EXP-FIRSTCONTACT-005 — Interactive Replay Experience
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Adoption Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  
-**Depends On:** EXP-FIRSTCONTACT-003  
+**Depends On:** EXP-FIRSTCONTACT-003, EXP-FIRSTCONTACT-009  
 **Blocks:** EXP-FIRSTCONTACT-006
 
 ---
@@ -96,14 +96,14 @@ Embed the Replay experience on the website as a first-class surface.
 
 ## Definition of Done
 
-- [ ] Interactive timeline implemented.
-- [ ] Event visualization implemented.
-- [ ] Mission progression visualization implemented.
-- [ ] Replay browser implemented.
-- [ ] Approval checkpoints highlighted.
-- [ ] Execution visualization implemented.
-- [ ] Experience embedded on the website.
-- [ ] `npm run govern` passes.
+- [x] Interactive timeline implemented.
+- [x] Event visualization implemented.
+- [x] Mission progression visualization implemented.
+- [x] Replay browser implemented.
+- [x] Approval checkpoints highlighted.
+- [x] Execution visualization implemented.
+- [x] Experience embedded on the website.
+- [x] `npm run govern` passes.
 - [ ] Expedition is accepted.
 
 ---
@@ -120,4 +120,16 @@ Embed the Replay experience on the website as a first-class surface.
 
 ## Completion Notes
 
-Pending.
+Completed as part of Program 009 closure.
+
+The interactive Replay experience is now embedded in `website/first-contact/replay.html`. It is generated deterministically from Archive B by `scripts/generate-first-contact-projection.js` and includes:
+
+- An interactive episode timeline (all eight episodes).
+- Per-episode command and event visualization derived from `commands.json` and `events.jsonl`.
+- Mission progression shown through episode ordering and approval-checkpoint highlighting.
+- Replay browser with the full replay verdict table (`events replayed`, hash chain, operational vs replayed hash, consistency verdict).
+- Execution visualization showing actor, command, and purpose for each step.
+
+The page is a projection, not a hand-authored UI: deleting `website/first-contact/replay.html` and regenerating restores it byte-identically, as verified by `tests/first-contact-projection.test.js`.
+
+Acceptance is pending the comprehension validation results from EXP-FIRSTCONTACT-006.

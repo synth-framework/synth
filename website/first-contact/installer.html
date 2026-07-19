@@ -1,0 +1,69 @@
+<!-- Projection notice: generated from the canonical First Contact evidence archive. Do not edit by hand; regenerate with node scripts/generate-first-contact-projection.js -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install Walkthrough — Synth First Contact</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="../index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="../docs.html">Docs</a>
+        <a href="../quick-start.html">Quick Start</a>
+        <a href="../examples.html">Examples</a>
+        <a href="../mission-studio.html">Mission Studio</a>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../community.html">Community</a>
+        <a href="./">First Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Install Walkthrough</h1>
+      <p>Get from installer to first Mission.</p>
+    </section>
+
+    <section>
+      <h2>Welcome</h2>
+      <p>SYNTH is installed. The fastest way to understand it is to walk through one complete Mission, recorded end to end.</p>
+    </section>
+    <section>
+      <h2>Your first five minutes</h2>
+
+      <div class="install-step">
+        <h3>Step 1 — Install SYNTH.</h3>
+              <div class="code-block"><code>curl -fsSL https://synth.dev/install.sh | sh</code></div>
+      </div>
+
+      <div class="install-step">
+        <h3>Step 2 — Verify installation health.</h3>
+              <div class="code-block"><code>synth doctor</code></div>
+      </div>
+
+      <div class="install-step">
+        <h3>Step 3 — Initialize a new SYNTH project.</h3>
+              <div class="code-block"><code>synth init</code></div>
+      </div>
+
+      <div class="install-step">
+        <h3>Step 4 — Create the user's first Mission.</h3>
+              <div class="code-block"><code>synth mission create --subject "Space Mission Tracker" --purpose "Track missions, crew, and launch windows."</code></div>
+      </div>
+    </section>
+    <section>
+      <h2>What happened?</h2>
+      <p>You just created your first Mission. SYNTH recorded every command as an immutable Event. Run synth explain replay at any time to prove the current State matches the event history.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Projected from the <a href="https://github.com/synth-framework/synth/tree/main/examples/first-contact/recorded-journey/evidence-archive-b">canonical evidence archive</a> (Archive B, hardened pipeline) · <a href="../index.html">← Back to Synth</a></p>
+  </footer>
+</body>
+</html>

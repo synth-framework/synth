@@ -1,0 +1,79 @@
+<!-- Projection notice: generated from the canonical First Contact evidence archive. Do not edit by hand; regenerate with node scripts/generate-first-contact-projection.js -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorial — Synth First Contact</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="../index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="../docs.html">Docs</a>
+        <a href="../quick-start.html">Quick Start</a>
+        <a href="../examples.html">Examples</a>
+        <a href="../mission-studio.html">Mission Studio</a>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../community.html">Community</a>
+        <a href="./">First Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Tutorial</h1>
+      <p>Step through the canonical SYNTH journey.</p>
+    </section>
+
+    <section>
+      <h2>Interactive Tutorial</h2>
+
+      <p>Use the controls to step through the canonical journey. Each step shows the episode description and the commands executed.</p>
+      <div id="tutorial-card" class="tutorial-card"></div>
+      <div class="tutorial-controls">
+        <button id="tutorial-prev">← Previous</button>
+        <span id="tutorial-progress"></span>
+        <button id="tutorial-next">Next →</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Projected from the <a href="https://github.com/synth-framework/synth/tree/main/examples/first-contact/recorded-journey/evidence-archive-b">canonical evidence archive</a> (Archive B, hardened pipeline) · <a href="../index.html">← Back to Synth</a></p>
+  </footer>
+
+<script>
+const FC_TUTORIAL_DATA = {"mission":"Space Mission Tracking Application","episodes":[{"episode":1,"title":"The Spark","eventTypes":["SYSTEM_GENESIS"],"description":"SYNTH bootstraps and begins analyzing before acting."},{"episode":2,"title":"The Idea","eventTypes":["MISSION_CREATED"],"description":"Human intent is captured as a Mission."},{"episode":3,"title":"The Plan","eventTypes":["PLAN_CREATED","EXPEDITION_CREATED","OBJECTIVE_ADDED","WORK_ITEM_CREATED","MISSION_APPROVED"],"description":"The Mission is decomposed into Expeditions and Objectives, then approved."},{"episode":4,"title":"The AI Works","eventTypes":["EXPEDITION_APPROVED","EXPEDITION_STARTED"],"description":"The approved Plan is executed through the CLI surface."},{"episode":5,"title":"Nothing Was Forgotten","eventTypes":["OBJECTIVE_COMPLETED","EXPEDITION_COMPLETED"],"description":"Every action is recorded as an immutable Event."},{"episode":6,"title":"State","eventTypes":["MISSION_COMPLETED"],"description":"The final State shows all work completed."},{"episode":7,"title":"Replay","eventTypes":[],"description":"Replay verifies that State matches the 32-event history."},{"episode":8,"title":"Your Turn","eventTypes":[],"description":"The user is invited to install SYNTH and create their first Mission."}],"commands":[{"episode":2,"actor":"human","type":"natural-language","command":"Build me a Space Mission Tracking application."},{"episode":2,"actor":"ai-agent","type":"cli","command":"synth mission create --subject \"Space Mission Tracking Application\" --purpose \"Track space missions, crew assignments, and launch windows with a simple, realistic implementation.\"","purpose":"Capture human intent as a Mission."},{"episode":3,"actor":"ai-agent","type":"cli","command":"synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Design Data Model\" --goal \"Design the data model for missions, crew, and launch windows.\"","purpose":"Propose the first Expedition."},{"episode":3,"actor":"ai-agent","type":"cli","command":"synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Scaffold Application\" --goal \"Scaffold the application structure and core modules.\"","purpose":"Propose the second Expedition."},{"episode":3,"actor":"ai-agent","type":"cli","command":"synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Implement Mission Views\" --goal \"Implement mission listing and detail views.\"","purpose":"Propose the third Expedition."},{"episode":3,"actor":"ai-agent","type":"cli","command":"synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Implement Crew Workflow\" --goal \"Add crew assignment workflow.\"","purpose":"Propose the fourth Expedition."},{"episode":3,"actor":"ai-agent","type":"cli","command":"synth expedition create --mission \"Space Mission Tracking Application\" --subject \"Validate Implementation\" --goal \"Validate the implementation with the operator and generate documentation.\"","purpose":"Propose the fifth Expedition."},{"episode":3,"actor":"human","type":"natural-language","command":"The proposed plan looks good. Approve it."},{"episode":3,"actor":"ai-agent","type":"cli","command":"synth mission approve --draft-id \u003cdraft-id>","purpose":"Approve the Mission and its Plan."},{"episode":4,"actor":"ai-agent","type":"cli","command":"npm run govern","purpose":"Execute the approved Plan through Mission Studio, Genesis, execution, Replay, and documentation generation."},{"episode":7,"actor":"ai-agent","type":"cli","command":"synth explain replay","purpose":"Verify that the current State matches the event history."},{"episode":8,"actor":"human","type":"cli","command":"curl -fsSL https://synth.dev/install.sh | sh","purpose":"Install SYNTH."},{"episode":8,"actor":"human","type":"cli","command":"synth doctor","purpose":"Verify installation health."},{"episode":8,"actor":"human","type":"cli","command":"synth init","purpose":"Initialize a new SYNTH project."},{"episode":8,"actor":"human","type":"cli","command":"synth mission create --subject \"Space Mission Tracker\" --purpose \"Track missions, crew, and launch windows.\"","purpose":"Create the user's first Mission."}]};
+(function() {
+  let step = 0;
+  const card = document.getElementById('tutorial-card');
+  const progress = document.getElementById('tutorial-progress');
+  function render() {
+    const episode = FC_TUTORIAL_DATA.episodes[step];
+    const epCommands = FC_TUTORIAL_DATA.commands.filter(c => c.episode === episode.episode);
+    let html = '<h3>Step ' + episode.episode + ' — ' + episode.title + '</h3>';
+    html += '<p>' + episode.description + '</p>';
+    if (epCommands.length > 0) {
+      html += '<h4>Commands</h4>';
+      html += epCommands.map(c => '<div class="command"><strong>' + c.actor + '</strong><div class="code-block"><code>' + c.command + '</code></div>' + (c.purpose ? '<p>' + c.purpose + '</p>' : '') + '</div>').join('');
+    }
+    card.innerHTML = html;
+    progress.textContent = (step + 1) + ' / ' + FC_TUTORIAL_DATA.episodes.length;
+  }
+  document.getElementById('tutorial-prev').addEventListener('click', () => { if (step > 0) { step--; render(); } });
+  document.getElementById('tutorial-next').addEventListener('click', () => { if (step < FC_TUTORIAL_DATA.episodes.length - 1) { step++; render(); } });
+  render();
+})();
+</script>
+<style>
+.tutorial-card { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 0.5rem; padding: 1.5rem; margin: 1rem 0; }
+.tutorial-controls { display: flex; gap: 1rem; align-items: center; }
+.tutorial-controls button { background: #18181b; color: #fff; border: none; border-radius: 0.375rem; padding: 0.5rem 1rem; cursor: pointer; }
+.tutorial-controls button[disabled] { background: #d4d4d8; cursor: not-allowed; }
+</style>
+</body>
+</html>
