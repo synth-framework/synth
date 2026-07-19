@@ -173,6 +173,14 @@ export async function runGovernanceOrchestrator(options = {}) {
     if (availableScripts.includes("typecheck")) requiredScripts.add("typecheck")
   }
 
+  // Source-affecting classes require a build before dependent tests can run.
+  if (
+    classesToRun.some((c) => ["runtime", "kernel", "compiler", "release", "design", "knowledge"].includes(c)) &&
+    availableScripts.includes("build")
+  ) {
+    requiredScripts.add("build")
+  }
+
   // Use the existing Scheduler for dependency-driven scheduling and proof
   // caching. The scheduler already handles changed inputs, module membership,
   // downstream invalidation, and proof reuse.
