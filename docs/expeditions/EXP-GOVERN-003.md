@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the Validation Proof model, implement semantic fingerprints, and provide a persistent proof store. Caching is built on top of the proof model; the model is the architecture.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-021 — Incremental Governance  

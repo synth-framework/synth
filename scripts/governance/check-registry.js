@@ -8,6 +8,8 @@
 
 /** @typedef {"governance" | "product" | "runtime" | "documentation" | "tests"} GovernanceScope */
 
+/** @typedef {"deterministic" | "contextual" | "non-deterministic"} DeterminismClass */
+
 /**
  * @typedef {Object} GovernanceCheck
  * @property {string} id - Stable check identifier. Usually matches the npm script name.
@@ -17,6 +19,10 @@
  * @property {GovernanceScope} scope - Classification of the check.
  * @property {string[]} protectedAssets - Protected assets this check validates, if any.
  * @property {string[]} [dependencies] - Explicit upstream check dependencies (check ids).
+ * @property {DeterminismClass} [determinism] - Whether the check result is cacheable.
+ * @property {string} [validatorVersion] - Version of the validator implementation.
+ * @property {string} [algorithmVersion] - Version of the underlying algorithm.
+ * @property {string} [cacheability] - Legacy alias for determinism.
  */
 
 /** Canonical governance modules. */
@@ -42,6 +48,9 @@ const EXPLICIT_CHECKS = [
     outputs: ["dist/**"],
     scope: "governance",
     protectedAssets: [],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
   {
     id: "test:replay",
@@ -50,6 +59,9 @@ const EXPLICIT_CHECKS = [
     outputs: [],
     scope: "governance",
     protectedAssets: ["Replay"],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
   {
     id: "test:graph-integrity",
@@ -58,6 +70,9 @@ const EXPLICIT_CHECKS = [
     outputs: [],
     scope: "governance",
     protectedAssets: ["Replay"],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
   {
     id: "test:determinism",
@@ -66,6 +81,9 @@ const EXPLICIT_CHECKS = [
     outputs: [],
     scope: "governance",
     protectedAssets: ["Replay"],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
   {
     id: "test:adversarial",
@@ -74,6 +92,9 @@ const EXPLICIT_CHECKS = [
     outputs: [],
     scope: "governance",
     protectedAssets: ["ExecutionGate", "Replay"],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
   {
     id: "test:mission-studio",
@@ -82,6 +103,9 @@ const EXPLICIT_CHECKS = [
     outputs: [],
     scope: "governance",
     protectedAssets: ["Mission Studio"],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
   {
     id: "proof",
@@ -90,6 +114,9 @@ const EXPLICIT_CHECKS = [
     outputs: ["proof/proof-*.json"],
     scope: "governance",
     protectedAssets: ["Genesis", "Replay"],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   },
 ]
 
@@ -105,7 +132,15 @@ export function resolveCheck(id) {
     outputs: [],
     scope: "tests",
     protectedAssets: [],
+    determinism: "deterministic",
+    validatorVersion: "1.0.0",
+    algorithmVersion: "1.0.0",
   }
+}
+
+/** Return true if a check is safe to cache. */
+export function isCacheable(check) {
+  return (check.determinism ?? check.cacheability) !== "non-deterministic"
 }
 
 /** Register or override a check definition. */
