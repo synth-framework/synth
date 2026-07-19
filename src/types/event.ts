@@ -67,6 +67,7 @@ export type StateEvent =
   | { type: "DISCOVERY_RECORDED"; discoveryId: string; expeditionId: string }
   | { type: "DECISION_ACCEPTED"; decisionId: string }
   | { type: "DECISION_REJECTED"; decisionId: string }
+  | { type: "REPAIR_ACCEPTED"; repairId: string; repairPlan: unknown; appliedActions: string[] }
   | { type: "SYSTEM_GENESIS"; payload: unknown }
   // First Contact greenfield onboarding lifecycle (EXP-AIFC-009)
   | { type: "FIRST_CONTACT_STARTED"; discoveryArtifactId: string; intent: string }

@@ -6,6 +6,14 @@
       "name": "Adapter",
       "description": "Adapter ecosystem expeditions (discovery, implementation, certification)."
     },
+    "AI": {
+      "name": "AI Agent Interoperability",
+      "description": "Open interoperability layer, agent skills, semantic metadata, and agent certification expeditions."
+    },
+    "HOME": {
+      "name": "Mission Studio Homepage",
+      "description": "Public homepage and Mission Studio experience expeditions."
+    },
     "ADP-OBS": {
       "name": "Adapter Observation",
       "description": "Adapter observation and evidence-gathering expeditions."

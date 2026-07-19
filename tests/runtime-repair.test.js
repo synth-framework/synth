@@ -167,6 +167,7 @@ function main() {
       const events = readEventLog(dir)
       assert(events.some((e) => e.type === "MISSION_CREATED"), "Repair apply: MISSION_CREATED event restored")
       assert(events.some((e) => e.type === "MISSION_APPROVED"), "Repair apply: MISSION_APPROVED event restored")
+      assert(events.some((e) => e.type === "REPAIR_ACCEPTED"), "Repair apply: REPAIR_ACCEPTED audit event emitted")
 
       const replay = runCli(dir, ["explain", "replay"])
       assert(replay.status === 0, "Repair apply: replay verification passes")

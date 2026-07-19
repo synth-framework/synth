@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Instrument every governance check and establish a performance baseline so future incrementality work is driven by measured data rather than assumptions.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-021 — Incremental Governance  

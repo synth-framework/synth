@@ -1,0 +1,36 @@
+{
+  "name": "@synth-framework/agent-sdk",
+  "version": "0.1.0",
+  "description": "Language-agnostic SDK for AI agent interoperability with SYNTH.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./protocol": {
+      "import": "./dist/protocol.js",
+      "types": "./dist/protocol.d.ts"
+    },
+    "./metadata": {
+      "import": "./dist/metadata.js",
+      "types": "./dist/metadata.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "keywords": [
+    "synth",
+    "ai-agent",
+    "interoperability",
+    "genesis-protocol"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

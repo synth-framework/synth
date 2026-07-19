@@ -85,7 +85,9 @@ async function approveMission(projectDir, subject, purpose) {
   assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
   assert(approveOutput.decision.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
 
-  return draftId
+  const missionId = approveOutput.runtime?.missionId
+  assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
+  return { draftId, missionId }
 }
 
 async function testMissionLifecycleEmitsRequiredEvents(projectDir) {
@@ -111,10 +113,10 @@ async function testMissionLifecycleEmitsRequiredEvents(projectDir) {
 }
 
 async function testExpeditionLifecycleEmitsRequiredEvents(projectDir) {
-  await approveMission(projectDir, "Expedition Host Mission", "Host expedition contract test")
+  const { missionId } = await approveMission(projectDir, "Expedition Host Mission", "Host expedition contract test")
 
   const createResult = runSynth(
-    ["expedition", "create", "--mission", "Expedition Host Mission", "--subject", "Contract Expedition", "--goal", "Test goal"],
+    ["expedition", "create", "--mission", missionId, "--subject", "Contract Expedition", "--goal", "Test goal"],
     projectDir,
   )
   assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)

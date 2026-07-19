@@ -46,9 +46,46 @@ async function setupProject() {
   return tmpDir
 }
 
-async function testLifecycleTransitions(projectDir) {
+async function createAndApproveMission(projectDir) {
   const createResult = runSynth(
-    ["expedition", "create", "--mission", "Test Mission", "--subject", "Test Expedition", "--goal", "Test goal"],
+    ["mission", "create", "--subject", "Test Mission", "--purpose", "Test purpose"],
+    projectDir,
+  )
+  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
+  const draftId1 = parseJson(createResult.stdout).draftId
+
+  const evidenceResult = runSynth(
+    [
+      "mission",
+      "evidence",
+      "add",
+      "--draft-id",
+      draftId1,
+      "--subject",
+      "Supporting evidence",
+      "--purpose",
+      "Raises confidence above approval threshold",
+      "--confidence",
+      "certain",
+    ],
+    projectDir,
+  )
+  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
+  const draftId2 = parseJson(evidenceResult.stdout).draftId
+
+  const approveResult = runSynth(["mission", "approve", "--draft-id", draftId2], projectDir)
+  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
+  const approveOutput = parseJson(approveResult.stdout)
+  assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
+  assert(approveOutput.decision?.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
+  const missionId = approveOutput.runtime?.missionId
+  assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
+  return missionId
+}
+
+async function testLifecycleTransitions(projectDir, missionId) {
+  const createResult = runSynth(
+    ["expedition", "create", "--mission", missionId, "--subject", "Test Expedition", "--goal", "Test goal"],
     projectDir,
   )
   assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
@@ -84,9 +121,22 @@ async function testLifecycleTransitions(projectDir) {
   console.log("[PASS] Draft → Approved → Committed → Executing → Completed lifecycle transitions work")
 }
 
-async function testInvalidTransitions(projectDir) {
+async function testMissingMissionRejection(projectDir) {
   const createResult = runSynth(
-    ["expedition", "create", "--mission", "Invalid Mission", "--subject", "Invalid Expedition", "--goal", "Invalid goal"],
+    ["expedition", "create", "--mission", "nonexistent-mission", "--subject", "Orphan Expedition", "--goal", "g"],
+    projectDir,
+  )
+  assert(createResult.status !== 0, "expedition create should fail when mission does not exist")
+  const createOutput = parseJson(createResult.stdout)
+  assert(createOutput.status === "error", "missing-mission failure should report error status")
+  assert(createOutput.error.includes("mission_exists"), "missing-mission failure should reference the mission_exists precondition")
+
+  console.log("[PASS] Expedition create rejects a missing mission")
+}
+
+async function testInvalidTransitions(projectDir, missionId) {
+  const createResult = runSynth(
+    ["expedition", "create", "--mission", missionId, "--subject", "Invalid Expedition", "--goal", "Invalid goal"],
     projectDir,
   )
   assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
@@ -123,9 +173,9 @@ async function testInvalidTransitions(projectDir) {
   console.log("[PASS] Invalid lifecycle transitions emit clear errors")
 }
 
-async function testLegacyExpeditionIdFlag(projectDir) {
+async function testLegacyExpeditionIdFlag(projectDir, missionId) {
   const createResult = runSynth(
-    ["expedition", "create", "--mission", "Legacy Mission", "--subject", "Legacy Expedition", "--goal", "Legacy goal"],
+    ["expedition", "create", "--mission", missionId, "--subject", "Legacy Expedition", "--goal", "Legacy goal"],
     projectDir,
   )
   assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
@@ -146,9 +196,11 @@ async function main() {
   console.log("Running expedition lifecycle tests...")
   const projectDir = await setupProject()
   try {
-    await testLifecycleTransitions(projectDir)
-    await testInvalidTransitions(projectDir)
-    await testLegacyExpeditionIdFlag(projectDir)
+    const missionId = await createAndApproveMission(projectDir)
+    await testMissingMissionRejection(projectDir)
+    await testLifecycleTransitions(projectDir, missionId)
+    await testInvalidTransitions(projectDir, missionId)
+    await testLegacyExpeditionIdFlag(projectDir, missionId)
     console.log("\nAll expedition lifecycle tests passed.")
   } finally {
     await fs.rm(projectDir, { recursive: true, force: true })

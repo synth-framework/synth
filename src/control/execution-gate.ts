@@ -149,7 +149,12 @@ export class ExecutionGate {
           // Not a hard failure — unknown capabilities produce no events
           return { name: invocation.capability, resolved: false }
         }
-        return { name: cap.name, resolved: true }
+        for (const precondition of cap.preconditions) {
+          if (!precondition.evaluate(invocation, currentState)) {
+            throw new Error(`PRECONDITION_FAILED: ${precondition.name}`)
+          }
+        }
+        return { name: cap.name, resolved: true, preconditionsChecked: cap.preconditions.length }
       })
       phases.push(resolveCap)
 

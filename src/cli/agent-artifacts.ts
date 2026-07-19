@@ -8,8 +8,15 @@
 
 import fs from "fs/promises"
 import path from "path"
+import type { CanonicalState } from "../types/index.js"
+import { writeAiMetadata } from "./ai-metadata.js"
 
-export async function writeAgentArtifacts(synthDir: string, projectName: string) {
+export async function writeAgentArtifacts(
+  synthDir: string,
+  projectName: string,
+  state?: CanonicalState,
+  manifest?: { name?: string; governanceVersion?: string },
+) {
   const contractPath = path.join(synthDir, "AGENT_CONTRACT.md")
   const contextPath = path.join(synthDir, "context.json")
 
@@ -40,4 +47,8 @@ When in doubt, run \`synth status\` and ask the human for the next step.
 
   await fs.writeFile(contractPath, contract, "utf-8")
   await fs.writeFile(contextPath, JSON.stringify(context, null, 2), "utf-8")
+
+  if (state) {
+    await writeAiMetadata(synthDir, state, manifest ?? { name: projectName, governanceVersion: "2.3.0" })
+  }
 }

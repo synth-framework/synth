@@ -16,6 +16,7 @@ import { createReplayVerifier } from "../core/replay-verifier.js"
 import { Logger } from "../observability/tracer.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
+import { refreshAiMetadata } from "./ai-metadata.js"
 import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
@@ -80,6 +81,7 @@ const COMMANDS = [
   { name: "repair", description: "Repair operations (replay)" },
   { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
   { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
+  { name: "ai", description: "AI agent interoperability (refresh)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -876,6 +878,18 @@ async function cmdDoctorHelp() {
   ]))
 }
 
+async function cmdAiHelp() {
+  printJson(namespaceHelp("ai", "AI agent interoperability", [
+    { name: "synth ai refresh", description: "Regenerate .synth/ai/ metadata from canonical state" },
+  ]))
+}
+
+async function cmdAiRefresh() {
+  const synthDir = path.join(process.cwd(), ".synth")
+  await refreshAiMetadata(synthDir)
+  printJson({ status: "ok", message: "AI metadata refreshed", path: path.join(synthDir, "ai") })
+}
+
 async function cmdAdapterHelp() {
   printJson(namespaceHelp("adapter", "Delegate to the adapter management CLI", [
     { name: "synth adapter <adapter> [args...]", description: "Run an adapter-specific command" },
@@ -989,7 +1003,8 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     }
   }
 
-  await writeAgentArtifacts(synthDir, projectName)
+  const finalState = await ctx.runtime.getState()
+  await writeAgentArtifacts(synthDir, projectName, finalState, manifest)
 
   printJson({
     status: "ok",
@@ -1052,6 +1067,10 @@ async function cmdStatus() {
   await ensureRuntimeDataDir(process.cwd())
   const logger = new Logger("status")
   logger.info("Resolving governance context for operator briefing")
+  // EXP-AI-003: keep .synth/ai/ metadata synchronized with canonical state so
+  // agent orientation is always current when the operator asks for status.
+  const synthDir = path.join(process.cwd(), ".synth")
+  await refreshAiMetadata(synthDir)
   const briefing = await buildOperatorBriefing(process.cwd())
   printJson(briefing)
   if (briefing.status === "error") {
@@ -1747,6 +1766,26 @@ async function cmdRepairReplay(args: string[], flags: Record<string, string | bo
     }
   }
 
+  const repairedEntries = repairs.filter((r) => r.status === "repaired")
+  if (approve && repairedEntries.length > 0) {
+    const allAppliedActions = repairedEntries.flatMap((r) => r.appliedActions || [])
+    const recordResult = await ctx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "RecordRepair",
+      payload: {
+        repairPlan: { repairs: repairedEntries },
+        appliedActions: allAppliedActions,
+      },
+    })
+    if (recordResult.status !== "ok") {
+      repairs.push({
+        snapshotId: "audit",
+        status: "failed",
+        error: `RecordRepair failed: ${recordResult.error || JSON.stringify(recordResult)}`,
+      })
+    }
+  }
+
   const failed = repairs.some((r) => r.status === "failed" || r.status === "error")
   const proposed = repairs.some((r) => r.status === "proposed")
 
@@ -2170,6 +2209,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
     case "first-contact":
     case "genesis":
       return { namespace, handler: cmdFirstContactHelp }
+    case "ai":
+      return { namespace, handler: cmdAiHelp }
     default:
       return undefined
   }
@@ -2373,6 +2414,13 @@ async function main() {
         printError(
           "Usage: synth repair replay [--approve]",
         )
+      break
+    }
+
+    case "ai": {
+      const sub = positional[1]
+      if (sub === "refresh") await cmdAiRefresh()
+      else printError("Usage: synth ai refresh")
       break
     }
 

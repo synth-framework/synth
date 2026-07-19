@@ -2,7 +2,7 @@
 
 > **Product expedition.** Harden the SYNTH CLI surface so that operator-facing diagnostics are trustworthy, actionable, and clearly separated from runtime internals. Born from gaps observed while closing EXP-BROWNFIELD-001 and running the full governance pipeline.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-004 — First Contact Program  

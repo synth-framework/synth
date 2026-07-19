@@ -200,7 +200,8 @@ async function initSynthProject(
     }
   }
 
-  await writeAgentArtifacts(synthDir, projectName)
+  const finalState = await ctx.runtime.getState()
+  await writeAgentArtifacts(synthDir, projectName, finalState, manifest)
 
   // Write the Agent Context Contract last so it takes precedence over the
   // generic runtime orientation context.json.

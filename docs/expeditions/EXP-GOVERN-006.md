@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Finalize the normative Mission/Expedition lifecycle contract, approval semantics, mutation boundaries, and event taxonomy so that Genesis builds on a stable governance platform.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  

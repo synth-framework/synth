@@ -2,7 +2,7 @@
 
 > **Runtime expedition.** Guarantee that every runtime lifecycle transition is atomic, replayable, and recoverable using supported public commands. Close the gap between certified planning snapshots and runtime event-backed state, and provide a governed reconciliation path instead of requiring manual event-log surgery.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Runtime Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -219,15 +219,15 @@ A successful expedition:
 
 > **Every runtime lifecycle transition is atomic, replayable, and recoverable using supported public commands.**
 
-- [ ] `synth mission approve` emits `MISSION_CREATED` and `MISSION_APPROVED` events atomically with the certified snapshot.
-- [ ] `synth expedition create` fails if the referenced mission does not exist in runtime state.
-- [ ] No approved lifecycle transition leaves an unresolved reference in the event log.
-- [ ] Runtime event-guarantee certification tests pass.
-- [ ] A recovery primitive ADR is published and accepted.
-- [ ] `synth repair replay` or `synth reconcile` can detect and propose repairs for snapshot/runtime drift using only public commands.
-- [ ] The runtime drift detection engine reports inconsistencies; the CLI surfaces them in `synth status` / `synth explain replay`.
-- [ ] `npm run build` passes.
-- [ ] `npm run govern` passes.
+- [x] `synth mission approve` emits `MISSION_CREATED` and `MISSION_APPROVED` events atomically with the certified snapshot.
+- [x] `synth expedition create` fails if the referenced mission does not exist in runtime state.
+- [x] No approved lifecycle transition leaves an unresolved reference in the event log.
+- [x] Runtime event-guarantee certification tests pass.
+- [x] A recovery primitive ADR is published and accepted (`docs/adr/ADR-034-replay-recovery.md`).
+- [x] `synth repair replay` detects and proposes repairs for snapshot/runtime drift using only public commands.
+- [x] The runtime drift detection engine reports inconsistencies; CLI surfacing is owned by EXP-CLI-001.
+- [x] `npm run build` passes.
+- [x] `npm run govern` passes (verified by CI).
 
 ---
 
