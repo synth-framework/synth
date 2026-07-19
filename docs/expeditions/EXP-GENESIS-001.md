@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the canonical Genesis workflow, artifact schema, and replay/governance integration.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
@@ -91,13 +91,13 @@ Ensure Genesis produces inputs that governance can validate:
 
 ## Deliverables
 
-1. Genesis lifecycle specification.
-2. Genesis artifact schema.
-3. Approval gate semantics.
-4. Event taxonomy for Genesis transitions.
-5. Replay integration contract.
-6. Governance integration contract.
-7. ADR on Genesis artifact semantics.
+1. Genesis lifecycle specification — `docs/reference/genesis-artifact-contract.md` §1.
+2. Genesis artifact schema — `docs/reference/genesis-artifact-contract.md` §2.
+3. Approval gate semantics — `docs/reference/genesis-artifact-contract.md` §3.
+4. Event taxonomy for Genesis transitions — `docs/reference/genesis-artifact-contract.md` §4 and `docs/architecture/09-event-model.md` §First Contact Events.
+5. Replay integration contract — `docs/reference/genesis-artifact-contract.md` §5.
+6. Governance integration contract — `docs/reference/genesis-artifact-contract.md` §6.
+7. ADR on Genesis artifact semantics — `docs/adr/ADR-027-genesis-artifact-semantics.md`.
 
 ---
 
