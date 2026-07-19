@@ -142,7 +142,7 @@ export type Execution = {
 export type CanonicalState = {
   version: number
   stateHash: string
-  lifecycle: "uninitialized" | "initialized"
+  lifecycle: "uninitialized" | "initialized" | "materialized"
   workItems: Record<string, WorkItem>
   plans: Record<string, Plan>
   milestones: Record<string, Milestone>

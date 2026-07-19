@@ -318,6 +318,85 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+
+    // First Contact greenfield onboarding lifecycle (EXP-AIFC-009)
+    case "FIRST_CONTACT_STARTED": {
+      const discoveryId = String(payload.discoveryArtifactId)
+      state.discoveries[discoveryId] = {
+        id: discoveryId,
+        expeditionId: "",
+        description: String(payload.intent ?? ""),
+        context: "first-contact",
+        impact: "medium",
+        status: "recorded",
+        metadata: { kind: "first-contact-intent" },
+        createdAt: event.timestamp,
+      }
+      break
+    }
+    case "DISCOVERY_APPROVED": {
+      const discoveryId = String(payload.discoveryArtifactId)
+      if (state.discoveries[discoveryId]) {
+        state.discoveries[discoveryId] = {
+          ...state.discoveries[discoveryId],
+          metadata: {
+            ...state.discoveries[discoveryId].metadata,
+            approved: true,
+            artifactHash: String(payload.artifactHash ?? ""),
+          },
+        }
+      }
+      break
+    }
+    case "MISSION_MATERIALIZED": {
+      const missionId = String(payload.missionId)
+      if (!state.missions[missionId]) {
+        state.missions[missionId] = {
+          id: missionId,
+          name: String(payload.subject ?? ""),
+          purpose: "Established from approved Discovery Artifact",
+          status: "active",
+          expeditions: [],
+          metadata: { source: "first-contact" },
+          createdAt: event.timestamp,
+          updatedAt: event.timestamp,
+        }
+      } else {
+        state.missions[missionId] = { ...state.missions[missionId], status: "active", updatedAt: event.timestamp }
+      }
+      state.lifecycle = "materialized"
+      break
+    }
+    case "EXPEDITIONS_PROPOSED": {
+      const missionId = String(payload.missionId)
+      const expeditionIds = Array.isArray(payload.expeditionIds) ? payload.expeditionIds.map(String) : []
+      if (state.missions[missionId]) {
+        state.missions[missionId] = {
+          ...state.missions[missionId],
+          expeditions: [...new Set([...state.missions[missionId].expeditions, ...expeditionIds])],
+          updatedAt: event.timestamp,
+        }
+      }
+      for (const expeditionId of expeditionIds) {
+        if (!state.expeditions[expeditionId]) {
+          state.expeditions[expeditionId] = {
+            id: expeditionId,
+            missionId,
+            name: "Proposed Expedition",
+            goal: "Derived from approved Discovery Artifact",
+            status: "draft",
+            objectives: [],
+            discoveries: [String(payload.discoveryArtifactId ?? "")],
+            decisions: [],
+            metadata: { source: "first-contact" },
+            createdAt: event.timestamp,
+            updatedAt: event.timestamp,
+          }
+        }
+      }
+      break
+    }
+
     case "WORK_ITEM_GENERATED": {
       const workItem = payload.workItem as GeneratedWorkItem
       if (workItem) state.generatedWorkItems[workItem.id] = workItem

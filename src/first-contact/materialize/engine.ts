@@ -15,6 +15,8 @@ import type {
   ExpeditionProposal,
 } from "./types.js"
 import { hashArtifact } from "../artifact/canonical.js"
+import { computeEventHash } from "../../core/hash.js"
+import { createEmptyState, applyEvent, computeStateHash } from "../../runtime/replay.js"
 
 function nowTimestamp(): number {
   return Date.now()
@@ -28,16 +30,11 @@ function uuid(): string {
   return crypto.randomUUID()
 }
 
-function eventHash(event: Record<string, unknown>, previousHash: string): string {
-  const canonical = JSON.stringify({ event, previousHash })
-  return crypto.createHash("sha256").update(canonical).digest("hex")
-}
-
 function createEvent(
   type: string,
   payload: Record<string, unknown>,
   previousHash: string,
-): Record<string, unknown> {
+): import("../../types/index.js").SynthEvent {
   const event = {
     id: uuid(),
     type,
@@ -48,7 +45,7 @@ function createEvent(
     payload,
     previousHash,
   }
-  return { ...event, eventHash: eventHash(event, previousHash) }
+  return { ...event, eventHash: computeEventHash(event as Parameters<typeof computeEventHash>[0]) } as import("../../types/index.js").SynthEvent
 }
 
 function buildMission(artifactId: string, architecture: { id: string; name: string }, intent: { description: string }): MissionProposal {
@@ -155,7 +152,7 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
   const expeditions = buildExpeditions(mission)
 
   let previousHash = "genesis"
-  const events: Record<string, unknown>[] = []
+  const events: import("../../types/index.js").SynthEvent[] = []
 
   events.push(
     createEvent(
@@ -192,13 +189,10 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
     ),
   )
 
-  const state = {
-    projectId: artifactId,
-    missionId: mission.id,
-    expeditionIds: expeditions.map((e) => e.id),
-    discoveryArtifactHash: enrichedArtifact.artifactHash,
-    lifecycle: "materialized",
-  }
+  // Derive canonical state by replaying the first-contact events so the
+  // persisted state is consistent with the runtime replay model.
+  const state = events.reduce(applyEvent, createEmptyState())
+  state.stateHash = computeStateHash(state)
 
   const manifestPath = path.join(synthDir, "manifest.json")
   const eventLogPath = path.join(dataDir, "event-log.jsonl")

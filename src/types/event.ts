@@ -68,6 +68,11 @@ export type StateEvent =
   | { type: "DECISION_ACCEPTED"; decisionId: string }
   | { type: "DECISION_REJECTED"; decisionId: string }
   | { type: "SYSTEM_GENESIS"; payload: unknown }
+  // First Contact greenfield onboarding lifecycle (EXP-AIFC-009)
+  | { type: "FIRST_CONTACT_STARTED"; discoveryArtifactId: string; intent: string }
+  | { type: "DISCOVERY_APPROVED"; discoveryArtifactId: string; artifactHash: string }
+  | { type: "MISSION_MATERIALIZED"; missionId: string; subject: string }
+  | { type: "EXPEDITIONS_PROPOSED"; missionId: string; expeditionIds: string[] }
   // Execution intent lifecycle (EXP-EXEC-001)
   | { type: "EXECUTION_INTENT_CREATED"; intentId: string; expeditionId: string; objectiveId: string; workItemId: string; capability: string; operation: string }
   | { type: "EXECUTION_INTENT_GRAPH_CREATED"; expeditionId: string; intentIds: string[]; edgeCount: number }
