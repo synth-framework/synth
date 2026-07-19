@@ -67,6 +67,7 @@ const COMMANDS = [
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
+  { name: "repair", description: "Repair operations (replay)" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
 ]
 
@@ -1154,6 +1155,55 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   })
 }
 
+async function materializeApprovedMission(
+  gateCtx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  snapshot: import("../mission-studio/types.js").ApprovedMissionModelSnapshot,
+): Promise<{ missionId: string; name: string; purpose: string; created: boolean; approved: boolean }> {
+  const state = await gateCtx.runtime.getState()
+  const missionNode = Array.from(snapshot.worldModel.nodes.values()).find(
+    (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
+  )
+  if (!missionNode) {
+    throw new Error("Approved snapshot contains no mission node")
+  }
+
+  let created = false
+  let approved = false
+  const existingMission = state.missions[missionNode.id]
+
+  if (!existingMission) {
+    const createMissionResult = await gateCtx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "CreateMission",
+      payload: { id: missionNode.id, name: missionNode.name, purpose: missionNode.purpose },
+    })
+    if (createMissionResult.status !== "ok") {
+      throw new Error(`Failed to create runtime mission: ${createMissionResult.error || JSON.stringify(createMissionResult)}`)
+    }
+    created = true
+  }
+
+  if (!existingMission || existingMission.status === "draft") {
+    const approveMissionResult = await gateCtx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "ApproveMission",
+      payload: { id: missionNode.id },
+    })
+    if (approveMissionResult.status !== "ok") {
+      throw new Error(`Failed to approve runtime mission: ${approveMissionResult.error || JSON.stringify(approveMissionResult)}`)
+    }
+    approved = true
+  }
+
+  return {
+    missionId: missionNode.id,
+    name: missionNode.name,
+    purpose: missionNode.purpose,
+    created,
+    approved,
+  }
+}
+
 async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
@@ -1191,33 +1241,17 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     printError(integrity.message)
   }
 
-  // Approval state derives from the decision record, never from the
-  // editable approvalState field (EXP-TRUST-004): re-approval is
-  // idempotent and prescriptive.
-  const priorApproval = await latestDecision(dataDir, draftId, "MISSION_APPROVAL_APPROVED")
-  if (priorApproval) {
-    printJson({
-      status: "ok",
-      kind: "MissionApprovalDecision",
-      decision: {
-        approved: true,
-        confidence: priorApproval.confidence,
-      },
-      draftId,
-      snapshotId: priorApproval.snapshotId,
-      snapshotPersisted: false,
-      note: `Draft already approved (decision recorded at ${new Date(priorApproval.timestamp).toISOString()}); no duplicate snapshot created.`,
-      nextStep: `synth mission snapshot ${priorApproval.snapshotId ?? "<snapshot-id>"} to inspect the persisted snapshot`,
-    })
-    return
-  }
-
   const session = deserializePlanningSession(draftData)
 
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
+
+  // Approval state derives from the decision record, never from the
+  // editable approvalState field (EXP-TRUST-004): re-approval is
+  // idempotent and prescriptive.
+  const priorApproval = await latestDecision(dataDir, draftId, "MISSION_APPROVAL_APPROVED")
 
   const approveResult = (await ctx.api.missionStudioOperation({
     operation: "approveModel",
@@ -1265,64 +1299,48 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   }
 
   const approvedData = approveResult.result?.data
+  if (!approvedData) {
+    printError("Mission Studio approved the model but produced no snapshot data")
+  }
+
+  // EXP-RUNTIME-001: Runtime events must precede snapshot persistence.
+  // If the runtime mission cannot be materialized, the snapshot must not be
+  // certified and the decision must not be recorded. This keeps planning and
+  // runtime state atomic: a certified snapshot always implies corresponding
+  // runtime events.
+  let runtimeResult: Awaited<ReturnType<typeof materializeApprovedMission>>
+  try {
+    runtimeResult = await materializeApprovedMission(gateCtx, approvedData)
+  } catch (err) {
+    printError(err instanceof Error ? err.message : String(err))
+  }
 
   // Persist the approved snapshot as an immutable, certified artifact.
   let snapshotPersisted = false
   let snapshotNote: string | undefined
-  if (approvedData) {
-    try {
-      await ctx.api.missionStudioOperation({
-        operation: "saveSnapshot",
-        params: { snapshot: approvedData, session: approveResult.result?.session ?? session },
-      })
-      snapshotPersisted = true
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("already exists")) {
-        snapshotNote = "snapshot already persisted"
-      } else {
-        throw err
-      }
+  try {
+    await ctx.api.missionStudioOperation({
+      operation: "saveSnapshot",
+      params: { snapshot: approvedData, session: approveResult.result?.session ?? session },
+    })
+    snapshotPersisted = true
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("already exists")) {
+      snapshotNote = "snapshot already persisted"
+    } else {
+      throw err
     }
   }
 
-  await appendDecision(dataDir, {
-    type: "MISSION_APPROVAL_APPROVED",
-    draftId,
-    confidence: decision?.confidence ?? session.confidence.overall,
-    ...(approvedData?.id ? { snapshotId: approvedData.id } : {}),
-  })
-
-  // Bridge the planning snapshot to runtime state: a Mission Studio approval
-  // certifies the model, but expeditions and replay need the mission to exist
-  // as a canonical runtime entity. Materialize it once from the approved
-  // snapshot so that `CreateExpedition` references resolve deterministically.
-  if (approvedData) {
-    const missionNode = Array.from(approvedData.worldModel.nodes.values()).find(
-      (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
-    )
-    if (missionNode) {
-      const existingMission = state.missions[missionNode.id]
-      if (!existingMission) {
-        const createMissionResult = await gateCtx.api.handleIntent({
-          actor: "synth-cli",
-          capability: "CreateMission",
-          payload: { id: missionNode.id, name: missionNode.name, purpose: missionNode.purpose },
-        })
-        if (createMissionResult.status !== "ok") {
-          printError(`Failed to create runtime mission: ${createMissionResult.error || JSON.stringify(createMissionResult)}`)
-        }
-      }
-      if (!existingMission || existingMission.status === "draft") {
-        const approveMissionResult = await gateCtx.api.handleIntent({
-          actor: "synth-cli",
-          capability: "ApproveMission",
-          payload: { id: missionNode.id },
-        })
-        if (approveMissionResult.status !== "ok") {
-          printError(`Failed to approve runtime mission: ${approveMissionResult.error || JSON.stringify(approveMissionResult)}`)
-        }
-      }
-    }
+  // Record the approval decision only after runtime state and snapshot are
+  // durable. On re-approval, this is idempotent: the decision already exists.
+  if (!priorApproval) {
+    await appendDecision(dataDir, {
+      type: "MISSION_APPROVAL_APPROVED",
+      draftId,
+      confidence: decision?.confidence ?? session.confidence.overall,
+      ...(approvedData.id ? { snapshotId: approvedData.id } : {}),
+    })
   }
 
   printJson({
@@ -1334,11 +1352,20 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     },
     draftId,
     decisionRecorded: true,
-    snapshotId: approvedData?.id,
+    snapshotId: approvedData.id,
     snapshotPersisted,
-    ...(snapshotNote ? { note: snapshotNote } : {}),
-    proposals: approvedData?.proposals,
-    nextStep: `synth mission snapshot ${approvedData?.id ?? "<snapshot-id>"} to inspect the persisted snapshot`,
+    ...(priorApproval
+      ? { note: "draft is already approved" }
+      : snapshotNote
+        ? { note: snapshotNote }
+        : {}),
+    runtime: {
+      missionId: runtimeResult.missionId,
+      created: runtimeResult.created,
+      approved: runtimeResult.approved,
+    },
+    proposals: approvedData.proposals,
+    nextStep: `synth mission snapshot ${approvedData.id} to inspect the persisted snapshot`,
   })
 }
 
@@ -1532,6 +1559,193 @@ async function cmdMissionSnapshot(args: string[], flags: Record<string, string |
     signatureValid: true,
     certification: { violations: [] },
   })
+}
+
+async function cmdRepairHelp() {
+  printJson(namespaceHelp("repair", "Runtime repair operations", [
+    { name: "synth repair replay", description: "Detect runtime drift against certified Mission snapshots and propose repairs" },
+    { name: "synth repair replay --approve", description: "Apply proposed repairs by emitting compensating runtime events", args: "--approve" },
+  ], {
+    note: "Repair uses only public CLI commands and the ExecutionGate. It never edits event logs or state files directly.",
+  }))
+}
+
+interface RepairEntry {
+  snapshotId: string
+  missionId?: string
+  status: string
+  requiredActions?: string[]
+  appliedActions?: string[]
+  reason?: string
+  error?: string
+}
+
+async function cmdRepairReplay(args: string[], flags: Record<string, string | boolean>) {
+  const approve = flags.approve === true || flags.approve === "true"
+  await ensureRuntimeDataDir(process.cwd())
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+
+  const listResult = (await ctx.api.missionStudioOperation({
+    operation: "listSnapshots",
+    params: {},
+  })) as { status: string; snapshots?: Array<{ id: string }>; error?: string }
+
+  if (listResult.status !== "ok") {
+    printError(`Failed to list certified snapshots: ${listResult.error || JSON.stringify(listResult)}`)
+  }
+
+  const snapshotSummaries = listResult.snapshots ?? []
+  const repairs: RepairEntry[] = []
+  const repairedMissionIds = new Set<string>()
+
+  for (const summary of snapshotSummaries) {
+    const getResult = (await ctx.api.missionStudioOperation({
+      operation: "getSnapshot",
+      params: { snapshotId: summary.id },
+    })) as {
+      status: string
+      snapshot?: import("../mission-studio/types.js").ApprovedMissionModelSnapshot
+      error?: string
+    }
+
+    if (getResult.status !== "ok" || !getResult.snapshot) {
+      repairs.push({
+        snapshotId: summary.id,
+        status: "error",
+        error: getResult.error || "snapshot could not be loaded",
+      })
+      continue
+    }
+
+    const snapshot = getResult.snapshot
+    const missionNode = Array.from(snapshot.worldModel.nodes.values()).find(
+      (n: import("../mission-studio/types.js").WorldModelNode): n is import("../mission-studio/types.js").MissionNode =>
+        n.kind === "mission",
+    )
+
+    if (!missionNode) {
+      repairs.push({
+        snapshotId: snapshot.id,
+        status: "skipped",
+        reason: "snapshot contains no mission node",
+      })
+      continue
+    }
+
+    const missionId = missionNode.id
+
+    if (repairedMissionIds.has(missionId)) {
+      repairs.push({
+        snapshotId: snapshot.id,
+        missionId,
+        status: "already-repaired",
+      })
+      continue
+    }
+
+    const existing = state.missions[missionId]
+    if (existing && existing.status === "active") {
+      repairs.push({
+        snapshotId: snapshot.id,
+        missionId,
+        status: "consistent",
+      })
+      continue
+    }
+
+    const requiredActions: string[] = []
+    if (!existing) {
+      requiredActions.push("create")
+    } else if (existing.status === "draft") {
+      requiredActions.push("approve")
+    }
+
+    if (requiredActions.length === 0) {
+      repairs.push({
+        snapshotId: snapshot.id,
+        missionId,
+        status: "consistent",
+      })
+      continue
+    }
+
+    if (!approve) {
+      repairs.push({
+        snapshotId: snapshot.id,
+        missionId,
+        status: "proposed",
+        requiredActions,
+      })
+      continue
+    }
+
+    try {
+      if (!existing) {
+        const createResult = await ctx.api.handleIntent({
+          actor: "synth-cli",
+          capability: "CreateMission",
+          payload: {
+            id: missionId,
+            name: missionNode.name,
+            purpose: missionNode.purpose,
+          },
+        })
+        if (createResult.status !== "ok") {
+          throw new Error(`CreateMission failed: ${createResult.error || JSON.stringify(createResult)}`)
+        }
+      }
+
+      const approveResult = await ctx.api.handleIntent({
+        actor: "synth-cli",
+        capability: "ApproveMission",
+        payload: { id: missionId },
+      })
+      if (approveResult.status !== "ok") {
+        throw new Error(`ApproveMission failed: ${approveResult.error || JSON.stringify(approveResult)}`)
+      }
+
+      repairedMissionIds.add(missionId)
+      repairs.push({
+        snapshotId: snapshot.id,
+        missionId,
+        status: "repaired",
+        appliedActions: requiredActions,
+      })
+    } catch (err) {
+      repairs.push({
+        snapshotId: snapshot.id,
+        missionId,
+        status: "failed",
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  const failed = repairs.some((r) => r.status === "failed" || r.status === "error")
+  const proposed = repairs.some((r) => r.status === "proposed")
+
+  printJson({
+    status: failed ? "error" : "ok",
+    kind: "RepairReport",
+    mode: approve ? "apply" : "dry-run",
+    snapshotCount: snapshotSummaries.length,
+    repairs,
+    nextStep: failed
+      ? "Inspect the failure details, then re-run after resolving the underlying issue."
+      : proposed
+        ? "Run 'synth repair replay --approve' to apply the proposed repairs."
+        : "Run 'synth explain replay' to verify runtime consistency.",
+  })
+
+  if (failed) {
+    process.exit(1)
+  }
 }
 
 async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
@@ -1931,6 +2145,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDocsGenerateHelp }
     case "adapter":
       return { namespace, handler: cmdAdapterHelp }
+    case "repair":
+      return { namespace, handler: cmdRepairHelp }
     default:
       return undefined
   }
@@ -1949,6 +2165,9 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     return "bootstrap"
   }
   if (namespace === "docs" && sub === "generate") return "docs generate"
+  if (namespace === "repair" && sub === "replay") {
+    return flags.approve === true || flags.approve === "true" ? "repair replay --approve" : "repair replay"
+  }
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
     if (sub === "approve") return "mission approve"
@@ -2107,6 +2326,16 @@ async function main() {
       else if (sub === "resume") await cmdExplainResume(flags)
       else if (sub === "governance") await cmdExplainGovernance(flags)
       else await cmdExplainObservability(sub, flags)
+      break
+    }
+
+    case "repair": {
+      const sub = positional[1]
+      if (sub === "replay") await cmdRepairReplay(positional.slice(2), flags)
+      else
+        printError(
+          "Usage: synth repair replay [--approve]",
+        )
       break
     }
 
