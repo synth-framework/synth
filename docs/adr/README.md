@@ -38,3 +38,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-030 — Intent Modeling Semantics](ADR-030-intent-modeling-semantics.md)
 - [ADR-031 — Domain Modeling Semantics](ADR-031-domain-modeling-semantics.md)
 - [ADR-032 — Canonical Knowledge Semantics](ADR-032-canonical-knowledge-semantics.md)
+- [ADR-033 — Prototype-First Validation Semantics](ADR-033-prototype-first-validation-semantics.md)
