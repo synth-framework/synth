@@ -18,6 +18,10 @@
       "name": "Repository & Release Governance",
       "description": "Repository state machine, branching, promotion, versioning, release, and forge adapter expeditions."
     },
+    "DIST": {
+      "name": "AI Ecosystem Distribution",
+      "description": "Distribution of SYNTH capabilities across agents, IDEs, package managers, forges, MCP servers, websites, and documentation."
+    },
     "ADP-OBS": {
       "name": "Adapter Observation",
       "description": "Adapter observation and evidence-gathering expeditions."

@@ -196,7 +196,10 @@ without requiring repository-specific instructions.
 - **EXP-PROGRAM-023 — Semantic Modeling** provides the intent and domain models agents exchange.
 - **EXP-PROGRAM-024 — Canonical Knowledge & Validation** provides the knowledge graph and validation contracts agents consume.
 - **EXP-PROGRAM-025 — Incremental Governance** provides the performance foundation for agent-driven validation.
+- **EXP-PROGRAM-028 — Repository & Release Governance** governs how agents participate in promotions, pull requests, and releases.
+- **EXP-PROGRAM-029 — AI Ecosystem Distribution** projects the Genesis Protocol, skills, and SDK into every major discovery surface.
 - **docs/adr/ADR-034-replay-recovery.md** defines recovery primitives agents must respect.
+- **docs/adr/ADR-037-shell-safe-command-construction.md** governs how SYNTH emits forge and distribution commands.
 
 ---
 
