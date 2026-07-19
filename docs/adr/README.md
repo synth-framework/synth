@@ -33,3 +33,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-025 — Parallel Execution and Remote Cache](ADR-025-parallel-execution-and-remote-cache.md)
 - [ADR-026 — Governance Lifecycle Freeze](ADR-026-governance-lifecycle-freeze.md)
 - [ADR-027 — Genesis Artifact Semantics](ADR-027-genesis-artifact-semantics.md)
+- [ADR-028 — Genesis Intent Capture Semantics](ADR-028-genesis-intent-capture-semantics.md)

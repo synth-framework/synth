@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Capture intent, classify context, extract constraints, and negotiate scope before Mission materialization.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
@@ -101,14 +101,14 @@ Detect and record:
 
 ## Deliverables
 
-1. Intent capture engine contract.
-2. Context classifier contract.
-3. Constraint extraction rules.
-4. Scope negotiation strategy.
-5. Ambiguity detection rules.
-6. Unknown tracker schema.
-7. Evidence attachment model.
-8. ADR on intent capture semantics.
+1. Intent capture engine contract — `docs/reference/genesis-intent-capture-contract.md` §1 and `src/first-contact/extract/types.ts`.
+2. Context classifier contract — `docs/reference/genesis-intent-capture-contract.md` §2.
+3. Constraint extraction rules — `docs/reference/genesis-intent-capture-contract.md` §3.
+4. Scope negotiation strategy — `docs/reference/genesis-intent-capture-contract.md` §4.
+5. Ambiguity detection rules — `docs/reference/genesis-intent-capture-contract.md` §5 and `src/first-contact/clarify/types.ts`.
+6. Unknown tracker schema — `docs/reference/genesis-intent-capture-contract.md` §6 and `src/first-contact/extract/types.ts` (`ExtractedUnknown`).
+7. Evidence attachment model — `docs/reference/genesis-intent-capture-contract.md` §7.
+8. ADR on intent capture semantics — `docs/adr/ADR-028-genesis-intent-capture-semantics.md`.
 
 ---
 
