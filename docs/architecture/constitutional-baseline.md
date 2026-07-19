@@ -1,7 +1,7 @@
 # Synth v2 Constitutional Baseline
 
 **Baseline Date:** 2026-06-29  
-**Constitution Version:** 1.0  
+**Constitution Version:** 1.1  
 **Language Version:** 1.0 (see `docs/reference/term-inventory.md`)  
 **Proof Schema Version:** synth-proof-v1  
 **ATL:** ATL-7 (after EXP-GOV-001)  
@@ -12,6 +12,7 @@
 **v2.1 Charter ADR:** [ADR-003 — Synth v2.1 Validation Program Charter](../adr/ADR-003-v2-1-validation-program-charter.md)
 **Eras and Protected Assets ADR:** [ADR-004 — Synth Eras and Protected Assets](../adr/ADR-004-synth-eras-and-protected-assets.md)
 **Architecture Era Closure ADR:** [ADR-005 — Architecture Era Closure](../adr/ADR-005-architecture-era-closure.md)
+**Current Era ADR:** [ADR-040 — Era III: Validation & Hardening](../adr/ADR-040-era-iii-validation-and-hardening.md)
 **Environment Independence ADR:** [ADR-006 — Environment Discovery Framework](../adr/ADR-006-environment-discovery-framework.md)
 **Capability Graph ADR:** [ADR-007 — Capability Graph Model](../adr/ADR-007-capability-graph-model.md)
 **Workspace Capability ADR:** [ADR-008 — Workspace Capability](../adr/ADR-008-workspace-capability.md)
@@ -55,6 +56,22 @@ The question is no longer:
 It is:
 
 > "Can every change demonstrate that it preserves the architecture?"
+
+---
+
+## Current Era
+
+SYNTH is in **Era III — Validation & Hardening**.
+
+The architectural surface of SYNTH v2 is feature-complete. The focus is now on real-world validation: greenfield and brownfield projects, first-time users, multiple AI operators, long-lived Missions, replay and governance stress testing, homepage onboarding, and repository governance exercise.
+
+During this era:
+
+- Bug fixes, UX refinements, performance improvements, documentation clarifications, acceptance criteria updates, convergence reviews, and certification scenarios are allowed.
+- New Programs, core concepts, public vocabulary changes, lifecycle changes, and governance model changes require evidence from testing.
+- The public vocabulary remains frozen.
+
+See `docs/adr/ADR-040-era-iii-validation-and-hardening.md` for the full freeze charter.
 
 ---
 
@@ -151,6 +168,7 @@ Product Boundary ADR: ADR-002
 v2.1 Charter ADR: ADR-003
 Eras and Protected Assets ADR: ADR-004
 Architecture Era Closure ADR: ADR-005
+Current Era ADR: ADR-040
 Environment Independence ADR: ADR-006
 Capability Graph ADR: ADR-007
 Workspace Capability ADR: ADR-008
