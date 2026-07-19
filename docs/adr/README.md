@@ -36,3 +36,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-028 — Genesis Intent Capture Semantics](ADR-028-genesis-intent-capture-semantics.md)
 - [ADR-029 — Genesis Validation & Mission Materialization Semantics](ADR-029-genesis-validation-materialization-semantics.md)
 - [ADR-030 — Intent Modeling Semantics](ADR-030-intent-modeling-semantics.md)
+- [ADR-031 — Domain Modeling Semantics](ADR-031-domain-modeling-semantics.md)
