@@ -2,7 +2,8 @@
 
 > **Architecture expedition.** Generate one or more implementation strategies from an approved Discovery artifact, presented as projections rather than canonical state.
 
-**Status:** Proposed  
+**Status:** Executing  
+**Started:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  
