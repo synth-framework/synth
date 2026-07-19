@@ -120,7 +120,16 @@ function applyEvent(state, event) {
     case "OBJECTIVE_ADDED": if (p.objective) state.objectives[p.objective.id] = p.objective; break
     case "OBJECTIVE_COMPLETED": { const id = String(p.id); if (state.objectives[id]) state.objectives[id] = { ...state.objectives[id], status: "completed", updatedAt: Date.now() }; break }
     case "DISCOVERY_RECORDED": if (p.discovery) state.discoveries[p.discovery.id] = p.discovery; break
-    case "DECISION_ACCEPTED": { const id = String(p.id); if (state.decisions[id]) state.decisions[id] = { ...state.decisions[id], status: "accepted", updatedAt: Date.now() }; else state.decisions[id] = { id, status: "accepted", timestamp: Date.now() }; break }
+    case "DECISION_ACCEPTED": {
+      if (p.decision) {
+        state.decisions[p.decision.id] = p.decision
+      } else {
+        const id = String(p.id)
+        if (state.decisions[id]) state.decisions[id] = { ...state.decisions[id], status: "accepted", updatedAt: Date.now() }
+        else state.decisions[id] = { id, status: "accepted", timestamp: Date.now() }
+      }
+      break
+    }
     case "DECISION_REJECTED": { const id = String(p.id); if (state.decisions[id]) state.decisions[id] = { ...state.decisions[id], status: "rejected", updatedAt: Date.now() }; else state.decisions[id] = { id, status: "rejected", timestamp: Date.now() }; break }
     case "WORK_ITEM_GENERATED": if (p.workItem) state.workItems[p.workItem.id] = p.workItem; break
     case "WORK_ITEM_COMPLETED": { const id = String(p.id); if (state.workItems[id]) state.workItems[id] = { ...state.workItems[id], status: "completed", completedAt: Date.now() }; break }
@@ -694,7 +703,8 @@ test("P0: double-seal throws InvariantViolation", async () => {
 test("P0: system operates normally after seal", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
-  const result = await ctx.api.handleIntent({ actor: "test", capability: "StartWorkItem", payload: { id: "W-1" } })
+  await ctx.api.handleIntent({ actor: "test", capability: "CreateWorkItem", payload: { id: "W-SEAL", name: "Seal Test Work Item" } })
+  const result = await ctx.api.handleIntent({ actor: "test", capability: "StartWorkItem", payload: { id: "W-SEAL" } })
   assert.equal(result.status, "ok", `Operation after seal should succeed: ${result.error}`)
 })
 
@@ -778,8 +788,8 @@ test("P2: state store hash integrity on save/load cycle", async () => {
 test("Expedition: capability registry includes Expedition capabilities", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
-  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, and PCE capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 27, `Registry must have 27 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, and recovery capabilities
+  assert.equal(ctx.capabilityRegistry.size(), 28, `Registry must have 28 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
   assert.ok(ctx.capabilityRegistry.has("CreateExpedition"), "Registry must have CreateExpedition")
@@ -791,6 +801,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   assert.ok(ctx.capabilityRegistry.has("CompleteObjective"), "Registry must have CompleteObjective")
   assert.ok(ctx.capabilityRegistry.has("RecordDiscovery"), "Registry must have RecordDiscovery")
   assert.ok(ctx.capabilityRegistry.has("AcceptDecision"), "Registry must have AcceptDecision")
+  assert.ok(ctx.capabilityRegistry.has("RecordRepair"), "Registry must have RecordRepair")
 })
 
 test("Expedition: CreateMission produces MISSION_CREATED event", async () => {
@@ -878,19 +889,19 @@ test("Expedition: RecordDiscovery produces DISCOVERY_RECORDED event", async () =
   assert.equal(discEvent.payload.discovery.impact, "high")
 })
 
-test("Expedition: AcceptDecision produces DECISION_ACCEPTED event", async () => {
+test("Expedition: RecordDecision produces DECISION_ACCEPTED event", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-6", missionId: "M-1", name: "Test Expedition" } })
   const result = await ctx.api.handleIntent({
-    actor: "test", capability: "AcceptDecision",
-    payload: { id: "DC-1" }
+    actor: "test", capability: "RecordDecision",
+    payload: { id: "DC-1", expeditionId: "E-6", title: "Test Decision", chosenAlternative: 0 }
   })
-  assert.equal(result.status, "ok", `AcceptDecision should succeed: ${result.error}`)
+  assert.equal(result.status, "ok", `RecordDecision should succeed: ${result.error}`)
   const events = await ctx.infra.eventStore.loadAll()
-  const decEvent = events.find((e) => e.type === "DECISION_ACCEPTED" && e.payload.id === "DC-1")
+  const decEvent = events.find((e) => e.type === "DECISION_ACCEPTED" && e.payload.decision?.id === "DC-1")
   assert.ok(decEvent, "DECISION_ACCEPTED event must exist")
-  assert.equal(decEvent.payload.status, "accepted")
+  assert.equal(decEvent.payload.decision.status, "accepted")
 })
 
 test("Expedition: full expedition lifecycle", async () => {
@@ -915,7 +926,8 @@ test("Expedition: full expedition lifecycle", async () => {
   await ctx.api.handleIntent({ actor: "test", capability: "RecordDiscovery", payload: { id: "D-FULL", expeditionId: "E-FULL", description: "Found something important", context: "During implementation", impact: "medium" } })
 
   // Make a decision
-  await ctx.api.handleIntent({ actor: "test", capability: "AcceptDecision", payload: { id: "DC-FULL" } })
+  const decisionResult = await ctx.api.handleIntent({ actor: "test", capability: "RecordDecision", payload: { id: "DC-FULL", expeditionId: "E-FULL", title: "Full Lifecycle Decision", chosenAlternative: 0 } })
+  assert.equal(decisionResult.status, "ok", `RecordDecision should succeed: ${decisionResult.error}`)
 
   // Complete expedition
   await ctx.api.handleIntent({ actor: "test", capability: "CompleteExpedition", payload: { id: "E-FULL" } })

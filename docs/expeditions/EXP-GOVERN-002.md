@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Make every governance check self-describing by declaring its inputs, outputs, scope, and module membership, producing a dependency graph without changing execution order yet.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-021 — Incremental Governance  

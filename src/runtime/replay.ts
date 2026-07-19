@@ -319,6 +319,13 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       break
     }
 
+    // Replay recovery audit (EXP-RUNTIME-001)
+    case "REPAIR_ACCEPTED": {
+      // Audit-only event: no state mutation. The repair itself is already
+      // represented by the compensating runtime events that preceded it.
+      break
+    }
+
     // First Contact greenfield onboarding lifecycle (EXP-AIFC-009)
     case "FIRST_CONTACT_STARTED": {
       const discoveryId = String(payload.discoveryArtifactId)

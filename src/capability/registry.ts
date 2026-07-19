@@ -752,5 +752,28 @@ export function createDefaultCapabilities(): Capability[] {
         return { events: [{ type: "DECISION_REJECTED", payload: { id: updated.id, status: updated.status } }], result: updated }
       },
     },
+    {
+      name: "RecordRepair",
+      description: "Record that a replay repair was accepted and applied",
+      inputSchema: { required: ["repairPlan"], types: { repairPlan: "object", appliedActions: "array" } },
+      outputSchema: { events: ["REPAIR_ACCEPTED"], resultType: "RepairRecord" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, executionCtx }) => {
+        const repairId = executionCtx.commandId
+        const repairPlan = intent.payload.repairPlan ?? {}
+        const appliedActions = Array.isArray(intent.payload.appliedActions) ? intent.payload.appliedActions : []
+        return {
+          events: [{
+            type: "REPAIR_ACCEPTED",
+            payload: { repairId, repairPlan, appliedActions, timestamp: executionCtx.timestamp },
+          }],
+          result: { repairId, appliedActions },
+        }
+      },
+    },
   ]
 }

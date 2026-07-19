@@ -117,8 +117,10 @@ async function testDryRunProducesSummary() {
 async function testPercentagesSumToOneHundred() {
   const { summary } = await runGovernProfile({ dryRun: true, silent: true })
   const total = summary.checks.reduce((sum, c) => sum + c.percentage, 0)
-  // Rounding errors can leave us slightly below 100; accept within one percent.
-  assert.ok(total >= 99.0 && total <= 100.1, `percentages sum to ${total}`)
+  // Each percentage is rounded to one decimal place, so the sum can deviate
+  // from 100 by up to ~0.05 per check. Accept a tolerance scaled by check count.
+  const tolerance = summary.checks.length * 0.05 + 0.1
+  assert.ok(total >= 99.0 && total <= 100 + tolerance, `percentages sum to ${total}`)
   console.log("[PASS] percentages sum to approximately 100")
 }
 
