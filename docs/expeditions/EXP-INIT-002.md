@@ -1,6 +1,6 @@
 # EXP-INIT-002 — Initialization Evidence & Replay
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Started:** 2026-07-18  
 **Kind:** Adoption / Initialization  
 **Priority:** Critical  

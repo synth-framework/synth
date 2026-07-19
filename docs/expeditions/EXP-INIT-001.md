@@ -1,6 +1,6 @@
 # EXP-INIT-001 — Adapter-based Project Bootstrap
 
-**Status:** Completed  
+**Status:** Completed and accepted  
 **Accepted:** 2026-07-18  
 **Completed:** 2026-07-18  
 **Kind:** Adoption / Initialization  
