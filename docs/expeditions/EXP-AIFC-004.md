@@ -2,8 +2,9 @@
 
 > **Architecture expedition.** Detect ambiguity, score confidence, and generate targeted clarification questions to bring a Discovery artifact to approval readiness.
 
-**Status:** Executing  
+**Status:** Accepted  
 **Started:** 2026-07-19  
+**Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  
