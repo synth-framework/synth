@@ -14,6 +14,10 @@
       "name": "Mission Studio Homepage",
       "description": "Public homepage and Mission Studio experience expeditions."
     },
+    "REPO": {
+      "name": "Repository & Release Governance",
+      "description": "Repository state machine, branching, promotion, versioning, release, and forge adapter expeditions."
+    },
     "ADP-OBS": {
       "name": "Adapter Observation",
       "description": "Adapter observation and evidence-gathering expeditions."
