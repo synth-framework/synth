@@ -62,6 +62,10 @@
       "name": "Governance",
       "description": "Governance model and constitutional expeditions."
     },
+    "GOVERN": {
+      "name": "Governance Execution",
+      "description": "Incremental governance execution expeditions (profiling, dependency graphs, fingerprinting, scheduling, optimization)."
+    },
     "HARDEN": {
       "name": "Constitutional Hardening",
       "description": "Constitutional hardening expeditions (Mission Studio, Snapshot, Genesis, Replay, Graph Integrity, Validation, Observability)."
