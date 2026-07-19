@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "synth-first-contact-artifact-v1",
+  "title": "SYNTH First Contact Discovery Artifact",
+  "description": "Canonical schema for greenfield Discovery artifacts.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "id",
+    "sessionId",
+    "version",
+    "createdAt",
+    "intent",
+    "audience",
+    "environment",
+    "capabilities",
+    "constraints",
+    "unknowns",
+    "risks",
+    "confidence",
+    "architectureCandidates",
+    "transcript",
+    "provenance",
+    "artifactHash"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "synth-first-contact-artifact-v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^artifact-[a-zA-Z0-9_-]+$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^session-[a-zA-Z0-9_-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approvedAt": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "intent": {
+      "type": "object",
+      "required": ["description", "goals", "successCriteria"],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "goals": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "successCriteria": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "audience": {
+      "type": "object",
+      "required": ["primaryUsers", "stakeholders"],
+      "properties": {
+        "primaryUsers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "stakeholders": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": ["targetRuntime", "languagePreferences", "platformConstraints"],
+      "properties": {
+        "targetRuntime": { "type": "string", "minLength": 1 },
+        "languagePreferences": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "platformConstraints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["required", "optional"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "optional": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "object",
+      "required": ["functional", "nonFunctional"],
+      "properties": {
+        "functional": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "nonFunctional": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "field", "description", "confidence", "accepted"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^unknown-[a-zA-Z0-9_-]+$" },
+          "field": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "accepted": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "description", "severity"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^risk-[a-zA-Z0-9_-]+$" },
+          "category": { "enum": ["technical", "product", "operational", "legal"] },
+          "description": { "type": "string", "minLength": 1 },
+          "severity": { "enum": ["low", "medium", "high", "critical"] },
+          "mitigation": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "required": ["overall", "threshold", "byField"],
+      "properties": {
+        "overall": { "type": "number", "minimum": 0, "maximum": 1 },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "byField": {
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "architectureCandidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "rationale", "tradeoffs", "assumptions", "recommended", "confidence"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^arch-[a-zA-Z0-9_-]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "rationale": { "type": "string", "minLength": 1 },
+          "tradeoffs": {
+            "type": "object",
+            "required": ["advantages", "disadvantages"],
+            "properties": {
+              "advantages": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              },
+              "disadvantages": {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              }
+            },
+            "additionalProperties": false
+          },
+          "assumptions": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "recommended": { "type": "boolean" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "selectedArchitecture": {
+      "type": ["object", "null"],
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^arch-[a-zA-Z0-9_-]+$" },
+        "name": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "capabilityVerification": {
+      "type": ["object", "null"],
+      "required": ["status", "blockers", "reportHash"],
+      "properties": {
+        "status": { "enum": ["passed", "blocked", "overridden"] },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["capability", "status", "message"],
+            "properties": {
+              "capability": { "type": "string", "minLength": 1 },
+              "status": { "enum": ["MISSING", "DEGRADED", "UNAVAILABLE"] },
+              "message": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "reportHash": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "transcript": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["turn", "actor", "type", "content", "timestamp"],
+        "properties": {
+          "turn": { "type": "integer", "minimum": 1 },
+          "actor": { "enum": ["operator", "system"] },
+          "type": { "enum": ["input", "question", "answer", "proposal", "approval"] },
+          "content": { "type": "string", "minLength": 1 },
+          "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["eventIds", "sessionHash", "validatorVersion"],
+      "properties": {
+        "eventIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "sessionHash": { "type": "string", "minLength": 1 },
+        "validatorVersion": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "artifactHash": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}
