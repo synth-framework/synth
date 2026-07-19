@@ -2,11 +2,12 @@
 
 > **Product expedition.** Verify capability feasibility, validate acceptance, and materialize the first Mission and Expedition proposals.
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
 **Depends On:** EXP-GENESIS-002 (Genesis Intent Capture & Classification)
+**Completed In:** PR #193
 
 ---
 
