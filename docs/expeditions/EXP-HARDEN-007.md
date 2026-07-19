@@ -1,6 +1,6 @@
 # EXP-HARDEN-007 — Observability
 
-**Status:** Completed  
+**Status:** Completed and accepted
 **Kind:** Implementation Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-010 — Constitutional Hardening Program  

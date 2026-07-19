@@ -1,6 +1,6 @@
 # EXP-EXEC-003 — Branch-per-Expedition Workflow
 
-**Status:** Completed  
+**Status:** Completed and accepted  
 **Merged:** PR #126
 **Kind:** Implementation Expedition  
 **Priority:** High  

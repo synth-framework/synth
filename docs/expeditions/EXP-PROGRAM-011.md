@@ -1,6 +1,6 @@
 # EXP-PROGRAM-011 — Operator Trust & CLI Integrity
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
