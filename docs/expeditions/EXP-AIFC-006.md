@@ -2,7 +2,8 @@
 
 > **Architecture expedition.** Validate runtime, language, framework, and platform assumptions before Mission creation proceeds.
 
-**Status:** Proposed  
+**Status:** Executing  
+**Started:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  
