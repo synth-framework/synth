@@ -32,3 +32,4 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-024 — Incremental Scheduler](ADR-024-incremental-scheduler.md)
 - [ADR-025 — Parallel Execution and Remote Cache](ADR-025-parallel-execution-and-remote-cache.md)
 - [ADR-026 — Governance Lifecycle Freeze](ADR-026-governance-lifecycle-freeze.md)
+- [ADR-027 — Genesis Artifact Semantics](ADR-027-genesis-artifact-semantics.md)
