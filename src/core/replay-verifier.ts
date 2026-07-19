@@ -198,6 +198,10 @@ export class ReplayVerifier {
       divergences.push(...this.deepDiff("decisions", liveState.decisions, replayedState.decisions))
     }
 
+    // First Contact artifact integrity (EXP-AIFC-009): if a DISCOVERY_APPROVED
+    // event exists, the stored discovery artifact hash must match.
+    divergences.push(...(await this.checkFirstContactArtifact(events)))
+
     const consistent = chain.valid && divergences.length === 0
     const explanation = consistent
       ? "Operational state is bit-for-bit identical to replayed state."
@@ -309,6 +313,60 @@ export class ReplayVerifier {
     }
 
     return parts.join("; ") || "Unknown inconsistency"
+  }
+
+  /**
+   * Check First Contact artifact integrity.
+   * If a DISCOVERY_APPROVED event exists, verify that the stored artifact
+   * at `.synth/first-contact/discovery-artifact.json` has the same hash.
+   */
+  private async checkFirstContactArtifact(events: SynthEvent[]): Promise<ReplayDivergence[]> {
+    const approvedEvent = events.find((e) => e.type === "DISCOVERY_APPROVED")
+    if (!approvedEvent) return []
+
+    const dataDir = this.eventStore.getDataDir()
+    if (!dataDir) return []
+
+    // Use the Environment Layer filesystem provider; never import fs/path
+    // directly from Core (ADR-006 §7).
+    const fs = createPosixFilesystemProvider(dataDir)
+    const raw = await fs.readFile("../first-contact/discovery-artifact.json")
+    if (!raw) {
+      return [
+        {
+          key: "firstContactArtifact.missing",
+          live: null,
+          replayed: "No stored artifact found at .synth/first-contact/discovery-artifact.json",
+        },
+      ]
+    }
+
+    let storedArtifact: Record<string, unknown>
+    try {
+      storedArtifact = JSON.parse(raw) as Record<string, unknown>
+    } catch {
+      return [
+        {
+          key: "firstContactArtifact.malformed",
+          live: null,
+          replayed: "Stored artifact is not valid JSON",
+        },
+      ]
+    }
+
+    const expectedHash = String((approvedEvent.payload as Record<string, unknown>)?.artifactHash ?? "")
+    const storedHash = String(storedArtifact.artifactHash ?? "")
+    if (expectedHash && storedHash && expectedHash !== storedHash) {
+      return [
+        {
+          key: "firstContactArtifact.hashMismatch",
+          live: storedHash,
+          replayed: expectedHash,
+        },
+      ]
+    }
+
+    return []
   }
 
   /** Quick check: are events replayable? */
