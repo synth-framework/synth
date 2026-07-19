@@ -19,6 +19,7 @@ import { mapFilesToModules } from "./module-mapper.js"
  * @property {string[]} upstreamFingerprints
  * @property {import("./proof-store.js").ValidationProof | null} proof
  * @property {string[]} [changedInputs]
+ * @property {string[]} dependencies
  */
 
 export class Scheduler {
@@ -64,13 +65,19 @@ export class Scheduler {
       const upstreamIds = check.dependencies ?? []
       const upstreamFingerprints = upstreamIds.map((id) => fingerprints.get(id) ?? "")
 
+      const dependencies = check.dependencies ?? []
+      const entryBase = {
+        checkId: check.id,
+        fingerprint,
+        upstreamFingerprints,
+        dependencies,
+      }
+
       if (this.full) {
         entries.push({
-          checkId: check.id,
+          ...entryBase,
           action: "run",
           reason: "full-run",
-          fingerprint,
-          upstreamFingerprints,
           proof: null,
         })
         continue
@@ -79,11 +86,9 @@ export class Scheduler {
       const changedInputs = this.matchChangedInputs(check.inputs)
       if (changedInputs.length > 0) {
         entries.push({
-          checkId: check.id,
+          ...entryBase,
           action: "run",
           reason: `input-changed: ${changedInputs.join(", ")}`,
-          fingerprint,
-          upstreamFingerprints,
           proof: null,
           changedInputs,
         })
@@ -92,11 +97,9 @@ export class Scheduler {
 
       if (changedModules.includes(check.module)) {
         entries.push({
-          checkId: check.id,
+          ...entryBase,
           action: "run",
           reason: `module-changed: ${check.module}`,
-          fingerprint,
-          upstreamFingerprints,
           proof: null,
         })
         continue
@@ -104,11 +107,9 @@ export class Scheduler {
 
       if (!isCacheable(check)) {
         entries.push({
-          checkId: check.id,
+          ...entryBase,
           action: "run",
           reason: "non-deterministic",
-          fingerprint,
-          upstreamFingerprints,
           proof: null,
         })
         continue
@@ -116,11 +117,9 @@ export class Scheduler {
 
       const decision = await this.engine.decide(check, fingerprint, upstreamFingerprints)
       entries.push({
-        checkId: check.id,
+        ...entryBase,
         action: decision.action,
         reason: decision.reason,
-        fingerprint: decision.fingerprint,
-        upstreamFingerprints: decision.upstreamFingerprints,
         proof: decision.proof,
       })
     }

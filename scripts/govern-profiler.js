@@ -1,5 +1,5 @@
 // ============================================================
-// GOVERNANCE PROFILER (EXP-GOVERN-001 → EXP-GOVERN-004)
+// GOVERNANCE PROFILER (EXP-GOVERN-001 → EXP-GOVERN-005)
 // ============================================================
 // Instruments the SYNTH governance pipeline and produces:
 //  - a structured GovernSummary with per-check timing and cache decisions
@@ -8,13 +8,15 @@
 // ============================================================
 
 import { spawn } from "child_process"
-import fs from "fs/promises"
+import fs from "fs"
+import fsp from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
 import { resolveChecks, isCacheable } from "./governance/check-registry.js"
 import { buildDependencyGraph } from "./governance/dependency-graph.js"
 import { Scheduler } from "./governance/scheduler.js"
 import { detectChangedFiles } from "./governance/change-detector.js"
+import { ParallelRunner } from "./governance/parallel-runner.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -23,7 +25,7 @@ const REPO_ROOT = path.resolve(__dirname, "..")
 
 /** Parse package.json scripts into a check list matching the old `npm run govern` pipeline. */
 export async function loadGovernChecks(pkgPath = path.join(REPO_ROOT, "package.json")) {
-  const pkg = JSON.parse(await fs.readFile(pkgPath, "utf-8"))
+  const pkg = JSON.parse(await fsp.readFile(pkgPath, "utf-8"))
   const testAll = pkg.scripts["test:all"]
   if (!testAll) {
     throw new Error("package.json is missing the test:all script")
@@ -51,20 +53,29 @@ export async function loadGovernChecks(pkgPath = path.join(REPO_ROOT, "package.j
   return checks
 }
 
-export function runCommand(command, args, cwd) {
+export function runCommand(command, args, cwd, timeoutMs = 0) {
   return new Promise((resolve) => {
     const startTime = Date.now()
     const startIso = new Date(startTime).toISOString()
     const child = spawn(command, args, { cwd, stdio: "inherit" })
+    let timedOut = false
+
+    if (timeoutMs > 0) {
+      setTimeout(() => {
+        timedOut = true
+        child.kill("SIGTERM")
+      }, timeoutMs)
+    }
 
     child.on("close", (code) => {
       const endTime = Date.now()
       resolve({
-        status: code === 0 ? "passed" : "failed",
-        exitCode: code ?? -1,
+        status: timedOut ? "failed" : code === 0 ? "passed" : "failed",
+        exitCode: timedOut ? 1 : code ?? -1,
         startTime: startIso,
         endTime: new Date(endTime).toISOString(),
         durationMs: endTime - startTime,
+        error: timedOut ? `timed out after ${timeoutMs}ms` : undefined,
       })
     })
 
@@ -83,7 +94,7 @@ export function runCommand(command, args, cwd) {
 }
 
 async function ensureProofDir(root) {
-  await fs.mkdir(path.join(root, "proof"), { recursive: true })
+  await fsp.mkdir(path.join(root, "proof"), { recursive: true })
 }
 
 function buildSummary(results, mode, changedFiles) {
@@ -129,6 +140,7 @@ export async function runGovernProfile(options = {}) {
   const checks = await loadGovernChecks(pkgPath)
   const metadata = resolveChecks(checks.map((c) => c.checkId))
   const metadataById = new Map(metadata.map((m) => [m.id, m]))
+  const commandById = new Map(checks.map((c) => [c.checkId, { command: c.command, args: c.args }]))
 
   const full = options.full ?? false
   let changedFiles = options.changedFiles
@@ -151,56 +163,17 @@ export async function runGovernProfile(options = {}) {
         reason: "dry-run",
         fingerprint: "dry-run",
         upstreamFingerprints: [],
+        dependencies: m.dependencies ?? [],
         proof: null,
       }))
     : await scheduler.plan(checks.map((c) => c.checkId))
 
-  const decisionById = new Map(decisions.map((d) => [d.checkId, d]))
-  const results = []
-  let failed = false
+  const executor = options.executor ?? ((command, args, cwd) => runCommand(command, args, cwd, options.timeoutMs))
 
-  for (const { checkId, command, args } of checks) {
-    const meta = metadataById.get(checkId)
-    const decision = decisionById.get(checkId)
-
-    if (!decision) {
-      throw new Error(`No scheduling decision for check ${checkId}`)
-    }
-
-    let result
-    if (options.dryRun) {
-      const now = Date.now()
-      result = {
-        status: "passed",
-        exitCode: 0,
-        startTime: new Date(now).toISOString(),
-        endTime: new Date(now + 1).toISOString(),
-        durationMs: 1,
-      }
-    } else if (decision.action === "skip" && decision.proof) {
-      const now = Date.now()
-      result = {
-        status: decision.proof.result === "PASS" ? "passed" : "failed",
-        exitCode: decision.proof.result === "PASS" ? 0 : 1,
-        startTime: new Date(now).toISOString(),
-        endTime: new Date(now).toISOString(),
-        durationMs: 0,
-      }
-    } else {
-      const executor = options.executor ?? runCommand
-      result = await executor(command, args, root)
-      if (decision.action === "run" && isCacheable(meta)) {
-        await scheduler.engine.record(
-          meta,
-          decision.fingerprint,
-          decision.upstreamFingerprints,
-          result.status === "passed" ? "PASS" : "FAIL",
-        )
-      }
-    }
-
-    results.push({
-      checkId,
+  const buildResult = async (decision, result) => {
+    const meta = metadataById.get(decision.checkId)
+    return {
+      checkId: decision.checkId,
       action: decision.action,
       reason: decision.reason,
       fingerprint: decision.fingerprint,
@@ -212,10 +185,64 @@ export async function runGovernProfile(options = {}) {
       dependencies: meta.dependencies ?? [],
       cacheability: meta.determinism ?? meta.cacheability ?? "unknown",
       protectedAssets: meta.protectedAssets,
-    })
+    }
+  }
 
-    if (result.status !== "passed") {
-      failed = true
+  const executeDecision = async (decision) => {
+    if (options.dryRun) {
+      const now = Date.now()
+      return buildResult(decision, {
+        status: "passed",
+        exitCode: 0,
+        startTime: new Date(now).toISOString(),
+        endTime: new Date(now + 1).toISOString(),
+        durationMs: 1,
+      })
+    }
+
+    if (decision.action === "skip" && decision.proof) {
+      const now = Date.now()
+      return buildResult(decision, {
+        status: decision.proof.result === "PASS" ? "passed" : "failed",
+        exitCode: decision.proof.result === "PASS" ? 0 : 1,
+        startTime: new Date(now).toISOString(),
+        endTime: new Date(now).toISOString(),
+        durationMs: 0,
+      })
+    }
+
+    const { command, args } = commandById.get(decision.checkId)
+    const result = await executor(command, args, root)
+
+    if (decision.action === "run" && isCacheable(metadataById.get(decision.checkId))) {
+      await scheduler.engine.record(
+        metadataById.get(decision.checkId),
+        decision.fingerprint,
+        decision.upstreamFingerprints,
+        result.status === "passed" ? "PASS" : "FAIL",
+      )
+    }
+
+    return buildResult(decision, result)
+  }
+
+  let results
+  let failed
+
+  if ((options.maxConcurrency ?? 1) > 1) {
+    const runner = new ParallelRunner({ concurrency: options.maxConcurrency, timeoutMs: options.timeoutMs })
+    const { results: parallelResults, failed: parallelFailed } = await runner.run(decisions, executeDecision)
+    results = parallelResults.map((pr) => pr.result)
+    failed = parallelFailed
+  } else {
+    results = []
+    failed = false
+    for (const decision of decisions) {
+      const item = await executeDecision(decision)
+      results.push(item)
+      if (item.status !== "passed") {
+        failed = true
+      }
     }
   }
 
@@ -257,8 +284,8 @@ export async function runGovernProfile(options = {}) {
     await ensureProofDir(root)
     const baselinePath = path.join(root, "proof", "govern-baseline.json")
     const graphPath = path.join(root, "proof", "govern-dependency-graph.json")
-    await fs.writeFile(baselinePath, JSON.stringify(summary, null, 2) + "\n", "utf-8")
-    await fs.writeFile(graphPath, JSON.stringify(graph, null, 2) + "\n", "utf-8")
+    await fsp.writeFile(baselinePath, JSON.stringify(summary, null, 2) + "\n", "utf-8")
+    await fsp.writeFile(graphPath, JSON.stringify(graph, null, 2) + "\n", "utf-8")
 
     if (!options.silent) {
       console.log(`GovernSummary written to ${baselinePath}`)
@@ -274,10 +301,66 @@ export async function runGovernProfile(options = {}) {
   return { summary, graph, failed }
 }
 
+export async function watchGovern(options = {}) {
+  const ignored = /(node_modules|\.git|\.synth\/cache|proof\/|dist\/)/
+  let running = false
+  let pending = false
+  let timer = null
+
+  const run = async () => {
+    if (running) {
+      pending = true
+      return
+    }
+    running = true
+    pending = false
+    console.log("\n[GOVERN WATCH] Running incremental govern...")
+    try {
+      await runGovernProfile({ ...options, silent: false })
+    } catch (err) {
+      console.error("[GOVERN WATCH]", err.message)
+    }
+    running = false
+    if (pending) {
+      await run()
+    }
+  }
+
+  await run()
+
+  const watcher = fs.watch(REPO_ROOT, { recursive: true }, (eventType, filename) => {
+    if (!filename || ignored.test(filename)) return
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      pending = true
+      run()
+    }, 500)
+  })
+
+  console.log("[GOVERN WATCH] Watching for changes. Press Ctrl+C to stop.")
+
+  process.on("SIGINT", () => {
+    watcher.close()
+    process.exit(0)
+  })
+
+  return new Promise(() => {})
+}
+
+function parseNumberArg(argv, flag) {
+  const idx = argv.indexOf(flag)
+  if (idx !== -1 && idx + 1 < argv.length) {
+    const value = Number(argv[idx + 1])
+    if (!Number.isNaN(value)) return value
+  }
+  return undefined
+}
+
 function parseCli(argv) {
   const dryRun = argv.includes("--dry-run")
   // --force is retired; treat it as a full run for backward compatibility.
   const full = argv.includes("--full") || argv.includes("--force")
+  const watch = argv.includes("--watch")
   let changedFiles
   const changesIdx = argv.indexOf("--changes")
   if (changesIdx !== -1 && changesIdx + 1 < argv.length) {
@@ -286,12 +369,18 @@ function parseCli(argv) {
       .map((s) => s.trim())
       .filter(Boolean)
   }
-  return { dryRun, full, changedFiles }
+  const maxConcurrency = parseNumberArg(argv, "--max-concurrency")
+  const timeoutMs = parseNumberArg(argv, "--timeout-per-check")
+  return { dryRun, full, watch, changedFiles, maxConcurrency, timeoutMs }
 }
 
 async function main() {
-  const { dryRun, full, changedFiles } = parseCli(process.argv)
-  const { summary, graph, failed } = await runGovernProfile({ dryRun, full, changedFiles })
+  const options = parseCli(process.argv)
+  if (options.watch) {
+    await watchGovern(options)
+    return
+  }
+  const { summary, graph, failed } = await runGovernProfile(options)
 
   if (graph.warnings.some((w) => w.startsWith("Cycle detected"))) {
     console.error("")

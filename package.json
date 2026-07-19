@@ -144,6 +144,7 @@
     "adapter": "node dist/cli/adapter.js",
     "govern": "node scripts/govern-profiler.js",
     "govern:full": "node scripts/govern-profiler.js --full",
+    "govern:watch": "node scripts/govern-profiler.js --watch",
     "govern:ci": "npm ci && npm run govern",
     "test:runtime-data-migration": "node tests/runtime-data-migration.test.js"
   },

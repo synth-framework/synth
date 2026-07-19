@@ -1,6 +1,6 @@
 # EXP-PROGRAM-021 — Incremental Governance
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  

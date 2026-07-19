@@ -124,6 +124,34 @@ export class ProofStore {
     await fs.writeFile(this.proofsPath, "", "utf-8")
   }
 
+  /**
+   * Merge proofs from a remote/shared backend. Existing local proofs with the
+   * same (check, fingerprint) are overwritten only if the remote proof passes
+   * integrity verification.
+   * @param {import("./cache-backend.js").ProofCacheBackend} backend
+   */
+  async syncFrom(backend) {
+    const remote = await backend.loadProofs()
+    const local = await this.loadAll()
+    const byKey = new Map(local.map((p) => [`${p.check}:${p.fingerprint}`, p]))
+
+    for (const proof of remote) {
+      if (!this.isValidProof(proof) || !this.verifyIntegrity(proof)) continue
+      byKey.set(`${proof.check}:${proof.fingerprint}`, proof)
+    }
+
+    await this.saveAll([...byKey.values()])
+  }
+
+  /**
+   * Push the current local proof set to a remote/shared backend.
+   * @param {import("./cache-backend.js").ProofCacheBackend} backend
+   */
+  async syncTo(backend) {
+    const proofs = await this.loadAll()
+    await backend.saveProofs(proofs)
+  }
+
   /** @param {ValidationProof} proof */
   computeProofHash(proof) {
     const canonical = JSON.stringify({
