@@ -1,13 +1,14 @@
-# EXP-DISCOVERY-001 — Source Adapter Framework
+# EXP-DISCOVERY-001 — Repository Discovery & Brownfield Genesis
 
-> **Discovery expedition.** This charter defines the source abstraction, adapter contract, adapter registry, and capability interface for the SYNTH Discovery Platform.
+> **Discovery expedition.** This charter defines a read-only Discovery phase that establishes an evidence-backed baseline for existing projects before SYNTH governance is initialized.
 
-**Status:** Completed  
+**Status:** Proposed  
 **Started:** 2026-07-18  
-**Kind:** Architecture Expedition  
+**Kind:** Adoption Expedition  
 **Priority:** Critical  
-**Program:** EXP-PROGRAM-006 — Discovery Platform  
-**Depends On:** EXP-INIT-001, EXP-GOV-007
+**Program:** EXP-PROGRAM-004 — First Contact Program  
+**Depends On:** EXP-AX-002, EXP-INIT-001  
+**Blocks:** Brownfield Genesis missions
 
 ---
 
@@ -24,163 +25,228 @@ Impact:
 
 ## Objective
 
-Define and implement the source abstraction, adapter contract, adapter registry, and `DiscoveryCapability` interface so that future Discovery stages are source-agnostic and consumers depend only on the capability contract.
+Introduce a deterministic, read-only Discovery phase that establishes an evidence-backed baseline for existing projects before SYNTH governance is initialized.
 
 ---
 
 ## Problem Statement
 
-Current SYNTH has no unified way to inspect external systems before governance begins. Existing repository analysis is embedded in CLI-specific bootstrap code and cannot be reused by Mission Studio, MCP, IDE, Web UI, or automation.
+Current Brownfield adoption conflates two independent concerns:
+
+1. Understanding an existing repository.
+2. Initializing SYNTH governance.
+
+This causes governance initialization to occur before the project has been assessed, allowing implementation changes during what should be an observational phase.
 
 As a result:
 
-- Repository inspection is coupled to bootstrap.
-- Adapter logic is mixed with CLI concerns.
-- New source types require redesigning existing code.
-- Replay and provenance are impossible to verify.
+- Repository inspection is no longer deterministic.
+- The inspected system changes during assessment.
+- Generated Missions are based on repository metadata instead of project intent.
+- Governance begins without an approved baseline.
 
 ---
 
 ## Motivation
 
-Discovery must become a platform capability. Before the engine, synthesizer, or consumers can exist, there must be a stable contract between sources and adapters.
+A project that predates SYNTH should first be understood.
 
-A well-defined adapter framework enables:
+Only after the operator approves an accurate representation of the project's current state should SYNTH establish governance.
 
-- Source-agnostic discovery.
-- Deterministic adapter selection and ordering.
-- Immutable observations with provenance.
-- Future extension to Git, GitHub, APIs, databases, deployments, and containers.
+Discovery is therefore a prerequisite for Brownfield Genesis.
 
 ---
 
 ## Goals
 
-The Source Adapter Framework shall:
+The Discovery phase shall:
 
-- Define a source-agnostic `DiscoverySource` union.
-- Define an immutable `Observation` type.
-- Define a `DiscoveryAdapter` contract.
-- Provide an adapter registry with deterministic resolution.
-- Expose a `DiscoveryCapability` interface for consumers.
-- Remain read-only and never modify observed systems.
+- Be completely read-only.
+- Produce identical results when run repeatedly against the same repository.
+- Build an evidence-backed model of the project.
+- Detect inconsistencies without modifying them.
+- Stop before governance initialization.
 
 ---
 
 ## Non-Goals
 
-This expedition shall not:
+Discovery shall not:
 
-- Implement the full Discovery engine pipeline.
-- Synthesize evidence, findings, or ProjectModel.
-- Implement persistence, approval, or governance.
-- Modify Protected Assets.
-- Produce events.
-- Create `.synth/` artifacts.
+- Create `.synth/`
+- Generate Missions
+- Generate Expeditions
+- Modify `package.json`
+- Create scripts
+- Repair the repository
+- Execute governance
+- Produce events
 
 ---
 
 ## Lifecycle
 
 ```text
-DiscoveryInput
+Repository
         |
         v
-Adapter Registry
+    Discovery
         |
         v
-DiscoveryAdapter(s)
+  Baseline Report
         |
         v
-Observations
+ Operator Approval
         |
         v
-Future: Engine → Evidence → Findings → ProjectModel
+Brownfield Genesis
+        |
+        v
+     Mission
+        |
+        v
+  Expeditions
+        |
+        v
+   Execution
 ```
 
 ---
 
-## Source Types
+## Discovery Outputs
 
-The framework supports an extensible set of source descriptors:
+### Repository Summary
 
-- `filesystem` — local directory
-- `git` — Git repository
-- `github` — GitHub repository
-- `knowledge` — knowledge package
-- `tickets` — ticket system
-- `api` — API endpoint
-- `deployment` — running deployment
-- `database` — database connection
-- `container` — container image
+- Languages
+- Frameworks
+- Build system
+- Runtime
+- Package managers
+- Deployment configuration
 
----
+### Knowledge Inventory
 
-## Adapter Contract
+Discovered sources of truth:
 
-```ts
-interface DiscoveryAdapter {
-  id: string
-  version: string
-  determinism: "deterministic" | "environment-dependent"
-  canHandle(source: DiscoverySource): boolean
-  collectObservations(
-    source: DiscoverySource,
-    context: DiscoveryContext,
-  ): Promise<Observation[]>
-}
-```
+- README
+- `knowledge/`
+- ADRs
+- Architecture documents
+- Specifications
+- Tickets
+- Tests
+- CI configuration
+- Database schema
 
-Adapters produce only immutable facts. They do not interpret, synthesize, or emit findings.
+### Capability Model
 
----
+For every identified capability:
 
-## Capability Contract
+- Name
+- Status: Complete, Partial, Planned, or Missing
+- Confidence
+- Supporting evidence
 
-```ts
-interface DiscoveryCapability {
-  discover(input: DiscoveryInput): Promise<DiscoverySession>
-  replay(session: DiscoverySession): Promise<ReplayResult>
-}
-```
+### Current State
 
-Consumers depend only on `DiscoveryCapability`. `DefaultDiscoveryEngine` is the internal implementation.
+Assessment of:
+
+- Architecture
+- Documentation
+- Implementation
+- Knowledge coverage
+- Test coverage
+- Governance presence
+
+### Conflict Report
+
+Examples:
+
+- Documentation differs from implementation.
+- Tests reference missing functionality.
+- Specifications conflict with source.
+- Missing dependencies.
+- Broken scripts.
+
+### Unknowns
+
+Explicitly identify areas where insufficient evidence prevents confident conclusions.
+
+### Confidence Report
+
+Every major conclusion shall include:
+
+- Evidence references
+- Confidence score
+- Unknown impact
+
+Confidence computation must be transparent and reproducible.
+
+### Recommended Mission
+
+Discovery may recommend a Mission. It shall never approve or create one.
 
 ---
 
 ## Acceptance Criteria
 
-A successful Source Adapter Framework:
+A successful Discovery:
 
-- [x] Defines `DiscoverySource`, `DiscoveryInput`, `Observation`, and `DiscoveryAdapter` contracts.
-- [x] Defines `DiscoveryCapability` interface.
-- [x] Implements an adapter registry with deterministic resolution.
-- [x] Provides a stub `DefaultDiscoveryEngine` implementing `DiscoveryCapability`.
-- [x] Adapters declare `canHandle` and `determinism` correctly.
-- [x] Adapters return observations with required provenance.
-- [x] Adapters do not modify sources.
-- [x] `npm run build` passes.
-- [x] New tests pass.
+- [ ] Produces no repository modifications.
+- [ ] Produces no governance artifacts.
+- [ ] Produces no events.
+- [ ] Produces no canonical state.
+- [ ] Produces a deterministic baseline.
+- [ ] Can be rerun with identical output if the repository is unchanged.
+
+---
+
+## Brownfield Genesis Changes
+
+`bootstrap` shall require an approved Discovery baseline.
+
+If none exists:
+
+```text
+No approved Discovery baseline found.
+
+Brownfield repositories must be assessed before governance can begin.
+
+Run:
+
+  synth discover
+```
 
 ---
 
 ## CLI Changes
 
-No CLI changes in this expedition. The CLI projection is deferred to EXP-DISCOVERY-002 and EXP-DISCOVERY-005.
+Introduce a new command:
+
+```bash
+synth discover
+```
+
+Possible options:
+
+```bash
+synth discover
+synth discover --json
+synth discover --report
+synth discover --refresh
+```
 
 ---
 
 ## Architectural Principles
 
-This expedition establishes the following invariants:
+This expedition establishes the following invariant:
 
-> **Adapters produce only immutable facts.**
+> **Understanding precedes governance.**
 
-> **Adapters participate only in the Acquire stage.**
+Inspection must never modify the system being inspected.
 
-> **Discovery is source-agnostic.**
-
-> **Consumers depend on the capability contract, not adapter implementations.**
+Governance begins only after an approved understanding of the current state exists.
 
 ---
 
@@ -188,11 +254,11 @@ This expedition establishes the following invariants:
 
 After completion:
 
-- SYNTH has a stable source abstraction and adapter contract.
-- New source types can be added without redesigning Discovery.
-- The Discovery engine can be built on top of this framework.
-- Consumers have a single capability interface to depend on.
-- The foundation for replayable, evidence-backed discovery is in place.
+- Greenfield and Brownfield projects follow distinct entry paths while converging into the same governance lifecycle.
+- Brownfield adoption becomes deterministic and reproducible.
+- Missions are synthesized from project intent rather than repository metadata.
+- Operators review an evidence-backed baseline before any governance artifacts or implementation changes occur.
+- Repository assessment and governance initialization become cleanly separated responsibilities.
 
 ---
 
@@ -200,47 +266,23 @@ After completion:
 
 ### Protected
 
-- Adapter contract
-- Observation schema
-- Source abstraction
-- Capability interface
+- Discovery intent
+- Read-only boundary
+- Evidence model
+- Baseline report format
 
 ### Not included
 
-- Engine pipeline implementation
-- Evidence synthesis
-- Finding synthesis
-- ProjectModel projection
-- Persistence
-- Approval lifecycle
-- Bootstrap integration
-- CLI projection
-
----
-
-## Completion Notes
-
-EXP-DISCOVERY-001 was completed on 2026-07-18.
-
-Delivered:
-
-- Source-agnostic `DiscoverySource` union.
-- Immutable `Observation` contract with adapter provenance.
-- `DiscoveryAdapter` contract with determinism declaration.
-- `DiscoveryCapability` public interface.
-- Deterministic adapter registry.
-- `DefaultDiscoveryEngine` stub implementing the capability.
-- Filesystem discovery adapter as the first concrete adapter.
-- 15 passing tests covering capability and adapter contracts.
-- Full `npm run govern` validation passed.
-
-Next: EXP-DISCOVERY-002 — Discovery Engine.
+- SYNTH architecture changes
+- CLI command semantics beyond `synth discover`
+- Governance model changes
+- Event model changes
+- Mission creation automation
 
 ---
 
 ## Related Documents
 
-- [EXP-PROGRAM-006 — Discovery Platform](EXP-PROGRAM-006.md)
 - [EXP-PROGRAM-004 — First Contact Program](EXP-PROGRAM-004.md)
 - [EXP-INIT-001 — Adapter-based Project Bootstrap](EXP-INIT-001.md)
-- [EXP-GOV-007 — Canonical State Resolution & Status Authority](EXP-GOV-007.md)
+- [docs/first-contact/experience-v2.md](../first-contact/experience-v2.md)

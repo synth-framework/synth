@@ -64,13 +64,25 @@ First Contact Program
 │       Adoption Expedition
 │       Prepare the repository for external users: badges, demos, example gallery.
 │
+├── EXP-DISCOVERY-001  Repository Discovery & Brownfield Genesis
+│       Adoption Expedition
+│       Introduce a deterministic, read-only Discovery phase before governance begins.
+│
 ├── EXP-BROWNFIELD-001  Brownfield Bootstrap Experience
 │       Product Expedition
 │       Make brownfield onboarding deterministic, mutation-safe, and self-guiding.
 │
-└── (promoted to EXP-PROGRAM-006)  Discovery Platform
-        Architecture Program
-        Source-agnostic evidence acquisition and observed-system understanding.
+├── EXP-CLI-001  CLI UX and Diagnostics Hardening
+│       Product Expedition
+│       Harden operator-facing diagnostics and the CLI output contract.
+│
+├── EXP-RUNTIME-001  Runtime Correctness and Recovery
+│       Runtime Expedition
+│       Guarantee atomic, replayable, recoverable runtime lifecycle transitions.
+│
+└── EXP-CERT-001  Failure Certification Framework
+        Certification Expedition
+        Establish deterministic failure and recovery certification using public workflows.
 ```
 
 ---
@@ -123,12 +135,12 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 ## Governance
 
 - The Program was reopened on 2026-07-18 to add EXP-DISCOVERY-001.
-- EXP-DISCOVERY-001 was promoted to PROGRAM-006 — Discovery Platform on 2026-07-18.
+- The Program was reopened again on 2026-07-19 to add EXP-BROWNFIELD-001 and the operational hardening expeditions EXP-CLI-001, EXP-RUNTIME-001, and EXP-CERT-001.
 - The Program is sequenced. Dependencies are explicit in each Expedition.
 - No Expedition may be promoted to executing without approval.
 - No implementation work may proceed outside an approved Expedition.
 - Each Expedition must produce evidence that satisfies its Definition of Done.
-- The Program completes when EXP-DISCOVERY-001 is accepted.
+- The Program completes when EXP-DISCOVERY-001, EXP-BROWNFIELD-001, EXP-CLI-001, EXP-RUNTIME-001, and EXP-CERT-001 are accepted.
 
 ---
 
@@ -151,28 +163,39 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 - [x] EXP-AX-003 completed and accepted.
 - [x] EXP-AX-004 completed and accepted.
 - [x] EXP-AX-005 completed and accepted (quick-start media deferred to follow-up).
+- [ ] EXP-DISCOVERY-001 completed and accepted.
 - [ ] EXP-BROWNFIELD-001 completed and accepted.
-- [x] EXP-DISCOVERY-001 promoted to PROGRAM-006 — Discovery Platform.
+- [ ] EXP-CLI-001 completed and accepted.
+- [ ] EXP-RUNTIME-001 completed and accepted.
+- [ ] EXP-CERT-001 completed and accepted.
 - [x] AGENTS.md is published at repository root.
 - [x] README is aligned with the AI-native experience.
 - [x] Website and documentation synchronization is verified.
 - [x] Public release polish is in place.
 - [x] `npm run govern` passes without architectural changes.
-- [ ] Brownfield entry path requires an approved Discovery baseline (deferred to PROGRAM-006).
+- [ ] Brownfield entry path requires an approved Discovery baseline.
 
 ---
 
 ## Completion Notes
 
-EXP-PROGRAM-004 — First Contact Program is complete.
+EXP-PROGRAM-004 — First Contact Program is active.
 
-All five expeditions were accepted:
+The first five expeditions were accepted:
 
 - **EXP-AX-001 Universal Distribution** — `@synth-framework/synth` is published on npm; global install, `npx`, `synth doctor`, and `synth init` are smoke-tested on macOS.
 - **EXP-AX-002 AI First Experience** — `AGENTS.md` is published at repository root and defines the AI operator contract, responsibilities, prohibitions, and full mission/validation/replay lifecycle.
 - **EXP-AX-003 README & Narrative Alignment** — README leads with the AI-native value proposition, npm install, 60-second demo, `AGENTS.md` reference, and secondary architecture.
 - **EXP-AX-004 Documentation Synchronization** — `docs/generated/` projection, link checking, and website-to-README copy sync are enforced in CI.
 - **EXP-AX-005 Public Release Polish** — Badges, example gallery, contributor section, and quick-start media placeholder are in place.
+
+Operational hardening expeditions are now in progress:
+
+- **EXP-DISCOVERY-001 Repository Discovery & Brownfield Genesis** — deterministic, read-only Discovery phase before governance.
+- **EXP-BROWNFIELD-001 Brownfield Bootstrap Experience** — deterministic, mutation-safe brownfield onboarding.
+- **EXP-CLI-001 CLI UX and Diagnostics Hardening** — trustworthy, actionable, machine-clean CLI diagnostics.
+- **EXP-RUNTIME-001 Runtime Correctness and Recovery** — atomic, replayable, recoverable runtime lifecycle transitions.
+- **EXP-CERT-001 Failure Certification Framework** — deterministic certification of failure and recovery scenarios.
 
 **Deferred work:** The quick-start GIF/video asset for EXP-AX-005 is tracked as a follow-up task and does not block program closure.
 
