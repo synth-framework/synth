@@ -786,7 +786,15 @@ async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBas
   const discoveryDir = path.join(targetDir, ".synth", "discovery")
   await fs.mkdir(discoveryDir, { recursive: true })
 
-  const canonical = JSON.stringify({ ...data, signature: "" }, Object.keys({ ...data, signature: "" }).sort())
+  // The signature covers only deterministic content. generatedAt and targetDir
+  // are volatile across runs and must not affect replay or cross-run equality.
+  const signatureInput = {
+    schema: data.schema,
+    discoverySessionId: data.discoverySessionId,
+    discoverySessionHash: data.discoverySessionHash,
+    analysis: data.analysis,
+  }
+  const canonical = JSON.stringify(signatureInput, Object.keys(signatureInput).sort())
   const signature = crypto.createHash("sha256").update(canonical).digest("hex")
   const baseline: DiscoveryBaseline = { ...data, signature }
 

@@ -2,7 +2,7 @@
 
 > **Product expedition.** Harden mutation-free discovery, baseline snapshots, repository classification, and bootstrap contracts so that existing systems can be onboarded deterministically.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  
@@ -115,16 +115,16 @@ Separate Discovery from Bootstrap:
 
 ## Deliverables
 
-1. Brownfield Intake model.
-2. Repository classifier.
-3. Baseline Snapshot artifact schema.
-4. Architecture inventory.
-5. Domain inventory.
-6. Dependency inventory.
-7. Risk assessment.
-8. Unknown tracker.
-9. Discovery confidence scoring.
-10. Bootstrap approval contract.
+1. Brownfield Intake model — `docs/guides/brownfield-bootstrap-specification.md` §3.
+2. Repository classifier — `src/cli/bootstrap-context.ts` (`generateAgentContext`).
+3. Baseline Snapshot artifact schema — `docs/reference/brownfield-baseline-artifact.md`.
+4. Architecture inventory — captured in `ProjectModel` projection (`src/discovery/types.ts`).
+5. Domain inventory — captured in `ProjectModel.knowledgeInventory`.
+6. Dependency inventory — captured in `ProjectModel.frameworks`, `ProjectModel.runtimes`, `ProjectModel.capabilities`.
+7. Risk assessment — `DiscoveryFindingSet` with severity levels (`src/discovery/types.ts`).
+8. Unknown tracker — `ProjectModel.unknowns` and findings of category `unknown`.
+9. Discovery confidence scoring — `ConfidenceScore` (`src/discovery/types.ts`) and `src/discovery/extract/confidence.ts`.
+10. Bootstrap approval contract — `docs/guides/brownfield-bootstrap-specification.md` §3.3–3.5 and §6.
 
 ---
 

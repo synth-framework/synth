@@ -148,6 +148,38 @@ async function testNamespaceHelpRouting() {
   console.log("[PASS] Every command namespace provides its own --help")
 }
 
+async function testBaselineArtifactDeterminism(repoDir) {
+  const firstResult = runSynth(["discover", repoDir, "--export"], PROJECT_ROOT)
+  assert(firstResult.status === 0, `synth discover --export must exit 0:\n${firstResult.stderr}`)
+  const firstOutput = parseJson(firstResult.stdout)
+  assert(firstOutput.kind === "DiscoveryResult", `discover --export should return DiscoveryResult, got ${firstOutput.kind}`)
+  assert(firstOutput.exported === true, `discover --export should report exported`)
+
+  const discoveryDir = path.join(repoDir, ".synth", "discovery")
+  const baselineFiles = (await fs.readdir(discoveryDir)).filter((f) => f.startsWith("baseline-") && f.endsWith(".json"))
+  assert(baselineFiles.length > 0, "discover --export should produce at least one baseline file")
+
+  const firstBaselinePath = path.join(discoveryDir, baselineFiles[baselineFiles.length - 1])
+  const firstBaseline = JSON.parse(await fs.readFile(firstBaselinePath, "utf-8"))
+  assert(firstBaseline.schema === "synth-discovery-baseline-v1", `baseline schema should be synth-discovery-baseline-v1, got ${firstBaseline.schema}`)
+  assert(firstBaseline.signature, "baseline should include signature")
+  assert(firstBaseline.discoverySessionHash, "baseline should include discoverySessionHash")
+
+  // Remove the baseline and re-export to verify deterministic signature.
+  await fs.rm(firstBaselinePath)
+  const secondResult = runSynth(["discover", repoDir, "--export"], PROJECT_ROOT)
+  assert(secondResult.status === 0, `second synth discover --export must exit 0:\n${secondResult.stderr}`)
+
+  const secondBaselineFiles = (await fs.readdir(discoveryDir)).filter((f) => f.startsWith("baseline-") && f.endsWith(".json"))
+  const secondBaselinePath = path.join(discoveryDir, secondBaselineFiles[secondBaselineFiles.length - 1])
+  const secondBaseline = JSON.parse(await fs.readFile(secondBaselinePath, "utf-8"))
+
+  assert(secondBaseline.signature === firstBaseline.signature, "baseline signature must be deterministic across exports")
+  assert(secondBaseline.discoverySessionHash === firstBaseline.discoverySessionHash, "discoverySessionHash must be deterministic across exports")
+
+  console.log("[PASS] Brownfield baseline artifact is deterministic")
+}
+
 async function main() {
   console.log("Running brownfield certification tests...")
   const repoDir = await setupTempRepo()
@@ -159,6 +191,7 @@ async function main() {
     await testGovernPasses(repoDir)
     await testMutatingCommandRejectedDuringDiscovery(repoDir)
     await testNamespaceHelpRouting()
+    await testBaselineArtifactDeterminism(repoDir)
     console.log("\nAll brownfield certification tests passed.")
   } finally {
     await fs.rm(repoDir, { recursive: true, force: true })
