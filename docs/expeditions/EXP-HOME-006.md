@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-006 — Governance Visualization
 
 > **Product expedition.** Explain governance through an interactive before/after comparison on the homepage.

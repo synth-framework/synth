@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-004 — AI Interaction Manifest
 
 > **Product expedition.** Standardize machine-readable interaction guidance so any AI agent can understand how to work with a specific SYNTH repository.

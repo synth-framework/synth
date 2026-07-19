@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-003 — Genesis Experience
 
 > **Product expedition.** Build the interactive Genesis session that turns visitor intent into a projected Mission and Expeditions on the homepage.

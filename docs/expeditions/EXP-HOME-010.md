@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-010 — Responsive Implementation
 
 > **Engineering expedition.** Adapt the Mission Workspace and homepage sections for all screen sizes.

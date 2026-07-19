@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-009 — Capabilities Explorer
 
 > **Product expedition.** Build a grid of runtime concepts that links to documentation.

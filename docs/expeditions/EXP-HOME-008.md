@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-008 — Architecture Explorer
 
 > **Product expedition.** Build an interactive layered architecture diagram for the homepage.

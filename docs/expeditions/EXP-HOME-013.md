@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-013 — Motion System
 
 > **Design expedition.** Define calm, purposeful animation rules for the homepage.

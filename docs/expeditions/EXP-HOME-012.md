@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-012 — Performance
 
 > **Engineering expedition.** Optimize the homepage for fast first paint, smooth animations, and efficient resource loading.

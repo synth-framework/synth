@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-007 — Replay Experience
 
 > **Product expedition.** Embed a replay timeline that updates homepage artifacts as the visitor scrubs through events.

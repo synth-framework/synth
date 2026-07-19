@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-004 — Artifact System
 
 > **Architecture expedition.** Define Artifact Card variants and behavior for the homepage.

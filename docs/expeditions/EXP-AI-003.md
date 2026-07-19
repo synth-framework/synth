@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-003 — Repository Semantic Metadata
 
 > **Architecture expedition.** Define the machine-readable metadata contracts a SYNTH repository exposes to AI agents.

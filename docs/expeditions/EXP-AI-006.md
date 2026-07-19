@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-006 — Multi-Agent Coordination
 
 > **Architecture expedition.** Define contracts that let multiple AI agents collaborate on the same SYNTH repository without conflict.

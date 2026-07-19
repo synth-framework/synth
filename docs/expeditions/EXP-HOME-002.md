@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-002 — Mission Workspace
 
 > **Architecture expedition.** Define the workspace layout, panels, and state machine for the homepage.

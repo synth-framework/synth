@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-001 — Mission Studio Design Language
 
 > **Design expedition.** Define the visual system, design tokens, and principles for the Mission Studio Homepage.

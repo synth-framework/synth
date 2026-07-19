@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-007 — Agent Certification
 
 > **Certification expedition.** Create deterministic test suites that validate AI agent compliance with the Genesis Protocol and SYNTH governance contracts.

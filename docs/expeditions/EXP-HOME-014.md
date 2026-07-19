@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-014 — Documentation Integration
 
 > **Product expedition.** Link homepage artifacts and concepts to canonical SYNTH documentation.

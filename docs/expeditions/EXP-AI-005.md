@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-005 — Interoperability SDK
 
 > **Engineering expedition.** Publish language-agnostic SDKs that agents use to parse the Genesis Protocol, execute discovery, exchange artifacts, consume replay, and validate governance.

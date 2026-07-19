@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-002 — Agent Skill Catalog
 
 > **Product expedition.** Publish reusable agent skills that encode SYNTH interaction patterns for common agent platforms.

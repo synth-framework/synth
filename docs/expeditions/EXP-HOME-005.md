@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-005 — Workflow Visualization
 
 > **Product expedition.** Visualize the SYNTH lifecycle as an interactive flow on the homepage.

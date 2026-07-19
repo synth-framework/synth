@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-011 — Accessibility
 
 > **Engineering expedition.** Ensure the homepage meets WCAG standards and is usable by everyone.

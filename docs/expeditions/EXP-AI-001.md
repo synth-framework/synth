@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-026 — AI Agent Interoperability**.
-
 # EXP-AI-001 — Genesis Protocol
 
 > **Architecture expedition.** Specify the canonical protocol through which any AI agent participates in SYNTH Discovery, Mission creation, and Expedition execution.

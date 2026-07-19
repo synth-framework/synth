@@ -1,5 +1,3 @@
-> This expedition is part of **EXP-PROGRAM-027 — Mission Studio Homepage**.
-
 # EXP-HOME-015 — Production Certification
 
 > **Certification expedition.** Certify that the Mission Studio Homepage meets all acceptance criteria before release.
