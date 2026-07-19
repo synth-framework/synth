@@ -54,6 +54,46 @@ Every event in the system has the following fields:
 | MILESTONE_COMPLETED | Milestone | Milestone transitioned to completed |
 | PROJECT_CREATED | Project | New project created |
 
+### Governance Events
+
+Governance events record lifecycle transitions for Missions and Expeditions. They are the canonical source of truth for governance state and must be replayable.
+
+| Event Type | Entity | Description |
+|------------|--------|-------------|
+| MISSION_CREATED | Mission | New mission drafted |
+| MISSION_APPROVED | Mission | Mission approved for execution |
+| MISSION_COMPLETED | Mission | Mission marked complete |
+| MISSION_ARCHIVED | Mission | Mission archived |
+| EXPEDITION_CREATED | Expedition | New expedition drafted under a mission |
+| EXPEDITION_APPROVED | Expedition | Expedition approved for commitment |
+| EXPEDITION_COMMITTED | Expedition | Expedition committed as runtime entity |
+| EXPEDITION_STARTED | Expedition | Expedition execution started |
+| EXPEDITION_COMPLETED | Expedition | Expedition execution completed |
+| OBJECTIVE_ADDED | Objective | Objective added to an expedition |
+
+### First Contact Events
+
+| Event Type | Description |
+|------------|-------------|
+| FIRST_CONTACT_STARTED | Greenfield discovery session began |
+| DISCOVERY_APPROVED | Discovery artifact approved |
+| MISSION_MATERIALIZED | Mission created from approved discovery |
+| EXPEDITIONS_PROPOSED | Initial expeditions proposed for a mission |
+
+### Execution Intent Events
+
+| Event Type | Description |
+|------------|-------------|
+| EXECUTION_INTENT_CREATED | Intent to execute a capability |
+| EXECUTION_INTENT_GRAPH_CREATED | Dependency graph of execution intents |
+| EXPEDITION_BRANCH_CREATED | Branch created for expedition execution |
+| EXECUTION_INTENT_STARTED | Intent execution started |
+| EXECUTION_INTENT_COMPLETED | Intent execution completed |
+| EXECUTION_INTENT_FAILED | Intent execution failed |
+| EXECUTION_INTENT_ROLLEDBACK | Intent execution rolled back |
+| EXPEDITION_EXECUTION_COMMITTED | Expedition execution committed |
+| EXPEDITION_EXECUTION_PROJECTED | Expedition output projected (PR/patch/diff) |
+
 ### System Events
 
 | Event Type | Description |
