@@ -4,11 +4,12 @@
 
 > **Product expedition.** Define prototype, acceptance scenario, mock API, simulation, and runtime verification capabilities before implementation.
 
-**Status:** Executing  
+**Status:** Completed and accepted  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-025 — Canonical Knowledge & Validation  
 **Depends On:** EXP-KNOWLEDGE-001 (Canonical Knowledge Model)
+**Completed In:** PR #199
 
 ---
 
