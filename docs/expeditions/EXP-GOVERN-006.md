@@ -97,14 +97,14 @@ Add tests that verify the runtime satisfies the governance contract without depe
 
 ## Deliverables
 
-1. Mission lifecycle contract document.
-2. Expedition lifecycle contract document.
-3. Approval semantics specification.
-4. Governance event taxonomy, aligned with `src/types/event.ts`.
-5. Mutation boundary contract.
-6. Brownfield bootstrap contract finalized.
-7. ADR on governance lifecycle freeze.
-8. Certification tests verifying the runtime satisfies the contract through public CLI workflows.
+1. Mission lifecycle contract — `docs/reference/governance-lifecycle-contract.md` §1.
+2. Expedition lifecycle contract — `docs/reference/governance-lifecycle-contract.md` §2.
+3. Approval semantics specification — `docs/reference/governance-lifecycle-contract.md` §3.
+4. Governance event taxonomy — `docs/architecture/09-event-model.md` §Governance Events.
+5. Mutation boundary contract — `docs/reference/governance-lifecycle-contract.md` §4.
+6. Brownfield bootstrap contract — `docs/guides/brownfield-bootstrap-specification.md`.
+7. ADR on governance lifecycle freeze — `docs/adr/ADR-026-governance-lifecycle-freeze.md`.
+8. Certification tests — `tests/governance-lifecycle-contract.test.js`.
 
 ---
 

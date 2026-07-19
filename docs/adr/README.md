@@ -27,3 +27,8 @@ Use `ADR-TEMPLATE.md`.
 - [ADR-019 — Greenfield Discovery Lifecycle](ADR-019-greenfield-discovery-lifecycle.md)
 - [ADR-020 — First Contact Discovery Artifact Schema](ADR-020-first-contact-artifact-schema.md)
 - [ADR-021 — Enforce Pull-Request Workflow for All Source Changes](ADR-021-enforce-pull-request-workflow.md)
+- [ADR-022 — Validation Dependency Graph](ADR-022-validation-dependency-graph.md)
+- [ADR-023 — Proof Model and Fingerprint Store](ADR-023-proof-model-and-fingerprint-store.md)
+- [ADR-024 — Incremental Scheduler](ADR-024-incremental-scheduler.md)
+- [ADR-025 — Parallel Execution and Remote Cache](ADR-025-parallel-execution-and-remote-cache.md)
+- [ADR-026 — Governance Lifecycle Freeze](ADR-026-governance-lifecycle-freeze.md)
