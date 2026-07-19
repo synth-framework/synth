@@ -2,8 +2,9 @@
 
 > **Architecture expedition.** Define the canonical greenfield discovery workflow and approval gates before any intent-extraction or materialization work begins.
 
-**Status:** Executing  
+**Status:** Accepted  
 **Started:** 2026-07-19  
+**Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  
