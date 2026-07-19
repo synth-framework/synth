@@ -36,6 +36,8 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "explain", safety: "READ_ONLY", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { command: "validate", safety: "READ_ONLY", description: "Analyze changes and plan validations" },
   { command: "govern", safety: "MUTATING", description: "Run the full governance pipeline", requiresApproval: true },
+  { command: "repair replay", safety: "POTENTIALLY_MUTATING", description: "Propose repairs for runtime drift without mutating state" },
+  { command: "repair replay --approve", safety: "MUTATING", description: "Apply repairs for runtime drift", requiresApproval: true },
 ]
 
 function normalizeCommand(command: string): string {
