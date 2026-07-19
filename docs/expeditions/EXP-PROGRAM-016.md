@@ -1,6 +1,6 @@
 # EXP-PROGRAM-016 — Governed Expedition Execution
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Accepted:** 2026-07-18
 **Kind:** Program  
 **Priority:** High  

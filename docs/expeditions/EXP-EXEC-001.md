@@ -1,6 +1,6 @@
 # EXP-EXEC-001 — Execution Intent Model
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Accepted:** 2026-07-18
 **Kind:** Architecture Expedition  
 **Priority:** High  

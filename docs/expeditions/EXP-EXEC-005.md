@@ -1,6 +1,6 @@
 # EXP-EXEC-005 — Pull Request Projection
 
-**Status:** Completed  
+**Status:** Completed and accepted  
 **Merged:** PR #128
 **Kind:** Implementation Expedition  
 **Priority:** High  

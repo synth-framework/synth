@@ -1,6 +1,6 @@
 # EXP-TRUST-004 — Decision Events
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-011 — Operator Trust & CLI Integrity  

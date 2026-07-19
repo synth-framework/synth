@@ -1,6 +1,6 @@
 # EXP-EXEC-004 — Commit-as-Evidence
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Merged:** PR #127
 **Kind:** Implementation Expedition  
 **Priority:** High  

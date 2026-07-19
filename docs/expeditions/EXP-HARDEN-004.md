@@ -1,6 +1,6 @@
 # EXP-HARDEN-004 — Replay Hardening
 
-**Status:** Completed  
+**Status:** Completed and accepted
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-010 — Constitutional Hardening Program  

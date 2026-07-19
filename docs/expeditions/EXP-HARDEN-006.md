@@ -1,6 +1,6 @@
 # EXP-HARDEN-006 — Validation Expansion
 
-**Status:** Completed  
+**Status:** Completed and accepted
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-010 — Constitutional Hardening Program  

@@ -1,6 +1,6 @@
 # EXP-PROGRAM-010 — Constitutional Hardening Program
 
-**Status:** Accepted — Constitutional objectives achieved (2026-07-16)  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  

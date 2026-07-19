@@ -1,6 +1,6 @@
 # EXP-HARDEN-002 — Snapshot Integrity
 
-**Status:** Completed  
+**Status:** Completed and accepted
 **Kind:** Implementation Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-010 — Constitutional Hardening Program  

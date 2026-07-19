@@ -1,6 +1,6 @@
 # EXP-VCS-005 — Versioning Certification
 
-**Status:** Accepted  
+**Status:** Completed and accepted  
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-015 — Repository Versioning Capability  
