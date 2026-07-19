@@ -14,6 +14,7 @@ import path from "path"
 import { createDefaultDiscoveryEngine } from "./engine.js"
 import { createFilesystemObservationCapability } from "./capabilities/filesystem-capability.js"
 import { createGitObservationCapability } from "./capabilities/git-capability.js"
+import { createOperationalArtifactObservationCapability } from "./capabilities/operational-artifact-capability.js"
 import type {
   DiscoveryInput,
   DiscoveryOptions,
@@ -86,7 +87,10 @@ export function createDefaultDiscoverySessionProvider(): DiscoverySessionProvide
         // .git is not present; leave Git capability disabled.
       }
 
-      const observationCapabilities = [createFilesystemObservationCapability()]
+      const observationCapabilities = [
+        createFilesystemObservationCapability(),
+        createOperationalArtifactObservationCapability(),
+      ]
       if (hasGitDirectory) {
         observationCapabilities.push(createGitObservationCapability())
       }

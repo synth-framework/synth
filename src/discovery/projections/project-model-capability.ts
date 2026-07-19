@@ -412,6 +412,77 @@ function documentationCapabilityRule(): ProjectModelRule {
   }
 }
 
+function makeOperationalCapabilityRule(
+  id: string,
+  name: string,
+  requiredClaim: string,
+): ProjectModelRule {
+  return {
+    id,
+    domain: "capability",
+    requiredClaims: [requiredClaim],
+    infer(evidenceGraph) {
+      const claims = findClaims(evidenceGraph, requiredClaim)
+      if (claims.length === 0) return undefined
+
+      const item: CapabilityItem = {
+        name,
+        available: true,
+        evidenceClaimIds: claims.map((claim) => claim.id),
+      }
+
+      return [
+        {
+          field: name,
+          value: item,
+          confidence: deterministicConfidence(0.9, `${requiredClaim} observed`, "deterministic"),
+          evidenceClaimIds: item.evidenceClaimIds,
+        },
+      ]
+    },
+  }
+}
+
+function containerizationCapabilityRule(): ProjectModelRule {
+  return makeOperationalCapabilityRule(
+    "project-model:capability:containerization",
+    "containerization",
+    "Container configuration present",
+  )
+}
+
+function deploymentCapabilityRule(): ProjectModelRule {
+  return makeOperationalCapabilityRule(
+    "project-model:capability:deployment",
+    "deployment",
+    "Deployment configuration present",
+  )
+}
+
+function databaseCapabilityRule(): ProjectModelRule {
+  return makeOperationalCapabilityRule(
+    "project-model:capability:database",
+    "database",
+    "Database configuration present",
+  )
+}
+
+function cicdCapabilityRule(): ProjectModelRule {
+  return makeOperationalCapabilityRule(
+    "project-model:capability:cicd",
+    "continuous-integration",
+    "CI/CD configuration present",
+  )
+}
+
+function infrastructureCapabilityRule(): ProjectModelRule {
+  return makeOperationalCapabilityRule(
+    "project-model:capability:infrastructure",
+    "infrastructure-as-code",
+    "Infrastructure-as-code present",
+  )
+}
+
 function readmeKnowledgeRule(): ProjectModelRule {
   return {
     id: "project-model:knowledge:readme",
@@ -723,6 +794,11 @@ export function createDefaultProjectModelRules(): ProjectModelRule[] {
     runtimeRule(),
     testingCapabilityRule(),
     documentationCapabilityRule(),
+    containerizationCapabilityRule(),
+    deploymentCapabilityRule(),
+    databaseCapabilityRule(),
+    cicdCapabilityRule(),
+    infrastructureCapabilityRule(),
     readmeKnowledgeRule(),
     architectureKnowledgeRule(),
     docsKnowledgeRule(),

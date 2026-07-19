@@ -1,6 +1,6 @@
 # EXP-PROGRAM-006 — Discovery Platform
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -178,9 +178,26 @@ Adapters participate only in **Acquire**. All downstream stages are engine-owned
 - [x] EXP-DISCOVERY-005 completed and accepted.
 - [x] EXP-DISCOVERY-006 completed and accepted.
 - [x] EXP-DISCOVERY-007 completed and accepted.
-- [ ] EXP-DISCOVERY-008 completed and accepted.
-- [ ] Discovery Capability is documented as a platform pillar.
-- [ ] `npm run govern` passes.
+- [x] EXP-DISCOVERY-008 completed and accepted.
+- [x] Discovery Capability is documented as a platform pillar.
+- [x] `npm run govern` passes.
+
+---
+
+## Completion Notes
+
+All eight Discovery expeditions are completed and accepted:
+
+- **EXP-DISCOVERY-001** — Source Adapter Framework
+- **EXP-DISCOVERY-002** — Discovery Engine
+- **EXP-DISCOVERY-003** — First Observation Capabilities
+- **EXP-DISCOVERY-004** — Projection Capability Mechanism
+- **EXP-DISCOVERY-005** — Brownfield Genesis Integration
+- **EXP-DISCOVERY-006** — Replay & Determinism
+- **EXP-DISCOVERY-007** — IDE / MCP / Web Consumers
+- **EXP-DISCOVERY-008** — Operational Discovery
+
+The Discovery Capability now supports filesystem, Git, and operational artifact observation with deterministic replay. Brownfield Genesis consumes Discovery baselines. The pipeline is documented and certified.
 
 ---
 
