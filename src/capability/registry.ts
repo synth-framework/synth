@@ -9,7 +9,7 @@ import {
   createMilestone, startMilestone, completeMilestone,
   createProject,
   createMission, approveMission, completeMission, archiveMission,
-  createExpedition, approveExpedition, startExpedition, completeExpedition,
+  createExpedition, approveExpedition, commitExpedition, startExpedition, completeExpedition,
   createObjective, completeObjective,
   createDiscovery,
   createDecision, acceptDecision, rejectDecision,
@@ -535,14 +535,37 @@ export function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "CommitExpedition",
+      description: "Commit an approved expedition to runtime",
+      inputSchema: { required: ["id"], types: { id: "string" } },
+      outputSchema: { events: ["EXPEDITION_COMMITTED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists_approved",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return state.expeditions[id]?.status === "approved" },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const existing = state.expeditions[id]
+        if (!existing) return { events: [{ type: "EXPEDITION_COMMITTED", payload: { id, status: "committed" } }] }
+        const updated = commitExpedition(existing, executionCtx)
+        return { events: [{ type: "EXPEDITION_COMMITTED", payload: { id: updated.id, status: updated.status } }], result: updated }
+      },
+    },
+    {
       name: "StartExpedition",
       description: "Start an expedition",
       inputSchema: { required: ["id"], types: { id: "string" } },
       outputSchema: { events: ["EXPEDITION_STARTED"], resultType: "Expedition" },
       preconditions: [
         {
-          name: "expedition_exists_approved",
-          evaluate: (intent, state) => { const id = String(intent.payload.id); return state.expeditions[id]?.status === "approved" },
+          name: "expedition_exists_committed",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return state.expeditions[id]?.status === "committed" },
         },
       ],
       postconditions: [],

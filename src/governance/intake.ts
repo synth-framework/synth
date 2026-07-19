@@ -21,6 +21,8 @@ export type AgentAction =
   | { kind: "mission.approve"; missionId?: string }
   | { kind: "mission.evidence.add"; missionId?: string }
   | { kind: "expedition.create"; missionId?: string }
+  | { kind: "expedition.approve"; expeditionId: string }
+  | { kind: "expedition.commit"; expeditionId: string }
   | { kind: "expedition.start"; expeditionId: string }
   | { kind: "expedition.complete"; expeditionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
@@ -128,6 +130,44 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState):
       return { decision: "ALLOW", activeMissionId: activeMission?.id }
     }
 
+    case "expedition.approve": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
+        }
+      }
+      if (expedition.status !== "draft") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only draft expeditions can be approved.`,
+          requiredAction: "Create a new expedition draft if the current one is no longer in draft state.",
+        }
+      }
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.commit": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create and approve the expedition through the lifecycle first.",
+        }
+      }
+      if (expedition.status !== "approved") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only approved expeditions can be committed.`,
+          requiredAction: `Approve the expedition first: synth expedition approve --draft-id <id>`,
+        }
+      }
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
     case "expedition.start": {
       const expedition = findExpedition(state, action.expeditionId)
       if (!expedition) {
@@ -137,11 +177,11 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState):
           requiredAction: "Create the expedition through the lifecycle first.",
         }
       }
-      if (expedition.status !== "approved") {
+      if (expedition.status !== "committed") {
         return {
           decision: "BLOCK",
-          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only approved expeditions can be started.`,
-          requiredAction: `Approve the expedition first: synth mission approve or the appropriate governance step for ${expedition.missionId}.`,
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only committed expeditions can be started.`,
+          requiredAction: `Commit the expedition first: synth expedition commit --proposal-id ${action.expeditionId}`,
         }
       }
       if (executingExpedition && executingExpedition.id !== expedition.id) {

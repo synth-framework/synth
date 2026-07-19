@@ -64,7 +64,7 @@ export type Expedition = {
   missionId: string
   name: string
   goal: string
-  status: "draft" | "approved" | "executing" | "completed" | "cancelled"
+  status: "draft" | "approved" | "committed" | "executing" | "completed" | "cancelled"
   objectives: string[]
   discoveries: string[]
   decisions: string[]

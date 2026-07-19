@@ -1,15 +1,41 @@
 // ============================================================
 // BOOTSTRAP: Repository Analyzer
 // ============================================================
-// Analyzes a target directory using Synth adapters and produces
-// observations for Mission Studio. Does not mutate the repository.
+// Translates a DiscoverySession into the legacy RepositoryAnalysis
+// shape consumed by Mission Studio and Genesis.
+//
+// This module does not read the filesystem directly and does not
+// perform language/framework/test detection. All project understanding
+// comes from the Discovery compiler via a DiscoverySessionProvider.
+//
+// The analysis now flows through the Discovery Consumption Layer: a
+// DiscoverySession is produced by the default provider, consumed by the
+// CLI consumer, and mapped back into the RepositoryAnalysis contract.
 // ============================================================
 
-import fs from "fs"
+import fs from "fs/promises"
 import path from "path"
-import { createAdapterRegistry } from "../adapters/registry.js"
-import { collectPlanningObservations } from "../mission-studio/adapter-observation-collector.js"
-import type { PlanningObservation } from "../planning/observation.js"
+import {
+  createConsumerRegistry,
+  createDefaultDiscoverySessionProvider,
+  createCliConsumer,
+  CLI_CONSUMER_ID,
+  type DiscoverySession,
+} from "../discovery/index.js"
+import type {
+  Finding,
+  ProjectModel,
+} from "../discovery/types.js"
+import type {
+  PlanningObservation,
+} from "../planning/observation.js"
+import type { AgentContext } from "./bootstrap-context.js"
+import {
+  canonicalLanguages,
+  buildObservations,
+  type CliConsumerOutput,
+} from "../discovery/consumers/cli-consumer.js"
+import { generateAgentContext } from "./bootstrap-context.js"
 
 export type RepositoryType = "empty" | "node" | "python" | "polyglot" | "brownfield" | "unknown"
 
@@ -22,157 +48,123 @@ export type RepositoryAnalysis = {
   fileCount: number
   observations: PlanningObservation[]
   adapterErrors: string[]
+  /** Source history classification for the target repository. */
+  sourceHistory: AgentContext["sourceHistory"]
+  /** Agent Context Contract derived from Discovery output. */
+  agentContext?: AgentContext
+  /** Discovery session provenance carried into Genesis for lineage. */
+  discoverySessionId?: string
+  discoverySessionHash?: string
 }
 
-const NODE_SIGNALS = ["package.json", "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "node_modules"]
-const PYTHON_SIGNALS = ["requirements.txt", "pyproject.toml", "setup.py", "Pipfile", "poetry.lock"]
-const JAVA_SIGNALS = ["pom.xml", "build.gradle", "gradlew"]
-const GO_SIGNALS = ["go.mod", "go.sum"]
-const RUST_SIGNALS = ["Cargo.toml", "Cargo.lock"]
-
-function detectLanguages(root: string): string[] {
-  const languages = new Set<string>()
-  const files = fs.readdirSync(root)
-
-  for (const signal of NODE_SIGNALS) {
-    if (files.includes(signal)) languages.add("JavaScript/TypeScript")
+function collectAdapterErrors(session: DiscoverySession): string[] {
+  const errors: string[] = []
+  for (const stage of Object.values(session.pipeline)) {
+    errors.push(...stage.warnings)
   }
-  for (const signal of PYTHON_SIGNALS) {
-    if (files.includes(signal)) languages.add("Python")
-  }
-  for (const signal of JAVA_SIGNALS) {
-    if (files.includes(signal)) languages.add("Java")
-  }
-  for (const signal of GO_SIGNALS) {
-    if (files.includes(signal)) languages.add("Go")
-  }
-  for (const signal of RUST_SIGNALS) {
-    if (files.includes(signal)) languages.add("Rust")
-  }
-
-  return Array.from(languages)
+  return errors
 }
 
-function detectFrameworks(root: string): string[] {
-  const frameworks = new Set<string>()
+const SOURCE_HISTORY_SEARCH_DEPTH = 3
 
+/**
+ * Classify whether version-control history is available in the target
+ * repository, missing, or lives in an external (parent) repository.
+ */
+export async function classifySourceHistory(targetDir: string): Promise<AgentContext["sourceHistory"]> {
   try {
-    const packageJsonPath = path.join(root, "package.json")
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"))
-      const deps = { ...packageJson.dependencies, ...packageJson.devDependencies }
-      const frameworkMap: Record<string, string> = {
-        next: "Next.js",
-        react: "React",
-        express: "Express",
-        "@nestjs/core": "NestJS",
-        fastify: "Fastify",
-        vue: "Vue",
-        svelte: "Svelte",
-        nuxt: "Nuxt",
-      }
-      for (const [dep, name] of Object.entries(frameworkMap)) {
-        if (deps[dep]) frameworks.add(name)
+    const gitPath = path.join(targetDir, ".git")
+    const stat = await fs.stat(gitPath)
+    if (stat.isDirectory()) {
+      // Verify the Git directory is readable by looking for HEAD.
+      try {
+        await fs.access(path.join(gitPath, "HEAD"))
+        return "AVAILABLE"
+      } catch {
+        return "UNKNOWN"
       }
     }
   } catch {
-    // ignore malformed package.json
+    // .git does not exist in targetDir; check parent directories.
   }
 
-  return Array.from(frameworks)
-}
-
-function detectTests(root: string): boolean {
-  const testPatterns = ["test", "tests", "__tests__", "*.test.js", "*.test.ts", "*.spec.js", "*.spec.ts"]
-  return testPatterns.some((pattern) => {
-    if (pattern.includes("*")) {
-      // crude glob check
-      const ext = pattern.slice(pattern.indexOf(".") + 1)
-      const files = fs.readdirSync(root)
-      return files.some((f) => f.endsWith(ext))
-    }
-    return fs.existsSync(path.join(root, pattern))
-  })
-}
-
-function countFiles(root: string): number {
-  let count = 0
-  function walk(dir: string) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true })
-    for (const entry of entries) {
-      if (["node_modules", ".git", "dist", "build", ".synth", "coverage"].includes(entry.name)) continue
-      if (entry.isDirectory()) {
-        walk(path.join(dir, entry.name))
-      } else {
-        count++
+  let current = targetDir
+  for (let depth = 0; depth < SOURCE_HISTORY_SEARCH_DEPTH; depth++) {
+    const parent = path.dirname(current)
+    if (parent === current) break
+    try {
+      const parentGit = path.join(parent, ".git")
+      const stat = await fs.stat(parentGit)
+      if (stat.isDirectory()) {
+        try {
+          await fs.access(path.join(parentGit, "HEAD"))
+          return "EXTERNAL"
+        } catch {
+          return "UNKNOWN"
+        }
       }
+    } catch {
+      // continue searching upward
     }
+    current = parent
   }
-  try {
-    walk(root)
-  } catch {
-    // ignore permission errors
-  }
-  return count
+
+  return "MISSING"
 }
 
-function classifyRepository(root: string, languages: string[]): RepositoryType {
-  const files = fs.readdirSync(root)
-  const fileCount = countFiles(root)
-
-  if (fileCount === 0) return "empty"
-  if (languages.length > 1) return "polyglot"
-  if (languages.length === 0 && fileCount > 5) return "brownfield"
-  if (languages.includes("JavaScript/TypeScript")) return "node"
-  if (languages.includes("Python")) return "python"
-  return "unknown"
+function createAnalyzerRegistry() {
+  const registry = createConsumerRegistry()
+  registry.register(createCliConsumer())
+  return registry
 }
 
 export async function analyzeRepository(targetDir: string): Promise<RepositoryAnalysis> {
-  const resolvedDir = path.resolve(targetDir)
-  if (!fs.existsSync(resolvedDir)) {
-    throw new Error(`Directory does not exist: ${resolvedDir}`)
+  const provider = createDefaultDiscoverySessionProvider()
+  const session = await provider.discover({ targetDir })
+  const sourceHistory = await classifySourceHistory(targetDir)
+
+  const projectModel = session.projections["project-model"] as ProjectModel | undefined
+  if (!projectModel) {
+    return {
+      repositoryType: "unknown",
+      languages: [],
+      frameworks: [],
+      hasTests: false,
+      hasPackageManager: false,
+      fileCount: 0,
+      observations: [],
+      adapterErrors: ["Discovery session did not produce a ProjectModel projection"],
+      sourceHistory,
+    }
   }
 
-  const originalCwd = process.cwd()
-  process.chdir(resolvedDir)
+  const registry = createAnalyzerRegistry()
+  const result = registry.execute<unknown, CliConsumerOutput>(CLI_CONSUMER_ID, session)
+  const consumerOutput = result.output
 
-  try {
-    const languages = detectLanguages(resolvedDir)
-    const frameworks = detectFrameworks(resolvedDir)
-    const hasTests = detectTests(resolvedDir)
-    const fileCount = countFiles(resolvedDir)
-    const repositoryType = classifyRepository(resolvedDir, languages)
+  const findings = (session.projections.findings as { items: Finding[] } | undefined) ?? {
+    items: [],
+  }
 
-    const registry = createAdapterRegistry()
+  const repositoryType = consumerOutput.repositoryType as RepositoryType
+  const observations = buildObservations(repositoryType, projectModel, findings)
 
-    // Configure filesystem adapter explicitly with target directory.
-    const filesystem = registry.create("filesystem")
-    await filesystem.configure({ rootDirectory: resolvedDir, maxSnippetLength: 500, includeHidden: false })
-    await filesystem.enable()
+  const agentContext = generateAgentContext(projectModel, session, sourceHistory)
 
-    // Collect observations from adapters that can observe the current directory.
-    const adapterNames = ["filesystem", "architecture", "dependency", "knowledge-extraction", "specification"]
-    const observations = await collectPlanningObservations(registry, { adapterNames, enrich: true })
-
-    // Adapter errors are not exposed directly by collectPlanningObservations,
-    // so we surface a generic summary if no observations were produced.
-    const adapterErrors: string[] = []
-    if (observations.length === 0 && fileCount > 0) {
-      adapterErrors.push("No observations produced by adapters despite files present")
-    }
-
-    return {
-      repositoryType,
-      languages,
-      frameworks,
-      hasTests,
-      hasPackageManager: languages.includes("JavaScript/TypeScript") || languages.includes("Python"),
-      fileCount,
-      observations,
-      adapterErrors,
-    }
-  } finally {
-    process.chdir(originalCwd)
+  return {
+    repositoryType,
+    languages: canonicalLanguages(projectModel),
+    frameworks: projectModel.frameworks.map((framework) => framework.name),
+    hasTests: projectModel.capabilities.some(
+      (capability) => capability.name === "testing" && capability.available,
+    ),
+    hasPackageManager: projectModel.packageManager !== undefined,
+    fileCount: projectModel.fileCount,
+    observations,
+    adapterErrors: collectAdapterErrors(session),
+    sourceHistory,
+    agentContext,
+    discoverySessionId: session.id,
+    discoverySessionHash: session.hash,
   }
 }

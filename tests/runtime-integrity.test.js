@@ -42,10 +42,10 @@ async function testDoctorVerifiesDistIntegrity() {
   const { stdout, status } = runSynth(["doctor"])
   assert(status === 0 || status === 1, "doctor should produce a structured exit")
   const output = parseJson(stdout)
-  assert(output.checks, "doctor output should include checks")
-  assert(output.checks.distIntegrity, "doctor output should include distIntegrity check")
-  assert(output.checks.distIntegrity.ok === true, `distIntegrity should be ok, got: ${output.checks.distIntegrity.detail}`)
-  assert(output.checks.distIntegrity.detail.includes("verified"), "distIntegrity detail should mention verified files")
+  assert(output.runtimeHealth, "doctor output should include runtimeHealth")
+  assert(output.runtimeHealth.distIntegrity, "doctor output should include runtime distIntegrity check")
+  assert(output.runtimeHealth.distIntegrity.ok === true, `distIntegrity should be ok, got: ${output.runtimeHealth.distIntegrity.detail}`)
+  assert(output.runtimeHealth.distIntegrity.detail.includes("verified"), "distIntegrity detail should mention verified files")
   console.log("[PASS] synth doctor verifies dist integrity when manifest matches")
 }
 
@@ -63,8 +63,8 @@ async function testDoctorDetectsTamperedDistFile() {
     const { stdout } = runSynth(["doctor"])
     const output = parseJson(stdout)
     assert(output.status === "warning", "doctor should report warning status when dist is tampered")
-    assert(output.checks.distIntegrity.ok === false, "distIntegrity should fail when a file is modified")
-    assert(output.checks.distIntegrity.detail.includes("modified"), "distIntegrity detail should mention modified files")
+    assert(output.runtimeHealth.distIntegrity.ok === false, "distIntegrity should fail when a file is modified")
+    assert(output.runtimeHealth.distIntegrity.detail.includes("modified"), "distIntegrity detail should mention modified files")
   } finally {
     await fs.writeFile(targetPath, original, "utf-8")
   }
