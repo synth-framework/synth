@@ -1,0 +1,29 @@
+{
+  "schema": "synth-performance-baseline-v1",
+  "version": "2.3.0",
+  "description": "Pre-Program 021 baseline for full npm run govern on a clean checkout.",
+  "capturedAt": "2026-07-19T03:14:27.643Z",
+  "note": "This baseline captures the last monolithic governance run before incremental scheduling is introduced. Use it to compare correctness, duration, and certification behavior against EXP-PROGRAM-021 results.",
+  "environment": {
+    "platform": "darwin",
+    "nodeVersion": "v24.14.1",
+    "cpus": 4,
+    "arch": "x64"
+  },
+  "repository": {
+    "srcFiles": 228,
+    "testFiles": 145,
+    "distFiles": 683,
+    "docsFiles": 420,
+    "validationChecks": 95
+  },
+  "govern": {
+    "durationSeconds": 1457.916,
+    "command": "npm run govern",
+    "stages": [
+      "npm run build",
+      "npm run test:all",
+      "npm run proof"
+    ]
+  }
+}

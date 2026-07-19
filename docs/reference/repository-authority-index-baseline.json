@@ -1,6 +1,6 @@
 {
   "status": "OK",
-  "aggregateRai": 0.8666666666666667,
+  "aggregateRai": 0.7999999999999999,
   "checkpoints": [
     {
       "name": "A: after init",
@@ -57,7 +57,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth mission evidence add --draft-id 7b3e9d0b76006509 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+          "reason": "explicit next action: synth mission evidence add --draft-id 4dd6f9ce30f7f377 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
         },
         {
           "name": "Confidence",
@@ -69,7 +69,7 @@
     {
       "name": "C: after mission approved",
       "expected": "mission approved; create expedition",
-      "rai": 1,
+      "rai": 0.9,
       "scores": [
         {
           "name": "Identity",
@@ -78,8 +78,8 @@
         },
         {
           "name": "Mission",
-          "score": 1,
-          "reason": "active mission \"Benchmark Mission\" reconstructed"
+          "score": 0.5,
+          "reason": "draft mission \"Benchmark Mission\" visible"
         },
         {
           "name": "Decisions",
@@ -89,7 +89,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission fce90e785277f91f --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -101,7 +101,7 @@
     {
       "name": "D: after expedition created",
       "expected": "expedition exists; continue execution",
-      "rai": 1,
+      "rai": 0.9,
       "scores": [
         {
           "name": "Identity",
@@ -110,8 +110,8 @@
         },
         {
           "name": "Mission",
-          "score": 1,
-          "reason": "active mission \"Benchmark Mission\" reconstructed"
+          "score": 0.5,
+          "reason": "draft mission \"Benchmark Mission\" visible"
         },
         {
           "name": "Decisions",
@@ -121,7 +121,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission fce90e785277f91f --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -133,7 +133,7 @@
     {
       "name": "E: after expedition completed",
       "expected": "expedition complete; continue or archive",
-      "rai": 1,
+      "rai": 0.9,
       "scores": [
         {
           "name": "Identity",
@@ -142,8 +142,8 @@
         },
         {
           "name": "Mission",
-          "score": 1,
-          "reason": "active mission \"Benchmark Mission\" reconstructed"
+          "score": 0.5,
+          "reason": "draft mission \"Benchmark Mission\" visible"
         },
         {
           "name": "Decisions",
@@ -153,7 +153,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission fce90e785277f91f --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -165,7 +165,7 @@
     {
       "name": "F: after proof check",
       "expected": "governance proof verified; cycle complete",
-      "rai": 1,
+      "rai": 0.9,
       "scores": [
         {
           "name": "Identity",
@@ -174,8 +174,8 @@
         },
         {
           "name": "Mission",
-          "score": 1,
-          "reason": "active mission \"Benchmark Mission\" reconstructed"
+          "score": 0.5,
+          "reason": "draft mission \"Benchmark Mission\" visible"
         },
         {
           "name": "Decisions",
@@ -185,7 +185,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission fce90e785277f91f --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission d7f3525fbf26f8ba --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
