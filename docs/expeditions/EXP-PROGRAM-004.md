@@ -64,6 +64,10 @@ First Contact Program
 │       Adoption Expedition
 │       Prepare the repository for external users: badges, demos, example gallery.
 │
+├── EXP-BROWNFIELD-001  Brownfield Bootstrap Experience
+│       Product Expedition
+│       Make brownfield onboarding deterministic, mutation-safe, and self-guiding.
+│
 └── (promoted to EXP-PROGRAM-006)  Discovery Platform
         Architecture Program
         Source-agnostic evidence acquisition and observed-system understanding.
@@ -147,6 +151,7 @@ See ADR-005 — Architecture Era Closure and ADR-004 — Synth Eras and Protecte
 - [x] EXP-AX-003 completed and accepted.
 - [x] EXP-AX-004 completed and accepted.
 - [x] EXP-AX-005 completed and accepted (quick-start media deferred to follow-up).
+- [ ] EXP-BROWNFIELD-001 completed and accepted.
 - [x] EXP-DISCOVERY-001 promoted to PROGRAM-006 — Discovery Platform.
 - [x] AGENTS.md is published at repository root.
 - [x] README is aligned with the AI-native experience.

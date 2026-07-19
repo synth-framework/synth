@@ -14,6 +14,18 @@
       "name": "Audit",
       "description": "Architecture and security audit expeditions."
     },
+    "CERT": {
+      "name": "Certification",
+      "description": "Resilience and failure-certification expeditions that validate behavior under abnormal conditions."
+    },
+    "BROWNFIELD": {
+      "name": "Brownfield Onboarding",
+      "description": "Brownfield onboarding and bootstrap experience expeditions that define the canonical operator journey for existing repositories."
+    },
+    "CLI": {
+      "name": "Command Line Interface",
+      "description": "CLI user experience, diagnostics, help, and operator-facing surface expeditions."
+    },
     "AX": {
       "name": "Agent Experience",
       "description": "Adoption-era expeditions focused on AI-first distribution and first-contact experience."
@@ -73,6 +85,10 @@
     "REL": {
       "name": "Release",
       "description": "Public release program expeditions (repository, docs, examples, website, OSS readiness)."
+    },
+    "RUNTIME": {
+      "name": "Runtime Correctness",
+      "description": "Runtime correctness expeditions (event guarantees, lifecycle atomicity, replay reconciliation, recovery primitives)."
     },
     "SMA": {
       "name": "Semantic Migration",
