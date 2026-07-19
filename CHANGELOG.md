@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] — 2026-07-19
+
+The Operator Surface Stabilization Release.
+
+This release completes the stabilization of SYNTH's operator surface before the Incremental Governance program (EXP-PROGRAM-021) begins. Brownfield onboarding, CLI diagnostics, deterministic runtime transitions, and replay recovery are now considered stable foundations.
+
+### Brownfield Bootstrap Hardening
+
+Completed EXP-BROWNFIELD-001, making brownfield onboarding deterministic, mutation-safe, and self-guiding.
+
+- Brownfield Bootstrap Specification in `docs/guides/brownfield-bootstrap-specification.md`.
+- Discovery Safety Model with READ_ONLY / PROPOSAL_ONLY / MUTATING command classification.
+- Runtime transition contract: Draft → Approved → Committed → Executing → Completed.
+- Agent context contract via `.synth/context.json`.
+- Namespace-owned CLI help for every command.
+- Brownfield Certification test suite in `tests/brownfield-certification.test.js`.
+
+### CLI UX and Diagnostics Hardening
+
+Completed EXP-CLI-001.
+
+- Fixed misleading `govern skipped` diagnostic when `package.json` exists without a `govern` script.
+- Eliminated duplicate stdout logging during bootstrap and diagnostics.
+- Clarified documentation capabilities vs. generated documentation.
+- Removed the `shell: true` deprecation warning from `synth govern`.
+- Split `synth doctor` into Runtime Health and Project Health sections.
+- Added `synth discover --export` for explicit, immutable discovery baselines.
+
+### Runtime Correctness and Recovery
+
+Completed EXP-RUNTIME-001.
+
+- Mission approval is now atomic: `MISSION_CREATED` and `MISSION_APPROVED` runtime events are emitted before the certified snapshot is persisted.
+- Added `synth repair replay` with dry-run and `--approve` modes.
+- Repair detects drift between certified Mission snapshots and runtime state and emits compensating events through the `ExecutionGate`.
+- Added runtime event-guarantee certification tests in `tests/runtime-repair.test.js`.
+
+### Programs and Process
+
+- Chartered EXP-PROGRAM-021 — Incremental Governance, to transform `npm run govern` into a dependency-aware, fingerprint-based incremental validation system.
+- Added ADR-018 — npm Package Publication Through PR and Tag.
+
 ## [2.2.0] — 2026-07-18
 
 The First Contact Learning System Release.
