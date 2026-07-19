@@ -1,6 +1,6 @@
-> This document is governed by **EXP-PROGRAM-024 — Semantic Modeling**.
-
 # EXP-SEMANTIC-002 — Domain Modeling Engine
+
+> This document is governed by **EXP-PROGRAM-024 — Semantic Modeling**.
 
 > **Architecture expedition.** Define the domain ontology, ubiquitous language, bounded contexts, integrity rules, and semantic drift detection for the problem space.
 

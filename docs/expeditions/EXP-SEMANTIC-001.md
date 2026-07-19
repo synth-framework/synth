@@ -1,6 +1,6 @@
-> This document is governed by **EXP-PROGRAM-024 — Semantic Modeling**.
-
 # EXP-SEMANTIC-001 — Intent Modeling Engine
+
+> This document is governed by **EXP-PROGRAM-024 — Semantic Modeling**.
 
 > **Architecture expedition.** Define the intent ontology, intent graph, confidence model, ambiguity detection, and replay semantics for operator intent.
 
