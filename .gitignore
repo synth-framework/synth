@@ -27,6 +27,7 @@ coverage/
 # Runtime
 # =============================================================================
 
+.synth/cache/
 .synth/data/
 data/
 data-test/

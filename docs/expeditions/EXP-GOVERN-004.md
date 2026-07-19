@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Build a dependency-driven scheduler that uses the validation graph, fingerprints, and proof cache to run only the checks affected by the current changes, with transparent skip explanations.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-021 — Incremental Governance  

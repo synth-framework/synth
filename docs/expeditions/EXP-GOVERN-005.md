@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Optimize the incremental governance system with parallel execution, remote/shared proof cache, watch mode, and CI-specific strategies while preserving determinism and the governance contract.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-021 — Incremental Governance  

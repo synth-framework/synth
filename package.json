@@ -142,7 +142,9 @@
     "docs:verify-first-contact-quickstart": "node scripts/generate-first-contact-quickstart.js --check",
     "version:verify": "node scripts/verify-version-sync.js",
     "adapter": "node dist/cli/adapter.js",
-    "govern": "npm run build && npm run test:all && npm run proof",
+    "govern": "node scripts/govern-profiler.js",
+    "govern:full": "node scripts/govern-profiler.js --full",
+    "govern:watch": "node scripts/govern-profiler.js --watch",
     "govern:ci": "npm ci && npm run govern",
     "test:runtime-data-migration": "node tests/runtime-data-migration.test.js"
   },
