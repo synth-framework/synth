@@ -2,8 +2,9 @@
 
 > **Architecture expedition.** Extract intent, audience, constraints, and success criteria from unstructured operator input and project them into the Discovery artifact.
 
-**Status:** Executing  
+**Status:** Accepted  
 **Started:** 2026-07-19  
+**Completed:** 2026-07-19  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact  

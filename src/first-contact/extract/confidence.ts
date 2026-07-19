@@ -30,10 +30,10 @@ function scorePresence(value: string | string[] | undefined, threshold: number):
   if (Array.isArray(value)) {
     if (value.length === 0) return 0
     // Confidence increases with count up to a cap.
-    return clamp(Math.min(1, threshold + value.length * 0.1))
+    return clamp(Math.min(1, threshold + 0.5 + value.length * 0.05))
   }
   if (value.trim().length === 0) return 0
-  return clamp(threshold)
+  return clamp(Math.min(1, threshold + 0.5))
 }
 
 export function computeConfidence(result: IntentExtractionResult): FieldConfidence {
