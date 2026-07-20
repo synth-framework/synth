@@ -1,0 +1,10 @@
+{
+  "id": "govern",
+  "description": "Run the full canonical governance pipeline: build, test, replay verification, adversarial audits, and proof generation.",
+  "command": "node scripts/govern.js",
+  "group": "governance",
+  "dependsOn": ["build"],
+  "tags": ["governance", "proof", "acceptance"],
+  "estimatedDurationMs": 300000,
+  "capabilities": ["Governance", "Proof"]
+}

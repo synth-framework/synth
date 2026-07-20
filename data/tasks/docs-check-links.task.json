@@ -1,0 +1,10 @@
+{
+  "id": "docs-check-links",
+  "description": "Verify that all internal and external links in documentation resolve correctly.",
+  "command": "node scripts/check-links.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": ["documentation", "links", "quality"],
+  "estimatedDurationMs": 10000,
+  "capabilities": ["Documentation"]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "build",
+  "description": "Compile TypeScript sources to dist/.",
+  "command": "npx tsc",
+  "group": "build",
+  "dependsOn": [],
+  "tags": ["build", "typescript", "compilation"],
+  "estimatedDurationMs": 15000,
+  "capabilities": ["NodeJS", "TypeScript"]
+}
