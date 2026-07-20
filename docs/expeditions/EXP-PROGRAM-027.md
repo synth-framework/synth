@@ -4,9 +4,9 @@
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
-**Scope:** Homepage as the first interactive projection of the SYNTH lifecycle  
+**Scope:** Mission Studio is the SYNTH homepage  
 **Era:** III — Architecture  
-**Architecture Impact:** Medium  
+**Architecture Impact:** High  
 **Constitutional Impact:** None  
 **Public Impact:** High  
 **Product Impact:** High  
@@ -16,56 +16,148 @@
 
 ## Thesis
 
-> **The SYNTH homepage should be the first execution of the Genesis lifecycle. Rather than explaining SYNTH through marketing content, it should immerse visitors in a guided, interactive Mission Studio experience that transforms raw intent into governed software.**
+> **Mission Studio is no longer a component of the homepage. It is the homepage.**
+>
+> Rather than explaining SYNTH through marketing content, the homepage immerses visitors in a guided, interactive Mission Studio experience that transforms raw intent into governed software. Supporting content exists only after Mission Studio has completed its lifecycle.
 
-The homepage is not a landing page. It is the first screen of SYNTH. Every interaction is a real projection of the SYNTH lifecycle. Visitors leave understanding SYNTH because they have experienced it.
+The SYNTH homepage is the first screen of SYNTH. Every interaction is a real projection of the SYNTH lifecycle. Visitors leave understanding SYNTH because they have experienced it.
 
 ---
 
 ## Purpose
 
-Turn the SYNTH homepage into a deterministic, interactive projection of the platform:
+Turn the SYNTH homepage into a production-quality Mission Studio experience:
 
-- Teach Genesis without documentation.
-- Demonstrate Discovery through interaction.
-- Present Missions and Expeditions as first-class concepts.
-- Explain Governance visually rather than textually.
-- Show Replay as a core capability.
-- Feel like entering an engineering workspace rather than browsing a website.
-- Use only runtime concepts that exist in SYNTH.
-- Remain deterministic and projection-driven.
+- Define the canonical Mission Studio Design System.
+- Build a persistent Mission Studio application shell embedded in the homepage.
+- Guide visitors through Intent → Discovery → Mission → Expeditions → Governance → Replay → Architecture → Repository Summary.
+- Release Mission Studio only after the lifecycle completes, then show supporting content (capabilities, examples, docs, community).
+- Certify that a first-time visitor can understand SYNTH in under five minutes without reading external documentation.
 
 ---
 
-## Core Abstraction — The Homepage as First Projection
+## Core Abstraction — Mission Studio as the Homepage
 
 > **Every element on the homepage must be a projection of a real SYNTH concept.**
 
-If a card, animation, badge, panel, or interaction cannot be traced directly to a runtime artifact, lifecycle phase, or governed concept within SYNTH, it should not exist. The homepage is not a visualization *of* SYNTH—it is the first projection *from* SYNTH itself.
+If a component, animation, badge, panel, or interaction cannot be traced directly to a runtime artifact, lifecycle phase, or governed concept within SYNTH, it should not exist. The homepage is not a visualization *of* SYNTH — it is the first projection *from* SYNTH itself.
 
 ```text
 Visitor Intent
         ↓
 Genesis Protocol
         ↓
-Interactive Workspace
+Mission Studio (persistent application shell)
         ↓
-Artifacts (Intent, Discovery, Domain, Mission, Expedition, Replay)
+Workspace phases
+        ↓
+Artifacts (Intent, Discovery, Constraints, Domain, Mission, Expedition, Governance, Replay, Architecture, Repository)
         ↓
 Governed Understanding
+        ↓
+Supporting sections
 ```
 
 ---
 
 ## Mission
 
-Make the SYNTH homepage the canonical first experience of the SYNTH lifecycle:
+Make Mission Studio the canonical first experience of SYNTH:
 
-- Define the Mission Studio Design System (LDS-002).
-- Specify the homepage as an interactive Mission Workspace.
-- Build a guided Genesis experience that produces real artifacts.
-- Visualize workflow, governance, replay, architecture, and capabilities.
-- Certify that a first-time visitor can understand SYNTH in under five minutes without reading external documentation.
+- Define the Mission Studio Design System (LDS-002) as the public visual language of SYNTH.
+- Specify Mission Studio as a persistent application with header, sidebar, workspace, status, and footer.
+- Build a scroll-driven, sticky Mission Studio experience on the homepage.
+- Implement every lifecycle phase as a Mission Studio state, not a separate page.
+- Visualize workflow, governance, replay, architecture, capabilities, and repository status as phases or extensions of Mission Studio.
+- Certify that a first-time visitor can understand SYNTH in under five minutes.
+
+---
+
+## Homepage Structure
+
+The homepage is organized into sequential sections:
+
+```text
+Section 0 — Hero
+  Logo, tagline, CTA, install command, entry into Mission Studio
+
+Section 1 — Mission Studio (sticky)
+  Header
+  Sidebar
+  Workspace
+  Footer
+
+Section 2 — Mission Lifecycle (scroll-driven)
+  Intent
+  ↓
+  Discovery
+  ↓
+  Mission
+  ↓
+  Expeditions
+  ↓
+  Governance
+  ↓
+  Replay
+  ↓
+  Architecture
+  ↓
+  Repository Summary
+
+Section 3 — Supporting Content (after Mission Studio releases)
+  Capabilities
+  Examples
+  Documentation
+  Open Source
+  Community
+  Footer
+```
+
+---
+
+## Mission Studio State Machine
+
+Mission Studio is driven by a finite state machine:
+
+```text
+Idle
+  ↓
+Intent
+  ↓
+Discovery
+  ↓
+Constraints
+  ↓
+Domain
+  ↓
+Mission
+  ↓
+Expeditions
+  ↓
+Governance
+  ↓
+Replay
+  ↓
+Architecture
+  ↓
+Repository Summary
+  ↓
+Complete → Mission Studio releases → Supporting sections
+```
+
+For every state the specification defines:
+
+- Purpose
+- Displayed artifacts
+- Sidebar state
+- Header state
+- Status badges
+- Commands
+- Timeline position
+- Animation
+- Scroll transition
+- Accessibility behavior
+- Runtime events
 
 ---
 
@@ -77,63 +169,63 @@ Mission Studio Homepage
 │
 ├── EXP-HOME-001  Mission Studio Design Language
 │       Design Expedition
-│       Define the visual system, tokens, and principles.
+│       Canonical public visual language of SYNTH: tokens, themes, principles.
 │
-├── EXP-HOME-002  Mission Workspace
+├── EXP-HOME-002  Mission Studio Component Catalog
+│       Design / Architecture Expedition
+│       Reusable components for workspace, sidebar, artifact cards, motion, feedback.
+│
+├── EXP-HOME-003  Mission Studio UI Specification
 │       Architecture Expedition
-│       Define the workspace layout, panels, and state machine.
+│       Persistent application shell, lifecycle phases, scroll-driven behavior.
 │
-├── EXP-HOME-003  Genesis Experience
-│       Product Expedition
-│       Build the interactive Genesis session on the homepage.
-│
-├── EXP-HOME-004  Artifact System
+├── EXP-HOME-004  Homepage / Mission Studio Integration
 │       Architecture Expedition
-│       Define Artifact Card variants and behavior.
+│       How Mission Studio becomes the homepage: hero handoff, sticky behavior, release.
 │
-├── EXP-HOME-005  Workflow Visualization
+├── EXP-HOME-005  Intent Phase
 │       Product Expedition
-│       Visualize the SYNTH lifecycle as an interactive flow.
+│       Mission Studio phase for capturing visitor intent.
 │
-├── EXP-HOME-006  Governance Visualization
+├── EXP-HOME-006  Discovery Phase
 │       Product Expedition
-│       Explain governance through interactive before/after comparison.
+│       Mission Studio phase for Discovery artifacts and unknowns.
 │
-├── EXP-HOME-007  Replay Experience
+├── EXP-HOME-007  Mission Phase
 │       Product Expedition
-│       Embed a replay timeline that updates artifacts on scrub.
+│       Mission Studio phase for Mission artifact and approval.
 │
-├── EXP-HOME-008  Architecture Explorer
+├── EXP-HOME-008  Expeditions Phase
 │       Product Expedition
-│       Interactive layered architecture diagram.
+│       Mission Studio phase for Expedition proposals.
 │
-├── EXP-HOME-009  Capabilities Explorer
+├── EXP-HOME-009  Governance & Replay Phase
 │       Product Expedition
-│       Grid of runtime concepts linking to documentation.
+│       Mission Studio phase for governance visualization and replay timeline.
 │
 ├── EXP-HOME-010  Responsive Implementation
 │       Engineering Expedition
-│       Adapt the workspace for all screen sizes.
+│       Adapt Mission Studio and homepage for all screen sizes.
 │
 ├── EXP-HOME-011  Accessibility
 │       Engineering Expedition
-│       WCAG-compliant keyboard navigation, screen readers, contrast.
+│       WCAG 2.2 AA compliance, keyboard navigation, screen readers, reduced motion.
 │
 ├── EXP-HOME-012  Performance
 │       Engineering Expedition
-│       Fast first paint, smooth animations, lazy loading.
+│       Fast first paint, 60 FPS scroll animations, bundle budgets, lazy loading.
 │
 ├── EXP-HOME-013  Motion System
 │       Design Expedition
-│       Define calm, purposeful animation rules.
+│       Calm, purposeful animation rules for Mission Studio transitions.
 │
 ├── EXP-HOME-014  Documentation Integration
 │       Product Expedition
-│       Link homepage artifacts to canonical docs.
+│       Link Mission Studio artifacts and homepage concepts to canonical docs.
 │
 ├── EXP-HOME-015  Production Certification
 │       Certification Expedition
-│       Certify the homepage meets acceptance criteria.
+│       Unit, integration, E2E, visual regression, accessibility, performance tests.
 │
 ├── EXP-HOME-016  Homepage Runtime
 │       Architecture Expedition
@@ -145,11 +237,11 @@ Mission Studio Homepage
 │
 ├── EXP-HOME-018  Homepage Replay Projection
 │       Product Expedition
-│       Scrubbable replay projection using the existing replay engine.
+│       Scrubbable replay projection using the existing SYNTH replay engine.
 │
 ├── EXP-HOME-019  Artifact Projection Layer
 │       Architecture Expedition
-│       Map runtime state to homepage Artifact Cards.
+│       Map runtime state to Mission Studio Artifact Cards.
 │
 ├── EXP-HOME-020  Curated Demonstration Library
 │       Product Expedition
@@ -157,7 +249,7 @@ Mission Studio Homepage
 │
 ├── EXP-HOME-021  Mission Studio State Machine
 │       Architecture Expedition
-│       Unified state machine driving the homepage workspace.
+│       Unified state machine driving the homepage Mission Studio.
 │
 ├── EXP-HOME-022  Runtime Abstraction Layer
 │       Architecture Expedition
@@ -178,22 +270,34 @@ Mission Studio Homepage
 
 Program 027 is delivered in three phases. Only Phase 1 is implemented in the current development cycle; Phases 2 and 3 are chartered for future evolution.
 
-### Phase 1 — Browser Mission Studio *(implement now)*
+### Phase 1 — Mission Studio as Homepage *(implement now)*
 
-Deliver a real Mission Studio experience on the homepage using deterministic, browser-native execution.
+Deliver a production-quality Mission Studio experience embedded in the homepage using deterministic, browser-native execution.
 
 ```text
 Visitor arrives
   ↓
-Types an idea
+Hero invites into Mission Studio
+  ↓
+Mission Studio becomes sticky
+  ↓
+Visitor types an idea
   ↓
 Discovery executes
   ↓
 Mission is generated
   ↓
-Artifacts appear
+Expeditions appear
+  ↓
+Governance is visualized
   ↓
 Replay is interactive
+  ↓
+Architecture and Repository Summary complete
+  ↓
+Mission Studio releases
+  ↓
+Supporting sections scroll normally
   ↓
 Visitor understands SYNTH
 ```
@@ -254,8 +358,8 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 | Allowed | Forbidden |
 |---|---|
 | Defining the Mission Studio Design System | Modifying Protected Assets |
-| Building interactive homepage projections | Inventing decorative UI not tied to SYNTH concepts |
-| Visualizing workflow, governance, replay, architecture | Marketing copy disconnected from runtime |
+| Building Mission Studio as the homepage | Inventing decorative UI not tied to SYNTH concepts |
+| Visualizing lifecycle phases inside Mission Studio | Marketing copy disconnected from runtime |
 | Implementing responsive, accessible, performant UI | Code generation as a homepage feature |
 | Integrating documentation links | Bypassing ExecutionGate for mutations |
 | Certifying visitor comprehension | Platform-specific lock-in |
@@ -266,15 +370,17 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 >
 > **Projection only:** The homepage projects existing SYNTH concepts; it does not invent new ones.
 >
-> **Progressive disclosure:** Information density increases as Genesis progresses.
+> **Progressive disclosure:** Information density increases as the lifecycle progresses.
 >
-> **Workspace over pages:** Everything lives inside one workspace; scroll changes workspace state.
+> **Workspace over pages:** Mission Studio is one persistent application; scroll changes phase, not page.
 >
 > **Calm computing:** Large whitespace, low noise, subtle motion, clear hierarchy.
 >
 > **Artifact driven:** Replace chat with objects; everything shown is an artifact.
 >
 > **Mission Studio depends only on the `MissionRuntime` interface:** No React component, state controller, or projection layer may invoke the SYNTH CLI directly. Today the interface is satisfied by the Homepage Runtime; tomorrow by the Runtime SDK or a Hosted Runtime. Only dependency injection changes.
+>
+> **Mission Studio is the homepage:** Supporting content appears only after Mission Studio completes its lifecycle and releases.
 
 ---
 
@@ -303,11 +409,18 @@ A first-time visitor should, within five minutes and without reading external do
 - Why doesn't SYNTH generate code immediately?
 - How does SYNTH transform intent into governed software?
 
+Additionally:
+
+- Mission Studio behaves as one persistent application.
+- No page-jump feeling during the lifecycle.
+- Supporting content appears only after Mission Studio releases.
+- All components derive from documented tokens.
+
 ---
 
 ## Relationship to Other Work
 
-- **EXP-PROGRAM-020 — Website Experience** is superseded by this program. EXP-CONVERGENCE-001 records the decision. EXP-WEB-001's hero design and scenario scripts feed into EXP-HOME-003.
+- **EXP-PROGRAM-020 — Website Experience** is superseded by this program. EXP-CONVERGENCE-001 records the decision. EXP-WEB-001's hero design and scenario scripts feed into EXP-HOME-004.
 - **EXP-PROGRAM-022 — Genesis** provides the lifecycle the homepage projects.
 - **EXP-PROGRAM-023 — Semantic Modeling** provides intent and domain artifacts visualized on the homepage.
 - **EXP-PROGRAM-024 — Canonical Knowledge & Validation** provides the knowledge graph and validation concepts.
@@ -318,4 +431,4 @@ A first-time visitor should, within five minutes and without reading external do
 
 ## Long-Term Vision
 
-The Mission Studio Homepage becomes the canonical entry point for both human visitors and AI agents. It is a living projection of SYNTH: as the platform evolves, the homepage evolves with it. It proves that SYNTH's concepts are not abstract—they can be seen, touched, and experienced from the very first interaction.
+The Mission Studio Homepage becomes the canonical entry point for both human visitors and AI agents. It is a living projection of SYNTH: as the platform evolves, the homepage evolves with it. It proves that SYNTH's concepts are not abstract — they can be seen, touched, and experienced from the very first interaction.
