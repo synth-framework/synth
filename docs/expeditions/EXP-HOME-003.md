@@ -9,6 +9,8 @@
 **Depends On:** EXP-HOME-002 (Mission Workspace), EXP-AI-001 (Genesis Protocol)  
 **Blocks:** EXP-HOME-015
 
+> **Operator note:** Resolve the EXP-AI-001 (Genesis Protocol) dependency before beginning implementation of this expedition. The homepage demo must align with the canonical Genesis protocol or a documented, rule-based subset approved for the homepage.
+
 ---
 
 ```yaml
