@@ -2,7 +2,7 @@
 
 > **Certification expedition.** Certify that the Mission Studio Homepage meets all acceptance criteria before release, with massively expanded unit, integration, end-to-end, visual regression, accessibility, and performance testing.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Certification Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

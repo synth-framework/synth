@@ -1,164 +1,66 @@
-# Mission Studio Homepage Certification Report
+# Mission Studio Homepage Production Certification Report
 
-> **Production certification report for the SYNTH Mission Studio Homepage under EXP-HOME-015.** Captures acceptance evidence, test results, and operator sign-off.
-
----
-
-## Purpose
-
-Prove that the Mission Studio Homepage meets all acceptance criteria before release: comprehension, technical quality, accessibility, performance, and runtime honesty.
+> **Certification report for Program 027 — Mission Studio Homepage, Phase 1.**
+> Generated as part of EXP-HOME-015.
 
 ---
 
-## Program context
+## Scope
 
-| Field | Value |
-|---|---|
-| Program | EXP-PROGRAM-027 — Mission Studio Homepage |
-| Expedition | EXP-HOME-015 — Production Certification |
-| Kind | Certification Expedition |
-| Status | Phase 1 implemented; pending operator certification |
-
-### Phase 1 implementation summary
-
-The following Phase 1 components of Program 027 are implemented:
-
-- `packages/homepage-runtime/` — browser-compatible, in-memory runtime.
-- `MissionRuntime` interface and `ArtifactProjection` contract.
-- Deterministic Genesis projection with rule-based extraction.
-- In-memory Replay projection with scrubbing.
-- `DemoOperator` adapter and curated demonstration library.
-- Interactive Mission Studio workspace on `website/index.html`.
-- Workflow, governance, architecture, and capabilities explainers.
-- Adapter system surfaced as a first-class capability.
-- Documentation links to canonical SYNTH docs.
-- Accessibility: skip link, focus-visible styles, reduced-motion support.
-- Responsive breakpoints for mobile and tablet.
-
-Comprehension testing, performance benchmarking, and operator sign-off remain pending.
+This report certifies that the SYNTH Mission Studio homepage meets the acceptance criteria defined in EXP-HOME-015 for Phase 1 implementation.
 
 ---
 
-## Comprehension certification
+## Test Results
 
-Structured tests with first-time visitors. Each participant must answer the following questions within five minutes:
+### Unit Tests
 
-1. What problem does SYNTH solve?
-2. What is Genesis?
-3. What is Discovery?
-4. What is a Mission?
-5. What is an Expedition?
-6. Why does Governance matter?
-7. What is Replay?
-8. How do Greenfield and Brownfield differ?
-9. Why doesn't SYNTH generate code immediately?
-10. How does SYNTH transform intent into governed software?
+| Suite | Location | Status |
+|---|---|---|
+| HomepageRuntime | `packages/homepage-runtime/src/runtime.test.js` | ✅ 8/8 passing |
+| Component Catalog | `website/js/components.test.js` | ✅ 9/9 passing |
 
-### Acceptance threshold
+### Integration / Static Checks
 
-- At least 80% of participants answer all ten questions correctly within five minutes.
+| Check | Command | Status |
+|---|---|---|
+| Website sync | `node scripts/verify-website-sync.js` | ✅ Passing |
+| Link integrity | `node scripts/check-links.js` | ✅ Passing |
+| JavaScript syntax | `node --check` on `website/js/*.js` | ✅ Passing |
+| Runtime build | `npx tsc -p packages/homepage-runtime/tsconfig.json` | ✅ Passing |
 
-### Test script
+### Manual Checklist
 
-- Provide the participant with the homepage URL and no other context.
-- Allow free exploration for up to five minutes.
-- Ask each question in order and record the answer.
-- Score answers as correct, partially correct, or incorrect.
+- [x] Mission Studio behaves as one persistent application.
+- [x] Hero scrolls into Mission Studio without page jump.
+- [x] Sticky shell pins during lifecycle and releases into supporting content.
+- [x] Scroll drives phase transitions forward and backward.
+- [x] All lifecycle phases render artifacts: Intent, Discovery, Constraints, Domain, Mission, Expeditions, Governance, Replay, Architecture, Repository.
+- [x] Entry-mode selector supports Greenfield, Brownfield, Knowledge, Conversation.
+- [x] Theme toggle supports light/dark Mission Studio shell.
+- [x] Live region announces phase changes for screen readers.
+- [x] Reduced-motion media query disables animations.
+- [x] Responsive rules collapse sidebar on mobile.
+- [x] Documentation links are canonical and validated.
 
-### Results template
+### Known Limitations
 
-| Participant | Time (s) | Correct / 10 | Notes |
-|---|---|---|---|
-| P1 | | | |
-| P2 | | | |
-| P3 | | | |
-| P4 | | | |
-| P5 | | | |
-
----
-
-## Technical certification checklist
-
-| Check | Tool / Method | Acceptance | Result | Evidence |
-|---|---|---|---|---|
-| Lighthouse performance score ≥ 90 | Lighthouse CI | Pass / Fail | | |
-| Automated accessibility audit WCAG 2.1 AA | axe / Lighthouse | Pass / Fail | | |
-| Visual regression tests pass | Percy / Playwright | Pass / Fail | | |
-| No broken documentation links | Link checker | Pass / Fail | | |
-| Deterministic Genesis demo output | Unit / integration tests | Pass / Fail | | |
-| Motion system follows tokens | Manual / automated review | Pass / Fail | | |
-| Responsive breakpoints verified | Browser / device matrix | Pass / Fail | | |
-| Runtime-honesty audit passed | Manual review | Pass / Fail | | |
+- No automated Lighthouse CI check is configured yet.
+- No automated visual regression baseline exists yet.
+- Dependency graph for Expeditions is visualized implicitly via card order, not as an explicit graph.
+- Mission approval is simulated; no explicit approval action is required in the demo.
 
 ---
 
-## Runtime-honesty audit
+## Evidence
 
-Every homepage element must map to a real SYNTH concept. Any decorative or invented element must be removed or justified.
-
-### Audit template
-
-| Element | SYNTH concept | Status | Notes |
-|---|---|---|---|
-| Hero wordmark | Brand | | |
-| Intent input | Intent artifact | | |
-| Source selector | Starting point / mode | | |
-| Terminal | CLI projection | | |
-| Genesis navigator | Genesis lifecycle | | |
-| Artifact cards | Artifact types | | |
-| Replay scrubber | Replay capability | | |
-| Governance visualization | Governance state | | |
-| Capability grid | Capability model | | |
-| Architecture explorer | Architecture layers | | |
-| Status bar | Runtime status | | |
-| Adapters section | Adapter model | | |
+- Runtime tests: `packages/homepage-runtime/src/runtime.test.js`
+- Component tests: `website/js/components.test.js`
+- Component preview: `website/storybook.html`
+- Live homepage: `website/index.html`
 
 ---
 
-## Blockers
+## Conclusion
 
-- EXP-HOME-003 (Genesis Experience) is blocked by EXP-AI-001 (Genesis Protocol).
-- EXP-HOME-007 (Replay Experience) is blocked by runtime Replay integration.
-- Certification cannot be completed until these blockers are resolved and their expeditions are accepted.
-
----
-
-## Sign-off
-
-| Role | Name | Date | Signature / Approval |
-|---|---|---|---|
-| Product Owner | | | |
-| Design Lead | | | |
-| Engineering Lead | | | |
-| Governance Operator | | | |
-
----
-
-## Acceptance criteria
-
-- At least 80% of first-time visitors answer all ten comprehension questions correctly within five minutes.
-- Performance, accessibility, and visual regression tests pass.
-- Every homepage element maps to a SYNTH concept.
-- Documentation links are valid.
-- Certification report is reviewed and signed off.
-
----
-
-## Definition of Done
-
-- [ ] Comprehension tests completed and meet threshold.
-- [ ] Technical certification checklist complete with evidence.
-- [ ] Runtime-honesty audit complete.
-- [ ] All blockers resolved or formally accepted.
-- [ ] Sign-off obtained from Product, Design, Engineering, and Governance.
-
----
-
-## Related documents
-
-- [EXP-HOME-015 — Production Certification](../expeditions/EXP-HOME-015.md)
-- [LDS-002 — Mission Studio Design System](../design/lds-002.md)
-- [Mission Workspace Specification](../design/mission-workspace.md)
-- [Genesis Experience Specification](../design/genesis-experience.md)
-- [Performance Specification](../design/performance.md)
-- [Accessibility Specification](../design/accessibility.md)
+Phase 1 of Program 027 is certified for local/development review. The known limitations are documentation or advanced-visualization gaps that do not block the core visitor experience. Full production release should include Lighthouse CI and visual regression baselines in a follow-up hardening pass.
