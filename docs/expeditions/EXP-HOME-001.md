@@ -2,7 +2,7 @@
 
 > **Design expedition.** Define the canonical Mission Studio Design System: the public visual language of SYNTH, not merely a landing page design system.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Design Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -178,6 +178,9 @@ Each surface has tokens for background, foreground, border, elevation, active st
 4. **Component taxonomy** mapping each component to a SYNTH concept and token set.
 5. **Design principles checklist** for reviewing future Mission Studio work.
 6. **Token export artifacts** for Figma variables, Tailwind config, and Storybook theming.
+   - `website/tokens.json` — canonical machine-readable token source (light + dark themes).
+   - `website/tailwind.config.js` — Tailwind re-export of `tokens.json`.
+   - `website/styles.css` — runtime CSS variables derived from `tokens.json`.
 7. **Theme switch specification** and reduced-motion policy.
 
 ---

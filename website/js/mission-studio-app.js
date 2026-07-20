@@ -88,6 +88,7 @@ const elements = {
   footerMeta: /** @type {HTMLDivElement} */ (document.getElementById("ms-footer-meta")),
   capabilitiesGrid: /** @type {HTMLDivElement} */ (document.getElementById("ms-capabilities-grid")),
   missionStudioSection: /** @type {HTMLElement} */ (document.getElementById("mission-studio")),
+  themeToggle: /** @type {HTMLButtonElement} */ (document.getElementById("ms-theme-toggle")),
 }
 
 function getPhaseIndex(phaseId) {
@@ -474,6 +475,29 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
+function initThemeToggle() {
+  if (!elements.themeToggle || !elements.shell) return
+
+  const stored = localStorage.getItem("synth-ms-theme")
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+  const initialDark = stored ? stored === "dark" : prefersDark
+
+  if (initialDark) {
+    elements.shell.setAttribute("data-theme", "dark")
+  }
+
+  elements.themeToggle.addEventListener("click", () => {
+    const isDark = elements.shell.getAttribute("data-theme") === "dark"
+    if (isDark) {
+      elements.shell.removeAttribute("data-theme")
+      localStorage.setItem("synth-ms-theme", "light")
+    } else {
+      elements.shell.setAttribute("data-theme", "dark")
+      localStorage.setItem("synth-ms-theme", "dark")
+    }
+  })
+}
+
 function init() {
   renderCapabilities()
 
@@ -535,6 +559,8 @@ function init() {
   }
 
   window.addEventListener("scroll", handleScroll, { passive: true })
+
+  initThemeToggle()
 
   updateUI({ phase: "idle", unknowns: { kind: "unknowns", items: [] }, expeditions: [], evidence: [] })
 }
