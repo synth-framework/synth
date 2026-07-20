@@ -1,7 +1,8 @@
 // ============================================================
-// HOMEPAGE: Mission Studio Component Catalog (Storybook)
+// HOMEPAGE: Mission Studio Design Reference (Storybook)
 // ============================================================
-// Renders every catalog component in representative states.
+// Renders Mission Studio surfaces, artifacts, interactions,
+// typography, and tokens as a canonical design reference.
 // ============================================================
 
 import {
@@ -18,38 +19,42 @@ import {
   renderCallout,
 } from "./components.js"
 
+const PHASES = ["intent", "discovery", "constraints", "domain", "mission", "expeditions", "governance", "replay", "architecture", "repository"]
+
 const SAMPLE_CARDS = {
   intent: {
     kind: "intent",
     description: "Build a CRM to manage customer relationships",
-    goals: ["track contacts", "manage deals"],
+    goals: ["Track contacts and companies", "Manage deals through a pipeline"],
     successCriteria: ["Users can track contacts", "Users can manage deals"],
     mode: "greenfield",
+    confidence: 0.92,
   },
   discovery: {
     kind: "discovery",
-    findings: ["Intent: Build a CRM", "Target runtime: web"],
-    capabilities: ["domain-modeling", "authentication"],
-    constraints: ["Runtime: web", "Language: typescript"],
+    findings: ["Operator wants a web-based CRM", "Core capability is customer relationship management"],
+    capabilities: ["domain-modeling", "authentication", "persistence"],
+    constraints: ["Runtime: web", "Language: TypeScript"],
   },
   unknowns: {
     kind: "unknowns",
     items: [
       { kind: "unknown", field: "runtime", description: "Target runtime is not specified.", confidence: 0.2 },
+      { kind: "unknown", field: "auth", description: "Authentication provider is undefined.", confidence: 0.4 },
     ],
   },
   domain: {
     kind: "domain",
-    entities: ["customer", "contact", "deal"],
-    relationships: ["customer belongs to a bounded context"],
-    boundedContexts: ["core-domain"],
+    entities: ["Customer", "Contact", "Deal", "Activity"],
+    relationships: ["Customer owns Contacts", "Deal belongs to Customer"],
+    boundedContexts: ["crm-core", "identity"],
   },
   mission: {
     kind: "mission",
     id: "mission-12345678",
     name: "Build a CRM",
     purpose: "Build a CRM with governed Discovery, Mission, and Expedition lifecycle.",
-    objectives: ["Capture intent", "Model domain", "Define expeditions"],
+    objectives: ["Capture intent", "Model domain", "Define expeditions", "Project architecture"],
     successCriteria: ["Users can manage customer relationships"],
   },
   expedition: {
@@ -63,20 +68,20 @@ const SAMPLE_CARDS = {
   evidence: {
     kind: "evidence",
     id: "ev-12345678",
-    observation: "Intent extracted from operator input",
+    observation: "Intent extracted from operator input with high confidence.",
     confidence: 0.85,
     source: "rule-based-intent-extraction",
   },
   architecture: {
     kind: "architecture",
-    layer: "Intent",
+    layer: "Intent Layer",
     responsibility: "Capture operator intent and success criteria.",
     dependencies: [],
   },
   repository: {
     kind: "repository",
     status: "governed",
-    artifacts: [".synth/manifest.json", ".synth/data/event-log.jsonl"],
+    artifacts: [".synth/manifest.json", ".synth/data/event-log.jsonl", ".synth/data/decisions.jsonl"],
     eventCount: 17,
   },
 }
@@ -102,20 +107,17 @@ function renderWorkspaceStories() {
 
 function renderSidebarStories() {
   const container = document.getElementById("sb-sidebar")
-  const phases = ["intent", "discovery", "constraints", "domain", "mission", "expeditions", "governance", "replay", "architecture", "repository"]
   container.innerHTML = [
-    story("Sidebar — Discovery", `<div class="ms-sidebar">${renderSidebar({ phases, activePhase: "discovery" })}</div>`),
-    story("Sidebar — Replay", `<div class="ms-sidebar">${renderSidebar({ phases, activePhase: "replay" })}</div>`),
-    story("Sidebar — Repository", `<div class="ms-sidebar">${renderSidebar({ phases, activePhase: "repository" })}</div>`),
+    story("Sidebar — Discovery", `<div class="sb-lifecycle-preview"><div class="ms-sidebar">${renderSidebar({ phases: PHASES, activePhase: "discovery" })}</div></div>`),
+    story("Sidebar — Replay", `<div class="sb-lifecycle-preview"><div class="ms-sidebar">${renderSidebar({ phases: PHASES, activePhase: "replay" })}</div></div>`),
+    story("Sidebar — Repository", `<div class="sb-lifecycle-preview"><div class="ms-sidebar">${renderSidebar({ phases: PHASES, activePhase: "repository" })}</div></div>`),
   ].join("")
 }
 
-function renderArtifactStories() {
-  const container = document.getElementById("sb-artifacts")
-  container.innerHTML = Object.entries(SAMPLE_CARDS).map(([key, card]) => {
-    return story(`Artifact — ${key}`, renderArtifactCard(card))
-  }).join("") + story("Artifact Grid", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactGrid({
-    phase: "mission",
+function renderLifecycleStories() {
+  const container = document.getElementById("sb-lifecycle")
+  const projectionFor = (phase) => ({
+    phase,
     intent: SAMPLE_CARDS.intent,
     discovery: SAMPLE_CARDS.discovery,
     unknowns: SAMPLE_CARDS.unknowns,
@@ -123,7 +125,27 @@ function renderArtifactStories() {
     mission: SAMPLE_CARDS.mission,
     expeditions: [SAMPLE_CARDS.expedition],
     evidence: [SAMPLE_CARDS.evidence],
-  })}</div></div>`)
+    architecture: [SAMPLE_CARDS.architecture],
+    repository: SAMPLE_CARDS.repository,
+  })
+
+  container.innerHTML = [
+    story("Intent Phase", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.intent)}</div></div>`),
+    story("Discovery Phase", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.discovery)}${renderArtifactCard(SAMPLE_CARDS.unknowns)}</div></div>`),
+    story("Mission Phase", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.mission)}</div></div>`),
+    story("Expeditions Phase", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.expedition)}</div></div>`),
+    story("Governance Phase", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.evidence)}</div></div>`),
+    story("Replay Phase", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.repository)}</div></div>`),
+    story("Repository Summary", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactCard(SAMPLE_CARDS.repository)}</div></div>`),
+    story("Full Artifact Grid", `<div class="sb-workspace-preview"><div class="ms-artifacts">${renderArtifactGrid(projectionFor("repository"))}</div></div>`),
+  ].join("")
+}
+
+function renderArtifactStories() {
+  const container = document.getElementById("sb-artifacts")
+  container.innerHTML = Object.entries(SAMPLE_CARDS).map(([key, card]) => {
+    return story(`Artifact — ${key}`, renderArtifactCard(card))
+  }).join("")
 }
 
 function renderContentStories() {
@@ -139,11 +161,58 @@ function renderContentStories() {
   ].join("")
 }
 
+function renderTypographyStories() {
+  const container = document.getElementById("sb-typography")
+  const sizes = [
+    { label: "4xl — Hero", cls: "ms-text-4xl", weight: "var(--ms-font-weight-bold)" },
+    { label: "3xl — Section", cls: "ms-text-3xl", weight: "var(--ms-font-weight-bold)" },
+    { label: "2xl — Page Title", cls: "ms-text-2xl", weight: "var(--ms-font-weight-semibold)" },
+    { label: "xl — Artifact Title", cls: "ms-text-xl", weight: "var(--ms-font-weight-semibold)" },
+    { label: "lg — Subsection", cls: "ms-text-lg", weight: "var(--ms-font-weight-medium)" },
+    { label: "base — Body", cls: "ms-text-base", weight: "var(--ms-font-weight-normal)" },
+    { label: "sm — Caption", cls: "ms-text-sm", weight: "var(--ms-font-weight-normal)" },
+    { label: "xs — Label", cls: "ms-text-xs", weight: "var(--ms-font-weight-bold)" },
+  ]
+  container.innerHTML = sizes.map(({ label, cls, weight }) => `
+    <div class="sb-typo-sample">
+      <div class="sb-typo-label">${label}</div>
+      <p style="font-size: var(--${cls}); font-weight: ${weight}; letter-spacing: ${cls.includes("xl") || cls.includes("4xl") || cls.includes("3xl") || cls.includes("2xl") ? "var(--ms-letter-spacing-tight)" : "normal"};">Synth turns intent into missions.</p>
+    </div>
+  `).join("")
+}
+
+function renderTokenStories() {
+  const container = document.getElementById("sb-tokens")
+  const concepts = ["genesis", "mission", "expedition", "evidence", "governance", "replay", "knowledge", "architecture", "repository"]
+  const variants = ["", "-soft", "-bg", "-text", "-icon"]
+  container.innerHTML = concepts.map((concept) => `
+    <div class="sb-story sb-full-width">
+      <h3>${concept}</h3>
+      <div class="sb-token-grid">
+        ${variants.map((variant) => {
+          const name = `--ms-${concept}${variant}`
+          return `
+            <div class="sb-token">
+              <div class="sb-token-swatch" style="background: var(${name});"></div>
+              <div>
+                <div class="sb-token-name">${name}</div>
+              </div>
+            </div>
+          `
+        }).join("")}
+      </div>
+    </div>
+  `).join("")
+}
+
 function init() {
   renderWorkspaceStories()
   renderSidebarStories()
+  renderLifecycleStories()
   renderArtifactStories()
   renderContentStories()
+  renderTypographyStories()
+  renderTokenStories()
 }
 
 init()

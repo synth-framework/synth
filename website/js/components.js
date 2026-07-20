@@ -92,7 +92,7 @@ export function renderSidebar({ phases, activePhase }) {
 }
 
 /**
- * Render an artifact card from a runtime card object.
+ * Render a document-like Mission Studio artifact card from a runtime card object.
  * @param {ArtifactProjection[keyof ArtifactProjection]} card
  * @returns {string}
  */
@@ -100,82 +100,157 @@ export function renderArtifactCard(card) {
   if (!card || typeof card !== "object") return ""
 
   switch (card.kind) {
-    case "intent":
+    case "intent": {
+      const goals = card.goals?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Goals</div><ul>${card.goals.map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul></div>`
+        : ""
       return `
-        <div class="ms-card ms-card-intent">
-          <div class="ms-card-kind">Intent</div>
-          <h4>${escapeHtml(card.description)}</h4>
-          ${card.goals.length ? `<ul>${card.goals.map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>` : ""}
-        </div>
+        <article class="ms-card ms-card-intent">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Intent</div>
+            <span class="ms-confidence">${Math.round((card.confidence ?? 1) * 100)}% confidence</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.description)}</h4>
+          <div class="ms-card-body">
+            ${goals}
+          </div>
+        </article>
       `
-    case "discovery":
+    }
+    case "discovery": {
+      const findings = card.findings?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Findings</div><ul>${card.findings.map((f) => `<li>${escapeHtml(f)}</li>`).join("")}</ul></div>`
+        : ""
+      const capabilities = card.capabilities?.length
+        ? `<div class="ms-tags">${card.capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div>`
+        : ""
       return `
-        <div class="ms-card ms-card-discovery">
-          <div class="ms-card-kind">Discovery</div>
-          ${card.findings.map((f) => `<p>${escapeHtml(f)}</p>`).join("")}
-          ${card.capabilities.length ? `<div class="ms-tags">${card.capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div>` : ""}
-        </div>
+        <article class="ms-card ms-card-discovery">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Discovery</div>
+          </div>
+          <div class="ms-card-body">
+            ${findings}
+            ${capabilities}
+          </div>
+        </article>
       `
-    case "unknowns":
+    }
+    case "unknowns": {
+      const items = card.items?.length
+        ? `<ul>${card.items.map((u) => `<li><strong>${escapeHtml(u.field)}</strong> — ${escapeHtml(u.description)}</li>`).join("")}</ul>`
+        : "<p>All critical unknowns resolved.</p>"
       return `
-        <div class="ms-card ms-card-unknowns">
-          <div class="ms-card-kind">Unknowns</div>
-          ${card.items.length ? `<ul>${card.items.map((u) => `<li>${escapeHtml(u.description)}</li>`).join("")}</ul>` : `<p>All critical unknowns resolved.</p>`}
-        </div>
+        <article class="ms-card ms-card-unknowns">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Unknowns</div>
+            <span class="ms-status ms-status-draft">${card.items?.length ?? 0} open</span>
+          </div>
+          <div class="ms-card-body">
+            ${items}
+          </div>
+        </article>
       `
-    case "domain":
+    }
+    case "domain": {
+      const entities = card.entities?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Entities</div><p>${card.entities.map(escapeHtml).join(", ")}</p></div>`
+        : ""
+      const contexts = card.boundedContexts?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Bounded Contexts</div><p>${card.boundedContexts.map(escapeHtml).join(", ")}</p></div>`
+        : ""
       return `
-        <div class="ms-card ms-card-domain">
-          <div class="ms-card-kind">Domain</div>
-          <p><strong>Entities:</strong> ${card.entities.map(escapeHtml).join(", ")}</p>
-          <p><strong>Contexts:</strong> ${card.boundedContexts.map(escapeHtml).join(", ")}</p>
-        </div>
+        <article class="ms-card ms-card-domain">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Domain</div>
+          </div>
+          <div class="ms-card-body">
+            ${entities}
+            ${contexts}
+          </div>
+        </article>
       `
-    case "mission":
+    }
+    case "mission": {
+      const objectives = card.objectives?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Objectives</div><ul>${card.objectives.map((o) => `<li>${escapeHtml(o)}</li>`).join("")}</ul></div>`
+        : ""
       return `
-        <div class="ms-card ms-card-mission">
-          <div class="ms-card-kind">Mission</div>
-          <h4>${escapeHtml(card.name)}</h4>
-          <p>${escapeHtml(card.purpose)}</p>
-          <ul>${card.objectives.map((o) => `<li>${escapeHtml(o)}</li>`).join("")}</ul>
-        </div>
+        <article class="ms-card ms-card-mission">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Mission</div>
+            <span class="ms-status ms-status-completed">Approved</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.purpose)}</p>
+            ${objectives}
+          </div>
+        </article>
       `
+    }
     case "expedition":
       return `
-        <div class="ms-card ms-card-expedition">
-          <div class="ms-card-kind">Expedition</div>
-          <h4>${escapeHtml(card.name)}</h4>
-          <p>${escapeHtml(card.goal)}</p>
-          <span class="ms-status ms-status-${card.status}">${escapeHtml(card.status)}</span>
-        </div>
+        <article class="ms-card ms-card-expedition">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Expedition</div>
+            <span class="ms-status ms-status-${card.status}">${escapeHtml(card.status)}</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.goal)}</p>
+          </div>
+        </article>
       `
     case "evidence":
       return `
-        <div class="ms-card ms-card-evidence">
-          <div class="ms-card-kind">Evidence</div>
-          <p>${escapeHtml(card.observation)}</p>
-          <span class="ms-confidence">confidence ${Math.round(card.confidence * 100)}%</span>
-        </div>
+        <article class="ms-card ms-card-evidence">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Evidence</div>
+            <span class="ms-confidence">${Math.round(card.confidence * 100)}% confidence</span>
+          </div>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.observation)}</p>
+            ${card.source ? `<div class="ms-card-meta"><span class="ms-tag">${escapeHtml(card.source)}</span></div>` : ""}
+          </div>
+        </article>
       `
-    case "architecture":
+    case "architecture": {
+      const dependencies = card.dependencies?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Dependencies</div><p>${card.dependencies.map(escapeHtml).join(", ")}</p></div>`
+        : ""
       return `
-        <div class="ms-card ms-card-architecture">
-          <div class="ms-card-kind">Architecture Layer</div>
-          <h4>${escapeHtml(card.layer)}</h4>
-          <p>${escapeHtml(card.responsibility)}</p>
-          ${card.dependencies.length ? `<p><strong>Depends on:</strong> ${card.dependencies.map(escapeHtml).join(", ")}</p>` : ""}
-        </div>
+        <article class="ms-card ms-card-architecture">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Architecture Layer</div>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.layer)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.responsibility)}</p>
+            ${dependencies}
+          </div>
+        </article>
       `
-    case "repository":
+    }
+    case "repository": {
+      const artifactList = card.artifacts?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Artifacts</div><ul>${card.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`
+        : ""
       return `
-        <div class="ms-card ms-card-repository">
-          <div class="ms-card-kind">Repository Summary</div>
-          <h4>Status: ${escapeHtml(card.status)}</h4>
-          <p><strong>Artifacts:</strong></p>
-          <ul>${card.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>
-          <p><strong>Events:</strong> ${card.eventCount}</p>
-        </div>
+        <article class="ms-card ms-card-repository">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Repository Summary</div>
+            <span class="ms-status ms-status-completed">${escapeHtml(card.status)}</span>
+          </div>
+          <div class="ms-card-body">
+            ${artifactList}
+            <div class="ms-card-meta">
+              <span class="ms-tag">${card.eventCount} events</span>
+            </div>
+          </div>
+        </article>
       `
+    }
     default:
       return ""
   }
@@ -263,11 +338,13 @@ export function renderReplayControls({ offset, total, hidden = false }) {
  */
 export function renderEmptyState({ title = "Nothing to show", message = "Artifacts will appear here." } = {}) {
   return `
-    <div class="ms-card">
-      <div class="ms-card-kind">Empty State</div>
-      <h4>${escapeHtml(title)}</h4>
-      <p>${escapeHtml(message)}</p>
-    </div>
+    <article class="ms-card">
+      <div class="ms-card-header">
+        <div class="ms-card-kind">Empty State</div>
+      </div>
+      <h4 class="ms-card-title">${escapeHtml(title)}</h4>
+      <div class="ms-card-body"><p>${escapeHtml(message)}</p></div>
+    </article>
   `
 }
 
@@ -287,12 +364,16 @@ export function renderLoading({ message = "Loading..." } = {}) {
  */
 export function renderError({ message, actionLabel = "Retry" }) {
   return `
-    <div class="ms-card ms-card-unknowns">
-      <div class="ms-card-kind">Error</div>
-      <h4>Something went wrong</h4>
-      <p>${escapeHtml(message)}</p>
-      <button class="ms-btn ms-btn-primary" id="ms-error-retry">${escapeHtml(actionLabel)}</button>
-    </div>
+    <article class="ms-card ms-card-unknowns">
+      <div class="ms-card-header">
+        <div class="ms-card-kind">Error</div>
+      </div>
+      <h4 class="ms-card-title">Something went wrong</h4>
+      <div class="ms-card-body"><p>${escapeHtml(message)}</p></div>
+      <div class="ms-card-meta">
+        <button class="ms-btn ms-btn-primary" id="ms-error-retry">${escapeHtml(actionLabel)}</button>
+      </div>
+    </article>
   `
 }
 

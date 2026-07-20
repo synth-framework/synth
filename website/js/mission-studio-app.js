@@ -12,6 +12,7 @@ import {
   demoExamples,
   DemoOperator,
 } from "./homepage-runtime/index.js"
+import { renderArtifactCard } from "./components.js"
 
 const runtime = createHomepageRuntime()
 
@@ -146,109 +147,26 @@ function renderFooterStatus(projection) {
       : ""
 }
 
-function renderCard(card) {
-  switch (card.kind) {
-    case "intent":
-      return `
-        <div class="ms-card ms-card-intent">
-          <div class="ms-card-kind">Intent</div>
-          <h4>${escapeHtml(card.description)}</h4>
-          ${card.goals.length ? `<ul>${card.goals.map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>` : ""}
-        </div>
-      `
-    case "discovery":
-      return `
-        <div class="ms-card ms-card-discovery">
-          <div class="ms-card-kind">Discovery</div>
-          ${card.findings.map((f) => `<p>${escapeHtml(f)}</p>`).join("")}
-          ${card.capabilities.length ? `<div class="ms-tags">${card.capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div>` : ""}
-        </div>
-      `
-    case "unknowns":
-      return `
-        <div class="ms-card ms-card-unknowns">
-          <div class="ms-card-kind">Unknowns</div>
-          ${card.items.length ? `<ul>${card.items.map((u) => `<li>${escapeHtml(u.description)}</li>`).join("")}</ul>` : `<p>All critical unknowns resolved.</p>`}
-        </div>
-      `
-    case "domain":
-      return `
-        <div class="ms-card ms-card-domain">
-          <div class="ms-card-kind">Domain</div>
-          <p><strong>Entities:</strong> ${card.entities.map(escapeHtml).join(", ")}</p>
-          <p><strong>Contexts:</strong> ${card.boundedContexts.map(escapeHtml).join(", ")}</p>
-        </div>
-      `
-    case "mission":
-      return `
-        <div class="ms-card ms-card-mission">
-          <div class="ms-card-kind">Mission</div>
-          <h4>${escapeHtml(card.name)}</h4>
-          <p>${escapeHtml(card.purpose)}</p>
-          <ul>${card.objectives.map((o) => `<li>${escapeHtml(o)}</li>`).join("")}</ul>
-        </div>
-      `
-    case "expedition":
-      return `
-        <div class="ms-card ms-card-expedition">
-          <div class="ms-card-kind">Expedition</div>
-          <h4>${escapeHtml(card.name)}</h4>
-          <p>${escapeHtml(card.goal)}</p>
-          <span class="ms-status ms-status-${card.status}">${escapeHtml(card.status)}</span>
-        </div>
-      `
-    case "evidence":
-      return `
-        <div class="ms-card ms-card-evidence">
-          <div class="ms-card-kind">Evidence</div>
-          <p>${escapeHtml(card.observation)}</p>
-          <span class="ms-confidence">confidence ${Math.round(card.confidence * 100)}%</span>
-        </div>
-      `
-    case "architecture":
-      return `
-        <div class="ms-card ms-card-architecture">
-          <div class="ms-card-kind">Architecture Layer</div>
-          <h4>${escapeHtml(card.layer)}</h4>
-          <p>${escapeHtml(card.responsibility)}</p>
-          ${card.dependencies.length ? `<p><strong>Depends on:</strong> ${card.dependencies.map(escapeHtml).join(", ")}</p>` : ""}
-        </div>
-      `
-    case "repository":
-      return `
-        <div class="ms-card ms-card-repository">
-          <div class="ms-card-kind">Repository Summary</div>
-          <h4>Status: ${escapeHtml(card.status)}</h4>
-          <p><strong>Artifacts:</strong></p>
-          <ul>${card.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>
-          <p><strong>Events:</strong> ${card.eventCount}</p>
-        </div>
-      `
-    default:
-      return ""
-  }
-}
-
 function renderArtifacts(projection) {
   const cards = []
-  if (projection.intent) cards.push(renderCard(projection.intent))
-  if (projection.discovery) cards.push(renderCard(projection.discovery))
-  if (projection.unknowns) cards.push(renderCard(projection.unknowns))
-  if (projection.domain) cards.push(renderCard(projection.domain))
-  if (projection.mission) cards.push(renderCard(projection.mission))
+  if (projection.intent) cards.push(renderArtifactCard(projection.intent))
+  if (projection.discovery) cards.push(renderArtifactCard(projection.discovery))
+  if (projection.unknowns) cards.push(renderArtifactCard(projection.unknowns))
+  if (projection.domain) cards.push(renderArtifactCard(projection.domain))
+  if (projection.mission) cards.push(renderArtifactCard(projection.mission))
   for (const expedition of projection.expeditions) {
-    cards.push(renderCard(expedition))
+    cards.push(renderArtifactCard(expedition))
   }
   for (const evidence of projection.evidence) {
-    cards.push(renderCard(evidence))
+    cards.push(renderArtifactCard(evidence))
   }
   if (projection.architecture) {
     for (const layer of projection.architecture) {
-      cards.push(renderCard(layer))
+      cards.push(renderArtifactCard(layer))
     }
   }
   if (projection.repository) {
-    cards.push(renderCard(projection.repository))
+    cards.push(renderArtifactCard(projection.repository))
   }
 
   elements.artifacts.innerHTML = cards.join("") || `<p class="ms-placeholder">Artifacts will appear here.</p>`

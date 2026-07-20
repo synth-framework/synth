@@ -71,14 +71,50 @@
   --ms-accent-soft: #EEF2FF;
 
   --ms-genesis: #4F46E5;
+  --ms-genesis-soft: #EEF2FF;
+  --ms-genesis-bg: #FAFBFF;
+  --ms-genesis-text: #4338CA;
+  --ms-genesis-icon: #6366F1;
   --ms-mission: #2563EB;
+  --ms-mission-soft: #DBEAFE;
+  --ms-mission-bg: #F5F9FF;
+  --ms-mission-text: #1D4ED8;
+  --ms-mission-icon: #3B82F6;
   --ms-expedition: #D97706;
+  --ms-expedition-soft: #FEF3C7;
+  --ms-expedition-bg: #FFFBEB;
+  --ms-expedition-text: #B45309;
+  --ms-expedition-icon: #F59E0B;
   --ms-evidence: #CA8A04;
+  --ms-evidence-soft: #FEF9C3;
+  --ms-evidence-bg: #FFFDE8;
+  --ms-evidence-text: #A16207;
+  --ms-evidence-icon: #EAB308;
   --ms-governance: #7C3AED;
+  --ms-governance-soft: #EDE9FE;
+  --ms-governance-bg: #FAF9FF;
+  --ms-governance-text: #6D28D9;
+  --ms-governance-icon: #8B5CF6;
   --ms-replay: #0891B2;
+  --ms-replay-soft: #CFFAFE;
+  --ms-replay-bg: #F0FDFF;
+  --ms-replay-text: #0E7490;
+  --ms-replay-icon: #06B6D4;
   --ms-knowledge: #DC2626;
+  --ms-knowledge-soft: #FEE2E2;
+  --ms-knowledge-bg: #FFF5F5;
+  --ms-knowledge-text: #B91C1C;
+  --ms-knowledge-icon: #EF4444;
   --ms-architecture: #059669;
+  --ms-architecture-soft: #D1FAE5;
+  --ms-architecture-bg: #F0FDF4;
+  --ms-architecture-text: #047857;
+  --ms-architecture-icon: #10B981;
   --ms-repository: #0D9488;
+  --ms-repository-soft: #CCFBF1;
+  --ms-repository-bg: #F0FDFA;
+  --ms-repository-text: #0F766E;
+  --ms-repository-icon: #14B8A6;
 
   --ms-success: #16A34A;
   --ms-success-soft: #DCFCE7;
@@ -118,14 +154,50 @@
     --ms-accent-soft: rgba(129, 140, 248, 0.15);
 
     --ms-genesis: #818cf8;
+    --ms-genesis-soft: rgba(129, 140, 248, 0.15);
+    --ms-genesis-bg: rgba(129, 140, 248, 0.08);
+    --ms-genesis-text: #A5B4FC;
+    --ms-genesis-icon: #818CF8;
     --ms-mission: #60a5fa;
+    --ms-mission-soft: rgba(96, 165, 250, 0.15);
+    --ms-mission-bg: rgba(96, 165, 250, 0.08);
+    --ms-mission-text: #93C5FD;
+    --ms-mission-icon: #60A5FA;
     --ms-expedition: #f59e0b;
+    --ms-expedition-soft: rgba(245, 158, 11, 0.15);
+    --ms-expedition-bg: rgba(245, 158, 11, 0.08);
+    --ms-expedition-text: #FCD34D;
+    --ms-expedition-icon: #F59E0B;
     --ms-evidence: #fbbf24;
+    --ms-evidence-soft: rgba(251, 191, 36, 0.15);
+    --ms-evidence-bg: rgba(251, 191, 36, 0.08);
+    --ms-evidence-text: #FDE047;
+    --ms-evidence-icon: #FBBF24;
     --ms-governance: #a78bfa;
+    --ms-governance-soft: rgba(167, 139, 250, 0.15);
+    --ms-governance-bg: rgba(167, 139, 250, 0.08);
+    --ms-governance-text: #C4B5FD;
+    --ms-governance-icon: #A78BFA;
     --ms-replay: #22d3ee;
+    --ms-replay-soft: rgba(34, 211, 238, 0.15);
+    --ms-replay-bg: rgba(34, 211, 238, 0.08);
+    --ms-replay-text: #67E8F9;
+    --ms-replay-icon: #22D3EE;
     --ms-knowledge: #f87171;
+    --ms-knowledge-soft: rgba(248, 113, 113, 0.15);
+    --ms-knowledge-bg: rgba(248, 113, 113, 0.08);
+    --ms-knowledge-text: #FCA5A5;
+    --ms-knowledge-icon: #F87171;
     --ms-architecture: #34d399;
+    --ms-architecture-soft: rgba(52, 211, 153, 0.15);
+    --ms-architecture-bg: rgba(52, 211, 153, 0.08);
+    --ms-architecture-text: #6EE7B7;
+    --ms-architecture-icon: #34D399;
     --ms-repository: #2dd4bf;
+    --ms-repository-soft: rgba(45, 212, 191, 0.15);
+    --ms-repository-bg: rgba(45, 212, 191, 0.08);
+    --ms-repository-text: #5EEAD4;
+    --ms-repository-icon: #2DD4BF;
 
     --ms-success: #4ade80;
     --ms-success-soft: rgba(74, 222, 128, 0.15);
@@ -443,7 +515,7 @@ nav {
 .ms-phase {
   display: flex;
   align-items: center;
-  gap: var(--ms-space-2);
+  gap: var(--ms-space-3);
   padding: var(--ms-space-2) var(--ms-space-3);
   border-radius: var(--ms-radius-sm);
   font-size: var(--ms-text-sm);
@@ -454,11 +526,19 @@ nav {
 
 .ms-phase::before {
   content: "";
-  width: 8px;
-  height: 8px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--ms-border);
+  border: 2px solid var(--ms-border-strong);
+  background: transparent;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  color: transparent;
+  transition: background var(--ms-duration-fast), border-color var(--ms-duration-fast), color var(--ms-duration-fast);
 }
 
 .ms-phase-past {
@@ -466,7 +546,10 @@ nav {
 }
 
 .ms-phase-past::before {
-  background: var(--ms-text-muted);
+  content: "✓";
+  border-color: var(--ms-text-muted);
+  background: var(--ms-surface-2);
+  color: var(--ms-text-muted);
 }
 
 .ms-phase-active {
@@ -476,6 +559,8 @@ nav {
 }
 
 .ms-phase-active::before {
+  content: "";
+  border-color: var(--ms-accent);
   background: var(--ms-accent);
 }
 
@@ -611,70 +696,157 @@ nav {
   background: var(--ms-surface);
   border: 1px solid var(--ms-border);
   border-radius: var(--ms-radius-lg);
-  padding: var(--ms-space-4);
+  padding: var(--ms-space-5);
+  box-shadow: var(--ms-shadow-sm);
+  transition: box-shadow var(--ms-duration-fast), transform var(--ms-duration-fast);
+}
+
+.ms-card:hover {
   box-shadow: var(--ms-shadow-md);
-  border-left: 4px solid var(--ms-border);
+}
+
+.ms-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ms-space-3);
+  margin-bottom: var(--ms-space-3);
 }
 
 .ms-card-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ms-space-2);
+  font-size: var(--ms-text-xs);
+  font-weight: var(--ms-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ms-card-kind::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ms-card-title {
+  margin: 0 0 var(--ms-space-2);
+  color: var(--ms-text);
+  font-size: var(--ms-text-xl);
+  font-weight: var(--ms-font-weight-semibold);
+  letter-spacing: var(--ms-letter-spacing-tight);
+  line-height: 1.3;
+}
+
+.ms-card-body {
+  color: var(--ms-text-secondary);
+  font-size: var(--ms-text-base);
+  line-height: 1.6;
+}
+
+.ms-card-body p,
+.ms-card-body li {
+  margin: 0 0 var(--ms-space-2);
+}
+
+.ms-card-body ul {
+  margin: 0;
+  padding-left: var(--ms-space-5);
+}
+
+.ms-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ms-space-3);
+  margin-top: var(--ms-space-4);
+  padding-top: var(--ms-space-4);
+  border-top: 1px solid var(--ms-border);
+}
+
+.ms-card-section {
+  margin-top: var(--ms-space-4);
+}
+
+.ms-card-section-title {
   font-size: var(--ms-text-xs);
   font-weight: var(--ms-font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ms-text-muted);
-  margin-bottom: var(--ms-space-2);
-}
-
-.ms-card h4 {
   margin: 0 0 var(--ms-space-2);
-  color: var(--ms-text);
-  font-size: var(--ms-text-base);
 }
 
-.ms-card p,
-.ms-card li {
-  color: var(--ms-text-secondary);
-  font-size: var(--ms-text-sm);
-  margin: 0 0 var(--ms-space-1);
-}
+/* Concept-aware artifact surfaces. Backgrounds use semantic -bg,
+   borders use semantic base, kind labels use semantic -text. */
+.ms-card-intent { background: var(--ms-genesis-bg); border-color: var(--ms-genesis-soft); }
+.ms-card-intent .ms-card-kind { color: var(--ms-genesis-text); }
 
-.ms-card ul {
-  margin: 0;
-  padding-left: var(--ms-space-4);
-}
+.ms-card-discovery { background: var(--ms-replay-bg); border-color: var(--ms-replay-soft); }
+.ms-card-discovery .ms-card-kind { color: var(--ms-replay-text); }
 
-.ms-card-intent { border-left-color: var(--ms-genesis); }
-.ms-card-discovery { border-left-color: var(--ms-replay); }
-.ms-card-unknowns { border-left-color: var(--ms-knowledge); }
-.ms-card-domain { border-left-color: var(--ms-governance); }
-.ms-card-mission { border-left-color: var(--ms-mission); }
-.ms-card-expedition { border-left-color: var(--ms-expedition); }
-.ms-card-evidence { border-left-color: var(--ms-evidence); }
-.ms-card-architecture { border-left-color: var(--ms-architecture); }
-.ms-card-repository { border-left-color: var(--ms-repository); }
+.ms-card-unknowns { background: var(--ms-knowledge-bg); border-color: var(--ms-knowledge-soft); }
+.ms-card-unknowns .ms-card-kind { color: var(--ms-knowledge-text); }
+
+.ms-card-domain { background: var(--ms-governance-bg); border-color: var(--ms-governance-soft); }
+.ms-card-domain .ms-card-kind { color: var(--ms-governance-text); }
+
+.ms-card-mission { background: var(--ms-mission-bg); border-color: var(--ms-mission-soft); }
+.ms-card-mission .ms-card-kind { color: var(--ms-mission-text); }
+
+.ms-card-expedition { background: var(--ms-expedition-bg); border-color: var(--ms-expedition-soft); }
+.ms-card-expedition .ms-card-kind { color: var(--ms-expedition-text); }
+
+.ms-card-evidence { background: var(--ms-evidence-bg); border-color: var(--ms-evidence-soft); }
+.ms-card-evidence .ms-card-kind { color: var(--ms-evidence-text); }
+
+.ms-card-architecture { background: var(--ms-architecture-bg); border-color: var(--ms-architecture-soft); }
+.ms-card-architecture .ms-card-kind { color: var(--ms-architecture-text); }
+
+.ms-card-repository { background: var(--ms-repository-bg); border-color: var(--ms-repository-soft); }
+.ms-card-repository .ms-card-kind { color: var(--ms-repository-text); }
 
 .ms-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ms-space-1);
-  margin-top: var(--ms-space-2);
+  gap: var(--ms-space-2);
+  margin-top: var(--ms-space-3);
 }
 
 .ms-tag {
   font-size: var(--ms-text-xs);
-  padding: var(--ms-space-1) var(--ms-space-2);
-  background: var(--ms-surface-2);
+  padding: var(--ms-space-1) var(--ms-space-3);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--ms-border);
   border-radius: var(--ms-radius-full);
   color: var(--ms-text-secondary);
 }
 
+.dark .ms-tag,
+[data-theme="dark"] .ms-tag {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .ms-status {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ms-space-1);
   font-size: var(--ms-text-xs);
-  padding: var(--ms-space-1) var(--ms-space-2);
+  font-weight: var(--ms-font-weight-bold);
+  padding: var(--ms-space-1) var(--ms-space-3);
   border-radius: var(--ms-radius-full);
   text-transform: uppercase;
-  margin-top: var(--ms-space-2);
+  letter-spacing: 0.04em;
+}
+
+.ms-status::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .ms-status-draft { background: var(--ms-surface-2); color: var(--ms-text-muted); }
@@ -682,8 +854,21 @@ nav {
 .ms-status-completed { background: var(--ms-success-soft); color: var(--ms-success); }
 
 .ms-confidence {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ms-space-1);
   font-size: var(--ms-text-xs);
-  color: var(--ms-text-muted);
+  font-weight: var(--ms-font-weight-bold);
+  padding: var(--ms-space-1) var(--ms-space-3);
+  border-radius: var(--ms-radius-full);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--ms-text-secondary);
+  border: 1px solid var(--ms-border);
+}
+
+.dark .ms-confidence,
+[data-theme="dark"] .ms-confidence {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .ms-controls {
