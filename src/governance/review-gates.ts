@@ -1,24 +1,59 @@
 // ============================================================
 // GOVERNANCE: Intent Refinement & Review Gates
 // ============================================================
-// Pure types and state transitions for the three-gate model.
-// No runtime/execution integration at this layer; this module
-// defines the vocabulary, artifacts, and state machine.
+// Generic, artifact-driven gate model for SYNTH governance.
+// A Gate is a stateless checkpoint identified by ID. It consumes
+// input artifacts and produces output artifacts. The engine
+// executes gates; the gateType defines semantics.
 // ============================================================
 
 /** Gate kinds in the intent-to-acceptance lifecycle. */
 export type GateType = "refinement" | "review" | "acceptance"
 
-/** Completion policy for an expedition. Determines who may resolve gates. */
-export type CompletionPolicy = "automatic" | "human_required" | "ai_required"
-
-/** Actor kinds that may resolve a gate. */
-export type ReviewerKind = "human" | "ai" | "council" | "engine" | "asset_owner"
-
 /** Reviewer identity. */
 export type Reviewer = {
   kind: ReviewerKind
   id: string
+}
+
+/** Actor kinds that may resolve a gate. */
+export type ReviewerKind = "human" | "ai" | "council" | "engine" | "asset_owner"
+
+/** Quorum rule for multi-reviewer gates. */
+export type QuorumRule = "all" | "any" | number
+
+/** Policy controlling who may resolve a gate and how. */
+export type GatePolicy = {
+  reviewers: ReviewerKind[]
+  quorum: QuorumRule
+  timeout?: number
+  revisionLimit?: number
+  autoAdvance?: boolean
+}
+
+/** Pre-defined policy templates for common cases. */
+export const GATE_POLICIES = {
+  automatic: (): GatePolicy => ({
+    reviewers: ["engine"],
+    quorum: "any",
+    autoAdvance: true,
+  }),
+  humanRequired: (): GatePolicy => ({
+    reviewers: ["human"],
+    quorum: "all",
+  }),
+  aiRequired: (): GatePolicy => ({
+    reviewers: ["ai"],
+    quorum: "all",
+  }),
+  humanAndAi: (): GatePolicy => ({
+    reviewers: ["human", "ai"],
+    quorum: "all",
+  }),
+  council: (): GatePolicy => ({
+    reviewers: ["council"],
+    quorum: "all",
+  }),
 }
 
 /** Decision types for the Refinement Gate. */
@@ -41,6 +76,9 @@ export type AcceptanceDecisionType = "accepted" | "rejected"
 
 /** Union of all gate decision types. */
 export type GateDecisionType = RefinementDecisionType | ReviewDecisionType | AcceptanceDecisionType
+
+/** Validity of a recorded decision. */
+export type DecisionValidity = "valid" | "invalid" | "obsolete"
 
 /** Current status of a gate instance. */
 export type GateStatus =
@@ -65,6 +103,10 @@ export type ReviewGateExpeditionStatus =
   | "closed"
   | "rejected"
 
+// ============================================================
+// Artifacts
+// ============================================================
+
 /** Refined Intent — canonical pre-Mission contract. */
 export type RefinedIntent = {
   id: string
@@ -85,26 +127,35 @@ export type RefinedIntent = {
   version: number
 }
 
-/** Gate package produced at every Review Gate. */
+/** Inputs consumed by a Review Gate. */
+export type ReviewGateInputs = {
+  refinedIntentId: string
+  implementationReference: string
+  divergenceReportId?: string
+}
+
+/** Outputs produced by a Review Gate. */
+export type ReviewGateOutputs = {
+  reviewPackageId: string
+  reviewDecisionId: string
+}
+
+/** Review Gate Package artifact. */
 export type ReviewGatePackage = {
   id: string
+  gateId: string
   expeditionId: string
   refinedIntentId: string
   implementationReference: string
   knownDivergence: string[]
   acceptedDivergence: string[]
   rejectedDivergence: string[]
-  reviewer: Reviewer
-  decision: ReviewDecisionType
-  reason: string
-  nextAction: string
-  evidence: string[]
-  timestamp: number
 }
 
 /** Replayable decision event produced by any gate. */
 export type ReviewDecision = {
   id: string
+  gateId: string
   gateType: GateType
   expeditionId: string
   decision: GateDecisionType
@@ -113,12 +164,14 @@ export type ReviewDecision = {
   requiredChanges?: string[]
   evidence: string[]
   reviewer: Reviewer
+  validity: DecisionValidity
   timestamp: number
 }
 
-/** Revision request event. */
+/** Revision request artifact. */
 export type RevisionRequest = {
   id: string
+  gateId: string
   expeditionId: string
   reason: string
   evidence: string[]
@@ -126,36 +179,44 @@ export type RevisionRequest = {
   timestamp: number
 }
 
-/** Acceptance gate package. */
+/** Acceptance Gate Package artifact. */
 export type AcceptanceGatePackage = {
   id: string
+  gateId: string
   expeditionId: string
   reviewDecisionId: string
   certificationEvidence: string[]
   stakeholderApprovals: string[]
   rolloutReadiness: string[]
-  reviewer: Reviewer
+}
+
+/** Acceptance Record artifact. */
+export type AcceptanceRecord = {
+  id: string
+  gateId: string
+  expeditionId: string
   decision: AcceptanceDecisionType
+  reviewer: Reviewer
   timestamp: number
 }
 
-/** Acceptance policy for a gate. */
-export type AcceptancePolicy = {
-  gateType: GateType
-  reviewerKind: ReviewerKind
-  requiredEvidence: string[]
-  autoAdvance?: boolean
-}
+// ============================================================
+// Gate Instance
+// ============================================================
 
-/** A gate instance attached to an expedition. */
-export type GateInstance = {
+/** A gate instance — stateless checkpoint identified by ID. */
+export type Gate = {
   id: string
-  expeditionId: string
   gateType: GateType
+  expeditionId: string
+  policy: GatePolicy
   status: GateStatus
-  policy: AcceptancePolicy
-  packageId?: string
+  inputs: string[]
+  outputs: string[]
+  reviewer?: Reviewer
   decisionId?: string
+  parentGateId?: string
+  blocking: boolean
   createdAt: number
   resolvedAt?: number
 }
@@ -163,12 +224,13 @@ export type GateInstance = {
 /** Expedition augmented with review-gate state. */
 export type ReviewGateExpedition = {
   expeditionId: string
-  completionPolicy: CompletionPolicy
   status: ReviewGateExpeditionStatus
-  gates: GateInstance[]
+  gates: Gate[]
   refinedIntentId?: string
   reviewPackageId?: string
+  reviewDecisionId?: string
   acceptancePackageId?: string
+  acceptanceRecordId?: string
   currentGateId?: string
 }
 
@@ -186,15 +248,33 @@ export function makeId(prefix: string): string {
 }
 
 /** Create a fresh expedition under review-gate governance. */
-export function createReviewGateExpedition(
-  expeditionId: string,
-  completionPolicy: CompletionPolicy = "human_required"
-): ReviewGateExpedition {
+export function createReviewGateExpedition(expeditionId: string): ReviewGateExpedition {
   return {
     expeditionId,
-    completionPolicy,
     status: "proposed",
     gates: [],
+  }
+}
+
+/** Create a gate instance. */
+export function createGate(
+  gateType: GateType,
+  expeditionId: string,
+  policy: GatePolicy,
+  inputs: string[] = [],
+  parentGateId?: string
+): Gate {
+  return {
+    id: makeId("gate"),
+    gateType,
+    expeditionId,
+    policy,
+    status: "awaiting_review",
+    inputs,
+    outputs: [],
+    parentGateId,
+    blocking: true,
+    createdAt: Date.now(),
   }
 }
 
@@ -210,41 +290,60 @@ export function beginExecution(expedition: ReviewGateExpedition): ReviewGateExpe
 }
 
 /** Mark implementation complete and open the Review Gate. */
-export function completeImplementation(expedition: ReviewGateExpedition): ReviewGateExpedition {
+export function completeImplementation(
+  expedition: ReviewGateExpedition,
+  implementationReference: string,
+  policy: GatePolicy = GATE_POLICIES.humanRequired()
+): { expedition: ReviewGateExpedition; gate: Gate; reviewPackage: ReviewGatePackage } {
   if (expedition.status !== "executing") {
     throw new ReviewGateError(`Cannot complete implementation from status ${expedition.status}`)
   }
-  const gate: GateInstance = {
-    id: makeId("gate"),
-    expeditionId: expedition.expeditionId,
-    gateType: "review",
-    status: "awaiting_review",
-    policy: { gateType: "review", reviewerKind: resolveReviewerKind(expedition.completionPolicy), requiredEvidence: [] },
-    createdAt: Date.now(),
+  if (!expedition.refinedIntentId) {
+    throw new ReviewGateError("Cannot review without a Refined Intent")
   }
+
+  const reviewPackage: ReviewGatePackage = {
+    id: makeId("review-package"),
+    gateId: "", // filled after gate creation
+    expeditionId: expedition.expeditionId,
+    refinedIntentId: expedition.refinedIntentId,
+    implementationReference,
+    knownDivergence: [],
+    acceptedDivergence: [],
+    rejectedDivergence: [],
+  }
+
+  const gate = createGate("review", expedition.expeditionId, policy, [
+    expedition.refinedIntentId,
+    reviewPackage.id,
+  ])
+  reviewPackage.gateId = gate.id
+
   return {
-    ...expedition,
-    status: "awaiting_review",
-    currentGateId: gate.id,
-    gates: [...expedition.gates, gate],
+    expedition: {
+      ...expedition,
+      status: "awaiting_review",
+      currentGateId: gate.id,
+      reviewPackageId: reviewPackage.id,
+      gates: [...expedition.gates, gate],
+    },
+    gate,
+    reviewPackage,
   }
 }
 
 /** Resolve a Review Gate with a decision. */
 export function resolveReviewGate(
   expedition: ReviewGateExpedition,
-  decision: ReviewDecisionType,
+  decisionType: ReviewDecisionType,
   reviewer: Reviewer,
   reason: string,
   evidence: string[] = [],
-  affectedAssets: string[] = []
-): { expedition: ReviewGateExpedition; decision: ReviewDecision } {
+  affectedAssets: string[] = [],
+  requiredChanges: string[] = []
+): { expedition: ReviewGateExpedition; gate: Gate; decision: ReviewDecision } {
   if (expedition.status !== "awaiting_review") {
     throw new ReviewGateError(`Cannot resolve review gate from status ${expedition.status}`)
-  }
-
-  if (expedition.completionPolicy !== "automatic" && reviewer.id === "implementer") {
-    throw new ReviewGateError("Implementation agent cannot approve its own work")
   }
 
   const gate = expedition.gates.find((g) => g.id === expedition.currentGateId)
@@ -252,55 +351,54 @@ export function resolveReviewGate(
     throw new ReviewGateError("No active review gate found")
   }
 
-  const reviewDecision: ReviewDecision = {
+  if (!gate.policy.autoAdvance && reviewer.id === "implementer") {
+    throw new ReviewGateError("Implementation agent cannot approve its own work")
+  }
+
+  const decision: ReviewDecision = {
     id: makeId("decision"),
+    gateId: gate.id,
     gateType: "review",
     expeditionId: expedition.expeditionId,
-    decision,
+    decision: decisionType,
     reason,
     affectedAssets,
+    requiredChanges,
     evidence,
     reviewer,
+    validity: "valid",
     timestamp: Date.now(),
   }
 
-  const resolvedGate: GateInstance = {
+  const nextStatus = reviewDecisionStatus(decisionType)
+  const resolvedGate: Gate = {
     ...gate,
-    status: decision === "approve" || decision === "approve_with_conditions" ? "approved" : "rejected",
-    decisionId: reviewDecision.id,
+    status: reviewGateStatus(decisionType),
+    decisionId: decision.id,
+    reviewer,
+    outputs: [decision.id],
     resolvedAt: Date.now(),
-  }
-
-  let nextStatus: ReviewGateExpeditionStatus
-  switch (decision) {
-    case "approve":
-    case "approve_with_conditions":
-      nextStatus = "approved"
-      break
-    case "revision_required":
-      nextStatus = "revision_requested"
-      break
-    case "reject":
-      nextStatus = "rejected"
-      break
-    default:
-      nextStatus = "awaiting_review"
   }
 
   return {
     expedition: {
       ...expedition,
       status: nextStatus,
+      reviewDecisionId: decision.id,
       gates: expedition.gates.map((g) => (g.id === resolvedGate.id ? resolvedGate : g)),
     },
-    decision: reviewDecision,
+    gate: resolvedGate,
+    decision,
   }
 }
 
 /** Begin a revision after a Review Gate requested changes. */
 export function beginRevision(
   expedition: ReviewGateExpedition,
-  request: Omit<RevisionRequest, "id" | "timestamp">
+  gate: Gate,
+  reviewer: Reviewer,
+  reason: string,
+  evidence: string[] = []
 ): { expedition: ReviewGateExpedition; revisionRequest: RevisionRequest } {
   if (expedition.status !== "revision_requested") {
     throw new ReviewGateError(`Cannot begin revision from status ${expedition.status}`)
@@ -308,10 +406,11 @@ export function beginRevision(
 
   const revisionRequest: RevisionRequest = {
     id: makeId("revision"),
+    gateId: gate.id,
     expeditionId: expedition.expeditionId,
-    reason: request.reason,
-    evidence: request.evidence,
-    reviewer: request.reviewer,
+    reason,
+    evidence,
+    reviewer,
     timestamp: Date.now(),
   }
 
@@ -322,36 +421,55 @@ export function beginRevision(
 }
 
 /** Open the Acceptance Gate after a successful Review Gate. */
-export function openAcceptanceGate(expedition: ReviewGateExpedition): ReviewGateExpedition {
+export function openAcceptanceGate(
+  expedition: ReviewGateExpedition,
+  reviewDecision: ReviewDecision,
+  policy: GatePolicy = GATE_POLICIES.council()
+): { expedition: ReviewGateExpedition; gate: Gate; acceptancePackage: AcceptanceGatePackage } {
   if (expedition.status !== "approved") {
     throw new ReviewGateError(`Cannot open acceptance gate from status ${expedition.status}`)
   }
 
-  const gate: GateInstance = {
-    id: makeId("gate"),
+  const acceptancePackage: AcceptanceGatePackage = {
+    id: makeId("acceptance-package"),
+    gateId: "",
     expeditionId: expedition.expeditionId,
-    gateType: "acceptance",
-    status: "awaiting_review",
-    policy: { gateType: "acceptance", reviewerKind: "engine", requiredEvidence: [] },
-    createdAt: Date.now(),
+    reviewDecisionId: reviewDecision.id,
+    certificationEvidence: [],
+    stakeholderApprovals: [],
+    rolloutReadiness: [],
   }
 
+  const gate = createGate(
+    "acceptance",
+    expedition.expeditionId,
+    policy,
+    [reviewDecision.id, acceptancePackage.id],
+    reviewDecision.gateId
+  )
+  acceptancePackage.gateId = gate.id
+
   return {
-    ...expedition,
-    status: "awaiting_acceptance",
-    currentGateId: gate.id,
-    gates: [...expedition.gates, gate],
+    expedition: {
+      ...expedition,
+      status: "awaiting_acceptance",
+      currentGateId: gate.id,
+      acceptancePackageId: acceptancePackage.id,
+      gates: [...expedition.gates, gate],
+    },
+    gate,
+    acceptancePackage,
   }
 }
 
 /** Resolve the Acceptance Gate. */
 export function resolveAcceptanceGate(
   expedition: ReviewGateExpedition,
-  decision: AcceptanceDecisionType,
+  decisionType: AcceptanceDecisionType,
   reviewer: Reviewer,
   reason: string,
   evidence: string[] = []
-): { expedition: ReviewGateExpedition; decision: ReviewDecision } {
+): { expedition: ReviewGateExpedition; gate: Gate; record: AcceptanceRecord; decision: ReviewDecision } {
   if (expedition.status !== "awaiting_acceptance") {
     throw new ReviewGateError(`Cannot resolve acceptance gate from status ${expedition.status}`)
   }
@@ -361,32 +479,48 @@ export function resolveAcceptanceGate(
     throw new ReviewGateError("No active acceptance gate found")
   }
 
-  const acceptanceDecision: ReviewDecision = {
-    id: makeId("decision"),
-    gateType: "acceptance",
+  const record: AcceptanceRecord = {
+    id: makeId("acceptance-record"),
+    gateId: gate.id,
     expeditionId: expedition.expeditionId,
-    decision,
-    reason,
-    affectedAssets: [],
-    evidence,
+    decision: decisionType,
     reviewer,
     timestamp: Date.now(),
   }
 
-  const resolvedGate: GateInstance = {
+  const decision: ReviewDecision = {
+    id: makeId("decision"),
+    gateId: gate.id,
+    gateType: "acceptance",
+    expeditionId: expedition.expeditionId,
+    decision: decisionType,
+    reason,
+    affectedAssets: [],
+    evidence,
+    reviewer,
+    validity: "valid",
+    timestamp: Date.now(),
+  }
+
+  const resolvedGate: Gate = {
     ...gate,
-    status: decision === "accepted" ? "accepted" : "rejected",
-    decisionId: acceptanceDecision.id,
+    status: decisionType === "accepted" ? "accepted" : "rejected",
+    decisionId: decision.id,
+    reviewer,
+    outputs: [record.id, decision.id],
     resolvedAt: Date.now(),
   }
 
   return {
     expedition: {
       ...expedition,
-      status: decision === "accepted" ? "accepted" : "rejected",
+      status: decisionType === "accepted" ? "accepted" : "rejected",
+      acceptanceRecordId: record.id,
       gates: expedition.gates.map((g) => (g.id === resolvedGate.id ? resolvedGate : g)),
     },
-    decision: acceptanceDecision,
+    gate: resolvedGate,
+    record,
+    decision,
   }
 }
 
@@ -398,15 +532,13 @@ export function closeExpedition(expedition: ReviewGateExpedition): ReviewGateExp
   return { ...expedition, status: "closed" }
 }
 
-/** Create and approve a Refined Intent, enabling Mission approval.
- *  Re-approving after a Review Gate decision invalidates downstream reviews. */
+/** Create and approve a Refined Intent, opening a Refinement Gate. */
 export function approveRefinedIntent(
   expedition: ReviewGateExpedition,
   refinedIntent: Omit<RefinedIntent, "id" | "version" | "approvedAt">,
-  reviewer: Reviewer
-): { expedition: ReviewGateExpedition; refinedIntent: RefinedIntent } {
-  const isRerun = expedition.status !== "proposed"
-
+  reviewer: Reviewer,
+  policy: GatePolicy = GATE_POLICIES.humanRequired()
+): { expedition: ReviewGateExpedition; gate: Gate; refinedIntent: RefinedIntent } {
   const version = expedition.gates.filter((g) => g.gateType === "refinement").length + 1
   const full: RefinedIntent = {
     ...refinedIntent,
@@ -416,43 +548,95 @@ export function approveRefinedIntent(
     approvedAt: Date.now(),
   }
 
-  const gate: GateInstance = {
-    id: makeId("gate"),
-    expeditionId: expedition.expeditionId,
-    gateType: "refinement",
-    status: "approved",
-    policy: { gateType: "refinement", reviewerKind: reviewer.kind, requiredEvidence: [] },
-    createdAt: Date.now(),
-    resolvedAt: Date.now(),
-  }
+  const gate = createGate("refinement", expedition.expeditionId, policy, [])
+  gate.status = "approved"
+  gate.decisionId = full.id
+  gate.reviewer = reviewer
+  gate.outputs = [full.id]
+  gate.resolvedAt = Date.now()
+  gate.blocking = false
 
-  // Re-approving a Refined Intent resets the expedition to proposed and
-  // invalidates any prior review or acceptance state.
+  // Re-approving a Refined Intent resets the expedition and invalidates
+  // downstream review/acceptance decisions (they become obsolete).
+  const obsoleteGates = expedition.gates.map((g) => {
+    if (g.decisionId && (g.gateType === "review" || g.gateType === "acceptance")) {
+      return { ...g, blocking: true, status: "rejected" as GateStatus }
+    }
+    return g
+  })
+
   return {
     expedition: {
       ...expedition,
       status: "proposed",
       refinedIntentId: full.id,
       currentGateId: undefined,
-      gates: [...expedition.gates, gate],
+      reviewPackageId: undefined,
+      reviewDecisionId: undefined,
+      acceptancePackageId: undefined,
+      acceptanceRecordId: undefined,
+      gates: [...obsoleteGates, gate],
     },
+    gate,
     refinedIntent: full,
+  }
+}
+
+/** Mark a recorded decision as invalid or obsolete. */
+export function invalidateDecision(
+  expedition: ReviewGateExpedition,
+  gateId: string,
+  validity: Exclude<DecisionValidity, "valid">,
+  reason: string
+): ReviewGateExpedition {
+  return {
+    ...expedition,
+    gates: expedition.gates.map((g) => {
+      if (g.id === gateId) {
+        return { ...g, blocking: validity === "invalid" || g.gateType === "review" || g.gateType === "acceptance" }
+      }
+      return g
+    }),
   }
 }
 
 /** Check whether an upstream expedition blocks downstream work. */
 export function blocksDownstream(expedition: ReviewGateExpedition): boolean {
-  return expedition.status === "awaiting_review" || expedition.status === "awaiting_acceptance"
+  return expedition.gates.some((g) => g.blocking && !g.resolvedAt)
 }
 
-/** Map a completion policy to the default reviewer kind. */
-function resolveReviewerKind(policy: CompletionPolicy): ReviewerKind {
-  switch (policy) {
-    case "automatic":
-      return "engine"
-    case "human_required":
-      return "human"
-    case "ai_required":
-      return "ai"
+/** Map a review decision type to an expedition status. */
+function reviewDecisionStatus(decision: ReviewDecisionType): ReviewGateExpeditionStatus {
+  switch (decision) {
+    case "approve":
+    case "approve_with_conditions":
+      return "approved"
+    case "revision_required":
+      return "revision_requested"
+    case "reject":
+    case "supersede_expedition":
+    case "split_expedition":
+    case "merge_expedition":
+    case "escalate_to_mission":
+    case "escalate_to_program":
+      return "rejected"
+  }
+}
+
+/** Map a review decision type to a gate status. */
+function reviewGateStatus(decision: ReviewDecisionType): GateStatus {
+  switch (decision) {
+    case "approve":
+    case "approve_with_conditions":
+      return "approved"
+    case "revision_required":
+      return "revision_requested"
+    case "reject":
+    case "supersede_expedition":
+    case "split_expedition":
+    case "merge_expedition":
+    case "escalate_to_mission":
+    case "escalate_to_program":
+      return "rejected"
   }
 }
