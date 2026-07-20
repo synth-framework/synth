@@ -21,6 +21,8 @@ import {
   isBlockedByUpstreamGate,
 } from "../governance/review-gate-engine.js"
 import type { GatePolicy, ReviewDecisionType } from "../governance/review-gates.js"
+import { createIntentModel, reviseIntentModel, validateIntentModel } from "../governance/intent-model.js"
+import { startRefinement, answerQuestion, submitForRefinedIntent, supersedeRefinement } from "../governance/refinement-layer.js"
 
 /** Execute domain logic — pure function: (intent, state, ctx) → result */
 export function applyDomain(
@@ -250,6 +252,121 @@ export function applyDomain(
       }
       const updated = planningLogic.completeExpedition(existing, ctx)
       return { events: [{ type: "EXPEDITION_COMPLETED", payload: { id: updated.id, status: updated.status } }] }
+    }
+
+    // Intent refinement capabilities (EXP-PROGRAM-036)
+    case "CreateIntentModel": {
+      const input = intent.payload.input as Record<string, unknown>
+      const model = createIntentModel({
+        rawIntentReference: String(input.rawIntentReference),
+        explicitObjectives: Array.isArray(input.explicitObjectives) ? input.explicitObjectives.map(String) : [],
+        implicitObjectives: Array.isArray(input.implicitObjectives) ? input.implicitObjectives.map(String) : undefined,
+        audience: typeof input.audience === "string" ? input.audience : undefined,
+        problemStatement: typeof input.problemStatement === "string" ? input.problemStatement : undefined,
+        desiredOutcome: typeof input.desiredOutcome === "string" ? input.desiredOutcome : undefined,
+        nonGoals: Array.isArray(input.nonGoals) ? input.nonGoals.map(String) : undefined,
+        forbiddenInterpretations: Array.isArray(input.forbiddenInterpretations)
+          ? input.forbiddenInterpretations.map(String)
+          : undefined,
+        allowedInterpretations: Array.isArray(input.allowedInterpretations)
+          ? input.allowedInterpretations.map(String)
+          : undefined,
+        referenceEvidenceIds: Array.isArray(input.referenceEvidenceIds)
+          ? input.referenceEvidenceIds.map(String)
+          : undefined,
+        unresolvedAmbiguity: Array.isArray(input.unresolvedAmbiguity) ? input.unresolvedAmbiguity.map(String) : undefined,
+        knownUnknowns: Array.isArray(input.knownUnknowns) ? input.knownUnknowns.map(String) : undefined,
+      })
+      const validation = validateIntentModel(model)
+      if (!validation.valid) {
+        throw new Error(`INTENT_MODEL_INVALID: ${validation.errors.join(", ")}`)
+      }
+      return { events: [{ type: "INTENT_MODEL_CREATED", payload: { intentModelId: model.id, intentModel: model } }] }
+    }
+
+    case "StartRefinementSession": {
+      const intentModelId = String(intent.payload.intentModelId)
+      const model = state.intentModels[intentModelId]
+      if (!model) {
+        throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
+      }
+      const session = startRefinement(model as import("../governance/intent-model.js").IntentModel)
+      return {
+        events: [
+          {
+            type: "REFINEMENT_SESSION_STARTED",
+            payload: {
+              sessionId: session.id,
+              intentModelId,
+              questions: session.questions,
+            },
+          },
+        ],
+      }
+    }
+
+    case "AnswerRefinementQuestion": {
+      const sessionId = String(intent.payload.sessionId)
+      const questionId = String(intent.payload.questionId)
+      const answer = String(intent.payload.answer)
+      const session = state.refinementSessions[sessionId]
+      if (!session) {
+        throw new Error(`REFINEMENT_SESSION_NOT_FOUND: ${sessionId}`)
+      }
+      const model = state.intentModels[session.intentModelId]
+      if (!model) {
+        throw new Error(`INTENT_MODEL_NOT_FOUND: ${session.intentModelId}`)
+      }
+      const { session: updatedSession, model: updatedModel } = answerQuestion(
+        session as import("../governance/refinement-layer.js").RefinementSession,
+        model as import("../governance/intent-model.js").IntentModel,
+        questionId,
+        answer
+      )
+      return {
+        events: [
+          { type: "REFINEMENT_QUESTION_ANSWERED", payload: { sessionId, questionId, answer } },
+          { type: "INTENT_MODEL_REVISED", payload: { intentModelId: updatedModel.id, intentModel: updatedModel } },
+          {
+            type: "REFINEMENT_SESSION_STARTED",
+            payload: {
+              sessionId: updatedSession.id,
+              intentModelId: updatedSession.intentModelId,
+              questions: updatedSession.questions,
+            },
+          },
+        ],
+      }
+    }
+
+    case "SubmitIntentModel": {
+      const intentModelId = String(intent.payload.intentModelId)
+      const model = state.intentModels[intentModelId]
+      if (!model) {
+        throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
+      }
+      const submitted = submitForRefinedIntent(model as import("../governance/intent-model.js").IntentModel)
+      return {
+        events: [{ type: "INTENT_MODEL_SUBMITTED", payload: { intentModelId: submitted.id } }],
+      }
+    }
+
+    case "SupersedeIntentModel": {
+      const intentModelId = String(intent.payload.intentModelId)
+      const model = state.intentModels[intentModelId]
+      const session = Object.values(state.refinementSessions).find((s) => s.intentModelId === intentModelId)
+      if (!model) {
+        throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
+      }
+      if (session) {
+        supersedeRefinement(
+          session as import("../governance/refinement-layer.js").RefinementSession,
+          model as import("../governance/intent-model.js").IntentModel
+        )
+      }
+      return {
+        events: [{ type: "INTENT_MODEL_SUPERSEDED", payload: { intentModelId } }],
+      }
     }
 
     // Review gate capabilities (EXP-PROGRAM-035)

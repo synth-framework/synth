@@ -113,6 +113,50 @@ export type ReviewGateState = {
   resolvedAt?: number
 }
 
+/** Intent Model — structured interpretation of raw human intent */
+export type IntentModelState = {
+  id: string
+  rawIntentReference: string
+  explicitObjectives: string[]
+  implicitObjectives: string[]
+  audience?: string
+  problemStatement?: string
+  desiredOutcome?: string
+  nonGoals: string[]
+  forbiddenInterpretations: string[]
+  allowedInterpretations: string[]
+  interpretations: Array<{
+    kind: string
+    text: string
+    evidence?: string[]
+  }>
+  referenceEvidenceIds: string[]
+  confidenceLevel: number
+  unresolvedAmbiguity: string[]
+  knownUnknowns: string[]
+  status: string
+  version: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** Refinement Session — clarification loop for an Intent Model */
+export type RefinementSessionState = {
+  id: string
+  intentModelId: string
+  status: "active" | "clarifying" | "sufficient" | "insufficient" | "superseded"
+  questions: Array<{
+    id: string
+    text: string
+    category: string
+    priority: string
+  }>
+  answers: Array<{ questionId: string; text: string }>
+  version: number
+  createdAt: number
+  updatedAt: number
+}
+
 /** Objective — specific measurable outcome within an expedition */
 export type Objective = {
   id: string
@@ -248,6 +292,8 @@ export type CanonicalState = {
   objectives: Record<string, Objective>
   discoveries: Record<string, Discovery>
   decisions: Record<string, Decision>
+  intentModels: Record<string, IntentModelState>
+  refinementSessions: Record<string, RefinementSessionState>
   generatedWorkItems: Record<string, GeneratedWorkItem>
   executions: Record<string, Execution>
   executionIntents: Record<string, ExecutionIntentState>

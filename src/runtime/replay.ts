@@ -13,6 +13,7 @@ import type {
   Expedition,
   ReviewGateState,
   ReviewGatePolicy,
+  IntentModelState,
   Objective,
   Discovery,
   Decision,
@@ -40,6 +41,8 @@ export function createEmptyState(): CanonicalState {
     objectives: {},
     discoveries: {},
     decisions: {},
+    intentModels: {},
+    refinementSessions: {},
     generatedWorkItems: {},
     executions: {},
     executionIntents: {},
@@ -397,6 +400,55 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
         gates: [],
       }
       state.reviewGateExpeditions[expeditionId] = { ...rge, status: "proposed", refinedIntentId }
+      break
+    }
+
+    // Intent refinement lifecycle (EXP-PROGRAM-036)
+    case "INTENT_MODEL_CREATED": {
+      const intentModel = payload.intentModel as IntentModelState
+      if (intentModel) state.intentModels[intentModel.id] = intentModel
+      break
+    }
+    case "INTENT_MODEL_REVISED": {
+      const intentModel = payload.intentModel as IntentModelState
+      if (intentModel) state.intentModels[intentModel.id] = intentModel
+      break
+    }
+    case "INTENT_MODEL_SUBMITTED": {
+      const intentModelId = String(payload.intentModelId)
+      if (state.intentModels[intentModelId]) {
+        state.intentModels[intentModelId] = { ...state.intentModels[intentModelId], status: "sufficient" }
+      }
+      break
+    }
+    case "INTENT_MODEL_SUPERSEDED": {
+      const intentModelId = String(payload.intentModelId)
+      if (state.intentModels[intentModelId]) {
+        state.intentModels[intentModelId] = { ...state.intentModels[intentModelId], status: "superseded" }
+      }
+      break
+    }
+    case "REFINEMENT_SESSION_STARTED": {
+      const sessionId = String(payload.sessionId)
+      state.refinementSessions[sessionId] = {
+        id: sessionId,
+        intentModelId: String(payload.intentModelId),
+        status: "active",
+        questions: Array.isArray(payload.questions) ? payload.questions : [],
+        answers: [],
+        version: 1,
+        createdAt: event.timestamp,
+        updatedAt: event.timestamp,
+      }
+      break
+    }
+    case "REFINEMENT_QUESTION_ANSWERED": {
+      const sessionId = String(payload.sessionId)
+      const session = state.refinementSessions[sessionId]
+      if (session) {
+        session.answers.push({ questionId: String(payload.questionId), text: String(payload.answer) })
+        session.updatedAt = event.timestamp
+      }
       break
     }
 
@@ -810,6 +862,8 @@ export function computeStateHash(state: CanonicalState): string {
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
+    intentModels: Object.keys(state.intentModels).sort(),
+    refinementSessions: Object.keys(state.refinementSessions).sort(),
   }
   // Backward-compatible hash: only include lifecycle once the project has
   // been initialized. Empty/uninitialized states preserve their legacy hash.

@@ -147,6 +147,8 @@ function mergeSnapshotState(
     objectives: {},
     discoveries: {},
     decisions: {},
+    intentModels: {},
+    refinementSessions: {},
     generatedWorkItems: {},
     executions: {},
     executionIntents: {},

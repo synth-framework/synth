@@ -71,6 +71,13 @@ export type StateEvent =
   | { type: "ACCEPTANCE_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; recordId: string; decision: string }
   | { type: "EXPEDITION_CLOSED"; expeditionId: string }
   | { type: "REFINED_INTENT_APPROVED"; expeditionId: string; refinedIntentId: string; refinedIntent: unknown }
+  // Intent refinement lifecycle (EXP-PROGRAM-036)
+  | { type: "INTENT_MODEL_CREATED"; intentModelId: string; intentModel: unknown }
+  | { type: "INTENT_MODEL_REVISED"; intentModelId: string; intentModel: unknown }
+  | { type: "INTENT_MODEL_SUBMITTED"; intentModelId: string }
+  | { type: "INTENT_MODEL_SUPERSEDED"; intentModelId: string }
+  | { type: "REFINEMENT_SESSION_STARTED"; sessionId: string; intentModelId: string; questions: unknown[] }
+  | { type: "REFINEMENT_QUESTION_ANSWERED"; sessionId: string; questionId: string; answer: string }
   | { type: "OBJECTIVE_ADDED"; objectiveId: string; expeditionId: string; title: string }
   | { type: "DISCOVERY_RECORDED"; discoveryId: string; expeditionId: string }
   | { type: "DECISION_ACCEPTED"; decisionId: string }
