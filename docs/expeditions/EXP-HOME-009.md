@@ -47,6 +47,7 @@ Compiler
 Kernel
 Knowledge
 Architecture
+Adapters
 ```
 
 ### 1.2 Card behavior
@@ -55,7 +56,11 @@ Architecture
 - Hover reveals a one-sentence description.
 - Click links to the canonical documentation page.
 
-### 1.3 Consistency
+### 1.3 Adapter capability
+
+Adapters are first-class capabilities. The homepage must surface the adapter ecosystem as a capability area that explains how Synth integrates with external tools and sources without modifying core governance.
+
+### 1.4 Consistency
 
 - Use semantic colors.
 - Maintain calm computing principles.
@@ -74,6 +79,7 @@ Architecture
 ## Acceptance Criteria
 
 - Each capability maps to a runtime SYNTH concept.
+- Adapters are surfaced as a first-class capability with a clear link to adapter documentation.
 - Grid is responsive and accessible.
 - Links lead to canonical documentation.
 
