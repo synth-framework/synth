@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Build the component catalog for Mission Studio: reusable, token-driven, state-machine-aware UI primitives that implement the Mission Studio Design System.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -145,6 +145,8 @@ Where a state is not applicable, the story must explicitly document why.
 
 1. **Mission Studio Component Catalog Specification** under `docs/design/mission-workspace.md`.
 2. **Implemented component library** covering Workspace, Sidebar, Artifact Cards, Navigation, Content, Feedback, and Motion categories.
+   - `website/js/components.js` — canonical component catalog.
+   - `website/storybook.html` + `website/js/storybook-app.js` — component preview/stories.
 3. **Storybook workspace** with all required stories.
 4. **Component API documentation** for props, events, slots, and accessibility attributes.
 5. **State mapping table** linking each component to its valid states and transitions.

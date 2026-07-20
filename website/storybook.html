@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Studio Component Catalog — Synth</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .sb-page {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--ms-space-6);
+      color: var(--text);
+    }
+    .sb-section {
+      margin-bottom: var(--ms-space-8);
+    }
+    .sb-section h2 {
+      font-size: var(--ms-text-2xl);
+      margin-bottom: var(--ms-space-4);
+      color: var(--accent);
+    }
+    .sb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--ms-space-4);
+    }
+    .sb-story {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--ms-radius-md);
+      padding: var(--ms-space-4);
+    }
+    .sb-story h3 {
+      font-size: var(--ms-text-sm);
+      color: var(--text-muted);
+      margin: 0 0 var(--ms-space-3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .sb-workspace-preview {
+      background: var(--ms-bg);
+      border: 1px solid var(--ms-border);
+      border-radius: var(--ms-radius-lg);
+      padding: var(--ms-space-4);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a href="index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="index.html">Homepage</a>
+        <a href="docs.html">Docs</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="sb-page" id="sb-page">
+    <h1>Mission Studio Component Catalog</h1>
+    <p>Token-driven, state-machine-aware UI primitives used by the SYNTH homepage.</p>
+
+    <section class="sb-section">
+      <h2>Workspace</h2>
+      <div class="sb-grid" id="sb-workspace"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Sidebar</h2>
+      <div class="sb-grid" id="sb-sidebar"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Artifact Cards</h2>
+      <div class="sb-grid" id="sb-artifacts"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Content & Feedback</h2>
+      <div class="sb-grid" id="sb-content"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/storybook-app.js"></script>
+</body>
+</html>
