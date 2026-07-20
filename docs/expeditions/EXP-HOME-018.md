@@ -2,7 +2,7 @@
 
 > **Product expedition.** Expose replay as a scrubbable, browser-native projection using the existing SYNTH replay engine.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

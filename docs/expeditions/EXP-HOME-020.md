@@ -2,7 +2,7 @@
 
 > **Product expedition.** Ship deterministic demo missions that visitors can explore and that serve as regression tests.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

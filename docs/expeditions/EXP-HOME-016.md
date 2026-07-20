@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Introduce a browser-compatible, in-memory runtime that executes a deterministic subset of SYNTH for the Mission Studio homepage.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

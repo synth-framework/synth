@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the `MissionRuntime` interface that decouples Mission Studio from any concrete runtime implementation.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

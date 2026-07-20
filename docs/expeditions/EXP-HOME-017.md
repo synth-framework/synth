@@ -2,7 +2,7 @@
 
 > **Product expedition.** Implement the homepage projection of the Genesis Protocol as deterministic TypeScript functions.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

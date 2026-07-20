@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Map runtime state produced by Genesis and Replay into homepage Artifact Cards.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Provide a deterministic operator adapter for the homepage that can later be replaced by live AI adapters.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
