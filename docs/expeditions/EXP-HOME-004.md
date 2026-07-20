@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define how Mission Studio becomes the SYNTH homepage: the hero handoff, sticky threshold, scroll controller, section synchronization, state machine, animation contracts, and performance constraints.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -95,7 +95,7 @@ A visitor arriving at the SYNTH homepage should not feel like they are moving fr
 
 ## Deliverables
 
-1. **Homepage / Mission Studio Integration Specification** under `docs/design/artifact-system.md`.
+1. **Homepage / Mission Studio Integration Specification** under `docs/design/homepage-specification.md` (v2 structure already specifies hero handoff, sticky shell, scroll controller, and release).
 2. **Hero handoff specification** with animation and timing.
 3. **Sticky threshold definition** and breakpoint behavior.
 4. **Scroll controller design** with phase-to-scroll-range mapping.
