@@ -29,10 +29,11 @@ EXP-PROGRAM-036 answers: *"Did we capture what was actually intended?"*
 
 Introduce a deterministic mechanism to transform ambiguous human intent into explicit, reviewable, governable contracts before Mission creation. The program delivers:
 
-1. **Refinement Layer** — convert raw intent into a governed `Refined Intent` artifact.
-2. **Alignment Contract** — the formal agreement between operator and SYNTH that captured intent matches intended outcome.
-3. **Divergence Gate** — prevent Missions and Expeditions from proceeding when intent alignment is incomplete.
-4. **Convergence Certification** — validate final outcomes against original intent and the Alignment Contract.
+1. **Intent Model** — the structured interpretation of raw intent, including implicit expectations and forbidden interpretations.
+2. **Refined Intent** — the governed, contract-ready interpretation derived from the Intent Model.
+3. **Alignment Contract** — the formal agreement between operator and SYNTH that captured intent matches intended outcome.
+4. **Divergence Gate** — prevent Missions and Expeditions from proceeding when intent alignment is incomplete.
+5. **Convergence Certification** — validate final outcomes against original intent and the Alignment Contract.
 
 This program has equal architectural priority to Program 035 because it closes a separate, equally important governance gap.
 
@@ -44,7 +45,7 @@ This program has equal architectural priority to Program 035 because it closes a
 Raw Intent
     │
     ▼
-Refinement Layer
+Intent Model
     │
     ▼
 Refined Intent Artifact
@@ -88,9 +89,10 @@ Program 036 is executed in four dependency-ordered phases. Phases 1 and 2 define
 
 ### Phase 1 — Refinement Model
 
-Define the canonical refinement process, artifact, and lifecycle.
+Define the canonical refinement process, artifacts, and lifecycle.
 
 ```text
+EXP-REFINE-010  Intent Interpretation Model
 EXP-REFINE-001  Refinement Layer Model
 EXP-REFINE-004  Refinement Questions Engine
 ```
@@ -127,9 +129,30 @@ EXP-REFINE-009  Certification
 
 ## New Artifacts
 
+### Intent Model
+
+The first structured artifact produced from raw intent. It captures not only what was explicitly requested, but also the implicit expectations, forbidden interpretations, and unresolved ambiguity that would otherwise be lost in the first refinement step.
+
+```text
+Intent Model
+
+Explicit objectives
+Implicit objectives
+Audience
+Problem statement
+Desired outcome
+Non-goals
+Forbidden interpretations
+Allowed interpretations
+Reference evidence
+Confidence level
+Unresolved ambiguity
+Known unknowns
+```
+
 ### Refined Intent
 
-The governed interpretation produced by the Refinement Layer. It is not the conversation, not the screenshots, not the prompt — it is the explicit, approved understanding.
+The governed interpretation produced from the Intent Model. It is not the conversation, not the screenshots, not the prompt — it is the explicit, approved understanding.
 
 ```text
 Refined Intent
@@ -163,7 +186,9 @@ Functional Expectations
 Technical Constraints
 Success Criteria
 Explicit Non-Requirements
+Allowed Interpretation
 Allowed Variation
+Forbidden Interpretation
 Forbidden Drift
 Approval Record
 ```
@@ -214,6 +239,7 @@ Timestamp
 **Artifacts reviewed:**
 
 - Raw intent
+- Intent Model
 - Refined Intent
 - Alignment Contract
 - Reference evidence
@@ -272,9 +298,10 @@ Style alignment
 
 1. A Mission cannot be approved until its Alignment Contract passes the Divergence Gate.
 2. A Refined Intent cannot produce an Alignment Contract until required references are bound.
-3. An Alignment Contract cannot be approved without explicit success criteria and forbidden drift.
-4. Rejected alignment must produce a new Refined Intent, not a silent retry.
-5. A changed Alignment Contract invalidates downstream Missions until re-aligned.
+3. An Alignment Contract cannot be approved without explicit success criteria, forbidden interpretation, and forbidden drift.
+4. A Refined Intent cannot be produced from an Intent Model whose confidence is below the policy threshold without human escalation.
+5. Rejected alignment must produce a new Refined Intent or Intent Model, not a silent retry.
+6. A changed Alignment Contract invalidates downstream Missions until re-aligned.
 
 ---
 
@@ -282,6 +309,7 @@ Style alignment
 
 The following artifacts introduced by this Program SHALL NOT be modified without a governance event:
 
+- Intent Model schema
 - Refined Intent schema
 - Alignment Contract schema
 - Divergence Gate decision schema
@@ -325,7 +353,7 @@ User
   ↓
 Raw Intent
   ↓
-Refinement Session
+Intent Model
   ↓
 Refined Intent
   ↓
@@ -352,9 +380,9 @@ Closed
 
 Additionally:
 
-- Every future Program produces a Refined Intent and Alignment Contract before Mission approval.
+- Every future Program produces an Intent Model, Refined Intent, and Alignment Contract before Mission approval.
 - The Divergence Gate prevents Mission creation when alignment is incomplete.
-- The Alignment Contract explicitly names Forbidden Drift and Allowed Variation.
+- The Alignment Contract explicitly names Allowed Interpretation, Forbidden Interpretation, Allowed Variation, and Forbidden Drift.
 - Reference evidence is bound by link/hash, not embedded in the event log.
 - Convergence Certification compares final outcomes against the Alignment Contract.
 - Program 027 successfully executes under the combined 035/036 model from its current paused state.
@@ -366,6 +394,8 @@ EXP-REFINE-009 must prove at least these scenarios:
 **Scenario 1 — Straight-through alignment**
 ```text
 Raw Intent
+  ↓
+Intent Model
   ↓
 Refined Intent
   ↓
@@ -379,6 +409,8 @@ Mission created
 **Scenario 2 — Revision loop**
 ```text
 Raw Intent
+  ↓
+Intent Model
   ↓
 Refined Intent
   ↓
@@ -397,9 +429,9 @@ Mission created
 ```text
 Raw Intent
   ↓
-Refined Intent without visual references
+Intent Model without visual references
   ↓
-Alignment Contract rejected
+Refined Intent rejected
   ↓
 Mission cannot be created
 ```
@@ -450,4 +482,4 @@ Once Programs 035 and 036 are certified:
 
 ## Long-Term Vision
 
-SYNTH's governance model becomes complete: raw intent is refined into a Refined Intent, bound to evidence through an Alignment Contract, reviewed at a Divergence Gate before execution, executed under Review and Acceptance Gates, and finally certified for convergence with the original intent. Every decision is a replayable event, every gate is visible in Mission Studio, and drift is caught at the earliest possible checkpoint.
+SYNTH's governance model becomes complete: raw intent is modeled into an Intent Model, refined into a Refined Intent, bound to evidence through an Alignment Contract, reviewed at a Divergence Gate before execution, executed under Review and Acceptance Gates, and finally certified for convergence with the original intent. Every decision is a replayable event, every gate is visible in Mission Studio, and drift is caught at the earliest possible checkpoint.

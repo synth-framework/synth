@@ -17,7 +17,7 @@ Create the canonical `Alignment Contract` artifact — the formal agreement betw
 
 ## Purpose
 
-The Alignment Contract is the missing bridge between human understanding and machine execution. It makes explicit what must remain true, what may vary, and what constitutes forbidden drift. A Mission cannot be created until the Alignment Contract is approved.
+The Alignment Contract is the missing bridge between human understanding and machine execution. It makes explicit what interpretations are allowed, what interpretations are forbidden, what may vary, and what constitutes forbidden drift. A Mission cannot be created until the Alignment Contract is approved.
 
 ---
 
@@ -40,6 +40,7 @@ The Alignment Contract is the missing bridge between human understanding and mac
 
 ```text
 id
+intentModelId
 refinedIntentId
 intentSummary
 expectedExperience
@@ -49,7 +50,9 @@ functionalExpectations
 technicalConstraints
 successCriteria
 explicitNonRequirements
+allowedInterpretation
 allowedVariation
+forbiddenInterpretation
 forbiddenDrift
 approvedBy
 approvedAt
@@ -60,9 +63,10 @@ version
 
 ## Acceptance Criteria
 
-- An Alignment Contract can be created from any approved Refined Intent.
+- An Alignment Contract can be created from any approved Refined Intent and its source Intent Model.
 - The contract must include at least one visual or behavioral reference.
-- The contract must explicitly define Forbidden Drift.
+- The contract must explicitly define Allowed Interpretation, Forbidden Interpretation, Allowed Variation, and Forbidden Drift.
+- The Forbidden Interpretation section must be non-empty.
 - Approval requires a valid reviewer per policy.
 - A rejected contract cannot produce a Mission.
 - The schema validates correctly with the existing validation framework.
@@ -81,5 +85,6 @@ version
 
 - ADR-036 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
+- EXP-REFINE-010 — Intent Interpretation Model
 - EXP-REFINE-001 — Refinement Layer Model
 - EXP-REFINE-003 — Divergence Gate

@@ -64,7 +64,7 @@ The lifecycle becomes:
 ```text
 Raw Intent
     ↓
-Refinement Layer
+Intent Model
     ↓
 Refined Intent Artifact
     ↓
@@ -109,9 +109,31 @@ Inputs:
 
 Outputs:
 
+- **Intent Model** — the structured interpretation of raw intent.
 - **Refined Intent Artifact** — the governed interpretation of what was requested.
 
-### 2. Refined Intent Artifact
+### 2. Intent Model
+
+The first artifact produced from raw intent. It captures not only what was explicitly requested, but also the implicit expectations, forbidden interpretations, and unresolved ambiguity that would otherwise be lost.
+
+```text
+Explicit objectives
+Implicit objectives
+Audience
+Problem statement
+Desired outcome
+Non-goals
+Forbidden interpretations
+Allowed interpretations
+Reference evidence
+Confidence level
+Unresolved ambiguity
+Known unknowns
+```
+
+The Intent Model is the input to the Refined Intent. It is intentionally broader and may contain uncertainty. The refinement process reduces that uncertainty before producing a contract-ready Refined Intent.
+
+### 3. Refined Intent Artifact
 
 A canonical artifact containing:
 
@@ -132,7 +154,7 @@ Version
 
 The Refined Intent is not the conversation, the screenshots, or the prompt. It is the explicit, approved interpretation that will be used to create the Alignment Contract.
 
-### 3. Alignment Contract
+### 4. Alignment Contract
 
 The central artifact introduced by this ADR. The Alignment Contract is the formal agreement between the operator and SYNTH that the captured intent accurately represents the intended outcome.
 
@@ -154,7 +176,7 @@ Approval Record
 
 The Alignment Contract becomes the bridge between human understanding and machine execution. A Mission cannot be created until the Alignment Contract is approved.
 
-### 4. Divergence Gate
+### 5. Divergence Gate
 
 A new governance checkpoint that occurs **before Mission creation**. It asks:
 
@@ -173,7 +195,7 @@ superseded
 
 A Mission cannot start unless the Divergence Gate is `aligned`.
 
-### 5. Convergence Certification
+### 6. Convergence Certification
 
 After implementation, acceptance, and review, Convergence Certification asks:
 
@@ -209,7 +231,11 @@ Together they form a complete governance loop:
 ```text
                 Genesis
                   │
-          Refinement Layer  (036)
+           Intent Model    (036)
+                  │
+          Refined Intent    (036)
+                  │
+       Alignment Contract  (036)
                   │
           Divergence Gate   (036)
                   │
