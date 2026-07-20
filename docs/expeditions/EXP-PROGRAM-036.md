@@ -15,9 +15,9 @@
 
 ## Thesis
 
-> **Deterministic execution requires deterministic understanding, and understanding requires an explicit, reviewable alignment contract.**
+> **Deterministic execution requires deterministic understanding, and understanding requires a governed Genesis Alignment Layer before Mission creation.**
 >
-> The Program 027 homepage incident revealed that strong specifications are not sufficient to prevent semantic drift. The missing layer is a formal mechanism to capture human intent, bind it to canonical evidence, and enforce alignment before execution begins.
+> The Program 027 homepage incident revealed that strong specifications are not sufficient to prevent semantic drift. The missing layer is not more documentation; it is a formal mechanism to capture human intent, bind it to canonical evidence, validate the interpretation, and enforce alignment before any Mission is chartered.
 
 EXP-PROGRAM-035 answers: *"Did we build what we agreed to build?"*
 
@@ -27,13 +27,14 @@ EXP-PROGRAM-036 answers: *"Did we capture what was actually intended?"*
 
 ## Purpose
 
-Introduce a deterministic mechanism to transform ambiguous human intent into explicit, reviewable, governable contracts before Mission creation. The program delivers:
+Introduce the **Genesis Alignment Layer**: a deterministic mechanism to transform ambiguous human intent into an approved, executable understanding before Mission creation. This layer sits before the Synthesis Layer (Mission → Expedition → Implementation) and the Governance Layer (Review Gate → Acceptance Gate). The program delivers:
 
 1. **Intent Model** — the structured interpretation of raw intent, including implicit expectations and forbidden interpretations.
 2. **Refined Intent** — the governed, contract-ready interpretation derived from the Intent Model.
 3. **Alignment Contract** — the formal agreement between operator and SYNTH that captured intent matches intended outcome.
-4. **Divergence Gate** — prevent Missions and Expeditions from proceeding when intent alignment is incomplete.
-5. **Convergence Certification** — validate final outcomes against original intent and the Alignment Contract.
+4. **Reference Evidence Binding** — formal relationship between requirements and the artifacts (images, designs, examples) that justify them.
+5. **Divergence Gate** — prevent Missions and Expeditions from proceeding when intent alignment is incomplete.
+6. **Convergence Certification** — validate final outcomes against original intent and the Alignment Contract.
 
 This program has equal architectural priority to Program 035 because it closes a separate, equally important governance gap.
 
@@ -42,16 +43,24 @@ This program has equal architectural priority to Program 035 because it closes a
 ## Core Abstraction — Intent-to-Mission Pipeline
 
 ```text
+                    Genesis Alignment Layer
+
 Raw Intent
     │
     ▼
 Intent Model
     │
     ▼
+Refinement Session
+    │
+    ▼
 Refined Intent Artifact
     │
     ▼
 Alignment Contract
+    │
+    ▼
+Reference Evidence Binding
     │
     ▼
 Divergence Gate
@@ -80,6 +89,32 @@ Convergence Certification (036)
     ▼
 Closed
 ```
+
+---
+
+## SYNTH's Three Layers
+
+EXP-PROGRAM-036 establishes the missing first layer of SYNTH:
+
+```text
+Genesis Alignment Layer
+      |
+      |  Intent → Understanding → Alignment Contract
+      |
+Synthesis Layer
+      |
+      |  Mission → Expedition → Implementation
+      |
+Governance Layer
+      |
+      |  Review Gate → Acceptance Gate → Convergence Certification
+```
+
+| Layer | Question | Failure Class Solved |
+|---|---|---|
+| Genesis Alignment | Did we understand what was wanted? | Understanding failure |
+| Synthesis | Did we plan the right work? | Planning failure |
+| Governance | Did we build what we agreed to build? | Execution failure |
 
 ---
 
@@ -355,9 +390,13 @@ Raw Intent
   ↓
 Intent Model
   ↓
+Refinement Session
+  ↓
 Refined Intent
   ↓
 Alignment Contract
+  ↓
+Reference Evidence Binding
   ↓
 Divergence Gate Review
   ↓
@@ -460,11 +499,12 @@ Revision requested
 
 ## Relationship to Other Work
 
+- **ADR-037 — Genesis Lifecycle and Alignment Contracts** elevates this program into the three-layer SYNTH architecture and defines the Genesis Alignment Layer.
 - **EXP-PROGRAM-035 — Intent Refinement & Review Governance** provides the gate engine and execution-control mechanisms that the Divergence Gate extends.
-- **EXP-PROGRAM-027 — Mission Studio Homepage** is paused and becomes the pilot certification project for both 035 and 036.
+- **EXP-PROGRAM-027 — Mission Studio Homepage** is paused and becomes the pilot certification project for the Genesis Alignment Layer.
 - **EXP-PROGRAM-030 — Intelligent Governance Orchestration** will schedule Divergence Gates as part of the validation planner.
 - **EXP-PROGRAM-032 — AI Agent Integration** will operate within alignment policies; AI agents may assist refinement but cannot approve their own interpretation under non-Automatic policies.
-- **EXP-PROGRAM-022 — Genesis** provides the lifecycle that these gates extend.
+- **EXP-PROGRAM-022 — Genesis** provides the lifecycle that the Genesis Alignment Layer extends.
 
 ---
 
