@@ -2,8 +2,9 @@
 
 > **Discovery expedition.** This charter defines a read-only Discovery phase that establishes an evidence-backed baseline for existing projects before SYNTH governance is initialized.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-19  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -192,12 +193,12 @@ Discovery may recommend a Mission. It shall never approve or create one.
 
 A successful Discovery:
 
-- [ ] Produces no repository modifications.
-- [ ] Produces no governance artifacts.
-- [ ] Produces no events.
-- [ ] Produces no canonical state.
-- [ ] Produces a deterministic baseline.
-- [ ] Can be rerun with identical output if the repository is unchanged.
+- [x] Produces no repository modifications.
+- [x] Produces no governance artifacts.
+- [x] Produces no events.
+- [x] Produces no canonical state.
+- [x] Produces a deterministic baseline.
+- [x] Can be rerun with identical output if the repository is unchanged.
 
 ---
 

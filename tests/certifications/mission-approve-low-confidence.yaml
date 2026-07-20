@@ -1,0 +1,60 @@
+id: mission-approve-low-confidence
+name: Mission approval blocked by low confidence
+description: >
+  A mission draft without sufficient evidence must not be approved.
+  The operator must add evidence and create a successor draft.
+taxonomy:
+  - lifecycle.approval
+  - operator.missing-approval
+level: 2
+
+workspace:
+  files:
+    - path: package.json
+      content: '{"name": "cert-mission-test", "version": "1.0.0"}'
+
+setup:
+  - name: bootstrap project
+    command: ["bootstrap", ".", "--approve"]
+    expect:
+      status: 0
+
+  - name: create mission draft
+    command: ["mission", "create", "--subject", "Low Confidence Mission", "--purpose", "Certification test"]
+    capture:
+      jsonPath:
+        draftId: "draftId"
+    expect:
+      status: 0
+
+steps:
+  - name: mission approve fails without evidence
+    command: ["mission", "approve", "--draft-id", "{{draftId}}"]
+    expect:
+      status: 0
+      jsonPath:
+        decision.approved: false
+      stdoutContains:
+        - "confidence"
+
+recovery:
+  - name: add certain evidence
+    command: ["mission", "evidence", "add", "--draft-id", "{{draftId}}", "--subject", "Conclusive evidence", "--purpose", "Raises confidence to approval threshold", "--confidence", "certain"]
+    capture:
+      jsonPath:
+        evidenceDraftId: "draftId"
+    expect:
+      status: 0
+
+  - name: approve mission with evidence
+    command: ["mission", "approve", "--draft-id", "{{evidenceDraftId}}"]
+    expect:
+      status: 0
+      jsonPath:
+        decision.approved: true
+
+verify:
+  - name: replay shows approval decision
+    command: ["explain", "replay"]
+    expect:
+      status: 0

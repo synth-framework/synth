@@ -43,6 +43,7 @@ import {
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
+import { runCertification, printCertificationReport, writeMatrix } from "./certification-runner.js"
 import {
   cmdFirstContactHelp,
   cmdFirstContactStart,
@@ -55,7 +56,7 @@ import {
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
+import { ensureRuntimeDataDir } from "../infra/paths.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import type { PlanningObservation } from "../planning/observation.js"
@@ -89,6 +90,7 @@ const COMMANDS = [
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
+  { name: "certify", description: "Run failure and recovery certification scenarios" },
   { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
   { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
   { name: "ai", description: "AI agent interoperability (refresh)" },
@@ -468,6 +470,48 @@ async function cmdDoctor() {
     checks,
     nextSteps,
   })
+}
+
+async function cmdCertify(flags: Record<string, string | boolean>) {
+  const libraryDir =
+    typeof flags["library-dir"] === "string"
+      ? flags["library-dir"]
+      : path.resolve(process.cwd(), "tests", "certifications")
+  const outputDir =
+    typeof flags["output-dir"] === "string"
+      ? flags["output-dir"]
+      : path.resolve(process.cwd(), "proof", "certifications")
+  const matrixPath =
+    typeof flags["matrix"] === "string"
+      ? flags["matrix"]
+      : path.resolve(process.cwd(), "docs", "certification-matrix.md")
+  const explain = flags.explain === true || flags.explain === "true"
+
+  const cliPath = process.argv[1]
+  const report = await runCertification({
+    cliPath,
+    libraryDir,
+    outputDir,
+    explain,
+  })
+
+  writeMatrix(report, matrixPath)
+
+  if (explain) {
+    printCertificationReport(report)
+  } else {
+    printJson({
+      status: report.summary.failed === 0 ? "ok" : "error",
+      kind: "CertificationResult",
+      summary: report.summary,
+      matrixPath,
+      reportGeneratedAt: report.generatedAt,
+    })
+  }
+
+  if (report.summary.failed > 0) {
+    process.exit(1)
+  }
 }
 
 async function cmdValidate(flags: Record<string, string | boolean>) {
@@ -950,6 +994,16 @@ async function cmdExpeditionHelp() {
 async function cmdDoctorHelp() {
   printJson(namespaceHelp("doctor", "Verify installation and project health", [
     { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
+  ]))
+}
+
+async function cmdCertifyHelp() {
+  printJson(namespaceHelp("certify", "Run failure and recovery certification scenarios", [
+    { name: "synth certify", description: "Run the default certification scenario library" },
+    { name: "synth certify --explain", description: "Emit the full structured certification report" },
+    { name: "synth certify --library-dir <dir>", description: "Load scenarios from a custom directory" },
+    { name: "synth certify --output-dir <dir>", description: "Write structured evidence reports to <dir>" },
+    { name: "synth certify --matrix <path>", description: "Write the certification matrix to <path>" },
   ]))
 }
 
@@ -1496,7 +1550,7 @@ async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
   if (!chainValid) {
     printError(
       "Mission decision record chain is broken: a recorded decision is missing, altered, or duplicated. " +
-        "Inspect data/decisions.jsonl; the record is tamper-evident by design.",
+        "Inspect .synth/data/decisions.jsonl; the record is tamper-evident by design.",
     )
   }
   printJson({
@@ -2279,6 +2333,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdExpeditionHelp }
     case "doctor":
       return { namespace, handler: cmdDoctorHelp }
+    case "certify":
+      return { namespace, handler: cmdCertifyHelp }
     case "docs":
       return { namespace, handler: cmdDocsGenerateHelp }
     case "adapter":
@@ -2506,6 +2562,10 @@ async function main() {
         )
       break
     }
+
+    case "certify":
+      await cmdCertify(flags)
+      break
 
     case "ai": {
       const sub = positional[1]

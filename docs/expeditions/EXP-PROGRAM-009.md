@@ -1,6 +1,6 @@
 # EXP-PROGRAM-009 — Canonical First Contact Experience
 
-**Status:** Active  
+**Status:** Closed — Superseded pending Era III revision  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -262,6 +262,7 @@ Any change to a Protected Asset requires an Architecture Decision Record and exp
 - [x] EXP-FIRSTCONTACT-010 accepted.
 - [x] EXP-FIRSTCONTACT-011 completed and accepted.
 - [ ] Program accepted (pending external validation evidence and final acceptance review).
+- [x] Program closed as superseded pending Era III revision.
 
 ---
 
@@ -279,6 +280,8 @@ Program restructured to treat First Contact as a constitutional asset with a can
 - All generated projections pass `tests/first-contact-projection.test.js` and regenerate byte-identically.
 
 Formal Program acceptance is gated on external validation evidence and the expedition acceptance review.
+
+2026-07-19 — Program closed as superseded. The first-contact architecture has evolved significantly since this charter was written (Genesis, Discovery, Mission Studio Homepage, and AI Interoperability now define the first-contact experience). The implemented expeditions and their artifacts are preserved, but the Program as chartered no longer represents the current execution path. A revised first-contact program will be chartered during Era III — Validation & Hardening, grounded in observed operator behavior rather than the assumptions captured here.
 
 ---
 

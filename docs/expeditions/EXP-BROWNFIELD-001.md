@@ -2,8 +2,9 @@
 
 > **First Contact expedition.** Improve SYNTH brownfield onboarding so that the correct transformation path is the lowest-friction path for operators and AI agents, based on evidence from the Carta Natal brownfield onboarding certification.
 
-**Status:** Executing  
+**Status:** Completed  
 **Started:** 2026-07-18  
+**Completed:** 2026-07-19  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -349,17 +350,17 @@ During execution, the following constraints apply:
 
 A successful expedition:
 
-- [ ] Brownfield Bootstrap Specification is published.
-- [ ] Discovery Safety Model rejects mutating commands during discovery.
-- [ ] Runtime Transition Contract defines `Draft → Approved → Committed → Executing → Completed`.
-- [ ] Agent Context Contract (`.synth/context.json`) is generated during classification.
-- [ ] Every command namespace provides its own `--help` output.
-- [ ] `synth doctor` separates Runtime Health from Project Health.
-- [ ] Source history is classified as `AVAILABLE`, `MISSING`, `EXTERNAL`, or `UNKNOWN`.
-- [ ] Brownfield Certification Test Suite passes on a clean repository.
-- [ ] Existing `tests/brownfield-validation.test.js` passes without regression.
-- [ ] `npm run build` passes.
-- [ ] `npm run govern` passes.
+- [x] Brownfield Bootstrap Specification is published.
+- [x] Discovery Safety Model rejects mutating commands during discovery.
+- [x] Runtime Transition Contract defines `Draft → Approved → Committed → Executing → Completed`.
+- [x] Agent Context Contract (`.synth/context.json`) is generated during classification.
+- [x] Every command namespace provides its own `--help` output.
+- [x] `synth doctor` separates Runtime Health from Project Health.
+- [x] Source history is classified as `AVAILABLE`, `MISSING`, `EXTERNAL`, or `UNKNOWN`.
+- [x] Brownfield Certification Test Suite passes on a clean repository.
+- [x] Existing `tests/brownfield-validation.test.js` passes without regression.
+- [x] `npm run build` passes.
+- [x] `npm run govern` passes.
 
 ---
 
