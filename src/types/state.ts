@@ -68,9 +68,49 @@ export type Expedition = {
   objectives: string[]
   discoveries: string[]
   decisions: string[]
+  dependsOn: string[]
   metadata: Record<string, unknown>
   createdAt: number
   updatedAt: number
+}
+
+/** Review gate expedition state — governed execution checkpoint */
+export type ReviewGateExpeditionState = {
+  expeditionId: string
+  status: "proposed" | "executing" | "implementation_complete" | "awaiting_review" | "revision_requested" | "approved" | "awaiting_acceptance" | "accepted" | "closed" | "rejected"
+  gates: ReviewGateState[]
+  refinedIntentId?: string
+  reviewPackageId?: string
+  reviewDecisionId?: string
+  acceptancePackageId?: string
+  acceptanceRecordId?: string
+  currentGateId?: string
+}
+
+/** Minimal gate policy stored in replay state */
+export type ReviewGatePolicy = {
+  reviewers: string[]
+  quorum: "all" | "any" | number
+  timeout?: number
+  revisionLimit?: number
+  autoAdvance?: boolean
+}
+
+/** Gate instance state */
+export type ReviewGateState = {
+  id: string
+  gateType: "refinement" | "review" | "acceptance"
+  expeditionId: string
+  policy: ReviewGatePolicy
+  status: "pending" | "awaiting_review" | "approved" | "revision_requested" | "rejected" | "accepted" | "closed"
+  inputs: string[]
+  outputs: string[]
+  reviewer?: { kind: string; id: string }
+  decisionId?: string
+  parentGateId?: string
+  blocking: boolean
+  createdAt: number
+  resolvedAt?: number
 }
 
 /** Objective — specific measurable outcome within an expedition */
@@ -204,6 +244,7 @@ export type CanonicalState = {
   projects: Record<string, Project>
   missions: Record<string, Mission>
   expeditions: Record<string, Expedition>
+  reviewGateExpeditions: Record<string, ReviewGateExpeditionState>
   objectives: Record<string, Objective>
   discoveries: Record<string, Discovery>
   decisions: Record<string, Decision>

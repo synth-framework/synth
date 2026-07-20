@@ -11,6 +11,8 @@ import type {
   Project,
   Mission,
   Expedition,
+  ReviewGateState,
+  ReviewGatePolicy,
   Objective,
   Discovery,
   Decision,
@@ -34,6 +36,7 @@ export function createEmptyState(): CanonicalState {
     projects: {},
     missions: {},
     expeditions: {},
+    reviewGateExpeditions: {},
     objectives: {},
     discoveries: {},
     decisions: {},
@@ -260,6 +263,143 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+
+    // Review gate lifecycle (EXP-PROGRAM-035)
+    case "REVIEW_GATE_OPENED": {
+      const expeditionId = String(payload.expeditionId)
+      const gateId = String(payload.gateId)
+      const reviewPackageId = String(payload.reviewPackageId)
+      const rge = state.reviewGateExpeditions[expeditionId] || {
+        expeditionId,
+        status: "executing",
+        gates: [],
+      }
+      state.reviewGateExpeditions[expeditionId] = {
+        ...rge,
+        status: "awaiting_review",
+        currentGateId: gateId,
+        reviewPackageId,
+        gates: [
+          ...rge.gates.filter((g) => g.id !== gateId),
+          {
+            id: gateId,
+            gateType: "review",
+            expeditionId,
+            policy: (payload.policy as ReviewGatePolicy) ?? { reviewers: ["human"], quorum: "all" },
+            status: "awaiting_review",
+            inputs: [],
+            outputs: [],
+            blocking: true,
+            createdAt: event.timestamp,
+          },
+        ],
+      }
+      break
+    }
+    case "REVIEW_GATE_RESOLVED": {
+      const expeditionId = String(payload.expeditionId)
+      const gateId = String(payload.gateId)
+      const decision = String(payload.decision)
+      const rge = state.reviewGateExpeditions[expeditionId]
+      if (rge) {
+        const nextStatus = decision === "approve" || decision === "approve_with_conditions" ? "approved" : decision === "revision_required" ? "revision_requested" : "rejected"
+        state.reviewGateExpeditions[expeditionId] = {
+          ...rge,
+          status: nextStatus,
+          reviewDecisionId: String(payload.decisionId),
+          gates: rge.gates.map((g) =>
+            g.id === gateId
+              ? { ...g, status: nextStatus as ReviewGateState["status"], decisionId: String(payload.decisionId), resolvedAt: event.timestamp }
+              : g
+          ),
+        }
+      }
+      break
+    }
+    case "REVISION_REQUESTED": {
+      const expeditionId = String(payload.expeditionId)
+      const gateId = String(payload.gateId)
+      const rge = state.reviewGateExpeditions[expeditionId]
+      if (rge) {
+        state.reviewGateExpeditions[expeditionId] = {
+          ...rge,
+          status: "executing",
+          gates: rge.gates.map((g) =>
+            g.id === gateId ? { ...g, status: "revision_requested" as ReviewGateState["status"] } : g
+          ),
+        }
+      }
+      break
+    }
+    case "ACCEPTANCE_GATE_OPENED": {
+      const expeditionId = String(payload.expeditionId)
+      const gateId = String(payload.gateId)
+      const acceptancePackageId = String(payload.acceptancePackageId)
+      const rge = state.reviewGateExpeditions[expeditionId]
+      if (rge) {
+        state.reviewGateExpeditions[expeditionId] = {
+          ...rge,
+          status: "awaiting_acceptance",
+          currentGateId: gateId,
+          acceptancePackageId,
+          gates: [
+            ...rge.gates.filter((g) => g.id !== gateId),
+            {
+              id: gateId,
+              gateType: "acceptance",
+              expeditionId,
+              policy: (payload.policy as ReviewGatePolicy) ?? { reviewers: ["human"], quorum: "all" },
+              status: "awaiting_review",
+              inputs: [],
+              outputs: [],
+              blocking: true,
+              createdAt: event.timestamp,
+            },
+          ],
+        }
+      }
+      break
+    }
+    case "ACCEPTANCE_GATE_RESOLVED": {
+      const expeditionId = String(payload.expeditionId)
+      const gateId = String(payload.gateId)
+      const decision = String(payload.decision)
+      const rge = state.reviewGateExpeditions[expeditionId]
+      if (rge) {
+        const nextStatus = decision === "accepted" ? "accepted" : "rejected"
+        state.reviewGateExpeditions[expeditionId] = {
+          ...rge,
+          status: nextStatus,
+          acceptanceRecordId: String(payload.recordId),
+          gates: rge.gates.map((g) =>
+            g.id === gateId
+              ? { ...g, status: nextStatus as ReviewGateState["status"], decisionId: String(payload.decisionId), resolvedAt: event.timestamp }
+              : g
+          ),
+        }
+      }
+      break
+    }
+    case "EXPEDITION_CLOSED": {
+      const expeditionId = String(payload.expeditionId)
+      const rge = state.reviewGateExpeditions[expeditionId]
+      if (rge) {
+        state.reviewGateExpeditions[expeditionId] = { ...rge, status: "closed" }
+      }
+      break
+    }
+    case "REFINED_INTENT_APPROVED": {
+      const expeditionId = String(payload.expeditionId)
+      const refinedIntentId = String(payload.refinedIntentId)
+      const rge = state.reviewGateExpeditions[expeditionId] ?? {
+        expeditionId,
+        status: "proposed",
+        gates: [],
+      }
+      state.reviewGateExpeditions[expeditionId] = { ...rge, status: "proposed", refinedIntentId }
+      break
+    }
+
     case "OBJECTIVE_ADDED": {
       const objective = payload.objective as Objective
       if (objective) state.objectives[objective.id] = objective
@@ -399,6 +539,7 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
             objectives: [],
             discoveries: [String(payload.discoveryArtifactId ?? "")],
             decisions: [],
+            dependsOn: [],
             metadata: { source: "first-contact" },
             createdAt: event.timestamp,
             updatedAt: event.timestamp,
@@ -665,6 +806,7 @@ export function computeStateHash(state: CanonicalState): string {
     projects: Object.keys(state.projects).sort(),
     missions: Object.keys(state.missions).sort(),
     expeditions: Object.keys(state.expeditions).sort(),
+    reviewGateExpeditions: Object.keys(state.reviewGateExpeditions).sort(),
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),

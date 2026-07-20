@@ -143,6 +143,7 @@ function mergeSnapshotState(
     projects: {},
     missions: {},
     expeditions: {},
+    reviewGateExpeditions: {},
     objectives: {},
     discoveries: {},
     decisions: {},

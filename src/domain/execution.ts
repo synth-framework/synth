@@ -9,6 +9,18 @@ import * as planLogic from "./plan.js"
 import * as milestoneLogic from "./milestone.js"
 import * as projectLogic from "./project.js"
 import * as planningLogic from "./planning.js"
+import {
+  ensureReviewGateExpedition,
+  engineOpenReviewGate,
+  engineResolveReviewGate,
+  engineRequestRevision,
+  engineOpenAcceptanceGate,
+  engineResolveAcceptanceGate,
+  engineCloseExpedition,
+  engineApproveRefinedIntent,
+  isBlockedByUpstreamGate,
+} from "../governance/review-gate-engine.js"
+import type { GatePolicy, ReviewDecisionType } from "../governance/review-gates.js"
 
 /** Execute domain logic — pure function: (intent, state, ctx) → result */
 export function applyDomain(
@@ -187,7 +199,13 @@ export function applyDomain(
       const missionId = String(intent.payload.missionId)
       const name = String(intent.payload.name)
       const goal = String(intent.payload.goal || "")
-      const expedition = planningLogic.createExpedition(id, missionId, name, goal, ctx, intent.payload as Record<string, unknown>)
+      const dependsOn = Array.isArray(intent.payload.dependsOn)
+        ? intent.payload.dependsOn.map(String)
+        : []
+      const expedition = planningLogic.createExpedition(id, missionId, name, goal, ctx, {
+        ...(intent.payload as Record<string, unknown>),
+        dependsOn,
+      })
       return { events: [{ type: "EXPEDITION_CREATED", payload: { expedition } }] }
     }
 
@@ -213,6 +231,9 @@ export function applyDomain(
 
     case "StartExpedition": {
       const id = String(intent.payload.id)
+      if (isBlockedByUpstreamGate(state, id)) {
+        throw new Error(`UPSTREAM_GATE_BLOCKED: Expedition ${id} cannot start while an upstream gate is unresolved`)
+      }
       const existing = state.expeditions[id]
       if (!existing) {
         return { events: [{ type: "EXPEDITION_STARTED", payload: { id, status: "executing" } }] }
@@ -229,6 +250,102 @@ export function applyDomain(
       }
       const updated = planningLogic.completeExpedition(existing, ctx)
       return { events: [{ type: "EXPEDITION_COMPLETED", payload: { id: updated.id, status: updated.status } }] }
+    }
+
+    // Review gate capabilities (EXP-PROGRAM-035)
+    case "ApproveRefinedIntent": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const refinedIntentInput = intent.payload.refinedIntent as Record<string, unknown>
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const policy = intent.payload.policy as Record<string, unknown>
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineApproveRefinedIntent(
+        current,
+        expeditionId,
+        refinedIntentInput as Parameters<typeof engineApproveRefinedIntent>[2],
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string },
+        policy as GatePolicy
+      )
+      return { events: result.events }
+    }
+
+    case "OpenReviewGate": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const implementationReference = String(intent.payload.implementationReference)
+      const policy = intent.payload.policy as Record<string, unknown>
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineOpenReviewGate(current, expeditionId, implementationReference, policy as GatePolicy)
+      return { events: result.events }
+    }
+
+    case "ResolveReviewGate": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const decision = String(intent.payload.decision) as ReviewDecisionType
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const reason = String(intent.payload.reason)
+      const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
+      const affectedAssets = Array.isArray(intent.payload.affectedAssets) ? intent.payload.affectedAssets.map(String) : []
+      const requiredChanges = Array.isArray(intent.payload.requiredChanges) ? intent.payload.requiredChanges.map(String) : []
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineResolveReviewGate(
+        current,
+        decision,
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string },
+        reason,
+        evidence,
+        affectedAssets,
+        requiredChanges
+      )
+      return { events: result.events }
+    }
+
+    case "RequestRevision": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const gateId = String(intent.payload.gateId)
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const reason = String(intent.payload.reason)
+      const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineRequestRevision(
+        current,
+        gateId,
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string },
+        reason,
+        evidence
+      )
+      return { events: result.events }
+    }
+
+    case "OpenAcceptanceGate": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const policy = intent.payload.policy as Record<string, unknown>
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineOpenAcceptanceGate(current, policy as GatePolicy)
+      return { events: result.events }
+    }
+
+    case "ResolveAcceptanceGate": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const decision = String(intent.payload.decision) as "accepted" | "rejected"
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const reason = String(intent.payload.reason)
+      const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineResolveAcceptanceGate(
+        current,
+        decision,
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string },
+        reason,
+        evidence
+      )
+      return { events: result.events }
+    }
+
+    case "CloseExpedition": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const current = ensureReviewGateExpedition(state, expeditionId)
+      const result = engineCloseExpedition(current)
+      return { events: result.events }
     }
 
     case "AddObjective": {

@@ -63,6 +63,14 @@ export type StateEvent =
   | { type: "EXPEDITION_COMMITTED"; expeditionId: string }
   | { type: "EXPEDITION_STARTED"; expeditionId: string }
   | { type: "EXPEDITION_COMPLETED"; expeditionId: string }
+  // Review gate lifecycle (EXP-PROGRAM-035)
+  | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
+  | { type: "REVIEW_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; decision: string }
+  | { type: "REVISION_REQUESTED"; expeditionId: string; gateId: string; revisionRequestId: string; reason: string }
+  | { type: "ACCEPTANCE_GATE_OPENED"; expeditionId: string; gateId: string; acceptancePackageId: string; policy: unknown }
+  | { type: "ACCEPTANCE_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; recordId: string; decision: string }
+  | { type: "EXPEDITION_CLOSED"; expeditionId: string }
+  | { type: "REFINED_INTENT_APPROVED"; expeditionId: string; refinedIntentId: string; refinedIntent: unknown }
   | { type: "OBJECTIVE_ADDED"; objectiveId: string; expeditionId: string; title: string }
   | { type: "DISCOVERY_RECORDED"; discoveryId: string; expeditionId: string }
   | { type: "DECISION_ACCEPTED"; decisionId: string }
