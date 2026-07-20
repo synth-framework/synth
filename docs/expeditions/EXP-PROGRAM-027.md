@@ -16,9 +16,11 @@
 
 > ## ⏸️ Program 027 is paused at a natural checkpoint
 >
-> Do not continue implementing additional homepage expeditions until the governance model supports review gates.
+> Do not continue implementing additional homepage expeditions until the governance model supports intent refinement and review gates.
 >
-> Program 027 is now the **pilot validation project** for EXP-PROGRAM-035 — Review Gate Governance. The current implementation becomes the baseline candidate. Completed expeditions (EXP-HOME-001, EXP-HOME-002, EXP-HOME-025) are frozen as evidence. Downstream expeditions may not begin until upstream review gates are resolved.
+> Program 027 is now the **pilot validation project** for EXP-PROGRAM-035 — Intent Refinement & Review Governance. The current implementation becomes the baseline candidate. Completed expeditions (EXP-HOME-001, EXP-HOME-002, EXP-HOME-025) are frozen as evidence. Downstream expeditions may not begin until upstream gates are resolved.
+>
+> Program 027 will execute under the three-gate model: **Refinement Gate** (before Mission), **Review Gate** (after implementation), and **Acceptance Gate** (before promotion).
 
 ---
 
@@ -286,62 +288,111 @@ Mission Studio Homepage
 
 ---
 
-## Milestones & Review Gates
+## Milestones & Gates
 
-Program 027 is delivered through four milestone **Review Gates**. Each gate produces a **Review Gate Package**, compares accepted references against implementation, and pauses execution until a decision is made. Downstream expeditions cannot begin while an upstream expedition is awaiting review.
+Program 027 is delivered through four milestones. Each milestone passes through the three-gate model defined in EXP-PROGRAM-035:
+
+```text
+Refinement Gate  → before Mission approval
+Review Gate      → after implementation
+Acceptance Gate  → before promotion
+```
 
 ```text
 Program 027
 │
 ├── Milestone A — Mission Studio Foundations
-│       Review Gate A
+│       Refinement Gate A → Review Gate A → Acceptance Gate A
 │
 ├── Milestone B — Homepage Experience
-│       Review Gate B
+│       Refinement Gate B → Review Gate B → Acceptance Gate B
 │
 ├── Milestone C — Runtime Integration
-│       Review Gate C
+│       Refinement Gate C → Review Gate C → Acceptance Gate C
 │
 └── Milestone D — Production Certification
-        Review Gate D
+        Refinement Gate D → Review Gate D → Acceptance Gate D
 ```
 
-### Review Gate Lifecycle
+### Three-Gate Lifecycle
 
-Every expedition in Program 027 now follows the Review Gate lifecycle:
+Every expedition in Program 027 follows the three-gate lifecycle:
 
 ```text
-Proposed
-    ↓
-Executing
-    ↓
-Implementation Complete
-    ↓
+Intent
+    │
+    ▼
+Refinement Gate
+    │
+    ├──────── Refined Intent
+    │
+    └──────── Clarification Requested
+    │
+    ▼
+Mission / Planning
+    │
+    ▼
+Implementation
+    │
+    ▼
 Review Gate
     │
-    ├──────── Approved ──────── Accepted ──────── Closed
+    ├──────── Approve
     │
-    └──────── Revision Requested ───────→ Executing
+    ├──────── Approve with Conditions
+    │
+    ├──────── Revision Required ──→ Implementation
+    │
+    ├──────── Reject
+    │
+    ├──────── Supersede / Split / Merge / Escalate
+    │
+    ▼
+Acceptance Gate
+    │
+    ├──────── Accepted ──→ Closed
+    │
+    └──────── Rejected
 ```
 
-A Review Gate may resolve as **Approved**, **Revision Requested**, or **Rejected**.
+### Gate Packages
 
-### Review Gate Package
+Each gate produces a governed package:
 
-A governed artifact produced at every gate:
-
+**Refinement Gate Package**
 ```text
-Reference artifacts        → accepted mockups, design boards, storyboards, videos, CLI examples
-Current implementation     → Storybook states, screenshots, scroll recordings
-Known divergence           → differences between reference and implementation
-Accepted divergence        → deliberate, approved deviations
-Rejected divergence        → deviations that must be corrected before the gate opens
-Reviewer                   → human, AI, council, or engine per acceptance policy
-Decision                   → Approved / Revision Requested / Rejected
-Evidence                   → links to Storybook, screenshots, recordings, comparison assets
+Raw intent
+Evidence
+References
+Constraints
+Assumptions
+Unknowns
+Decision → Refined Intent / Clarification Requested
 ```
 
-**Stop condition:** No downstream expedition may begin while an upstream expedition is Awaiting Review.
+**Review Gate Package**
+```text
+Refined Intent reference
+Current implementation
+Known divergence
+Accepted divergence
+Rejected divergence
+Reviewer
+Decision → Approve / Approve with Conditions / Revision Required / Reject / Supersede / Split / Merge / Escalate
+Evidence
+```
+
+**Acceptance Gate Package**
+```text
+Review decision
+Certification evidence
+Stakeholder approvals
+Rollout readiness
+Reviewer
+Decision → Accepted / Rejected
+```
+
+**Stop condition:** No downstream expedition may begin while an upstream expedition is awaiting any gate decision.
 
 ### Milestone A — Mission Studio Foundations
 
@@ -350,10 +401,12 @@ Evidence                   → links to Storybook, screenshots, recordings, comp
 **Deliverable:** One functioning Mission Studio shell (header, sidebar, workspace, footer) rendered in Storybook.
 
 **Gate A Acceptance:**
+- Refinement Gate produces an approved Refined Intent for the Mission Studio shell.
 - Implementation visually converges to accepted Mission Studio design boards.
 - Storybook renders the complete workspace in light and dark themes.
 - Every component derives exclusively from LDS-002 tokens.
 - Review Gate Package is approved by a human reviewer.
+- Acceptance Gate confirms the shell is ready for homepage integration.
 
 ### Milestone B — Homepage Experience
 
@@ -362,10 +415,12 @@ Evidence                   → links to Storybook, screenshots, recordings, comp
 **Deliverable:** The complete guided homepage experience, scroll-driven through all lifecycle phases, without runtime integration.
 
 **Gate B Acceptance:**
+- Refinement Gate produces an approved Refined Intent for the homepage experience.
 - Homepage reproduces the complete storyboard.
 - Scroll recordings demonstrate smooth phase transitions.
 - Sidebar progression, artifact evolution, and workspace persistence are verified.
 - Review Gate Package is approved by a human reviewer.
+- Acceptance Gate confirms the experience is production-worthy.
 
 ### Milestone C — Runtime Integration
 
@@ -374,11 +429,13 @@ Evidence                   → links to Storybook, screenshots, recordings, comp
 **Deliverable:** The homepage runtime powers the already-approved UI with zero visual regression.
 
 **Gate C Acceptance:**
+- Refinement Gate produces an approved Refined Intent for runtime integration.
 - Deterministic browser runtime produces artifacts for curated examples.
 - Genesis and Replay projections feed the Artifact Projection Layer.
 - Mission Studio State Machine drives the same UI approved at Gate B.
 - Visual regression against Gate B baseline shows zero unintended changes.
 - Review Gate Package is approved by a human reviewer.
+- Acceptance Gate confirms runtime integration is production-worthy.
 
 ### Milestone D — Production Certification
 
@@ -387,10 +444,12 @@ Evidence                   → links to Storybook, screenshots, recordings, comp
 **Deliverable:** A production-certified homepage ready for release.
 
 **Gate D Acceptance:**
+- Refinement Gate produces an approved Refined Intent for production certification.
 - Responsive, accessible, performant, and motion-validated.
 - Documentation links are stable and validated.
 - Production certification tests pass (unit, integration, E2E, visual regression, accessibility, performance).
 - Review Gate Package is approved by a human reviewer.
+- Acceptance Gate confirms the homepage is approved for release.
 
 ---
 
@@ -404,7 +463,7 @@ EXP-HOME-002  Mission Studio Component Catalog      → Implementation Complete
 EXP-HOME-025  Mission Studio Design Governance      → Implementation Complete
 ```
 
-Each frozen expedition will pass through the Review Gate lifecycle as soon as EXP-PROGRAM-035 delivers the capability. Until then, they remain baseline candidates.
+Each frozen expedition will pass through the three-gate lifecycle as soon as EXP-PROGRAM-035 delivers the capability. Until then, they remain baseline candidates.
 
 ---
 
@@ -568,6 +627,7 @@ Additionally:
 - **EXP-PROGRAM-024 — Canonical Knowledge & Validation** provides the knowledge graph and validation concepts.
 - **EXP-PROGRAM-025 — Incremental Governance** ensures homepage changes are validated efficiently.
 - **EXP-PROGRAM-026 — AI Agent Interoperability** provides the agent protocols the homepage may demonstrate.
+- **EXP-PROGRAM-035 — Intent Refinement & Review Governance** governs how Program 027 is understood, reviewed, and accepted.
 
 ---
 
