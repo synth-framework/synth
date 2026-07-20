@@ -2,12 +2,16 @@
 
 > **Product expedition.** Build a grid of runtime concepts that links to documentation.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Product Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-004 (Artifact System)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/capabilities-explorer.md`](../design/capabilities-explorer.md).
 
 ---
 

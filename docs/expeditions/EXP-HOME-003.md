@@ -2,12 +2,16 @@
 
 > **Product expedition.** Build the interactive Genesis session that turns visitor intent into a projected Mission and Expeditions on the homepage.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-002 (Mission Workspace), EXP-AI-001 (Genesis Protocol)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/genesis-experience.md`](../design/genesis-experience.md).
 
 > **Operator note:** Resolve the EXP-AI-001 (Genesis Protocol) dependency before beginning implementation of this expedition. The homepage demo must align with the canonical Genesis protocol or a documented, rule-based subset approved for the homepage.
 
@@ -106,3 +110,14 @@ The homepage Genesis experience is read-only and proposal-only. It does not crea
 ## Success Criteria
 
 The expedition succeeds when a visitor can experience Genesis end-to-end in under two minutes.
+
+---
+
+## Definition of Done
+
+- [ ] Specification complete.
+- [ ] Rule-based demo adapters defined.
+- [ ] Example inputs and expected outputs documented.
+- [ ] **EXP-AI-001 (Genesis Protocol) dependency resolved (external blocker).**
+- [ ] Implementation advances the workspace through Genesis states deterministically.
+- [ ] Tests verify deterministic output for example inputs.

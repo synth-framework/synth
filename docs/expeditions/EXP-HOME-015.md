@@ -2,12 +2,16 @@
 
 > **Certification expedition.** Certify that the Mission Studio Homepage meets all acceptance criteria before release.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Certification Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-001 through EXP-HOME-014  
 **Blocks:** none
+
+> **Specification:** See [`docs/operator/homepage-certification-report.md`](../operator/homepage-certification-report.md).
 
 ---
 

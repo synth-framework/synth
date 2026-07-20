@@ -2,7 +2,7 @@
 
 > **Design expedition.** Define the visual system, design tokens, and principles for the Mission Studio Homepage.
 
-**Status:** Completed  
+**Status:** Completed (pending acceptance)  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Design Expedition  
@@ -10,6 +10,8 @@
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** none  
 **Blocks:** EXP-HOME-002, EXP-HOME-004, EXP-HOME-013
+
+> **Specification:** See [`docs/design/lds-002.md`](../design/lds-002.md).
 
 ---
 

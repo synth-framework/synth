@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the workspace layout, panels, and state machine for the homepage.
 
-**Status:** Completed  
+**Status:** Completed (pending acceptance)  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Architecture Expedition  
@@ -10,6 +10,8 @@
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-001 (Mission Studio Design Language)  
 **Blocks:** EXP-HOME-003, EXP-HOME-007, EXP-HOME-010
+
+> **Specification:** See [`docs/design/mission-workspace.md`](../design/mission-workspace.md).
 
 ---
 

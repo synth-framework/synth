@@ -2,12 +2,16 @@
 
 > **Architecture expedition.** Define Artifact Card variants and behavior for the homepage.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-001 (Mission Studio Design Language)  
 **Blocks:** EXP-HOME-003, EXP-HOME-007, EXP-HOME-014
+
+> **Specification:** See [`docs/design/artifact-system.md`](../design/artifact-system.md).
 
 ---
 

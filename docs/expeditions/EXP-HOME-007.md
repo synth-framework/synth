@@ -2,12 +2,16 @@
 
 > **Product expedition.** Embed a replay timeline that updates homepage artifacts as the visitor scrubs through events.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-002 (Mission Workspace), EXP-HOME-004 (Artifact System)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/replay-experience.md`](../design/replay-experience.md).
 
 ---
 
@@ -82,3 +86,13 @@ A deterministic, curated event log representing a complete Genesis → Mission �
 ## Success Criteria
 
 The expedition succeeds when a visitor can scrub through history and see how SYNTH reconstructs state from events.
+
+---
+
+## Definition of Done
+
+- [ ] Specification complete.
+- [ ] Sample event log defined and deterministic.
+- [ ] **Runtime replay integration path resolved (external dependency).**
+- [ ] Implementation scrubs through sample events and updates workspace artifacts.
+- [ ] Tests verify artifact updates match event log position.

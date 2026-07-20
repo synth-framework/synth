@@ -2,12 +2,16 @@
 
 > **Product expedition.** Explain governance through an interactive before/after comparison on the homepage.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-002 (Mission Workspace)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/governance-visualization.md`](../design/governance-visualization.md).
 
 ---
 
