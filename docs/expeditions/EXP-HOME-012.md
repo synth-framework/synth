@@ -2,7 +2,7 @@
 
 > **Engineering expedition.** Optimize the homepage for fast first paint, smooth animations, and efficient resource loading.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Proposed  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Engineering Expedition  

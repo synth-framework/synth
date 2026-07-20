@@ -1,6 +1,6 @@
 # EXP-PROGRAM-027 — Mission Studio Homepage
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

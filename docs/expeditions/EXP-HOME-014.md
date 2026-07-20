@@ -2,7 +2,7 @@
 
 > **Product expedition.** Link homepage artifacts and concepts to canonical SYNTH documentation.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Proposed  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Product Expedition  

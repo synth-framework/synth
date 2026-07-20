@@ -2,7 +2,7 @@
 
 > **Engineering expedition.** Ensure the homepage meets WCAG standards and is usable by everyone.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Proposed  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Engineering Expedition  
