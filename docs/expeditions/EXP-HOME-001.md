@@ -2,7 +2,9 @@
 
 > **Design expedition.** Define the visual system, design tokens, and principles for the Mission Studio Homepage.
 
-**Status:** Proposed  
+**Status:** Completed  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Design Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
