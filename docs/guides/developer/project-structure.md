@@ -24,7 +24,7 @@ synth-v2/
     operations/            -- Operations manual (5 documents)
     reference/             -- Reference docs (4 documents)
 
-  data/                    -- Runtime data (created at runtime)
+  .synth/data/             -- Runtime data (created at runtime)
     event-log.jsonl        -- Append-only event log
     canonical-state.json   -- State snapshot with hash
     checkpoints.json       -- Consumer checkpoints

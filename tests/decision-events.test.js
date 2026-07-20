@@ -28,7 +28,12 @@ function assert(condition, message) {
 }
 
 function makeWorkspace() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-decisions-"))
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-decisions-"))
+  const init = runCli(dir, ["init", "--name", "Decision Events Test"])
+  if (init.status !== 0) {
+    throw new Error(`synth init failed in test workspace: ${init.output}`)
+  }
+  return dir
 }
 
 function cleanup(dir) {
@@ -67,7 +72,7 @@ function approve(dir, draftId) {
 }
 
 function readDecisions(dir) {
-  const file = path.join(dir, "data", "decisions.jsonl")
+  const file = path.join(dir, ".synth", "data", "decisions.jsonl")
   try {
     return fs
       .readFileSync(file, "utf8")
@@ -125,7 +130,7 @@ function main() {
     const dir = makeWorkspace()
     try {
       const draftId = createDraft(dir)
-      const file = path.join(dir, "data", "drafts", `${draftId}.json`)
+      const file = path.join(dir, ".synth", "data", "drafts", `${draftId}.json`)
       const draft = JSON.parse(fs.readFileSync(file, "utf8"))
       draft.confidence.overall = 0.95
       fs.writeFileSync(file, JSON.stringify(draft, null, 2))
@@ -160,7 +165,7 @@ function main() {
     const dir = makeWorkspace()
     try {
       const draftId = createDraft(dir)
-      const file = path.join(dir, "data", "drafts", `${draftId}.json`)
+      const file = path.join(dir, ".synth", "data", "drafts", `${draftId}.json`)
       const draft = JSON.parse(fs.readFileSync(file, "utf8"))
       draft.approvalState = "approved"
       fs.writeFileSync(file, JSON.stringify(draft, null, 2))
@@ -198,7 +203,7 @@ function main() {
       approve(dir, first)
       const second = createDraft(dir)
       approve(dir, second)
-      const file = path.join(dir, "data", "decisions.jsonl")
+      const file = path.join(dir, ".synth", "data", "decisions.jsonl")
       const lines = fs.readFileSync(file, "utf8").split("\n").filter(Boolean)
       fs.writeFileSync(file, [...lines.slice(1), ""].join("\n"))
       const r = runCli(dir, ["mission", "decisions"])

@@ -60,7 +60,7 @@ Discovery Orchestrator
 DiscoveryEvidence (canonical, hashed, replayable)
     │
     ├──► Capability Report (agent-facing projection)
-    └──► data/discovery-evidence.json (persisted artifact)
+    └──► .synth/data/discovery-evidence.json (persisted artifact)
 ```
 
 1. **Observe** — discovery rules produce `DiscoveryObservation` values tagged with confidence (`none` → `certain`) through the `ObservationContext`.
@@ -77,7 +77,7 @@ DiscoveryEvidence (canonical, hashed, replayable)
 - **Deterministic serialization** — JSON with recursively sorted keys; identical discoveries produce byte-identical artifacts.
 - **Content hashed** — integrity is verifiable by hash.
 - **Replayable** — replay re-derives the environment classification, capability summaries, assumptions, and compatibility sections from recorded inputs and compares them against the artifact; divergences are reported explicitly.
-- **Persisted** at `data/discovery-evidence.json`.
+- **Persisted** at `.synth/data/discovery-evidence.json`.
 
 Replay integration lives entirely inside the Environment Layer. The frozen Replay engine, Event Model, and the `synth-proof-v1` proof object are not modified.
 

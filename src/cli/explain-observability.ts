@@ -51,7 +51,7 @@ import type { ReplayAttributionReport } from "../core/replay-attribution.js"
 import type { StoredSnapshot } from "../mission-studio/types.js"
 import type { CanonicalState, SynthEvent } from "../types/index.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
+import { ensureRuntimeDataDir } from "../infra/paths.js"
 
 export const EXPLAIN_OBSERVABILITY_VERSION = 1
 

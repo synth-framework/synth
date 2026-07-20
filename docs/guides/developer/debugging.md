@@ -9,7 +9,7 @@ Synth's architecture provides multiple diagnostic layers. When something goes wr
 The event log is the primary diagnostic tool. Every mutation is recorded:
 
 ```
-Read data/event-log.jsonl
+Read .synth/data/event-log.jsonl
 Look for:
   - Event ordering
   - Transaction IDs

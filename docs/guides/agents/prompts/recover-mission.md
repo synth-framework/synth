@@ -10,7 +10,7 @@ Use this prompt when a previous Mission or Expedition was interrupted.
 
 1. Read `.synth/manifest.json`.
 2. Run `synth status`.
-3. Inspect `data/event-log.jsonl` if needed.
+3. Inspect `.synth/data/event-log.jsonl` if needed.
 4. Identify the last completed state (e.g., mission created, expedition started).
 5. Propose the next action:
    - Continue an in-progress Expedition.

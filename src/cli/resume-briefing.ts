@@ -18,7 +18,7 @@ import {
 import { deriveValidTransition } from "../runtime/transition-engine.js"
 import { toResumeNextAction } from "../runtime/status-projection.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
+import { ensureRuntimeDataDir } from "../infra/paths.js"
 import type { SynthEvent, CanonicalState } from "../types/index.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
 

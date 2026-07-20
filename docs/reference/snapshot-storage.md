@@ -18,7 +18,7 @@ An approved Mission Model Snapshot is a permanent, immutable, certified planning
 
 ## Location and Filename
 
-- Directory: `data/snapshots/` (wired at bootstrap via `createFileSystemSnapshotStore`).
+- Directory: `.synth/data/snapshots/` (wired at bootstrap via `createFileSystemSnapshotStore`).
 - Filename: `<snapshot-id>.json` — one file per snapshot, named by its ID. Characters outside `[a-zA-Z0-9_-]` are replaced with `_`.
 - Snapshots are immutable: saving an existing ID is rejected with `INVARIANT_VIOLATION`.
 

@@ -35,6 +35,11 @@ function cleanup(dir) {
   fs.rmSync(dir, { recursive: true, force: true })
 }
 
+function initWorkspace(dir) {
+  const r = runCli(dir, ["init", "--name", "Evidence Path Test"])
+  assert(r.status === 0, `init should succeed: ${r.output}`)
+}
+
 function runCli(dir, args) {
   const env = { ...process.env }
   delete env.SYNTH_GOVERN_DEPTH
@@ -68,7 +73,7 @@ function approve(dir, draftId) {
 }
 
 function draftPath(dir, draftId) {
-  return path.join(dir, "data", "drafts", `${draftId}.json`)
+  return path.join(dir, ".synth", "data", "drafts", `${draftId}.json`)
 }
 
 function main() {
@@ -80,6 +85,7 @@ function main() {
   // 1. N3 verbatim: the below-threshold rejection must name the evidence command.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       const { draftId } = createDraft(dir)
       const r = approve(dir, draftId)
@@ -94,6 +100,7 @@ function main() {
   // 2. Happy path: evidence add certifies a successor draft with recomputed confidence.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       const first = createDraft(dir)
       const r = evidenceAdd(dir, first.draftId, "Operator domain knowledge")
@@ -113,6 +120,7 @@ function main() {
   // 3. Chained successors: two evidence additions keep the integrity chain intact.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       const first = createDraft(dir)
       const second = evidenceAdd(dir, first.draftId, "Domain knowledge")
@@ -129,6 +137,7 @@ function main() {
   // 4. A tampered source draft cannot be extended.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       const { draftId } = createDraft(dir)
       const file = draftPath(dir, draftId)
@@ -146,6 +155,7 @@ function main() {
   // 5. Duplicate evidence is refused prescriptively.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       const { draftId } = createDraft(dir)
       const first = evidenceAdd(dir, draftId, "Domain knowledge")
@@ -160,6 +170,7 @@ function main() {
   // 6. Unknown confidence levels are refused with the valid set.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       const { draftId } = createDraft(dir)
       const r = evidenceAdd(dir, draftId, "Domain knowledge", ["--confidence", "bogus"])

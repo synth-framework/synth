@@ -188,7 +188,7 @@ export const checkEvidenceReferentialIntegrity: VerificationCheck = async (ctx) 
   if (!ctx.decisions.chainValid) {
     violations.push(
       v("Decision record chain is broken; referential integrity cannot be trusted.", {
-        nextStep: "inspect data/decisions.jsonl",
+        nextStep: "inspect .synth/data/decisions.jsonl",
       }),
     )
   }
