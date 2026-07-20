@@ -92,6 +92,7 @@ const elements = {
   capabilitiesGrid: /** @type {HTMLDivElement} */ (document.getElementById("ms-capabilities-grid")),
   missionStudioSection: /** @type {HTMLElement} */ (document.getElementById("mission-studio")),
   themeToggle: /** @type {HTMLButtonElement} */ (document.getElementById("ms-theme-toggle")),
+  liveRegion: /** @type {HTMLDivElement} */ (document.getElementById("ms-live-region")),
 }
 
 function getPhaseIndex(phaseId) {
@@ -274,8 +275,14 @@ function renderControls(projection) {
   document.getElementById("ms-advance-btn")?.addEventListener("click", advancePhase)
 }
 
+function announcePhase(phase) {
+  if (!elements.liveRegion) return
+  elements.liveRegion.textContent = `Mission Studio phase: ${phase}`
+}
+
 function updateUI(projection) {
   activePhase = projection.phase
+  announcePhase(projection.phase)
   renderHeaderStatus(projection)
   renderPhaseList(projection.phase)
   renderArtifacts(projection)

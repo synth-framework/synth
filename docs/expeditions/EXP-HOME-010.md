@@ -2,7 +2,7 @@
 
 > **Engineering expedition.** Adapt the Mission Workspace and homepage sections for all screen sizes.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Engineering Expedition  
