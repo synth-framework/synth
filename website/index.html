@@ -35,6 +35,29 @@
       <p class="hero-note">AI operators: read <a href="https://github.com/synth-framework/synth/blob/main/AGENTS.md">AGENTS.md</a> first.</p>
     </section>
 
+    <section class="mission-studio-section">
+      <h2>Experience Mission Studio</h2>
+      <p>Type an idea and watch SYNTH turn it into a governed Mission.</p>
+
+      <div id="ms-workspace" class="ms-workspace">
+        <div id="ms-navigator" class="ms-navigator"></div>
+        <div class="ms-main">
+          <form id="ms-intent-form" class="ms-intent-form">
+            <input id="ms-intent-input" type="text" placeholder="e.g., Build a CRM" autocomplete="off" />
+            <button type="submit" class="ms-btn ms-btn-primary">Discover</button>
+          </form>
+          <div id="ms-examples" class="ms-examples"></div>
+          <div id="ms-artifacts" class="ms-artifacts"></div>
+          <div id="ms-controls" class="ms-controls"></div>
+          <div id="ms-replay-controls" class="ms-replay-controls ms-hidden">
+            <label for="ms-replay-slider">Replay</label>
+            <input id="ms-replay-slider" type="range" min="0" max="0" value="0" />
+          </div>
+        </div>
+      </div>
+      <div id="ms-status-bar" class="ms-status-bar"></div>
+    </section>
+
     <section>
       <h2>Seven public concepts</h2>
       <p>Synth is explained with exactly seven concepts. Everything else is implementation detail.</p>
@@ -77,5 +100,7 @@
   <footer>
     <p>Synth v2 is frozen and in Era II — Adoption. <a href="https://github.com/synth-framework/synth/blob/main/docs/adr/ADR-004-synth-eras-and-protected-assets.md">Read the governance model</a>.</p>
   </footer>
+
+  <script type="module" src="js/mission-studio-app.js"></script>
 </body>
 </html>
