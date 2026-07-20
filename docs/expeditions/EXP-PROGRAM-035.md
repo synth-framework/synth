@@ -13,6 +13,12 @@
 
 ---
 
+> ## Final architectural program before the testing/stabilization era
+>
+> Program 035 is the last architectural program in Era III. After it succeeds, the SYNTH governance model is frozen and the project shifts into extensive real-world testing, defect fixing, ergonomics refinement, and completion of active programs under the new model. No new architectural concepts are introduced unless testing reveals genuine gaps.
+
+---
+
 ## Thesis
 
 > **Deterministic execution requires deterministic understanding, and understanding requires governance.**
@@ -30,13 +36,13 @@ A Refinement Gate bridges the two by turning conversation into a canonical, revi
 
 ## Purpose
 
-Close the gap between human intent and deterministic execution by introducing three gate types and a new `Refined Intent` artifact:
+Close the gap between human intent and deterministic execution by introducing three gate types, a `Refined Intent` artifact, and a replayable `Review Decision` artifact:
 
 1. **Refinement Gate** — before Mission approval: *Did we understand what is actually being requested?*
 2. **Review Gate** — after implementation: *Did we build what we agreed to build?*
 3. **Acceptance Gate** — after review: *Is this production-worthy?*
 
-This program has higher architectural priority than Program 027 because it changes how every future program is understood, executed, and accepted.
+This program has higher architectural priority than Program 027 because it changes how every future program is understood, executed, reviewed, and accepted.
 
 ---
 
@@ -87,16 +93,71 @@ Acceptance Gate
     │
     ├──────── Accepted ──→ Closed
     │
-    └──────── Rejected ──→ Revision / Mission review
+    └──────── Rejected
 ```
 
 Each gate is a decision point, not an approval itself. Decisions are governance events and are replayable.
 
 ---
 
-## New Artifact — Refined Intent
+## Execution Phases
 
-A canonical interpretation produced by the Refinement Gate. It is not the conversation, not the screenshots, not the prompt — it is the governed understanding.
+Program 035 is executed in five dependency-ordered phases. Phases 1 and 2 define vocabulary and artifacts without touching runtime code. Phase 3 modifies execution. Phase 4 retrofits existing systems. Phase 5 certifies the model.
+
+### Phase 1 — Governance Model
+
+Define vocabulary, state machines, artifacts, and governance rules.
+
+```text
+EXP-GATE-001  Review Lifecycle
+EXP-GATE-002  Completion Policies
+EXP-GATE-003  Refinement Lifecycle
+EXP-GATE-004  Decision Model
+```
+
+### Phase 2 — Artifacts
+
+Define the canonical schemas that flow through the system.
+
+```text
+EXP-GATE-005  Review Gate Package
+EXP-GATE-006  Refined Intent Artifact
+EXP-GATE-007  Acceptance Policies
+```
+
+### Phase 3 — Engine
+
+Modify execution behavior so gates are enforced.
+
+```text
+EXP-GATE-008  Review Gate Engine
+EXP-GATE-009  Revision Governance
+```
+
+### Phase 4 — Integration
+
+Retrofit existing systems and test against a real project.
+
+```text
+EXP-GATE-010  Mission Studio Integration
+EXP-GATE-011  Retrofit Program 027
+```
+
+### Phase 5 — Certification
+
+Prove the lifecycle behaves correctly across scenarios.
+
+```text
+EXP-GATE-012  Certification
+```
+
+---
+
+## New Artifacts
+
+### Refined Intent
+
+The canonical interpretation produced by the Refinement Gate. It is not the conversation, not the screenshots, not the prompt — it is the governed understanding.
 
 ```text
 Refined Intent
@@ -115,6 +176,91 @@ Risks
 ```
 
 The Refined Intent becomes the contract against which Review and Acceptance Gates are evaluated.
+
+### Review Gate Package
+
+Produced at every Review Gate. Contains:
+
+```text
+Target expedition
+Refined Intent reference
+Current implementation
+Known divergence
+Accepted divergence
+Rejected divergence
+Reviewer                   → human, AI, council, or engine per policy
+Decision                   → Approve / Approve with Conditions / Revision Required / Reject / Supersede / Split / Merge / Escalate
+Reason
+Next action
+Evidence
+Timestamp
+```
+
+### Review Decision
+
+A replayable governance event produced by every gate. Example:
+
+```yaml
+decision:
+  type: revision_required
+
+reason:
+  "Mission Studio still resembles a dashboard instead of the approved design language."
+
+affected_assets:
+  - homepage
+  - mission-studio
+  - design-system
+
+required_changes:
+  - replace dashboard cards
+  - restore document artifacts
+  - increase whitespace
+
+evidence:
+  - design-board-v4.png
+  - EXP-HOME-025
+
+reviewer: human
+timestamp:
+```
+
+### Revision Request
+
+A first-class event in the event log. Contains:
+
+```text
+Target expedition
+Reason
+Evidence
+Reviewer
+Timestamp
+```
+
+### Acceptance Gate Package
+
+Produced at every Acceptance Gate. Contains:
+
+```text
+Target expedition
+Review decision
+Certification evidence
+Stakeholder approvals
+Rollout readiness
+Reviewer
+Decision                   → Accepted / Rejected
+Timestamp
+```
+
+### Acceptance Policy
+
+A governed artifact defining who may resolve which gate. Examples:
+
+```text
+Refinement Gate    → Human + Evidence
+Review Gate        → Human for design, AI for docs
+Acceptance Gate    → Certification Engine + Stakeholder
+```
 
 ---
 
@@ -237,171 +383,13 @@ Style consistency
 
 ---
 
-## Program Composition
-
-```text
-EXP-PROGRAM-035
-Intent Refinement & Review Governance
-│
-├── Refinement Gate
-│   │
-│   ├── EXP-REFINE-001  Refined Intent Artifact
-│   │       Governance Expedition
-│   │       Define the canonical interpretation artifact produced before Mission approval.
-│   │
-│   ├── EXP-REFINE-002  Refinement Gate Engine
-│   │       Architecture Expedition
-│   │       Implement the gate that evaluates intent, evidence, references, and unknowns.
-│   │
-│   └── EXP-REFINE-003  Clarification Loop
-│           Process Expedition
-│           Define how Clarification Requested returns to intent gathering.
-│
-├── Review Gate
-│   │
-│   ├── EXP-REVIEW-001  Review Lifecycle
-│   │       Governance Expedition
-│   │       Introduce Implementation Complete → Review Gate → decision → Accepted → Closed.
-│   │
-│   ├── EXP-REVIEW-002  Revision Governance
-│   │       Governance Expedition
-│   │       Introduce RevisionRequested, RevisionCompleted, and revision loops as replayable events.
-│   │
-│   ├── EXP-REVIEW-003  Rich Decision Model
-│   │       Governance Expedition
-│   │       Define Approve, Approve with Conditions, Reject, Supersede, Split, Merge, Escalate.
-│   │
-│   ├── EXP-REVIEW-004  Review Gate Package
-│   │       Governance Expedition
-│   │       Define the artifact produced at every review gate.
-│   │
-│   ├── EXP-REVIEW-005  Visual & Semantic Comparison
-│   │       Engineering Expedition
-│   │       Automated comparison: screenshot diff, semantic diff, layout diff, artifact mapping.
-│   │
-│   └── EXP-REVIEW-006  AI Review Protocol
-│           AI Expedition
-│           Mandate that AI agents review each other's work and cannot self-approve.
-│
-├── Acceptance Gate
-│   │
-│   ├── EXP-ACCEPT-001  Acceptance Lifecycle
-│   │       Governance Expedition
-│   │       Define Review Gate → Acceptance Gate → Accepted → Closed.
-│   │
-│   ├── EXP-ACCEPT-002  Acceptance Policies
-│   │       Governance Expedition
-│   │       Define who is allowed to accept what (human, AI, council, engine, asset owner).
-│   │
-│   └── EXP-ACCEPT-003  Production Certification Gate
-│           Certification Expedition
-│           Integrate certification, UX validation, and rollout readiness into acceptance.
-│
-├── Cross-Cutting
-│   │
-│   ├── EXP-GATE-001  Completion Policies
-│   │       Governance Expedition
-│   │       Define Automatic, Human Approval Required, and AI Approval Required.
-│   │
-│   ├── EXP-GATE-002  Mission Studio Integration
-│   │       Product Expedition
-│   │       Visualize Refinement Pending, Review Pending, Revision Required, Accepted, and Closed.
-│   │
-│   ├── EXP-GATE-003  Retrofit Program 027
-│   │       Governance Expedition
-│   │       Migrate Program 027 to the three-gate model and freeze completed expeditions as evidence.
-│   │
-│   └── EXP-GATE-004  Certification
-│           Certification Expedition
-│           Certify Intent Refinement & Review Governance using Program 027 as the validation project.
-```
-
----
-
-## New Artifacts
-
-### Refined Intent
-
-The canonical interpretation produced by the Refinement Gate. Contains:
-
-```text
-Objective
-Scope
-Non-goals
-Success criteria
-Visual references
-Behavioral references
-Constraints
-Protected assets
-Acceptance examples
-Known unknowns
-Risks
-```
-
-### Review Gate Package
-
-Produced at every Review Gate. Contains:
-
-```text
-Target expedition
-Refined Intent reference
-Current implementation
-Known divergence
-Accepted divergence
-Rejected divergence
-Reviewer                   → human, AI, council, or engine per policy
-Decision                   → Approve / Approve with Conditions / Revision Required / Reject / Supersede / Split / Merge / Escalate
-Reason
-Next action
-Evidence
-Timestamp
-```
-
-### Revision Request
-
-A first-class event in the event log. Contains:
-
-```text
-Target expedition
-Reason
-Evidence
-Reviewer
-Timestamp
-```
-
-### Acceptance Gate Package
-
-Produced at every Acceptance Gate. Contains:
-
-```text
-Target expedition
-Review decision
-Certification evidence
-Stakeholder approvals
-Rollout readiness
-Reviewer
-Decision                   → Accepted / Rejected
-Timestamp
-```
-
-### Acceptance Policy
-
-A governed artifact defining who may resolve which gate. Examples:
-
-```text
-Refinement Gate    → Human + Evidence
-Review Gate        → Human for design, AI for docs
-Acceptance Gate    → Certification Engine + Stakeholder
-```
-
----
-
 ## Protected Assets
 
 The following artifacts introduced by this Program SHALL NOT be modified without a governance event:
 
 - Refined Intent schema
 - Review Gate Package format
+- Review Decision event schema
 - Acceptance Gate Package format
 - Revision Request event schema
 - Acceptance Policy definitions
@@ -439,6 +427,42 @@ Any change to these assets requires an Architecture Expedition and a new ADR.
 
 ## Success Criteria
 
+Program 035 is complete only when it enables this workflow:
+
+```text
+User
+  ↓
+Intent
+  ↓
+Refinement Session
+  ↓
+Refined Intent ✓
+  ↓
+Mission
+  ↓
+Planning
+  ↓
+Implementation
+  ↓
+Review Package
+  ↓
+Human Review
+  ↓
+Revision Requested
+  ↓
+Implementation
+  ↓
+Review Package
+  ↓
+Approved
+  ↓
+Acceptance
+  ↓
+Closed
+```
+
+Additionally:
+
 - Every future Program produces a Refined Intent before Mission approval.
 - Every non-Automatic expedition passes through Review and Acceptance Gates before Closed.
 - `Implementation Complete` is visibly distinct from `Accepted` in Mission Studio.
@@ -448,6 +472,59 @@ Any change to these assets requires an Architecture Expedition and a new ADR.
 - Program 027 successfully executes under the three-gate model from its current paused state.
 - AI agents cannot approve their own work under Human or AI Approval Required policies.
 
+### Certification Scenarios
+
+EXP-GATE-012 must prove at least these scenarios:
+
+**Scenario 1 — Straight-through acceptance**
+```text
+Refinement approved
+  ↓
+Mission created
+  ↓
+Implementation
+  ↓
+Review approved
+  ↓
+Accepted
+```
+
+**Scenario 2 — Revision loop**
+```text
+Review
+  ↓
+Revision Requested
+  ↓
+Implementation resumes
+  ↓
+Review
+  ↓
+Approved
+```
+
+**Scenario 3 — Refinement clarification blocks Mission**
+```text
+Refinement
+  ↓
+Clarification Requested
+  ↓
+Mission cannot be created
+```
+
+**Scenario 4 — Mission change invalidates reviews**
+```text
+Mission changes
+  ↓
+Existing reviews invalidated
+```
+
+**Scenario 5 — Superseded expedition pauses dependents**
+```text
+Expedition superseded
+  ↓
+Dependent expeditions paused
+```
+
 ---
 
 ## Relationship to Other Work
@@ -456,6 +533,18 @@ Any change to these assets requires an Architecture Expedition and a new ADR.
 - **EXP-PROGRAM-030 — Intelligent Governance Orchestration** will schedule Refinement, Review, and Acceptance Gates as part of the validation planner.
 - **EXP-PROGRAM-032 — AI Agent Integration** will operate within gate policies; AI agents may review each other's work but cannot self-approve under non-Automatic policies.
 - **EXP-PROGRAM-022 — Genesis** provides the lifecycle that these gates extend.
+
+---
+
+## After Program 035
+
+Once Program 035 is certified:
+
+1. The SYNTH governance model is frozen.
+2. Program 027 resumes under the new model.
+3. Remaining active programs complete under the new model.
+4. The project enters extensive real-world testing, defect fixing, and ergonomics refinement.
+5. New architectural concepts are deferred unless testing reveals genuine gaps.
 
 ---
 
