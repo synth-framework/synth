@@ -34,6 +34,8 @@ Establish the Mission Studio Design System (LDS-002), superseding any prior desi
 
 The current homepage explains SYNTH through static marketing content. There is no unified design language that projects SYNTH's runtime concepts into a cohesive interactive experience.
 
+A visual design reference was provided to establish tokens, color temperament, typography scale, and overall tone. The reference is not a locked layout specification; the Mission Workspace layout and component arrangement may evolve per EXP-HOME-002.
+
 ---
 
 ## Required Change

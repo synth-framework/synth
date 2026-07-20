@@ -2,7 +2,9 @@
 
 > **Architecture expedition.** Define the workspace layout, panels, and state machine for the homepage.
 
-**Status:** Proposed  
+**Status:** Completed  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
