@@ -38,11 +38,12 @@ Visitors currently read about Genesis. There is no way to experience it directly
 
 ### 1.1 Entry modes
 
-Three buttons change Genesis behavior:
+Four entry modes change Genesis behavior:
 
 - **Greenfield:** start from raw intent.
 - **Brownfield:** start from an existing repository.
 - **Knowledge:** start from a knowledge graph.
+- **Conversation:** start from an operator briefing or chat transcript.
 
 ### 1.2 Simplified flow
 
@@ -85,8 +86,10 @@ The homepage Genesis experience is read-only and proposal-only. It does not crea
 
 - A visitor can type an intent and see artifacts appear progressively.
 - The flow covers Intent, Discovery, Unknowns, Architecture, Mission, and Expeditions.
+- Entry modes include Greenfield, Brownfield, Knowledge, and Conversation.
 - No code is generated.
 - Output is deterministic for the same input and mode.
+- All homepage copy uses SYNTH public vocabulary.
 
 ---
 

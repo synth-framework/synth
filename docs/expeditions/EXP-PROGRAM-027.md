@@ -211,6 +211,7 @@ A first-time visitor should, within five minutes and without reading external do
 
 ## Relationship to Other Work
 
+- **EXP-PROGRAM-020 — Website Experience** is superseded by this program. EXP-CONVERGENCE-001 records the decision. EXP-WEB-001's hero design and scenario scripts feed into EXP-HOME-003.
 - **EXP-PROGRAM-022 — Genesis** provides the lifecycle the homepage projects.
 - **EXP-PROGRAM-023 — Semantic Modeling** provides intent and domain artifacts visualized on the homepage.
 - **EXP-PROGRAM-024 — Canonical Knowledge & Validation** provides the knowledge graph and validation concepts.
