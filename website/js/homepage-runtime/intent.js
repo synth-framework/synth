@@ -245,6 +245,65 @@ export function generateEvidence(intent, discovery) {
         },
     ];
 }
+export function generateArchitecture(mission, expeditions) {
+    return [
+        {
+            kind: "architecture",
+            layer: "Intent",
+            responsibility: "Capture operator intent and success criteria.",
+            dependencies: [],
+        },
+        {
+            kind: "architecture",
+            layer: "Knowledge",
+            responsibility: "Preserve domain model and constraints.",
+            dependencies: ["Intent"],
+        },
+        {
+            kind: "architecture",
+            layer: "Mission",
+            responsibility: "Define strategic goal and expeditions.",
+            dependencies: ["Knowledge"],
+        },
+        {
+            kind: "architecture",
+            layer: "Expedition",
+            responsibility: "Execute bounded investigations and builds.",
+            dependencies: ["Mission"],
+        },
+        {
+            kind: "architecture",
+            layer: "Events",
+            responsibility: "Record every state change immutably.",
+            dependencies: ["Expedition"],
+        },
+        {
+            kind: "architecture",
+            layer: "Kernel",
+            responsibility: "Enforce governance invariants.",
+            dependencies: ["Events"],
+        },
+        {
+            kind: "architecture",
+            layer: "Runtime",
+            responsibility: "Execute capabilities deterministically.",
+            dependencies: ["Kernel"],
+        },
+    ];
+}
+export function generateRepository(mission, expeditions) {
+    return {
+        kind: "repository",
+        status: "governed",
+        artifacts: [
+            ".synth/manifest.json",
+            ".synth/data/event-log.jsonl",
+            ".synth/data/canonical-state.json",
+            ...expeditions.map((e) => `.synth/proposals/${e.id}.json`),
+        ],
+        eventCount: 8 + expeditions.length * 3,
+    };
+}
 export function generateClarificationQuestions(unknowns) {
     return unknowns.items.map((item, index) => ({
         id: `q-${index}`,

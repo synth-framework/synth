@@ -1,8 +1,9 @@
 // ============================================================
-// HOMEPAGE: Mission Studio App
+// HOMEPAGE: Mission Studio App v2
 // ============================================================
-// Browser UI controller for the SYNTH Mission Studio homepage.
-// Depends on ./homepage-runtime/index.js
+// Persistent Mission Studio shell with scroll-driven state machine.
+// Maps page scroll through phases: Intent → Discovery → Mission →
+// Expeditions → Governance → Replay → Architecture → Repository.
 // ============================================================
 
 import {
@@ -20,29 +21,40 @@ let currentGenesisState = null
 /** @type {import("./homepage-runtime/index.js").ReplayState | null} */
 let currentReplayState = null
 
-const elements = {
-  input: /** @type {HTMLInputElement} */ (document.getElementById("ms-intent-input")),
-  form: /** @type {HTMLFormElement} */ (document.getElementById("ms-intent-form")),
-  examples: /** @type {HTMLDivElement} */ (document.getElementById("ms-examples")),
-  workspace: /** @type {HTMLDivElement} */ (document.getElementById("ms-workspace")),
-  navigator: /** @type {HTMLDivElement} */ (document.getElementById("ms-navigator")),
-  artifacts: /** @type {HTMLDivElement} */ (document.getElementById("ms-artifacts")),
-  statusBar: /** @type {HTMLDivElement} */ (document.getElementById("ms-status-bar")),
-  controls: /** @type {HTMLDivElement} */ (document.getElementById("ms-controls")),
-  replayControls: /** @type {HTMLDivElement} */ (document.getElementById("ms-replay-controls")),
-  replaySlider: /** @type {HTMLInputElement} */ (document.getElementById("ms-replay-slider")),
-}
+/** @type {string} */
+let activePhase = "idle"
+
+/** @type {boolean} */
+let autoDemoStarted = false
+
+/** @type {boolean} */
+let manualMode = false
 
 const PHASES = [
-  { id: "idle", label: "Idle" },
-  { id: "intent", label: "Intent" },
-  { id: "discovery", label: "Discovery" },
-  { id: "constraints", label: "Constraints" },
-  { id: "domain", label: "Domain" },
-  { id: "mission", label: "Mission" },
-  { id: "expeditions", label: "Expeditions" },
-  { id: "governance", label: "Governance" },
-  { id: "replay", label: "Replay" },
+  { id: "idle", label: "Idle", stage: 0 },
+  { id: "intent", label: "Intent", stage: 1 },
+  { id: "discovery", label: "Discovery", stage: 2 },
+  { id: "constraints", label: "Constraints", stage: 2 },
+  { id: "domain", label: "Domain", stage: 3 },
+  { id: "mission", label: "Mission", stage: 4 },
+  { id: "expeditions", label: "Expeditions", stage: 5 },
+  { id: "governance", label: "Governance", stage: 6 },
+  { id: "replay", label: "Replay", stage: 6 },
+  { id: "architecture", label: "Architecture", stage: 7 },
+  { id: "repository", label: "Repository", stage: 8 },
+]
+
+const SCROLL_PHASES = [
+  "intent",
+  "discovery",
+  "constraints",
+  "domain",
+  "mission",
+  "expeditions",
+  "governance",
+  "replay",
+  "architecture",
+  "repository",
 ]
 
 const CAPABILITIES = [
@@ -57,13 +69,76 @@ const CAPABILITIES = [
   { id: "adapters", name: "Adapters", description: "External tools as first-class citizens." },
 ]
 
-function renderNavigator(activePhase) {
-  elements.navigator.innerHTML = PHASES.map((phase) => {
-    const isActive = phase.id === activePhase
-    const isPast = PHASES.findIndex((p) => p.id === activePhase) > PHASES.findIndex((p) => p.id === phase.id)
+const elements = {
+  shell: /** @type {HTMLDivElement} */ (document.getElementById("ms-shell")),
+  headerStatus: /** @type {HTMLDivElement} */ (document.getElementById("ms-header-status")),
+  phaseList: /** @type {HTMLDivElement} */ (document.getElementById("ms-phase-list")),
+  workspaceScroll: /** @type {HTMLDivElement} */ (document.getElementById("ms-workspace-scroll")),
+  intro: /** @type {HTMLDivElement} */ (document.getElementById("ms-intro")),
+  input: /** @type {HTMLInputElement} */ (document.getElementById("ms-intent-input")),
+  form: /** @type {HTMLFormElement} */ (document.getElementById("ms-intent-form")),
+  examples: /** @type {HTMLDivElement} */ (document.getElementById("ms-examples")),
+  artifacts: /** @type {HTMLDivElement} */ (document.getElementById("ms-artifacts")),
+  controls: /** @type {HTMLDivElement} */ (document.getElementById("ms-controls")),
+  replayControls: /** @type {HTMLDivElement} */ (document.getElementById("ms-replay-controls")),
+  replaySlider: /** @type {HTMLInputElement} */ (document.getElementById("ms-replay-slider")),
+  replayPrev: /** @type {HTMLButtonElement} */ (document.getElementById("ms-replay-prev")),
+  replayNext: /** @type {HTMLButtonElement} */ (document.getElementById("ms-replay-next")),
+  footerStatus: /** @type {HTMLDivElement} */ (document.getElementById("ms-footer-status")),
+  footerMeta: /** @type {HTMLDivElement} */ (document.getElementById("ms-footer-meta")),
+  capabilitiesGrid: /** @type {HTMLDivElement} */ (document.getElementById("ms-capabilities-grid")),
+  missionStudioSection: /** @type {HTMLElement} */ (document.getElementById("mission-studio")),
+}
+
+function getPhaseIndex(phaseId) {
+  return PHASES.findIndex((p) => p.id === phaseId)
+}
+
+function renderPhaseList(activePhaseId) {
+  const activeIndex = getPhaseIndex(activePhaseId)
+  elements.phaseList.innerHTML = PHASES.filter((p) => p.id !== "idle").map((phase) => {
+    const phaseIndex = getPhaseIndex(phase.id)
+    const isActive = phase.id === activePhaseId
+    const isPast = activeIndex > phaseIndex
     const cls = isActive ? "ms-phase ms-phase-active" : isPast ? "ms-phase ms-phase-past" : "ms-phase"
     return `<div class="${cls}" data-phase="${phase.id}">${phase.label}</div>`
   }).join("")
+}
+
+function renderHeaderStatus(projection) {
+  const label = projection.phase === "idle" ? "Idle" : projection.phase
+  elements.headerStatus.textContent = label
+  elements.headerStatus.classList.toggle("ms-status-active", projection.phase !== "idle")
+}
+
+function renderFooterStatus(projection) {
+  const replay = projection.replay
+  if (replay) {
+    elements.footerStatus.textContent = `Replay ${replay.offset + 1}/${replay.totalEvents}`
+    elements.footerMeta.textContent = `hash ${replay.stateHash}`
+    return
+  }
+
+  const labels = {
+    idle: "Ready",
+    intent: "Waiting for input",
+    discovery: "Extracting intent",
+    constraints: "Clarifying unknowns",
+    domain: "Modeling domain",
+    mission: "Building mission",
+    expeditions: "Planning expeditions",
+    governance: "Validating governance",
+    replay: "Replaying events",
+    architecture: "Projecting architecture",
+    repository: "Summarizing repository",
+  }
+
+  elements.footerStatus.textContent = labels[projection.phase] ?? projection.phase
+  elements.footerMeta.textContent = projection.repository
+    ? `${projection.repository.eventCount} events`
+    : projection.expeditions.length > 0
+      ? `${projection.expeditions.length} expeditions`
+      : ""
 }
 
 function renderCard(card) {
@@ -125,6 +200,25 @@ function renderCard(card) {
           <span class="ms-confidence">confidence ${Math.round(card.confidence * 100)}%</span>
         </div>
       `
+    case "architecture":
+      return `
+        <div class="ms-card ms-card-architecture">
+          <div class="ms-card-kind">Architecture Layer</div>
+          <h4>${escapeHtml(card.layer)}</h4>
+          <p>${escapeHtml(card.responsibility)}</p>
+          ${card.dependencies.length ? `<p><strong>Depends on:</strong> ${card.dependencies.map(escapeHtml).join(", ")}</p>` : ""}
+        </div>
+      `
+    case "repository":
+      return `
+        <div class="ms-card ms-card-repository">
+          <div class="ms-card-kind">Repository Summary</div>
+          <h4>Status: ${escapeHtml(card.status)}</h4>
+          <p><strong>Artifacts:</strong></p>
+          <ul>${card.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>
+          <p><strong>Events:</strong> ${card.eventCount}</p>
+        </div>
+      `
     default:
       return ""
   }
@@ -143,16 +237,16 @@ function renderArtifacts(projection) {
   for (const evidence of projection.evidence) {
     cards.push(renderCard(evidence))
   }
+  if (projection.architecture) {
+    for (const layer of projection.architecture) {
+      cards.push(renderCard(layer))
+    }
+  }
+  if (projection.repository) {
+    cards.push(renderCard(projection.repository))
+  }
 
   elements.artifacts.innerHTML = cards.join("") || `<p class="ms-placeholder">Artifacts will appear here.</p>`
-}
-
-function renderStatusBar(projection) {
-  const replay = projection.replay
-  const status = replay
-    ? `Replay ${replay.offset + 1}/${replay.totalEvents} · hash ${replay.stateHash}`
-    : `Phase: ${projection.phase}`
-  elements.statusBar.textContent = status
 }
 
 function renderControls(projection) {
@@ -161,61 +255,44 @@ function renderControls(projection) {
     return
   }
 
-  if (projection.phase === "expeditions" || projection.phase === "governance" || projection.phase === "replay") {
-    elements.controls.innerHTML = `<button id="ms-replay-btn" class="ms-btn ms-btn-primary">Show Replay</button>`
-    document.getElementById("ms-replay-btn").addEventListener("click", startReplay)
+  if (projection.phase === "replay") {
+    elements.controls.innerHTML = `<p class="ms-hint">Scrub through the replay to verify state reconstruction.</p>`
+    return
+  }
+
+  if (["expeditions", "governance", "architecture", "repository"].includes(projection.phase)) {
+    elements.controls.innerHTML = `<button id="ms-replay-btn" class="ms-btn ms-btn-secondary">Show Replay</button>`
+    document.getElementById("ms-replay-btn")?.addEventListener("click", startReplay)
     return
   }
 
   elements.controls.innerHTML = `<button id="ms-advance-btn" class="ms-btn ms-btn-primary">Advance</button>`
-  document.getElementById("ms-advance-btn").addEventListener("click", advancePhase)
-}
-
-function renderExplainerSections(projection) {
-  // Workflow highlight.
-  document.querySelectorAll(".ms-workflow-step").forEach((step) => {
-    const stepId = step.dataset.step
-    const active = stepId === projection.phase || (stepId === "expedition" && projection.phase === "expeditions")
-    step.classList.toggle("ms-workflow-step-active", active)
-  })
-
-  // Architecture highlight.
-  document.querySelectorAll(".ms-arch-layer").forEach((layer) => {
-    const layerId = layer.dataset.layer
-    const active =
-      (layerId === "intent" && projection.phase === "intent") ||
-      (layerId === "knowledge" && ["discovery", "constraints"].includes(projection.phase)) ||
-      (layerId === "mission" && projection.phase === "mission") ||
-      (layerId === "expedition" && projection.phase === "expeditions") ||
-      (layerId === "events" && projection.phase === "governance") ||
-      (layerId === "runtime" && projection.phase === "replay")
-    layer.classList.toggle("ms-arch-layer-active", active)
-  })
-
-  // Capabilities grid.
-  const grid = document.getElementById("ms-capabilities-grid")
-  if (grid) {
-    grid.innerHTML = CAPABILITIES.map((cap) => {
-      const isAdapter = cap.id === "adapters"
-      return `
-        <div class="ms-capability-card ${isAdapter ? "ms-capability-adapter" : ""}">
-          <h4>${escapeHtml(cap.name)}</h4>
-          <p>${escapeHtml(cap.description)}</p>
-        </div>
-      `
-    }).join("")
-  }
+  document.getElementById("ms-advance-btn")?.addEventListener("click", advancePhase)
 }
 
 function updateUI(projection) {
-  renderNavigator(projection.phase)
+  activePhase = projection.phase
+  renderHeaderStatus(projection)
+  renderPhaseList(projection.phase)
   renderArtifacts(projection)
-  renderStatusBar(projection)
+  renderFooterStatus(projection)
   renderControls(projection)
-  renderExplainerSections(projection)
+
+  // Hide intro once we have intent.
+  if (projection.phase !== "idle" && projection.intent) {
+    elements.intro.classList.add("ms-hidden")
+  } else {
+    elements.intro.classList.remove("ms-hidden")
+  }
+
+  // Scroll workspace to top on phase change to reveal new artifacts.
+  if (elements.workspaceScroll.scrollTop > 0 && projection.phase !== "replay") {
+    elements.workspaceScroll.scrollTop = 0
+  }
 }
 
 async function startDiscovery(input, mode = "greenfield") {
+  manualMode = true
   const result = await runtime.discover(input, mode)
   currentGenesisState = result.state
   currentReplayState = null
@@ -228,7 +305,11 @@ async function advancePhase() {
 
   let state = currentGenesisState
   const phase = state.mission
-    ? (state.expeditions.length > 0 ? "expeditions" : "mission")
+    ? (state.expeditions.length > 0
+      ? (state.architecture
+        ? (state.repository ? "repository" : "architecture")
+        : "expeditions")
+      : "mission")
     : (state.domain ? "domain" : (state.unknowns.items.length > 0 ? "constraints" : "discovery"))
 
   try {
@@ -243,6 +324,12 @@ async function advancePhase() {
       state = result.state
     } else if (phase === "mission") {
       const result = await runtime.buildExpeditions(state)
+      state = result.state
+    } else if (phase === "expeditions") {
+      const result = await runtime.buildArchitecture(state)
+      state = result.state
+    } else if (phase === "architecture") {
+      const result = await runtime.buildRepository(state)
       state = result.state
     }
 
@@ -272,6 +359,115 @@ async function onReplaySliderChange() {
   updateUI(currentReplayState.projection)
 }
 
+async function stepReplayDirection(direction) {
+  if (!currentReplayState) return
+  currentReplayState = await runtime.stepReplay(currentReplayState, direction)
+  elements.replaySlider.value = String(currentReplayState.offset)
+  updateUI(currentReplayState.projection)
+}
+
+async function buildGenesisToPhase(targetPhase) {
+  const example = demoExamples[0]
+  let { state } = await runtime.discover(example.input, example.mode)
+
+  const targetIndex = SCROLL_PHASES.indexOf(targetPhase)
+
+  if (targetIndex >= SCROLL_PHASES.indexOf("constraints")) {
+    const operator = new DemoOperator()
+    const questions = state.unknowns.items.map((u, i) => ({ id: `q-${i}`, field: u.field, description: u.description }))
+    const answers = await operator.answerClarification(questions)
+    ;({ state } = await runtime.clarify(state, answers))
+  }
+
+  if (targetIndex >= SCROLL_PHASES.indexOf("domain")) {
+    ;({ state } = await runtime.buildMission(state))
+  }
+
+  if (targetIndex >= SCROLL_PHASES.indexOf("expeditions")) {
+    ;({ state } = await runtime.buildExpeditions(state))
+  }
+
+  if (targetIndex >= SCROLL_PHASES.indexOf("architecture")) {
+    ;({ state } = await runtime.buildArchitecture(state))
+  }
+
+  if (targetIndex >= SCROLL_PHASES.indexOf("repository")) {
+    ;({ state } = await runtime.buildRepository(state))
+  }
+
+  currentGenesisState = state
+
+  if (targetPhase === "replay") {
+    const events = buildDemoReplay(state)
+    currentReplayState = await runtime.loadReplay(events)
+    elements.replayControls.classList.remove("ms-hidden")
+    elements.replaySlider.max = String(events.length - 1)
+    elements.replaySlider.value = "0"
+    return currentReplayState.projection
+  }
+
+  elements.replayControls.classList.add("ms-hidden")
+
+  // Force the requested conceptual phase even if runtime.currentArtifacts
+  // would report a later completed phase. This keeps scroll and UI in sync.
+  const projection = runtime.currentArtifacts(state)
+  if (targetPhase === "governance") {
+    return { ...projection, phase: "governance", replay: undefined }
+  }
+  return projection
+}
+
+function getScrollPhase() {
+  const section = elements.missionStudioSection
+  if (!section) return "intent"
+
+  const rect = section.getBoundingClientRect()
+  const headerOffset = 57
+  const viewportHeight = window.innerHeight - headerOffset
+  const sectionTop = rect.top - headerOffset
+  const sectionHeight = rect.height - viewportHeight
+
+  if (sectionTop >= 0) return "intent"
+  if (sectionTop <= -sectionHeight) return "repository"
+
+  const progress = Math.max(0, Math.min(1, -sectionTop / sectionHeight))
+  const index = Math.min(
+    SCROLL_PHASES.length - 1,
+    Math.floor(progress * SCROLL_PHASES.length)
+  )
+  return SCROLL_PHASES[index]
+}
+
+async function handleScroll() {
+  if (manualMode || !autoDemoStarted) return
+
+  const targetPhase = getScrollPhase()
+  if (targetPhase === activePhase) return
+
+  if (targetPhase === "intent") {
+    updateUI({ phase: "idle", unknowns: { kind: "unknowns", items: [] }, expeditions: [], evidence: [] })
+    currentGenesisState = null
+    currentReplayState = null
+    return
+  }
+
+  const projection = await buildGenesisToPhase(targetPhase)
+  updateUI(projection)
+}
+
+function renderCapabilities() {
+  if (!elements.capabilitiesGrid) return
+  elements.capabilitiesGrid.innerHTML = CAPABILITIES.map((cap) => {
+    const isAdapter = cap.id === "adapters"
+    return `
+      <div class="ms-capability-card ${isAdapter ? "ms-capability-adapter" : ""}">
+        <h4>${escapeHtml(cap.name)}</h4>
+        <p>${escapeHtml(cap.description)}</p>
+      </div>
+    `
+  }).join("")
+}
+
 function escapeHtml(text) {
   const div = document.createElement("div")
   div.textContent = text
@@ -279,6 +475,8 @@ function escapeHtml(text) {
 }
 
 function init() {
+  renderCapabilities()
+
   // Render example buttons.
   elements.examples.innerHTML = demoExamples.map((example) => `
     <button class="ms-btn ms-btn-secondary ms-example" data-example="${example.id}">
@@ -308,6 +506,35 @@ function init() {
   elements.replaySlider.addEventListener("input", () => {
     void onReplaySliderChange()
   })
+
+  elements.replayPrev.addEventListener("click", () => {
+    void stepReplayDirection("backward")
+  })
+
+  elements.replayNext.addEventListener("click", () => {
+    void stepReplayDirection("forward")
+  })
+
+  // Start the scroll-driven demo once Mission Studio is in view.
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting && !autoDemoStarted && !manualMode) {
+          autoDemoStarted = true
+          void buildGenesisToPhase("intent").then((projection) => {
+            updateUI(projection)
+          })
+        }
+      }
+    },
+    { threshold: 0.1 }
+  )
+
+  if (elements.missionStudioSection) {
+    observer.observe(elements.missionStudioSection)
+  }
+
+  window.addEventListener("scroll", handleScroll, { passive: true })
 
   updateUI({ phase: "idle", unknowns: { kind: "unknowns", items: [] }, expeditions: [], evidence: [] })
 }

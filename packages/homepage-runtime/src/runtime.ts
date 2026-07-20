@@ -18,10 +18,12 @@ import type {
 import {
   discoverIntent,
   extractIntent,
+  generateArchitecture,
   generateDomain,
   generateEvidence,
   generateExpeditions,
   generateMission,
+  generateRepository,
   generateUnknowns,
 } from "./intent.js"
 import { buildSampleEventLog, rebuildStateFromOffset, replayStateToProjection } from "./replay.js"
@@ -108,6 +110,36 @@ export class HomepageRuntime implements MissionRuntime {
     return { state: updated, projection: this.projectGenesis(updated, "expeditions") }
   }
 
+  async buildArchitecture(state: GenesisState): Promise<GenesisResult> {
+    if (!state.intent || !state.discovery || !state.mission || state.expeditions.length === 0) {
+      throw new Error("Genesis state is missing expeditions")
+    }
+
+    const architecture = generateArchitecture(state.mission, state.expeditions)
+
+    const updated: GenesisState = {
+      ...state,
+      architecture,
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "architecture") }
+  }
+
+  async buildRepository(state: GenesisState): Promise<GenesisResult> {
+    if (!state.intent || !state.discovery || !state.mission || state.expeditions.length === 0) {
+      throw new Error("Genesis state is missing expeditions")
+    }
+
+    const repository = generateRepository(state.mission, state.expeditions)
+
+    const updated: GenesisState = {
+      ...state,
+      repository,
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "repository") }
+  }
+
   async loadReplay(events: SampleEvent[]): Promise<ReplayState> {
     const state = rebuildStateFromOffset(events, 0)
     const projection = replayStateToProjection(state, 0, events.length)
@@ -145,7 +177,17 @@ export class HomepageRuntime implements MissionRuntime {
       return state.projection
     }
 
-    return this.projectGenesis(state, state.mission ? (state.expeditions.length > 0 ? "expeditions" : "mission") : "discovery")
+    const phase: ArtifactProjection["phase"] = state.repository
+      ? "repository"
+      : state.architecture
+        ? "architecture"
+        : state.mission
+          ? (state.expeditions.length > 0 ? "expeditions" : "mission")
+          : state.domain
+            ? "domain"
+            : "discovery"
+
+    return this.projectGenesis(state, phase)
   }
 
   private projectGenesis(state: GenesisState, phase: ArtifactProjection["phase"]): ArtifactProjection {
@@ -158,6 +200,8 @@ export class HomepageRuntime implements MissionRuntime {
       mission: state.mission,
       expeditions: state.expeditions,
       evidence: state.evidence,
+      architecture: state.architecture,
+      repository: state.repository,
     }
   }
 }

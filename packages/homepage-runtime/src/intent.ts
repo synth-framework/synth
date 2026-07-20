@@ -6,6 +6,7 @@
 // ============================================================
 
 import type {
+  ArchitectureCard,
   ClarificationQuestion,
   Confidence,
   DiscoveryCard,
@@ -15,6 +16,7 @@ import type {
   ExpeditionCard,
   IntentCard,
   MissionCard,
+  RepositoryCard,
   UnknownCard,
   UnknownsCard,
 } from "./types.js"
@@ -291,6 +293,67 @@ export function generateEvidence(intent: IntentCard, discovery: DiscoveryCard): 
       source: "capability-pattern-matching",
     },
   ]
+}
+
+export function generateArchitecture(mission: MissionCard, expeditions: ExpeditionCard[]): ArchitectureCard[] {
+  return [
+    {
+      kind: "architecture",
+      layer: "Intent",
+      responsibility: "Capture operator intent and success criteria.",
+      dependencies: [],
+    },
+    {
+      kind: "architecture",
+      layer: "Knowledge",
+      responsibility: "Preserve domain model and constraints.",
+      dependencies: ["Intent"],
+    },
+    {
+      kind: "architecture",
+      layer: "Mission",
+      responsibility: "Define strategic goal and expeditions.",
+      dependencies: ["Knowledge"],
+    },
+    {
+      kind: "architecture",
+      layer: "Expedition",
+      responsibility: "Execute bounded investigations and builds.",
+      dependencies: ["Mission"],
+    },
+    {
+      kind: "architecture",
+      layer: "Events",
+      responsibility: "Record every state change immutably.",
+      dependencies: ["Expedition"],
+    },
+    {
+      kind: "architecture",
+      layer: "Kernel",
+      responsibility: "Enforce governance invariants.",
+      dependencies: ["Events"],
+    },
+    {
+      kind: "architecture",
+      layer: "Runtime",
+      responsibility: "Execute capabilities deterministically.",
+      dependencies: ["Kernel"],
+    },
+  ]
+}
+
+export function generateRepository(mission: MissionCard, expeditions: ExpeditionCard[]): RepositoryCard {
+  return {
+    kind: "repository",
+    status: "governed",
+    artifacts: [
+      ".synth/manifest.json",
+      ".synth/data/event-log.jsonl",
+      ".synth/data/canonical-state.json",
+      ...expeditions.map((e) => `.synth/proposals/${e.id}.json`),
+    ],
+    eventCount: 8 + expeditions.length * 3,
+  }
 }
 
 export function generateClarificationQuestions(unknowns: UnknownsCard): ClarificationQuestion[] {

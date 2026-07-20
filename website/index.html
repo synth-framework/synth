@@ -8,14 +8,14 @@
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  <header>
-    <nav>
+
+  <header class="site-header">
+    <nav aria-label="Primary">
       <a href="index.html" class="logo">Synth<span>.</span></a>
       <div class="nav-links">
         <a href="docs.html">Docs</a>
         <a href="quick-start.html">Quick Start</a>
         <a href="examples.html">Examples</a>
-        <a href="mission-studio.html">Mission Studio</a>
         <a href="architecture.html">Architecture</a>
         <a href="community.html">Community</a>
         <a href="first-contact/">First Contact</a>
@@ -24,146 +24,138 @@
   </header>
 
   <main id="main-content">
-    <section class="hero">
-      <h1>Humans explore. SYNTH remembers. AI executes deterministically.</h1>
-      <p>From an idea to replayable software through Missions, Expeditions, and Proof. Synth turns human intent into approved plans, records every action as an immutable event, and lets Replay prove the state is correct.</p>
-      <div class="code-block"><code>curl -fsSL https://synth-framework.github.io/synth/install.sh | sh</code></div>
-      <p class="hero-alt">Or install with <code>npm install -g @synth-framework/synth</code></p>
-      <div class="cta-group">
-        <a href="quick-start.html" class="btn btn-primary">Get Started in 5 Minutes</a>
-        <a href="https://github.com/synth-framework/synth" class="btn btn-secondary">View on GitHub</a>
+    <section class="hero" id="hero">
+      <div class="hero-content">
+        <h1>Humans explore. SYNTH remembers. AI executes deterministically.</h1>
+        <p>From an idea to replayable software through Missions, Expeditions, and Proof.</p>
+        <div class="code-block"><code>curl -fsSL https://synth-framework.github.io/synth/install.sh | sh</code></div>
+        <p class="hero-alt">Or install with <code>npm install -g @synth-framework/synth</code></p>
+        <div class="cta-group">
+          <a href="#mission-studio" class="btn btn-primary">Experience Mission Studio</a>
+          <a href="https://github.com/synth-framework/synth" class="btn btn-secondary">View on GitHub</a>
+        </div>
+        <p class="hero-note">AI operators: read <a href="https://github.com/synth-framework/synth/blob/main/AGENTS.md">AGENTS.md</a> first.</p>
       </div>
-      <p class="hero-note">AI operators: read <a href="https://github.com/synth-framework/synth/blob/main/AGENTS.md">AGENTS.md</a> first.</p>
+      <div class="hero-scroll-hint" aria-hidden="true">
+        <span>Scroll to begin</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+      </div>
     </section>
 
-    <section class="mission-studio-section">
-      <h2>Experience Mission Studio</h2>
-      <p>Type an idea and watch SYNTH turn it into a governed Mission.</p>
+    <section class="mission-studio-section" id="mission-studio" aria-label="Mission Studio">
+      <div class="mission-studio-sticky" id="mission-studio-sticky">
+        <div class="ms-shell" id="ms-shell">
+          <div class="ms-header">
+            <div class="ms-header-title">
+              <span class="ms-logo-mark">S</span>
+              <span>Mission Studio</span>
+            </div>
+            <div class="ms-header-status" id="ms-header-status">Idle</div>
+          </div>
 
-      <div id="ms-workspace" class="ms-workspace">
-        <div id="ms-navigator" class="ms-navigator"></div>
-        <div class="ms-main">
-          <form id="ms-intent-form" class="ms-intent-form" aria-label="Intent discovery">
-            <input id="ms-intent-input" type="text" placeholder="e.g., Build a CRM" autocomplete="off" aria-label="Describe what you want to build" />
-            <button type="submit" class="ms-btn ms-btn-primary">Discover</button>
-          </form>
-          <div id="ms-examples" class="ms-examples"></div>
-          <div id="ms-artifacts" class="ms-artifacts"></div>
-          <div id="ms-controls" class="ms-controls"></div>
-          <div id="ms-replay-controls" class="ms-replay-controls ms-hidden" aria-label="Replay controls">
-            <label for="ms-replay-slider">Replay</label>
-            <input id="ms-replay-slider" type="range" min="0" max="0" value="0" aria-label="Scrub through event history" />
+          <div class="ms-body">
+            <aside class="ms-sidebar" id="ms-sidebar" aria-label="Mission phases">
+              <nav class="ms-phase-list" id="ms-phase-list"></nav>
+            </aside>
+
+            <div class="ms-workspace" id="ms-workspace">
+              <div class="ms-workspace-scroll" id="ms-workspace-scroll">
+                <div class="ms-workspace-content" id="ms-workspace-content">
+                  <div class="ms-intro" id="ms-intro">
+                    <h2>Turn intent into a governed Mission.</h2>
+                    <p>Type an idea below or pick a curated example. Watch SYNTH extract intent, model the domain, propose expeditions, project architecture, and summarize the repository.</p>
+                    <form id="ms-intent-form" class="ms-intent-form" aria-label="Intent discovery">
+                      <input id="ms-intent-input" type="text" placeholder="e.g., Build a CRM" autocomplete="off" aria-label="Describe what you want to build" />
+                      <button type="submit" class="ms-btn ms-btn-primary">Discover</button>
+                    </form>
+                    <div id="ms-examples" class="ms-examples"></div>
+                  </div>
+
+                  <div class="ms-artifacts" id="ms-artifacts"></div>
+
+                  <div class="ms-controls" id="ms-controls">
+                    <p class="ms-hint">Type an idea or pick an example to begin.</p>
+                  </div>
+
+                  <div id="ms-replay-controls" class="ms-replay-controls ms-hidden" aria-label="Replay controls">
+                    <button id="ms-replay-prev" class="ms-btn ms-btn-icon" aria-label="Previous event">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <label for="ms-replay-slider">Replay</label>
+                    <input id="ms-replay-slider" type="range" min="0" max="0" value="0" aria-label="Scrub through event history" />
+                    <button id="ms-replay-next" class="ms-btn ms-btn-icon" aria-label="Next event">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ms-footer">
+            <div class="ms-footer-status" id="ms-footer-status">Ready</div>
+            <div class="ms-footer-meta" id="ms-footer-meta"></div>
           </div>
         </div>
       </div>
-      <div id="ms-status-bar" class="ms-status-bar"></div>
     </section>
 
-    <section class="ms-explainer-section">
-      <h2>The SYNTH workflow</h2>
-      <p>Intent becomes Discovery. Discovery becomes Mission. Mission becomes Expedition. Every step produces evidence.</p>
-      <div id="ms-workflow-viz" class="ms-workflow-viz">
-        <div class="ms-workflow-step" data-step="intent">Intent</div>
-        <div class="ms-workflow-arrow">→</div>
-        <div class="ms-workflow-step" data-step="discovery">Discovery</div>
-        <div class="ms-workflow-arrow">→</div>
-        <div class="ms-workflow-step" data-step="mission">Mission</div>
-        <div class="ms-workflow-arrow">→</div>
-        <div class="ms-workflow-step" data-step="expedition">Expedition</div>
-        <div class="ms-workflow-arrow">→</div>
-        <div class="ms-workflow-step" data-step="replay">Replay</div>
+    <section class="supporting-section" id="capabilities">
+      <div class="supporting-content">
+        <h2>Capabilities</h2>
+        <p>SYNTH integrates with external tools and sources through adapters. The core governance model never changes; adapters bring the outside world in.</p>
+        <div id="ms-capabilities-grid" class="ms-capabilities-grid"></div>
+        <p class="supporting-note"><a href="https://github.com/synth-framework/synth/blob/main/docs/adr/ADR-044-external-build-systems-are-adapters.md" target="_blank" rel="noopener noreferrer">Read the adapters ADR</a>.</p>
       </div>
-      <p class="ms-explainer-note">Hover over any step to see how the workspace above uses it. <a href="https://github.com/synth-framework/synth/blob/main/docs/guides/greenfield-discovery-lifecycle.md" target="_blank" rel="noopener noreferrer">Read the Discovery lifecycle guide</a>.</p>
     </section>
 
-    <section class="ms-explainer-section ms-governance-section">
-      <h2>Governance makes the difference</h2>
-      <p>Without SYNTH, intent drifts into undocumented decisions and inconsistent state. With SYNTH, every decision is recorded, approved, and replayable.</p>
-      <div class="ms-comparison">
-        <div class="ms-comparison-col ms-comparison-without">
-          <h3>Without SYNTH</h3>
-          <ul>
-            <li>Drift between intent and implementation</li>
-            <li>Lost decisions</li>
-            <li>Inconsistent state across tools</li>
-            <li>No audit trail</li>
-          </ul>
-        </div>
-        <div class="ms-comparison-col ms-comparison-with">
-          <h3>With SYNTH</h3>
-          <ul>
-            <li>Governed lifecycle</li>
-            <li>Replayable events</li>
-            <li>Deterministic state</li>
-            <li>Immutable evidence</li>
-          </ul>
+    <section class="supporting-section" id="workflow">
+      <div class="supporting-content">
+        <h2>The SYNTH workflow</h2>
+        <p>Intent becomes Discovery. Discovery becomes Mission. Mission becomes Expedition. Every step produces evidence.</p>
+        <div class="workflow-grid">
+          <div class="workflow-step"><strong>Intent</strong><p>Capture what you want to build.</p></div>
+          <div class="workflow-step"><strong>Discovery</strong><p>Extract constraints, capabilities, and unknowns.</p></div>
+          <div class="workflow-step"><strong>Mission</strong><p>Approve a strategic goal with success criteria.</p></div>
+          <div class="workflow-step"><strong>Expeditions</strong><p>Plan bounded investigations and builds.</p></div>
+          <div class="workflow-step"><strong>Governance</strong><p>Validate and produce evidence.</p></div>
+          <div class="workflow-step"><strong>Replay</strong><p>Prove state matches the event history.</p></div>
+          <div class="workflow-step"><strong>Repository</strong><p>Materialize governed artifacts.</p></div>
         </div>
       </div>
-      <p class="ms-explainer-note"><a href="https://github.com/synth-framework/synth/blob/main/docs/governance.md" target="_blank" rel="noopener noreferrer">Learn how SYNTH governance works</a>.</p>
     </section>
 
-    <section class="ms-explainer-section">
-      <h2>Architecture</h2>
-      <p>SYNTH is organized in layers. Each layer has a single responsibility and depends only on layers beneath it.</p>
-      <div id="ms-architecture-viz" class="ms-architecture-viz">
-        <div class="ms-arch-layer" data-layer="intent"><span>Intent</span></div>
-        <div class="ms-arch-layer" data-layer="knowledge"><span>Knowledge</span></div>
-        <div class="ms-arch-layer" data-layer="mission"><span>Mission</span></div>
-        <div class="ms-arch-layer" data-layer="expedition"><span>Expedition</span></div>
-        <div class="ms-arch-layer" data-layer="events"><span>Events</span></div>
-        <div class="ms-arch-layer" data-layer="kernel"><span>Kernel</span></div>
-        <div class="ms-arch-layer" data-layer="runtime"><span>Runtime</span></div>
-      </div>
-      <p class="ms-explainer-note"><a href="https://github.com/synth-framework/synth/blob/main/docs/architecture/constitution.md" target="_blank" rel="noopener noreferrer">Explore the full architecture</a>.</p>
-    </section>
-
-    <section class="ms-explainer-section">
-      <h2>Capabilities</h2>
-      <p>SYNTH integrates with external tools and sources through adapters. The core governance model never changes; adapters bring the outside world in.</p>
-      <div id="ms-capabilities-grid" class="ms-capabilities-grid"></div>
-      <p class="ms-explainer-note"><a href="https://github.com/synth-framework/synth/blob/main/docs/adr/ADR-044-external-build-systems-are-adapters.md" target="_blank" rel="noopener noreferrer">Read the adapters ADR</a>.</p>
-    </section>
-
-    <section>
-      <h2>Seven public concepts</h2>
-      <p>Synth is explained with exactly seven concepts. Everything else is implementation detail.</p>
-      <div class="card-grid">
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/operator/01-getting-started.md" target="_blank" rel="noopener noreferrer">Mission</a></h3><p>The strategic goal you are working toward.</p></div>
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/operator/04-working-with-expeditions.md" target="_blank" rel="noopener noreferrer">Expedition</a></h3><p>A bounded investigation or build that moves the mission forward.</p></div>
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/governance.md" target="_blank" rel="noopener noreferrer">Evidence</a></h3><p>What you know and how confidently you know it.</p></div>
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/reference/public-vocabulary.md" target="_blank" rel="noopener noreferrer">Plan</a></h3><p>The approved path forward, ready to execute.</p></div>
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/reference/event-model.md" target="_blank" rel="noopener noreferrer">Event</a></h3><p>An immutable record that something happened.</p></div>
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/reference/replay-specification.md" target="_blank" rel="noopener noreferrer">State</a></h3><p>The current picture, derived from events.</p></div>
-        <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/operator/09-replay.md" target="_blank" rel="noopener noreferrer">Replay</a></h3><p>Rebuilding state from events to prove correctness.</p></div>
+    <section class="supporting-section" id="examples">
+      <div class="supporting-content">
+        <h2>Example gallery</h2>
+        <p>Certified example projects demonstrate Synth on realistic repositories. Each one passes governance and produces a proof artifact.</p>
+        <div class="cta-group">
+          <a href="examples.html" class="btn btn-primary">Browse examples</a>
+          <a href="https://github.com/synth-framework/synth/tree/main/examples" class="btn btn-secondary">View on GitHub</a>
+        </div>
       </div>
     </section>
 
-    <section>
-      <h2>The public flow</h2>
-      <div class="code-block"><code>Idea → Mission Draft → Approval → Mission → Expedition → Plan → Validation → Governance → Proof → Events → State → Replay</code></div>
-      <p>Every step produces evidence. The event log is the source of truth. Validation gives fast local feedback; Governance produces the canonical proof. Replay verifies that the current state matches the history.</p>
-    </section>
-
-    <section>
-      <h2>Why Synth?</h2>
-      <div class="card-grid">
-        <div class="card"><h3>Auditability</h3><p>Every decision and action is recorded. Nothing is hidden.</p></div>
-        <div class="card"><h3>Determinism</h3><p>Same events produce the same state, every time.</p></div>
-        <div class="card"><h3>Governance</h3><p>Actions are checked against the approved plan before execution.</p></div>
-      </div>
-    </section>
-
-    <section>
-      <h2>Example gallery</h2>
-      <p>Certified example projects demonstrate Synth on realistic repositories. Each one passes <code>npm run govern</code> and produces a proof artifact.</p>
-      <div class="cta-group">
-        <a href="examples.html" class="btn btn-primary">Browse examples</a>
-        <a href="https://github.com/synth-framework/synth/tree/main/examples" class="btn btn-secondary">View on GitHub</a>
+    <section class="supporting-section" id="concepts">
+      <div class="supporting-content">
+        <h2>Seven public concepts</h2>
+        <p>Synth is explained with exactly seven concepts. Everything else is implementation detail.</p>
+        <div class="card-grid">
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/operator/01-getting-started.md" target="_blank" rel="noopener noreferrer">Mission</a></h3><p>The strategic goal you are working toward.</p></div>
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/operator/04-working-with-expeditions.md" target="_blank" rel="noopener noreferrer">Expedition</a></h3><p>A bounded investigation or build that moves the mission forward.</p></div>
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/governance.md" target="_blank" rel="noopener noreferrer">Evidence</a></h3><p>What you know and how confidently you know it.</p></div>
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/reference/public-vocabulary.md" target="_blank" rel="noopener noreferrer">Plan</a></h3><p>The approved path forward, ready to execute.</p></div>
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/reference/event-model.md" target="_blank" rel="noopener noreferrer">Event</a></h3><p>An immutable record that something happened.</p></div>
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/reference/replay-specification.md" target="_blank" rel="noopener noreferrer">State</a></h3><p>The current picture, derived from events.</p></div>
+          <div class="card"><h3><a href="https://github.com/synth-framework/synth/blob/main/docs/operator/09-replay.md" target="_blank" rel="noopener noreferrer">Replay</a></h3><p>Rebuilding state from events to prove correctness.</p></div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer>
+  <footer class="site-footer">
     <p>Synth v2 is frozen and in Era II — Adoption. <a href="https://github.com/synth-framework/synth/blob/main/docs/adr/ADR-004-synth-eras-and-protected-assets.md">Read the governance model</a>.</p>
   </footer>
 

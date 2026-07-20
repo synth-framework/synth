@@ -37,6 +37,27 @@ void describe("HomepageRuntime", () => {
         assert.strictEqual(projection.phase, "expeditions");
         assert.ok(projection.expeditions.length > 0);
     });
+    void it("builds architecture after expeditions", async () => {
+        let { state } = await runtime.discover("Build a CRM with auth and billing", "greenfield");
+        ({ state } = await runtime.clarify(state, []));
+        ({ state } = await runtime.buildMission(state));
+        ({ state } = await runtime.buildExpeditions(state));
+        const { projection } = await runtime.buildArchitecture(state);
+        assert.strictEqual(projection.phase, "architecture");
+        assert.ok(projection.architecture);
+        assert.ok(projection.architecture.length > 0);
+    });
+    void it("builds repository summary after architecture", async () => {
+        let { state } = await runtime.discover("Build a CRM with auth and billing", "greenfield");
+        ({ state } = await runtime.clarify(state, []));
+        ({ state } = await runtime.buildMission(state));
+        ({ state } = await runtime.buildExpeditions(state));
+        ({ state } = await runtime.buildArchitecture(state));
+        const { projection } = await runtime.buildRepository(state);
+        assert.strictEqual(projection.phase, "repository");
+        assert.ok(projection.repository);
+        assert.strictEqual(projection.repository.status, "governed");
+    });
     void it("replays a sample event log", async () => {
         let { state } = await runtime.discover("Build a CRM", "greenfield");
         ({ state } = await runtime.clarify(state, []));

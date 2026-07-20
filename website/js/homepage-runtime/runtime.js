@@ -4,7 +4,7 @@
 // In-memory implementation of MissionRuntime for the Mission Studio
 // homepage. Pure functions; no filesystem; no CLI.
 // ============================================================
-import { discoverIntent, extractIntent, generateDomain, generateEvidence, generateExpeditions, generateMission, generateUnknowns, } from "./intent.js";
+import { discoverIntent, extractIntent, generateArchitecture, generateDomain, generateEvidence, generateExpeditions, generateMission, generateRepository, generateUnknowns, } from "./intent.js";
 import { buildSampleEventLog, rebuildStateFromOffset, replayStateToProjection } from "./replay.js";
 export class HomepageRuntime {
     async discover(input, mode) {
@@ -72,6 +72,28 @@ export class HomepageRuntime {
         };
         return { state: updated, projection: this.projectGenesis(updated, "expeditions") };
     }
+    async buildArchitecture(state) {
+        if (!state.intent || !state.discovery || !state.mission || state.expeditions.length === 0) {
+            throw new Error("Genesis state is missing expeditions");
+        }
+        const architecture = generateArchitecture(state.mission, state.expeditions);
+        const updated = {
+            ...state,
+            architecture,
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "architecture") };
+    }
+    async buildRepository(state) {
+        if (!state.intent || !state.discovery || !state.mission || state.expeditions.length === 0) {
+            throw new Error("Genesis state is missing expeditions");
+        }
+        const repository = generateRepository(state.mission, state.expeditions);
+        const updated = {
+            ...state,
+            repository,
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "repository") };
+    }
     async loadReplay(events) {
         const state = rebuildStateFromOffset(events, 0);
         const projection = replayStateToProjection(state, 0, events.length);
@@ -104,7 +126,16 @@ export class HomepageRuntime {
         if ("events" in state) {
             return state.projection;
         }
-        return this.projectGenesis(state, state.mission ? (state.expeditions.length > 0 ? "expeditions" : "mission") : "discovery");
+        const phase = state.repository
+            ? "repository"
+            : state.architecture
+                ? "architecture"
+                : state.mission
+                    ? (state.expeditions.length > 0 ? "expeditions" : "mission")
+                    : state.domain
+                        ? "domain"
+                        : "discovery";
+        return this.projectGenesis(state, phase);
     }
     projectGenesis(state, phase) {
         return {
@@ -116,6 +147,8 @@ export class HomepageRuntime {
             mission: state.mission,
             expeditions: state.expeditions,
             evidence: state.evidence,
+            architecture: state.architecture,
+            repository: state.repository,
         };
     }
 }

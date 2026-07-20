@@ -1,5 +1,5 @@
 export type EntryMode = "greenfield" | "brownfield" | "knowledge" | "conversation";
-export type WorkspacePhase = "idle" | "intent" | "discovery" | "constraints" | "domain" | "mission" | "expeditions" | "governance" | "replay";
+export type WorkspacePhase = "idle" | "intent" | "discovery" | "constraints" | "domain" | "mission" | "expeditions" | "governance" | "replay" | "architecture" | "repository";
 export interface Confidence {
     overall: number;
     byField: Record<string, number>;
@@ -62,6 +62,12 @@ export interface ArchitectureCard {
     responsibility: string;
     dependencies: string[];
 }
+export interface RepositoryCard {
+    kind: "repository";
+    status: "initialized" | "materialized" | "governed";
+    artifacts: string[];
+    eventCount: number;
+}
 export interface ReplayProjection {
     offset: number;
     totalEvents: number;
@@ -78,6 +84,7 @@ export interface ArtifactProjection {
     expeditions: ExpeditionCard[];
     evidence: EvidenceCard[];
     architecture?: ArchitectureCard[];
+    repository?: RepositoryCard;
     replay?: ReplayProjection;
 }
 export interface WorkspaceStatus {
@@ -104,6 +111,8 @@ export interface GenesisState {
     mission?: MissionCard;
     expeditions: ExpeditionCard[];
     evidence: EvidenceCard[];
+    architecture?: ArchitectureCard[];
+    repository?: RepositoryCard;
     answers: ClarificationAnswer[];
 }
 export interface SampleEvent {
@@ -141,6 +150,8 @@ export interface MissionRuntime {
     clarify(state: GenesisState, answers: ClarificationAnswer[]): Promise<GenesisResult>;
     buildMission(state: GenesisState): Promise<GenesisResult>;
     buildExpeditions(state: GenesisState): Promise<GenesisResult>;
+    buildArchitecture(state: GenesisState): Promise<GenesisResult>;
+    buildRepository(state: GenesisState): Promise<GenesisResult>;
     loadReplay(events: SampleEvent[]): Promise<ReplayState>;
     stepReplay(state: ReplayState, direction: "forward" | "backward" | number): Promise<ReplayState>;
     currentArtifacts(state: GenesisState | ReplayState): ArtifactProjection;

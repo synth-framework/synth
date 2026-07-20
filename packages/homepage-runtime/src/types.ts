@@ -16,6 +16,8 @@ export type WorkspacePhase =
   | "expeditions"
   | "governance"
   | "replay"
+  | "architecture"
+  | "repository"
 
 export interface Confidence {
   overall: number
@@ -89,6 +91,13 @@ export interface ArchitectureCard {
   dependencies: string[]
 }
 
+export interface RepositoryCard {
+  kind: "repository"
+  status: "initialized" | "materialized" | "governed"
+  artifacts: string[]
+  eventCount: number
+}
+
 export interface ReplayProjection {
   offset: number
   totalEvents: number
@@ -106,6 +115,7 @@ export interface ArtifactProjection {
   expeditions: ExpeditionCard[]
   evidence: EvidenceCard[]
   architecture?: ArchitectureCard[]
+  repository?: RepositoryCard
   replay?: ReplayProjection
 }
 
@@ -136,6 +146,8 @@ export interface GenesisState {
   mission?: MissionCard
   expeditions: ExpeditionCard[]
   evidence: EvidenceCard[]
+  architecture?: ArchitectureCard[]
+  repository?: RepositoryCard
   answers: ClarificationAnswer[]
 }
 
@@ -180,6 +192,8 @@ export interface MissionRuntime {
   clarify(state: GenesisState, answers: ClarificationAnswer[]): Promise<GenesisResult>
   buildMission(state: GenesisState): Promise<GenesisResult>
   buildExpeditions(state: GenesisState): Promise<GenesisResult>
+  buildArchitecture(state: GenesisState): Promise<GenesisResult>
+  buildRepository(state: GenesisState): Promise<GenesisResult>
   loadReplay(events: SampleEvent[]): Promise<ReplayState>
   stepReplay(state: ReplayState, direction: "forward" | "backward" | number): Promise<ReplayState>
   currentArtifacts(state: GenesisState | ReplayState): ArtifactProjection

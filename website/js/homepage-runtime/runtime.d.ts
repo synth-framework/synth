@@ -4,6 +4,8 @@ export declare class HomepageRuntime implements MissionRuntime {
     clarify(state: GenesisState, answers: ClarificationAnswer[]): Promise<GenesisResult>;
     buildMission(state: GenesisState): Promise<GenesisResult>;
     buildExpeditions(state: GenesisState): Promise<GenesisResult>;
+    buildArchitecture(state: GenesisState): Promise<GenesisResult>;
+    buildRepository(state: GenesisState): Promise<GenesisResult>;
     loadReplay(events: SampleEvent[]): Promise<ReplayState>;
     stepReplay(state: ReplayState, direction: "forward" | "backward" | number): Promise<ReplayState>;
     currentArtifacts(state: GenesisState | ReplayState): ArtifactProjection;
