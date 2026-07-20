@@ -34,7 +34,7 @@ Each participant completes the following tasks in order:
 7. **Observe the generated events** after approval.
 7. **Run `npm run govern`** and confirm the proof passes.
 8. **Explain Replay** in their own words using `synth explain replay`.
-9. **Recover** from a simulated interruption by deleting `data/` and rerunning `npm run govern`.
+9. **Recover** from a simulated interruption by deleting `.synth/data/` and rerunning `npm run govern`.
 
 ## Measurements
 

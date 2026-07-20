@@ -69,7 +69,7 @@ At each checkpoint:
 
 ## Measurement Rules
 
-1. **Zero-history constraint.** The scoring agent may not read source code, raw `data/` files beyond CLI output, or use prior context.
+1. **Zero-history constraint.** The scoring agent may not read source code, raw `.synth/data/` files beyond CLI output, or use prior context.
 2. **Public vocabulary only.** The agent may reason using only the seven public concepts: Mission, Expedition, Evidence, Plan, Event, State, Replay.
 3. **Deterministic projection.** All information must come from deterministic CLI commands; no hand-authored narrative files may be consulted.
 4. **Warning value.** A warning that correctly signals fragile or incomplete state contributes to the Confidence dimension but does not alone raise other dimensions.

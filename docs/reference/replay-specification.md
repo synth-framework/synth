@@ -109,7 +109,7 @@ consistency verdict:
   invalid. Strict mode is the enforcement path; default mode is the
   deliberate, documented grandfathering of legacy logs.
 - `scripts/verify-replay.js --log <path>` verifies an alternate event log
-  instead of the repository's canonical `data/event-log.jsonl`, so any
+  instead of the repository's canonical `.synth/data/event-log.jsonl`, so any
   archived or fixture log can be checked in either mode.
 
 ## Version History

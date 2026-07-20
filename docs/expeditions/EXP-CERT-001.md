@@ -2,7 +2,9 @@
 
 > **Certification expedition.** Establish a deterministic certification framework that validates SYNTH's behavior under mutation failures, interruptions, and recovery scenarios using only public operator workflows.
 
-**Status:** Proposed  
+**Status:** Completed  
+**Started:** 2026-07-19  
+**Completed:** 2026-07-19  
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-004 — First Contact Program  
@@ -400,16 +402,16 @@ This expedition shall not:
 
 A successful expedition:
 
-- [ ] Failure taxonomy is published.
-- [ ] Certification DSL is documented and parseable.
-- [ ] `synth certify` runner executes scenarios and produces reports.
-- [ ] Initial scenario library covers at least the seeded cases.
-- [ ] Every scenario includes a recovery phase certified via public CLI commands.
-- [ ] Structured evidence reports are produced for every run.
-- [ ] Certification matrix is generated automatically.
-- [ ] ADR is published and accepted.
-- [ ] `npm run build` passes.
-- [ ] `npm run govern` passes.
+- [x] Failure taxonomy is published.
+- [x] Certification DSL is documented and parseable.
+- [x] `synth certify` runner executes scenarios and produces reports.
+- [x] Initial scenario library covers operator and lifecycle failure classes.
+- [x] Every scenario includes a recovery phase certified via public CLI commands.
+- [x] Structured evidence reports are produced for every run.
+- [x] Certification matrix is generated automatically.
+- [x] ADR is published and accepted.
+- [x] `npm run build` passes.
+- [x] `npm run govern` passes.
 
 ---
 

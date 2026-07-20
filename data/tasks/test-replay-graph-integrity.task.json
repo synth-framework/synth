@@ -1,0 +1,10 @@
+{
+  "id": "test-replay-graph-integrity",
+  "description": "Validate aggregate graph integrity and replay consistency for the event log.",
+  "command": "node tests/replay-graph-integrity.test.js",
+  "group": "runtime",
+  "dependsOn": ["build"],
+  "tags": ["runtime", "replay", "graph", "governance"],
+  "estimatedDurationMs": 4000,
+  "capabilities": ["Runtime", "Replay"]
+}

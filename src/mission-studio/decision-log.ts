@@ -5,7 +5,7 @@
 // durable: an approval rejection that exists only in CLI output
 // never happened. Every approval outcome is appended to an
 // append-only, hash-chained planning-layer record
-// (data/decisions.jsonl), persisted through the Environment
+// (.synth/data/decisions.jsonl), persisted through the Environment
 // Layer filesystem provider and certified at read.
 //
 // The canonical event log is execution state and stays behind
@@ -125,7 +125,7 @@ export async function appendDecision(
   if (!verifyDecisionChain(records)) {
     throw new Error(
       "Mission decision record chain is broken: a recorded decision is missing, altered, or duplicated. " +
-        "Inspect data/decisions.jsonl; the record is tamper-evident by design.",
+        "Inspect .synth/data/decisions.jsonl; the record is tamper-evident by design.",
     )
   }
 

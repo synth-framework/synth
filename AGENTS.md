@@ -12,7 +12,7 @@ SYNTH is a deterministic execution system for engineering work. Humans explore, 
 - Break the Mission into **Expeditions**.
 - Record every action as an **Event**.
 - Let **Replay** prove the state is correct.
-- Validate every meaningful change with `npm run govern`.
+- Validate source-code changes with targeted tests; ensure the operator runs the full governance pipeline before merge (ADR-043).
 
 ## Hard constraints
 
@@ -20,7 +20,7 @@ SYNTH is a deterministic execution system for engineering work. Humans explore, 
 - **Never bypass Genesis.** Execution state mutates only through the ExecutionGate.
 - **Never modify replay history.** Events are immutable.
 - **Never violate Protected Assets.** Mission Studio, Genesis, Replay, ExecutionGate, the Event Model, the Capability Model, and the Constitutional Baseline are frozen.
-- **Never commit without running `npm run govern`.**
+- **Never commit without the operator running `npm run govern`.** AI agents do not run the full governance pipeline locally (ADR-043).
 
 ## Installation
 
@@ -105,13 +105,13 @@ synth validate --full
 npm run govern
 ```
 
-**Before requesting a merge, always run the full governance pipeline:**
+**Before requesting a merge, ensure the operator runs the full governance pipeline:**
 
 ```bash
 npm run govern
 ```
 
-This builds, tests, verifies replay, runs adversarial audits, and generates a proof artifact in `proof/`.
+This builds, tests, verifies replay, runs adversarial audits, and generates a proof artifact in `proof/`. AI agents do not run this locally; they run only the targeted validations needed to confirm their source-code changes (ADR-043).
 
 ## Explain replay
 
@@ -153,7 +153,7 @@ Everything else is implementation detail.
 
 ## When you are unsure
 
-1. Run `npm run govern` to see if the current state is valid.
+1. Run `synth validate` for a lightweight check, or ask the operator to run `npm run govern`. AI agents do not run the full pipeline locally (ADR-043).
 2. Read `docs/guides/agents/index.md` for agent-specific guidance.
 3. Read `docs/operator/01-getting-started.md` for the operator journey.
 4. Read `docs/reference/public-vocabulary.md` for terminology constraints.

@@ -11,7 +11,7 @@ import fs from "fs/promises"
 import path from "path"
 import { deriveGovernanceRecords } from "../core/governance-record-projection.js"
 import type { GovernanceRecordLineage } from "../types/governance-record.js"
-import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
+import { ensureRuntimeDataDir } from "../infra/paths.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
 
 function printJson(obj: unknown) {

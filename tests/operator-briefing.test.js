@@ -53,7 +53,7 @@ async function writeEventLog(dir, rawEvents) {
     previousHash = event.eventHash
     events.push(event)
   }
-  const dataDir = path.join(dir, "data")
+  const dataDir = path.join(dir, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
   await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
 }

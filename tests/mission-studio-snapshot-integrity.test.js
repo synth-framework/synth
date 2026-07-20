@@ -371,8 +371,11 @@ test("An approved Mission is reconstructed from its persisted snapshot with a va
 test("synth mission snapshot inspects, verifies, and lists persisted snapshots", async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-snapshot-"))
   try {
-    // Seed the project-local snapshot store the CLI reads (./data/snapshots).
-    const store = createFileSystemSnapshotStore(path.join(tmpDir, "data", "snapshots"))
+    const init = runSynth(["init", "--name", "Snapshot CLI Test"], tmpDir)
+    assert.strictEqual(init.status, 0, init.stderr)
+
+    // Seed the project-local snapshot store the CLI reads (.synth/data/snapshots).
+    const store = createFileSystemSnapshotStore(path.join(tmpDir, ".synth", "data", "snapshots"))
     const { snapshot, session } = makeApprovedSnapshot()
     await store.save({ snapshot, session })
 
@@ -400,7 +403,7 @@ test("synth mission snapshot inspects, verifies, and lists persisted snapshots",
     assert.match(JSON.parse(missing.stdout).error, /not found/)
 
     // A tampered file makes the CLI fail loudly with the certification errors.
-    await rewriteSnapshotFile(path.join(tmpDir, "data", "snapshots"), snapshot.id, (parsed) => {
+    await rewriteSnapshotFile(path.join(tmpDir, ".synth", "data", "snapshots"), snapshot.id, (parsed) => {
       parsed.snapshot.proposals[0].name = "Tampered Mission"
     })
     const tampered = runSynth(["mission", "snapshot", snapshot.id], tmpDir)

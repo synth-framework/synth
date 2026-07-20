@@ -34,6 +34,11 @@ function cleanup(dir) {
   fs.rmSync(dir, { recursive: true, force: true })
 }
 
+function initWorkspace(dir) {
+  const r = runCli(dir, ["init", "--name", "Runtime Repair Test"])
+  assert(r.status === 0, `init should succeed: ${r.output}`)
+}
+
 function runCli(dir, args) {
   const env = { ...process.env }
   delete env.SYNTH_GOVERN_DEPTH
@@ -66,7 +71,7 @@ function approve(dir, draftId) {
 }
 
 function readEventLog(dir) {
-  const file = path.join(dir, "data", "event-log.jsonl")
+  const file = path.join(dir, ".synth", "data", "event-log.jsonl")
   try {
     return fs
       .readFileSync(file, "utf8")
@@ -79,7 +84,7 @@ function readEventLog(dir) {
 }
 
 function listSnapshots(dir) {
-  const snapshotDir = path.join(dir, "data", "snapshots")
+  const snapshotDir = path.join(dir, ".synth", "data", "snapshots")
   try {
     return fs.readdirSync(snapshotDir).filter((f) => f.endsWith(".json"))
   } catch {
@@ -96,6 +101,7 @@ function main() {
   // 1. Mission approval emits runtime events before persisting the snapshot.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
@@ -120,6 +126,7 @@ function main() {
   // 2. Repair detects missing runtime events and proposes compensating actions.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
@@ -128,7 +135,7 @@ function main() {
 
       // Simulate a runtime-side failure: the certified snapshot remains, but
       // the runtime events that should have accompanied it are lost.
-      const logFile = path.join(dir, "data", "event-log.jsonl")
+      const logFile = path.join(dir, ".synth", "data", "event-log.jsonl")
       const surviving = readEventLog(dir).filter(
         (e) => e.type !== "MISSION_CREATED" && e.type !== "MISSION_APPROVED",
       )
@@ -148,13 +155,14 @@ function main() {
   // 3. Repair --approve recovers runtime consistency using only public commands.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
       approve(dir, draftId)
 
-      const logFile = path.join(dir, "data", "event-log.jsonl")
+      const logFile = path.join(dir, ".synth", "data", "event-log.jsonl")
       const surviving = readEventLog(dir).filter(
         (e) => e.type !== "MISSION_CREATED" && e.type !== "MISSION_APPROVED",
       )
@@ -180,6 +188,7 @@ function main() {
   // 4. Repair is idempotent: re-running on a consistent runtime needs no changes.
   {
     const dir = makeWorkspace()
+    initWorkspace(dir)
     try {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")

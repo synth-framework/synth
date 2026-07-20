@@ -59,7 +59,7 @@ async function writeEventLog(dir, rawEvents) {
     previousHash = event.eventHash
     events.push(event)
   }
-  const dataDir = path.join(dir, "data")
+  const dataDir = path.join(dir, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
   await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
 }
@@ -175,7 +175,7 @@ async function testApprovedMission() {
       },
     ])
 
-    const dataDir = path.join(tmpDir, "data")
+    const dataDir = path.join(tmpDir, ".synth", "data")
     await appendDecision(dataDir, {
       type: "MISSION_APPROVAL_APPROVED",
       draftId: "DRAFT-RESUME-1",
@@ -375,7 +375,7 @@ async function testBrokenDecisionLogWarning() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-decision-warning-"))
   try {
     await writeManifest(tmpDir, "Decision Warning Test")
-    const dataDir = path.join(tmpDir, "data")
+    const dataDir = path.join(tmpDir, ".synth", "data")
     await fs.mkdir(dataDir, { recursive: true })
     // Write a decision log with two genesis records, which breaks the chain.
     await fs.writeFile(

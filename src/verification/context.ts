@@ -13,7 +13,7 @@ import { createReplayVerifier } from "../core/replay-verifier.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
 import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
+import { ensureRuntimeDataDir } from "../infra/paths.js"
 import type { VerificationContext, DecisionRecord } from "./types.js"
 
 async function pathExists(target: string): Promise<boolean> {

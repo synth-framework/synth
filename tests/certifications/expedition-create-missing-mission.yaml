@@ -1,0 +1,71 @@
+id: expedition-create-missing-mission
+name: Expedition create rejects a missing mission
+description: >
+  An expedition must reference an active mission. Creating an expedition
+  for a non-existent mission should fail with a clear diagnostic.
+taxonomy:
+  - lifecycle.commit
+  - operator.invalid-command
+level: 2
+
+workspace:
+  files:
+    - path: package.json
+      content: '{"name": "cert-expedition-test", "version": "1.0.0"}'
+
+setup:
+  - name: bootstrap project
+    command: ["bootstrap", ".", "--approve"]
+    expect:
+      status: 0
+      jsonPath:
+        status: "ok"
+
+steps:
+  - name: expedition create fails for missing mission
+    command: ["expedition", "create", "--mission", "nonexistent-mission", "--subject", "Orphan Expedition", "--goal", "Test goal"]
+    expect:
+      status: "non-zero"
+      stdoutContains:
+        - "error"
+        - "mission_exists"
+
+recovery:
+  - name: create a mission
+    command: ["mission", "create", "--subject", "Recovery Mission", "--purpose", "Certification recovery mission"]
+    capture:
+      jsonPath:
+        draftId: "draftId"
+    expect:
+      status: 0
+
+  - name: add certain evidence
+    command: ["mission", "evidence", "add", "--draft-id", "{{draftId}}", "--subject", "Supporting evidence", "--purpose", "Raises confidence", "--confidence", "certain"]
+    capture:
+      jsonPath:
+        evidenceDraftId: "draftId"
+    expect:
+      status: 0
+
+  - name: approve the mission
+    command: ["mission", "approve", "--draft-id", "{{evidenceDraftId}}"]
+    capture:
+      jsonPath:
+        missionId: "runtime.missionId"
+    expect:
+      status: 0
+      jsonPath:
+        decision.approved: true
+
+  - name: create expedition against active mission
+    command: ["expedition", "create", "--mission", "{{missionId}}", "--subject", "Recovery Expedition", "--goal", "Test goal"]
+    expect:
+      status: 0
+      jsonPath:
+        kind: "ExpeditionDraft"
+
+verify:
+  - name: replay remains consistent
+    command: ["explain", "replay"]
+    expect:
+      status: 0

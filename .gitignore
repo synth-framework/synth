@@ -29,7 +29,9 @@ coverage/
 
 .synth/cache/
 .synth/data/
-data/
+data/*
+!data/tasks/
+!data/tasks/*.task.json
 data-test/
 proof/
 

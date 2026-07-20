@@ -13,7 +13,6 @@
 import fs from "fs/promises"
 import path from "path"
 import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/migrate-data-dir.js"
 
 export type RepositoryIdentity = {
   status: "ok"
@@ -107,7 +106,7 @@ export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryId
     kind = manifest.projectName || "SYNTH project"
   } else if (expeditionFiles.length > 0 && (await pathExists(path.join(cwd, "src")))) {
     kind = "SYNTH source repository"
-  } else if (await pathExists(path.join(cwd, ".synth"))) {
+  } else if (await pathExists(path.join(cwd, ".synth", "manifest.json"))) {
     kind = "SYNTH project directory"
   } else {
     kind = "Unclassified repository"
@@ -196,7 +195,6 @@ export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryId
  */
 export async function cmdExplainIdentity(_flags: Record<string, string | boolean>): Promise<void> {
   const cwd = process.cwd()
-  await ensureRuntimeDataDir(cwd)
   const identity = await buildRepositoryIdentity(cwd)
   printJson(identity)
 }

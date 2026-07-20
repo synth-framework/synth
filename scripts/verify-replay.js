@@ -18,6 +18,7 @@
 //                    canonical data/event-log.jsonl
 // ============================================================
 
+import path from "path"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
 import { rebuildState } from "../dist/runtime/replay.js"
@@ -35,9 +36,17 @@ async function main() {
   console.log("  SYNTH: Replay Verification (Layer 4)")
   console.log("═══════════════════════════════════════════════════\n")
 
+  // When verifying an alternate log, compare it against the state file that
+  // lives alongside that log (e.g. an evidence archive), not the repo's local
+  // runtime state. If no such state file exists, the verifier will replay
+  // without an operational baseline.
+  const statePath = eventLogPath
+    ? path.join(path.dirname(eventLogPath), "canonical-state.json")
+    : undefined
+
   const ctx = await bootstrap({
     infra: eventLogPath
-      ? { persistence: "file", eventLogPath }
+      ? { persistence: "file", eventLogPath, statePath }
       : { persistence: "file" },
     skipGenesis: true,
   })

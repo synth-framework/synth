@@ -29,7 +29,7 @@ synth-v2/
   tests/          -- Test suite
   scripts/        -- Verification scripts
   docs/           -- Documentation
-  data/           -- Runtime data (event log, state)
+  .synth/data/    -- Runtime data (event log, state)
 ```
 
 ### Quick Start

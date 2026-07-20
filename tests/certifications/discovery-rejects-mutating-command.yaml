@@ -1,0 +1,37 @@
+id: discovery-rejects-mutating-command
+name: Mutating command rejected during Discovery
+description: >
+  When --discovery-mode is active, a MUTATING command must be rejected
+  before it mutates repository or governance state.
+taxonomy:
+  - operator.invalid-command
+  - discovery
+level: 2
+
+workspace:
+  files:
+    - path: package.json
+      content: '{"name": "cert-discovery-test", "version": "1.0.0"}'
+    - path: README.md
+      content: '# Certification Test Repository\n'
+
+steps:
+  - name: docs generate rejected during discovery
+    command: ["--discovery-mode", "docs", "generate"]
+    expect:
+      status: "non-zero"
+      stdoutContains:
+        - "MUTATING"
+        - "cannot run during Discovery"
+
+recovery:
+  - name: docs generate succeeds outside discovery mode
+    command: ["docs", "generate"]
+    expect:
+      status: 0
+
+verify:
+  - name: project health remains reportable
+    command: ["doctor"]
+    expect:
+      status: 0

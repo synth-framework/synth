@@ -48,7 +48,7 @@ async function writeEventLog(dir, rawEvents) {
     previousHash = event.eventHash
     events.push(event)
   }
-  const dataDir = path.join(dir, "data")
+  const dataDir = path.join(dir, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
   await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
 }
@@ -174,8 +174,8 @@ async function testEmptyLog() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-governance-empty-"))
   try {
     await writeManifest(tmpDir)
-    await fs.mkdir(path.join(tmpDir, "data"), { recursive: true })
-    await fs.writeFile(path.join(tmpDir, "data", "event-log.jsonl"), "")
+    await fs.mkdir(path.join(tmpDir, ".synth", "data"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, ".synth", "data", "event-log.jsonl"), "")
     const { stdout, status } = runSynth(["explain", "governance"], tmpDir)
     assert(status === 0, "explain governance should exit 0 on empty log")
     const output = parseJson(stdout)

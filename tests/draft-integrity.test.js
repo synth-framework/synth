@@ -33,7 +33,12 @@ function assert(condition, message) {
 }
 
 function makeWorkspace() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-draft-"))
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-draft-"))
+  const init = runCli(dir, ["init", "--name", "Draft Integrity Test"])
+  if (init.status !== 0) {
+    throw new Error(`synth init failed in test workspace: ${init.output}`)
+  }
+  return dir
 }
 
 function cleanup(dir) {
@@ -64,7 +69,7 @@ function createDraft(dir) {
 }
 
 function draftPath(dir, draftId) {
-  return path.join(dir, "data", "drafts", `${draftId}.json`)
+  return path.join(dir, ".synth", "data", "drafts", `${draftId}.json`)
 }
 
 function readDraft(dir, draftId) {
@@ -196,7 +201,7 @@ function main() {
     try {
       const first = createDraft(dir)
       const second = createDraft(dir)
-      fs.rmSync(path.join(dir, "data", "drafts", `${first.draftId}.integrity.json`), { force: true })
+      fs.rmSync(path.join(dir, ".synth", "data", "drafts", `${first.draftId}.integrity.json`), { force: true })
       const r = approve(dir, second.draftId)
       assert(!r.output.includes('"approved": true'), "Chain break: successor draft not approved")
       assert(/integrity violation/i.test(r.output), "Chain break: rejection cites the broken integrity chain")

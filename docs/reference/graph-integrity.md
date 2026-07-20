@@ -98,7 +98,7 @@ invariants always run) and returns a structured
 
 `scripts/verify-graph-integrity.js` produces the Graph Integrity proof
 (`synth-graph-integrity-proof-v1`). It does **not** validate the
-repository's canonical `data/event-log.jsonl`: that log is gitignored
+repository's canonical `.synth/data/event-log.jsonl`: that log is gitignored
 local runtime state, absent in CI, and may carry pre-HARDEN-001
 pollution preserved as immutable forensic evidence. Instead the proof
 certifies a **freshly generated reference execution** — the real

@@ -37,7 +37,7 @@ The Bootstrap Manifest is an agent-readable description of a Synth project. It i
     "docs": "docs/",
     "generatedDocs": "docs/generated/",
     "examples": "examples/",
-    "data": "data/",
+    "data": ".synth/data/",
     "proof": "proof/",
     "src": "src/",
     "tests": "tests/",
