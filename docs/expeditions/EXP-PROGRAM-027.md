@@ -1,6 +1,6 @@
 # EXP-PROGRAM-027 — Mission Studio Homepage
 
-**Status:** Accepted  
+**Status:** Paused — Review Gate Pilot  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -11,6 +11,14 @@
 **Public Impact:** High  
 **Product Impact:** High  
 **Execution Impact:** Medium
+
+---
+
+> ## ⏸️ Program 027 is paused at a natural checkpoint
+>
+> Do not continue implementing additional homepage expeditions until the governance model supports review gates.
+>
+> Program 027 is now the **pilot validation project** for EXP-PROGRAM-035 — Review Gate Governance. The current implementation becomes the baseline candidate. Completed expeditions (EXP-HOME-001, EXP-HOME-002, EXP-HOME-025) are frozen as evidence. Downstream expeditions may not begin until upstream review gates are resolved.
 
 ---
 
@@ -278,29 +286,49 @@ Mission Studio Homepage
 
 ---
 
-## Milestones & Reference Convergence Gates
+## Milestones & Review Gates
 
-Program 027 is delivered through four milestone gates. Each gate requires a **Reference Convergence Report** that compares accepted references (design boards, storyboards, specifications) against the current implementation, records known divergence, and obtains explicit human approval before downstream work begins.
+Program 027 is delivered through four milestone **Review Gates**. Each gate produces a **Review Gate Package**, compares accepted references against implementation, and pauses execution until a decision is made. Downstream expeditions cannot begin while an upstream expedition is awaiting review.
 
 ```text
 Program 027
 │
 ├── Milestone A — Mission Studio Foundations
-│       Reference Convergence Gate A
+│       Review Gate A
 │
 ├── Milestone B — Homepage Experience
-│       Reference Convergence Gate B
+│       Review Gate B
 │
 ├── Milestone C — Runtime Integration
-│       Reference Convergence Gate C
+│       Review Gate C
 │
 └── Milestone D — Production Certification
-        Reference Convergence Gate D
+        Review Gate D
 ```
 
-### Reference Convergence Report
+### Review Gate Lifecycle
 
-A new governed artifact produced at every gate:
+Every expedition in Program 027 now follows the Review Gate lifecycle:
+
+```text
+Proposed
+    ↓
+Executing
+    ↓
+Implementation Complete
+    ↓
+Review Gate
+    │
+    ├──────── Approved ──────── Accepted ──────── Closed
+    │
+    └──────── Revision Requested ───────→ Executing
+```
+
+A Review Gate may resolve as **Approved**, **Revision Requested**, or **Rejected**.
+
+### Review Gate Package
+
+A governed artifact produced at every gate:
 
 ```text
 Reference artifacts        → accepted mockups, design boards, storyboards, videos, CLI examples
@@ -308,11 +336,12 @@ Current implementation     → Storybook states, screenshots, scroll recordings
 Known divergence           → differences between reference and implementation
 Accepted divergence        → deliberate, approved deviations
 Rejected divergence        → deviations that must be corrected before the gate opens
-Approval                   → reviewer name and signature
+Reviewer                   → human, AI, council, or engine per acceptance policy
+Decision                   → Approved / Revision Requested / Rejected
 Evidence                   → links to Storybook, screenshots, recordings, comparison assets
 ```
 
-No downstream expedition may begin until the gate's Reference Convergence Report is approved.
+**Stop condition:** No downstream expedition may begin while an upstream expedition is Awaiting Review.
 
 ### Milestone A — Mission Studio Foundations
 
@@ -324,7 +353,7 @@ No downstream expedition may begin until the gate's Reference Convergence Report
 - Implementation visually converges to accepted Mission Studio design boards.
 - Storybook renders the complete workspace in light and dark themes.
 - Every component derives exclusively from LDS-002 tokens.
-- Reference Convergence Report is approved by a human reviewer.
+- Review Gate Package is approved by a human reviewer.
 
 ### Milestone B — Homepage Experience
 
@@ -336,7 +365,7 @@ No downstream expedition may begin until the gate's Reference Convergence Report
 - Homepage reproduces the complete storyboard.
 - Scroll recordings demonstrate smooth phase transitions.
 - Sidebar progression, artifact evolution, and workspace persistence are verified.
-- Reference Convergence Report is approved by a human reviewer.
+- Review Gate Package is approved by a human reviewer.
 
 ### Milestone C — Runtime Integration
 
@@ -349,7 +378,7 @@ No downstream expedition may begin until the gate's Reference Convergence Report
 - Genesis and Replay projections feed the Artifact Projection Layer.
 - Mission Studio State Machine drives the same UI approved at Gate B.
 - Visual regression against Gate B baseline shows zero unintended changes.
-- Reference Convergence Report is approved by a human reviewer.
+- Review Gate Package is approved by a human reviewer.
 
 ### Milestone D — Production Certification
 
@@ -361,7 +390,21 @@ No downstream expedition may begin until the gate's Reference Convergence Report
 - Responsive, accessible, performant, and motion-validated.
 - Documentation links are stable and validated.
 - Production certification tests pass (unit, integration, E2E, visual regression, accessibility, performance).
-- Reference Convergence Report is approved by a human reviewer.
+- Review Gate Package is approved by a human reviewer.
+
+---
+
+## Frozen Work
+
+The following expeditions are **frozen** exactly as implemented. They are not to be rewritten or silently improved. They become evidence for the new Review Gate governance model.
+
+```text
+EXP-HOME-001  Mission Studio Design Language        → Implementation Complete
+EXP-HOME-002  Mission Studio Component Catalog      → Implementation Complete
+EXP-HOME-025  Mission Studio Design Governance      → Implementation Complete
+```
+
+Each frozen expedition will pass through the Review Gate lifecycle as soon as EXP-PROGRAM-035 delivers the capability. Until then, they remain baseline candidates.
 
 ---
 
