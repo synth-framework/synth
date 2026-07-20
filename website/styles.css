@@ -500,3 +500,257 @@ a:hover {
     flex-direction: column;
   }
 }
+
+/* ============================================================
+   Explainer Sections (Workflow, Governance, Architecture, Capabilities)
+   ============================================================ */
+
+.ms-explainer-section {
+  background: #FFFFFF;
+  color: #111827;
+  border: 1px solid #E2E5E9;
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.ms-explainer-section h2 {
+  color: #111827;
+  margin-top: 0;
+}
+
+.ms-explainer-section > p {
+  color: #4B5563;
+}
+
+.ms-explainer-note {
+  font-size: 0.9rem;
+  color: #6B7280;
+  margin-bottom: 0;
+}
+
+.ms-explainer-note a {
+  color: #4F46E5;
+}
+
+.ms-workflow-viz {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #F7F8FA;
+  border-radius: 12px;
+}
+
+.ms-workflow-step {
+  padding: 0.6rem 1rem;
+  background: #FFFFFF;
+  border: 1px solid #E2E5E9;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  color: #6B7280;
+  transition: all 0.15s;
+}
+
+.ms-workflow-step-active {
+  background: #EEF2FF;
+  border-color: #4F46E5;
+  color: #4F46E5;
+  font-weight: 600;
+}
+
+.ms-workflow-arrow {
+  color: #9CA3AF;
+  font-size: 1.2rem;
+}
+
+.ms-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.ms-comparison-col {
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #E2E5E9;
+}
+
+.ms-comparison-col h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.ms-comparison-without {
+  background: #FEF2F2;
+  border-color: #FECACA;
+}
+
+.ms-comparison-without h3 {
+  color: #DC2626;
+}
+
+.ms-comparison-with {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+}
+
+.ms-comparison-with h3 {
+  color: #16A34A;
+}
+
+.ms-comparison-col ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #4B5563;
+  font-size: 0.9rem;
+}
+
+.ms-comparison-col li {
+  margin-bottom: 0.4rem;
+}
+
+.ms-architecture-viz {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+  margin: 1.5rem auto;
+}
+
+.ms-arch-layer {
+  padding: 0.75rem 1rem;
+  background: #F7F8FA;
+  border: 1px solid #E2E5E9;
+  border-radius: 10px;
+  text-align: center;
+  color: #6B7280;
+  transition: all 0.15s;
+}
+
+.ms-arch-layer-active {
+  background: #EEF2FF;
+  border-color: #4F46E5;
+  color: #4F46E5;
+  font-weight: 600;
+}
+
+.ms-capabilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.ms-capability-card {
+  padding: 1rem;
+  background: #F7F8FA;
+  border: 1px solid #E2E5E9;
+  border-radius: 12px;
+  transition: all 0.15s;
+}
+
+.ms-capability-card:hover {
+  background: #EEF2FF;
+  border-color: #4F46E5;
+}
+
+.ms-capability-card h4 {
+  margin: 0 0 0.5rem;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.ms-capability-card p {
+  margin: 0;
+  color: #6B7280;
+  font-size: 0.85rem;
+}
+
+.ms-capability-adapter {
+  border-left: 4px solid #D97706;
+}
+
+@media (max-width: 600px) {
+  .ms-comparison {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card h3 a:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+/* ============================================================
+   Accessibility & Responsive Polish
+   ============================================================ */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--accent);
+  color: #FFFFFF;
+  padding: 0.5rem 1rem;
+  z-index: 100;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  transition: top 0.15s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ms-intent-form input:focus-visible,
+.ms-btn:focus-visible,
+.ms-example:focus-visible,
+.ms-replay-controls input:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .mission-studio-section,
+  .ms-explainer-section {
+    padding: 1.25rem;
+  }
+
+  .ms-workflow-viz {
+    flex-direction: column;
+  }
+
+  .ms-workflow-arrow {
+    transform: rotate(90deg);
+  }
+
+  .ms-capabilities-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}

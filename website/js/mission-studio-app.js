@@ -45,6 +45,18 @@ const PHASES = [
   { id: "replay", label: "Replay" },
 ]
 
+const CAPABILITIES = [
+  { id: "mission", name: "Mission", description: "Strategic goals and approved plans." },
+  { id: "discovery", name: "Discovery", description: "Intent extraction and domain understanding." },
+  { id: "governance", name: "Governance", description: "Approval boundaries and evidence." },
+  { id: "replay", name: "Replay", description: "Deterministic state reconstruction." },
+  { id: "compiler", name: "Compiler", description: "Transforms artifacts into execution plans." },
+  { id: "kernel", name: "Kernel", description: "Protected runtime invariants." },
+  { id: "knowledge", name: "Knowledge", description: "Canonical knowledge graph." },
+  { id: "architecture", name: "Architecture", description: "Layered system model." },
+  { id: "adapters", name: "Adapters", description: "External tools as first-class citizens." },
+]
+
 function renderNavigator(activePhase) {
   elements.navigator.innerHTML = PHASES.map((phase) => {
     const isActive = phase.id === activePhase
@@ -159,11 +171,48 @@ function renderControls(projection) {
   document.getElementById("ms-advance-btn").addEventListener("click", advancePhase)
 }
 
+function renderExplainerSections(projection) {
+  // Workflow highlight.
+  document.querySelectorAll(".ms-workflow-step").forEach((step) => {
+    const stepId = step.dataset.step
+    const active = stepId === projection.phase || (stepId === "expedition" && projection.phase === "expeditions")
+    step.classList.toggle("ms-workflow-step-active", active)
+  })
+
+  // Architecture highlight.
+  document.querySelectorAll(".ms-arch-layer").forEach((layer) => {
+    const layerId = layer.dataset.layer
+    const active =
+      (layerId === "intent" && projection.phase === "intent") ||
+      (layerId === "knowledge" && ["discovery", "constraints"].includes(projection.phase)) ||
+      (layerId === "mission" && projection.phase === "mission") ||
+      (layerId === "expedition" && projection.phase === "expeditions") ||
+      (layerId === "events" && projection.phase === "governance") ||
+      (layerId === "runtime" && projection.phase === "replay")
+    layer.classList.toggle("ms-arch-layer-active", active)
+  })
+
+  // Capabilities grid.
+  const grid = document.getElementById("ms-capabilities-grid")
+  if (grid) {
+    grid.innerHTML = CAPABILITIES.map((cap) => {
+      const isAdapter = cap.id === "adapters"
+      return `
+        <div class="ms-capability-card ${isAdapter ? "ms-capability-adapter" : ""}">
+          <h4>${escapeHtml(cap.name)}</h4>
+          <p>${escapeHtml(cap.description)}</p>
+        </div>
+      `
+    }).join("")
+  }
+}
+
 function updateUI(projection) {
   renderNavigator(projection.phase)
   renderArtifacts(projection)
   renderStatusBar(projection)
   renderControls(projection)
+  renderExplainerSections(projection)
 }
 
 async function startDiscovery(input, mode = "greenfield") {

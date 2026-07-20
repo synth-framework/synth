@@ -17,7 +17,25 @@ Prove that the Mission Studio Homepage meets all acceptance criteria before rele
 | Program | EXP-PROGRAM-027 — Mission Studio Homepage |
 | Expedition | EXP-HOME-015 — Production Certification |
 | Kind | Certification Expedition |
-| Status | Pending acceptance |
+| Status | Phase 1 implemented; pending operator certification |
+
+### Phase 1 implementation summary
+
+The following Phase 1 components of Program 027 are implemented:
+
+- `packages/homepage-runtime/` — browser-compatible, in-memory runtime.
+- `MissionRuntime` interface and `ArtifactProjection` contract.
+- Deterministic Genesis projection with rule-based extraction.
+- In-memory Replay projection with scrubbing.
+- `DemoOperator` adapter and curated demonstration library.
+- Interactive Mission Studio workspace on `website/index.html`.
+- Workflow, governance, architecture, and capabilities explainers.
+- Adapter system surfaced as a first-class capability.
+- Documentation links to canonical SYNTH docs.
+- Accessibility: skip link, focus-visible styles, reduced-motion support.
+- Responsive breakpoints for mobile and tablet.
+
+Comprehension testing, performance benchmarking, and operator sign-off remain pending.
 
 ---
 
