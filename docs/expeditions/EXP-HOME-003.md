@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Specify Mission Studio as a persistent application embedded in the homepage, not merely a Genesis experience.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -179,7 +179,7 @@ Phases are: Intent, Discovery, Mission, Expeditions, Governance, Replay, Archite
 
 ## Deliverables
 
-1. **Mission Studio UI Specification** under `docs/design/genesis-experience.md`.
+1. **Mission Studio UI Specification** under `docs/design/genesis-experience.md` (updated for v2 persistent application shell and scroll-driven state machine).
 2. **Application shell layout** with header, sidebar, workspace, and footer specifications.
 3. **Phase specification** for Intent, Discovery, Mission, Expeditions, Governance, Replay, Architecture, and Repository Summary.
 4. **State machine definition** with transitions, triggers, guards, and side effects.
