@@ -131,10 +131,104 @@ Mission Studio Homepage
 │       Product Expedition
 │       Link homepage artifacts to canonical docs.
 │
-└── EXP-HOME-015  Production Certification
-        Certification Expedition
-        Certify the homepage meets acceptance criteria.
+├── EXP-HOME-015  Production Certification
+│       Certification Expedition
+│       Certify the homepage meets acceptance criteria.
+│
+├── EXP-HOME-016  Homepage Runtime
+│       Architecture Expedition
+│       Browser-compatible, in-memory SYNTH runtime for the homepage.
+│
+├── EXP-HOME-017  Homepage Genesis Projection
+│       Product Expedition
+│       Homepage projection of the Genesis Protocol as TypeScript functions.
+│
+├── EXP-HOME-018  Homepage Replay Projection
+│       Product Expedition
+│       Scrubbable replay projection using the existing replay engine.
+│
+├── EXP-HOME-019  Artifact Projection Layer
+│       Architecture Expedition
+│       Map runtime state to homepage Artifact Cards.
+│
+├── EXP-HOME-020  Curated Demonstration Library
+│       Product Expedition
+│       Deterministic demo missions for regression testing and visitor exploration.
+│
+├── EXP-HOME-021  Mission Studio State Machine
+│       Architecture Expedition
+│       Unified state machine driving the homepage workspace.
+│
+├── EXP-HOME-022  Runtime Abstraction Layer
+│       Architecture Expedition
+│       MissionRuntime interface decouples UI from runtime implementation.
+│
+├── EXP-HOME-023  AI Operator Adapter
+│       Architecture Expedition
+│       Demo operator adapter; later replaced by live AI adapters.
+│
+└── EXP-HOME-024  Projection Contract
+        Architecture Expedition
+        Stable interface between runtime and any UI.
 ```
+
+---
+
+## Phases
+
+Program 027 is delivered in three phases. Only Phase 1 is implemented in the current development cycle; Phases 2 and 3 are chartered for future evolution.
+
+### Phase 1 — Browser Mission Studio *(implement now)*
+
+Deliver a real Mission Studio experience on the homepage using deterministic, browser-native execution.
+
+```text
+Visitor arrives
+  ↓
+Types an idea
+  ↓
+Discovery executes
+  ↓
+Mission is generated
+  ↓
+Artifacts appear
+  ↓
+Replay is interactive
+  ↓
+Visitor understands SYNTH
+```
+
+Phase 1 implements EXP-HOME-001 through EXP-HOME-024, with the AI Operator Adapter initially implemented as a deterministic `DemoOperator`. No backend, no filesystem, no remote AI, no repository mutation.
+
+### Phase 2 — Shared Runtime SDK *(charter only)*
+
+Define the extraction of the homepage runtime into a reusable `@synth/runtime-sdk` package and the migration of the CLI to consume it.
+
+Phase 2 deliverables are specifications only:
+
+- `@synth/runtime-sdk` package boundary
+- Public `MissionRuntime` API
+- CLI migration plan
+- Browser compatibility requirements
+
+### Phase 3 — Live Agent Integration *(charter only)*
+
+Define the live AI experience through an `@synth/agent-sdk` and operator adapters.
+
+Phase 3 deliverables are specifications only:
+
+- `@synth/agent-sdk` package boundary
+- Operator adapter interface
+- ChatGPT, Gemini, Claude, and Cursor adapter charters
+- Hosted runtime, authentication, streaming, and cost models
+
+---
+
+## Implementation Boundary
+
+> **Program 027 will implement only Phase 1 during the current development cycle.**
+>
+> Phases 2 and 3 are architectural charters intended to guide future evolution. They are explicitly out of scope for this iteration and require a separate implementation decision after the validation and hardening era.
 
 ---
 
@@ -179,6 +273,8 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 > **Calm computing:** Large whitespace, low noise, subtle motion, clear hierarchy.
 >
 > **Artifact driven:** Replace chat with objects; everything shown is an artifact.
+>
+> **Mission Studio depends only on the `MissionRuntime` interface:** No React component, state controller, or projection layer may invoke the SYNTH CLI directly. Today the interface is satisfied by the Homepage Runtime; tomorrow by the Runtime SDK or a Hosted Runtime. Only dependency injection changes.
 
 ---
 
