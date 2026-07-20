@@ -2,7 +2,7 @@
 
 > **Product expedition.** Define the Mission phase inside Mission Studio: Mission artifact, approval boundary, and the commitment that governs all downstream work.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

@@ -2,7 +2,7 @@
 
 > **Product expedition.** Define the Expeditions phase inside Mission Studio: Expedition proposals, dependencies, and the work plan derived from an approved Mission.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

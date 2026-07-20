@@ -2,7 +2,7 @@
 
 > **Product expedition.** Define the Intent phase as the first interactive state inside Mission Studio, not an isolated demo.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

@@ -2,7 +2,7 @@
 
 > **Product expedition.** Define the Discovery phase inside Mission Studio: unknowns, constraints, findings, and the transition from raw intent to understood intent.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

@@ -203,11 +203,24 @@ export function renderArtifactGrid(projection) {
  * @param {{ examples: Array<{ id: string; name: string }>; inputValue?: string }} props
  * @returns {string}
  */
-export function renderIntentSurface({ examples, inputValue = "" }) {
+export function renderIntentSurface({ examples, inputValue = "", mode = "greenfield" }) {
+  const modes = [
+    { id: "greenfield", label: "Greenfield" },
+    { id: "brownfield", label: "Brownfield" },
+    { id: "knowledge", label: "Knowledge" },
+    { id: "conversation", label: "Conversation" },
+  ]
   return `
     <div class="ms-intro" id="ms-intro">
       <h2>Turn intent into a governed Mission.</h2>
       <p>Type an idea below or pick a curated example. Watch SYNTH extract intent, model the domain, propose expeditions, project architecture, and summarize the repository.</p>
+      <div class="ms-source-selector" role="group" aria-label="Entry mode">
+        ${modes.map((m) => `
+          <button type="button" class="ms-btn ms-source-option ${m.id === mode ? "ms-source-active" : ""}" data-mode="${m.id}">
+            ${escapeHtml(m.label)}
+          </button>
+        `).join("")}
+      </div>
       <form id="ms-intent-form" class="ms-intent-form" aria-label="Intent discovery">
         <input id="ms-intent-input" type="text" placeholder="e.g., Build a CRM" autocomplete="off" aria-label="Describe what you want to build" value="${escapeHtml(inputValue)}" />
         <button type="submit" class="ms-btn ms-btn-primary">Discover</button>

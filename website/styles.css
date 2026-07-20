@@ -512,6 +512,25 @@ nav {
   color: var(--ms-text-secondary);
 }
 
+.ms-source-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ms-space-2);
+  margin-bottom: var(--ms-space-4);
+}
+
+.ms-source-option {
+  background: var(--ms-surface);
+  color: var(--ms-text-secondary);
+}
+
+.ms-source-option.ms-source-active {
+  background: var(--ms-accent-soft);
+  color: var(--ms-accent);
+  border-color: var(--ms-accent);
+  font-weight: var(--ms-font-weight-semibold);
+}
+
 .ms-intent-form {
   display: flex;
   gap: var(--ms-space-3);

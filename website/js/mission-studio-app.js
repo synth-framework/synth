@@ -30,6 +30,9 @@ let autoDemoStarted = false
 /** @type {boolean} */
 let manualMode = false
 
+/** @type {import("./homepage-runtime/index.js").EntryMode} */
+let selectedMode = "greenfield"
+
 const PHASES = [
   { id: "idle", label: "Idle", stage: 0 },
   { id: "intent", label: "Intent", stage: 1 },
@@ -292,7 +295,7 @@ function updateUI(projection) {
   }
 }
 
-async function startDiscovery(input, mode = "greenfield") {
+async function startDiscovery(input, mode = selectedMode) {
   manualMode = true
   const result = await runtime.discover(input, mode)
   currentGenesisState = result.state
@@ -508,12 +511,24 @@ function init() {
     </button>
   `).join("")
 
+  document.querySelectorAll(".ms-source-option").forEach((button) => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".ms-source-option").forEach((b) => b.classList.remove("ms-source-active"))
+      button.classList.add("ms-source-active")
+      selectedMode = /** @type {import("./homepage-runtime/index.js").EntryMode} */ (button.dataset.mode)
+    })
+  })
+
   document.querySelectorAll(".ms-example").forEach((button) => {
     button.addEventListener("click", () => {
       const id = button.dataset.example
       const example = demoExamples.find((e) => e.id === id)
       if (example) {
         elements.input.value = example.input
+        selectedMode = example.mode
+        document.querySelectorAll(".ms-source-option").forEach((b) => {
+          b.classList.toggle("ms-source-active", b.dataset.mode === example.mode)
+        })
         void startDiscovery(example.input, example.mode)
       }
     })

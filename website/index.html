@@ -72,6 +72,12 @@
                   <div class="ms-intro" id="ms-intro">
                     <h2>Turn intent into a governed Mission.</h2>
                     <p>Type an idea below or pick a curated example. Watch SYNTH extract intent, model the domain, propose expeditions, project architecture, and summarize the repository.</p>
+                    <div class="ms-source-selector" id="ms-source-selector" role="group" aria-label="Entry mode">
+                      <button type="button" class="ms-btn ms-source-option ms-source-active" data-mode="greenfield">Greenfield</button>
+                      <button type="button" class="ms-btn ms-source-option" data-mode="brownfield">Brownfield</button>
+                      <button type="button" class="ms-btn ms-source-option" data-mode="knowledge">Knowledge</button>
+                      <button type="button" class="ms-btn ms-source-option" data-mode="conversation">Conversation</button>
+                    </div>
                     <form id="ms-intent-form" class="ms-intent-form" aria-label="Intent discovery">
                       <input id="ms-intent-input" type="text" placeholder="e.g., Build a CRM" autocomplete="off" aria-label="Describe what you want to build" />
                       <button type="submit" class="ms-btn ms-btn-primary">Discover</button>
