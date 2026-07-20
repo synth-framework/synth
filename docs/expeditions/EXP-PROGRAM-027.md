@@ -1,6 +1,6 @@
 # EXP-PROGRAM-027 — Mission Studio Homepage
 
-**Status:** Completed (pending acceptance)  
+**Status:** Accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -167,108 +167,207 @@ For every state the specification defines:
 EXP-PROGRAM-027
 Mission Studio Homepage
 │
-├── EXP-HOME-001  Mission Studio Design Language
-│       Design Expedition
-│       Canonical public visual language of SYNTH: tokens, themes, principles.
+├── Milestone A — Mission Studio Foundations
+│   │
+│   ├── EXP-HOME-001  Mission Studio Design Language
+│   │       Design Expedition
+│   │       Canonical public visual language of SYNTH: tokens, themes, principles.
+│   │
+│   ├── EXP-HOME-002  Mission Studio Component Catalog
+│   │       Design / Architecture Expedition
+│   │       Reusable components for workspace, sidebar, artifact cards, motion, feedback.
+│   │
+│   ├── EXP-HOME-003  Mission Studio UI Specification
+│   │       Architecture Expedition
+│   │       Persistent application shell, lifecycle phases, scroll-driven behavior.
+│   │
+│   └── EXP-HOME-025  Mission Studio Design Governance
+│           Design Expedition
+│           Ensure implementation conforms to canonical Mission Studio visual language.
 │
-├── EXP-HOME-002  Mission Studio Component Catalog
-│       Design / Architecture Expedition
-│       Reusable components for workspace, sidebar, artifact cards, motion, feedback.
+├── Milestone B — Homepage Experience
+│   │
+│   ├── EXP-HOME-004  Homepage / Mission Studio Integration
+│   │       Architecture Expedition
+│   │       How Mission Studio becomes the homepage: hero handoff, sticky behavior, release.
+│   │
+│   ├── EXP-HOME-005  Intent Phase
+│   │       Product Expedition
+│   │       Mission Studio phase for capturing visitor intent.
+│   │
+│   ├── EXP-HOME-006  Discovery Phase
+│   │       Product Expedition
+│   │       Mission Studio phase for Discovery artifacts and unknowns.
+│   │
+│   ├── EXP-HOME-007  Mission Phase
+│   │       Product Expedition
+│   │       Mission Studio phase for Mission artifact and approval.
+│   │
+│   ├── EXP-HOME-008  Expeditions Phase
+│   │       Product Expedition
+│   │       Mission Studio phase for Expedition proposals.
+│   │
+│   └── EXP-HOME-009  Governance & Replay Phase
+│           Product Expedition
+│           Mission Studio phase for governance visualization and replay timeline.
 │
-├── EXP-HOME-003  Mission Studio UI Specification
-│       Architecture Expedition
-│       Persistent application shell, lifecycle phases, scroll-driven behavior.
+├── Milestone C — Runtime Integration
+│   │
+│   ├── EXP-HOME-016  Homepage Runtime
+│   │       Architecture Expedition
+│   │       Browser-compatible, in-memory SYNTH runtime for the homepage.
+│   │
+│   ├── EXP-HOME-017  Homepage Genesis Projection
+│   │       Product Expedition
+│   │       Homepage projection of the Genesis Protocol as TypeScript functions.
+│   │
+│   ├── EXP-HOME-018  Homepage Replay Projection
+│   │       Product Expedition
+│   │       Scrubbable replay projection using the existing SYNTH replay engine.
+│   │
+│   ├── EXP-HOME-019  Artifact Projection Layer
+│   │       Architecture Expedition
+│   │       Map runtime state to Mission Studio Artifact Cards.
+│   │
+│   ├── EXP-HOME-020  Curated Demonstration Library
+│   │       Product Expedition
+│   │       Deterministic demo missions for regression testing and visitor exploration.
+│   │
+│   ├── EXP-HOME-021  Mission Studio State Machine
+│   │       Architecture Expedition
+│   │       Unified state machine driving the homepage Mission Studio.
+│   │
+│   ├── EXP-HOME-022  Runtime Abstraction Layer
+│   │       Architecture Expedition
+│   │       MissionRuntime interface decouples UI from runtime implementation.
+│   │
+│   ├── EXP-HOME-023  AI Operator Adapter
+│   │       Architecture Expedition
+│   │       Demo operator adapter; later replaced by live AI adapters.
+│   │
+│   └── EXP-HOME-024  Projection Contract
+│           Architecture Expedition
+│           Stable interface between runtime and any UI.
 │
-├── EXP-HOME-004  Homepage / Mission Studio Integration
-│       Architecture Expedition
-│       How Mission Studio becomes the homepage: hero handoff, sticky behavior, release.
-│
-├── EXP-HOME-005  Intent Phase
-│       Product Expedition
-│       Mission Studio phase for capturing visitor intent.
-│
-├── EXP-HOME-006  Discovery Phase
-│       Product Expedition
-│       Mission Studio phase for Discovery artifacts and unknowns.
-│
-├── EXP-HOME-007  Mission Phase
-│       Product Expedition
-│       Mission Studio phase for Mission artifact and approval.
-│
-├── EXP-HOME-008  Expeditions Phase
-│       Product Expedition
-│       Mission Studio phase for Expedition proposals.
-│
-├── EXP-HOME-009  Governance & Replay Phase
-│       Product Expedition
-│       Mission Studio phase for governance visualization and replay timeline.
-│
-├── EXP-HOME-010  Responsive Implementation
-│       Engineering Expedition
-│       Adapt Mission Studio and homepage for all screen sizes.
-│
-├── EXP-HOME-011  Accessibility
-│       Engineering Expedition
-│       WCAG 2.2 AA compliance, keyboard navigation, screen readers, reduced motion.
-│
-├── EXP-HOME-012  Performance
-│       Engineering Expedition
-│       Fast first paint, 60 FPS scroll animations, bundle budgets, lazy loading.
-│
-├── EXP-HOME-013  Motion System
-│       Design Expedition
-│       Calm, purposeful animation rules for Mission Studio transitions.
-│
-├── EXP-HOME-014  Documentation Integration
-│       Product Expedition
-│       Link Mission Studio artifacts and homepage concepts to canonical docs.
-│
-├── EXP-HOME-015  Production Certification
-│       Certification Expedition
-│       Unit, integration, E2E, visual regression, accessibility, performance tests.
-│
-├── EXP-HOME-016  Homepage Runtime
-│       Architecture Expedition
-│       Browser-compatible, in-memory SYNTH runtime for the homepage.
-│
-├── EXP-HOME-017  Homepage Genesis Projection
-│       Product Expedition
-│       Homepage projection of the Genesis Protocol as TypeScript functions.
-│
-├── EXP-HOME-018  Homepage Replay Projection
-│       Product Expedition
-│       Scrubbable replay projection using the existing SYNTH replay engine.
-│
-├── EXP-HOME-019  Artifact Projection Layer
-│       Architecture Expedition
-│       Map runtime state to Mission Studio Artifact Cards.
-│
-├── EXP-HOME-020  Curated Demonstration Library
-│       Product Expedition
-│       Deterministic demo missions for regression testing and visitor exploration.
-│
-├── EXP-HOME-021  Mission Studio State Machine
-│       Architecture Expedition
-│       Unified state machine driving the homepage Mission Studio.
-│
-├── EXP-HOME-022  Runtime Abstraction Layer
-│       Architecture Expedition
-│       MissionRuntime interface decouples UI from runtime implementation.
-│
-├── EXP-HOME-023  AI Operator Adapter
-│       Architecture Expedition
-│       Demo operator adapter; later replaced by live AI adapters.
-│
-└── EXP-HOME-024  Projection Contract
-        Architecture Expedition
-        Stable interface between runtime and any UI.
+└── Milestone D — Production Certification
+    │
+    ├── EXP-HOME-010  Responsive Implementation
+    │       Engineering Expedition
+    │       Adapt Mission Studio and homepage for all screen sizes.
+    │
+    ├── EXP-HOME-011  Accessibility
+    │       Engineering Expedition
+    │       WCAG 2.2 AA compliance, keyboard navigation, screen readers, reduced motion.
+    │
+    ├── EXP-HOME-012  Performance
+    │       Engineering Expedition
+    │       Fast first paint, 60 FPS scroll animations, bundle budgets, lazy loading.
+    │
+    ├── EXP-HOME-013  Motion System
+    │       Design Expedition
+    │       Calm, purposeful animation rules for Mission Studio transitions.
+    │
+    ├── EXP-HOME-014  Documentation Integration
+    │       Product Expedition
+    │       Link Mission Studio artifacts and homepage concepts to canonical docs.
+    │
+    └── EXP-HOME-015  Production Certification
+            Certification Expedition
+            Unit, integration, E2E, visual regression, accessibility, performance tests.
 ```
+
+---
+
+## Milestones & Reference Convergence Gates
+
+Program 027 is delivered through four milestone gates. Each gate requires a **Reference Convergence Report** that compares accepted references (design boards, storyboards, specifications) against the current implementation, records known divergence, and obtains explicit human approval before downstream work begins.
+
+```text
+Program 027
+│
+├── Milestone A — Mission Studio Foundations
+│       Reference Convergence Gate A
+│
+├── Milestone B — Homepage Experience
+│       Reference Convergence Gate B
+│
+├── Milestone C — Runtime Integration
+│       Reference Convergence Gate C
+│
+└── Milestone D — Production Certification
+        Reference Convergence Gate D
+```
+
+### Reference Convergence Report
+
+A new governed artifact produced at every gate:
+
+```text
+Reference artifacts        → accepted mockups, design boards, storyboards, videos, CLI examples
+Current implementation     → Storybook states, screenshots, scroll recordings
+Known divergence           → differences between reference and implementation
+Accepted divergence        → deliberate, approved deviations
+Rejected divergence        → deviations that must be corrected before the gate opens
+Approval                   → reviewer name and signature
+Evidence                   → links to Storybook, screenshots, recordings, comparison assets
+```
+
+No downstream expedition may begin until the gate's Reference Convergence Report is approved.
+
+### Milestone A — Mission Studio Foundations
+
+**Expeditions:** EXP-HOME-001, EXP-HOME-002, EXP-HOME-003, EXP-HOME-025
+
+**Deliverable:** One functioning Mission Studio shell (header, sidebar, workspace, footer) rendered in Storybook.
+
+**Gate A Acceptance:**
+- Implementation visually converges to accepted Mission Studio design boards.
+- Storybook renders the complete workspace in light and dark themes.
+- Every component derives exclusively from LDS-002 tokens.
+- Reference Convergence Report is approved by a human reviewer.
+
+### Milestone B — Homepage Experience
+
+**Expeditions:** EXP-HOME-004, EXP-HOME-005, EXP-HOME-006, EXP-HOME-007, EXP-HOME-008, EXP-HOME-009
+
+**Deliverable:** The complete guided homepage experience, scroll-driven through all lifecycle phases, without runtime integration.
+
+**Gate B Acceptance:**
+- Homepage reproduces the complete storyboard.
+- Scroll recordings demonstrate smooth phase transitions.
+- Sidebar progression, artifact evolution, and workspace persistence are verified.
+- Reference Convergence Report is approved by a human reviewer.
+
+### Milestone C — Runtime Integration
+
+**Expeditions:** EXP-HOME-016, EXP-HOME-017, EXP-HOME-018, EXP-HOME-019, EXP-HOME-020, EXP-HOME-021, EXP-HOME-022, EXP-HOME-023, EXP-HOME-024
+
+**Deliverable:** The homepage runtime powers the already-approved UI with zero visual regression.
+
+**Gate C Acceptance:**
+- Deterministic browser runtime produces artifacts for curated examples.
+- Genesis and Replay projections feed the Artifact Projection Layer.
+- Mission Studio State Machine drives the same UI approved at Gate B.
+- Visual regression against Gate B baseline shows zero unintended changes.
+- Reference Convergence Report is approved by a human reviewer.
+
+### Milestone D — Production Certification
+
+**Expeditions:** EXP-HOME-010, EXP-HOME-011, EXP-HOME-012, EXP-HOME-013, EXP-HOME-014, EXP-HOME-015
+
+**Deliverable:** A production-certified homepage ready for release.
+
+**Gate D Acceptance:**
+- Responsive, accessible, performant, and motion-validated.
+- Documentation links are stable and validated.
+- Production certification tests pass (unit, integration, E2E, visual regression, accessibility, performance).
+- Reference Convergence Report is approved by a human reviewer.
 
 ---
 
 ## Phases
 
-Program 027 is delivered in three phases. Only Phase 1 is implemented in the current development cycle; Phases 2 and 3 are chartered for future evolution.
+Program 027 is delivered in three architectural phases. Only Phase 1 is implemented in the current development cycle; Phases 2 and 3 are chartered for future evolution.
 
 ### Phase 1 — Mission Studio as Homepage *(implement now)*
 
