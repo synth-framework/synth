@@ -2,7 +2,7 @@
 
 > **Genesis expedition.** Capture the explicit and implicit intent for the Mission Studio homepage before any implementation proceeds.
 
-**Status:** Proposed  
+**Status:** Completed (awaiting refinement review)  
 **Kind:** Genesis Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -78,6 +78,20 @@ Program 027 began with the directive to make Mission Studio the SYNTH homepage. 
 - [ ] Refinement Gate resolves to `Refined Intent` or documents required clarifications.
 
 ---
+
+## Artifact
+
+The canonical Intent Model for Program 027 is recorded at:
+
+```text
+docs/governance/program-027/intent-model.json
+```
+
+It was registered in the event store via:
+
+```bash
+synth intent create --file docs/governance/program-027/intent-model.json
+```
 
 ## Out of Scope
 

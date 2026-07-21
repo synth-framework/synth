@@ -86,6 +86,7 @@ const COMMANDS = [
   { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
+  { name: "intent", description: "Intent model operations (create)" },
   { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete)" },
   { name: "docs", description: "Documentation operations (generate)" },
@@ -980,6 +981,60 @@ async function cmdMissionHelp() {
     { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
     { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
   ]))
+}
+
+async function cmdIntentHelp() {
+  printJson(namespaceHelp("intent", "Intent model operations", [
+    { name: "synth intent create --file <path>", description: "Create an Intent Model from a JSON file" },
+  ]))
+}
+
+async function cmdIntentCreate(flags: Record<string, string | boolean>) {
+  const filePath = typeof flags.file === "string" ? flags.file : undefined
+  if (!filePath) {
+    printError("Usage: synth intent create --file <path>")
+    return
+  }
+
+  await ensureRuntimeDataDir(process.cwd())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  let input: Record<string, unknown>
+  try {
+    const content = await fs.readFile(path.resolve(filePath), "utf-8")
+    input = JSON.parse(content)
+  } catch (err) {
+    printError(`Failed to read intent model file: ${err instanceof Error ? err.message : String(err)}`)
+    return
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateIntentModel",
+    payload: { input },
+  })
+
+  if (result.status !== "ok") {
+    printError(`CreateIntentModel failed: ${result.error}`)
+    return
+  }
+
+  const events = await ctx.infra.eventStore.loadAll()
+  const intentEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_CREATED")
+  const intentModelId = (intentEvent?.payload as Record<string, any> | undefined)?.intentModelId
+
+  printJson({
+    status: "ok",
+    kind: "IntentModelCreated",
+    intentModelId,
+    note: "Intent Model recorded. Run a refinement session before creating an Alignment Contract.",
+  })
 }
 
 async function cmdAlignmentHelp() {
@@ -2507,6 +2562,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDiscoverHelp }
     case "mission":
       return { namespace, handler: cmdMissionHelp }
+    case "intent":
+      return { namespace, handler: cmdIntentHelp }
     case "alignment":
       return { namespace, handler: cmdAlignmentHelp }
     case "expedition":
@@ -2575,6 +2632,9 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
     if (sub === "approve") return "mission approve"
+  }
+  if (namespace === "intent") {
+    if (sub === "create") return "intent create"
   }
   if (namespace === "alignment") {
     if (sub === "prepare") return "alignment prepare"
@@ -2702,6 +2762,14 @@ async function main() {
         printError(
           "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
         )
+      break
+    }
+
+    case "intent": {
+      const sub = positional[1]
+      if (sub === "create") await cmdIntentCreate(flags)
+      else
+        printError("Usage: synth intent create --file <path>")
       break
     }
 
