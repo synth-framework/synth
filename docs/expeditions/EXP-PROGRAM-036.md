@@ -32,9 +32,10 @@ Introduce the **Genesis Alignment Layer**: a deterministic mechanism to transfor
 1. **Intent Model** — the structured interpretation of raw intent, including implicit expectations and forbidden interpretations.
 2. **Refined Intent** — the governed, contract-ready interpretation derived from the Intent Model.
 3. **Alignment Contract** — the formal agreement between operator and SYNTH that captured intent matches intended outcome.
-4. **Reference Evidence Binding** — formal relationship between requirements and the artifacts (images, designs, examples) that justify them.
-5. **Divergence Gate** — prevent Missions and Expeditions from proceeding when intent alignment is incomplete.
-6. **Convergence Certification** — validate final outcomes against original intent and the Alignment Contract.
+4. **Divergence Gate** — prevent Missions and Expeditions from proceeding when intent alignment is incomplete.
+5. **Interactive Decision Acquisition** — structured, adapter-independent decision requests that eliminate uncertainty during refinement.
+6. **Reference Evidence Binding** — formal relationship between requirements and the artifacts (images, designs, examples) that justify them.
+7. **Convergence Certification** — validate final outcomes against original intent and the Alignment Contract.
 
 This program has equal architectural priority to Program 035 because it closes a separate, equally important governance gap.
 
@@ -120,41 +121,50 @@ Governance Layer
 
 ## Execution Phases
 
-Program 036 is executed in four dependency-ordered phases. Phases 1 and 2 define vocabulary and artifacts. Phase 3 modifies pre-Mission execution. Phase 4 retrofits the pilot program and certifies the model.
+Program 036 is executed in four dependency-ordered phases:
+
+- **Phase 1** defines the vocabulary and artifacts of intent modeling.
+- **Phase 2** defines the Alignment Contract and the Divergence Gate that validates it.
+- **Phase 3** introduces Interactive Decision Acquisition to eliminate residual uncertainty through structured, adapter-independent interactions.
+- **Phase 4** binds reference evidence, certifies convergence, integrates refinement into Mission Studio, and uses Program 027 as the pilot.
 
 ### Phase 1 — Refinement Model
 
 Define the canonical refinement process, artifacts, and lifecycle.
 
 ```text
-EXP-REFINE-010  Intent Interpretation Model
+EXP-REFINE-011  Intent Interpretation Model
 EXP-REFINE-001  Refinement Layer Model
 EXP-REFINE-004  Refinement Questions Engine
 ```
 
 ### Phase 2 — Alignment Artifacts
 
-Define the Alignment Contract, reference evidence binding, and divergence gate semantics.
+Define the Alignment Contract and Divergence Gate semantics.
 
 ```text
 EXP-REFINE-002  Alignment Contract
 EXP-REFINE-003  Divergence Gate
+```
+
+### Phase 3 — Interactive Refinement
+
+Introduce structured decision acquisition so the Refinement Layer can eliminate uncertainty through deterministic, adapter-independent interactions.
+
+```text
+EXP-REFINE-010  Interactive Decision Acquisition
+                Decision Acquisition Engine
+                Adapter Capability Detection
+                Interactive Decision Artifacts
+```
+
+### Phase 4 — Convergence Certification, Evidence Binding, and Integration
+
+Bind reference evidence to the Alignment Contract, certify final outcomes against original intent, integrate refinement into Mission Studio, and use Program 027 as the pilot.
+
+```text
 EXP-REFINE-005  Reference Evidence Binding
-```
-
-### Phase 3 — Convergence Certification
-
-Define how final outcomes are validated against original intent.
-
-```text
 EXP-REFINE-006  Convergence Certification
-```
-
-### Phase 4 — Integration and Certification
-
-Integrate refinement into Mission Studio and use Program 027 as the pilot.
-
-```text
 EXP-REFINE-007  Mission Studio Integration
 EXP-REFINE-008  Program 027 Retrofit
 EXP-REFINE-009  Certification

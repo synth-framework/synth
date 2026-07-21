@@ -85,6 +85,6 @@ version
 
 - ADR-036 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
-- EXP-REFINE-010 — Intent Interpretation Model
+- EXP-REFINE-011 — Intent Interpretation Model
 - EXP-REFINE-001 — Refinement Layer Model
 - EXP-REFINE-003 — Divergence Gate

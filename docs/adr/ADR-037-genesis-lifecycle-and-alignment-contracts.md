@@ -102,6 +102,16 @@ The Genesis Layer separates two distinct failure classes:
 
 A Mission cannot be created until the Divergence Gate produces an `aligned` decision.
 
+### Constitutional Principle
+
+> **Creation records knowledge. Approval authorizes execution.**
+
+Mission creation is a modeling operation. It captures, structures, and preserves intent as a replayable artifact. Mission approval is a governance operation. It authorizes the transition from modeled understanding to executable commitment. Discovery and modeling must never be blocked by governance; governance blocks only activation.
+
+### Helper Commands and Governance Integrity
+
+Alignment helpers are operator conveniences, not governance shortcuts. Every helper command must execute the same domain capabilities and produce the same governance artifacts that a manual workflow would produce. No CLI convenience may synthesize approval artifacts, skip a Divergence Gate, or otherwise bypass the constitutional model.
+
 ---
 
 ## New Concepts

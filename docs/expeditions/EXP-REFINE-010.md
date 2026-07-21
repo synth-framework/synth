@@ -1,119 +1,225 @@
-# EXP-REFINE-010 — Intent Interpretation Model
+# EXP-REFINE-010 — Interactive Decision Acquisition
 
 **Status:** Proposed  
 **Kind:** Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  
-**Phase:** 1 — Refinement Model  
+**Phase:** 3 — Interactive Refinement  
 **Authority:** Synth Architectural Constitution
 
 ---
 
 ## Goal
 
-Create a canonical **Intent Model** artifact that captures explicit objectives, implicit expectations, forbidden interpretations, and unresolved ambiguity before an intent is refined into a contract.
+Introduce a canonical interaction model that allows the Refinement Layer to acquire missing knowledge through structured, deterministic decision requests rather than relying exclusively on free-form conversation.
 
 ---
 
 ## Purpose
 
-Raw human intent is not yet a contract. Before SYNTH can produce a `Refined Intent`, it must model what the human actually means — including what was said, what was implied, and what must never be inferred. The Intent Model is the first structured artifact in the refinement pipeline.
+The Refinement Layer identifies uncertainty. The Decision Acquisition Engine determines the smallest set of questions required to eliminate that uncertainty. Adapters render those decisions using the richest interaction primitives they support. The refinement process remains deterministic regardless of the interaction surface.
+
+This expedition turns "asking questions" into a reusable, replayable governance capability.
+
+---
+
+## New Concepts
+
+### Interactive Decision
+
+A structured request for a single piece of missing knowledge. It is independent of any UI or adapter.
+
+```text
+id
+intentModelId
+decisionType
+question
+description
+options          // for choice-based types
+required
+blocking
+createdAt
+```
+
+### Decision Request
+
+A batch of Interactive Decisions produced by the Decision Acquisition Engine for a single refinement iteration.
+
+```text
+id
+intentModelId
+sessionId
+decisions[]
+purpose
+confidenceTarget
+createdAt
+```
+
+### Decision Response
+
+The operator's answer, captured as evidence.
+
+```text
+id
+requestId
+decisionId
+value            // string | string[] | boolean
+reason
+evidenceReference
+createdAt
+```
+
+### Interaction Capability
+
+A capability advertised by an adapter describing which decision types it can render.
+
+```text
+free_text
+single_choice
+multi_choice
+boolean
+approval
+confirmation
+ranking
+priority_ordering
+file_selection
+image_selection
+reference_selection
+```
+
+### Interaction Renderer
+
+Adapter-specific logic that translates an Interactive Decision into the appropriate surface (CLI prompt, Mission Studio UI, chat message, etc.).
+
+---
+
+## Supported Decision Types
+
+| Type | Description | Example |
+|---|---|---|
+| `free_text` | Open answer | "Describe the primary user." |
+| `single_choice` | Select one | "Which platform is primary?" |
+| `multi_choice` | Select many | "Which integrations are required?" |
+| `boolean` | Yes/no | "Is this public-facing?" |
+| `approval` | Approve/reject with reason | "Approve this interpretation?" |
+| `confirmation` | Acknowledge | "Confirm this constraint is correct." |
+| `ranking` | Order items | "Rank these priorities." |
+| `priority_ordering` | Assign relative priority | "Order these milestones." |
+| `file_selection` | Choose files | "Select reference documents." |
+| `image_selection` | Choose images | "Select the authoritative design." |
+| `reference_selection` | Choose existing artifact | "Select the approved architecture diagram." |
+
+---
+
+## Adapter Capability Model
+
+Every AI adapter advertises its interaction capabilities.
+
+Example:
+
+```text
+supports:
+  ✓ free_text
+  ✓ single_choice
+  ✓ multi_choice
+  ✓ approval
+  ✓ confirmation
+  ✗ ranking
+  ✗ image_selection
+```
+
+The Refinement Engine never chooses presentation. It asks for a Decision Request. The adapter chooses the rendering.
+
+---
+
+## Decision Generation Rules
+
+The Decision Acquisition Engine must:
+
+- Minimize the number of questions.
+- Maximize confidence gained per question.
+- Avoid redundant questions across refinement sessions.
+- Merge related uncertainties into single decisions when possible.
+- Stop asking once confidence exceeds the required threshold.
+- Support optional questions.
+- Support blocking questions that prevent refinement from continuing until answered.
+
+---
+
+## Decision Evidence
+
+Every answer becomes evidence.
+
+```text
+Intent
+  ↓
+Decision Request
+  ↓
+Response
+  ↓
+Evidence
+  ↓
+Intent Model Revision
+```
+
+Replay reconstructs the entire refinement conversation from Decision Requests and Responses.
+
+---
+
+## Degradation Rules
+
+When an adapter cannot render a decision type, the engine degrades to a compatible alternative:
+
+- `ranking` → `single_choice` of "most important" or `free_text`
+- `image_selection` → `reference_selection` or `free_text`
+- `multi_choice` → repeated `single_choice` or `free_text`
+- `file_selection` → `reference_selection` or `free_text`
+
+No refinement logic depends on a specific AI provider or UI surface.
 
 ---
 
 ## Deliverables
 
-1. **Intent Model artifact schema** in `src/governance/intent-model.ts`.
-2. **Intent interpretation service** that derives an Intent Model from raw input.
-3. **Confidence scoring** that quantifies how well the intent is understood.
-4. **Ambiguity extraction** that surfaces unknowns requiring clarification.
-5. **Lifecycle states**:
-   - `draft`
-   - `awaiting_clarification`
-   - `sufficient`
-   - `insufficient`
-   - `superseded`
-6. **Unit tests** covering valid/invalid models and confidence transitions.
-
----
-
-## Intent Model Fields
-
-```text
-id
-rawIntentReference
-explicitObjectives
-implicitObjectives
-audience
-problemStatement
-desiredOutcome
-nonGoals
-forbiddenInterpretations
-allowedInterpretations
-referenceEvidenceIds
-confidenceLevel          // 0.0 - 1.0
-unresolvedAmbiguity
-knownUnknowns
-version
-```
-
----
-
-## Example
-
-For the homepage request:
-
-```text
-Raw intent: "Let's build the homepage using this design."
-
-Explicit objectives:
-- Create a homepage
-- Use the provided design
-
-Implicit objectives:
-- Product demonstration
-- Interactive experience
-- Not marketing-first
-
-Forbidden interpretations:
-- SaaS landing page
-- Generic dashboard
-- AI chat interface
-- Component showcase
-
-Allowed interpretations:
-- Mission Studio as the dominant experience
-- Marketing sections secondary
-
-Confidence: 72%
-Unresolved ambiguity:
-- Live AI agent or static simulation?
-```
+1. `InteractiveDecision` artifact schema in `src/governance/interactive-decision.ts`.
+2. `DecisionRequest` and `DecisionResponse` artifact schemas.
+3. Decision Acquisition Engine that selects questions from an Intent Model's ambiguity.
+4. Adapter capability detection and negotiation.
+5. Interaction renderer interface for CLI, Mission Studio, and AI chat adapters.
+6. Replay event types for `INTERACTIVE_DECISION_CREATED`, `DECISION_REQUESTED`, `DECISION_RESPONDED`.
+7. Unit tests covering decision generation, adapter capability negotiation, and degradation.
 
 ---
 
 ## Acceptance Criteria
 
-- An Intent Model can be created from raw intent input.
-- The model distinguishes explicit from implicit objectives.
-- Forbidden and allowed interpretations are explicitly listed.
-- Confidence is computed from completeness of required fields.
-- Models below a configurable confidence threshold require human escalation.
-- The schema validates correctly with the existing validation framework.
+- Interactive Decision becomes a canonical governance artifact.
+- Decision requests are replayable.
+- Adapters declare interaction capabilities.
+- The refinement engine selects decision types independently of UI.
+- Unsupported interaction types automatically degrade to compatible alternatives.
+- Every decision response becomes evidence.
+- Replay faithfully reconstructs all refinement interactions.
+- Mission Studio can render decision requests.
+- CLI adapters present equivalent terminal interactions.
+- AI chat adapters present equivalent conversational interactions.
+- No refinement logic depends on a specific AI provider.
 
 ---
 
 ## Out of Scope
 
-- Natural-language parsing or LLM-based interpretation.
-- UI for Intent Model editing in Mission Studio.
-- Divergence Gate enforcement.
+- Natural-language generation of questions from arbitrary text.
+- Real-time bidirectional chat sessions.
+- Automated decision-making without operator input.
 
 ---
 
 ## Related
 
 - ADR-036 — Intent Refinement and Alignment Governance
+- ADR-037 — Genesis Lifecycle and Alignment Contracts
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-REFINE-001 — Refinement Layer Model
-- EXP-REFINE-002 — Alignment Contract
+- EXP-REFINE-004 — Refinement Questions Engine
+- EXP-REFINE-011 — Intent Interpretation Model
