@@ -1,6 +1,6 @@
 # EXP-PROGRAM-027 — Mission Studio Homepage
 
-**Status:** Paused — Review Gate Pilot  
+**Status:** Active — Governance Architecture v1.0 Pilot  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -14,13 +14,16 @@
 
 ---
 
-> ## ⏸️ Program 027 is paused at a natural checkpoint
+> ## ▶️ Program 027 is the first program executed under Governance Architecture v1.0
 >
-> Do not continue implementing additional homepage expeditions until the governance model supports intent refinement and review gates.
+> Program 027 is the **pilot validation project** for ADR-045 — Governance Lifecycle & State Machine Specification. It demonstrates the complete SYNTH governance lifecycle end-to-end.
 >
-> Program 027 is now the **pilot validation project** for EXP-PROGRAM-035 — Intent Refinement & Review Governance. The current implementation becomes the baseline candidate. Completed expeditions (EXP-HOME-001, EXP-HOME-002, EXP-HOME-025) are frozen as evidence. Downstream expeditions may not begin until upstream gates are resolved.
+> Completed expeditions (EXP-HOME-001, EXP-HOME-002, EXP-HOME-025) are frozen as baseline evidence. They will pass through the new governance gates rather than being rewritten. Downstream expeditions may not begin until upstream gates are resolved.
 >
-> Program 027 will execute under the three-gate model: **Refinement Gate** (before Mission), **Review Gate** (after implementation), and **Acceptance Gate** (before promotion).
+> Program 027 will execute under the five-phase lifecycle defined in ADR-045:
+> **Genesis** (Intent → Refinement → Alignment → Approval) →
+> **Synthesis** (Mission → Expeditions → Implementation) →
+> **Governance** (Review → Revision → Acceptance → Convergence → Completion).
 
 ---
 
@@ -43,6 +46,41 @@ Turn the SYNTH homepage into a production-quality Mission Studio experience:
 - Guide visitors through Intent → Discovery → Mission → Expeditions → Governance → Replay → Architecture → Repository Summary.
 - Release Mission Studio only after the lifecycle completes, then show supporting content (capabilities, examples, docs, community).
 - Certify that a first-time visitor can understand SYNTH in under five minutes without reading external documentation.
+
+---
+
+## Governance Lifecycle
+
+Program 027 is the first program executed under **Governance Architecture v1.0** (ADR-036, ADR-037, ADR-045). The homepage itself must project this lifecycle.
+
+```text
+Genesis
+────────────
+Intent
+Refinement
+Alignment
+Approval
+
+↓
+
+Synthesis
+────────────
+Mission
+Expeditions
+Implementation
+
+↓
+
+Governance
+────────────
+Review
+Revision
+Acceptance
+Convergence
+Completion
+```
+
+Every phase produces an artifact. Every gate requires an authorized satisfier. No downstream work may begin while an upstream gate is awaiting decision.
 
 ---
 
@@ -173,153 +211,177 @@ For every state the specification defines:
 
 ## Program Composition
 
+Program 027 is reorganized around the Governance Architecture v1.0 lifecycle. Existing expeditions are preserved; new Genesis expeditions are added to capture intent, alignment, and approval before implementation resumes.
+
 ```text
 EXP-PROGRAM-027
 Mission Studio Homepage
 │
-├── Milestone A — Mission Studio Foundations
+├── Genesis
 │   │
-│   ├── EXP-HOME-001  Mission Studio Design Language
-│   │       Design Expedition
-│   │       Canonical public visual language of SYNTH: tokens, themes, principles.
+│   ├── EXP-HOME-026  Homepage Intent Model
+│   │       Genesis Expedition
+│   │       Capture the explicit and implicit intent for the Mission Studio homepage.
 │   │
-│   ├── EXP-HOME-002  Mission Studio Component Catalog
-│   │       Design / Architecture Expedition
-│   │       Reusable components for workspace, sidebar, artifact cards, motion, feedback.
+│   ├── EXP-HOME-027  Homepage Alignment Contract
+│   │       Genesis Expedition
+│   │       Formalize allowed interpretation, forbidden drift, and reference evidence.
 │   │
-│   ├── EXP-HOME-003  Mission Studio UI Specification
-│   │       Architecture Expedition
-│   │       Persistent application shell, lifecycle phases, scroll-driven behavior.
-│   │
-│   └── EXP-HOME-025  Mission Studio Design Governance
-│           Design Expedition
-│           Ensure implementation conforms to canonical Mission Studio visual language.
+│   └── EXP-HOME-028  Homepage Mission Approval
+│           Genesis Expedition
+│           Approve the Mission only after the Divergence Gate resolves to aligned.
 │
-├── Milestone B — Homepage Experience
+├── Synthesis
 │   │
-│   ├── EXP-HOME-004  Homepage / Mission Studio Integration
-│   │       Architecture Expedition
-│   │       How Mission Studio becomes the homepage: hero handoff, sticky behavior, release.
+│   ├── Milestone A — Mission Studio Foundations
+│   │   │
+│   │   ├── EXP-HOME-001  Mission Studio Design Language        → Frozen baseline
+│   │   │       Design Expedition
+│   │   │
+│   │   ├── EXP-HOME-002  Mission Studio Component Catalog      → Frozen baseline
+│   │   │       Design / Architecture Expedition
+│   │   │
+│   │   ├── EXP-HOME-003  Mission Studio UI Specification
+│   │   │       Architecture Expedition
+│   │   │
+│   │   └── EXP-HOME-025  Mission Studio Design Governance      → Frozen baseline
+│   │           Design Expedition
 │   │
-│   ├── EXP-HOME-005  Intent Phase
-│   │       Product Expedition
-│   │       Mission Studio phase for capturing visitor intent.
+│   ├── Milestone B — Homepage Experience
+│   │   │
+│   │   ├── EXP-HOME-004  Homepage / Mission Studio Integration
+│   │   │       Architecture Expedition
+│   │   │
+│   │   ├── EXP-HOME-005  Intent Phase
+│   │   │       Product Expedition
+│   │   │
+│   │   ├── EXP-HOME-006  Discovery Phase
+│   │   │       Product Expedition
+│   │   │
+│   │   ├── EXP-HOME-007  Mission Phase
+│   │   │       Product Expedition
+│   │   │
+│   │   ├── EXP-HOME-008  Expeditions Phase
+│   │   │       Product Expedition
+│   │   │
+│   │   └── EXP-HOME-009  Governance & Replay Phase
+│   │           Product Expedition
 │   │
-│   ├── EXP-HOME-006  Discovery Phase
-│   │       Product Expedition
-│   │       Mission Studio phase for Discovery artifacts and unknowns.
-│   │
-│   ├── EXP-HOME-007  Mission Phase
-│   │       Product Expedition
-│   │       Mission Studio phase for Mission artifact and approval.
-│   │
-│   ├── EXP-HOME-008  Expeditions Phase
-│   │       Product Expedition
-│   │       Mission Studio phase for Expedition proposals.
-│   │
-│   └── EXP-HOME-009  Governance & Replay Phase
-│           Product Expedition
-│           Mission Studio phase for governance visualization and replay timeline.
+│   └── Milestone C — Runtime Integration
+│       │
+│       ├── EXP-HOME-016  Homepage Runtime
+│       │       Architecture Expedition
+│       │
+│       ├── EXP-HOME-017  Homepage Genesis Projection
+│       │       Product Expedition
+│       │
+│       ├── EXP-HOME-018  Homepage Replay Projection
+│       │       Product Expedition
+│       │
+│       ├── EXP-HOME-019  Artifact Projection Layer
+│       │       Architecture Expedition
+│       │
+│       ├── EXP-HOME-020  Curated Demonstration Library
+│       │       Product Expedition
+│       │
+│       ├── EXP-HOME-021  Mission Studio State Machine
+│       │       Architecture Expedition
+│       │
+│       ├── EXP-HOME-022  Runtime Abstraction Layer
+│       │       Architecture Expedition
+│       │
+│       ├── EXP-HOME-023  AI Operator Adapter
+│       │       Architecture Expedition
+│       │
+│       └── EXP-HOME-024  Projection Contract
+│               Architecture Expedition
 │
-├── Milestone C — Runtime Integration
+├── Governance
 │   │
-│   ├── EXP-HOME-016  Homepage Runtime
-│   │       Architecture Expedition
-│   │       Browser-compatible, in-memory SYNTH runtime for the homepage.
-│   │
-│   ├── EXP-HOME-017  Homepage Genesis Projection
-│   │       Product Expedition
-│   │       Homepage projection of the Genesis Protocol as TypeScript functions.
-│   │
-│   ├── EXP-HOME-018  Homepage Replay Projection
-│   │       Product Expedition
-│   │       Scrubbable replay projection using the existing SYNTH replay engine.
-│   │
-│   ├── EXP-HOME-019  Artifact Projection Layer
-│   │       Architecture Expedition
-│   │       Map runtime state to Mission Studio Artifact Cards.
-│   │
-│   ├── EXP-HOME-020  Curated Demonstration Library
-│   │       Product Expedition
-│   │       Deterministic demo missions for regression testing and visitor exploration.
-│   │
-│   ├── EXP-HOME-021  Mission Studio State Machine
-│   │       Architecture Expedition
-│   │       Unified state machine driving the homepage Mission Studio.
-│   │
-│   ├── EXP-HOME-022  Runtime Abstraction Layer
-│   │       Architecture Expedition
-│   │       MissionRuntime interface decouples UI from runtime implementation.
-│   │
-│   ├── EXP-HOME-023  AI Operator Adapter
-│   │       Architecture Expedition
-│   │       Demo operator adapter; later replaced by live AI adapters.
-│   │
-│   └── EXP-HOME-024  Projection Contract
-│           Architecture Expedition
-│           Stable interface between runtime and any UI.
+│   ├── Review Gate #1 — Mission Studio Foundations
+│   ├── Review Gate #2 — Homepage Experience
+│   ├── Review Gate #3 — Runtime Integration
+│   ├── Acceptance Gate — Homepage Release
+│   └── Convergence Certification — Intent Preserved
 │
-└── Milestone D — Production Certification
+└── Completion
     │
-    ├── EXP-HOME-010  Responsive Implementation
-    │       Engineering Expedition
-    │       Adapt Mission Studio and homepage for all screen sizes.
-    │
-    ├── EXP-HOME-011  Accessibility
-    │       Engineering Expedition
-    │       WCAG 2.2 AA compliance, keyboard navigation, screen readers, reduced motion.
-    │
-    ├── EXP-HOME-012  Performance
-    │       Engineering Expedition
-    │       Fast first paint, 60 FPS scroll animations, bundle budgets, lazy loading.
-    │
-    ├── EXP-HOME-013  Motion System
-    │       Design Expedition
-    │       Calm, purposeful animation rules for Mission Studio transitions.
-    │
-    ├── EXP-HOME-014  Documentation Integration
-    │       Product Expedition
-    │       Link Mission Studio artifacts and homepage concepts to canonical docs.
-    │
-    └── EXP-HOME-015  Production Certification
-            Certification Expedition
-            Unit, integration, E2E, visual regression, accessibility, performance tests.
+    └── Milestone D — Production Certification
+        │
+        ├── EXP-HOME-010  Responsive Implementation
+        │       Engineering Expedition
+        │
+        ├── EXP-HOME-011  Accessibility
+        │       Engineering Expedition
+        │
+        ├── EXP-HOME-012  Performance
+        │       Engineering Expedition
+        │
+        ├── EXP-HOME-013  Motion System
+        │       Design Expedition
+        │
+        ├── EXP-HOME-014  Documentation Integration
+        │       Product Expedition
+        │
+        └── EXP-HOME-015  Production Certification
+                Certification Expedition
 ```
 
 ---
 
 ## Milestones & Gates
 
-Program 027 is delivered through four milestones. Each milestone passes through the three-gate model defined in EXP-PROGRAM-035:
+Program 027 is delivered through the complete Governance Architecture v1.0 lifecycle defined in ADR-045:
 
 ```text
-Refinement Gate  → before Mission approval
-Review Gate      → after implementation
-Acceptance Gate  → before promotion
+Genesis
+    │
+    ├── Refinement Gate   → before Intent Model approval
+    ├── Alignment Gate    → before Mission approval
+    │
+    ▼
+Synthesis
+    │
+    ├── Implementation
+    │
+    ▼
+Governance
+    │
+    ├── Review Gate       → after implementation
+    ├── Acceptance Gate   → before promotion
+    └── Convergence Gate  → before completion
 ```
 
 ```text
 Program 027
 │
-├── Milestone A — Mission Studio Foundations
-│       Refinement Gate A → Review Gate A → Acceptance Gate A
+├── Genesis
+│       Intent Model → Alignment Contract → Mission Approval
 │
-├── Milestone B — Homepage Experience
-│       Refinement Gate B → Review Gate B → Acceptance Gate B
+├── Synthesis
+│   │
+│   ├── Milestone A — Mission Studio Foundations
+│   │       Review Gate A
+│   │
+│   ├── Milestone B — Homepage Experience
+│   │       Review Gate B
+│   │
+│   └── Milestone C — Runtime Integration
+│           Review Gate C
 │
-├── Milestone C — Runtime Integration
-│       Refinement Gate C → Review Gate C → Acceptance Gate C
+├── Governance
+│       Acceptance Gate → Convergence Gate
 │
-└── Milestone D — Production Certification
-        Refinement Gate D → Review Gate D → Acceptance Gate D
+└── Completion
+        Milestone D — Production Certification
 ```
 
-### Three-Gate Lifecycle
+### Governance Lifecycle
 
-Every expedition in Program 027 follows the three-gate lifecycle:
+Every expedition in Program 027 follows the lifecycle defined in ADR-045:
 
 ```text
-Intent
+Raw Intent
     │
     ▼
 Refinement Gate
@@ -329,7 +391,21 @@ Refinement Gate
     └──────── Clarification Requested
     │
     ▼
-Mission / Planning
+Intent Model
+    │
+    ▼
+Alignment Gate
+    │
+    ├──────── Aligned
+    │
+    ├──────── Revision Required ──→ Refinement
+    │
+    ├──────── Rejected
+    │
+    └──────── Superseded
+    │
+    ▼
+Mission Approved
     │
     ▼
 Implementation
@@ -350,9 +426,16 @@ Review Gate
     ▼
 Acceptance Gate
     │
-    ├──────── Accepted ──→ Closed
+    ├──────── Accepted
     │
     └──────── Rejected
+    │
+    ▼
+Convergence Gate
+    │
+    ├──────── Certified ──→ Closed
+    │
+    └──────── Not Certified ──→ Revision
 ```
 
 ### Gate Packages
@@ -368,6 +451,17 @@ Constraints
 Assumptions
 Unknowns
 Decision → Refined Intent / Clarification Requested
+```
+
+**Alignment Gate Package**
+```text
+Intent Model
+Refined Intent
+Alignment Contract
+Reference Evidence
+Allowed / Forbidden Interpretation
+Reviewer
+Decision → Aligned / Revision Required / Rejected / Superseded
 ```
 
 **Review Gate Package**
@@ -392,7 +486,51 @@ Reviewer
 Decision → Accepted / Rejected
 ```
 
-**Stop condition:** No downstream expedition may begin while an upstream expedition is awaiting any gate decision.
+**Convergence Gate Package**
+```text
+Original Alignment Contract
+Implementation evidence
+Final result
+Divergence detected
+Divergence accepted
+Reviewer
+Decision → Certified / Not Certified
+```
+
+### Mission Studio Review Package
+
+A new artifact bundles everything a Review Gate evaluates for the homepage:
+
+```text
+Mission Studio Review Package
+
+- Current implementation (Storybook / deployed preview)
+- Design boards (canonical references)
+- Design tokens (LDS-002)
+- Component catalog
+- Screenshot comparisons
+- Visual diff against baseline
+- Acceptance checklist
+- Divergence report
+- Replay trace
+```
+
+This package is what the Review Gate actually evaluates. "Please review" is no longer sufficient.
+
+**Stop condition:** No downstream expedition may begin while an upstream gate is awaiting any gate decision.
+
+### Genesis
+
+**Expeditions:** EXP-HOME-026, EXP-HOME-027, EXP-HOME-028
+
+**Deliverable:** An approved Mission chartered from an aligned Alignment Contract.
+
+**Genesis Acceptance:**
+- Intent Model captures explicit and implicit homepage intent.
+- Alignment Contract binds reference evidence (design boards, tokens, storyboards).
+- Allowed and forbidden interpretations are explicit.
+- Divergence Gate resolves to `aligned`.
+- Mission Approval Gate authorizes the Mission.
 
 ### Milestone A — Mission Studio Foundations
 
@@ -401,12 +539,10 @@ Decision → Accepted / Rejected
 **Deliverable:** One functioning Mission Studio shell (header, sidebar, workspace, footer) rendered in Storybook.
 
 **Gate A Acceptance:**
-- Refinement Gate produces an approved Refined Intent for the Mission Studio shell.
 - Implementation visually converges to accepted Mission Studio design boards.
 - Storybook renders the complete workspace in light and dark themes.
 - Every component derives exclusively from LDS-002 tokens.
-- Review Gate Package is approved by a human reviewer.
-- Acceptance Gate confirms the shell is ready for homepage integration.
+- Mission Studio Review Package is approved by a human reviewer.
 
 ### Milestone B — Homepage Experience
 
@@ -415,12 +551,10 @@ Decision → Accepted / Rejected
 **Deliverable:** The complete guided homepage experience, scroll-driven through all lifecycle phases, without runtime integration.
 
 **Gate B Acceptance:**
-- Refinement Gate produces an approved Refined Intent for the homepage experience.
 - Homepage reproduces the complete storyboard.
 - Scroll recordings demonstrate smooth phase transitions.
 - Sidebar progression, artifact evolution, and workspace persistence are verified.
-- Review Gate Package is approved by a human reviewer.
-- Acceptance Gate confirms the experience is production-worthy.
+- Mission Studio Review Package is approved by a human reviewer.
 
 ### Milestone C — Runtime Integration
 
@@ -429,13 +563,11 @@ Decision → Accepted / Rejected
 **Deliverable:** The homepage runtime powers the already-approved UI with zero visual regression.
 
 **Gate C Acceptance:**
-- Refinement Gate produces an approved Refined Intent for runtime integration.
 - Deterministic browser runtime produces artifacts for curated examples.
 - Genesis and Replay projections feed the Artifact Projection Layer.
 - Mission Studio State Machine drives the same UI approved at Gate B.
 - Visual regression against Gate B baseline shows zero unintended changes.
-- Review Gate Package is approved by a human reviewer.
-- Acceptance Gate confirms runtime integration is production-worthy.
+- Mission Studio Review Package is approved by a human reviewer.
 
 ### Milestone D — Production Certification
 
@@ -444,18 +576,17 @@ Decision → Accepted / Rejected
 **Deliverable:** A production-certified homepage ready for release.
 
 **Gate D Acceptance:**
-- Refinement Gate produces an approved Refined Intent for production certification.
 - Responsive, accessible, performant, and motion-validated.
 - Documentation links are stable and validated.
 - Production certification tests pass (unit, integration, E2E, visual regression, accessibility, performance).
-- Review Gate Package is approved by a human reviewer.
 - Acceptance Gate confirms the homepage is approved for release.
+- Convergence Gate certifies intent has been preserved.
 
 ---
 
 ## Frozen Work
 
-The following expeditions are **frozen** exactly as implemented. They are not to be rewritten or silently improved. They become evidence for the new Review Gate governance model.
+The following expeditions are **frozen** exactly as implemented. They are not to be rewritten or silently improved. They become baseline evidence for the new governance model.
 
 ```text
 EXP-HOME-001  Mission Studio Design Language        → Implementation Complete
@@ -463,7 +594,7 @@ EXP-HOME-002  Mission Studio Component Catalog      → Implementation Complete
 EXP-HOME-025  Mission Studio Design Governance      → Implementation Complete
 ```
 
-Each frozen expedition will pass through the three-gate lifecycle as soon as EXP-PROGRAM-035 delivers the capability. Until then, they remain baseline candidates.
+Each frozen expedition will be evaluated through a Review Gate under Governance Architecture v1.0. Until then, they remain baseline candidates. No silent improvements are permitted.
 
 ---
 
@@ -627,7 +758,9 @@ Additionally:
 - **EXP-PROGRAM-024 — Canonical Knowledge & Validation** provides the knowledge graph and validation concepts.
 - **EXP-PROGRAM-025 — Incremental Governance** ensures homepage changes are validated efficiently.
 - **EXP-PROGRAM-026 — AI Agent Interoperability** provides the agent protocols the homepage may demonstrate.
-- **EXP-PROGRAM-035 — Intent Refinement & Review Governance** governs how Program 027 is understood, reviewed, and accepted.
+- **EXP-PROGRAM-035 — Intent Refinement & Review Governance** provides Review Gates, Acceptance Gates, and execution governance.
+- **EXP-PROGRAM-036 — Intent Refinement & Alignment Governance** provides the Genesis Layer, Alignment Contract, and Divergence Gate.
+- **ADR-045 — Governance Lifecycle & State Machine Specification** is the canonical lifecycle under which Program 027 executes.
 
 ---
 
