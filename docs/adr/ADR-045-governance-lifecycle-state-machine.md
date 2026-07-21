@@ -42,13 +42,18 @@ Any future governance mechanism shall integrate into this lifecycle rather than 
 
 ---
 
-## Constitutional Rule — Mission Projection as Genesis/Synthesis Boundary
+## Constitutional Rule — Alignment Contract as Genesis/Synthesis Boundary
 
-> **The Alignment Contract authorizes Mission Projection. The Mission Projection Package, once certified, authorizes transition from Genesis into Synthesis. No Mission may be created, activated, or approved without a certified Mission Projection derived from a valid Alignment Contract unless explicitly governed by an approved constitutional exception.**
+> **The Alignment Contract is the sole constitutional artifact that authorizes transition from Genesis into Synthesis. No Mission may be created, activated, or approved without a valid Alignment Contract unless explicitly governed by an approved constitutional exception. The first act of Synthesis is the deterministic projection of the approved Alignment Contract into a Mission Projection Package, which must then be certified before it becomes an authoritative Mission.**
 
-The boundary between Genesis and Synthesis is not the Alignment Contract alone. It is the certified projection of that contract into a Mission. Above the boundary, interpretation may still change through refinement, review, and approval cycles. Below the boundary, change is governed by the same execution controls that govern Mission, Expedition, and Implementation lifecycle transitions.
+The Alignment Contract marks the boundary between exploratory intent work (Genesis) and executable work (Synthesis). Above the contract, interpretation may still change through refinement, review, and approval cycles. Below the contract, change is governed by the same execution controls that govern Mission, Expedition, and Implementation lifecycle transitions.
 
-This rule makes Mission a deterministic projection, not an imperative creation. It preserves the complete refinement history (Intent Model, Refinement Session, Refinement Report, Refinement Approval, Alignment Contract) while ensuring that only explicitly authorized, certifiably projected intent enters synthesis.
+This rule preserves two distinct responsibilities:
+
+1. **Genesis** produces authorization: the Alignment Contract answers whether Synthesis may begin.
+2. **Synthesis** produces artifacts: Mission Projection answers what the canonical Mission is, and Projection Certification answers whether that projection is complete and faithful.
+
+Mission remains a deterministic projection, not an imperative creation, but its projection belongs to Synthesis, not Genesis.
 
 ---
 

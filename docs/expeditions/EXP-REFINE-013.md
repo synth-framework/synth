@@ -2,7 +2,7 @@
 
 > **Genesis expedition.** Specify how an approved `Alignment Contract` is deterministically projected into a canonical `Mission` artifact.
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Kind:** Genesis Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  
@@ -182,18 +182,52 @@ These invariants become the basis of a constitutional regression suite.
 
 ---
 
-## 4. Projection Certification
+## 4. Projection Completeness
 
-Before a projected Mission becomes authoritative, the projection itself must be certified.
+Determinism is not enough. A projection can be deterministic and still silently omit authorized intent. Projection Completeness requires that every authorized element of the Alignment Contract is represented exactly once in the projected Mission.
+
+Completeness checks:
+
+```text
+C1. Objective Completeness
+    Every aligned objective in Alignment Contract.objectiveCoverage
+    appears exactly once in Mission.objectives.
+
+C2. Constraint Completeness
+    Every required property and technical constraint in the Alignment Contract
+    appears exactly once in Mission.constraints.
+
+C3. Forbidden Interpretation Completeness
+    Every forbidden interpretation in the Alignment Contract
+    appears exactly once in Mission.nonGoals.
+
+C4. Evidence Reachability
+    Every referenceEvidenceId in the Alignment Contract
+    remains reachable through Mission.referenceEvidence.
+
+C5. Provenance Completeness
+    Every field in the projected Mission has a documented provenance rule.
+    No synthesized field lacks provenance.
+
+C6. Lineage Completeness
+    Mission.lineage records alignmentContractId, intentModelId, and refinementReportId.
+```
+
+A projection that fails completeness is not merely inaccurate; it is incomplete and must not be certified.
+
+---
+
+## 5. Projection Certification
+
+Before a projected Mission becomes authoritative, the projection itself must be certified. Certification combines invariants, completeness, and provenance into a single auditable decision.
 
 Certification checks:
 
 | Check | Question |
 |---|---|
-| Coverage | Is every aligned objective present in the Mission? |
-| Conservation | Did any objective disappear during projection? |
-| Constraint preservation | Are all required properties preserved? |
-| Forbidden preservation | Are all forbidden interpretations preserved? |
+| Invariants | Does the projection satisfy all constitutional invariants? |
+| Completeness | Does every authorized element appear exactly once? |
+| Conservation | Did any objective, constraint, or forbidden interpretation disappear? |
 | Provenance | Does every Mission field trace to a projection rule? |
 | Determinism | Does the fingerprint match a recomputed projection? |
 | Lineage | Does the Mission record its originating Alignment Contract? |
@@ -207,7 +241,7 @@ FAILED  → Projection is rejected; Alignment Contract must be revised.
 
 ---
 
-## 5. Mission Projection Package
+## 6. Mission Projection Package
 
 The projection must produce a reviewable package containing:
 
@@ -238,12 +272,13 @@ This package is the artifact that Mission Review evaluates. A reviewer must be a
 
 ## Definition of Done
 
-- [ ] Mission Projection Specification is written and accepted.
-- [ ] Canonical Mission schema is defined with provenance for every field.
-- [ ] Projection invariants are listed and classified as constitutional.
-- [ ] Projection Certification criteria are specified.
-- [ ] Mission Projection Package structure is specified.
-- [ ] ADR-045 is updated to include the `Alignment Contract → Mission Projection → Mission Projection Certification → Mission` lifecycle.
+- [x] Mission Projection Specification is written and accepted.
+- [x] Canonical Mission schema is defined with provenance for every field.
+- [x] Projection invariants are listed and classified as constitutional.
+- [x] Projection Completeness checks are specified.
+- [x] Projection Certification criteria are specified.
+- [x] Mission Projection Package structure is specified.
+- [x] ADR-045 is updated to include the `Alignment Contract → Mission Projection → Mission Projection Certification → Mission` lifecycle, with the Alignment Contract remaining the Genesis/Synthesis boundary.
 
 ---
 
