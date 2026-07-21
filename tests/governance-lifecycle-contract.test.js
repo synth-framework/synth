@@ -13,6 +13,8 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { bootstrap } from "../dist/core/bootstrap.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
@@ -79,7 +81,23 @@ async function approveMission(projectDir, subject, purpose) {
     draftId = createOutput.draftId
   }
 
-  const approveResult = runSynth(["mission", "approve", "--draft-id", draftId], projectDir)
+  // Phase 2 governance: Mission approval requires an aligned Alignment Contract.
+  // The CLI operator workflow for creating this contract is not yet implemented,
+  // so tests construct it directly through the governance capabilities.
+  const dataDir = path.join(projectDir, ".synth", "data")
+  const gateCtx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      eventLogPath: path.join(dataDir, "event-log.jsonl"),
+      statePath: path.join(dataDir, "canonical-state.json"),
+    },
+  })
+  const { contractId } = await createAlignedContract(gateCtx)
+
+  const approveResult = runSynth(
+    ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId],
+    projectDir,
+  )
   assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
   const approveOutput = parseJson(approveResult.stdout)
   assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)

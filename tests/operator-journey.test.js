@@ -20,6 +20,7 @@ import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
 import { documentFromKnowledgeBase } from "../dist/documentation/documentation-expedition.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
 function makeObservation(type, subject, overrides = {}) {
   return {
@@ -194,6 +195,9 @@ test("Operator Journey completes end-to-end and produces certification evidence"
     { capability: "CompleteExpedition", payload: { id: expeditionProposal.id } },
     { capability: "CompleteMission", payload: { id: missionProposal.id } },
   ]
+
+  const { contractId } = await createAlignedContract(ctx)
+  executionIntents[0].payload.alignmentContractId = contractId
 
   for (const intent of executionIntents) {
     const result = await ctx.api.handleIntent({

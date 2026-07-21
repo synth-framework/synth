@@ -30,6 +30,7 @@ import {
   WorkspaceCognitionEnvironment, CanonicalLanguageAuditor,
   RepositoryHealth, SemanticVerifier, ExecutionArtifactAdapter,
 } from "../dist/workspace/index.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
 // ---- Test harness ----
 const TESTS = []
@@ -829,7 +830,8 @@ test("Expedition: ApproveMission transitions status to active", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-2", name: "Test Mission" } })
-  const result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-2" } })
+  const { contractId } = await createAlignedContract(ctx)
+  const result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-2", alignmentContractId: contractId } })
   assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
   const events = await ctx.infra.eventStore.loadAll()
   const approveEvent = events.find((e) => e.type === "MISSION_APPROVED" && e.payload.id === "M-2")
@@ -916,7 +918,8 @@ test("Expedition: full expedition lifecycle", async () => {
 
   // Create Mission
   await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-FULL", name: "Full Test Mission", purpose: "Test full lifecycle" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-FULL" } })
+  const { contractId } = await createAlignedContract(ctx)
+  await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-FULL", alignmentContractId: contractId } })
 
   // Create, commit, and start Expedition
   await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-FULL", missionId: "M-FULL", name: "Full Expedition", goal: "Test everything" } })
@@ -1108,7 +1111,8 @@ test("PCE: commissionMission transitions mission to active", async () => {
   if (!ctx.isSealed) ctx.seal()
 
   await ctx.api.plan({ operation: "chartMission", params: { id: "M-PCE-2", name: "Commission Test" } })
-  const result = await ctx.api.plan({ operation: "commissionMission", params: { id: "M-PCE-2" } })
+  const { contractId } = await createAlignedContract(ctx)
+  const result = await ctx.api.plan({ operation: "commissionMission", params: { id: "M-PCE-2" }, context: { alignmentContractId: contractId } })
 
   assert.ok(result.events, "Result must include events")
   assert.equal(result.events[0]?.type, "MISSION_APPROVED")
@@ -1214,8 +1218,9 @@ test("PCE: full planning pipeline — mission → expedition → objective synth
   })
   assert.ok(mission.events, "chartMission must produce events")
 
-  // Step 2: Commission mission
-  await ctx.api.plan({ operation: "commissionMission", params: { id: "M-FULL-PCE" } })
+  // Step 2: Create alignment contract and commission mission
+  const { contractId } = await createAlignedContract(ctx)
+  await ctx.api.plan({ operation: "commissionMission", params: { id: "M-FULL-PCE" }, context: { alignmentContractId: contractId } })
 
   // Step 3: Chart expedition
   const expedition = await ctx.api.plan({

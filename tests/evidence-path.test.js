@@ -68,8 +68,15 @@ function evidenceAdd(dir, draftId, subject, extra = []) {
   return runCli(dir, ["mission", "evidence", "add", "--draft-id", draftId, "--subject", subject, ...extra])
 }
 
-function approve(dir, draftId) {
-  return runCli(dir, ["mission", "approve", "--draft-id", draftId])
+function align(dir) {
+  const r = runCli(dir, ["alignment", "prepare"])
+  return r.output.match(/"contractId":\s*"([^"]+)"/)?.[1]
+}
+
+function approve(dir, draftId, contractId) {
+  const args = ["mission", "approve", "--draft-id", draftId]
+  if (contractId) args.push("--alignment-contract-id", contractId)
+  return runCli(dir, args)
 }
 
 function draftPath(dir, draftId) {
@@ -110,7 +117,8 @@ function main() {
       assert(newId !== first.draftId, "Evidence add: successor has a new id (drafts are immutable)")
       assert(r.output.includes(`"supersedes": "${first.draftId}"`) || r.output.includes(first.draftId), "Evidence add: names the superseded draft")
       assert(newConfidence > first.confidence, `Evidence add: confidence recomputed upward (${first.confidence} → ${newConfidence})`)
-      const approval = approve(dir, newId)
+      const contractId = align(dir)
+      const approval = approve(dir, newId, contractId)
       assert(!/integrity/i.test(approval.output), "Evidence add: successor draft certifies cleanly at approval")
     } finally {
       cleanup(dir)
@@ -127,7 +135,8 @@ function main() {
       const secondId = second.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
       const third = evidenceAdd(dir, secondId, "Operational constraints")
       const thirdId = third.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
-      const approval = approve(dir, thirdId)
+      const contractId = align(dir)
+      const approval = approve(dir, thirdId, contractId)
       assert(!/integrity/i.test(approval.output), "Chained successors: integrity chain remains certifiable")
     } finally {
       cleanup(dir)
