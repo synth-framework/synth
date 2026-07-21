@@ -430,15 +430,35 @@ export function createDefaultCapabilities(): Capability[] {
         },
       ],
       postconditions: [],
-      invariantsChecked: [],
+      invariantsChecked: ["alignment_contract_aligned"],
       sideEffects: false,
       executionClass: "sync",
       handler: ({ intent, state, executionCtx }) => {
         const id = String(intent.payload.id)
         const existing = state.missions[id]
         if (!existing) return { events: [{ type: "MISSION_APPROVED", payload: { id, status: "active" } }] }
+        const alignmentContractId = String(intent.payload.alignmentContractId || existing.alignmentContractId || "")
+        if (!alignmentContractId || alignmentContractId === "undefined") {
+          throw new Error("ALIGNMENT_CONTRACT_REQUIRED: ApproveMission requires an alignment contract")
+        }
+        const contract = state.alignmentContracts[alignmentContractId]
+        if (!contract) {
+          throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${alignmentContractId}`)
+        }
+        const alignedGate = Object.values(state.divergenceGates).find(
+          (g) => g.contractId === alignmentContractId && g.status === "aligned"
+        )
+        if (!alignedGate) {
+          throw new Error(`DIVERGENCE_GATE_NOT_ALIGNED: Mission cannot be approved without an aligned divergence gate for contract ${alignmentContractId}`)
+        }
         const updated = approveMission(existing, executionCtx)
-        return { events: [{ type: "MISSION_APPROVED", payload: { id: updated.id, status: updated.status } }], result: updated }
+        return {
+          events: [{
+            type: "MISSION_APPROVED",
+            payload: { id: updated.id, status: updated.status, alignmentContractId },
+          }],
+          result: { ...updated, alignmentContractId },
+        }
       },
     },
     {

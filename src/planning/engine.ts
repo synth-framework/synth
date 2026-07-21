@@ -129,11 +129,12 @@ export class PlanningEngine {
     id: string,
     context: Record<string, unknown> = {},
   ): Promise<ReturnType<PlanningEngine["process"]>> {
+    const alignmentContractId = typeof context.alignmentContractId === "string" ? context.alignmentContractId : undefined
     return this.process(
       {
         actor: "pce",
         capability: "ApproveMission",
-        payload: { id },
+        payload: alignmentContractId ? { id, alignmentContractId } : { id },
       },
       context,
     )

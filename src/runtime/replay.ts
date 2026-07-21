@@ -14,6 +14,8 @@ import type {
   ReviewGateState,
   ReviewGatePolicy,
   IntentModelState,
+  AlignmentContractState,
+  ReferenceEvidenceState,
   Objective,
   Discovery,
   Decision,
@@ -43,6 +45,9 @@ export function createEmptyState(): CanonicalState {
     decisions: {},
     intentModels: {},
     refinementSessions: {},
+    alignmentContracts: {},
+    referenceEvidence: {},
+    divergenceGates: {},
     generatedWorkItems: {},
     executions: {},
     executionIntents: {},
@@ -215,7 +220,11 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     case "MISSION_APPROVED": {
       const missionId = String(payload.id)
       if (state.missions[missionId]) {
-        state.missions[missionId] = { ...state.missions[missionId], status: "active", updatedAt: event.timestamp }
+        const update: Partial<typeof state.missions[typeof missionId]> = { status: "active", updatedAt: event.timestamp }
+        if (typeof payload.alignmentContractId === "string") {
+          update.alignmentContractId = payload.alignmentContractId
+        }
+        state.missions[missionId] = { ...state.missions[missionId], ...update }
       }
       break
     }
@@ -448,6 +457,82 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       if (session) {
         session.answers.push({ questionId: String(payload.questionId), text: String(payload.answer) })
         session.updatedAt = event.timestamp
+      }
+      break
+    }
+
+    // Alignment and divergence lifecycle (EXP-PROGRAM-036 Phase 2)
+    case "ALIGNMENT_CONTRACT_CREATED": {
+      const contract = payload.contract as AlignmentContractState
+      if (contract) state.alignmentContracts[contract.id] = contract
+      break
+    }
+    case "ALIGNMENT_CONTRACT_SUBMITTED": {
+      const contractId = String(payload.contractId)
+      if (state.alignmentContracts[contractId]) {
+        state.alignmentContracts[contractId] = { ...state.alignmentContracts[contractId], status: "awaiting_review" }
+      }
+      break
+    }
+    case "ALIGNMENT_CONTRACT_APPROVED": {
+      const contractId = String(payload.contractId)
+      const approvedBy = payload.approvedBy as { kind: string; id: string } | undefined
+      if (state.alignmentContracts[contractId]) {
+        state.alignmentContracts[contractId] = {
+          ...state.alignmentContracts[contractId],
+          status: "approved",
+          approvedBy,
+          approvedAt: event.timestamp,
+        }
+      }
+      break
+    }
+    case "ALIGNMENT_CONTRACT_REJECTED": {
+      const contractId = String(payload.contractId)
+      if (state.alignmentContracts[contractId]) {
+        state.alignmentContracts[contractId] = { ...state.alignmentContracts[contractId], status: "rejected" }
+      }
+      break
+    }
+    case "ALIGNMENT_CONTRACT_SUPERSEDED": {
+      const contractId = String(payload.contractId)
+      if (state.alignmentContracts[contractId]) {
+        state.alignmentContracts[contractId] = { ...state.alignmentContracts[contractId], status: "superseded" }
+      }
+      break
+    }
+    case "REFERENCE_EVIDENCE_CREATED": {
+      const evidence = payload.evidence as ReferenceEvidenceState
+      if (evidence) state.referenceEvidence[evidence.id] = evidence
+      break
+    }
+    case "REFERENCE_EVIDENCE_BOUND": {
+      const contractId = String(payload.contractId)
+      const evidenceId = String(payload.evidenceId)
+      const contract = state.alignmentContracts[contractId]
+      if (contract && !contract.referenceEvidenceIds.includes(evidenceId)) {
+        contract.referenceEvidenceIds = [...contract.referenceEvidenceIds, evidenceId]
+      }
+      break
+    }
+    case "DIVERGENCE_GATE_OPENED": {
+      const gateId = String(payload.gateId)
+      state.divergenceGates[gateId] = {
+        id: gateId,
+        contractId: String(payload.contractId),
+        intentModelId: String(payload.intentModelId),
+        status: "awaiting_alignment",
+        createdAt: event.timestamp,
+      }
+      break
+    }
+    case "DIVERGENCE_GATE_RESOLVED": {
+      const gateId = String(payload.gateId)
+      const gate = state.divergenceGates[gateId]
+      if (gate) {
+        gate.status = String(payload.decision)
+        gate.reportId = String(payload.reportId)
+        gate.resolvedAt = event.timestamp
       }
       break
     }
@@ -864,6 +949,9 @@ export function computeStateHash(state: CanonicalState): string {
     decisions: Object.keys(state.decisions).sort(),
     intentModels: Object.keys(state.intentModels).sort(),
     refinementSessions: Object.keys(state.refinementSessions).sort(),
+    alignmentContracts: Object.keys(state.alignmentContracts).sort(),
+    referenceEvidence: Object.keys(state.referenceEvidence).sort(),
+    divergenceGates: Object.keys(state.divergenceGates).sort(),
   }
   // Backward-compatible hash: only include lifecycle once the project has
   // been initialized. Empty/uninitialized states preserve their legacy hash.

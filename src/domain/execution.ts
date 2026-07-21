@@ -23,6 +23,16 @@ import {
 import type { GatePolicy, ReviewDecisionType } from "../governance/review-gates.js"
 import { createIntentModel, reviseIntentModel, validateIntentModel } from "../governance/intent-model.js"
 import { startRefinement, answerQuestion, submitForRefinedIntent, supersedeRefinement } from "../governance/refinement-layer.js"
+import {
+  createAlignmentContract,
+  validateAlignmentContract,
+  submitAlignmentContract,
+  approveAlignmentContract,
+  rejectAlignmentContract,
+  supersedeAlignmentContract,
+} from "../governance/alignment-contract.js"
+import { createReferenceEvidence, validateReferenceEvidence, bindEvidenceToContract } from "../governance/reference-evidence.js"
+import { openDivergenceGate, resolveDivergenceGate, isAligned } from "../governance/divergence-gate.js"
 
 /** Execute domain logic — pure function: (intent, state, ctx) → result */
 export function applyDomain(
@@ -172,8 +182,27 @@ export function applyDomain(
       if (!existing) {
         return { events: [{ type: "MISSION_APPROVED", payload: { id, status: "active" } }] }
       }
+      const alignmentContractId = String(intent.payload.alignmentContractId || existing.alignmentContractId || "")
+      if (!alignmentContractId || alignmentContractId === "undefined") {
+        throw new Error("ALIGNMENT_CONTRACT_REQUIRED: ApproveMission requires an alignment contract")
+      }
+      const contract = state.alignmentContracts[alignmentContractId]
+      if (!contract) {
+        throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${alignmentContractId}`)
+      }
+      const alignedGate = Object.values(state.divergenceGates).find(
+        (g) => g.contractId === alignmentContractId && g.status === "aligned"
+      )
+      if (!alignedGate) {
+        throw new Error(`DIVERGENCE_GATE_NOT_ALIGNED: Mission cannot be approved without an aligned divergence gate for contract ${alignmentContractId}`)
+      }
       const updated = planningLogic.approveMission(existing, ctx)
-      return { events: [{ type: "MISSION_APPROVED", payload: { id: updated.id, status: updated.status } }] }
+      return {
+        events: [{
+          type: "MISSION_APPROVED",
+          payload: { id: updated.id, status: updated.status, alignmentContractId },
+        }],
+      }
     }
 
     case "CompleteMission": {
@@ -366,6 +395,146 @@ export function applyDomain(
       }
       return {
         events: [{ type: "INTENT_MODEL_SUPERSEDED", payload: { intentModelId } }],
+      }
+    }
+
+    // Alignment and divergence capabilities (EXP-PROGRAM-036 Phase 2)
+    case "CreateAlignmentContract": {
+      const input = intent.payload.input as Record<string, unknown>
+      const contract = createAlignmentContract({
+        intentModelId: String(input.intentModelId),
+        refinedIntentId: typeof input.refinedIntentId === "string" ? input.refinedIntentId : undefined,
+        intentSummary: String(input.intentSummary),
+        expectedExperience: String(input.expectedExperience),
+        requiredProperties: Array.isArray(input.requiredProperties) ? input.requiredProperties.map(String) : undefined,
+        forbiddenProperties: Array.isArray(input.forbiddenProperties) ? input.forbiddenProperties.map(String) : undefined,
+        requiredBehaviors: Array.isArray(input.requiredBehaviors) ? input.requiredBehaviors.map(String) : undefined,
+        visualReferences: Array.isArray(input.visualReferences) ? input.visualReferences.map(String) : undefined,
+        behavioralReferences: Array.isArray(input.behavioralReferences) ? input.behavioralReferences.map(String) : undefined,
+        functionalExpectations: Array.isArray(input.functionalExpectations) ? input.functionalExpectations.map(String) : undefined,
+        technicalConstraints: Array.isArray(input.technicalConstraints) ? input.technicalConstraints.map(String) : undefined,
+        successCriteria: Array.isArray(input.successCriteria) ? input.successCriteria.map(String) : undefined,
+        explicitNonRequirements: Array.isArray(input.explicitNonRequirements)
+          ? input.explicitNonRequirements.map(String)
+          : undefined,
+        allowedInterpretation: Array.isArray(input.allowedInterpretation) ? input.allowedInterpretation.map(String) : undefined,
+        allowedVariation: Array.isArray(input.allowedVariation) ? input.allowedVariation.map(String) : undefined,
+        forbiddenInterpretation: Array.isArray(input.forbiddenInterpretation)
+          ? input.forbiddenInterpretation.map(String)
+          : undefined,
+        forbiddenDrift: Array.isArray(input.forbiddenDrift) ? input.forbiddenDrift.map(String) : undefined,
+        referenceEvidenceIds: Array.isArray(input.referenceEvidenceIds) ? input.referenceEvidenceIds.map(String) : undefined,
+      })
+      const validation = validateAlignmentContract(contract)
+      if (!validation.valid) {
+        throw new Error(`ALIGNMENT_CONTRACT_INVALID: ${validation.errors.join(", ")}`)
+      }
+      return { events: [{ type: "ALIGNMENT_CONTRACT_CREATED", payload: { contractId: contract.id, contract } }] }
+    }
+
+    case "SubmitAlignmentContract": {
+      const contractId = String(intent.payload.contractId)
+      const contract = state.alignmentContracts[contractId]
+      if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
+      const submitted = submitAlignmentContract(contract as import("../governance/alignment-contract.js").AlignmentContract)
+      return {
+        events: [
+          { type: "ALIGNMENT_CONTRACT_SUBMITTED", payload: { contractId } },
+          { type: "ALIGNMENT_CONTRACT_CREATED", payload: { contractId: submitted.id, contract: submitted } },
+        ],
+      }
+    }
+
+    case "ApproveAlignmentContract": {
+      const contractId = String(intent.payload.contractId)
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const contract = state.alignmentContracts[contractId]
+      if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
+      const approved = approveAlignmentContract(
+        contract as import("../governance/alignment-contract.js").AlignmentContract,
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string }
+      )
+      return {
+        events: [
+          { type: "ALIGNMENT_CONTRACT_APPROVED", payload: { contractId, approvedBy: reviewer } },
+          { type: "ALIGNMENT_CONTRACT_CREATED", payload: { contractId: approved.id, contract: approved } },
+        ],
+      }
+    }
+
+    case "RejectAlignmentContract": {
+      const contractId = String(intent.payload.contractId)
+      const reason = String(intent.payload.reason)
+      return { events: [{ type: "ALIGNMENT_CONTRACT_REJECTED", payload: { contractId, reason } }] }
+    }
+
+    case "CreateReferenceEvidence": {
+      const input = intent.payload.input as Record<string, unknown>
+      const evidence = createReferenceEvidence({
+        kind: String(input.kind) as import("../governance/reference-evidence.js").EvidenceKind,
+        uri: String(input.uri),
+        hash: typeof input.hash === "string" ? input.hash : undefined,
+        mimeType: typeof input.mimeType === "string" ? input.mimeType : undefined,
+        description: typeof input.description === "string" ? input.description : undefined,
+      })
+      const validation = validateReferenceEvidence(evidence)
+      if (!validation.valid) {
+        throw new Error(`REFERENCE_EVIDENCE_INVALID: ${validation.errors.join(", ")}`)
+      }
+      return { events: [{ type: "REFERENCE_EVIDENCE_CREATED", payload: { evidenceId: evidence.id, evidence } }] }
+    }
+
+    case "BindReferenceEvidence": {
+      const contractId = String(intent.payload.contractId)
+      const evidenceId = String(intent.payload.evidenceId)
+      return { events: [{ type: "REFERENCE_EVIDENCE_BOUND", payload: { contractId, evidenceId } }] }
+    }
+
+    case "OpenDivergenceGate": {
+      const contractId = String(intent.payload.contractId)
+      const contract = state.alignmentContracts[contractId]
+      if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
+      if (contract.status !== "approved") {
+        throw new Error(`ALIGNMENT_CONTRACT_NOT_APPROVED: ${contractId}`)
+      }
+      const gate = openDivergenceGate(contractId, contract.intentModelId)
+      return {
+        events: [
+          {
+            type: "DIVERGENCE_GATE_OPENED",
+            payload: { gateId: gate.id, contractId, intentModelId: contract.intentModelId },
+          },
+        ],
+      }
+    }
+
+    case "ResolveDivergenceGate": {
+      const gateId = String(intent.payload.gateId)
+      const decision = String(intent.payload.decision) as import("../governance/divergence-gate.js").DivergenceGateDecision
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const reason = String(intent.payload.reason)
+      const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
+      const gate = state.divergenceGates[gateId]
+      if (!gate) throw new Error(`DIVERGENCE_GATE_NOT_FOUND: ${gateId}`)
+      const { gate: resolvedGate, report } = resolveDivergenceGate(
+        gate as import("../governance/divergence-gate.js").DivergenceGate,
+        decision,
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string },
+        reason,
+        evidence
+      )
+      return {
+        events: [
+          {
+            type: "DIVERGENCE_GATE_RESOLVED",
+            payload: {
+              gateId: resolvedGate.id,
+              contractId: resolvedGate.contractId,
+              decision,
+              reportId: report.id,
+            },
+          },
+        ],
       }
     }
 
@@ -599,6 +768,7 @@ export function toEvents(
   eventHash: string
   previousHash: string
 }> {
+  let previousHash = ctx.previousHash
   return result.events.map((event, index) => {
     const base = {
       id: `${ctx.commandId}-${index}`,
@@ -608,11 +778,13 @@ export function toEvents(
       capability: ctx.capability,
       actor: ctx.actor,
       payload: event.payload,
-      previousHash: ctx.previousHash,
+      previousHash,
     }
+    const eventHash = computeEventHash(base)
+    previousHash = eventHash
     return {
       ...base,
-      eventHash: computeEventHash(base),
+      eventHash,
     }
   })
 }
