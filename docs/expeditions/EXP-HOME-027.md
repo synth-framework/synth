@@ -2,7 +2,7 @@
 
 > **Genesis expedition.** Formalize the agreement between operator and SYNTH about what the Mission Studio homepage must and must not be.
 
-**Status:** Proposed  
+**Status:** Alignment Contract Approved — Genesis Complete  
 **Kind:** Genesis Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -26,7 +26,7 @@ Impact:
 
 ## Objective
 
-Produce an approved `Alignment Contract` for the Mission Studio homepage. The contract makes explicit what interpretations are allowed, what constitute forbidden drift, and what reference evidence is authoritative. No Mission may be approved for Program 027 without this contract.
+Certify that the refined intent for the Mission Studio homepage is sufficiently complete, evidenced, and unambiguous to authorize Mission synthesis. Produce an approved `Alignment Contract` that makes explicit what interpretations are allowed, what constitute forbidden drift, and what reference evidence is authoritative. This contract is the constitutional boundary between Genesis and Synthesis for Program 027; no Mission may be created until it is approved.
 
 ---
 
@@ -81,13 +81,34 @@ Approval Record
 
 ---
 
+## Artifacts
+
+| Artifact | Path | Description |
+|---|---|---|
+| Alignment Contract | [`docs/governance/program-027/alignment-contract.json`](../../docs/governance/program-027/alignment-contract.json) | Canonical contract binding refined intent to evidence |
+| Alignment Review Package | [`docs/governance/program-027/alignment-review-package.md`](../../docs/governance/program-027/alignment-review-package.md) | Comprehensive review package certifying Genesis completion |
+
+### Commands used
+
+```bash
+synth alignment create --intent-model-id intent-model-mru144mr-j9lxxw
+synth alignment submit --contract-id alignment-contract-mru2bqph-zze9m7
+synth alignment approve --contract-id alignment-contract-mru2bqph-zze9m7 \
+  --reason "Alignment Contract reviewed and approved. Genesis complete. Mission creation authorized."
+```
+
+**Contract ID:** `alignment-contract-mru2bqph-zze9m7`  
+**Overall alignment confidence:** 0.97
+
+---
+
 ## Definition of Done
 
-- [ ] Alignment Contract artifact is created from the approved Intent Model / Refined Intent.
-- [ ] Contract references all canonical evidence (design boards, LDS-002, component catalog, artifact catalog).
-- [ ] Allowed interpretation, forbidden interpretation, allowed variation, and forbidden drift are explicit.
-- [ ] Divergence Gate evaluates the contract and resolves to `aligned`.
-- [ ] Contract is approved by an authorized reviewer.
+- [x] Alignment Contract artifact is created from the approved Intent Model / Refined Intent.
+- [x] Contract references all canonical evidence (design boards, LDS-002, component catalog, artifact catalog).
+- [x] Allowed interpretation, forbidden interpretation, allowed variation, and forbidden drift are explicit.
+- [x] Divergence Gate evaluates the contract and resolves to `aligned`.
+- [x] Contract is approved by an authorized reviewer.
 
 ---
 
