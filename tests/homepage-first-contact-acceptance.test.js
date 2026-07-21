@@ -15,11 +15,10 @@
 
 import { test } from "node:test"
 import assert from "node:assert"
-import {
-  createHomepageRuntime,
-} from "../packages/homepage-runtime/dist/runtime.js"
+import { createHomepageRuntime } from "../packages/homepage-runtime/dist/runtime.js"
 import { resolvePublicExperience } from "../packages/homepage-runtime/dist/public-experience.js"
 import { DemoOperator } from "../packages/homepage-runtime/dist/operator.js"
+import { demoExamples } from "../packages/homepage-runtime/dist/demos.js"
 import {
   renderPublicExperience,
   renderPublicHeader,
@@ -77,9 +76,37 @@ function renderSurface(state, projection, examples) {
   }
 }
 
+async function answerUnknowns(runtime, state) {
+  const operator = new DemoOperator()
+  const questions = state.unknowns.items.map((u, i) => ({
+    id: `q-${i}`,
+    field: u.field,
+    description: u.description,
+  }))
+  const answers = await operator.answerClarification(questions)
+  const result = await runtime.clarify(state, answers)
+  return result.state
+}
+
+async function runFullFlow(runtime, input, mode = "greenfield") {
+  let { state, projection } = await runtime.discover(input, mode)
+  state = await answerUnknowns(runtime, state)
+  ;({ state, projection } = await runtime.approveContract(state))
+  ;({ state, projection } = await runtime.approveMission(state))
+  if (state.expeditions.length === 0) {
+    ;({ state, projection } = await runtime.buildExpeditions(state))
+  }
+  ;({ state, projection } = await runtime.approvePlan(state))
+  ;({ state, projection } = await runtime.startExecution(state))
+  ;({ state, projection } = await runtime.completeExecution(state))
+  ;({ state, projection } = await runtime.approveReview(state))
+  ;({ state, projection } = await runtime.acceptOutcome(state))
+  return { state, projection }
+}
+
 test("Homepage first-contact acceptance flow", async () => {
   const runtime = createHomepageRuntime()
-  const examples = [{ id: "example", name: "Example", input: "Build a homepage", mode: "greenfield" }]
+  const examples = demoExamples
 
   // 1. Idea
   let state = { input: "", mode: "greenfield", unknowns: { kind: "unknowns", items: [] }, expeditions: [], evidence: [], answers: [], publicFlow: { contractApproved: false, missionApproved: false, planApproved: false, executionStarted: false, executionComplete: false, reviewApproved: false, accepted: false } }
@@ -87,6 +114,7 @@ test("Homepage first-contact acceptance flow", async () => {
   let { experience, html } = renderSurface(state, projection, examples)
   assert.strictEqual(experience.step, "idea")
   assertContains(html, "What do you want to build?", "Idea step")
+  assertContains(html, "Start", "Idea step")
   assertNoForbiddenVocabulary(html, "Idea step")
 
   // 2. Discover → Question
@@ -95,16 +123,13 @@ test("Homepage first-contact acceptance flow", async () => {
   projection = discovered.projection
   ;({ experience, html } = renderSurface(state, projection, examples))
   assert.strictEqual(experience.step, "question")
-  assertContains(html, "Help SYNTH understand", "Question step")
+  assertContains(html, "Before SYNTH can help", "Question step")
+  assertContains(html, "Your answers shape the contract", "Question step")
   assertNoForbiddenVocabulary(html, "Question step")
 
   // 3. Answer questions → Understanding
-  const operator = new DemoOperator()
-  const questions = state.unknowns.items.map((u, i) => ({ id: `q-${i}`, field: u.field, description: u.description }))
-  const answers = await operator.answerClarification(questions)
-  const clarified = await runtime.clarify(state, answers)
-  state = clarified.state
-  projection = clarified.projection
+  state = await answerUnknowns(runtime, state)
+  projection = runtime.currentArtifacts(state)
   ;({ experience, html } = renderSurface(state, projection, examples))
   assert.strictEqual(experience.step, "understanding")
   assertContains(html, "Here is what SYNTH understood", "Understanding step")
@@ -133,6 +158,7 @@ test("Homepage first-contact acceptance flow", async () => {
   assert.strictEqual(experience.step, "plan")
   assertContains(html, "This is how SYNTH will build it", "Plan step")
   assertHasAction(html, "approve-plan", "Plan step")
+  assertContains(html, "Plan item", "Plan step")
   assertNoForbiddenVocabulary(html, "Plan step")
 
   // 6. Approve plan → still Plan, but Start building action is available.
@@ -150,7 +176,8 @@ test("Homepage first-contact acceptance flow", async () => {
   projection = started.projection
   ;({ experience, html } = renderSurface(state, projection, examples))
   assert.strictEqual(experience.step, "evidence")
-  assertContains(html, "Status: <strong>In progress</strong>", "Evidence step")
+  assertContains(html, "Execution status", "Evidence step")
+  assertContains(html, "In progress", "Evidence step")
   assertNoForbiddenVocabulary(html, "Evidence step")
 
   // 8. Complete execution → Review
@@ -159,9 +186,14 @@ test("Homepage first-contact acceptance flow", async () => {
   projection = completed.projection
   ;({ experience, html } = renderSurface(state, projection, examples))
   assert.strictEqual(experience.step, "review")
-  assertContains(html, "Does this result match the contract?", "Review step")
+  assertContains(html, "Compare the outcome to the original contract", "Review step")
+  assertContains(html, "Contract", "Review step")
+  assertContains(html, "Outcome", "Review step")
   assertHasAction(html, "approve-review", "Review step")
   assertNoForbiddenVocabulary(html, "Review step")
+
+  // Plan items should be marked completed in Review.
+  assertContains(html, "completed", "Review step completed plan items")
 
   // 9. Approve review → Acceptance
   const reviewApproved = await runtime.approveReview(state)
@@ -182,4 +214,23 @@ test("Homepage first-contact acceptance flow", async () => {
   assertContains(html, "The journey from idea to accepted outcome is complete", "Complete step")
   assertHasAction(html, "replay", "Complete step")
   assertNoForbiddenVocabulary(html, "Complete step")
+})
+
+test("AI product homepage demo scenario completes end-to-end", async () => {
+  const runtime = createHomepageRuntime()
+  const example = demoExamples.find((e) => e.id === "ai-product-homepage")
+  assert.ok(example, "AI product homepage demo example should exist")
+
+  const { state, projection } = await runFullFlow(runtime, example.input, example.mode)
+  const experience = resolvePublicExperience(state)
+
+  assert.strictEqual(experience.step, "complete")
+  assert.ok(state.mission, "Mission should be generated")
+  assert.ok(state.expeditions.length > 0, "Plan should have items")
+  assert.ok(state.publicFlow.accepted, "Outcome should be accepted")
+  assert.ok(projection.repository, "Repository summary should exist")
+
+  const html = renderPublicExperience({ experience, state, projection, examples: demoExamples })
+  assertContains(html, example.input, "Complete step should reference original idea")
+  assertNoForbiddenVocabulary(html, "AI product homepage complete step")
 })
