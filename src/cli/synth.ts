@@ -86,6 +86,7 @@ const COMMANDS = [
   { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
+  { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
@@ -974,11 +975,181 @@ async function cmdDiscover(args: string[], flags: Record<string, string | boolea
 async function cmdMissionHelp() {
   printJson(namespaceHelp("mission", "Mission Studio operations", [
     { name: "synth mission create --subject <subject> --purpose <purpose>", description: "Create a Mission proposal" },
-    { name: "synth mission approve --draft-id <id>", description: "Approve a Mission draft" },
+    { name: "synth mission approve --draft-id <id> --alignment-contract-id <contract-id>", description: "Approve a Mission draft" },
     { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
     { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
     { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
   ]))
+}
+
+async function cmdAlignmentHelp() {
+  printJson(namespaceHelp("alignment", "Intent alignment and divergence governance", [
+    { name: "synth alignment prepare", description: "Create a minimal aligned contract and output its id" },
+  ]))
+}
+
+interface AlignmentPrepareResult {
+  contractId: string
+  intentModelId: string
+  gateId: string
+}
+
+async function prepareAlignmentContract(ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>): Promise<AlignmentPrepareResult> {
+  async function lastEvent(type: string, predicate: (e: any) => boolean = () => true) {
+    const events = await ctx.infra.eventStore.loadAll()
+    const matches = events.filter((e: any) => e.type === type && predicate(e))
+    return matches.length > 0 ? matches[matches.length - 1] : undefined
+  }
+
+  const evidenceResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateReferenceEvidence",
+    payload: {
+      input: {
+        kind: "document",
+        uri: "file://alignment/prepare.md",
+        hash: "sha256:00000000",
+        mimeType: "text/markdown",
+        description: "Reference evidence created by alignment prepare",
+      },
+    },
+  })
+  if (evidenceResult.status !== "ok") {
+    throw new Error(`CreateReferenceEvidence failed: ${evidenceResult.error}`)
+  }
+  const evidenceEvent = await lastEvent("REFERENCE_EVIDENCE_CREATED")
+  const evidenceId = (evidenceEvent?.payload as Record<string, any> | undefined)?.evidenceId
+  if (!evidenceId) throw new Error("Reference evidence id not found after creation")
+
+  const intentResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateIntentModel",
+    payload: {
+      input: {
+        rawIntentReference: "synth-cli-alignment-prepare",
+        explicitObjectives: ["Mission created through CLI alignment prepare"],
+        implicitObjectives: [],
+        audience: "operators",
+        problemStatement: "Provide an aligned intent model for Mission approval",
+        desiredOutcome: "Aligned Mission approved",
+        nonGoals: [],
+        forbiddenInterpretations: [],
+        allowedInterpretations: ["CLI-prepared alignment"],
+        referenceEvidenceIds: [evidenceId],
+        unresolvedAmbiguity: [],
+        knownUnknowns: [],
+      },
+    },
+  })
+  if (intentResult.status !== "ok") {
+    throw new Error(`CreateIntentModel failed: ${intentResult.error}`)
+  }
+  const intentEvent = await lastEvent("INTENT_MODEL_CREATED")
+  const intentModelId = (intentEvent?.payload as Record<string, any> | undefined)?.intentModelId
+  if (!intentModelId) throw new Error("Intent model id not found after creation")
+
+  const contractResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateAlignmentContract",
+    payload: {
+      input: {
+        intentModelId,
+        intentSummary: "Mission created through CLI alignment prepare",
+        expectedExperience: "Aligned Mission execution",
+        requiredProperties: ["Mission approved with aligned intent"],
+        forbiddenProperties: ["Mission approved without alignment contract"],
+        requiredBehaviors: ["Approval validates alignment"],
+        successCriteria: ["Mission approval succeeds"],
+        forbiddenInterpretation: ["Unaligned mission approval"],
+        forbiddenDrift: ["Bypass alignment governance"],
+        referenceEvidenceIds: [evidenceId],
+      },
+    },
+  })
+  if (contractResult.status !== "ok") {
+    throw new Error(`CreateAlignmentContract failed: ${contractResult.error}`)
+  }
+  const contractEvent = await lastEvent("ALIGNMENT_CONTRACT_CREATED")
+  const contractId = (contractEvent?.payload as Record<string, any> | undefined)?.contractId
+  if (!contractId) throw new Error("Alignment contract id not found after creation")
+
+  const submitResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "SubmitAlignmentContract",
+    payload: { contractId },
+  })
+  if (submitResult.status !== "ok") {
+    throw new Error(`SubmitAlignmentContract failed: ${submitResult.error}`)
+  }
+
+  const approveResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ApproveAlignmentContract",
+    payload: {
+      contractId,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+    },
+  })
+  if (approveResult.status !== "ok") {
+    throw new Error(`ApproveAlignmentContract failed: ${approveResult.error}`)
+  }
+
+  const openGateResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "OpenDivergenceGate",
+    payload: { contractId, intentModelId },
+  })
+  if (openGateResult.status !== "ok") {
+    throw new Error(`OpenDivergenceGate failed: ${openGateResult.error}`)
+  }
+  const gateEvent = await lastEvent("DIVERGENCE_GATE_OPENED", (e: any) => e.payload.contractId === contractId)
+  const gateId = (gateEvent?.payload as Record<string, any> | undefined)?.gateId
+  if (!gateId) throw new Error("Divergence gate id not found after opening")
+
+  const resolveResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ResolveDivergenceGate",
+    payload: {
+      gateId,
+      decision: "aligned",
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+      reason: "CLI alignment prepare: contract accepted as baseline",
+      evidence: ["alignment-prepare"],
+    },
+  })
+  if (resolveResult.status !== "ok") {
+    throw new Error(`ResolveDivergenceGate failed: ${resolveResult.error}`)
+  }
+
+  return { contractId, intentModelId, gateId }
+}
+
+async function cmdAlignmentPrepare() {
+  // Phase 2 CLI workflow: create the minimal governance artifacts required
+  // for Mission approval when the operator has not yet run a full refinement
+  // session. This is a convenience wrapper around the public capabilities;
+  // ApproveMission still validates the contract through the ExecutionGate.
+  await ensureRuntimeDataDir(process.cwd())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  let result: AlignmentPrepareResult
+  try {
+    result = await prepareAlignmentContract(ctx)
+  } catch (err) {
+    printError(err instanceof Error ? err.message : String(err))
+  }
+
+  printJson({
+    status: "ok",
+    kind: "AlignmentPrepared",
+    contractId: result!.contractId,
+    intentModelId: result!.intentModelId,
+    gateId: result!.gateId,
+    note: "This is a minimal aligned contract for CLI workflows. Production missions should run a full refinement session.",
+  })
 }
 
 async function cmdExpeditionHelp() {
@@ -1330,6 +1501,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
 async function materializeApprovedMission(
   gateCtx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   snapshot: import("../mission-studio/types.js").ApprovedMissionModelSnapshot,
+  alignmentContractId?: string,
 ): Promise<{ missionId: string; name: string; purpose: string; created: boolean; approved: boolean }> {
   const state = await gateCtx.runtime.getState()
   const missionNode = Array.from(snapshot.worldModel.nodes.values()).find(
@@ -1356,10 +1528,14 @@ async function materializeApprovedMission(
   }
 
   if (!existingMission || existingMission.status === "draft") {
+    const approvePayload: Record<string, unknown> = { id: missionNode.id }
+    if (alignmentContractId) {
+      approvePayload.alignmentContractId = alignmentContractId
+    }
     const approveMissionResult = await gateCtx.api.handleIntent({
       actor: "synth-cli",
       capability: "ApproveMission",
-      payload: { id: missionNode.id },
+      payload: approvePayload,
     })
     if (approveMissionResult.status !== "ok") {
       throw new Error(`Failed to approve runtime mission: ${approveMissionResult.error || JSON.stringify(approveMissionResult)}`)
@@ -1480,9 +1656,10 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   // certified and the decision must not be recorded. This keeps planning and
   // runtime state atomic: a certified snapshot always implies corresponding
   // runtime events.
+  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
   let runtimeResult: Awaited<ReturnType<typeof materializeApprovedMission>>
   try {
-    runtimeResult = await materializeApprovedMission(gateCtx, approvedData)
+    runtimeResult = await materializeApprovedMission(gateCtx, approvedData, alignmentContractId)
   } catch (err) {
     printError(err instanceof Error ? err.message : String(err))
   }
@@ -1873,10 +2050,11 @@ async function cmdRepairReplay(args: string[], flags: Record<string, string | bo
         }
       }
 
+      const { contractId } = await prepareAlignmentContract(ctx)
       const approveResult = await ctx.api.handleIntent({
         actor: "synth-cli",
         capability: "ApproveMission",
-        payload: { id: missionId },
+        payload: { id: missionId, alignmentContractId: contractId },
       })
       if (approveResult.status !== "ok") {
         throw new Error(`ApproveMission failed: ${approveResult.error || JSON.stringify(approveResult)}`)
@@ -2329,6 +2507,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDiscoverHelp }
     case "mission":
       return { namespace, handler: cmdMissionHelp }
+    case "alignment":
+      return { namespace, handler: cmdAlignmentHelp }
     case "expedition":
       return { namespace, handler: cmdExpeditionHelp }
     case "doctor":
@@ -2395,6 +2575,9 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
     if (sub === "approve") return "mission approve"
+  }
+  if (namespace === "alignment") {
+    if (sub === "prepare") return "alignment prepare"
   }
   if (namespace === "expedition") {
     if (sub === "create") return "expedition create"
@@ -2517,8 +2700,16 @@ async function main() {
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
         )
+      break
+    }
+
+    case "alignment": {
+      const sub = positional[1]
+      if (sub === "prepare") await cmdAlignmentPrepare()
+      else
+        printError("Usage: synth alignment prepare")
       break
     }
 
