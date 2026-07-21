@@ -1,15 +1,12 @@
 // ============================================================
 // HOMEPAGE: Public Experience Views
 // ============================================================
-// Thin, public-vocabulary-only UI views for the simplified SYNTH
-// interaction model: Idea, Question, Understanding, Contract,
-// Mission, Plan, Evidence, Review, Acceptance.
+// Human-facing UI for the simplified SYNTH journey:
+// Idea → Question → Understanding → Contract → Mission → Plan →
+// Evidence → Review → Acceptance.
 //
-// These views deliberately avoid internal governance terminology.
-// They render what the user needs to see at each public step.
+// No internal governance vocabulary appears on this surface.
 // ============================================================
-
-import { renderArtifactCard } from "./components.js"
 
 /**
  * @typedef {import("./homepage-runtime/index.js").PublicExperienceState} PublicExperienceState
@@ -18,9 +15,6 @@ import { renderArtifactCard } from "./components.js"
  * @typedef {import("./homepage-runtime/index.js").ArtifactProjection} ArtifactProjection
  * @typedef {import("./homepage-runtime/index.js").DiscoveryCard} DiscoveryCard
  * @typedef {import("./homepage-runtime/index.js").ExpeditionCard} ExpeditionCard
- * @typedef {import("./homepage-runtime/index.js").ArchitectureCard} ArchitectureCard
- * @typedef {import("./homepage-runtime/index.js").RepositoryCard} RepositoryCard
- * @typedef {import("./homepage-runtime/index.js").EvidenceCard} EvidenceCard
  * @typedef {import("./homepage-runtime/index.js").MissionCard} MissionCard
  * @typedef {import("./homepage-runtime/index.js").IntentCard} IntentCard
  */
@@ -46,139 +40,8 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;")
 }
 
-/**
- * Render a public-facing artifact card using only public vocabulary.
- * Internal artifact kind names are relabeled for the homepage surface.
- * @param {IntentCard | DiscoveryCard | MissionCard | ExpeditionCard | EvidenceCard | ArchitectureCard | RepositoryCard} card
- * @returns {string}
- */
-function renderPublicArtifactCard(card) {
-  if (!card || typeof card !== "object") return ""
-
-  switch (card.kind) {
-    case "intent": {
-      const goals = card.goals?.length
-        ? `<div class="ms-card-section"><div class="ms-card-section-title">Goals</div><ul>${card.goals.map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul></div>`
-        : ""
-      return `
-        <article class="ms-card ms-card-intent">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Idea</div>
-            <span class="ms-confidence">${Math.round((card.confidence ?? 1) * 100)}% confidence</span>
-          </div>
-          <h4 class="ms-card-title">${escapeHtml(card.description)}</h4>
-          <div class="ms-card-body">${goals}</div>
-        </article>
-      `
-    }
-    case "discovery": {
-      const findings = card.findings?.length
-        ? `<div class="ms-card-section"><div class="ms-card-section-title">Understanding</div><ul>${card.findings.map((f) => `<li>${escapeHtml(f)}</li>`).join("")}</ul></div>`
-        : ""
-      const capabilities = card.capabilities?.length
-        ? `<div class="ms-tags">${card.capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div>`
-        : ""
-      const constraints = card.constraints?.length
-        ? `<div class="ms-card-section"><div class="ms-card-section-title">Constraints</div><ul>${card.constraints.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul></div>`
-        : ""
-      return `
-        <article class="ms-card ms-card-discovery">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Understanding</div>
-          </div>
-          <div class="ms-card-body">
-            ${findings}
-            ${constraints}
-            ${capabilities}
-          </div>
-        </article>
-      `
-    }
-    case "mission": {
-      const objectives = card.objectives?.length
-        ? `<div class="ms-card-section"><div class="ms-card-section-title">Objectives</div><ul>${card.objectives.map((o) => `<li>${escapeHtml(o)}</li>`).join("")}</ul></div>`
-        : ""
-      return `
-        <article class="ms-card ms-card-mission">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Mission</div>
-            <span class="ms-status ms-status-completed">Approved</span>
-          </div>
-          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
-          <div class="ms-card-body">
-            <p>${escapeHtml(card.purpose)}</p>
-            ${objectives}
-          </div>
-        </article>
-      `
-    }
-    case "expedition": {
-      const status = card.status === "completed" ? "completed" : "draft"
-      return `
-        <article class="ms-card ms-card-expedition">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Plan item</div>
-            <span class="ms-status ms-status-${status}">${escapeHtml(status)}</span>
-          </div>
-          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
-          <div class="ms-card-body">
-            <p>${escapeHtml(card.goal)}</p>
-          </div>
-        </article>
-      `
-    }
-    case "evidence":
-      return `
-        <article class="ms-card ms-card-evidence">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Evidence</div>
-            <span class="ms-confidence">${Math.round(card.confidence * 100)}% confidence</span>
-          </div>
-          <div class="ms-card-body">
-            <p>${escapeHtml(card.observation)}</p>
-            ${card.source ? `<div class="ms-card-meta"><span class="ms-tag">${escapeHtml(card.source)}</span></div>` : ""}
-          </div>
-        </article>
-      `
-    case "architecture": {
-      const dependencies = card.dependencies?.length
-        ? `<div class="ms-card-section"><div class="ms-card-section-title">Dependencies</div><p>${card.dependencies.map(escapeHtml).join(", ")}</p></div>`
-        : ""
-      return `
-        <article class="ms-card ms-card-architecture">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Structure</div>
-          </div>
-          <h4 class="ms-card-title">${escapeHtml(card.layer)}</h4>
-          <div class="ms-card-body">
-            <p>${escapeHtml(card.responsibility)}</p>
-            ${dependencies}
-          </div>
-        </article>
-      `
-    }
-    case "repository": {
-      const artifactList = card.artifacts?.length
-        ? `<div class="ms-card-section"><div class="ms-card-section-title">Artifacts</div><ul>${card.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`
-        : ""
-      return `
-        <article class="ms-card ms-card-repository">
-          <div class="ms-card-header">
-            <div class="ms-card-kind">Summary</div>
-            <span class="ms-status ms-status-completed">${escapeHtml(card.status)}</span>
-          </div>
-          <div class="ms-card-body">
-            ${artifactList}
-            <div class="ms-card-meta">
-              <span class="ms-tag">${card.eventCount} events</span>
-            </div>
-          </div>
-        </article>
-      `
-    }
-    default:
-      return ""
-  }
+function titleCase(text) {
+  return text.replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 /**
@@ -228,15 +91,103 @@ export function renderPublicHeader({ experience }) {
   const current = PUBLIC_STEPS.find((s) => s.id === experience.step)
   return `
     <div class="ms-public-header">
-      <div class="ms-public-step-title">${escapeHtml(current?.label ?? experience.step)}</div>
+      <div class="ms-public-step-title">Step ${experience.progress.current} of ${experience.progress.total}</div>
       <div class="ms-public-step-message">${escapeHtml(experience.message)}</div>
     </div>
   `
 }
 
 /**
+ * Render a public-facing card for an artifact, using public vocabulary only.
+ * @param {IntentCard | DiscoveryCard | MissionCard | ExpeditionCard} card
+ * @returns {string}
+ */
+function renderPublicArtifactCard(card) {
+  if (!card || typeof card !== "object") return ""
+
+  switch (card.kind) {
+    case "intent": {
+      const goals = card.goals?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Goals</div><ul>${card.goals.map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-intent">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Idea</div>
+            <span class="ms-confidence">${Math.round((card.confidence ?? 1) * 100)}% confidence</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.description)}</h4>
+          <div class="ms-card-body">${goals}</div>
+        </article>
+      `
+    }
+    case "discovery": {
+      const findings = card.findings?.length
+        ? `<ul>${card.findings.map((f) => `<li>${escapeHtml(f)}</li>`).join("")}</ul>`
+        : ""
+      const constraints = card.constraints?.length
+        ? `<div class="ms-contract-section"><div class="ms-contract-section-title">Constraints</div><ul>${card.constraints.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul></div>`
+        : ""
+      const capabilities = card.capabilities?.length
+        ? `<div class="ms-contract-section"><div class="ms-contract-section-title">Capabilities</div><div class="ms-tags">${card.capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-discovery">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Understanding</div>
+          </div>
+          <div class="ms-card-body">
+            ${findings}
+            ${constraints}
+            ${capabilities}
+          </div>
+        </article>
+      `
+    }
+    case "mission": {
+      const objectives = card.objectives?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Objectives</div><ul>${card.objectives.map((o) => `<li>${escapeHtml(o)}</li>`).join("")}</ul></div>`
+        : ""
+      const successCriteria = card.successCriteria?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Success criteria</div><ul>${card.successCriteria.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ul></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-mission">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Mission</div>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.purpose)}</p>
+            ${objectives}
+            ${successCriteria}
+          </div>
+        </article>
+      `
+    }
+    case "expedition": {
+      const status = card.status === "completed" ? "completed" : "pending"
+      return `
+        <article class="ms-card ms-card-expedition">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Plan item</div>
+            <span class="ms-status ms-status-${status}">${escapeHtml(status)}</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.goal)}</p>
+          </div>
+        </article>
+      `
+    }
+    default:
+      return ""
+  }
+}
+
+/**
  * Render the Idea step: intent input surface.
- * @param {{ examples: Array<{ id: string; name: string }>; inputValue?: string; mode?: string }} props
+ * @param {{ examples: Array<{ id: string; name: string; input: string }>; inputValue?: string; mode?: string }} props
  * @returns {string}
  */
 export function renderIdeaView({ examples, inputValue = "", mode = "greenfield" }) {
@@ -248,8 +199,10 @@ export function renderIdeaView({ examples, inputValue = "", mode = "greenfield" 
   ]
   return `
     <div class="ms-public-view ms-public-view-idea">
-      <h2>What do you want to build?</h2>
-      <p>Type an idea below or pick a curated example.</p>
+      <div class="ms-public-hero">
+        <h2>What do you want to build?</h2>
+        <p>Describe your idea in plain language. SYNTH will ask a few questions, confirm what it understood, and then build it with your approval.</p>
+      </div>
       <div class="ms-source-selector" role="group" aria-label="Entry mode">
         ${modes.map((m) => `
           <button type="button" class="ms-btn ms-source-option ${m.id === mode ? "ms-source-active" : ""}" data-mode="${m.id}">
@@ -258,11 +211,12 @@ export function renderIdeaView({ examples, inputValue = "", mode = "greenfield" 
         `).join("")}
       </div>
       <form id="ms-intent-form" class="ms-intent-form" aria-label="Intent discovery">
-        <input id="ms-intent-input" type="text" placeholder="e.g., Build a CRM" autocomplete="off" aria-label="Describe what you want to build" value="${escapeHtml(inputValue)}" />
-        <button type="submit" class="ms-btn ms-btn-primary">Discover</button>
+        <input id="ms-intent-input" type="text" placeholder="e.g., Create a homepage for an AI product" autocomplete="off" aria-label="Describe what you want to build" value="${escapeHtml(inputValue)}" />
+        <button type="submit" class="ms-btn ms-btn-primary">Start</button>
       </form>
+      <div class="ms-examples-label">Or try a curated example:</div>
       <div id="ms-examples" class="ms-examples">
-        ${examples.map((e) => `<button class="ms-btn ms-btn-secondary ms-example" data-example="${escapeHtml(e.id)}">${escapeHtml(e.name)}</button>`).join("")}
+        ${examples.map((e) => `<button class="ms-btn ms-btn-secondary ms-example" data-example="${escapeHtml(e.id)}" data-input="${escapeHtml(e.input)}">${escapeHtml(e.name)}</button>`).join("")}
       </div>
     </div>
   `
@@ -282,13 +236,15 @@ export function renderQuestionView({ state }) {
 
   return `
     <div class="ms-public-view ms-public-view-question">
-      <h3>Help SYNTH understand</h3>
-      <p>Answer a few quick questions so SYNTH can refine its understanding.</p>
+      <div class="ms-public-hero">
+        <h3>Before SYNTH can help, it needs to understand a few things</h3>
+        <p>Your answers shape the contract. You can always revise them later.</p>
+      </div>
       <form id="ms-question-form" class="ms-question-form">
         ${questions.map((q) => `
           <div class="ms-question-item">
             <label for="${escapeHtml(q.id)}">${escapeHtml(q.description)}</label>
-            <input id="${escapeHtml(q.id)}" type="text" name="${escapeHtml(q.field)}" data-field="${escapeHtml(q.field)}" placeholder="Your answer" />
+            <input id="${escapeHtml(q.id)}" type="text" name="${escapeHtml(q.field)}" data-field="${escapeHtml(q.field)}" placeholder="${escapeHtml(defaultPlaceholder(q.field))}" />
           </div>
         `).join("")}
         <button type="submit" class="ms-btn ms-btn-primary">Continue</button>
@@ -297,20 +253,54 @@ export function renderQuestionView({ state }) {
   `
 }
 
+function defaultPlaceholder(field) {
+  switch (field) {
+    case "runtime":
+      return "web, desktop, mobile..."
+    case "language":
+      return "typescript, python, rust..."
+    case "capabilities":
+      return "authentication, search, export..."
+    default:
+      return "Your answer"
+  }
+}
+
 /**
  * Render the Understanding step: show what SYNTH understood.
  * @param {{ state: GenesisState }} props
  * @returns {string}
  */
 export function renderUnderstandingView({ state }) {
-  const cards = []
-  if (state.intent) cards.push(renderPublicArtifactCard(state.intent))
-  if (state.discovery) cards.push(renderPublicArtifactCard(state.discovery))
+  const idea = state.intent?.description ?? ""
+  const constraints = state.discovery?.constraints ?? []
+  const capabilities = state.discovery?.capabilities ?? []
+
   return `
     <div class="ms-public-view ms-public-view-understanding">
-      <h3>Here is what SYNTH understood</h3>
-      <p>Review this before approving the contract.</p>
-      <div class="ms-public-artifacts">${cards.join("")}</div>
+      <div class="ms-public-hero">
+        <h3>Here is what SYNTH understood</h3>
+        <p>Review this summary. If it matches your intent, approve it to form the contract.</p>
+      </div>
+      <div class="ms-public-summary">
+        <div class="ms-public-summary-row">
+          <span class="ms-public-summary-key">Idea</span>
+          <span class="ms-public-summary-value">${escapeHtml(idea)}</span>
+        </div>
+        ${constraints.length > 0 ? `
+          <div class="ms-public-summary-row">
+            <span class="ms-public-summary-key">Constraints</span>
+            <span class="ms-public-summary-value">${constraints.map(escapeHtml).join("; ")}</span>
+          </div>
+        ` : ""}
+        ${capabilities.length > 0 ? `
+          <div class="ms-public-summary-row">
+            <span class="ms-public-summary-key">Capabilities</span>
+            <span class="ms-public-summary-value">${capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join(" ")}</span>
+          </div>
+        ` : ""}
+      </div>
+      ${state.intent ? renderPublicArtifactCard(state.intent) : ""}
     </div>
   `
 }
@@ -321,15 +311,42 @@ export function renderUnderstandingView({ state }) {
  * @returns {string}
  */
 export function renderContractView({ state }) {
-  const cards = []
-  if (state.intent) cards.push(renderPublicArtifactCard(state.intent))
-  if (state.discovery) cards.push(renderPublicArtifactCard(state.discovery))
-  if (state.domain) cards.push(renderPublicArtifactCard(state.domain))
+  const idea = state.intent?.description ?? ""
+  const constraints = state.discovery?.constraints ?? []
+  const capabilities = state.discovery?.capabilities ?? []
+  const entities = state.domain?.entities ?? []
+
   return `
     <div class="ms-public-view ms-public-view-contract">
-      <h3>Contract</h3>
-      <p>Approve this contract and SYNTH will derive a Mission and Plan.</p>
-      <div class="ms-public-artifacts">${cards.join("")}</div>
+      <div class="ms-public-hero">
+        <h3>Contract</h3>
+        <p>Approve this contract and SYNTH will derive a Mission and Plan. This is the boundary between understanding and building.</p>
+      </div>
+      <div class="ms-contract-document">
+        <div class="ms-contract-title">Statement of work</div>
+        <div class="ms-contract-section">
+          <div class="ms-contract-section-title">Idea</div>
+          <p>${escapeHtml(idea)}</p>
+        </div>
+        ${constraints.length > 0 ? `
+          <div class="ms-contract-section">
+            <div class="ms-contract-section-title">Constraints</div>
+            <ul>${constraints.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul>
+          </div>
+        ` : ""}
+        ${capabilities.length > 0 ? `
+          <div class="ms-contract-section">
+            <div class="ms-contract-section-title">Capabilities</div>
+            <div class="ms-tags">${capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div>
+          </div>
+        ` : ""}
+        ${entities.length > 0 ? `
+          <div class="ms-contract-section">
+            <div class="ms-contract-section-title">Domain</div>
+            <p>${entities.map(escapeHtml).join(", ")}</p>
+          </div>
+        ` : ""}
+      </div>
     </div>
   `
 }
@@ -340,29 +357,32 @@ export function renderContractView({ state }) {
  * @returns {string}
  */
 export function renderMissionView({ state }) {
-  const cards = []
-  if (state.mission) cards.push(renderPublicArtifactCard(state.mission))
   return `
     <div class="ms-public-view ms-public-view-mission">
-      <h3>Mission</h3>
-      <p>This is what SYNTH will build.</p>
-      <div class="ms-public-artifacts">${cards.join("")}</div>
+      <div class="ms-public-hero">
+        <h3>Mission</h3>
+        <p>This is what SYNTH will build. Approve it to authorize the plan.</p>
+      </div>
+      ${state.mission ? renderPublicArtifactCard(state.mission) : ""}
     </div>
   `
 }
 
 /**
- * Render the Plan step: show expeditions.
+ * Render the Plan step: show plan items.
  * @param {{ state: GenesisState }} props
  * @returns {string}
  */
 export function renderPlanView({ state }) {
-  const cards = state.expeditions.map((expedition) => renderPublicArtifactCard(expedition))
+  const items = state.expeditions.map((expedition) => renderPublicArtifactCard(expedition))
+
   return `
     <div class="ms-public-view ms-public-view-plan">
-      <h3>Plan</h3>
-      <p>This is how SYNTH will build it.</p>
-      <div class="ms-public-artifacts">${cards.join("") || `<p class="ms-placeholder">No plan items yet.</p>`}</div>
+      <div class="ms-public-hero">
+        <h3>Plan</h3>
+        <p>This is how SYNTH will build the mission. Each item produces evidence.</p>
+      </div>
+      <div class="ms-public-artifacts">${items.join("") || `<p class="ms-placeholder">No plan items yet.</p>`}</div>
     </div>
   `
 }
@@ -373,19 +393,108 @@ export function renderPlanView({ state }) {
  * @returns {string}
  */
 export function renderEvidenceView({ state, projection }) {
-  const cards = []
-  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderPublicArtifactCard(layer))
-  if (projection.repository) cards.push(renderPublicArtifactCard(projection.repository))
-  for (const evidence of projection.evidence) cards.push(renderPublicArtifactCard(evidence))
-
   const status = state.publicFlow.executionComplete ? "Complete" : "In progress"
+  const log = state.publicFlow.executionComplete
+    ? executionLogComplete(state, projection)
+    : executionLogInProgress(state)
+
+  const cards = []
+  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderStructureCard(layer))
+  if (projection.repository) cards.push(renderSummaryCard(projection.repository))
+  for (const evidence of projection.evidence) cards.push(renderEvidenceCard(evidence))
 
   return `
     <div class="ms-public-view ms-public-view-evidence">
-      <h3>Evidence</h3>
-      <p>Status: <strong>${escapeHtml(status)}</strong></p>
-      <div class="ms-public-artifacts">${cards.join("") || `<p class="ms-placeholder">Building evidence...</p>`}</div>
+      <div class="ms-public-hero">
+        <h3>Evidence</h3>
+        <p>SYNTH is executing the plan. Every action produces evidence.</p>
+      </div>
+      <div class="ms-evidence-status">
+        <span class="ms-evidence-status-label">Execution status</span>
+        <span class="ms-evidence-status-value ms-status-${status.toLowerCase().replace(/\s+/g, "-")}">${escapeHtml(status)}</span>
+      </div>
+      <div class="ms-execution-log">${log}</div>
+      <div class="ms-public-artifacts">${cards.join("")}</div>
     </div>
+  `
+}
+
+function executionLogInProgress(state) {
+  return state.expeditions.map((e) => `
+    <div class="ms-execution-log-entry">
+      <span class="ms-execution-log-dot ms-execution-log-dot-pending"></span>
+      <span class="ms-execution-log-text">Executing: ${escapeHtml(e.name)}</span>
+    </div>
+  `).join("")
+}
+
+function executionLogComplete(state, projection) {
+  const entries = []
+  for (const expedition of state.expeditions) {
+    entries.push(`
+      <div class="ms-execution-log-entry">
+        <span class="ms-execution-log-dot ms-execution-log-dot-complete"></span>
+        <span class="ms-execution-log-text">Completed: ${escapeHtml(expedition.name)}</span>
+      </div>
+    `)
+  }
+  if (projection.repository) {
+    entries.push(`
+      <div class="ms-execution-log-entry">
+        <span class="ms-execution-log-dot ms-execution-log-dot-complete"></span>
+        <span class="ms-execution-log-text">Produced ${projection.repository.eventCount} events</span>
+      </div>
+    `)
+  }
+  return entries.join("")
+}
+
+function renderStructureCard(layer) {
+  return `
+    <article class="ms-card ms-card-architecture">
+      <div class="ms-card-header">
+        <div class="ms-card-kind">Structure</div>
+      </div>
+      <h4 class="ms-card-title">${escapeHtml(layer.layer)}</h4>
+      <div class="ms-card-body">
+        <p>${escapeHtml(layer.responsibility)}</p>
+      </div>
+    </article>
+  `
+}
+
+function renderSummaryCard(repository) {
+  const artifactList = repository.artifacts?.length
+    ? `<div class="ms-card-section"><div class="ms-card-section-title">Artifacts</div><ul>${repository.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`
+    : ""
+  return `
+    <article class="ms-card ms-card-repository">
+      <div class="ms-card-header">
+        <div class="ms-card-kind">Summary</div>
+        <span class="ms-status ms-status-completed">${escapeHtml(repository.status)}</span>
+      </div>
+      <div class="ms-card-body">
+        ${artifactList}
+        <div class="ms-card-meta">
+          <span class="ms-tag">${repository.eventCount} events</span>
+        </div>
+      </div>
+    </article>
+  `
+}
+
+function renderEvidenceCard(evidence) {
+  return `
+    <article class="ms-card ms-card-evidence">
+      <div class="ms-card-header">
+        <div class="ms-card-kind">Evidence</div>
+        <span class="ms-confidence">${Math.round(evidence.confidence * 100)}% confidence</span>
+      </div>
+      <div class="ms-card-body">
+        <p>${escapeHtml(evidence.observation)}</p>
+        ${evidence.source ? `<div class="ms-card-meta"><span class="ms-tag">${escapeHtml(evidence.source)}</span></div>` : ""}
+      </div>
+    </article>
   `
 }
 
@@ -395,17 +504,34 @@ export function renderEvidenceView({ state, projection }) {
  * @returns {string}
  */
 export function renderReviewView({ state, projection }) {
-  const cards = []
-  if (projection.repository) cards.push(renderPublicArtifactCard(projection.repository))
-  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderPublicArtifactCard(layer))
-  // Show completed plan items as part of the reviewable outcome.
-  for (const expedition of state.expeditions) cards.push(renderPublicArtifactCard(expedition))
+  const idea = state.intent?.description ?? ""
+  const mission = state.mission?.name ?? ""
 
   return `
     <div class="ms-public-view ms-public-view-review">
-      <h3>Review</h3>
-      <p>Does this result match the contract?</p>
-      <div class="ms-public-artifacts">${cards.join("")}</div>
+      <div class="ms-public-hero">
+        <h3>Review</h3>
+        <p>Compare the outcome to the original contract. Approve if it matches.</p>
+      </div>
+      <div class="ms-review-comparison">
+        <div class="ms-review-column">
+          <div class="ms-review-column-title">Contract</div>
+          <div class="ms-public-summary">
+            <p><strong>Idea:</strong> ${escapeHtml(idea)}</p>
+            <p><strong>Mission:</strong> ${escapeHtml(mission)}</p>
+          </div>
+        </div>
+        <div class="ms-review-column">
+          <div class="ms-review-column-title">Outcome</div>
+          <div class="ms-public-summary">
+            <p><strong>Plan items completed:</strong> ${state.expeditions.length}</p>
+            <p><strong>Events produced:</strong> ${projection.repository?.eventCount ?? 0}</p>
+          </div>
+        </div>
+      </div>
+      <div class="ms-public-artifacts">
+        ${state.expeditions.map((e) => renderPublicArtifactCard(e)).join("")}
+      </div>
     </div>
   `
 }
@@ -418,13 +544,15 @@ export function renderReviewView({ state, projection }) {
 export function renderAcceptanceView({ state, projection }) {
   return `
     <div class="ms-public-view ms-public-view-acceptance">
-      <h3>Acceptance</h3>
-      <p>Is this outcome complete?</p>
-      <div class="ms-public-summary">
+      <div class="ms-public-hero">
+        <h3>Acceptance</h3>
+        <p>The work is complete. Accept the outcome to finish the journey.</p>
+      </div>
+      <div class="ms-public-summary ms-public-summary-final">
         <p><strong>Idea:</strong> ${escapeHtml(state.input)}</p>
         <p><strong>Mission:</strong> ${escapeHtml(state.mission?.name ?? "")}</p>
-        <p><strong>Plan items:</strong> ${state.expeditions.length}</p>
-        <p><strong>Events:</strong> ${projection.repository?.eventCount ?? 0}</p>
+        <p><strong>Plan items completed:</strong> ${state.expeditions.length}</p>
+        <p><strong>Evidence events:</strong> ${projection.repository?.eventCount ?? 0}</p>
       </div>
     </div>
   `
@@ -438,9 +566,11 @@ export function renderAcceptanceView({ state, projection }) {
 export function renderCompleteView({ state }) {
   return `
     <div class="ms-public-view ms-public-view-complete">
-      <h3>Complete</h3>
-      <p>The journey from idea to accepted outcome is complete.</p>
-      <div class="ms-public-summary">
+      <div class="ms-public-hero">
+        <h3>Complete</h3>
+        <p>The journey from idea to accepted outcome is complete. Every step was recorded and can be replayed.</p>
+      </div>
+      <div class="ms-public-summary ms-public-summary-final">
         <p><strong>Idea:</strong> ${escapeHtml(state.input)}</p>
         <p><strong>Mission:</strong> ${escapeHtml(state.mission?.name ?? "")}</p>
         <p><strong>Accepted:</strong> Yes</p>
@@ -455,8 +585,6 @@ export function renderCompleteView({ state }) {
  * @returns {string}
  */
 export function renderPublicExperience({ experience, state, projection, examples }) {
-  const viewArgs = { experience, state, projection, examples }
-
   switch (experience.step) {
     case "idea":
       return renderIdeaView({ examples })
