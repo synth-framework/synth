@@ -27,6 +27,7 @@ import {
   generateUnknowns,
 } from "./intent.js"
 import { buildSampleEventLog, rebuildStateFromOffset, replayStateToProjection } from "./replay.js"
+import { createPublicFlowState } from "./public-experience.js"
 
 export class HomepageRuntime implements MissionRuntime {
   async discover(input: string, mode: EntryMode): Promise<GenesisResult> {
@@ -44,6 +45,7 @@ export class HomepageRuntime implements MissionRuntime {
       evidence,
       answers: [],
       expeditions: [],
+      publicFlow: createPublicFlowState(),
     }
 
     return { state, projection: this.projectGenesis(state, "discovery") }
@@ -135,6 +137,107 @@ export class HomepageRuntime implements MissionRuntime {
     const updated: GenesisState = {
       ...state,
       repository,
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "repository") }
+  }
+
+  async approveContract(state: GenesisState): Promise<GenesisResult> {
+    if (!state.intent || !state.discovery) {
+      throw new Error("Genesis state is missing intent or discovery")
+    }
+
+    const domain = state.domain ?? generateDomain(state.intent, state.discovery)
+    const mission = state.mission ?? generateMission(state.intent, state.discovery, domain)
+
+    const updated: GenesisState = {
+      ...state,
+      domain,
+      mission,
+      publicFlow: { ...state.publicFlow, contractApproved: true },
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "mission") }
+  }
+
+  async approveMission(state: GenesisState): Promise<GenesisResult> {
+    if (!state.mission) {
+      throw new Error("Genesis state is missing mission")
+    }
+
+    const updated: GenesisState = {
+      ...state,
+      publicFlow: { ...state.publicFlow, missionApproved: true },
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, state.expeditions.length > 0 ? "expeditions" : "mission") }
+  }
+
+  async approvePlan(state: GenesisState): Promise<GenesisResult> {
+    if (state.expeditions.length === 0) {
+      throw new Error("Genesis state is missing expeditions")
+    }
+
+    const updated: GenesisState = {
+      ...state,
+      publicFlow: { ...state.publicFlow, planApproved: true },
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "expeditions") }
+  }
+
+  async startExecution(state: GenesisState): Promise<GenesisResult> {
+    if (state.expeditions.length === 0) {
+      throw new Error("Genesis state is missing expeditions")
+    }
+
+    const updated: GenesisState = {
+      ...state,
+      publicFlow: { ...state.publicFlow, executionStarted: true },
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "governance") }
+  }
+
+  async completeExecution(state: GenesisState): Promise<GenesisResult> {
+    if (!state.intent || !state.discovery || !state.mission || state.expeditions.length === 0) {
+      throw new Error("Genesis state is missing mission or expeditions")
+    }
+
+    const architecture = state.architecture ?? generateArchitecture(state.mission, state.expeditions)
+    const repository = state.repository ?? generateRepository(state.mission, state.expeditions)
+
+    const updated: GenesisState = {
+      ...state,
+      architecture,
+      repository,
+      publicFlow: { ...state.publicFlow, executionComplete: true },
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "repository") }
+  }
+
+  async approveReview(state: GenesisState): Promise<GenesisResult> {
+    if (!state.publicFlow.executionComplete) {
+      throw new Error("Execution is not complete")
+    }
+
+    const updated: GenesisState = {
+      ...state,
+      publicFlow: { ...state.publicFlow, reviewApproved: true },
+    }
+
+    return { state: updated, projection: this.projectGenesis(updated, "repository") }
+  }
+
+  async acceptOutcome(state: GenesisState): Promise<GenesisResult> {
+    if (!state.publicFlow.reviewApproved) {
+      throw new Error("Review is not approved")
+    }
+
+    const updated: GenesisState = {
+      ...state,
+      publicFlow: { ...state.publicFlow, accepted: true },
     }
 
     return { state: updated, projection: this.projectGenesis(updated, "repository") }

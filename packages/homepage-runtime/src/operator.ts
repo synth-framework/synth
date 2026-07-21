@@ -45,7 +45,7 @@ export class DemoOperator implements OperatorAdapter {
       }
 
       return {
-        questionId: question.id,
+        questionId: question.field,
         content,
       }
     })
