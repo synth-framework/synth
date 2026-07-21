@@ -988,6 +988,7 @@ async function cmdIntentHelp() {
     { name: "synth intent create --file <path>", description: "Create an Intent Model from a JSON file" },
     { name: "synth intent refine --intent-model-id <id> --answers <path> --recommendation <recommendation> --reason <reason>", description: "Run a refinement session and produce a Refinement Report" },
     { name: "synth intent submit --intent-model-id <id>", description: "Submit a refined Intent Model for downstream Alignment Contract creation" },
+    { name: "synth intent approve --report-id <id> [--decision approved_for_alignment|revision_required|rejected] [--reason <reason>]", description: "Approve or reject a Refinement Report" },
   ]))
 }
 
@@ -1199,6 +1200,50 @@ async function cmdIntentSubmit(flags: Record<string, string | boolean>) {
     kind: "IntentModelSubmitted",
     intentModelId,
     note: "Intent Model submitted. Ready for Alignment Contract creation (EXP-HOME-027).",
+  })
+}
+
+async function cmdIntentApprove(flags: Record<string, string | boolean>) {
+  const reportId = typeof flags["report-id"] === "string" ? flags["report-id"] : undefined
+  if (!reportId) {
+    printError("Usage: synth intent approve --report-id <id> [--decision approved_for_alignment|revision_required|rejected] [--reason <reason>]")
+    return
+  }
+
+  await ensureRuntimeDataDir(process.cwd())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const decision = typeof flags.decision === "string" ? flags.decision : "approved_for_alignment"
+  const reason = typeof flags.reason === "string" ? flags.reason : "Refinement report approved for alignment"
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ApproveRefinementReport",
+    payload: {
+      reportId,
+      decision,
+      reason,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+    },
+  })
+
+  if (result.status !== "ok") {
+    printError(`ApproveRefinementReport failed: ${result.error}`)
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "RefinementReportApproved",
+    reportId,
+    decision,
+    reason,
+    note: decision === "approved_for_alignment"
+      ? "Refinement Report approved. Intent Model is now approved for Alignment Contract creation."
+      : "Refinement Report rejected. Intent Model requires revision before alignment.",
   })
 }
 
@@ -2805,6 +2850,7 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "create") return "intent create"
     if (sub === "refine") return "intent refine"
     if (sub === "submit") return "intent submit"
+    if (sub === "approve") return "intent approve"
   }
   if (namespace === "alignment") {
     if (sub === "prepare") return "alignment prepare"
@@ -2940,8 +2986,9 @@ async function main() {
       if (sub === "create") await cmdIntentCreate(flags)
       else if (sub === "refine") await cmdIntentRefine(flags)
       else if (sub === "submit") await cmdIntentSubmit(flags)
+      else if (sub === "approve") await cmdIntentApprove(flags)
       else
-        printError("Usage: synth intent create --file <path> | synth intent refine --intent-model-id <id> [--answers <path>] [--recommendation <recommendation>] [--reason <reason>] | synth intent submit --intent-model-id <id>")
+        printError("Usage: synth intent create --file <path> | synth intent refine --intent-model-id <id> [--answers <path>] [--recommendation <recommendation>] [--reason <reason>] | synth intent submit --intent-model-id <id> | synth intent approve --report-id <id> [--decision ...] [--reason <reason>]")
       break
     }
 
