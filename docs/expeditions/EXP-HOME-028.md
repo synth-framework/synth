@@ -90,6 +90,108 @@ The homepage uses the internal machinery but never exposes it.
 
 ---
 
+## Capability verification
+
+All internal capabilities required for the flow already exist in `src/domain/execution.ts`:
+
+| Public step | Internal capability | Status |
+|---|---|---|
+| Idea | `CreateIntentModel` | ✅ Implemented |
+| Question | `StartRefinementSession`, `AnswerRefinementQuestion` | ✅ Implemented |
+| Understanding | `CreateRefinementReport`, `CreateAlignmentContract` | ✅ Implemented |
+| Contract | `SubmitAlignmentContract`, `ApproveAlignmentContract`, `OpenDivergenceGate`, `ResolveDivergenceGate` | ✅ Implemented |
+| Mission | `ProjectMission` | ✅ Implemented |
+| Plan | `CreateExpedition`, `ApproveExpedition` | ✅ Implemented |
+| Execution | `CommitExpedition`, `StartExpedition`, `CompleteExpedition` | ✅ Implemented |
+| Review | `OpenReviewGate`, `ResolveReviewGate`, `RequestRevision` | ✅ Implemented |
+| Acceptance | `OpenAcceptanceGate`, `ResolveAcceptanceGate`, `CloseExpedition` | ✅ Implemented |
+
+No new capabilities are required.
+
+---
+
+## Minimum missing pieces
+
+The gap is not in governance machinery. The gap is in **public-vocabulary orchestration and presentation**.
+
+### 1. Homepage orchestration layer
+
+A controller that sequences the existing capabilities using public step names only. It must:
+
+- Accept an Idea.
+- Trigger question generation.
+- Collect answers.
+- Produce Understanding and Contract.
+- Await Contract approval.
+- Trigger Mission projection.
+- Derive Plan (Expeditions).
+- Execute Plan.
+- Collect Evidence.
+- Present Review.
+- Present Acceptance.
+
+This layer never exposes internal artifact names.
+
+### 2. Public-vocabulary UI components
+
+One component per public step:
+
+| Component | Purpose |
+|---|---|
+| `IdeaInput` | Capture the user's initial idea. |
+| `QuestionWizard` | Present one question at a time; collect answers. |
+| `UnderstandingCard` | Summarize what SYNTH understood; allow correction. |
+| `ContractApproval` | Present the Contract; approve or reject. |
+| `MissionCard` | Display the derived Mission. |
+| `PlanView` | Display Expeditions as plan steps. |
+| `EvidencePanel` | Show implementation evidence. |
+| `ReviewPrompt` | Ask whether evidence matches the Contract. |
+| `AcceptancePrompt` | Final accept/reject action. |
+
+### 3. Public step resolver
+
+A small projection that maps internal state to the current public step:
+
+```text
+no IntentModel           → Idea
+IntentModel, no approved RefinementReport → Question / Understanding
+approved AlignmentContract, no aligned DivergenceGate → Contract
+aligned DivergenceGate, no Mission        → Mission
+Mission, no Expeditions                   → Plan
+Expeditions not started/complete          → Execution
+Expeditions complete, no Review decision  → Review
+Review approved, no Acceptance            → Acceptance
+```
+
+### 4. Plain-language replay timeline
+
+Replay must remain available, but labels use public vocabulary:
+
+```text
+Idea recorded
+Questions answered
+Understanding confirmed
+Contract approved
+Mission created
+Plan created
+Evidence produced
+Review completed
+Acceptance recorded
+```
+
+---
+
+## Implementation plan
+
+1. **Build the orchestration layer** using existing capabilities.
+2. **Build the 9 UI components** using the public vocabulary.
+3. **Add the public step resolver** to drive component visibility.
+4. **Wire the homepage** to the orchestration layer.
+5. **Verify forbidden vocabulary** is never displayed.
+6. **Run the acceptance test** with a first-time user script.
+
+---
+
 ## Definition of Done
 
 - [ ] A first-time user can state an idea on the homepage.
