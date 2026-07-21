@@ -19,13 +19,13 @@ Produce the canonical specification for SYNTH's full governance lifecycle — ev
 
 EXP-PROGRAM-035 and EXP-PROGRAM-036 have introduced multiple gate types, decision policies, and pre-Mission artifacts. Without a unified state-machine specification, each new capability risks introducing ad-hoc states, inconsistent terminology, and transitions that are not replayable.
 
-This expedition captures the lifecycle in ADR-038 and produces a machine-checkable reference that future capabilities can extend without breaking existing governance semantics.
+This expedition captures the lifecycle in ADR-045 and produces a machine-checkable reference that future capabilities can extend without breaking existing governance semantics.
 
 ---
 
 ## Deliverables
 
-1. **ADR-038 — Governance Lifecycle & State Machine Specification** in `docs/adr/ADR-038-governance-lifecycle-state-machine.md`.
+1. **ADR-045 — Governance Lifecycle & State Machine Specification** in `docs/adr/ADR-045-governance-lifecycle-state-machine.md`.
 2. **Layered lifecycle diagram** covering Genesis, Synthesis, and Governance layers.
 3. **Phase/artifact/gate/satisfier matrix** showing what each phase produces and who may resolve each gate.
 4. **Valid transition diagrams** for Genesis, Synthesis, and Governance layers.
@@ -78,7 +78,7 @@ Governance Layer
 
 ## Acceptance Criteria
 
-- ADR-038 is approved and references all existing governance ADRs and programs.
+- ADR-045 is approved and references all existing governance ADRs and programs.
 - The lifecycle diagram is included in both the ADR and this expedition record.
 - Every gate has a defined satisfier policy.
 - Every transition has a corresponding event.
@@ -97,7 +97,7 @@ Governance Layer
 
 ## Success Criteria
 
-A contributor can read ADR-038 and understand:
+A contributor can read ADR-045 and understand:
 
 1. Which layer a given expedition belongs to.
 2. Which artifact must exist before each gate.

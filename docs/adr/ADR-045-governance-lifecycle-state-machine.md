@@ -1,6 +1,6 @@
-# ADR-038 — Governance Lifecycle & State Machine Specification
+# ADR-045 — Governance Lifecycle & State Machine Specification
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Date:** 2026-07-21  
 **Author:** SYNTH Architecture  
 **Deciders:** Architecture Owner  
@@ -23,6 +23,22 @@ This ADR establishes a single source of truth for the governance lifecycle: ever
 Adopt a canonical **Governance Lifecycle State Machine** that spans three layers: Genesis, Synthesis, and Governance. Every state transition is an event. Every gate is a decision point. Every decision produces an artifact. No transition may occur without the required artifact and an authorized satisfier.
 
 The lifecycle is intentionally layered so that each layer can evolve independently as long as its public contract (states, artifacts, and events) is honored.
+
+---
+
+## Governance Architecture v1.0
+
+This ADR, together with ADR-036 — Intent Refinement and Alignment Governance and ADR-037 — Genesis Lifecycle and Alignment Contracts, constitutes the canonical governance architecture of SYNTH.
+
+```text
+Governance Architecture v1.0
+
+ADR-036  Intent Refinement and Alignment Governance
+ADR-037  Genesis Lifecycle and Alignment Contracts
+ADR-045  Governance Lifecycle & State Machine Specification
+```
+
+Any future governance mechanism shall integrate into this lifecycle rather than introducing parallel execution paths. Program 027 — Mission Studio Homepage becomes the first program executed under this architecture.
 
 ---
 
@@ -322,6 +338,7 @@ Rejected. The distinction must be between "who implemented" and "who reviews," n
 
 ## Related
 
+- ADR-036 — Intent Refinement and Alignment Governance
 - ADR-037 — Genesis Lifecycle and Alignment Contracts
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance
