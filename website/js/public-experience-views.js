@@ -16,6 +16,13 @@ import { renderArtifactCard } from "./components.js"
  * @typedef {import("./homepage-runtime/index.js").PublicExperienceStep} PublicExperienceStep
  * @typedef {import("./homepage-runtime/index.js").GenesisState} GenesisState
  * @typedef {import("./homepage-runtime/index.js").ArtifactProjection} ArtifactProjection
+ * @typedef {import("./homepage-runtime/index.js").DiscoveryCard} DiscoveryCard
+ * @typedef {import("./homepage-runtime/index.js").ExpeditionCard} ExpeditionCard
+ * @typedef {import("./homepage-runtime/index.js").ArchitectureCard} ArchitectureCard
+ * @typedef {import("./homepage-runtime/index.js").RepositoryCard} RepositoryCard
+ * @typedef {import("./homepage-runtime/index.js").EvidenceCard} EvidenceCard
+ * @typedef {import("./homepage-runtime/index.js").MissionCard} MissionCard
+ * @typedef {import("./homepage-runtime/index.js").IntentCard} IntentCard
  */
 
 const PUBLIC_STEPS = [
@@ -37,6 +44,141 @@ function escapeHtml(text) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;")
+}
+
+/**
+ * Render a public-facing artifact card using only public vocabulary.
+ * Internal artifact kind names are relabeled for the homepage surface.
+ * @param {IntentCard | DiscoveryCard | MissionCard | ExpeditionCard | EvidenceCard | ArchitectureCard | RepositoryCard} card
+ * @returns {string}
+ */
+function renderPublicArtifactCard(card) {
+  if (!card || typeof card !== "object") return ""
+
+  switch (card.kind) {
+    case "intent": {
+      const goals = card.goals?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Goals</div><ul>${card.goals.map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-intent">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Idea</div>
+            <span class="ms-confidence">${Math.round((card.confidence ?? 1) * 100)}% confidence</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.description)}</h4>
+          <div class="ms-card-body">${goals}</div>
+        </article>
+      `
+    }
+    case "discovery": {
+      const findings = card.findings?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Understanding</div><ul>${card.findings.map((f) => `<li>${escapeHtml(f)}</li>`).join("")}</ul></div>`
+        : ""
+      const capabilities = card.capabilities?.length
+        ? `<div class="ms-tags">${card.capabilities.map((c) => `<span class="ms-tag">${escapeHtml(c)}</span>`).join("")}</div>`
+        : ""
+      const constraints = card.constraints?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Constraints</div><ul>${card.constraints.map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ul></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-discovery">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Understanding</div>
+          </div>
+          <div class="ms-card-body">
+            ${findings}
+            ${constraints}
+            ${capabilities}
+          </div>
+        </article>
+      `
+    }
+    case "mission": {
+      const objectives = card.objectives?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Objectives</div><ul>${card.objectives.map((o) => `<li>${escapeHtml(o)}</li>`).join("")}</ul></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-mission">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Mission</div>
+            <span class="ms-status ms-status-completed">Approved</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.purpose)}</p>
+            ${objectives}
+          </div>
+        </article>
+      `
+    }
+    case "expedition": {
+      const status = card.status === "completed" ? "completed" : "draft"
+      return `
+        <article class="ms-card ms-card-expedition">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Plan item</div>
+            <span class="ms-status ms-status-${status}">${escapeHtml(status)}</span>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.name)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.goal)}</p>
+          </div>
+        </article>
+      `
+    }
+    case "evidence":
+      return `
+        <article class="ms-card ms-card-evidence">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Evidence</div>
+            <span class="ms-confidence">${Math.round(card.confidence * 100)}% confidence</span>
+          </div>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.observation)}</p>
+            ${card.source ? `<div class="ms-card-meta"><span class="ms-tag">${escapeHtml(card.source)}</span></div>` : ""}
+          </div>
+        </article>
+      `
+    case "architecture": {
+      const dependencies = card.dependencies?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Dependencies</div><p>${card.dependencies.map(escapeHtml).join(", ")}</p></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-architecture">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Structure</div>
+          </div>
+          <h4 class="ms-card-title">${escapeHtml(card.layer)}</h4>
+          <div class="ms-card-body">
+            <p>${escapeHtml(card.responsibility)}</p>
+            ${dependencies}
+          </div>
+        </article>
+      `
+    }
+    case "repository": {
+      const artifactList = card.artifacts?.length
+        ? `<div class="ms-card-section"><div class="ms-card-section-title">Artifacts</div><ul>${card.artifacts.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul></div>`
+        : ""
+      return `
+        <article class="ms-card ms-card-repository">
+          <div class="ms-card-header">
+            <div class="ms-card-kind">Summary</div>
+            <span class="ms-status ms-status-completed">${escapeHtml(card.status)}</span>
+          </div>
+          <div class="ms-card-body">
+            ${artifactList}
+            <div class="ms-card-meta">
+              <span class="ms-tag">${card.eventCount} events</span>
+            </div>
+          </div>
+        </article>
+      `
+    }
+    default:
+      return ""
+  }
 }
 
 /**
@@ -162,8 +304,8 @@ export function renderQuestionView({ state }) {
  */
 export function renderUnderstandingView({ state }) {
   const cards = []
-  if (state.intent) cards.push(renderArtifactCard(state.intent))
-  if (state.discovery) cards.push(renderArtifactCard(state.discovery))
+  if (state.intent) cards.push(renderPublicArtifactCard(state.intent))
+  if (state.discovery) cards.push(renderPublicArtifactCard(state.discovery))
   return `
     <div class="ms-public-view ms-public-view-understanding">
       <h3>Here is what SYNTH understood</h3>
@@ -180,9 +322,9 @@ export function renderUnderstandingView({ state }) {
  */
 export function renderContractView({ state }) {
   const cards = []
-  if (state.intent) cards.push(renderArtifactCard(state.intent))
-  if (state.discovery) cards.push(renderArtifactCard(state.discovery))
-  if (state.domain) cards.push(renderArtifactCard(state.domain))
+  if (state.intent) cards.push(renderPublicArtifactCard(state.intent))
+  if (state.discovery) cards.push(renderPublicArtifactCard(state.discovery))
+  if (state.domain) cards.push(renderPublicArtifactCard(state.domain))
   return `
     <div class="ms-public-view ms-public-view-contract">
       <h3>Contract</h3>
@@ -199,7 +341,7 @@ export function renderContractView({ state }) {
  */
 export function renderMissionView({ state }) {
   const cards = []
-  if (state.mission) cards.push(renderArtifactCard(state.mission))
+  if (state.mission) cards.push(renderPublicArtifactCard(state.mission))
   return `
     <div class="ms-public-view ms-public-view-mission">
       <h3>Mission</h3>
@@ -215,7 +357,7 @@ export function renderMissionView({ state }) {
  * @returns {string}
  */
 export function renderPlanView({ state }) {
-  const cards = state.expeditions.map((expedition) => renderArtifactCard(expedition))
+  const cards = state.expeditions.map((expedition) => renderPublicArtifactCard(expedition))
   return `
     <div class="ms-public-view ms-public-view-plan">
       <h3>Plan</h3>
@@ -232,9 +374,9 @@ export function renderPlanView({ state }) {
  */
 export function renderEvidenceView({ state, projection }) {
   const cards = []
-  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderArtifactCard(layer))
-  if (projection.repository) cards.push(renderArtifactCard(projection.repository))
-  for (const evidence of projection.evidence) cards.push(renderArtifactCard(evidence))
+  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderPublicArtifactCard(layer))
+  if (projection.repository) cards.push(renderPublicArtifactCard(projection.repository))
+  for (const evidence of projection.evidence) cards.push(renderPublicArtifactCard(evidence))
 
   const status = state.publicFlow.executionComplete ? "Complete" : "In progress"
 
@@ -254,8 +396,10 @@ export function renderEvidenceView({ state, projection }) {
  */
 export function renderReviewView({ state, projection }) {
   const cards = []
-  if (projection.repository) cards.push(renderArtifactCard(projection.repository))
-  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderArtifactCard(layer))
+  if (projection.repository) cards.push(renderPublicArtifactCard(projection.repository))
+  if (projection.architecture) for (const layer of projection.architecture) cards.push(renderPublicArtifactCard(layer))
+  // Show completed plan items as part of the reviewable outcome.
+  for (const expedition of state.expeditions) cards.push(renderPublicArtifactCard(expedition))
 
   return `
     <div class="ms-public-view ms-public-view-review">

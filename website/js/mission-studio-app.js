@@ -55,6 +55,23 @@ const CAPABILITIES = [
   { id: "adapters", name: "Adapters", description: "External tools as first-class citizens." },
 ]
 
+const PUBLIC_STEP_LABELS = {
+  idea: "Idea",
+  question: "Question",
+  understanding: "Understanding",
+  contract: "Contract",
+  mission: "Mission",
+  plan: "Plan",
+  evidence: "Evidence",
+  review: "Review",
+  acceptance: "Acceptance",
+  complete: "Complete",
+}
+
+function publicStepLabel(step) {
+  return PUBLIC_STEP_LABELS[step] ?? step
+}
+
 const elements = {
   shell: /** @type {HTMLDivElement} */ (document.getElementById("ms-shell")),
   headerStatus: /** @type {HTMLDivElement} */ (document.getElementById("ms-header-status")),
@@ -102,7 +119,7 @@ function updateUI() {
   activePublicStep = experience.step
 
   announce(`SYNTH: ${experience.message}`)
-  elements.headerStatus.textContent = experience.step
+  elements.headerStatus.textContent = publicStepLabel(experience.step)
   elements.headerStatus.classList.toggle("ms-status-active", experience.step !== "idea")
 
   elements.phaseList.innerHTML = renderStepIndicator({ step: experience.step })
@@ -114,7 +131,7 @@ function updateUI() {
 
   elements.controls.innerHTML = renderPublicActions({ actions: experience.actions })
 
-  elements.footerStatus.textContent = `${experience.step} • ${experience.progress.current}/${experience.progress.total}`
+  elements.footerStatus.textContent = `${publicStepLabel(experience.step)} • ${experience.progress.current}/${experience.progress.total}`
   elements.footerMeta.textContent = currentGenesisState.mission
     ? currentGenesisState.input.slice(0, 50)
     : "Ready"
@@ -196,8 +213,13 @@ async function handlePublicAction(actionId) {
         break
       }
       case "approve-mission": {
-        const result = await runtime.approveMission(currentGenesisState)
+        let result = await runtime.approveMission(currentGenesisState)
         currentGenesisState = result.state
+        // Derive the plan automatically once the mission is approved.
+        if (currentGenesisState.expeditions.length === 0) {
+          result = await runtime.buildExpeditions(currentGenesisState)
+          currentGenesisState = result.state
+        }
         break
       }
       case "approve-plan": {
@@ -206,8 +228,9 @@ async function handlePublicAction(actionId) {
         break
       }
       case "start-execution": {
-        const result = await runtime.startExecution(currentGenesisState)
-        currentGenesisState = result.state
+        const started = await runtime.startExecution(currentGenesisState)
+        currentGenesisState = started.state
+        updateUI() // Show Evidence step as execution starts.
         const completed = await runtime.completeExecution(currentGenesisState)
         currentGenesisState = completed.state
         break
