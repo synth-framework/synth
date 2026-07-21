@@ -42,6 +42,16 @@ Any future governance mechanism shall integrate into this lifecycle rather than 
 
 ---
 
+## Constitutional Rule — Alignment Contract as Genesis/Synthesis Boundary
+
+> **The Alignment Contract is the sole constitutional artifact that authorizes transition from Genesis into Synthesis. No Mission may be created, activated, or approved without a valid Alignment Contract unless explicitly governed by an approved constitutional exception.**
+
+The Alignment Contract marks the boundary between exploratory intent work (Genesis) and executable work (Synthesis). Above the contract, interpretation may still change through refinement, review, and approval cycles. Below the contract, change is governed by the same execution controls that govern Mission, Expedition, and Implementation lifecycle transitions.
+
+This rule makes the Alignment Contract an authorization, not merely a report. It preserves the complete refinement history (Intent Model, Refinement Session, Refinement Report, Refinement Approval) while ensuring that only explicitly authorized intent enters synthesis.
+
+---
+
 ## Lifecycle Overview
 
 ```text
