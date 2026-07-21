@@ -2,7 +2,7 @@
 
 > **Genesis expedition.** Capture the explicit and implicit intent for the Mission Studio homepage before any implementation proceeds.
 
-**Status:** Refinement Review Approved — Intent Model Submitted  
+**Status:** Refinement Report Approved — Approved for Alignment  
 **Kind:** Genesis Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -76,7 +76,8 @@ Program 027 began with the directive to make Mission Studio the SYNTH homepage. 
 - [x] Explicit objectives, implicit objectives, forbidden interpretations, and allowed interpretations are documented.
 - [x] Confidence level and known unknowns are recorded.
 - [x] Refinement Gate resolves to `Refined Intent` with an approved Refinement Report.
-- [x] Intent Model is submitted for Alignment Contract creation.
+- [x] Refinement Report is explicitly approved for alignment (governance decision separate from recommendation).
+- [x] Intent Model is approved for Alignment Contract creation.
 
 ---
 
@@ -117,6 +118,16 @@ The Intent Model was then submitted for downstream Alignment Contract creation:
 
 ```bash
 synth intent submit --intent-model-id intent-model-mru144mr-j9lxxw
+```
+
+### Refinement Approval
+
+The Refinement Report was reviewed and explicitly approved for alignment, preserving the constitutional distinction between recommendation and governance decision:
+
+```bash
+synth intent approve --report-id refinement-report-mru1jfin-5blzig \
+  --decision approved_for_alignment \
+  --reason "Refinement Report reviewed and approved. Intent Model is clear, evidence-bound, and ready for Alignment Contract creation under Governance Architecture v1.0."
 ```
 
 ## Out of Scope
