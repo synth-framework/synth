@@ -9,6 +9,12 @@ import type { DemoExample } from "./types.js"
 
 export const demoExamples: DemoExample[] = [
   {
+    id: "ai-product-homepage",
+    name: "AI Product Homepage",
+    input: "Create a homepage for an AI product.",
+    mode: "greenfield",
+  },
+  {
     id: "markdown-editor",
     name: "Markdown Editor",
     input: "Build a markdown editor with live preview and file export.",
