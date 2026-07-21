@@ -149,6 +149,7 @@ function mergeSnapshotState(
     decisions: {},
     intentModels: {},
     refinementSessions: {},
+    refinementReports: {},
     alignmentContracts: {},
     referenceEvidence: {},
     divergenceGates: {},

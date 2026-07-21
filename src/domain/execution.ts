@@ -2,7 +2,7 @@
 // DOMAIN: Execution Logic (Pure)
 // ============================================================
 
-import type { CanonicalState, CapabilityInvocation, CapabilityResult, Discovery, DomainContext, ExecutionContext } from "../types/index.js"
+import type { CanonicalState, CapabilityInvocation, CapabilityResult, Discovery, DomainContext, ExecutionContext, IntentModelState } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import * as workItemLogic from "./workitem.js"
 import * as planLogic from "./plan.js"
@@ -23,6 +23,7 @@ import {
 import type { GatePolicy, ReviewDecisionType } from "../governance/review-gates.js"
 import { createIntentModel, reviseIntentModel, validateIntentModel } from "../governance/intent-model.js"
 import { startRefinement, answerQuestion, submitForRefinedIntent, supersedeRefinement } from "../governance/refinement-layer.js"
+import { createRefinementReport, validateRefinementReport } from "../governance/refinement-report.js"
 import {
   createAlignmentContract,
   validateAlignmentContract,
@@ -396,6 +397,46 @@ export function applyDomain(
       return {
         events: [{ type: "INTENT_MODEL_SUPERSEDED", payload: { intentModelId } }],
       }
+    }
+
+    case "CreateRefinementReport": {
+      const sessionId = String(intent.payload.sessionId)
+      const session = state.refinementSessions[sessionId]
+      if (!session) {
+        throw new Error(`REFINEMENT_SESSION_NOT_FOUND: ${sessionId}`)
+      }
+      const intentModelId = session.intentModelId
+      const finalModel = state.intentModels[intentModelId]
+      if (!finalModel) {
+        throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
+      }
+      const initialModel = (intent.payload.initialModel as IntentModelState | undefined) ?? finalModel
+      const reviewer = (intent.payload.reviewer as { kind: string; id: string }) ?? { kind: "human", id: "synth-cli-operator" }
+      const recommendation = String(intent.payload.recommendation || "approve_for_alignment") as
+        | "approve_for_alignment"
+        | "clarification_required"
+        | "reject_intent"
+        | "supersede_intent"
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : "Refinement review completed"
+
+      const additionalEntries = Array.isArray(intent.payload.additionalEntries)
+        ? (intent.payload.additionalEntries as Array<{ question: { id: string; text: string; category: string; priority: string }; answer: string }>)
+        : undefined
+
+      const report = createRefinementReport(
+        session as import("../governance/refinement-layer.js").RefinementSession,
+        initialModel as import("../governance/intent-model.js").IntentModel,
+        finalModel as import("../governance/intent-model.js").IntentModel,
+        reviewer,
+        recommendation,
+        reason,
+        additionalEntries as import("../governance/refinement-report.js").RefinementReportEntry[] | undefined
+      )
+      const validation = validateRefinementReport(report)
+      if (!validation.valid) {
+        throw new Error(`REFINEMENT_REPORT_INVALID: ${validation.errors.join(", ")}`)
+      }
+      return { events: [{ type: "REFINEMENT_REPORT_CREATED", payload: { reportId: report.id, report } }] }
     }
 
     // Alignment and divergence capabilities (EXP-PROGRAM-036 Phase 2)

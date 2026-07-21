@@ -158,6 +158,33 @@ export type RefinementSessionState = {
   updatedAt: number
 }
 
+/** Refinement Report — captured outcome of a refinement session */
+export type RefinementReportState = {
+  id: string
+  sessionId: string
+  intentModelId: string
+  createdAt: number
+  reviewer: { kind: string; id: string }
+  initialConfidence: number
+  finalConfidence: number
+  entries: Array<{
+    question: {
+      id: string
+      text: string
+      category: string
+      priority: string
+    }
+    answer: string
+  }>
+  assumptionsRemoved: string[]
+  forbiddenInterpretationsAdded: string[]
+  allowedInterpretationsAdded: string[]
+  evidenceLinked: string[]
+  openQuestions: string[]
+  recommendation: string
+  reason: string
+}
+
 /** Alignment Contract — formal agreement before Mission creation */
 export type AlignmentContractState = {
   id: string
@@ -346,6 +373,7 @@ export type CanonicalState = {
   decisions: Record<string, Decision>
   intentModels: Record<string, IntentModelState>
   refinementSessions: Record<string, RefinementSessionState>
+  refinementReports: Record<string, RefinementReportState>
   alignmentContracts: Record<string, AlignmentContractState>
   referenceEvidence: Record<string, ReferenceEvidenceState>
   divergenceGates: Record<string, DivergenceGateState>

@@ -14,6 +14,7 @@ import type {
   ReviewGateState,
   ReviewGatePolicy,
   IntentModelState,
+  RefinementReportState,
   AlignmentContractState,
   ReferenceEvidenceState,
   Objective,
@@ -45,6 +46,7 @@ export function createEmptyState(): CanonicalState {
     decisions: {},
     intentModels: {},
     refinementSessions: {},
+    refinementReports: {},
     alignmentContracts: {},
     referenceEvidence: {},
     divergenceGates: {},
@@ -458,6 +460,11 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
         session.answers.push({ questionId: String(payload.questionId), text: String(payload.answer) })
         session.updatedAt = event.timestamp
       }
+      break
+    }
+    case "REFINEMENT_REPORT_CREATED": {
+      const report = payload.report as RefinementReportState
+      if (report) state.refinementReports[report.id] = report
       break
     }
 
