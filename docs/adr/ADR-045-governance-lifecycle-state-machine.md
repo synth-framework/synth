@@ -42,13 +42,13 @@ Any future governance mechanism shall integrate into this lifecycle rather than 
 
 ---
 
-## Constitutional Rule — Alignment Contract as Genesis/Synthesis Boundary
+## Constitutional Rule — Mission Projection as Genesis/Synthesis Boundary
 
-> **The Alignment Contract is the sole constitutional artifact that authorizes transition from Genesis into Synthesis. No Mission may be created, activated, or approved without a valid Alignment Contract unless explicitly governed by an approved constitutional exception.**
+> **The Alignment Contract authorizes Mission Projection. The Mission Projection Package, once certified, authorizes transition from Genesis into Synthesis. No Mission may be created, activated, or approved without a certified Mission Projection derived from a valid Alignment Contract unless explicitly governed by an approved constitutional exception.**
 
-The Alignment Contract marks the boundary between exploratory intent work (Genesis) and executable work (Synthesis). Above the contract, interpretation may still change through refinement, review, and approval cycles. Below the contract, change is governed by the same execution controls that govern Mission, Expedition, and Implementation lifecycle transitions.
+The boundary between Genesis and Synthesis is not the Alignment Contract alone. It is the certified projection of that contract into a Mission. Above the boundary, interpretation may still change through refinement, review, and approval cycles. Below the boundary, change is governed by the same execution controls that govern Mission, Expedition, and Implementation lifecycle transitions.
 
-This rule makes the Alignment Contract an authorization, not merely a report. It preserves the complete refinement history (Intent Model, Refinement Session, Refinement Report, Refinement Approval) while ensuring that only explicitly authorized intent enters synthesis.
+This rule makes Mission a deterministic projection, not an imperative creation. It preserves the complete refinement history (Intent Model, Refinement Session, Refinement Report, Refinement Approval, Alignment Contract) while ensuring that only explicitly authorized, certifiably projected intent enters synthesis.
 
 ---
 
@@ -72,6 +72,12 @@ This rule makes the Alignment Contract an authorization, not merely a report. It
 │      ▼                                                            │
 │   Divergence Gate        ──gate─────▶   Aligned / Revision /      │
 │                                         Rejected / Superseded     │
+│      │                                                            │
+│      ▼                                                            │
+│   Mission Projection     ──artifact──▶  MissionProjectionPackage  │
+│      │                                                            │
+│      ▼                                                            │
+│   Projection Certification ──gate────▶  Certified / Failed        │
 │      │                                                            │
 │      ▼                                                            │
 │   Mission Created                                                 │
@@ -122,6 +128,8 @@ This rule makes the Alignment Contract an authorization, not merely a report. It
 | Intent Modeled | Genesis | `IntentModel` | — | Automatic / AI-assisted |
 | Intent Refined | Genesis | `RefinedIntent` | — | Automatic / AI-assisted |
 | Contract Aligned | Genesis | `AlignmentContract` | Divergence Gate | Human / AI / Automatic |
+| Mission Projected | Genesis/Synthesis boundary | `MissionProjectionPackage` | — | Automatic |
+| Projection Certified | Genesis/Synthesis boundary | `MissionProjectionCertification` | Projection Certification Gate | Automatic / AI |
 | Mission Drafted | Synthesis | `MissionDraft` | — | Automatic |
 | Mission Approved | Synthesis | `Mission` | Mission Approval Gate | Human / AI / Automatic |
 | Expedition Proposed | Synthesis | `Expedition` | — | Automatic |
@@ -164,7 +172,15 @@ draft
 awaiting_alignment
   │
   ▼
-aligned ────────────────▶ Mission Created
+aligned
+  │
+  ▼
+projected ──artifact────▶ MissionProjectionPackage
+  │
+  ▼
+certified ──gate────────▶ Mission Created
+  │                         │
+  ├── failed ───────────────┘
   │
   ├── revision_required ──▶ draft
   │
@@ -262,7 +278,10 @@ Every state transition emits exactly one event. Events are immutable and replaya
 | `ALIGNMENT_CONTRACT_APPROVED` | Divergence Gate resolves to `aligned`. | `contractId`, `gateId`, `reviewer`, `timestamp` |
 | `ALIGNMENT_CONTRACT_REVISION_REQUESTED` | Divergence Gate resolves to `revision_required`. | `contractId`, `gateId`, `reason`, `timestamp` |
 | `ALIGNMENT_CONTRACT_REJECTED` | Divergence Gate resolves to `rejected`. | `contractId`, `gateId`, `reason`, `timestamp` |
-| `MISSION_DRAFT_CREATED` | Mission Draft is created. | `draftId`, `contractId`, `timestamp` |
+| `MISSION_PROJECTED` | Mission Projection Package is produced from an approved Alignment Contract. | `projectionId`, `contractId`, `missionFingerprint`, `timestamp` |
+| `PROJECTION_CERTIFIED` | Projection Certification Gate resolves to `certified`. | `certificationId`, `projectionId`, `checks`, `timestamp` |
+| `PROJECTION_CERTIFICATION_FAILED` | Projection Certification Gate resolves to `failed`. | `certificationId`, `projectionId`, `reason`, `timestamp` |
+| `MISSION_DRAFT_CREATED` | Mission Draft is created from a certified projection. | `draftId`, `projectionId`, `contractId`, `timestamp` |
 | `MISSION_APPROVED` | Mission Approval Gate resolves. | `missionId`, `draftId`, `gateId`, `timestamp` |
 | `EXPEDITION_CREATED` | Expedition is chartered. | `expeditionId`, `missionId`, `timestamp` |
 | `EXPEDITION_STARTED` | Execution begins. | `expeditionId`, `timestamp` |
@@ -351,8 +370,10 @@ Rejected. The distinction must be between "who implemented" and "who reviews," n
 - ADR-036 — Intent Refinement and Alignment Governance
 - ADR-037 — Genesis Lifecycle and Alignment Contracts
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
+- EXP-REFINE-013 — Mission Projection & Derivation
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance
 - EXP-PROGRAM-027 — Mission Studio Homepage
+- EXP-HOME-028 — Homepage Mission Projection
 - EXP-PROGRAM-022 — Genesis
 - docs/governance.md
 - docs/reference/public-vocabulary.md
