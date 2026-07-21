@@ -37,7 +37,7 @@ export class DemoOperator {
                     break;
             }
             return {
-                questionId: question.id,
+                questionId: question.field,
                 content,
             };
         });

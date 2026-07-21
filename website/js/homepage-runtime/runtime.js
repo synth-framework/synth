@@ -6,6 +6,7 @@
 // ============================================================
 import { discoverIntent, extractIntent, generateArchitecture, generateDomain, generateEvidence, generateExpeditions, generateMission, generateRepository, generateUnknowns, } from "./intent.js";
 import { buildSampleEventLog, rebuildStateFromOffset, replayStateToProjection } from "./replay.js";
+import { createPublicFlowState } from "./public-experience.js";
 export class HomepageRuntime {
     async discover(input, mode) {
         const intent = extractIntent(input, mode);
@@ -21,6 +22,7 @@ export class HomepageRuntime {
             evidence,
             answers: [],
             expeditions: [],
+            publicFlow: createPublicFlowState(),
         };
         return { state, projection: this.projectGenesis(state, "discovery") };
     }
@@ -91,6 +93,84 @@ export class HomepageRuntime {
         const updated = {
             ...state,
             repository,
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "repository") };
+    }
+    async approveContract(state) {
+        if (!state.intent || !state.discovery) {
+            throw new Error("Genesis state is missing intent or discovery");
+        }
+        const domain = state.domain ?? generateDomain(state.intent, state.discovery);
+        const mission = state.mission ?? generateMission(state.intent, state.discovery, domain);
+        const updated = {
+            ...state,
+            domain,
+            mission,
+            publicFlow: { ...state.publicFlow, contractApproved: true },
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "mission") };
+    }
+    async approveMission(state) {
+        if (!state.mission) {
+            throw new Error("Genesis state is missing mission");
+        }
+        const updated = {
+            ...state,
+            publicFlow: { ...state.publicFlow, missionApproved: true },
+        };
+        return { state: updated, projection: this.projectGenesis(updated, state.expeditions.length > 0 ? "expeditions" : "mission") };
+    }
+    async approvePlan(state) {
+        if (state.expeditions.length === 0) {
+            throw new Error("Genesis state is missing expeditions");
+        }
+        const updated = {
+            ...state,
+            publicFlow: { ...state.publicFlow, planApproved: true },
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "expeditions") };
+    }
+    async startExecution(state) {
+        if (state.expeditions.length === 0) {
+            throw new Error("Genesis state is missing expeditions");
+        }
+        const updated = {
+            ...state,
+            publicFlow: { ...state.publicFlow, executionStarted: true },
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "governance") };
+    }
+    async completeExecution(state) {
+        if (!state.intent || !state.discovery || !state.mission || state.expeditions.length === 0) {
+            throw new Error("Genesis state is missing mission or expeditions");
+        }
+        const architecture = state.architecture ?? generateArchitecture(state.mission, state.expeditions);
+        const repository = state.repository ?? generateRepository(state.mission, state.expeditions);
+        const updated = {
+            ...state,
+            architecture,
+            repository,
+            publicFlow: { ...state.publicFlow, executionComplete: true },
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "repository") };
+    }
+    async approveReview(state) {
+        if (!state.publicFlow.executionComplete) {
+            throw new Error("Execution is not complete");
+        }
+        const updated = {
+            ...state,
+            publicFlow: { ...state.publicFlow, reviewApproved: true },
+        };
+        return { state: updated, projection: this.projectGenesis(updated, "repository") };
+    }
+    async acceptOutcome(state) {
+        if (!state.publicFlow.reviewApproved) {
+            throw new Error("Review is not approved");
+        }
+        const updated = {
+            ...state,
+            publicFlow: { ...state.publicFlow, accepted: true },
         };
         return { state: updated, projection: this.projectGenesis(updated, "repository") };
     }
