@@ -206,9 +206,14 @@ export class HomepageRuntime implements MissionRuntime {
 
     const architecture = state.architecture ?? generateArchitecture(state.mission, state.expeditions)
     const repository = state.repository ?? generateRepository(state.mission, state.expeditions)
+    const completedExpeditions = state.expeditions.map((expedition) => ({
+      ...expedition,
+      status: "completed" as const,
+    }))
 
     const updated: GenesisState = {
       ...state,
+      expeditions: completedExpeditions,
       architecture,
       repository,
       publicFlow: { ...state.publicFlow, executionComplete: true },
