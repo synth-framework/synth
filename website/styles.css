@@ -1146,3 +1146,166 @@ nav {
     padding: var(--ms-space-7) var(--ms-space-4);
   }
 }
+
+/* ============================================================
+   Public Experience Layer
+   ============================================================ */
+
+.ms-public-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-2);
+  padding: var(--ms-space-4);
+}
+
+.ms-public-step {
+  display: flex;
+  align-items: center;
+  gap: var(--ms-space-3);
+  padding: var(--ms-space-2) var(--ms-space-3);
+  border-radius: var(--ms-radius-sm);
+  opacity: 0.6;
+  font-size: var(--ms-text-sm);
+}
+
+.ms-public-step-active {
+  opacity: 1;
+  background: var(--ms-surface-2);
+  font-weight: 600;
+}
+
+.ms-public-step-past {
+  opacity: 0.9;
+}
+
+.ms-public-step-future {
+  opacity: 0.4;
+}
+
+.ms-public-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: var(--ms-border);
+  color: var(--ms-text-primary);
+  font-size: var(--ms-text-xs);
+  font-weight: 600;
+}
+
+.ms-public-step-active .ms-public-step-number {
+  background: var(--ms-accent);
+  color: var(--ms-surface-1);
+}
+
+.ms-public-step-past .ms-public-step-number {
+  background: var(--ms-success);
+  color: var(--ms-surface-1);
+}
+
+.ms-public-header {
+  margin-bottom: var(--ms-space-5);
+  padding-bottom: var(--ms-space-4);
+  border-bottom: 1px solid var(--ms-border);
+}
+
+.ms-public-step-title {
+  font-size: var(--ms-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ms-text-secondary);
+  margin-bottom: var(--ms-space-1);
+}
+
+.ms-public-step-message {
+  font-size: var(--ms-text-lg);
+  font-weight: 500;
+  color: var(--ms-text-primary);
+}
+
+.ms-public-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-4);
+}
+
+.ms-public-view h2,
+.ms-public-view h3 {
+  margin: 0;
+  color: var(--ms-text-primary);
+}
+
+.ms-public-view p {
+  margin: 0;
+  color: var(--ms-text-secondary);
+}
+
+.ms-public-artifacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--ms-space-4);
+}
+
+.ms-public-actions {
+  display: flex;
+  gap: var(--ms-space-3);
+  flex-wrap: wrap;
+}
+
+.ms-question-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-4);
+  max-width: 480px;
+}
+
+.ms-question-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-space-2);
+}
+
+.ms-question-item label {
+  font-size: var(--ms-text-sm);
+  color: var(--ms-text-secondary);
+}
+
+.ms-question-item input {
+  padding: var(--ms-space-3);
+  border: 1px solid var(--ms-border);
+  border-radius: var(--ms-radius-sm);
+  background: var(--ms-surface-1);
+  color: var(--ms-text-primary);
+  font-size: var(--ms-text-base);
+}
+
+.ms-public-summary {
+  display: grid;
+  gap: var(--ms-space-3);
+  padding: var(--ms-space-4);
+  background: var(--ms-surface-2);
+  border-radius: var(--ms-radius-md);
+}
+
+.ms-public-summary p {
+  color: var(--ms-text-primary);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .ms-public-steps {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: var(--ms-space-2);
+  }
+
+  .ms-public-step-label {
+    display: none;
+  }
+
+  .ms-public-artifacts {
+    grid-template-columns: 1fr;
+  }
+}
