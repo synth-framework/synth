@@ -389,7 +389,7 @@ function renderCapabilities() {
   elements.capabilitiesGrid.innerHTML = CAPABILITIES.map((cap) => {
     const isAdapter = cap.id === "adapters"
     return `
-      <div class="ms-capability-card ${isAdapter ? "ms-capability-adapter" : ""}">
+      <div class="synth-capability-card ${isAdapter ? "synth-capability-adapter" : ""}">
         <h4>${escapeHtml(cap.name)}</h4>
         <p>${escapeHtml(cap.description)}</p>
       </div>
