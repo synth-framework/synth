@@ -986,6 +986,8 @@ async function cmdMissionHelp() {
 async function cmdIntentHelp() {
   printJson(namespaceHelp("intent", "Intent model operations", [
     { name: "synth intent create --file <path>", description: "Create an Intent Model from a JSON file" },
+    { name: "synth intent refine --intent-model-id <id> --answers <path> --recommendation <recommendation> --reason <reason>", description: "Run a refinement session and produce a Refinement Report" },
+    { name: "synth intent submit --intent-model-id <id>", description: "Submit a refined Intent Model for downstream Alignment Contract creation" },
   ]))
 }
 
@@ -1034,6 +1036,169 @@ async function cmdIntentCreate(flags: Record<string, string | boolean>) {
     kind: "IntentModelCreated",
     intentModelId,
     note: "Intent Model recorded. Run a refinement session before creating an Alignment Contract.",
+  })
+}
+
+async function cmdIntentRefine(flags: Record<string, string | boolean>) {
+  const intentModelId = typeof flags["intent-model-id"] === "string" ? flags["intent-model-id"] : undefined
+  if (!intentModelId) {
+    printError("Usage: synth intent refine --intent-model-id <id> [--answers <path>] [--recommendation <recommendation>] [--reason <reason>]")
+    return
+  }
+
+  await ensureRuntimeDataDir(process.cwd())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const events = await ctx.infra.eventStore.loadAll()
+  const initialEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_CREATED" && e.payload?.intentModelId === intentModelId)
+  if (!initialEvent) {
+    printError(`Intent Model not found: ${intentModelId}`)
+    return
+  }
+  const initialModel = (initialEvent.payload as Record<string, any>).intentModel
+
+  const startResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "StartRefinementSession",
+    payload: { intentModelId },
+  })
+  if (startResult.status !== "ok") {
+    printError(`StartRefinementSession failed: ${startResult.error}`)
+    return
+  }
+
+  const sessionEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "REFINEMENT_SESSION_STARTED" && e.payload?.intentModelId === intentModelId)
+  const sessionId = (sessionEvent?.payload as Record<string, any> | undefined)?.sessionId
+  const questions = ((sessionEvent?.payload as Record<string, any> | undefined)?.questions ?? []) as Array<{ id: string; text: string; category: string; priority: string }>
+
+  const answersPath = typeof flags.answers === "string" ? flags.answers : undefined
+  let answers: Record<string, string> = {}
+  let additionalEntries: Array<{ question: { id: string; text: string; category: string; priority: string }; answer: string }> = []
+  if (answersPath) {
+    try {
+      const content = await fs.readFile(path.resolve(answersPath), "utf-8")
+      const parsed = JSON.parse(content)
+      if (parsed.answers && typeof parsed.answers === "object") {
+        answers = parsed.answers
+      }
+      if (Array.isArray(parsed.additionalEntries)) {
+        additionalEntries = parsed.additionalEntries
+      }
+    } catch (err) {
+      printError(`Failed to read answers file: ${err instanceof Error ? err.message : String(err)}`)
+      return
+    }
+  }
+
+  if (Object.keys(answers).length === 0 && additionalEntries.length === 0) {
+    printJson({
+      status: "ok",
+      kind: "RefinementSessionStarted",
+      sessionId,
+      intentModelId,
+      questions,
+      note: "Provide answers in a JSON file and rerun with --answers <path>",
+    })
+    return
+  }
+
+  for (const question of questions) {
+    const answer = answers[question.id]
+    if (!answer) continue
+    const answerResult = await ctx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "AnswerRefinementQuestion",
+      payload: { sessionId, questionId: question.id, answer },
+    })
+    if (answerResult.status !== "ok") {
+      printError(`AnswerRefinementQuestion failed for ${question.id}: ${answerResult.error}`)
+      return
+    }
+  }
+
+  const recommendation = typeof flags.recommendation === "string" ? flags.recommendation : "approve_for_alignment"
+  const reason = typeof flags.reason === "string" ? flags.reason : "Refinement review completed via CLI"
+
+  const reportResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateRefinementReport",
+    payload: {
+      sessionId,
+      initialModel,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+      recommendation,
+      reason,
+      additionalEntries,
+    },
+  })
+  if (reportResult.status !== "ok") {
+    printError(`CreateRefinementReport failed: ${reportResult.error}`)
+    return
+  }
+
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const reportEvent = allEvents
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "REFINEMENT_REPORT_CREATED" && e.payload?.report?.sessionId === sessionId)
+  const reportId = (reportEvent?.payload as Record<string, any> | undefined)?.reportId
+  const finalModelEvent = allEvents
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_REVISED" && e.payload?.intentModelId === intentModelId)
+  const finalConfidence = (finalModelEvent?.payload as Record<string, any> | undefined)?.intentModel?.confidenceLevel
+
+  printJson({
+    status: "ok",
+    kind: "RefinementReportCreated",
+    reportId,
+    sessionId,
+    intentModelId,
+    finalConfidence,
+    recommendation,
+    reason,
+    note: "Refinement Report created. Submit the Intent Model when ready for Alignment Contract creation.",
+  })
+}
+
+async function cmdIntentSubmit(flags: Record<string, string | boolean>) {
+  const intentModelId = typeof flags["intent-model-id"] === "string" ? flags["intent-model-id"] : undefined
+  if (!intentModelId) {
+    printError("Usage: synth intent submit --intent-model-id <id>")
+    return
+  }
+
+  await ensureRuntimeDataDir(process.cwd())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "SubmitIntentModel",
+    payload: { intentModelId },
+  })
+
+  if (result.status !== "ok") {
+    printError(`SubmitIntentModel failed: ${result.error}`)
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "IntentModelSubmitted",
+    intentModelId,
+    note: "Intent Model submitted. Ready for Alignment Contract creation (EXP-HOME-027).",
   })
 }
 
@@ -2636,6 +2801,11 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "intent") {
     if (sub === "create") return "intent create"
   }
+  if (namespace === "intent") {
+    if (sub === "create") return "intent create"
+    if (sub === "refine") return "intent refine"
+    if (sub === "submit") return "intent submit"
+  }
   if (namespace === "alignment") {
     if (sub === "prepare") return "alignment prepare"
   }
@@ -2768,8 +2938,10 @@ async function main() {
     case "intent": {
       const sub = positional[1]
       if (sub === "create") await cmdIntentCreate(flags)
+      else if (sub === "refine") await cmdIntentRefine(flags)
+      else if (sub === "submit") await cmdIntentSubmit(flags)
       else
-        printError("Usage: synth intent create --file <path>")
+        printError("Usage: synth intent create --file <path> | synth intent refine --intent-model-id <id> [--answers <path>] [--recommendation <recommendation>] [--reason <reason>] | synth intent submit --intent-model-id <id>")
       break
     }
 
