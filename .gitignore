@@ -33,6 +33,7 @@ data/*
 !data/tasks/
 !data/tasks/*.task.json
 data-test/
+data-test-alignment/
 proof/
 
 # =============================================================================
