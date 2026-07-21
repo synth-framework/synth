@@ -78,6 +78,16 @@ export type StateEvent =
   | { type: "INTENT_MODEL_SUPERSEDED"; intentModelId: string }
   | { type: "REFINEMENT_SESSION_STARTED"; sessionId: string; intentModelId: string; questions: unknown[] }
   | { type: "REFINEMENT_QUESTION_ANSWERED"; sessionId: string; questionId: string; answer: string }
+  // Alignment and divergence lifecycle (EXP-PROGRAM-036 Phase 2)
+  | { type: "ALIGNMENT_CONTRACT_CREATED"; contractId: string; contract: unknown }
+  | { type: "ALIGNMENT_CONTRACT_SUBMITTED"; contractId: string }
+  | { type: "ALIGNMENT_CONTRACT_APPROVED"; contractId: string; approvedBy: unknown }
+  | { type: "ALIGNMENT_CONTRACT_REJECTED"; contractId: string; reason: string }
+  | { type: "ALIGNMENT_CONTRACT_SUPERSEDED"; contractId: string }
+  | { type: "REFERENCE_EVIDENCE_CREATED"; evidenceId: string; evidence: unknown }
+  | { type: "REFERENCE_EVIDENCE_BOUND"; contractId: string; evidenceId: string }
+  | { type: "DIVERGENCE_GATE_OPENED"; gateId: string; contractId: string; intentModelId: string }
+  | { type: "DIVERGENCE_GATE_RESOLVED"; gateId: string; contractId: string; decision: string; reportId: string }
   | { type: "OBJECTIVE_ADDED"; objectiveId: string; expeditionId: string; title: string }
   | { type: "DISCOVERY_RECORDED"; discoveryId: string; expeditionId: string }
   | { type: "DECISION_ACCEPTED"; decisionId: string }

@@ -53,6 +53,7 @@ export type Mission = {
   purpose: string
   status: "draft" | "active" | "completed" | "archived"
   expeditions: string[]
+  alignmentContractId?: string
   metadata: Record<string, unknown>
   createdAt: number
   updatedAt: number
@@ -155,6 +156,57 @@ export type RefinementSessionState = {
   version: number
   createdAt: number
   updatedAt: number
+}
+
+/** Alignment Contract — formal agreement before Mission creation */
+export type AlignmentContractState = {
+  id: string
+  intentModelId: string
+  refinedIntentId?: string
+  intentSummary: string
+  expectedExperience: string
+  requiredProperties: string[]
+  forbiddenProperties: string[]
+  requiredBehaviors: string[]
+  visualReferences: string[]
+  behavioralReferences: string[]
+  functionalExpectations: string[]
+  technicalConstraints: string[]
+  successCriteria: string[]
+  explicitNonRequirements: string[]
+  allowedInterpretation: string[]
+  allowedVariation: string[]
+  forbiddenInterpretation: string[]
+  forbiddenDrift: string[]
+  referenceEvidenceIds: string[]
+  status: string
+  approvedBy?: { kind: string; id: string }
+  approvedAt?: number
+  version: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** Reference Evidence — bound artifact justifying a requirement */
+export type ReferenceEvidenceState = {
+  id: string
+  kind: string
+  uri: string
+  hash?: string
+  mimeType?: string
+  description?: string
+  capturedAt: number
+}
+
+/** Divergence Gate — pre-Mission alignment checkpoint */
+export type DivergenceGateState = {
+  id: string
+  contractId: string
+  intentModelId: string
+  status: string
+  reportId?: string
+  createdAt: number
+  resolvedAt?: number
 }
 
 /** Objective — specific measurable outcome within an expedition */
@@ -294,6 +346,9 @@ export type CanonicalState = {
   decisions: Record<string, Decision>
   intentModels: Record<string, IntentModelState>
   refinementSessions: Record<string, RefinementSessionState>
+  alignmentContracts: Record<string, AlignmentContractState>
+  referenceEvidence: Record<string, ReferenceEvidenceState>
+  divergenceGates: Record<string, DivergenceGateState>
   generatedWorkItems: Record<string, GeneratedWorkItem>
   executions: Record<string, Execution>
   executionIntents: Record<string, ExecutionIntentState>
