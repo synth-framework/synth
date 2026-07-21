@@ -1,15 +1,15 @@
-# EXP-HOME-028 — Mission Projection Experience
+# EXP-HOME-028 — Homepage Intent → Mission Flow
 
-> **Integration expedition.** Integrate the canonical `ProjectMission` capability into Mission Studio, allowing visitors to observe, understand, review, and approve the projected Mission without reimplementing any constitutional logic.
+> **Proving-ground expedition.** Demonstrate the complete human-facing SYNTH journey from idea to accepted outcome, without exposing internal governance vocabulary.
 
 **Status:** Proposed  
-**Kind:** Integration Expedition  
+**Kind:** Proving-Ground Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** EXP-HOME-027, EXP-REFINE-014  
+**Depends On:** EXP-HOME-027  
 **Blocks:** EXP-HOME-001, EXP-HOME-002, EXP-HOME-003, EXP-HOME-025
 
-> **Authority:** ADR-045 — Governance Lifecycle & State Machine Specification, EXP-REFINE-013 — Mission Projection & Derivation
+> **Authority:** `docs/analysis/simplified-interaction-model-decision.md`
 
 ---
 
@@ -26,160 +26,137 @@ Impact:
 
 ## Objective
 
-Integrate the canonical `ProjectMission` capability into Mission Studio so that the homepage becomes the first consumer of SYNTH's deterministic Mission Projection lifecycle.
+Demonstrate the complete human-facing SYNTH journey on the Mission Studio homepage.
 
-Mission Studio must invoke `ProjectMission`; it must never derive Mission data locally, invent projection rules, or weaken governance. The expedition turns the homepage into an executable explanation of how an approved Alignment Contract becomes a Mission.
+A first-time user must be able to arrive, state an idea, answer guided questions, confirm understanding, approve a contract, observe mission execution, review evidence, and accept the outcome—without encountering internal governance vocabulary.
 
----
-
-## Purpose
-
-Until now, Program 027 repeatedly uncovered missing constitutional concepts. That phase is complete. The Governance Architecture v1.0 is frozen, Mission Projection is implemented, and the Alignment Contract for Program 027 is approved.
-
-EXP-HOME-028 is the first expedition that purely consumes the platform. Its job is to visualize, explain, and make tangible the constitutional lifecycle the visitor is already experiencing.
+This expedition is the acceptance test for the simplified interaction model.
 
 ---
 
-## Required Integration
-
-### 1.1 Invoke `ProjectMission`
-
-The homepage must call the canonical capability:
+## Human-facing flow
 
 ```text
-ProjectMission(alignmentContractId)
+1. Idea
+   User states: "I want a homepage for my AI tool."
+
+2. Question
+   SYNTH asks:
+   • "Who is it for?"
+   • "What should they feel?"
+   • "What is the one action they should take?"
+   • "What must it NOT look like?"
+   • "Which reference is authoritative?"
+
+3. Understanding
+   SYNTH presents: "Here is what I understand you want..."
+
+4. Contract
+   SYNTH asks: "Approve this contract and I will build it."
+
+5. Mission
+   SYNTH shows: "This is the Mission I derived from your contract."
+
+6. Plan
+   SYNTH shows: "This is how I will execute the Mission."
+
+7. Execution
+   SYNTH executes and produces evidence.
+
+8. Review
+   SYNTH asks: "Does this match what we agreed?"
+
+9. Acceptance
+   SYNTH asks: "Do you accept this outcome?"
 ```
 
-using the approved Program 027 Alignment Contract:
+---
 
-```text
-alignment-contract-mru2bqph-zze9m7
-```
+## Internal mapping
 
-No local derivation. No hardcoded Mission fields. No duplication of projection rules.
+The homepage uses the internal machinery but never exposes it.
 
-### 1.2 Render the Mission Projection Package
-
-Display the returned package:
-
-```text
-Mission
-Provenance
-Coverage Matrix
-Lineage
-Fingerprint
-Certification Report
-```
-
-### 1.3 Provenance Panel
-
-Provide a collapsible or navigable panel showing field-level provenance:
-
-```text
-Mission Title
-← Alignment Contract.intentSummary
-
-Objectives
-← Alignment Contract.objectiveCoverage[aligned=true]
-
-Constraints
-← Alignment Contract.requiredProperties ∪ technicalConstraints
-
-Non-Goals
-← Alignment Contract.explicitNonRequirements ∪ forbiddenInterpretations
-
-Allowed Variation
-← Alignment Contract.allowedVariation
-
-Forbidden Drift
-← Alignment Contract.forbiddenDrift
-
-Reference Evidence
-← Alignment Contract.referenceEvidenceIds
-
-Fingerprint
-← hash(Alignment Contract + Intent Model + Refinement Report)
-```
-
-### 1.4 Certification Visualization
-
-Visibly distinguish the phases:
-
-```text
-Projecting…
-  ↓
-Projected
-  ↓
-Certified
-```
-
-Do not skip from invocation to "Mission Ready." Certification is part of the experience.
-
-### 1.5 Replay Timeline
-
-The Mission Studio replay timeline must include:
-
-```text
-Alignment Approved
-  ↓
-Mission Projected
-  ↓
-Projection Certified
-  ↓
-Mission Approved
-```
-
-This teaches the constitutional lifecycle by example.
+| Human-facing step | Internal capability | Internal artifacts |
+|---|---|---|
+| Idea | `CreateIntentModel` | `IntentModel` |
+| Question | `AskQuestion` | `RefinementQuestion`, `RefinementSession` |
+| Understanding | `CreateRefinementReport` + `CreateAlignmentContract` | `RefinementReport`, `AlignmentContract` |
+| Contract | `ApproveAlignmentContract` + `OpenDivergenceGate` + `ResolveDivergenceGate` | `AlignmentContract`, `DivergenceGate`, `DivergenceReport` |
+| Mission | `ProjectMission` | `MissionProjectionPackage`, `ProjectionCertification`, `Mission` |
+| Plan | `CreateExpedition` | `Expedition`, `RefinedIntent` |
+| Execution | `StartExpedition` + `CompleteExpedition` | `ImplementationEvidence` |
+| Review | `OpenReviewGate` + `ResolveReviewGate` | `ReviewGatePackage`, `ReviewDecision` |
+| Acceptance | `OpenAcceptanceGate` + `ResolveAcceptanceGate` | `AcceptanceGatePackage`, `AcceptanceRecord` |
 
 ---
 
 ## Definition of Done
 
-- [ ] Homepage invokes `ProjectMission` with the Program 027 Alignment Contract ID.
-- [ ] Homepage renders the projected Mission from the Mission Projection Package.
-- [ ] Displayed Mission fingerprint matches the runtime fingerprint.
-- [ ] Provenance panel maps every Mission field to its source rule.
-- [ ] Certification status is visible and transitions through `Projecting → Projected → Certified`.
-- [ ] Replay timeline includes `Alignment Approved`, `Mission Projected`, `Projection Certified`, and `Mission Approved`.
-- [ ] No projection logic, invariant checks, or business rules are implemented in homepage code.
-- [ ] Expedition does not introduce new constitutional concepts.
+- [ ] A first-time user can state an idea on the homepage.
+- [ ] SYNTH generates and presents guided questions.
+- [ ] SYNTH presents an Understanding summary for confirmation.
+- [ ] SYNTH presents a Contract for approval.
+- [ ] SYNTH derives and displays a Mission after Contract approval.
+- [ ] SYNTH derives and displays a Plan after Mission creation.
+- [ ] SYNTH executes the Plan and produces Evidence.
+- [ ] SYNTH presents Evidence for Review.
+- [ ] SYNTH presents a final Acceptance step.
+- [ ] The user never sees the internal governance vocabulary listed below.
 
 ---
 
-## Out of Scope
+## Forbidden vocabulary
 
-- Defining Mission Projection rules (EXP-REFINE-013).
-- Implementing the `ProjectMission` capability (EXP-REFINE-014).
-- Mission Approval Gate implementation.
-- Homepage component implementation beyond the Mission Projection experience.
+The homepage must never display these terms to the user:
+
+- Alignment Contract
+- Divergence Gate
+- Mission Projection
+- Mission Projection Package
+- Projection Certification
+- Refinement Session
+- Refinement Report
+- Refined Intent
+- Review Gate
+- Review Gate Package
+- Review Decision
+- Acceptance Gate
+- Acceptance Gate Package
+- Acceptance Record
+- Convergence Report
+- Gate Policy
+- Reviewer Kind
+- Governance State Machine
 
 ---
 
 ## Acceptance Criteria
 
-- A visitor can see how the Program 027 Mission was derived from the approved Alignment Contract.
-- A visitor can inspect objectives, constraints, non-goals, lineage, and fingerprint.
-- A visitor can observe the certification transition.
-- Removing or modifying the Alignment Contract produces a detectable change in the displayed fingerprint.
-- The homepage code contains no fallback or duplicate projection logic.
+1. A first-time user can complete the entire flow without documentation.
+2. The flow matches the 9-term public vocabulary: Idea, Question, Understanding, Contract, Mission, Plan, Evidence, Review, Acceptance.
+3. Each step is visually distinct and explains what is happening in plain language.
+4. The Contract step clearly states what is being approved.
+5. The Mission and Plan steps visibly connect to the approved Contract.
+6. Evidence in the Review step is tied back to the Contract.
+7. Acceptance is a single, clear final action.
+8. Replay timeline is available but labeled in plain language.
 
 ---
 
-## Artifacts
+## Out of Scope
 
-| Artifact | Path | Description |
-|---|---|---|
-| Alignment Contract | `docs/governance/program-027/alignment-contract.json` | Source contract for projection |
-| Alignment Review Package | `docs/governance/program-027/alignment-review-package.md` | Context for the projection |
-| Mission Projection Spec | `docs/expeditions/EXP-REFINE-013.md` | Constitutional specification |
-| Mission Projection Capability | `src/governance/project-mission.ts` | Runtime capability to consume |
+- Modifying internal governance types or events.
+- Renaming code artifacts.
+- Adding new gates or capabilities.
+- Implementing the full homepage design system.
+- Launching the homepage publicly.
 
 ---
 
 ## Related
 
-- EXP-PROGRAM-027 — Mission Studio Homepage
+- `docs/analysis/synth-consolidation-review.md`
+- `docs/analysis/simplified-interaction-model-decision.md`
+- `docs/analysis/homepage-simplicity-proving-ground.md`
 - EXP-HOME-027 — Homepage Alignment Contract
-- EXP-REFINE-013 — Mission Projection & Derivation
-- EXP-REFINE-014 — Mission Projection Capability
-- ADR-045 — Governance Lifecycle & State Machine Specification
+- EXP-PROGRAM-027 — Mission Studio Homepage
