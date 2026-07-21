@@ -79,6 +79,8 @@ export type StateEvent =
   | { type: "REFINEMENT_SESSION_STARTED"; sessionId: string; intentModelId: string; questions: unknown[] }
   | { type: "REFINEMENT_QUESTION_ANSWERED"; sessionId: string; questionId: string; answer: string }
   | { type: "REFINEMENT_REPORT_CREATED"; reportId: string; report: unknown }
+  | { type: "REFINEMENT_REPORT_APPROVED"; reportId: string; intentModelId: string; approvedBy: unknown; reason: string }
+  | { type: "REFINEMENT_REPORT_REJECTED"; reportId: string; intentModelId: string; rejectedBy: unknown; reason: string }
   // Alignment and divergence lifecycle (EXP-PROGRAM-036 Phase 2)
   | { type: "ALIGNMENT_CONTRACT_CREATED"; contractId: string; contract: unknown }
   | { type: "ALIGNMENT_CONTRACT_SUBMITTED"; contractId: string }

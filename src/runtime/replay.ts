@@ -467,6 +467,50 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       if (report) state.refinementReports[report.id] = report
       break
     }
+    case "REFINEMENT_REPORT_APPROVED": {
+      const reportId = String(payload.reportId)
+      const intentModelId = String(payload.intentModelId)
+      if (state.refinementReports[reportId]) {
+        state.refinementReports[reportId] = {
+          ...state.refinementReports[reportId],
+          recommendation: "approve_for_alignment",
+        }
+      }
+      if (state.intentModels[intentModelId]) {
+        state.intentModels[intentModelId] = {
+          ...state.intentModels[intentModelId],
+          status: "approved_for_alignment",
+          refinementApproval: {
+            reportId,
+            decision: "approved_for_alignment",
+            approvedBy: payload.approvedBy as { kind: string; id: string },
+            reason: String(payload.reason),
+            approvedAt: event.timestamp,
+          },
+          updatedAt: event.timestamp,
+        }
+      }
+      break
+    }
+    case "REFINEMENT_REPORT_REJECTED": {
+      const reportId = String(payload.reportId)
+      const intentModelId = String(payload.intentModelId)
+      if (state.intentModels[intentModelId]) {
+        state.intentModels[intentModelId] = {
+          ...state.intentModels[intentModelId],
+          status: "revision_required",
+          refinementApproval: {
+            reportId,
+            decision: "revision_required",
+            rejectedBy: payload.rejectedBy as { kind: string; id: string },
+            reason: String(payload.reason),
+            approvedAt: event.timestamp,
+          },
+          updatedAt: event.timestamp,
+        }
+      }
+      break
+    }
 
     // Alignment and divergence lifecycle (EXP-PROGRAM-036 Phase 2)
     case "ALIGNMENT_CONTRACT_CREATED": {

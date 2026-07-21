@@ -439,6 +439,40 @@ export function applyDomain(
       return { events: [{ type: "REFINEMENT_REPORT_CREATED", payload: { reportId: report.id, report } }] }
     }
 
+    case "ApproveRefinementReport": {
+      const reportId = String(intent.payload.reportId)
+      const report = state.refinementReports[reportId]
+      if (!report) {
+        throw new Error(`REFINEMENT_REPORT_NOT_FOUND: ${reportId}`)
+      }
+      const intentModelId = report.intentModelId
+      const decision = String(intent.payload.decision || "approved_for_alignment") as
+        | "approved_for_alignment"
+        | "revision_required"
+        | "rejected"
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : "Refinement report approved"
+      const reviewer = (intent.payload.reviewer as { kind: string; id: string }) ?? { kind: "human", id: "synth-cli-operator" }
+
+      if (decision === "approved_for_alignment") {
+        return {
+          events: [
+            {
+              type: "REFINEMENT_REPORT_APPROVED",
+              payload: { reportId, intentModelId, approvedBy: reviewer, reason },
+            },
+          ],
+        }
+      }
+      return {
+        events: [
+          {
+            type: "REFINEMENT_REPORT_REJECTED",
+            payload: { reportId, intentModelId, rejectedBy: reviewer, reason },
+          },
+        ],
+      }
+    }
+
     // Alignment and divergence capabilities (EXP-PROGRAM-036 Phase 2)
     case "CreateAlignmentContract": {
       const input = intent.payload.input as Record<string, unknown>

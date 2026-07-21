@@ -136,6 +136,14 @@ export type IntentModelState = {
   unresolvedAmbiguity: string[]
   knownUnknowns: string[]
   status: string
+  refinementApproval?: {
+    reportId: string
+    decision: "approved_for_alignment" | "revision_required" | "rejected"
+    approvedBy?: { kind: string; id: string }
+    rejectedBy?: { kind: string; id: string }
+    reason: string
+    approvedAt: number
+  }
   version: number
   createdAt: number
   updatedAt: number
