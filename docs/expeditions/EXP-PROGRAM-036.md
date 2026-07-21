@@ -121,12 +121,21 @@ Governance Layer
 
 ## Execution Phases
 
-Program 036 is executed in four dependency-ordered phases:
+Program 036 is executed in five dependency-ordered phases:
 
+- **Phase 0** defines the canonical governance lifecycle state machine that all subsequent phases obey.
 - **Phase 1** defines the vocabulary and artifacts of intent modeling.
 - **Phase 2** defines the Alignment Contract and the Divergence Gate that validates it.
 - **Phase 3** introduces Interactive Decision Acquisition to eliminate residual uncertainty through structured, adapter-independent interactions.
 - **Phase 4** binds reference evidence, certifies convergence, integrates refinement into Mission Studio, and uses Program 027 as the pilot.
+
+### Phase 0 — Governance Lifecycle Specification
+
+Produce the canonical specification for SYNTH's full governance lifecycle before any further implementation proceeds. This phase ensures all gates, states, transitions, satisfiers, events, and replay expectations are explicit and reviewable.
+
+```text
+EXP-REFINE-012  Governance Lifecycle State Machine
+```
 
 ### Phase 1 — Refinement Model
 
