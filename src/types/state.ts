@@ -51,8 +51,22 @@ export type Mission = {
   id: string
   name: string
   purpose: string
-  status: "draft" | "active" | "completed" | "archived"
+  status: "projected" | "draft" | "active" | "completed" | "archived"
+  projectionStatus?: "projected" | "certified" | "failed"
   expeditions: string[]
+  objectives?: string[]
+  constraints?: string[]
+  nonGoals?: string[]
+  allowedVariation?: string[]
+  forbiddenDrift?: string[]
+  referenceEvidence?: string[]
+  lineage?: {
+    alignmentContractId: string
+    intentModelId: string
+    refinementReportId: string
+  }
+  fingerprint?: string
+  projectionId?: string
   alignmentContractId?: string
   metadata: Record<string, unknown>
   createdAt: number

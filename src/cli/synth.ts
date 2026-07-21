@@ -976,6 +976,7 @@ async function cmdDiscover(args: string[], flags: Record<string, string | boolea
 async function cmdMissionHelp() {
   printJson(namespaceHelp("mission", "Mission Studio operations", [
     { name: "synth mission create --subject <subject> --purpose <purpose>", description: "Create a Mission proposal" },
+    { name: "synth mission project --alignment-contract-id <id>", description: "Project a Mission from an approved Alignment Contract (EXP-REFINE-014)" },
     { name: "synth mission approve --draft-id <id> --alignment-contract-id <contract-id>", description: "Approve a Mission draft" },
     { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
     { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
@@ -2224,6 +2225,52 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdMissionProject(flags: Record<string, string | boolean>) {
+  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
+  if (!alignmentContractId) {
+    printError("Usage: synth mission project --alignment-contract-id <id>")
+    return
+  }
+
+  await ensureRuntimeDataDir(process.cwd())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ProjectMission",
+    payload: { alignmentContractId },
+  })
+
+  if (result.status !== "ok") {
+    printError(`ProjectMission failed: ${result.error}`)
+    return
+  }
+
+  const output = (result as any).result ?? {}
+  const certification = output.certification ?? {}
+  const passed = certification.result === "passed"
+  const mission = output.mission ?? {}
+
+  printJson({
+    status: "ok",
+    kind: passed ? "MissionProjectedAndCertified" : "MissionProjectionFailed",
+    projectionId: output.projectionId,
+    certificationId: certification.certificationId,
+    missionId: mission.id,
+    missionFingerprint: output.missionFingerprint,
+    contractId: alignmentContractId,
+    certification: passed
+      ? { result: "passed", checks: certification.checks }
+      : { result: "failed", reason: certification.checks?.filter((c: any) => !c.passed).map((c: any) => c.reason).join("; ") },
+    note: passed
+      ? "Mission projected, certified, and created. Ready for Mission Approval."
+      : "Mission projection failed certification. Alignment Contract must be revised.",
+  })
+}
+
 const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain"]
 
 async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
@@ -3214,13 +3261,14 @@ async function main() {
     case "mission": {
       const sub = positional[1]
       if (sub === "create") await cmdMissionCreate(flags)
+      else if (sub === "project") await cmdMissionProject(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
       else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)
       else if (sub === "decisions") await cmdMissionDecisions(flags)
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
         )
       break
     }

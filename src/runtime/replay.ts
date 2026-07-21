@@ -219,6 +219,18 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       if (mission) state.missions[mission.id] = mission
       break
     }
+    case "MISSION_PROJECTED": {
+      // Projection package is materialized from the event log; no state mutation required.
+      break
+    }
+    case "PROJECTION_CERTIFIED": {
+      // Certification result is materialized from the event log; no state mutation required.
+      break
+    }
+    case "PROJECTION_CERTIFICATION_FAILED": {
+      // Failure is materialized from the event log; no state mutation required.
+      break
+    }
     case "MISSION_APPROVED": {
       const missionId = String(payload.id)
       if (state.missions[missionId]) {

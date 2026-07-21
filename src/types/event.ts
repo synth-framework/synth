@@ -58,6 +58,9 @@ export type StateEvent =
   | { type: "MISSION_APPROVED"; missionId: string }
   | { type: "MISSION_COMPLETED"; missionId: string }
   | { type: "MISSION_ARCHIVED"; missionId: string }
+  | { type: "MISSION_PROJECTED"; projectionId: string; contractId: string; missionFingerprint: string }
+  | { type: "PROJECTION_CERTIFIED"; certificationId: string; projectionId: string; checks: unknown[] }
+  | { type: "PROJECTION_CERTIFICATION_FAILED"; certificationId: string; projectionId: string; reason: string }
   | { type: "EXPEDITION_CREATED"; expeditionId: string; missionId: string; name: string }
   | { type: "EXPEDITION_APPROVED"; expeditionId: string }
   | { type: "EXPEDITION_COMMITTED"; expeditionId: string }

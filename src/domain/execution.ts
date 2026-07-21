@@ -34,6 +34,7 @@ import {
 } from "../governance/alignment-contract.js"
 import { createReferenceEvidence, validateReferenceEvidence, bindEvidenceToContract } from "../governance/reference-evidence.js"
 import { openDivergenceGate, resolveDivergenceGate, isAligned } from "../governance/divergence-gate.js"
+import { projectMission, ProjectionInvariantError, ProjectionCompletenessError } from "../governance/project-mission.js"
 
 /** Execute domain logic — pure function: (intent, state, ctx) → result */
 export function applyDomain(
@@ -541,6 +542,83 @@ export function applyDomain(
       const contractId = String(intent.payload.contractId)
       const reason = String(intent.payload.reason)
       return { events: [{ type: "ALIGNMENT_CONTRACT_REJECTED", payload: { contractId, reason } }] }
+    }
+
+    // Mission Projection capability (EXP-REFINE-014)
+    case "ProjectMission": {
+      const contractId = String(intent.payload.alignmentContractId)
+      const contractState = state.alignmentContracts[contractId]
+      if (!contractState) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
+      if (contractState.status !== "approved") {
+        throw new Error(`ALIGNMENT_CONTRACT_NOT_APPROVED: ${contractId}`)
+      }
+
+      const intentModelState = state.intentModels[contractState.intentModelId]
+      if (!intentModelState) throw new Error(`INTENT_MODEL_NOT_FOUND: ${contractState.intentModelId}`)
+
+      const refinementReportState = Object.values(state.refinementReports).find(
+        (r) => r.intentModelId === contractState.intentModelId
+      )
+      if (!refinementReportState) throw new Error(`REFINEMENT_REPORT_NOT_FOUND: ${contractState.intentModelId}`)
+
+      const pkg = projectMission({
+        alignmentContract: contractState as import("../governance/alignment-contract.js").AlignmentContract,
+        intentModel: intentModelState as import("../governance/intent-model.js").IntentModel,
+        refinementReport: refinementReportState as import("../governance/refinement-report.js").RefinementReport,
+      })
+
+      const events: Array<{ type: string; payload: Record<string, unknown> }> = [
+        {
+          type: "MISSION_PROJECTED",
+          payload: {
+            projectionId: pkg.projectionId,
+            contractId: pkg.alignmentContractId,
+            missionFingerprint: pkg.fingerprint,
+          },
+        },
+      ]
+
+      if (pkg.certification.result === "passed") {
+        events.push({
+          type: "PROJECTION_CERTIFIED",
+          payload: {
+            certificationId: pkg.certification.certificationId,
+            projectionId: pkg.projectionId,
+            checks: pkg.certification.checks,
+          },
+        })
+        const mission = {
+          ...pkg.mission,
+          projectionStatus: "certified" as const,
+          status: "draft" as const,
+          expeditions: [],
+          metadata: {},
+        }
+        events.push({
+          type: "MISSION_CREATED",
+          payload: { missionId: mission.id, mission },
+        })
+      } else {
+        events.push({
+          type: "PROJECTION_CERTIFICATION_FAILED",
+          payload: {
+            certificationId: pkg.certification.certificationId,
+            projectionId: pkg.projectionId,
+            reason: pkg.certification.checks.filter((c) => !c.passed).map((c) => c.reason).join("; "),
+          },
+        })
+      }
+
+      return {
+        events,
+        result: {
+          projectionId: pkg.projectionId,
+          missionId: pkg.mission.id,
+          missionFingerprint: pkg.fingerprint,
+          certification: pkg.certification,
+          mission: pkg.mission,
+        },
+      }
     }
 
     case "CreateReferenceEvidence": {
