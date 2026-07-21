@@ -214,6 +214,12 @@ export type AlignmentContractState = {
   forbiddenInterpretation: string[]
   forbiddenDrift: string[]
   referenceEvidenceIds: string[]
+  dimensions?: Array<{ name: string; score: number; reason: string }>
+  objectiveCoverage?: Array<{ objective: string; evidenceIds: string[]; aligned: boolean; notes?: string }>
+  implicitObjectiveStatus?: Array<{ objective: string; status: string; reason: string }>
+  forbiddenInterpretations?: Array<{ interpretation: string; reason: string; evidenceIds: string[] }>
+  confidenceExplanation?: { score: number; reason: string }
+  residualDivergence?: Array<{ description: string; acceptedBy: { kind: string; id: string }; reason: string; risk: string }>
   status: string
   approvedBy?: { kind: string; id: string }
   approvedAt?: number
