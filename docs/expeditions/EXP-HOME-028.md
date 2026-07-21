@@ -1,6 +1,4 @@
-# EXP-HOME-028 — Homepage Intent → Mission Flow
-
-> **Proving-ground expedition.** Demonstrate the complete human-facing SYNTH journey from idea to accepted outcome, without exposing internal governance vocabulary.
+> **Human flow validation expedition.** Prove that SYNTH can guide a first-time user from Idea → Acceptance without exposing internal governance vocabulary.
 
 **Status:** Proposed  
 **Kind:** Proving-Ground Expedition  
@@ -26,11 +24,40 @@ Impact:
 
 ## Objective
 
-Demonstrate the complete human-facing SYNTH journey on the Mission Studio homepage.
+Prove that a first-time user can use SYNTH without knowing SYNTH exists.
 
-A first-time user must be able to arrive, state an idea, answer guided questions, confirm understanding, approve a contract, observe mission execution, review evidence, and accept the outcome—without encountering internal governance vocabulary.
+The user states an idea, answers guided questions, reviews an understanding, approves a contract, observes a mission and plan, reviews evidence, and accepts the outcome. The internal governance machinery performs all deterministic work behind the scenes.
 
 This expedition is the acceptance test for the simplified interaction model.
+
+---
+
+## The simplicity governor
+
+> **Internal governance artifacts MUST NOT become public vocabulary unless they represent a user decision.**
+
+| Concept | User decision? | Public |
+|---|---|---|
+| Idea | Yes | ✅ |
+| Question | Yes | ✅ |
+| Understanding | Yes | ✅ |
+| Contract | Yes | ✅ |
+| Mission | Yes | ✅ |
+| Plan | Yes | ✅ |
+| Evidence | Yes | ✅ |
+| Review | Yes | ✅ |
+| Acceptance | Yes | ✅ |
+| IntentModel | No | ❌ |
+| RefinementSession | No | ❌ |
+| RefinementReport | No | ❌ |
+| AlignmentContract | No | ❌ |
+| DivergenceGate | No | ❌ |
+| MissionProjection | No | ❌ |
+| ProjectionCertification | No | ❌ |
+| ReviewGate | No | ❌ |
+| AcceptanceGate | No | ❌ |
+
+The upper layer is the product. The lower layer is the engine.
 
 ---
 
@@ -79,14 +106,14 @@ The homepage uses the internal machinery but never exposes it.
 | Human-facing step | Internal capability | Internal artifacts |
 |---|---|---|
 | Idea | `CreateIntentModel` | `IntentModel` |
-| Question | `AskQuestion` | `RefinementQuestion`, `RefinementSession` |
-| Understanding | `CreateRefinementReport` + `CreateAlignmentContract` | `RefinementReport`, `AlignmentContract` |
-| Contract | `ApproveAlignmentContract` + `OpenDivergenceGate` + `ResolveDivergenceGate` | `AlignmentContract`, `DivergenceGate`, `DivergenceReport` |
+| Question | `StartRefinementSession`, `AnswerRefinementQuestion` | `RefinementQuestion`, `RefinementSession` |
+| Understanding | `CreateRefinementReport`, `CreateAlignmentContract` | `RefinementReport`, `AlignmentContract` |
+| Contract | `ApproveAlignmentContract`, `OpenDivergenceGate`, `ResolveDivergenceGate` | `AlignmentContract`, `DivergenceGate`, `DivergenceReport` |
 | Mission | `ProjectMission` | `MissionProjectionPackage`, `ProjectionCertification`, `Mission` |
 | Plan | `CreateExpedition` | `Expedition`, `RefinedIntent` |
-| Execution | `StartExpedition` + `CompleteExpedition` | `ImplementationEvidence` |
-| Review | `OpenReviewGate` + `ResolveReviewGate` | `ReviewGatePackage`, `ReviewDecision` |
-| Acceptance | `OpenAcceptanceGate` + `ResolveAcceptanceGate` | `AcceptanceGatePackage`, `AcceptanceRecord` |
+| Execution | `StartExpedition`, `CompleteExpedition` | `ImplementationEvidence` |
+| Review | `OpenReviewGate`, `ResolveReviewGate`, `RequestRevision` | `ReviewGatePackage`, `ReviewDecision` |
+| Acceptance | `OpenAcceptanceGate`, `ResolveAcceptanceGate`, `CloseExpedition` | `AcceptanceGatePackage`, `AcceptanceRecord` |
 
 ---
 
@@ -110,90 +137,84 @@ No new capabilities are required.
 
 ---
 
-## Minimum missing pieces
+## Implementation order
 
-The gap is not in governance machinery. The gap is in **public-vocabulary orchestration and presentation**.
+### Step 1 — Public state resolver
 
-### 1. Homepage orchestration layer
+Build a resolver that maps internal state to public experience state.
 
-A controller that sequences the existing capabilities using public step names only. It must:
+```text
+Internal State
+       ↓
+Public Experience State
+       ↓
+UI
+```
 
-- Accept an Idea.
-- Trigger question generation.
-- Collect answers.
-- Produce Understanding and Contract.
-- Await Contract approval.
-- Trigger Mission projection.
-- Derive Plan (Expeditions).
-- Execute Plan.
-- Collect Evidence.
-- Present Review.
-- Present Acceptance.
+Example:
 
-This layer never exposes internal artifact names.
+Internal:
 
-### 2. Public-vocabulary UI components
+```text
+IntentModel.status = submitted
+RefinementApproval = approved
+AlignmentContract = approved
+MissionProjection = certified
+```
 
-One component per public step:
+Public:
 
-| Component | Purpose |
+```text
+CurrentStep: Contract
+Message: "Review what I understand before I begin building."
+```
+
+This is the most important piece. It is the boundary between the engine and the product.
+
+### Step 2 — Thin UI views
+
+Build one view per public step. These are presentation components, not new concepts.
+
+| View | Purpose |
 |---|---|
 | `IdeaInput` | Capture the user's initial idea. |
-| `QuestionWizard` | Present one question at a time; collect answers. |
+| `QuestionFlow` | Present one question at a time; collect answers. |
 | `UnderstandingCard` | Summarize what SYNTH understood; allow correction. |
 | `ContractApproval` | Present the Contract; approve or reject. |
-| `MissionCard` | Display the derived Mission. |
+| `MissionView` | Display the derived Mission. |
 | `PlanView` | Display Expeditions as plan steps. |
-| `EvidencePanel` | Show implementation evidence. |
-| `ReviewPrompt` | Ask whether evidence matches the Contract. |
-| `AcceptancePrompt` | Final accept/reject action. |
+| `EvidenceView` | Show implementation evidence. |
+| `ReviewView` | Ask whether evidence matches the Contract. |
+| `AcceptanceView` | Final accept/reject action. |
 
-### 3. Public step resolver
+### Step 3 — Forbidden vocabulary test
 
-A small projection that maps internal state to the current public step:
+Automated check that homepage output does not contain internal governance terms.
 
-```text
-no IntentModel           → Idea
-IntentModel, no approved RefinementReport → Question / Understanding
-approved AlignmentContract, no aligned DivergenceGate → Contract
-aligned DivergenceGate, no Mission        → Mission
-Mission, no Expeditions                   → Plan
-Expeditions not started/complete          → Execution
-Expeditions complete, no Review decision  → Review
-Review approved, no Acceptance            → Acceptance
-```
-
-### 4. Plain-language replay timeline
-
-Replay must remain available, but labels use public vocabulary:
+Forbidden terms in public mode:
 
 ```text
-Idea recorded
-Questions answered
-Understanding confirmed
-Contract approved
-Mission created
-Plan created
-Evidence produced
-Review completed
-Acceptance recorded
+Alignment
+Divergence
+Projection
+Certification
+Gate
+Artifact
+Governance
+RefinementSession
+RefinementReport
+RefinedIntent
+AcceptanceRecord
 ```
 
----
-
-## Implementation plan
-
-1. **Build the orchestration layer** using existing capabilities.
-2. **Build the 9 UI components** using the public vocabulary.
-3. **Add the public step resolver** to drive component visibility.
-4. **Wire the homepage** to the orchestration layer.
-5. **Verify forbidden vocabulary** is never displayed.
-6. **Run the acceptance test** with a first-time user script.
+These may appear only inside developer/debug mode.
 
 ---
 
 ## Definition of Done
 
+- [ ] Public state resolver maps internal state to public experience state.
+- [ ] Thin UI views exist for all 9 public steps.
 - [ ] A first-time user can state an idea on the homepage.
 - [ ] SYNTH generates and presents guided questions.
 - [ ] SYNTH presents an Understanding summary for confirmation.
@@ -203,13 +224,13 @@ Acceptance recorded
 - [ ] SYNTH executes the Plan and produces Evidence.
 - [ ] SYNTH presents Evidence for Review.
 - [ ] SYNTH presents a final Acceptance step.
-- [ ] The user never sees the internal governance vocabulary listed below.
+- [ ] Forbidden vocabulary test passes for public UI output.
 
 ---
 
 ## Forbidden vocabulary
 
-The homepage must never display these terms to the user:
+The homepage must never display these terms to the user in public mode:
 
 - Alignment Contract
 - Divergence Gate
@@ -229,6 +250,8 @@ The homepage must never display these terms to the user:
 - Gate Policy
 - Reviewer Kind
 - Governance State Machine
+- Artifact
+- Governance
 
 ---
 
@@ -241,7 +264,7 @@ The homepage must never display these terms to the user:
 5. The Mission and Plan steps visibly connect to the approved Contract.
 6. Evidence in the Review step is tied back to the Contract.
 7. Acceptance is a single, clear final action.
-8. Replay timeline is available but labeled in plain language.
+8. Public UI output passes the forbidden vocabulary test.
 
 ---
 
@@ -252,6 +275,7 @@ The homepage must never display these terms to the user:
 - Adding new gates or capabilities.
 - Implementing the full homepage design system.
 - Launching the homepage publicly.
+- Creating new programs, ADRs, or artifact families.
 
 ---
 
