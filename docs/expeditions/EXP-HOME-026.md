@@ -2,7 +2,7 @@
 
 > **Genesis expedition.** Capture the explicit and implicit intent for the Mission Studio homepage before any implementation proceeds.
 
-**Status:** Completed (awaiting refinement review)  
+**Status:** Refinement Review Approved — Intent Model Submitted  
 **Kind:** Genesis Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -71,15 +71,18 @@ Program 027 began with the directive to make Mission Studio the SYNTH homepage. 
 
 ## Definition of Done
 
-- [ ] Intent Model artifact is created for Program 027.
-- [ ] Intent Model references all canonical evidence (design boards, LDS-002, storyboards, existing frozen expeditions).
-- [ ] Explicit objectives, implicit objectives, forbidden interpretations, and allowed interpretations are documented.
-- [ ] Confidence level and known unknowns are recorded.
-- [ ] Refinement Gate resolves to `Refined Intent` or documents required clarifications.
+- [x] Intent Model artifact is created for Program 027.
+- [x] Intent Model references all canonical evidence (design boards, LDS-002, storyboards, existing frozen expeditions).
+- [x] Explicit objectives, implicit objectives, forbidden interpretations, and allowed interpretations are documented.
+- [x] Confidence level and known unknowns are recorded.
+- [x] Refinement Gate resolves to `Refined Intent` with an approved Refinement Report.
+- [x] Intent Model is submitted for Alignment Contract creation.
 
 ---
 
-## Artifact
+## Artifacts
+
+### Intent Model
 
 The canonical Intent Model for Program 027 is recorded at:
 
@@ -87,10 +90,33 @@ The canonical Intent Model for Program 027 is recorded at:
 docs/governance/program-027/intent-model.json
 ```
 
-It was registered in the event store via:
+Registered in the event store via:
 
 ```bash
 synth intent create --file docs/governance/program-027/intent-model.json
+```
+
+### Refinement Report
+
+The Refinement Report capturing the inaugural Program 036 review is recorded at:
+
+```text
+docs/governance/program-027/refinement-report.json
+```
+
+Produced via:
+
+```bash
+synth intent refine --intent-model-id intent-model-mru144mr-j9lxxw \
+  --answers docs/governance/program-027/refinement-answers.json \
+  --recommendation approve_for_alignment \
+  --reason "Refinement review confirms intent is clear, evidence-bound, and aligned with Governance Architecture v1.0."
+```
+
+The Intent Model was then submitted for downstream Alignment Contract creation:
+
+```bash
+synth intent submit --intent-model-id intent-model-mru144mr-j9lxxw
 ```
 
 ## Out of Scope
