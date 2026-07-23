@@ -11,7 +11,7 @@ import {
   renderCapabilityReportMarkdown,
   CAPABILITY_FAMILIES,
   CAPABILITY_PLANNING_GUIDANCE,
-} from "../dist/environment/index.js"
+} from "../dist/discovery/index.js"
 
 function makeInMemoryContext(files = {}, dirs = {}, env = {}, cwd = "/test") {
   const fileMap = { ...files }

@@ -1,21 +1,15 @@
 // ============================================================
-// ENVIRONMENT: Public Exports
+// ENVIRONMENT: Compatibility Exports
+// ============================================================
+// This module re-exports the canonical discovery types and the
+// remaining environment orchestration types. New code should import
+// capability projections and evidence types from src/discovery/.
 // ============================================================
 
 export * from "./types.js"
 export * from "./rules.js"
 export * from "./orchestrator.js"
-export * from "./node-context.js"
+export * from "../discovery/node-context.js"
 export * from "./providers/reference.js"
-export * from "./graph.js"
-export * from "./workspace-capability.js"
-export * from "./revision-capability.js"
-export * from "./filesystem-capability.js"
-export * from "./process-capability.js"
-export * from "./runtime-capability.js"
-export * from "./forge-capability.js"
-export * from "./secrets-capability.js"
-export * from "./versioning-capability.js"
-export * from "./git-versioning-provider.js"
+export * from "../infra/filesystem-provider.js"
 export * from "./evidence.js"
-export * from "./capability-report.js"

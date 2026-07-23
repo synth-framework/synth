@@ -1,5 +1,5 @@
 // ============================================================
-// ENVIRONMENT: Capability Graph
+// DISCOVERY PROJECTION: Capability Graph
 // ============================================================
 // Canonical graph model for capabilities and providers. The graph
 // is built from a capability catalog and discovery evidence, then
@@ -20,7 +20,7 @@ import type {
   ProviderPath,
   ResolutionFailure,
   ResolutionResult,
-} from "./types.js"
+} from "../types.js"
 
 /** Default capability catalog supported by SYNTH */
 export const CAPABILITY_CATALOG: CapabilityNode[] = [
@@ -114,7 +114,7 @@ export class CapabilityGraphBuilder {
     return this
   }
 
-  build(): CapabilityGraph {
+  build(timestamp?: number): CapabilityGraph {
     const evidence = this.evidence
     const nodes = sortById(Array.from(this.nodes.values()))
     const edges = sortById(this.edges)
@@ -131,7 +131,7 @@ export class CapabilityGraphBuilder {
     return {
       schema: "synth-capability-graph-v1",
       version: "1.0.0",
-      timestamp: evidence?.timestamp ?? Date.now(),
+      timestamp: timestamp ?? evidence?.timestamp ?? Date.now(),
       nodes,
       edges,
       resolution,

@@ -6,8 +6,11 @@
 // all filesystem interaction flows through this capability.
 // ============================================================
 
-import { readFile, writeFile, readdir, access, mkdir, rm, stat, constants } from "node:fs/promises"
 import { resolve, dirname } from "node:path"
+import * as sdkFiles from "../sdk/files/index.js"
+import { IllegalMutationError } from "../core/errors.js"
+
+export const FILESYSTEM_WRITE_TOKEN = Symbol("FILESYSTEM_WRITE_TOKEN")
 
 /** Filesystem capability provider interface */
 export interface FilesystemProvider {
@@ -28,65 +31,53 @@ export class PosixFilesystemProvider implements FilesystemProvider {
   readonly name = "posix-filesystem"
   readonly version = "1.0.0"
   readonly root: string
+  private writeToken: symbol | undefined
 
-  constructor(root: string) {
+  constructor(root: string, writeToken?: symbol) {
     this.root = root
+    this.writeToken = writeToken
   }
 
   private resolve(path: string): string {
     return resolve(this.root, path)
   }
 
-  async readFile(path: string): Promise<string | undefined> {
-    try {
-      return await readFile(this.resolve(path), "utf-8")
-    } catch {
-      return undefined
+  private ensureAuthorized(token?: symbol): void {
+    if (token !== FILESYSTEM_WRITE_TOKEN) {
+      throw new IllegalMutationError(
+        "ILLEGAL_FILESYSTEM_WRITE: FilesystemProvider writes require an authorized token. " +
+          "Direct writeFile calls without authorization are forbidden."
+      )
     }
+  }
+
+  async readFile(path: string): Promise<string | undefined> {
+    return sdkFiles.readFileMaybe(this.resolve(path))
   }
 
   async writeFile(path: string, content: string): Promise<void> {
-    const fullPath = this.resolve(path)
-    await mkdir(dirname(fullPath), { recursive: true })
-    await writeFile(fullPath, content, "utf-8")
+    this.ensureAuthorized(this.writeToken)
+    return sdkFiles.writeFile(this.resolve(path), content)
   }
 
   async listDirectory(path: string): Promise<string[]> {
-    try {
-      return await readdir(this.resolve(path))
-    } catch {
-      return []
-    }
+    return sdkFiles.listDirectory(this.resolve(path))
   }
 
   async pathExists(path: string): Promise<boolean> {
-    try {
-      await access(this.resolve(path), constants.F_OK)
-      return true
-    } catch {
-      return false
-    }
+    return sdkFiles.exists(this.resolve(path))
   }
 
   async isDirectory(path: string): Promise<boolean> {
-    try {
-      const info = await stat(this.resolve(path))
-      return info.isDirectory()
-    } catch {
-      return false
-    }
+    return sdkFiles.isDirectory(this.resolve(path))
   }
 
   async ensureDirectory(path: string): Promise<void> {
-    await mkdir(this.resolve(path), { recursive: true })
+    return sdkFiles.ensureDirectory(this.resolve(path))
   }
 
   async deleteFile(path: string): Promise<void> {
-    try {
-      await rm(this.resolve(path))
-    } catch {
-      // ignore errors on missing files
-    }
+    return sdkFiles.deleteFile(this.resolve(path))
   }
 }
 
@@ -97,8 +88,10 @@ export class InMemoryFilesystemProvider implements FilesystemProvider {
   readonly root = "/"
   private files = new Map<string, string>()
   private directories = new Set<string>()
+  private writeToken: symbol | undefined
 
-  constructor(initialFiles: Record<string, string> = {}) {
+  constructor(initialFiles: Record<string, string> = {}, writeToken?: symbol) {
+    this.writeToken = writeToken
     this.directories.add("/")
     for (const [path, content] of Object.entries(initialFiles)) {
       this.files.set(path, content)
@@ -114,11 +107,21 @@ export class InMemoryFilesystemProvider implements FilesystemProvider {
     return resolve("/", path)
   }
 
+  private ensureAuthorized(token?: symbol): void {
+    if (token !== FILESYSTEM_WRITE_TOKEN) {
+      throw new IllegalMutationError(
+        "ILLEGAL_FILESYSTEM_WRITE: FilesystemProvider writes require an authorized token. " +
+          "Direct writeFile calls without authorization are forbidden."
+      )
+    }
+  }
+
   async readFile(path: string): Promise<string | undefined> {
     return this.files.get(this.normalize(path))
   }
 
   async writeFile(path: string, content: string): Promise<void> {
+    this.ensureAuthorized(this.writeToken)
     const fullPath = this.normalize(path)
     this.files.set(fullPath, content)
     let dir = dirname(fullPath)
@@ -167,10 +170,10 @@ export class InMemoryFilesystemProvider implements FilesystemProvider {
   }
 }
 
-export function createPosixFilesystemProvider(root: string): FilesystemProvider {
-  return new PosixFilesystemProvider(root)
+export function createPosixFilesystemProvider(root: string, writeToken?: symbol): FilesystemProvider {
+  return new PosixFilesystemProvider(root, writeToken)
 }
 
-export function createInMemoryFilesystemProvider(initialFiles?: Record<string, string>): FilesystemProvider {
-  return new InMemoryFilesystemProvider(initialFiles)
+export function createInMemoryFilesystemProvider(initialFiles?: Record<string, string>, writeToken?: symbol): FilesystemProvider {
+  return new InMemoryFilesystemProvider(initialFiles, writeToken)
 }

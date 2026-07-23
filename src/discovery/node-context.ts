@@ -1,14 +1,14 @@
 // ============================================================
-// ENVIRONMENT: Node.js Observation Context
+// DISCOVERY: Node.js Observation Context
 // ============================================================
 // This module adapts Node.js APIs to the environment-agnostic
-// ObservationContext interface. It is part of the Environment
-// Layer and is the only module in this directory that depends
-// directly on Node.js APIs.
+// ObservationContext interface used by the discovery pipeline.
+// It is the only module in this directory that depends directly
+// on Node.js APIs.
 //
 // The Core must never import this module directly. It should
-// receive an ObservationContext produced by the Environment
-// Layer or by test fixtures.
+// receive an ObservationContext produced by the Discovery Layer
+// or by test fixtures.
 // ============================================================
 
 import { readFile as nodeReadFile, readdir, access, constants } from "node:fs/promises"

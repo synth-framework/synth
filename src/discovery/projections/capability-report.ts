@@ -1,5 +1,5 @@
 // ============================================================
-// ENVIRONMENT: Capability Report
+// DISCOVERY PROJECTION: Capability Report
 // ============================================================
 // Agent-facing projection of discovery evidence (ADR-016).
 // Every constitutional capability family appears explicitly —
@@ -11,7 +11,7 @@ import type {
   CapabilityFamily,
   DiscoveryConfidence,
   DiscoveryEvidence,
-} from "./types.js"
+} from "../types.js"
 
 /** All constitutional capability families (ADR-006 §2) */
 export const CAPABILITY_FAMILIES: readonly CapabilityFamily[] = [
