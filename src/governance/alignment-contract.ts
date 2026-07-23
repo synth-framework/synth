@@ -180,15 +180,20 @@ export function validateAlignmentContract(
   return errors.length ? { valid: false, errors } : { valid: true, errors: [] }
 }
 
-function makeId(): string {
-  return `alignment-contract-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+import type { ConstructionContext } from "./intent-model.js"
+
+function makeId(timestamp: number = Date.now()): string {
+  return `alignment-contract-${timestamp.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /** Create an Alignment Contract from an Intent Model input. */
-export function createAlignmentContract(input: AlignmentContractInput): AlignmentContract {
-  const now = Date.now()
+export function createAlignmentContract(
+  input: AlignmentContractInput,
+  ctx: ConstructionContext = {}
+): AlignmentContract {
+  const now = ctx.timestamp ?? Date.now()
   return {
-    id: makeId(),
+    id: ctx.id ?? makeId(now),
     intentModelId: input.intentModelId,
     refinedIntentId: input.refinedIntentId,
     intentSummary: input.intentSummary,
@@ -221,43 +226,55 @@ export function createAlignmentContract(input: AlignmentContractInput): Alignmen
 }
 
 /** Submit an Alignment Contract for review. */
-export function submitAlignmentContract(contract: AlignmentContract): AlignmentContract {
-  return { ...contract, status: "awaiting_review", updatedAt: Date.now() }
+export function submitAlignmentContract(
+  contract: AlignmentContract,
+  timestamp?: number
+): AlignmentContract {
+  return { ...contract, status: "awaiting_review", updatedAt: timestamp ?? Date.now() }
 }
 
 /** Approve an Alignment Contract. */
 export function approveAlignmentContract(
   contract: AlignmentContract,
-  reviewer: Reviewer
+  reviewer: Reviewer,
+  timestamp?: number
 ): AlignmentContract {
+  const now = timestamp ?? Date.now()
   return {
     ...contract,
     status: "approved",
     approvedBy: reviewer,
-    approvedAt: Date.now(),
-    updatedAt: Date.now(),
+    approvedAt: now,
+    updatedAt: now,
   }
 }
 
 /** Reject an Alignment Contract. */
-export function rejectAlignmentContract(contract: AlignmentContract): AlignmentContract {
-  return { ...contract, status: "rejected", updatedAt: Date.now() }
+export function rejectAlignmentContract(
+  contract: AlignmentContract,
+  timestamp?: number
+): AlignmentContract {
+  return { ...contract, status: "rejected", updatedAt: timestamp ?? Date.now() }
 }
 
 /** Supersede an Alignment Contract. */
-export function supersedeAlignmentContract(contract: AlignmentContract): AlignmentContract {
-  return { ...contract, status: "superseded", updatedAt: Date.now() }
+export function supersedeAlignmentContract(
+  contract: AlignmentContract,
+  timestamp?: number
+): AlignmentContract {
+  return { ...contract, status: "superseded", updatedAt: timestamp ?? Date.now() }
 }
 
 /** Derive a default Alignment Contract from an Intent Model. */
 export function deriveAlignmentContractFromIntentModel(
   intentModel: IntentModel,
-  refinedIntentId?: string
+  refinedIntentId?: string,
+  ctx: ConstructionContext = {}
 ): AlignmentContract {
   const objectiveCoverage: ObjectiveCoverage[] = intentModel.explicitObjectives.map((objective) => ({
     objective,
     evidenceIds: intentModel.referenceEvidenceIds,
-    aligned: true,
+    aligned: false,
     notes: "Derived from approved Intent Model",
   }))
 
@@ -276,41 +293,44 @@ export function deriveAlignmentContractFromIntentModel(
   )
 
   const dimensions: AlignmentDimension[] = [
-    { name: "Intent", score: 0.98, reason: "Explicit and implicit objectives documented and reviewed" },
-    { name: "Experience", score: 0.95, reason: "Desired outcome and experience contract captured" },
-    { name: "Visual", score: 0.97, reason: "Visual references and design system identified" },
-    { name: "Interaction", score: 0.94, reason: "Scroll contract and workspace persistence captured" },
-    { name: "Governance", score: 1.0, reason: "Refinement approval recorded" },
-    { name: "Evidence", score: 1.0, reason: "All objectives bound to reference evidence" },
+    { name: "Intent", score: null as unknown as number, reason: "Explicit and implicit objectives documented and reviewed" },
+    { name: "Experience", score: null as unknown as number, reason: "Desired outcome and experience contract captured" },
+    { name: "Visual", score: null as unknown as number, reason: "Visual references and design system identified" },
+    { name: "Interaction", score: null as unknown as number, reason: "Scroll contract and workspace persistence captured" },
+    { name: "Governance", score: null as unknown as number, reason: "Refinement approval recorded" },
+    { name: "Evidence", score: null as unknown as number, reason: "All objectives bound to reference evidence" },
   ]
 
-  const overallScore = dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length
+  const overallScore = null as unknown as number
 
-  return createAlignmentContract({
-    intentModelId: intentModel.id,
-    refinedIntentId,
-    intentSummary: intentModel.explicitObjectives.join("; "),
-    expectedExperience: intentModel.desiredOutcome ?? "Not specified",
-    requiredProperties: intentModel.allowedInterpretations,
-    forbiddenProperties: intentModel.forbiddenInterpretations,
-    requiredBehaviors: ["Workspace persists while phases change", "Supporting content appears after Mission Studio releases"],
-    forbiddenInterpretation: intentModel.forbiddenInterpretations,
-    forbiddenDrift: intentModel.forbiddenInterpretations,
-    successCriteria: intentModel.desiredOutcome ? [intentModel.desiredOutcome] : [],
-    referenceEvidenceIds: intentModel.referenceEvidenceIds,
-    dimensions,
-    objectiveCoverage,
-    implicitObjectiveStatus,
-    forbiddenInterpretations,
-    confidenceExplanation: {
-      score: overallScore,
-      reason: `Computed from ${dimensions.length} alignment dimensions. Residual ambiguity is documented.`,
+  return createAlignmentContract(
+    {
+      intentModelId: intentModel.id,
+      refinedIntentId,
+      intentSummary: intentModel.explicitObjectives.join("; "),
+      expectedExperience: intentModel.desiredOutcome ?? "Not specified",
+      requiredProperties: intentModel.allowedInterpretations,
+      forbiddenProperties: intentModel.forbiddenInterpretations,
+      requiredBehaviors: ["Workspace persists while phases change", "Supporting content appears after Mission Studio releases"],
+      forbiddenInterpretation: intentModel.forbiddenInterpretations,
+      forbiddenDrift: intentModel.forbiddenInterpretations,
+      successCriteria: intentModel.desiredOutcome ? [intentModel.desiredOutcome] : [],
+      referenceEvidenceIds: intentModel.referenceEvidenceIds,
+      dimensions,
+      objectiveCoverage,
+      implicitObjectiveStatus,
+      forbiddenInterpretations,
+      confidenceExplanation: {
+        score: overallScore,
+        reason: `Computed from ${dimensions.length} alignment dimensions. Residual ambiguity is documented.`,
+      },
+      residualDivergence: intentModel.knownUnknowns.map((unknown) => ({
+        description: unknown,
+        acceptedBy: { kind: "human", id: "synth-cli-operator" },
+        reason: "Known unknown accepted for first release",
+        risk: null as unknown as "low" | "medium" | "high",
+      })),
     },
-    residualDivergence: intentModel.knownUnknowns.map((unknown) => ({
-      description: unknown,
-      acceptedBy: { kind: "human", id: "synth-cli-operator" },
-      reason: "Known unknown accepted for first release",
-      risk: "low",
-    })),
-  })
+    ctx
+  )
 }

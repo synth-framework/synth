@@ -6,7 +6,7 @@
 // with state transitions suitable for the domain layer.
 // ============================================================
 
-import type { CanonicalState, ReviewGateExpeditionState } from "../types/index.js"
+import type { CanonicalState, DerivedState, ReviewGateExpeditionState } from "../types/index.js"
 import type {
   GatePolicy,
   Reviewer,
@@ -14,6 +14,7 @@ import type {
   AcceptanceDecisionType,
   RefinedIntent,
 } from "./review-gates.js"
+import type { EvaluationResult } from "./proposal-evaluation/types.js"
 import {
   createReviewGateExpedition,
   beginExecution,
@@ -25,6 +26,8 @@ import {
   closeExpedition,
   approveRefinedIntent,
   blocksDownstream,
+  fulfillCondition,
+  allConditionsFulfilled,
 } from "./review-gates.js"
 
 export type ReviewGateEngineEvent = {
@@ -57,10 +60,10 @@ function fromEngineState(state: import("./review-gates.js").ReviewGateExpedition
 
 /** Ensure a review-gate expedition record exists. */
 export function ensureReviewGateExpedition(
-  state: CanonicalState,
+  derivedState: DerivedState,
   expeditionId: string
 ): ReviewGateExpeditionState {
-  return state.reviewGateExpeditions[expeditionId] ?? createReviewGateExpedition(expeditionId)
+  return derivedState.reviewGateExpeditions[expeditionId] ?? createReviewGateExpedition(expeditionId)
 }
 
 /** Approve a Refined Intent and bind it to the expedition. */
@@ -127,7 +130,8 @@ export function engineResolveReviewGate(
   reason: string,
   evidence: string[] = [],
   affectedAssets: string[] = [],
-  requiredChanges: string[] = []
+  requiredChanges: string[] = [],
+  evaluation?: EvaluationResult
 ): ReviewGateEngineResult {
   const { expedition, gate, decision } = resolveReviewGate(
     asEngineState(current),
@@ -138,22 +142,26 @@ export function engineResolveReviewGate(
     affectedAssets,
     requiredChanges
   )
+  const payload: Record<string, unknown> = {
+    expeditionId: expedition.expeditionId,
+    gateId: gate.id,
+    decisionId: decision.id,
+    decision: decisionType,
+    reason,
+    evidence,
+    affectedAssets,
+    requiredChanges,
+    reviewer: JSON.parse(JSON.stringify(reviewer)),
+  }
+  if (evaluation) {
+    payload.evaluation = JSON.parse(JSON.stringify(evaluation))
+  }
   return {
     state: fromEngineState(expedition),
     events: [
       {
         type: "REVIEW_GATE_RESOLVED",
-        payload: {
-          expeditionId: expedition.expeditionId,
-          gateId: gate.id,
-          decisionId: decision.id,
-          decision: decisionType,
-          reason,
-          evidence,
-          affectedAssets,
-          requiredChanges,
-          reviewer: JSON.parse(JSON.stringify(reviewer)),
-        },
+        payload,
       },
     ],
   }
@@ -195,19 +203,27 @@ export function engineOpenAcceptanceGate(
 ): ReviewGateEngineResult {
   const reviewDecisionId = current.reviewDecisionId
   if (!reviewDecisionId) throw new Error("No review decision to accept")
-  // Reconstruct a minimal ReviewDecision for the pure function.
+  const reviewGate = current.gates.find((g) => g.gateType === "review" && g.decisionId === reviewDecisionId)
+
+  if (reviewGate && !allConditionsFulfilled(reviewGate as unknown as import("./review-gates.js").Gate)) {
+    throw new Error(
+      `Cannot open acceptance gate: gate ${reviewGate.id} has unfulfilled conditions. ` +
+      `Fulfill all conditions before opening acceptance gate.`
+    )
+  }
+
   const reviewDecision = {
     id: reviewDecisionId,
-    gateId: current.gates.find((g) => g.gateType === "review" && g.decisionId === reviewDecisionId)?.id ?? "",
+    gateId: reviewGate?.id ?? "",
     gateType: "review" as const,
     expeditionId: current.expeditionId,
-    decision: "approve" as ReviewDecisionType,
-    reason: "",
-    affectedAssets: [],
-    evidence: [],
-    reviewer: { kind: "human" as const, id: "operator" },
+    decision: (reviewGate?.decision as ReviewDecisionType) ?? "approve",
+    reason: reviewGate?.decisionReason ?? "",
+    affectedAssets: reviewGate?.decisionAffectedAssets ?? [],
+    evidence: reviewGate?.decisionEvidence ?? [],
+    reviewer: (reviewGate?.reviewer as Reviewer) ?? { kind: "human" as const, id: "operator" },
     validity: "valid" as const,
-    timestamp: Date.now(),
+    timestamp: reviewGate?.resolvedAt ?? Date.now(),
   }
   const { expedition, gate, acceptancePackage } = openAcceptanceGate(asEngineState(current), reviewDecision, policy)
   return {
@@ -233,7 +249,8 @@ export function engineResolveAcceptanceGate(
   decisionType: AcceptanceDecisionType,
   reviewer: Reviewer,
   reason: string,
-  evidence: string[] = []
+  evidence: string[] = [],
+  evaluation?: EvaluationResult
 ): ReviewGateEngineResult {
   const { expedition, gate, record, decision } = resolveAcceptanceGate(
     asEngineState(current),
@@ -242,21 +259,25 @@ export function engineResolveAcceptanceGate(
     reason,
     evidence
   )
+  const payload: Record<string, unknown> = {
+    expeditionId: expedition.expeditionId,
+    gateId: gate.id,
+    decisionId: decision.id,
+    recordId: record.id,
+    decision: decisionType,
+    reason,
+    evidence,
+    reviewer: JSON.parse(JSON.stringify(reviewer)),
+  }
+  if (evaluation) {
+    payload.evaluation = JSON.parse(JSON.stringify(evaluation))
+  }
   return {
     state: fromEngineState(expedition),
     events: [
       {
         type: "ACCEPTANCE_GATE_RESOLVED",
-        payload: {
-          expeditionId: expedition.expeditionId,
-          gateId: gate.id,
-          decisionId: decision.id,
-          recordId: record.id,
-          decision: decisionType,
-          reason,
-          evidence,
-          reviewer: JSON.parse(JSON.stringify(reviewer)),
-        },
+        payload,
       },
     ],
   }
@@ -276,15 +297,44 @@ export function engineCloseExpedition(current: ReviewGateExpeditionState): Revie
   }
 }
 
+/** Fulfill a condition on a review gate. */
+export function engineFulfillCondition(
+  current: ReviewGateExpeditionState,
+  gateId: string,
+  conditionId: string,
+  fulfilledBy: string
+): ReviewGateEngineResult {
+  const gate = current.gates.find((g) => g.id === gateId)
+  if (!gate) throw new Error(`Gate ${gateId} not found`)
+  const updatedGate = fulfillCondition(
+    gate as unknown as import("./review-gates.js").Gate,
+    conditionId,
+    fulfilledBy
+  )
+  return {
+    state: {
+      ...current,
+      gates: current.gates.map((g) => (g.id === gateId ? { ...g, conditions: updatedGate.conditions } : g)),
+    },
+    events: [
+      {
+        type: "CONDITION_FULFILLED",
+        payload: { gateId, conditionId, fulfilledBy },
+      },
+    ],
+  }
+}
+
 /** Check whether an upstream expedition blocks downstream work. */
 export function isBlockedByUpstreamGate(
   state: CanonicalState,
+  derivedState: DerivedState,
   expeditionId: string
 ): boolean {
   const expedition = state.expeditions[expeditionId]
   if (!expedition) return false
   for (const dependencyId of expedition.dependsOn ?? []) {
-    const upstream = state.reviewGateExpeditions[dependencyId]
+    const upstream = derivedState.reviewGateExpeditions[dependencyId]
     if (upstream && blocksDownstream(asEngineState(upstream))) {
       return true
     }

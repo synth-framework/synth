@@ -71,20 +71,26 @@ export function validateReferenceEvidence(
   return errors.length ? { valid: false, errors } : { valid: true, errors: [] }
 }
 
-function makeId(): string {
-  return `evidence-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+import type { ConstructionContext } from "./intent-model.js"
+
+function makeId(timestamp: number = Date.now()): string {
+  return `evidence-${timestamp.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /** Create a reference evidence record. */
-export function createReferenceEvidence(input: ReferenceEvidenceInput): ReferenceEvidence {
+export function createReferenceEvidence(
+  input: ReferenceEvidenceInput,
+  ctx: ConstructionContext = {}
+): ReferenceEvidence {
+  const now = ctx.timestamp ?? Date.now()
   return {
-    id: makeId(),
+    id: ctx.id ?? makeId(now),
     kind: input.kind,
     uri: input.uri,
     hash: input.hash,
     mimeType: input.mimeType,
     description: input.description,
-    capturedAt: Date.now(),
+    capturedAt: now,
   }
 }
 

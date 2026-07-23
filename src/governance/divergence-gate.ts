@@ -7,6 +7,8 @@
 // ============================================================
 
 import type { Reviewer } from "./review-gates.js"
+import type { Proposal, ProposalEvaluationRuleSet, EvaluationResult } from "./proposal-evaluation/types.js"
+import { evaluateProposal } from "./proposal-evaluation/index.js"
 
 export type DivergenceGateDecision =
   | "aligned"
@@ -116,4 +118,43 @@ export function resolveDivergenceGate(
 /** Check whether a contract is aligned and allows Mission creation. */
 export function isAligned(gate: DivergenceGate): boolean {
   return gate.status === "aligned"
+}
+
+/**
+ * Resolve a Divergence Gate by evaluating a proposal against the Alignment Contract.
+ *
+ * This consumes the Proposal Evaluation Capability. The reviewer still authorizes the
+ * resolution, but the decision is derived deterministically from the proposal, contract,
+ * and rule set.
+ */
+export function resolveDivergenceGateWithProposalEvaluation(
+  gate: DivergenceGate,
+  proposal: Proposal,
+  contract: import("./alignment-contract.js").AlignmentContract,
+  ruleSet: ProposalEvaluationRuleSet,
+  reviewer: Reviewer,
+  knownDivergence: string[] = [],
+  acceptedDivergence: string[] = [],
+  rejectedDivergence: string[] = []
+): { gate: DivergenceGate; report: DivergenceReport; evaluation: EvaluationResult } {
+  const evaluation = evaluateProposal(proposal, contract, ruleSet)
+  const decision = evaluation.decision
+
+  const evidence = [
+    ...evaluation.reasoning,
+    ...evaluation.matchedDriftClasses.map((id) => `Matched drift class: ${id}`),
+  ]
+
+  const { gate: resolvedGate, report } = resolveDivergenceGate(
+    gate,
+    decision,
+    reviewer,
+    evaluation.evidence.summary,
+    evidence,
+    knownDivergence,
+    acceptedDivergence,
+    rejectedDivergence
+  )
+
+  return { gate: resolvedGate, report, evaluation }
 }

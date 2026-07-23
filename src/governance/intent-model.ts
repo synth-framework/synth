@@ -107,8 +107,8 @@ export function validateIntentModel(model: unknown): IntentModelValidationResult
   return errors.length ? { valid: false, errors } : { valid: true, errors: [] }
 }
 
-function makeId(): string {
-  return `intent-model-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+function makeId(timestamp: number = Date.now()): string {
+  return `intent-model-${timestamp.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /** Compute a simple confidence score based on required evidence. */
@@ -130,12 +130,22 @@ export function computeConfidence(input: IntentModelInput): number {
   return Math.min(1, Math.max(0, score))
 }
 
+export type ConstructionContext = {
+  /** Explicit identifier. Omit to generate one from the timestamp and random suffix. */
+  id?: string
+  /** Explicit timestamp. Omit to use the current wall-clock time. */
+  timestamp?: number
+}
+
 /** Create a new Intent Model from raw input. */
-export function createIntentModel(input: IntentModelInput): IntentModel {
-  const now = Date.now()
+export function createIntentModel(
+  input: IntentModelInput,
+  ctx: ConstructionContext = {}
+): IntentModel {
+  const now = ctx.timestamp ?? Date.now()
   const confidenceLevel = computeConfidence(input)
   return {
-    id: makeId(),
+    id: ctx.id ?? makeId(now),
     rawIntentReference: input.rawIntentReference,
     explicitObjectives: input.explicitObjectives,
     implicitObjectives: input.implicitObjectives ?? [],
@@ -160,7 +170,8 @@ export function createIntentModel(input: IntentModelInput): IntentModel {
 /** Revise an existing Intent Model. */
 export function reviseIntentModel(
   model: IntentModel,
-  input: Partial<IntentModelInput>
+  input: Partial<IntentModelInput>,
+  timestamp?: number
 ): IntentModel {
   const merged: IntentModelInput = {
     rawIntentReference: input.rawIntentReference ?? model.rawIntentReference,
@@ -185,11 +196,11 @@ export function reviseIntentModel(
     confidenceLevel,
     status: confidenceLevel >= 0.8 ? "sufficient" : "awaiting_clarification",
     version: model.version + 1,
-    updatedAt: Date.now(),
+    updatedAt: timestamp ?? Date.now(),
   }
 }
 
 /** Mark an Intent Model as superseded. */
-export function supersedeIntentModel(model: IntentModel): IntentModel {
-  return { ...model, status: "superseded", updatedAt: Date.now() }
+export function supersedeIntentModel(model: IntentModel, timestamp?: number): IntentModel {
+  return { ...model, status: "superseded", updatedAt: timestamp ?? Date.now() }
 }

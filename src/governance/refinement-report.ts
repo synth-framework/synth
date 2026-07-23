@@ -7,7 +7,7 @@
 // initial Intent Model and the refined result.
 // ============================================================
 
-import type { IntentModel } from "./intent-model.js"
+import type { IntentModel, ConstructionContext } from "./intent-model.js"
 import type { RefinementSession, RefinementQuestion } from "./refinement-layer.js"
 
 export type RefinementReportChange = {
@@ -47,8 +47,8 @@ export type RefinementReport = {
   reason: string
 }
 
-function makeId(): string {
-  return `refinement-report-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+function makeId(timestamp: number = Date.now()): string {
+  return `refinement-report-${timestamp.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /** Build a Refinement Report from a completed session and its resulting model. */
@@ -59,8 +59,10 @@ export function createRefinementReport(
   reviewer: { kind: string; id: string },
   recommendation: RefinementReportRecommendation,
   reason: string,
-  additionalEntries?: RefinementReportEntry[]
+  additionalEntries?: RefinementReportEntry[],
+  ctx: ConstructionContext = {}
 ): RefinementReport {
+  const now = ctx.timestamp ?? Date.now()
   const entries: RefinementReportEntry[] = session.answers.map((answer) => {
     const question = session.questions.find((q) => q.id === answer.questionId)
     if (!question) throw new Error(`Question not found: ${answer.questionId}`)
@@ -93,10 +95,10 @@ export function createRefinementReport(
   const openQuestions = finalModel.unresolvedAmbiguity.length > 0 ? finalModel.unresolvedAmbiguity : []
 
   return {
-    id: makeId(),
+    id: ctx.id ?? makeId(now),
     sessionId: session.id,
     intentModelId: finalModel.id,
-    createdAt: Date.now(),
+    createdAt: now,
     reviewer,
     initialConfidence: initialModel.confidenceLevel,
     finalConfidence: finalModel.confidenceLevel,

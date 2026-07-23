@@ -1,0 +1,261 @@
+{
+  "id": "governability-regression-certification-program-027",
+  "expedition": "EXP-GOVERNABILITY-001",
+  "status": "accepted",
+  "certificationStatus": "pass",
+  "capturedAt": "2026-07-22T00:15:00Z",
+  "acceptedAt": "2026-07-22T00:20:00Z",
+  "reExecutedAt": "2026-07-22T01:30:56Z",
+  "assessment": "Re-executed after EXP-GATE-012 implemented the Program 035 three-gate governance model certification. REFINE-009 completes the Program 036 certification: full Genesis-to-Closure lifecycle (Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition → Review Gate → Acceptance Gate → Convergence Certification) is verified in tests/refine-009-certification.test.js. Scenario 4 (changed Alignment Contract invalidates Mission) and Scenario 5 (convergence failure after implementation) are proven. Convergence Certification gates Mission completion correctly. The combined 035/036 governance model is now certified for Program 027.",
+  "benchmarkId": "governability-benchmark-program-027",
+  "replaySpecificationId": "replay-specification-program-027",
+  "methodology": "Replay Graph certification measuring recall, precision, determinism, and coverage. Replay branches are exercised by tests/proposal-evaluation.test.js via the public EvaluateAndResolveDivergenceGate capability.",
+  "principles": [
+    "Every drift class must have at least one replay branch.",
+    "Every drift-class replay must be intercepted before implementation.",
+    "Every valid branch must remain admissible.",
+    "Replaying the same branch must produce the same outcome."
+  ],
+  "artifactStatus": {
+    "incidentReview": {
+      "path": "docs/expeditions/EXP-PROGRAM-027-incident-review.md",
+      "status": "complete"
+    },
+    "benchmark": {
+      "path": "docs/governance/program-027/governability-benchmark.json",
+      "status": "complete"
+    },
+    "replaySpecification": {
+      "path": "docs/governance/program-027/replay-specification.json",
+      "status": "complete"
+    },
+    "convergenceCertificationCriteria": {
+      "path": "docs/governance/program-027/convergence-certification-criteria.md",
+      "status": "complete"
+    },
+    "proposalEvaluationCapability": {
+      "path": "src/governance/proposal-evaluation/",
+      "status": "implemented"
+    },
+    "replayTests": {
+      "path": "tests/proposal-evaluation.test.js",
+      "status": "passing"
+    }
+  },
+  "controlInventory": {
+    "intentModel": {
+      "exists": true,
+      "path": "src/governance/intent-model.ts",
+      "note": "Can capture explicit, implicit, forbidden, and allowed interpretations."
+    },
+    "refinementLayer": {
+      "exists": true,
+      "path": "src/governance/refinement-layer.ts",
+      "note": "Generates clarification questions and tracks session status. Does not automatically detect drift."
+    },
+    "alignmentContract": {
+      "exists": true,
+      "path": "src/governance/alignment-contract.ts",
+      "note": "Can be created, validated for required fields, and approved."
+    },
+    "divergenceGate": {
+      "exists": true,
+      "path": "src/governance/divergence-gate.ts",
+      "note": "State machine for alignment decisions. Now consumes the Proposal Evaluation Capability via EvaluateAndResolveDivergenceGate."
+    },
+    "proposalEvaluationCapability": {
+      "exists": true,
+      "path": "src/governance/proposal-evaluation/index.ts",
+      "note": "Deterministic, explainable evaluation of implementation proposals against an Alignment Contract."
+    },
+    "reviewGate": {
+      "exists": true,
+      "path": "src/governance/review-gate-engine.ts",
+      "note": "Engine exists and enforcement verified through EXP-REFINE-009 full lifecycle. Review Gate resolves correctly after alignment and expedition execution."
+    },
+    "acceptanceGate": {
+      "exists": true,
+      "path": "src/governance/review-gates.ts",
+      "note": "Defined in review-gate logic and enforcement verified through EXP-REFINE-009 full lifecycle. Acceptance Gate resolves correctly after Review Gate approval."
+    },
+    "convergenceCertification": {
+      "exists": true,
+      "path": "src/governance/convergence-certification/",
+      "note": "Implemented and verified through EXP-REFINE-009. Four-dimension evaluation (intent_fidelity, contract_fidelity, evidence_fidelity, drift_absence) produces deterministic convergence reports."
+    }
+  },
+  "replayExecution": {
+    "testReference": "tests/proposal-evaluation.test.js",
+    "ruleSetId": "program-027-homepage",
+    "driftClassReplays": [
+      {
+        "branchId": "D01",
+        "driftClassId": "D01",
+        "input": "Generic dashboard proposal",
+        "expectedOutcome": "rejected or revision_required",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Proposal Evaluation Capability detected metric cards, promotional banners, and disconnected widgets. The Divergence Gate was resolved as rejected before Mission approval."
+      },
+      {
+        "branchId": "D02",
+        "driftClassId": "D02",
+        "input": "Marketing-first landing page",
+        "expectedOutcome": "rejected",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Marketing hero, feature grid, and Mission Studio as a section triggered the forbidden-interpretation rule."
+      },
+      {
+        "branchId": "D03",
+        "driftClassId": "D03",
+        "input": "Chat-primary interface",
+        "expectedOutcome": "rejected",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Chat-primary interaction and decorative AI imagery triggered the forbidden-interpretation rule."
+      },
+      {
+        "branchId": "D04",
+        "driftClassId": "D04",
+        "input": "Page-jump navigation",
+        "expectedOutcome": "rejected",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Separate lifecycle pages and page-jump navigation violated the persistent-workspace contract."
+      },
+      {
+        "branchId": "D05",
+        "driftClassId": "D05",
+        "input": "Storybook aesthetic",
+        "expectedOutcome": "rejected or revision_required",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Component grid and isolated specimens violated the persistent workspace integration requirement."
+      },
+      {
+        "branchId": "D06",
+        "driftClassId": "D06",
+        "input": "Placeholder artifacts",
+        "expectedOutcome": "rejected or revision_required",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Fake terminal output, mock data, and placeholder screenshots were rejected as non-runtime artifacts."
+      },
+      {
+        "branchId": "D07",
+        "driftClassId": "D07",
+        "input": "Hardcoded visual values",
+        "expectedOutcome": "rejected or revision_required",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Hardcoded colors, spacing, and non-token typography violated the LDS-002 token mandate."
+      },
+      {
+        "branchId": "D08",
+        "driftClassId": "D08",
+        "input": "Workspace dilution",
+        "expectedOutcome": "rejected or revision_required",
+        "actualOutcome": "rejected",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Mission Studio shell present with dominant marketing content triggered workspace-dilution rule."
+      }
+    ],
+    "validBranchReplays": [
+      {
+        "branchId": "V01",
+        "validBranchId": "V01",
+        "input": "Persistent workspace",
+        "expectedOutcome": "aligned",
+        "actualOutcome": "aligned",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Persistent header, sidebar, and scroll-driven phases satisfied the required-behavior rule."
+      },
+      {
+        "branchId": "V02",
+        "validBranchId": "V02",
+        "input": "Hero invitation",
+        "expectedOutcome": "aligned",
+        "actualOutcome": "aligned",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Short hero with CTA into persistent workspace satisfied the allowed-interpretation rule."
+      },
+      {
+        "branchId": "V03",
+        "validBranchId": "V03",
+        "input": "Deterministic demo",
+        "expectedOutcome": "aligned",
+        "actualOutcome": "aligned",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Demo operator adapter with deterministic execution satisfied the allowed-interpretation rule."
+      },
+      {
+        "branchId": "V04",
+        "validBranchId": "V04",
+        "input": "Light-theme default",
+        "expectedOutcome": "aligned",
+        "actualOutcome": "aligned",
+        "pass": true,
+        "interceptPoint": "Divergence Gate",
+        "finding": "Light theme default with optional dark mode satisfied the allowed-variation rule."
+      }
+    ]
+  },
+  "gapClassification": {
+    "solved": [
+      "Platform capability ownership (EXP-PLATFORM-001/002)",
+      "Construction determinism (EXP-PLATFORM-003)",
+      "Kernel mutation authority / ExecutionGate",
+      "Protected Assets boundary",
+      "Deterministic proposal evaluation capability (EXP-GOVERNABILITY-003)",
+      "Divergence Gate automated rejection of Program 027 drift classes",
+      "Review Gate / Acceptance Gate enforcement (EXP-GATE-012 certification)",
+      "Convergence Certification (EXP-GOVERNABILITY-005)"
+    ],
+    "specifiedButUncertified": [
+      {
+        "gap": "Divergence Gate state machine",
+        "reason": "Gate now consumes Proposal Evaluation Capability and resolves automatically for Program 027."
+      },
+      {
+        "gap": "Alignment Contract validation",
+        "reason": "Contract fields are evaluated by rule set; validation is deterministic for the tested rule set."
+      }
+    ],
+    "missing": []
+  },
+  "certificationResult": {
+    "recall": "demonstrated",
+    "precision": "demonstrated",
+    "determinism": "demonstrated",
+    "coverage": "demonstrated",
+    "overall": "pass"
+  },
+  "recommendedCorrectiveActions": [],
+  "architecturalLayeringInsight": {
+    "current": "Proposal → Proposal Evaluation Capability → Alignment Decision → Divergence Gate state",
+    "required": "Proposal → Proposal Evaluation → Divergence Gate → Review Gate → Acceptance Gate → Convergence Certification",
+    "missingLayer": "None — full three-gate lifecycle certified",
+    "note": "The Divergence Gate has an automated evaluation step. Review Gate, Acceptance Gate, and Convergence Certification are now certified through EXP-GATE-012, EXP-GOVERNABILITY-005, and EXP-REFINE-009. REFINE-009 completes Program 036 alignment governance certification with full Genesis→Synthesis→Governance lifecycle verification."
+  },
+  "notes": [
+    "This certification report was re-executed after EXP-GATE-012 delivered the Program 035 three-gate governance model certification.",
+    "All 12 replay branches execute automatically via tests/proposal-evaluation.test.js and produce the expected outcomes.",
+    "EXP-GATE-012 certifies the full three-gate lifecycle through five canonical scenarios in tests/gate-012-certification.test.js.",
+    "Convergence Certification is certified in tests/convergence-certification.test.js (EXP-GOVERNABILITY-005).",
+    "No new governance concepts or kernel changes were introduced by this certification expedition.",
+    "The expedition succeeds: all five canonical scenarios produce deterministic, documented outcomes with replayable events.",
+    "EXP-REFINE-009 completes Program 036 alignment governance certification. Full lifecycle (Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition → Review Gate → Acceptance Gate → Convergence Certification) verified in tests/refine-009-certification.test.js. Scenario 4 (changed Alignment Contract invalidates Mission) and Scenario 5 (convergence failure after implementation) are certified."
+  ]
+}
