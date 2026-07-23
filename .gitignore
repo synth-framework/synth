@@ -34,6 +34,7 @@ data/*
 !data/tasks/*.task.json
 data-test/
 data-test-alignment/
+data-test-proposal-evaluation/
 proof/
 
 # =============================================================================

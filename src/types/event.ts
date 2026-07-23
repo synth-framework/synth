@@ -63,12 +63,14 @@ export type StateEvent =
   | { type: "PROJECTION_CERTIFICATION_FAILED"; certificationId: string; projectionId: string; reason: string }
   | { type: "EXPEDITION_CREATED"; expeditionId: string; missionId: string; name: string }
   | { type: "EXPEDITION_APPROVED"; expeditionId: string }
+  | { type: "EXPEDITION_AUTHORIZED"; expeditionId: string }
   | { type: "EXPEDITION_COMMITTED"; expeditionId: string }
   | { type: "EXPEDITION_STARTED"; expeditionId: string }
   | { type: "EXPEDITION_COMPLETED"; expeditionId: string }
   // Review gate lifecycle (EXP-PROGRAM-035)
   | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
   | { type: "REVIEW_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; decision: string }
+  | { type: "CONDITION_FULFILLED"; expeditionId: string; gateId: string; conditionId: string; fulfilledBy?: string }
   | { type: "REVISION_REQUESTED"; expeditionId: string; gateId: string; revisionRequestId: string; reason: string }
   | { type: "ACCEPTANCE_GATE_OPENED"; expeditionId: string; gateId: string; acceptancePackageId: string; policy: unknown }
   | { type: "ACCEPTANCE_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; recordId: string; decision: string }
@@ -124,6 +126,9 @@ export type StateEvent =
   | { type: "PROMOTION_PROPOSED"; promotionId: string; pullRequestId: string; from: string; to: string; evidenceReference?: string }
   | { type: "PROMOTION_APPROVED"; promotionId: string; approver: string }
   | { type: "RELEASE_CREATED"; releaseId: string; tag: string; targetCommit: string; evidenceReference?: string }
+  // Convergence Certification lifecycle (EXP-GOVERNABILITY-005)
+  | { type: "CONVERGENCE_CERTIFIED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
+  | { type: "CONVERGENCE_DIVERGED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
 
 /** Execution events — represent transaction lifecycle */
 export type ExecutionEvent =
