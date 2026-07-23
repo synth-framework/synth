@@ -75,6 +75,7 @@ function publicStepLabel(step) {
 const elements = {
   shell: /** @type {HTMLDivElement} */ (document.getElementById("ms-shell")),
   headerStatus: /** @type {HTMLDivElement} */ (document.getElementById("ms-header-status")),
+  headerMission: /** @type {HTMLSpanElement} */ (document.getElementById("ms-header-mission")),
   phaseList: /** @type {HTMLDivElement} */ (document.getElementById("ms-phase-list")),
   workspaceScroll: /** @type {HTMLDivElement} */ (document.getElementById("ms-workspace-scroll")),
   workspaceContent: /** @type {HTMLDivElement} */ (document.getElementById("ms-workspace-content")),
@@ -92,8 +93,14 @@ const elements = {
   footerMeta: /** @type {HTMLDivElement} */ (document.getElementById("ms-footer-meta")),
   capabilitiesGrid: /** @type {HTMLDivElement} */ (document.getElementById("ms-capabilities-grid")),
   missionStudioSection: /** @type {HTMLElement} */ (document.getElementById("mission-studio")),
-  themeToggle: /** @type {HTMLButtonElement} */ (document.getElementById("ms-theme-toggle")),
   liveRegion: /** @type {HTMLDivElement} */ (document.getElementById("ms-live-region")),
+  workspaceShell: /** @type {HTMLDivElement} */ (document.getElementById("workspace-shell")),
+  workspaceToolbar: /** @type {HTMLDivElement} */ (document.getElementById("workspace-toolbar")),
+  workspaceRail: /** @type {HTMLElement} */ (document.getElementById("workspace-rail")),
+  stickyBar: /** @type {HTMLDivElement} */ (document.getElementById("workspace-toolbar-collapsed")),
+  stickyBarMission: /** @type {HTMLSpanElement} */ (document.getElementById("ws-bar-mission")),
+  stickyBarChips: /** @type {HTMLDivElement} */ (document.getElementById("ws-bar-chips")),
+  stickyBarConfidence: /** @type {HTMLSpanElement} */ (document.getElementById("ws-bar-confidence")),
 }
 
 function announce(message) {
@@ -136,6 +143,8 @@ function updateUI() {
     ? currentGenesisState.input.slice(0, 50)
     : "Ready"
 
+  updateStickyBar(experience, currentGenesisState)
+
   bindPublicActionHandlers()
   bindIntentFormHandler()
   bindQuestionFormHandler()
@@ -150,6 +159,28 @@ function updateUI() {
 
   if (elements.workspaceScroll.scrollTop > 0 && !currentReplayState) {
     elements.workspaceScroll.scrollTop = 0
+  }
+}
+
+function updateStickyBar(experience, state) {
+  if (!elements.stickyBarMission) return
+  elements.stickyBarMission.textContent = state.mission?.name ?? state.input?.slice(0, 40) ?? "Mission Studio"
+
+  if (elements.stickyBarChips) {
+    const chips = []
+    if (state.publicFlow.contractApproved) chips.push(`<span class="ms-chip ms-chip-governed">Contract</span>`)
+    if (state.publicFlow.missionApproved) chips.push(`<span class="ms-chip ms-chip-active">Mission</span>`)
+    if (state.publicFlow.planApproved) chips.push(`<span class="ms-chip ms-chip-active">Plan</span>`)
+    if (state.publicFlow.executionComplete) chips.push(`<span class="ms-chip ms-chip-governed">Executed</span>`)
+    if (state.publicFlow.accepted) chips.push(`<span class="ms-chip ms-chip-replay">Accepted</span>`)
+    if (chips.length === 0) chips.push(`<span class="ms-chip">Planning</span>`)
+    elements.stickyBarChips.innerHTML = chips.join("")
+  }
+
+  if (elements.stickyBarConfidence) {
+    const stepIndex = ["idea", "question", "understanding", "contract", "mission", "plan", "evidence", "review", "acceptance", "complete"].indexOf(experience.step)
+    const confidence = Math.min(99, 15 + stepIndex * 9)
+    elements.stickyBarConfidence.textContent = `${confidence}% confidence`
   }
 }
 
@@ -173,6 +204,10 @@ function renderIdleExperience() {
   elements.controls.innerHTML = `<p class="ms-hint">Type an idea or pick an example to begin.</p>`
   elements.footerStatus.textContent = "Ready"
   elements.footerMeta.textContent = ""
+
+  if (elements.stickyBarMission) elements.stickyBarMission.textContent = "Mission Studio"
+  if (elements.stickyBarChips) elements.stickyBarChips.innerHTML = `<span class="ms-chip">Planning</span>`
+  if (elements.stickyBarConfidence) elements.stickyBarConfidence.textContent = "85% confidence"
 
   bindIntentFormHandler()
   bindSourceSelectorHandler()
@@ -215,7 +250,6 @@ async function handlePublicAction(actionId) {
       case "approve-mission": {
         let result = await runtime.approveMission(currentGenesisState)
         currentGenesisState = result.state
-        // Derive the plan automatically once the mission is approved.
         if (currentGenesisState.expeditions.length === 0) {
           result = await runtime.buildExpeditions(currentGenesisState)
           currentGenesisState = result.state
@@ -230,7 +264,7 @@ async function handlePublicAction(actionId) {
       case "start-execution": {
         const started = await runtime.startExecution(currentGenesisState)
         currentGenesisState = started.state
-        updateUI() // Show Evidence step as execution starts.
+        updateUI()
         const completed = await runtime.completeExecution(currentGenesisState)
         currentGenesisState = completed.state
         break
@@ -384,17 +418,40 @@ async function handleScroll() {
   updateUI()
 }
 
+// ============================================================
+// Progressive Collapse: 6 states driven by scroll progress
+// ============================================================
+// 0.0-0.6:  Immersive / Replay  (full height, content visible)
+// 0.6-0.7:  Begin Collapse      (shell shrinks, sidebar narrows)
+// 0.7-0.8:  Compact             (sidebar icons only)
+// 0.8-0.9:  Sidebar Retracted   (sidebar gone, metadata row)
+// 0.9-1.0:  Sticky Bar          (72px fixed bar)
+// >1.0:     Bar persists
+
+function handleProgressiveCollapse() {
+  const toolbar = elements.workspaceToolbar
+  if (!toolbar) return
+
+  const NAV_HEIGHT = 56
+  const toolbarRect = toolbar.getBoundingClientRect()
+  const toolbarTop = toolbarRect.top
+
+  const scrolledPast = NAV_HEIGHT - toolbarTop
+  const collapseDistance = Math.min(toolbarRect.height || 420, 600)
+
+  const progress = Math.max(0, Math.min(1, scrolledPast / collapseDistance))
+
+  document.documentElement.style.setProperty("--collapse-progress", String(progress))
+}
+
 function renderCapabilities() {
   if (!elements.capabilitiesGrid) return
-  elements.capabilitiesGrid.innerHTML = CAPABILITIES.map((cap) => {
-    const isAdapter = cap.id === "adapters"
-    return `
-      <div class="synth-capability-card ${isAdapter ? "synth-capability-adapter" : ""}">
-        <h4>${escapeHtml(cap.name)}</h4>
-        <p>${escapeHtml(cap.description)}</p>
-      </div>
-    `
-  }).join("")
+  elements.capabilitiesGrid.innerHTML = CAPABILITIES.map((cap) => `
+    <div class="feature-card">
+      <h3>${escapeHtml(cap.name)}</h3>
+      <p>${escapeHtml(cap.description)}</p>
+    </div>
+  `).join("")
 }
 
 function escapeHtml(text) {
@@ -459,29 +516,6 @@ function bindExampleButtons() {
   })
 }
 
-function initThemeToggle() {
-  if (!elements.themeToggle || !elements.shell) return
-
-  const stored = localStorage.getItem("synth-ms-theme")
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-  const initialDark = stored ? stored === "dark" : prefersDark
-
-  if (initialDark) {
-    elements.shell.setAttribute("data-theme", "dark")
-  }
-
-  elements.themeToggle.addEventListener("click", () => {
-    const isDark = elements.shell.getAttribute("data-theme") === "dark"
-    if (isDark) {
-      elements.shell.removeAttribute("data-theme")
-      localStorage.setItem("synth-ms-theme", "light")
-    } else {
-      elements.shell.setAttribute("data-theme", "dark")
-      localStorage.setItem("synth-ms-theme", "dark")
-    }
-  })
-}
-
 function init() {
   renderCapabilities()
   renderIdleExperience()
@@ -498,7 +532,6 @@ function init() {
     void stepReplayDirection("forward")
   })
 
-  // Start the scroll-driven demo once Mission Studio is in view.
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -519,8 +552,7 @@ function init() {
   }
 
   window.addEventListener("scroll", handleScroll, { passive: true })
-
-  initThemeToggle()
+  window.addEventListener("scroll", handleProgressiveCollapse, { passive: true })
 }
 
 init()
