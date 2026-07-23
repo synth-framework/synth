@@ -21,12 +21,16 @@ import type {
   ExecutionResult,
   SynthEvent,
   ExecutionContext,
+  MutationRequest,
+  MutationProvider,
 } from "../types/index.js"
 import type { ValidationResult } from "../types/index.js"
+import { computeEventHash } from "../core/hash.js"
 import type { Registry } from "../capability/registry.js"
 import type { PolicyEngine } from "../policy/policy-engine.js"
 import type { RuntimeEngine } from "../runtime/engine.js"
 import type { EventStore } from "../infra/event-store.js"
+import { EVENT_STORE_WRITE_TOKEN } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
 import {
   CONTRACT_STEPS,
@@ -77,6 +81,11 @@ class PhaseFailedError extends Error {
   }
 }
 
+/** Result of a mutation authority check */
+export type MutationAuthorization =
+  | { allowed: true; authority: string; reason: string }
+  | { allowed: false; reason: string }
+
 /** Execution Gate — the single mutation authority */
 export class ExecutionGate {
   constructor(
@@ -86,6 +95,7 @@ export class ExecutionGate {
     private eventStore: EventStore,
     private stateStore: IStateStore,
     private validator: (invocation: CapabilityInvocation) => ValidationResult,
+    private mutationProviders: Map<string, MutationProvider> = new Map(),
   ) {}
 
   // ===== PUBLIC API: The only mutation entry points =====
@@ -167,6 +177,15 @@ export class ExecutionGate {
         durationMs: 0,
       })
 
+      // === PHASE 4b: EXECUTE AUTHORIZED MUTATIONS ===
+      if (executionResult.mutations && executionResult.mutations.length > 0) {
+        const mutationPhase = await this.runMutationPhase(executionResult.mutations, invocation.actor)
+        phases.push(mutationPhase)
+        if (!mutationPhase.passed) {
+          throw new Error(mutationPhase.error || "MUTATION_FAILED")
+        }
+      }
+
       // === PHASE 5: EMIT EVENTS ===
       phases.push({
         phase: "EMIT_EVENTS",
@@ -176,13 +195,18 @@ export class ExecutionGate {
       })
 
       // === PHASE 6: PERSIST EVENTS (single write path) ===
-      if (executionResult.events.length > 0) {
-        await this.eventStore.appendBatch(executionResult.events)
+      const eventsToPersist = [...executionResult.events]
+      if (executionResult.mutations && executionResult.mutations.length > 0) {
+        const authorizedEvent = await this.createAuthorizedEvent(executionResult.mutations, invocation.actor)
+        if (authorizedEvent) eventsToPersist.push(authorizedEvent)
+      }
+      if (eventsToPersist.length > 0) {
+        await this.eventStore.appendBatch(eventsToPersist, EVENT_STORE_WRITE_TOKEN)
       }
       phases.push({
         phase: "PERSIST_EVENTS",
         passed: true,
-        output: { persisted: executionResult.events.length },
+        output: { persisted: eventsToPersist.length },
         durationMs: 0,
       })
 
@@ -281,11 +305,67 @@ export class ExecutionGate {
     }
 
     // Single batch commit through the guarded store
-    await this.eventStore.appendBatch(events)
+    await this.eventStore.appendBatch(events, EVENT_STORE_WRITE_TOKEN)
 
     // Rebuild state from the committed events
     const finalState = await this.runtime.getState()
     return { committed: events.length, finalState }
+  }
+
+  /**
+   * Mutation Authority gate.
+   *
+   * Checks whether a proposed repository mutation is authorized by an approved
+   * Mission and an authorized Expedition. Returns `{ allowed: false, reason }`
+   * when any requirement is not met.
+   *
+   * This is the runtime enforcement primitive for the Mutation Authority
+   * invariant in the Constitutional Baseline.
+   */
+  async authorize(mutation: MutationRequest): Promise<MutationAuthorization> {
+    const state = await this.runtime.getState()
+
+    // 1. Authority must exist: at least one approved Mission.
+    const approvedMissions = Object.values(state.missions).filter(
+      (m) => m.status === "active"
+    )
+    if (approvedMissions.length === 0) {
+      return { allowed: false, reason: "No approved Mission exists" }
+    }
+
+    // 2. Lifecycle must permit execution: at least one approved Expedition.
+    const authorizedExpeditions = Object.values(state.expeditions).filter(
+      (e) => e.status === "approved" || e.status === "committed" || e.status === "executing"
+    )
+    if (authorizedExpeditions.length === 0) {
+      return { allowed: false, reason: "No authorized Expedition exists" }
+    }
+
+    // 3. Scope must be contained within the approved expedition scope, if scope
+    //    is declared. If no scope is declared, the expedition is treated as
+    //    unscoped and any mutation is allowed (preserves existing behavior).
+    const scopedExpeditions = authorizedExpeditions.filter(
+      (e) => Array.isArray(e.metadata?.scope) && e.metadata.scope.length > 0
+    )
+    if (scopedExpeditions.length > 0) {
+      const allowedByScope = scopedExpeditions.some((e) =>
+        (e.metadata.scope as string[]).some((scope) => mutation.target.startsWith(scope))
+      )
+      if (!allowedByScope) {
+        return {
+          allowed: false,
+          reason: "Mutation target is outside authorized expedition scope",
+        }
+      }
+    }
+
+    // 4. ExecutionGate must be open (this method is invoked through it).
+    const authority = authorizedExpeditions[0]
+    return {
+      allowed: true,
+      authority: authority.id,
+      reason: "Mutation authorized by ExecutionGate",
+    }
   }
 
   /**
@@ -325,7 +405,93 @@ export class ExecutionGate {
     }
   }
 
+  /**
+   * Register a mutation provider for a capability namespace.
+   * Providers are invoked only after mutation authority is confirmed.
+   */
+  registerMutationProvider(provider: MutationProvider): void {
+    this.mutationProviders.set(provider.namespace, provider)
+  }
+
   // ===== INTERNAL =====
+
+  private async runMutationPhase(
+    mutations: MutationRequest[],
+    actor: string,
+  ): Promise<PhaseResult> {
+    for (const mutation of mutations) {
+      const auth = await this.authorize({ ...mutation, actor })
+      if (!auth.allowed) {
+        return {
+          phase: "MUTATE_EXTERNAL",
+          passed: false,
+          error: auth.reason,
+          durationMs: 0,
+        }
+      }
+
+      const provider = this.mutationProviders.get(mutation.capability)
+      if (!provider) {
+        return {
+          phase: "MUTATE_EXTERNAL",
+          passed: false,
+          error: `No mutation provider registered for capability: ${mutation.capability}`,
+          durationMs: 0,
+        }
+      }
+
+      const result = await provider.mutate(mutation)
+      if (!result.success) {
+        return {
+          phase: "MUTATE_EXTERNAL",
+          passed: false,
+          error: result.error || `Mutation failed for ${mutation.target}`,
+          durationMs: 0,
+        }
+      }
+    }
+
+    return {
+      phase: "MUTATE_EXTERNAL",
+      passed: true,
+      output: { mutations: mutations.length },
+      durationMs: 0,
+    }
+  }
+
+  private async createAuthorizedEvent(
+    mutations: MutationRequest[],
+    actor: string,
+  ): Promise<SynthEvent | null> {
+    const state = await this.runtime.getState()
+    const authorizedExpedition = Object.values(state.expeditions).find(
+      (e) => e.status === "approved" || e.status === "committed" || e.status === "executing"
+    )
+    if (!authorizedExpedition) return null
+
+    const lastEvent = await this.eventStore.getLastEvent()
+    const previousHash = lastEvent?.eventHash ?? "genesis"
+    const timestamp = Date.now()
+    const sequence = await this.eventStore.count()
+
+    const event: SynthEvent = {
+      id: crypto.randomUUID(),
+      type: "EXPEDITION_AUTHORIZED",
+      timestamp,
+      transactionId: `tx-authorized-${sequence}`,
+      capability: "mutation-authority",
+      actor,
+      payload: {
+        id: authorizedExpedition.id,
+        mutationCount: mutations.length,
+        targets: mutations.map((m) => m.target),
+      },
+      previousHash,
+      eventHash: "",
+    }
+    event.eventHash = computeEventHash(event)
+    return event
+  }
 
   private runPhase<T>(phase: ExecutionPhase, fn: () => T): PhaseResult<T> {
     try {

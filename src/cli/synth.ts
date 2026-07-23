@@ -10,6 +10,7 @@ import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
 import { spawn } from "child_process"
+import { sha256 } from "../sdk/hashing/index.js"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
@@ -20,8 +21,9 @@ import { refreshAiMetadata } from "./ai-metadata.js"
 import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
+import { setAgentTelemetry, printJson, printError } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
@@ -55,10 +57,10 @@ import {
   cmdFirstContactStatus,
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/paths.js"
+import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
+import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 
@@ -119,9 +121,8 @@ const ADAPTER_NAMES = [
   "wizard",
 ]
 
-let agentTelemetry: Record<string, unknown> = {}
-
-function setAgentTelemetry(flags: Record<string, string | boolean>) {
+// Wraps shared setAgentTelemetry to parse CLI flags into telemetry data.
+function setAgentTelemetryFromFlags(flags: Record<string, string | boolean>) {
   const telemetry: Record<string, unknown> = {}
   if (typeof flags["agent-session"] === "string" && flags["agent-session"].length > 0) {
     telemetry.agentSession = flags["agent-session"]
@@ -136,20 +137,7 @@ function setAgentTelemetry(flags: Record<string, string | boolean>) {
       telemetry.agentReasoningState = { parseError: flags["agent-reasoning-state"] }
     }
   }
-  agentTelemetry = telemetry
-}
-
-function printJson(obj: unknown) {
-  if (Object.keys(agentTelemetry).length === 0) {
-    console.log(JSON.stringify(obj, null, 2))
-  } else {
-    console.log(JSON.stringify({ ...agentTelemetry, ...(obj as Record<string, unknown>) }, null, 2))
-  }
-}
-
-function printError(error: string, code = 1): never {
-  printJson({ status: "error", error })
-  process.exit(code)
+  setAgentTelemetry(telemetry)
 }
 
 function parseArgs(argv: string[]) {
@@ -195,8 +183,13 @@ async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]
   return ctx
 }
 
-function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState) {
-  return validateAgentAction(action, state)
+async function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState, runtime?: import("../runtime/engine.js").RuntimeEngine) {
+  let derived: import("../types/index.js").DerivedState | undefined
+  if (runtime) {
+    const events = await runtime.loadEvents()
+    derived = buildDerivedState(events)
+  }
+  return validateAgentAction(action, state, derived)
 }
 
 function printGateBlock(result: Extract<ReturnType<typeof validateAgentAction>, { decision: "BLOCK" }>): never {
@@ -265,7 +258,7 @@ async function verifyDistIntegrity(): Promise<DoctorCheckResult> {
     const filePath = path.join(distDir, rel)
     let actualHash: string
     try {
-      actualHash = crypto.createHash("sha256").update(await fs.readFile(filePath)).digest("hex")
+      actualHash = sha256(await fs.readFile(filePath))
     } catch {
       missing++
       continue
@@ -288,21 +281,19 @@ async function verifyDistIntegrity(): Promise<DoctorCheckResult> {
 
 async function verifyReplayHealth(): Promise<DoctorCheckResult> {
   try {
-    await ensureRuntimeDataDir(process.cwd())
-    const dataDir = await getRuntimeDataDir(process.cwd())
-    const logPath = path.join(dataDir, "event-log.jsonl")
-    try {
-      await fs.access(logPath)
-    } catch {
+    const root = sdk.workspace.root()
+    await sdk.paths.ensureDataDir(root)
+    const logPath = sdk.paths.eventLogFile(root)
+    if (!(await sdk.files.exists(logPath))) {
       return { ok: true, detail: "No event log present; replay skipped" }
     }
     const ctx = await bootstrap({
       skipGenesis: true,
       infra: {
         persistence: "file",
-        eventLogPath: logPath,
-        statePath: path.join(dataDir, "canonical-state.json"),
-        checkpointPath: path.join(dataDir, "checkpoints.json"),
+        eventLogPath: sdk.paths.eventLogFile(root),
+        statePath: sdk.paths.stateFile(root),
+        checkpointPath: sdk.paths.checkpointsFile(root),
       },
     })
     const verifier = createReplayVerifier(ctx.infra.eventStore, ctx.infra.stateStore)
@@ -325,23 +316,19 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
 
 async function verifyEventChain(): Promise<DoctorCheckResult> {
   try {
-    await ensureRuntimeDataDir(process.cwd())
-    const dataDir = await getRuntimeDataDir(process.cwd())
-    const logPath = path.join(dataDir, "event-log.jsonl")
-    try {
-      await fs.access(logPath)
-    } catch {
+    const root = sdk.workspace.root()
+    await sdk.paths.ensureDataDir(root)
+    const logPath = sdk.paths.eventLogFile(root)
+    if (!(await sdk.files.exists(logPath))) {
       return { ok: true, detail: "No event log present; chain skipped" }
     }
-    const events: string[] = (await fs.readFile(logPath, "utf-8"))
-      .split("\n")
-      .filter((line) => line.trim().length > 0)
+    const events = await sdk.events.readEvents(root)
     if (events.length === 0) {
       return { ok: true, detail: "Event log is empty" }
     }
     let previousHash = "genesis"
     for (let i = 0; i < events.length; i++) {
-      const event = JSON.parse(events[i])
+      const event = events[i]
       if (event.previousHash !== previousHash) {
         return {
           ok: false,
@@ -362,7 +349,7 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
 }
 
 async function verifyDiscoveryBaseline(): Promise<DoctorCheckResult> {
-  const discoveryDir = path.join(process.cwd(), ".synth", "discovery")
+  const discoveryDir = sdk.paths.discoveryDir(sdk.workspace.root())
   try {
     const entries = await fs.readdir(discoveryDir)
     const hasBaseline = entries.some((entry) => entry.endsWith(".json") || entry.endsWith(".jsonl"))
@@ -409,7 +396,7 @@ async function cmdDoctor() {
   }
 
   // Project Health — repository and governance signals
-  const manifestPath = path.join(process.cwd(), ".synth", "manifest.json")
+  const manifestPath = sdk.paths.manifestPath(sdk.workspace.root())
   let hasManifest = false
   try {
     await fs.access(manifestPath)
@@ -907,7 +894,7 @@ function requireString(value: string | undefined, fallback: string): string {
 }
 
 async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBaseline, "signature">): Promise<string> {
-  const discoveryDir = path.join(targetDir, ".synth", "discovery")
+  const discoveryDir = sdk.paths.discoveryDir(targetDir)
   await fs.mkdir(discoveryDir, { recursive: true })
 
   // The signature covers only deterministic content. generatedAt and targetDir
@@ -919,7 +906,7 @@ async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBas
     analysis: data.analysis,
   }
   const canonical = JSON.stringify(signatureInput, Object.keys(signatureInput).sort())
-  const signature = crypto.createHash("sha256").update(canonical).digest("hex")
+  const signature = sha256(canonical)
   const baseline: DiscoveryBaseline = { ...data, signature }
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
@@ -984,6 +971,32 @@ async function cmdMissionHelp() {
   ]))
 }
 
+async function cmdValidateHelp() {
+  printJson(namespaceHelp("validate", "Analyze changes, plan validations, and execute them", [
+    { name: "synth validate", description: "Run the adaptive validator on the current working tree" },
+    { name: "synth validate --dry-run", description: "Preview the validation plan without executing" },
+    { name: "synth validate --full", description: "Run the complete canonical governance pipeline" },
+    { name: "synth validate dependencies", description: "Verify expedition charter dependency resolution" },
+    { name: "synth validate artifact --type <type>", description: "Validate governance artifacts (expedition, mission)" },
+  ]))
+}
+
+async function cmdExplainHelp() {
+  printJson(namespaceHelp("explain", "Explain operations — replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all", [
+    { name: "synth explain replay", description: "Verify replay consistency between event log and current state" },
+    { name: "synth explain lineage", description: "Project → Mission → Expedition → Objective tree with broken parents" },
+    { name: "synth explain proposals", description: "Proposal → observations/evidence from snapshot store" },
+    { name: "synth explain snapshots", description: "Snapshot version history and parents" },
+    { name: "synth explain graph", description: "Aggregate graph with per-node status and violation markers" },
+    { name: "synth explain diagnostics", description: "Relationship diagnostics with violation rollup and replay attribution" },
+    { name: "synth explain status", description: "Validation dashboard with one verdict" },
+    { name: "synth explain identity", description: "Repository identity projection from replayable evidence" },
+    { name: "synth explain resume", description: "What happened, what was decided, what is next" },
+    { name: "synth explain governance", description: "Governance Record lineage derived from replay" },
+    { name: "synth explain all", description: "Umbrella report with every section above" },
+  ], { note: "Every explain subcommand is read-only. Use --log <path> to inspect an alternative project log. Use --json for machine output." }))
+}
+
 async function cmdIntentHelp() {
   printJson(namespaceHelp("intent", "Intent model operations", [
     { name: "synth intent create --file <path>", description: "Create an Intent Model from a JSON file" },
@@ -1000,7 +1013,7 @@ async function cmdIntentCreate(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1048,7 +1061,7 @@ async function cmdIntentRefine(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1179,7 +1192,7 @@ async function cmdIntentSubmit(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1211,7 +1224,7 @@ async function cmdIntentApprove(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1264,7 +1277,7 @@ async function cmdAlignmentCreate(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1432,7 +1445,7 @@ async function cmdAlignmentSubmit(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1464,7 +1477,7 @@ async function cmdAlignmentApprove(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1636,7 +1649,7 @@ async function cmdAlignmentPrepare() {
   // for Mission approval when the operator has not yet run a full refinement
   // session. This is a convenience wrapper around the public capabilities;
   // ApproveMission still validates the contract through the ExecutionGate.
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -1692,7 +1705,7 @@ async function cmdAiHelp() {
 }
 
 async function cmdAiRefresh() {
-  const synthDir = path.join(process.cwd(), ".synth")
+  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
   await refreshAiMetadata(synthDir)
   printJson({ status: "ok", message: "AI metadata refreshed", path: path.join(synthDir, "ai") })
 }
@@ -1706,17 +1719,17 @@ async function cmdAdapterHelp() {
 async function cmdInit(args: string[], flags: Record<string, string | boolean>) {
   const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
   const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
-  const synthDir = path.join(targetDir, ".synth")
-  const dataDir = path.join(targetDir, ".synth", "data")
+  const synthDir = sdk.paths.synthDir(targetDir)
+  const dataDir = sdk.paths.dataDir(targetDir)
   const governanceVersion = "2.1"
-  const projectId = crypto.randomUUID()
+  const projectId = sdk.identity.uuid()
 
   const sourceType = typeof flags.source === "string" ? flags.source : "filesystem"
   const sourceLocation = typeof flags["source-location"] === "string" ? flags["source-location"] : targetDir
   const declaredIntent = typeof flags["declared-intent"] === "string" ? flags["declared-intent"] : undefined
 
-  await fs.mkdir(synthDir, { recursive: true })
-  await fs.mkdir(dataDir, { recursive: true })
+  await sdk.files.ensureDirectory(synthDir)
+  await sdk.files.ensureDirectory(dataDir)
 
   const manifest = {
     schema: "synth-bootstrap-manifest-v1",
@@ -1743,8 +1756,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     quickStart: "synth init && synth docs generate && npm run govern",
   }
 
-  const manifestPath = path.join(synthDir, "manifest.json")
-  await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf-8")
+  await sdk.json.writeJson(sdk.paths.manifestPath(targetDir), manifest)
 
   // Bootstrap a file-backed runtime in the target directory so the
   // initialization itself is recorded as a replayable governance event.
@@ -1752,9 +1764,9 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-      checkpointPath: path.join(dataDir, "checkpoints.json"),
+      eventLogPath: sdk.paths.eventLogFile(targetDir),
+      statePath: sdk.paths.stateFile(targetDir),
+      checkpointPath: sdk.paths.checkpointsFile(targetDir),
     },
   })
 
@@ -1816,7 +1828,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   printJson({
     status: "ok",
     message: "Synth project initialized",
-    manifestPath,
+    manifestPath: sdk.paths.manifestPath(targetDir),
     projectName,
     governanceVersion,
     lifecycle: "initialized",
@@ -1853,7 +1865,7 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
     if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
       return runInternalGovernance(verdict.condition)
     }
-    return Promise.reject(new Error(verdict.message))
+    return printError(verdict.message)
   }
   const args = ["run", "govern"]
   if (flags.explain === true || flags.explain === "true") args.push("--explain")
@@ -1875,12 +1887,12 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
 }
 
 async function cmdStatus() {
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const logger = new Logger("status")
   logger.info("Resolving governance context for operator briefing")
   // EXP-AI-003: keep .synth/ai/ metadata synchronized with canonical state so
   // agent orientation is always current when the operator asks for status.
-  const synthDir = path.join(process.cwd(), ".synth")
+  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
   await refreshAiMetadata(synthDir)
   const briefing = await buildOperatorBriefing(process.cwd())
   printJson(briefing)
@@ -1889,7 +1901,12 @@ async function cmdStatus() {
   }
 }
 
-function makeObservation(type: string, subject: string, overrides: Record<string, unknown> = {}): PlanningObservation {
+function makeObservation(
+  type: string,
+  subject: string,
+  timestamp: number,
+  overrides: Record<string, unknown> = {}
+): PlanningObservation {
   return {
     id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
     sourceAdapter: "synth-cli",
@@ -1897,7 +1914,7 @@ function makeObservation(type: string, subject: string, overrides: Record<string
     payload: { subject, name: subject, ...overrides },
     evidenceReference: `evidence-${type}-${subject}`,
     confidence: "high",
-    timestamp: Date.now(),
+    timestamp,
   }
 }
 
@@ -1938,7 +1955,7 @@ function deserializePlanningSession(data: any): PlanningSession {
 }
 
 async function ensureDraftsDir(): Promise<string> {
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   await fs.mkdir(draftsDir, { recursive: true })
   return draftsDir
@@ -1947,6 +1964,7 @@ async function ensureDraftsDir(): Promise<string> {
 async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   const subject = typeof flags.subject === "string" ? flags.subject : ""
   const purpose = typeof flags.purpose === "string" ? flags.purpose : ""
+  const evidenceFile = typeof flags["evidence-file"] === "string" ? flags["evidence-file"] : ""
   if (!subject) printError("--subject is required")
 
   // Resolve the project's actual governance state before allowing intent
@@ -1956,7 +1974,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "mission.create" }, state)
+  const intake = await gateDecision({ kind: "mission.create" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -1965,11 +1983,12 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
+  const timestamp = Date.now()
 
-  const observations = [makeObservation("mission", subject, { purpose })]
+  const observations = [makeObservation("mission", subject, timestamp, { purpose })]
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; session?: PlanningSession; error?: string }
 
   if (sessionResult.status !== "ok" || !sessionResult.session) {
@@ -1980,7 +1999,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
 
   const proposalsResult = (await ctx.api.missionStudioOperation({
     operation: "proposeMissions",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; proposals?: unknown; error?: string }
 
   const draftsDir = await ensureDraftsDir()
@@ -1988,6 +2007,26 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   const serialized = serializePlanningSession(session)
   await fs.writeFile(draftPath, JSON.stringify(serialized, null, 2), "utf-8")
   await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
+
+  let evidence: unknown = undefined
+  if (evidenceFile) {
+    const loaded = await loadEvidenceFromFile(evidenceFile)
+    if (loaded) {
+      const evidencePayload = { draftId: session.id, source: loaded.source, hash: loaded.hash }
+      try {
+        await ctx.api.handleIntent({
+          actor: "synth-cli",
+          capability: "AttachEvidence",
+          payload: evidencePayload,
+        })
+        evidence = { status: "attached", ...evidencePayload }
+      } catch {
+        evidence = { status: "failed", ...evidencePayload, error: "Could not attach evidence to draft" }
+      }
+    } else {
+      evidence = { status: "error", error: `Could not read evidence file: ${evidenceFile}` }
+    }
+  }
 
   printJson({
     status: "ok",
@@ -1997,6 +2036,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     integrity: "certified",
     subject,
     purpose,
+    evidence,
     confidence: session.confidence,
     unknowns: session.unknowns,
     questions: session.questions,
@@ -2069,12 +2109,12 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "mission.approve" }, state)
+  const intake = await gateDecision({ kind: "mission.approve" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
 
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
@@ -2102,6 +2142,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
+  const timestamp = Date.now()
 
   // Approval state derives from the decision record, never from the
   // editable approvalState field (EXP-TRUST-004): re-approval is
@@ -2110,7 +2151,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
 
   const approveResult = (await ctx.api.missionStudioOperation({
     operation: "approveModel",
-    params: { session },
+    params: { session, timestamp },
   })) as {
     status: string
     decision?: { approved: boolean; reason?: string; confidence?: number }
@@ -2232,7 +2273,7 @@ async function cmdMissionProject(flags: Record<string, string | boolean>) {
     return
   }
 
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -2275,7 +2316,7 @@ const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain
 
 async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : undefined
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const { records, chainValid } = await listDecisions(dataDir, draftId)
   if (!chainValid) {
     printError(
@@ -2303,7 +2344,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "mission.evidence.add" }, state)
+  const intake = await gateDecision({ kind: "mission.evidence.add" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2313,7 +2354,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     printError(`Unknown confidence level: "${confidence}". Valid levels: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}`)
   }
 
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
@@ -2329,8 +2370,10 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     printError(integrity.message)
   }
 
+  const timestamp = Date.now()
+
   // Drafts are immutable: adding evidence creates a successor draft (EXP-TRUST-003).
-  const observation = makeObservation("evidence", subject, {
+  const observation = makeObservation("evidence", subject, timestamp, {
     description: purpose ?? subject,
     ...(purpose ? { purpose } : {}),
   })
@@ -2349,7 +2392,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
 
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations: [...existing, observation] },
+    params: { observations: [...existing, observation], timestamp },
   })) as { status: string; session?: PlanningSession; error?: string }
 
   if (sessionResult.status !== "ok" || !sessionResult.session) {
@@ -2484,7 +2527,7 @@ interface RepairEntry {
 
 async function cmdRepairReplay(args: string[], flags: Record<string, string | boolean>) {
   const approve = flags.approve === true || flags.approve === "true"
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
 
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
@@ -2684,7 +2727,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.create", missionId: missionSubject }, state)
+  const intake = await gateDecision({ kind: "expedition.create", missionId: missionSubject }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2693,14 +2736,15 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
+  const timestamp = Date.now()
 
   const observations = [
-    makeObservation("mission", missionSubject, { purpose: "Auto-created from CLI" }),
-    makeObservation("expedition", subject, { goal, missionSubject }),
+    makeObservation("mission", missionSubject, timestamp, { purpose: "Auto-created from CLI" }),
+    makeObservation("expedition", subject, timestamp, { goal, missionSubject }),
   ]
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; session?: PlanningSession; error?: string }
 
   if (sessionResult.status !== "ok" || !sessionResult.session) {
@@ -2710,7 +2754,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const session = sessionResult.session
   const proposalsResult = (await ctx.api.missionStudioOperation({
     operation: "proposeExpeditions",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; proposals?: unknown; error?: string }
 
   // Persist the expedition draft and create a runtime entity in draft state.
@@ -2754,12 +2798,12 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state)
+  const intake = await gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
 
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
@@ -2786,13 +2830,7 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionApproveFailed",
-      draftId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionApproveFailed")
   }
 
   printJson({
@@ -2815,7 +2853,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   })
 
   const state = await ctx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state)
+  const intake = await gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2827,13 +2865,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionCommitFailed",
-      proposalId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionCommitFailed")
   }
 
   printJson({
@@ -2863,7 +2895,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   })
 
   const state = await ctx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.start", expeditionId }, state)
+  const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2875,13 +2907,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionStartFailed",
-      expeditionId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionStartFailed")
   }
 
   printJson({
@@ -2905,7 +2931,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 
   const state = await ctx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.complete", expeditionId }, state)
+  const intake = await gateDecision({ kind: "expedition.complete", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2919,13 +2945,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionCompleteFailed",
-      expeditionId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionCompleteFailed")
   }
 
   printJson({
@@ -2999,7 +3019,7 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
 async function cmdExplainReplay(flags: Record<string, string | boolean>) {
   // Ensure runtime data is in `.synth/data/` for governed projects before
   // inspecting any project-local log.
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
 
   // --log <path> (EXP-HARDEN-007): inspect any example/project log;
   // state/checkpoint paths derive from the log's directory.
@@ -3079,6 +3099,10 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
     case "first-contact":
     case "genesis":
       return { namespace, handler: cmdFirstContactHelp }
+    case "validate":
+      return { namespace, handler: cmdValidateHelp }
+    case "explain":
+      return { namespace, handler: cmdExplainHelp }
     case "ai":
       return { namespace, handler: cmdAiHelp }
     case "repo":
@@ -3130,7 +3154,14 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
     if (sub === "approve") return "mission approve"
+    if (sub === "decisions") return "mission decisions"
+    if (sub === "evidence" && positional[2] === "add") return "mission evidence add"
+    if (sub === "snapshot") return "mission snapshot"
+    if (sub === "project") return "mission project"
+    if (sub === "verify-charter") return "mission verify-charter"
   }
+  if (namespace === "validate" && sub === "dependencies") return "validate dependencies"
+  if (namespace === "validate" && sub === "artifact") return "validate artifact"
   if (namespace === "intent") {
     if (sub === "create") return "intent create"
   }
@@ -3155,6 +3186,190 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   }
 
   return namespace
+}
+
+// ============================================================
+// EXP-GATE-013: Dependency validation command
+// ============================================================
+async function cmdValidateDependencies(flags: Record<string, string | boolean>) {
+  const {
+    parseDependencyRecord,
+    checkUpstreamDependencies,
+    parseCharterDirectory,
+  } = await import("../governance/dependency-graph.js")
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const records = await parseCharterDirectory(charterDir)
+
+  if (records.length === 0) {
+    printJson({ status: "ok", kind: "DependencyCheck", dependencies: [], note: "No expedition charters found." })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await ctx.runtime.getState()
+
+  const results = records.map((r) => checkUpstreamDependencies(r.expeditionId, state, records))
+
+  const blocked = results.filter((r) => r.status !== "resolved")
+
+  printJson({
+    status: blocked.length > 0 ? "warning" : "ok",
+    kind: "DependencyCheck",
+    total: results.length,
+    blocked: blocked.length,
+    resolved: results.length - blocked.length,
+    dependencies: results,
+    note: blocked.length > 0
+      ? `${blocked.length} expedition(s) have unresolved upstream dependencies.`
+      : "All dependencies are resolved.",
+  })
+}
+
+// ============================================================
+// EXP-REFINE-016: Artifact validation command
+// ============================================================
+async function cmdValidateArtifact(flags: Record<string, string | boolean>) {
+  const artifactType = typeof flags.type === "string" ? flags.type : ""
+
+  if (!artifactType) {
+    printJson({
+      status: "error",
+      kind: "ArtifactValidation",
+      error: "--type is required. Options: expedition, mission, refined-intent, alignment-contract",
+    })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await ctx.runtime.getState()
+
+  let valid = true
+  const checks: { name: string; passed: boolean; detail: string }[] = []
+
+  switch (artifactType) {
+    case "expedition": {
+      const expeditions = state.expeditions || {}
+      const ids = Object.keys(expeditions)
+      checks.push({ name: "expeditions-exist", passed: ids.length > 0, detail: `${ids.length} expedition(s) found` })
+
+      for (const [id, exp] of Object.entries(expeditions)) {
+        checks.push({ name: `expedition-${id}-has-mission`, passed: !!exp.missionId, detail: `Mission: ${exp.missionId || "missing"}` })
+        checks.push({ name: `expedition-${id}-has-goal`, passed: !!exp.goal, detail: `Goal: ${exp.goal || "missing"}` })
+        checks.push({ name: `expedition-${id}-has-status`, passed: !!exp.status, detail: `Status: ${exp.status}` })
+      }
+      break
+    }
+
+    case "mission": {
+      const missions = state.missions || {}
+      const ids = Object.keys(missions)
+      checks.push({ name: "missions-exist", passed: ids.length > 0, detail: `${ids.length} mission(s) found` })
+
+      for (const [id, mission] of Object.entries(missions)) {
+        checks.push({ name: `mission-${id}-has-name`, passed: !!mission.name, detail: `Name: ${mission.name || "missing"}` })
+        checks.push({ name: `mission-${id}-has-purpose`, passed: !!mission.purpose, detail: `Purpose: ${mission.purpose || "missing"}` })
+        checks.push({ name: `mission-${id}-has-status`, passed: !!mission.status, detail: `Status: ${mission.status}` })
+      }
+      break
+    }
+
+    default:
+      printJson({
+        status: "error",
+        kind: "ArtifactValidation",
+        error: `Unknown artifact type: ${artifactType}. Supported: expedition, mission`,
+      })
+      return
+  }
+
+  const failed = checks.filter((c) => !c.passed)
+  valid = failed.length === 0
+
+  printJson({
+    status: valid ? "ok" : "error",
+    kind: "ArtifactValidation",
+    artifactType,
+    totalChecks: checks.length,
+    passed: checks.filter((c) => c.passed).length,
+    failed: failed.length,
+    checks,
+    valid,
+  })
+
+  if (!valid) process.exit(1)
+}
+
+// ============================================================
+// EXP-REFINE-015: Evidence attachment for mission create
+// ============================================================
+async function loadEvidenceFromFile(evidenceFile: string): Promise<{ source: string; content: string; hash: string } | null> {
+  try {
+    const content = await fs.readFile(evidenceFile, "utf-8")
+    const hash = crypto.createHash("sha256").update(content).digest("hex")
+    return { source: evidenceFile, content, hash }
+  } catch {
+    return null
+  }
+}
+
+// ============================================================
+// EXP-REFINE-015: Charter verification command
+// ============================================================
+async function cmdMissionVerifyCharter(flags: Record<string, string | boolean>) {
+  const filePath = typeof flags.file === "string" ? flags.file : ""
+  if (!filePath) {
+    printJson({ status: "error", kind: "CharterVerification", error: "--file is required" })
+    return
+  }
+
+  let content: string
+  try {
+    content = await fs.readFile(path.resolve(filePath), "utf-8")
+  } catch {
+    printJson({ status: "error", kind: "CharterVerification", error: `Cannot read file: ${filePath}` })
+    return
+  }
+
+  const checks: { name: string; passed: boolean; detail: string }[] = []
+
+  // Check required headers
+  checks.push({ name: "has-title", passed: /^#\s+.+$/m.test(content), detail: "Title (H1) present" })
+  checks.push({ name: "has-status", passed: /^\*\*Status:\*\*\s+.+$/m.test(content), detail: "Status header present" })
+  checks.push({ name: "has-objective", passed: /^##\s+(Objective|Purpose|Thesis)/m.test(content), detail: "Objective/Purpose/Thesis section present" })
+
+  // Check dependency headers
+  const { parseDependencyRecord } = await import("../governance/dependency-graph.js")
+  const record = parseDependencyRecord("charter", content)
+
+  checks.push({ name: "depends-on-valid", passed: true, detail: `Depends On: ${record.dependsOn.length > 0 ? record.dependsOn.join(", ") : "none"}` })
+  checks.push({ name: "blocks-valid", passed: true, detail: `Blocks: ${record.blocks.length > 0 ? record.blocks.join(", ") : "none"}` })
+
+  // Check for required sections
+  const sections = ["Deliverables", "Acceptance Criteria", "Out of Scope", "Relationship to Other Work"]
+  for (const section of sections) {
+    const pattern = new RegExp(`^##\\s+${section}`, "m")
+    checks.push({ name: `has-section-${section.toLowerCase().replace(/\s+/g, "-")}`, passed: pattern.test(content), detail: `${section} section present` })
+  }
+
+  const failed = checks.filter((c) => !c.passed)
+
+  printJson({
+    status: failed.length === 0 ? "ok" : "warning",
+    kind: "CharterVerification",
+    file: filePath,
+    totalChecks: checks.length,
+    passed: checks.filter((c) => c.passed).length,
+    failed: failed.length,
+    checks,
+    valid: failed.length === 0,
+  })
 }
 
 async function main() {
@@ -3207,7 +3422,7 @@ async function main() {
   // EXP-FIRSTCONTACT-010: when running as part of an agent first-contact
   // experiment, merge telemetry (agent session and reasoning state) into
   // every JSON response so the CLI acts as an experimental sensor.
-  setAgentTelemetry(flags)
+  setAgentTelemetryFromFlags(flags)
 
   const command = positional[0]
 
@@ -3246,9 +3461,13 @@ async function main() {
       await cmdGovern(flags)
       break
 
-    case "validate":
-      await cmdValidate(flags)
+    case "validate": {
+      const sub = positional[1]
+      if (sub === "dependencies") await cmdValidateDependencies(flags)
+      else if (sub === "artifact") await cmdValidateArtifact(flags)
+      else await cmdValidate(flags)
       break
+    }
 
     case "verify":
       await cmdVerify()
@@ -3264,11 +3483,12 @@ async function main() {
       else if (sub === "project") await cmdMissionProject(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
       else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)
+      else if (sub === "verify-charter") await cmdMissionVerifyCharter(flags)
       else if (sub === "decisions") await cmdMissionDecisions(flags)
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
         )
       break
     }
@@ -3390,5 +3610,5 @@ async function main() {
 }
 
 main().catch((err) => {
-  printError(err instanceof Error ? err.message : String(err), 1)
+  printError(err instanceof Error ? err.message : String(err))
 })

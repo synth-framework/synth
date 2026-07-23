@@ -1,27 +1,31 @@
 // ============================================================
-// ADAPTER: Registry
+// MISSION STUDIO: Adapter Registry
 // ============================================================
-// Central registry for Synth adapters. Core code depends only on
-// adapter interfaces, not on specific implementations.
+// Central registry for Mission Studio planning adapters.
+// These adapters produce observations for mission and expedition
+// planning, not for the discovery pipeline.
+//
+// Core code depends only on adapter interfaces, not on specific
+// implementations.
 // ============================================================
 
 import type { Adapter } from "../types/index.js"
-import { createGitRepositoryAdapter, GitRepositoryAdapter } from "./repository/git.js"
-import { createGitHubAdapter, GitHubAdapterImpl } from "./github/adapter.js"
-import { createTddAdapter, TddAdapterImpl } from "./tdd/adapter.js"
-import { createBddAdapter, BddAdapterImpl } from "./bdd/adapter.js"
-import { createConversationAdapter, ConversationAdapterImpl } from "./conversation/adapter.js"
-import { createDocumentAdapter, DocumentAdapterImpl } from "./document/adapter.js"
-import { createFilesystemAdapter, FilesystemAdapterImpl } from "./filesystem/adapter.js"
-import { createSpecificationAdapter, SpecificationAdapterImpl } from "./specification/adapter.js"
-import { createKnowledgeExtractionAdapter, KnowledgeExtractionAdapterImpl } from "./knowledge/adapter.js"
-import { createConfidenceAdapter, ConfidenceAdapterImpl } from "./confidence/adapter.js"
-import { createDependencyAdapter, DependencyAdapterImpl } from "./dependency/adapter.js"
-import { createArchitectureAdapter, ArchitectureAdapterImpl } from "./architecture/adapter.js"
-import { createMissionBuilderAdapter, MissionBuilderAdapterImpl } from "./mission-builder/adapter.js"
-import { createExpeditionBuilderAdapter, ExpeditionBuilderAdapterImpl } from "./expedition-builder/adapter.js"
-import { createObjectiveBuilderAdapter, ObjectiveBuilderAdapterImpl } from "./objective-builder/adapter.js"
-import { createWizardAdapter, WizardAdapterImpl } from "./wizard/adapter.js"
+import { createGitRepositoryAdapter, GitRepositoryAdapter } from "../adapters/repository/git.js"
+import { createGitHubAdapter, GitHubAdapterImpl } from "../adapters/github/adapter.js"
+import { createTddAdapter, TddAdapterImpl } from "../adapters/tdd/adapter.js"
+import { createBddAdapter, BddAdapterImpl } from "../adapters/bdd/adapter.js"
+import { createConversationAdapter, ConversationAdapterImpl } from "../adapters/conversation/adapter.js"
+import { createDocumentAdapter, DocumentAdapterImpl } from "../adapters/document/adapter.js"
+import { createFilesystemAdapter, FilesystemAdapterImpl } from "../adapters/filesystem/adapter.js"
+import { createSpecificationAdapter, SpecificationAdapterImpl } from "../adapters/specification/adapter.js"
+import { createKnowledgeExtractionAdapter, KnowledgeExtractionAdapterImpl } from "../adapters/knowledge/adapter.js"
+import { createConfidenceAdapter, ConfidenceAdapterImpl } from "../adapters/confidence/adapter.js"
+import { createDependencyAdapter, DependencyAdapterImpl } from "../adapters/dependency/adapter.js"
+import { createArchitectureAdapter, ArchitectureAdapterImpl } from "../adapters/architecture/adapter.js"
+import { createMissionBuilderAdapter, MissionBuilderAdapterImpl } from "../adapters/mission-builder/adapter.js"
+import { createExpeditionBuilderAdapter, ExpeditionBuilderAdapterImpl } from "../adapters/expedition-builder/adapter.js"
+import { createObjectiveBuilderAdapter, ObjectiveBuilderAdapterImpl } from "../adapters/objective-builder/adapter.js"
+import { createWizardAdapter, WizardAdapterImpl } from "../adapters/wizard/adapter.js"
 
 export type AdapterConstructor = () => Adapter
 

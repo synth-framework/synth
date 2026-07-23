@@ -11,8 +11,8 @@
 // rejects tampered or malformed files loudly.
 // ============================================================
 
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import type { StoredSnapshot, ApprovedMissionModelSnapshot, PlanningSession } from "./types.js"
 import { certifySnapshot, migrateStoredSnapshot } from "./snapshot-integrity.js"
 

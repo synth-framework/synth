@@ -40,20 +40,11 @@ export function createEmptyState(): CanonicalState {
     projects: {},
     missions: {},
     expeditions: {},
-    reviewGateExpeditions: {},
     objectives: {},
     discoveries: {},
     decisions: {},
-    intentModels: {},
-    refinementSessions: {},
-    refinementReports: {},
-    alignmentContracts: {},
     referenceEvidence: {},
-    divergenceGates: {},
-    generatedWorkItems: {},
-    executions: {},
-    executionIntents: {},
-    executionGraphs: {},
+    repository: undefined,
     lastEventOffset: 0,
   }
 }
@@ -268,6 +259,16 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_AUTHORIZED": {
+      // Authorized expeditions are recorded as committed without changing the
+      // Expedition status enum (surgical governance change; see Mutation
+      // Authority Invariant in the Constitutional Baseline).
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "committed", updatedAt: event.timestamp }
+      }
+      break
+    }
     case "EXPEDITION_COMMITTED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
@@ -290,315 +291,34 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       break
     }
 
-    // Review gate lifecycle (EXP-PROGRAM-035)
-    case "REVIEW_GATE_OPENED": {
-      const expeditionId = String(payload.expeditionId)
-      const gateId = String(payload.gateId)
-      const reviewPackageId = String(payload.reviewPackageId)
-      const rge = state.reviewGateExpeditions[expeditionId] || {
-        expeditionId,
-        status: "executing",
-        gates: [],
-      }
-      state.reviewGateExpeditions[expeditionId] = {
-        ...rge,
-        status: "awaiting_review",
-        currentGateId: gateId,
-        reviewPackageId,
-        gates: [
-          ...rge.gates.filter((g) => g.id !== gateId),
-          {
-            id: gateId,
-            gateType: "review",
-            expeditionId,
-            policy: (payload.policy as ReviewGatePolicy) ?? { reviewers: ["human"], quorum: "all" },
-            status: "awaiting_review",
-            inputs: [],
-            outputs: [],
-            blocking: true,
-            createdAt: event.timestamp,
-          },
-        ],
-      }
-      break
-    }
-    case "REVIEW_GATE_RESOLVED": {
-      const expeditionId = String(payload.expeditionId)
-      const gateId = String(payload.gateId)
-      const decision = String(payload.decision)
-      const rge = state.reviewGateExpeditions[expeditionId]
-      if (rge) {
-        const nextStatus = decision === "approve" || decision === "approve_with_conditions" ? "approved" : decision === "revision_required" ? "revision_requested" : "rejected"
-        state.reviewGateExpeditions[expeditionId] = {
-          ...rge,
-          status: nextStatus,
-          reviewDecisionId: String(payload.decisionId),
-          gates: rge.gates.map((g) =>
-            g.id === gateId
-              ? { ...g, status: nextStatus as ReviewGateState["status"], decisionId: String(payload.decisionId), resolvedAt: event.timestamp }
-              : g
-          ),
-        }
-      }
-      break
-    }
-    case "REVISION_REQUESTED": {
-      const expeditionId = String(payload.expeditionId)
-      const gateId = String(payload.gateId)
-      const rge = state.reviewGateExpeditions[expeditionId]
-      if (rge) {
-        state.reviewGateExpeditions[expeditionId] = {
-          ...rge,
-          status: "executing",
-          gates: rge.gates.map((g) =>
-            g.id === gateId ? { ...g, status: "revision_requested" as ReviewGateState["status"] } : g
-          ),
-        }
-      }
-      break
-    }
-    case "ACCEPTANCE_GATE_OPENED": {
-      const expeditionId = String(payload.expeditionId)
-      const gateId = String(payload.gateId)
-      const acceptancePackageId = String(payload.acceptancePackageId)
-      const rge = state.reviewGateExpeditions[expeditionId]
-      if (rge) {
-        state.reviewGateExpeditions[expeditionId] = {
-          ...rge,
-          status: "awaiting_acceptance",
-          currentGateId: gateId,
-          acceptancePackageId,
-          gates: [
-            ...rge.gates.filter((g) => g.id !== gateId),
-            {
-              id: gateId,
-              gateType: "acceptance",
-              expeditionId,
-              policy: (payload.policy as ReviewGatePolicy) ?? { reviewers: ["human"], quorum: "all" },
-              status: "awaiting_review",
-              inputs: [],
-              outputs: [],
-              blocking: true,
-              createdAt: event.timestamp,
-            },
-          ],
-        }
-      }
-      break
-    }
-    case "ACCEPTANCE_GATE_RESOLVED": {
-      const expeditionId = String(payload.expeditionId)
-      const gateId = String(payload.gateId)
-      const decision = String(payload.decision)
-      const rge = state.reviewGateExpeditions[expeditionId]
-      if (rge) {
-        const nextStatus = decision === "accepted" ? "accepted" : "rejected"
-        state.reviewGateExpeditions[expeditionId] = {
-          ...rge,
-          status: nextStatus,
-          acceptanceRecordId: String(payload.recordId),
-          gates: rge.gates.map((g) =>
-            g.id === gateId
-              ? { ...g, status: nextStatus as ReviewGateState["status"], decisionId: String(payload.decisionId), resolvedAt: event.timestamp }
-              : g
-          ),
-        }
-      }
-      break
-    }
-    case "EXPEDITION_CLOSED": {
-      const expeditionId = String(payload.expeditionId)
-      const rge = state.reviewGateExpeditions[expeditionId]
-      if (rge) {
-        state.reviewGateExpeditions[expeditionId] = { ...rge, status: "closed" }
-      }
-      break
-    }
-    case "REFINED_INTENT_APPROVED": {
-      const expeditionId = String(payload.expeditionId)
-      const refinedIntentId = String(payload.refinedIntentId)
-      const rge = state.reviewGateExpeditions[expeditionId] ?? {
-        expeditionId,
-        status: "proposed",
-        gates: [],
-      }
-      state.reviewGateExpeditions[expeditionId] = { ...rge, status: "proposed", refinedIntentId }
-      break
-    }
 
-    // Intent refinement lifecycle (EXP-PROGRAM-036)
-    case "INTENT_MODEL_CREATED": {
-      const intentModel = payload.intentModel as IntentModelState
-      if (intentModel) state.intentModels[intentModel.id] = intentModel
-      break
-    }
-    case "INTENT_MODEL_REVISED": {
-      const intentModel = payload.intentModel as IntentModelState
-      if (intentModel) state.intentModels[intentModel.id] = intentModel
-      break
-    }
-    case "INTENT_MODEL_SUBMITTED": {
-      const intentModelId = String(payload.intentModelId)
-      if (state.intentModels[intentModelId]) {
-        state.intentModels[intentModelId] = { ...state.intentModels[intentModelId], status: "sufficient" }
-      }
-      break
-    }
-    case "INTENT_MODEL_SUPERSEDED": {
-      const intentModelId = String(payload.intentModelId)
-      if (state.intentModels[intentModelId]) {
-        state.intentModels[intentModelId] = { ...state.intentModels[intentModelId], status: "superseded" }
-      }
-      break
-    }
-    case "REFINEMENT_SESSION_STARTED": {
-      const sessionId = String(payload.sessionId)
-      state.refinementSessions[sessionId] = {
-        id: sessionId,
-        intentModelId: String(payload.intentModelId),
-        status: "active",
-        questions: Array.isArray(payload.questions) ? payload.questions : [],
-        answers: [],
-        version: 1,
-        createdAt: event.timestamp,
-        updatedAt: event.timestamp,
-      }
-      break
-    }
-    case "REFINEMENT_QUESTION_ANSWERED": {
-      const sessionId = String(payload.sessionId)
-      const session = state.refinementSessions[sessionId]
-      if (session) {
-        session.answers.push({ questionId: String(payload.questionId), text: String(payload.answer) })
-        session.updatedAt = event.timestamp
-      }
-      break
-    }
-    case "REFINEMENT_REPORT_CREATED": {
-      const report = payload.report as RefinementReportState
-      if (report) state.refinementReports[report.id] = report
-      break
-    }
-    case "REFINEMENT_REPORT_APPROVED": {
-      const reportId = String(payload.reportId)
-      const intentModelId = String(payload.intentModelId)
-      if (state.refinementReports[reportId]) {
-        state.refinementReports[reportId] = {
-          ...state.refinementReports[reportId],
-          recommendation: "approve_for_alignment",
-        }
-      }
-      if (state.intentModels[intentModelId]) {
-        state.intentModels[intentModelId] = {
-          ...state.intentModels[intentModelId],
-          status: "approved_for_alignment",
-          refinementApproval: {
-            reportId,
-            decision: "approved_for_alignment",
-            approvedBy: payload.approvedBy as { kind: string; id: string },
-            reason: String(payload.reason),
-            approvedAt: event.timestamp,
-          },
-          updatedAt: event.timestamp,
-        }
-      }
-      break
-    }
-    case "REFINEMENT_REPORT_REJECTED": {
-      const reportId = String(payload.reportId)
-      const intentModelId = String(payload.intentModelId)
-      if (state.intentModels[intentModelId]) {
-        state.intentModels[intentModelId] = {
-          ...state.intentModels[intentModelId],
-          status: "revision_required",
-          refinementApproval: {
-            reportId,
-            decision: "revision_required",
-            rejectedBy: payload.rejectedBy as { kind: string; id: string },
-            reason: String(payload.reason),
-            approvedAt: event.timestamp,
-          },
-          updatedAt: event.timestamp,
-        }
-      }
-      break
-    }
 
-    // Alignment and divergence lifecycle (EXP-PROGRAM-036 Phase 2)
-    case "ALIGNMENT_CONTRACT_CREATED": {
-      const contract = payload.contract as AlignmentContractState
-      if (contract) state.alignmentContracts[contract.id] = contract
-      break
-    }
-    case "ALIGNMENT_CONTRACT_SUBMITTED": {
-      const contractId = String(payload.contractId)
-      if (state.alignmentContracts[contractId]) {
-        state.alignmentContracts[contractId] = { ...state.alignmentContracts[contractId], status: "awaiting_review" }
-      }
-      break
-    }
-    case "ALIGNMENT_CONTRACT_APPROVED": {
-      const contractId = String(payload.contractId)
-      const approvedBy = payload.approvedBy as { kind: string; id: string } | undefined
-      if (state.alignmentContracts[contractId]) {
-        state.alignmentContracts[contractId] = {
-          ...state.alignmentContracts[contractId],
-          status: "approved",
-          approvedBy,
-          approvedAt: event.timestamp,
-        }
-      }
-      break
-    }
-    case "ALIGNMENT_CONTRACT_REJECTED": {
-      const contractId = String(payload.contractId)
-      if (state.alignmentContracts[contractId]) {
-        state.alignmentContracts[contractId] = { ...state.alignmentContracts[contractId], status: "rejected" }
-      }
-      break
-    }
-    case "ALIGNMENT_CONTRACT_SUPERSEDED": {
-      const contractId = String(payload.contractId)
-      if (state.alignmentContracts[contractId]) {
-        state.alignmentContracts[contractId] = { ...state.alignmentContracts[contractId], status: "superseded" }
-      }
-      break
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     case "REFERENCE_EVIDENCE_CREATED": {
       const evidence = payload.evidence as ReferenceEvidenceState
       if (evidence) state.referenceEvidence[evidence.id] = evidence
       break
     }
-    case "REFERENCE_EVIDENCE_BOUND": {
-      const contractId = String(payload.contractId)
-      const evidenceId = String(payload.evidenceId)
-      const contract = state.alignmentContracts[contractId]
-      if (contract && !contract.referenceEvidenceIds.includes(evidenceId)) {
-        contract.referenceEvidenceIds = [...contract.referenceEvidenceIds, evidenceId]
-      }
-      break
-    }
-    case "DIVERGENCE_GATE_OPENED": {
-      const gateId = String(payload.gateId)
-      state.divergenceGates[gateId] = {
-        id: gateId,
-        contractId: String(payload.contractId),
-        intentModelId: String(payload.intentModelId),
-        status: "awaiting_alignment",
-        createdAt: event.timestamp,
-      }
-      break
-    }
-    case "DIVERGENCE_GATE_RESOLVED": {
-      const gateId = String(payload.gateId)
-      const gate = state.divergenceGates[gateId]
-      if (gate) {
-        gate.status = String(payload.decision)
-        gate.reportId = String(payload.reportId)
-        gate.resolvedAt = event.timestamp
-      }
-      break
-    }
+
+
+
 
     case "OBJECTIVE_ADDED": {
       const objective = payload.objective as Objective
@@ -749,131 +469,22 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       break
     }
 
-    case "WORK_ITEM_GENERATED": {
-      const workItem = payload.workItem as GeneratedWorkItem
-      if (workItem) state.generatedWorkItems[workItem.id] = workItem
-      break
-    }
+
 
     case "SYSTEM_GENESIS": {
       state.version = 1
       break
     }
-    case "TRANSACTION_STARTED": {
-      const txId = String(payload.txId)
-      state.executions[txId] = {
-        id: txId,
-        capability: "",
-        intent: {},
-        txId,
-        startedAt: event.timestamp,
-        status: "success",
-      }
-      break
-    }
 
-    // Execution intent lifecycle (EXP-EXEC-001)
-    case "EXECUTION_INTENT_CREATED": {
-      const intentId = String(payload.intentId)
-      state.executionIntents[intentId] = {
-        id: intentId,
-        expeditionId: String(payload.expeditionId),
-        objectiveId: String(payload.objectiveId),
-        workItemId: String(payload.workItemId),
-        sequence: Number(payload.sequence ?? 0),
-        capability: String(payload.capability),
-        operation: String(payload.operation),
-        target: String(payload.target ?? ""),
-        status: "pending",
-        dependencies: Array.isArray(payload.dependencies) ? payload.dependencies.map(String) : [],
-      }
-      break
-    }
-    case "EXECUTION_INTENT_GRAPH_CREATED": {
-      const expeditionId = String(payload.expeditionId)
-      state.executionGraphs[expeditionId] = {
-        expeditionId,
-        branch: String(payload.branch ?? ""),
-        phase: "approved",
-        intentIds: Array.isArray(payload.intentIds) ? payload.intentIds.map(String) : [],
-      }
-      break
-    }
-    case "EXPEDITION_BRANCH_CREATED": {
-      const expeditionId = String(payload.expeditionId)
-      const graph = state.executionGraphs[expeditionId]
-      if (graph) {
-        graph.branch = String(payload.branch)
-        graph.baseCommit = String(payload.baseCommit)
-        graph.phase = "branch-created"
-      }
-      break
-    }
-    case "EXECUTION_INTENT_STARTED": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "running"
-        intent.startedAt = event.timestamp
-      }
-      const graph = state.executionGraphs[String(payload.expeditionId)]
-      if (graph) {
-        graph.phase = "executing"
-        graph.currentIntentId = intentId
-      }
-      break
-    }
-    case "EXECUTION_INTENT_COMPLETED": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "completed"
-        intent.completedAt = event.timestamp
-      }
-      break
-    }
-    case "EXECUTION_INTENT_FAILED": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "failed"
-        intent.failureReason = String(payload.reason)
-        intent.completedAt = event.timestamp
-      }
-      const graph = state.executionGraphs[String(payload.expeditionId)]
-      if (graph) graph.phase = "failed"
-      break
-    }
-    case "EXECUTION_INTENT_ROLLEDBACK": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "rolledback"
-        intent.completedAt = event.timestamp
-      }
-      const graph = state.executionGraphs[String(payload.expeditionId)]
-      if (graph) graph.phase = "rolledback"
-      break
-    }
-    case "EXPEDITION_EXECUTION_COMMITTED": {
-      const expeditionId = String(payload.expeditionId)
-      const graph = state.executionGraphs[expeditionId]
-      if (graph) {
-        graph.phase = "committed"
-        graph.resultCommit = String(payload.commit)
-      }
-      break
-    }
-    case "EXPEDITION_EXECUTION_PROJECTED": {
-      const expeditionId = String(payload.expeditionId)
-      const graph = state.executionGraphs[expeditionId]
-      if (graph) {
-        graph.phase = "projected"
-        graph.projectionType = payload.projectionType as "pull_request" | "patch" | "diff"
-        graph.projectionUrl = payload.projectionUrl ? String(payload.projectionUrl) : undefined
-      }
-      break
-    }
+
+
+
+
+
+
+
+
+
 
     // Repository governance lifecycle (EXP-PROGRAM-028)
     case "REPOSITORY_INITIALIZED": {
@@ -1006,28 +617,19 @@ export function computeStateHash(state: CanonicalState): string {
     projects: Object.keys(state.projects).sort(),
     missions: Object.keys(state.missions).sort(),
     expeditions: Object.keys(state.expeditions).sort(),
-    reviewGateExpeditions: Object.keys(state.reviewGateExpeditions).sort(),
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
-    intentModels: Object.keys(state.intentModels).sort(),
-    refinementSessions: Object.keys(state.refinementSessions).sort(),
-    alignmentContracts: Object.keys(state.alignmentContracts).sort(),
     referenceEvidence: Object.keys(state.referenceEvidence).sort(),
-    divergenceGates: Object.keys(state.divergenceGates).sort(),
   }
   // Backward-compatible hash: only include lifecycle once the project has
   // been initialized. Empty/uninitialized states preserve their legacy hash.
   if (state.lifecycle === "initialized") {
     data.lifecycle = state.lifecycle
   }
-  // Backward-compatible hash: only include new collections when populated.
-  // Logs recorded before EXP-EXEC-001 have empty execution collections.
-  if (Object.keys(state.executionIntents).length > 0) {
-    data.executionIntents = Object.keys(state.executionIntents).sort()
-  }
-  if (Object.keys(state.executionGraphs).length > 0) {
-    data.executionGraphs = Object.keys(state.executionGraphs).sort()
+  // Backward-compatible hash: only include repository when populated.
+  if (state.repository) {
+    data.repository = Object.keys(state.repository.branches).sort()
   }
   const str = JSON.stringify(data)
   let hash = 0

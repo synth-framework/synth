@@ -8,7 +8,7 @@
 
 import type { DiscoveryAdapter, DiscoverySource } from "./types.js"
 
-export type AdapterRegistry = {
+export type DiscoveryAdapterRegistry = {
   /**
    * Return all registered adapters that can handle the given source,
    * ordered deterministically by adapter id.
@@ -19,7 +19,7 @@ export type AdapterRegistry = {
   list(): string[]
 }
 
-export type AdapterRegistryOptions = {
+export type DiscoveryAdapterRegistryOptions = {
   adapters?: DiscoveryAdapter[]
 }
 
@@ -30,8 +30,8 @@ export type AdapterRegistryOptions = {
  * expected to register the adapters they need.
  */
 export function createAdapterRegistry(
-  options: AdapterRegistryOptions = {},
-): AdapterRegistry {
+  options: DiscoveryAdapterRegistryOptions = {},
+): DiscoveryAdapterRegistry {
   const adapters = options.adapters ?? []
 
   return {

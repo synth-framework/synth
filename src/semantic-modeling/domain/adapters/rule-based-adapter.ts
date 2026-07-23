@@ -5,7 +5,7 @@
 // Deterministic for a fixed intent model and adapter version.
 // ============================================================
 
-import crypto from "crypto"
+import { stableId } from "../../../sdk/hashing/index.js"
 import type {
   Aggregate,
   BoundedContext,
@@ -27,11 +27,6 @@ import type { IntentGraph, IntentModel, IntentNode } from "../../intent/types.js
 
 const ADAPTER_ID = "rule-based-domain-modeler"
 const ADAPTER_VERSION = "1.0.0"
-
-function stableId(...parts: string[]): string {
-  const normalized = parts.map((p) => p.toLowerCase().trim()).join("|")
-  return crypto.createHash("sha256").update(normalized).digest("hex").slice(0, 16)
-}
 
 function canonicalName(label: string): string {
   return label

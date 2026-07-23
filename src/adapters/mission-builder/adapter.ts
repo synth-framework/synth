@@ -8,7 +8,7 @@
 // capability signals.
 // ============================================================
 
-import crypto from "crypto"
+import { shortHash } from "../../sdk/hashing/index.js"
 import type {
   AdapterState,
   AdapterHealth,
@@ -57,7 +57,7 @@ export class MissionBuilderAdapterImpl implements MissionBuilderAdapter {
   }
 
   private hash(input: string): string {
-    return crypto.createHash("sha256").update(input).digest("hex").slice(0, 12)
+    return shortHash(input)
   }
 
   async discover(): Promise<AdapterState> {

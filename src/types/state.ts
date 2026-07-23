@@ -97,6 +97,8 @@ export type ReviewGateExpeditionState = {
   refinedIntentId?: string
   reviewPackageId?: string
   reviewDecisionId?: string
+  /** Persisted proposal-evaluation result that produced the review decision. */
+  evaluation?: import("../governance/proposal-evaluation/types.js").EvaluationResult
   acceptancePackageId?: string
   acceptanceRecordId?: string
   currentGateId?: string
@@ -106,9 +108,19 @@ export type ReviewGateExpeditionState = {
 export type ReviewGatePolicy = {
   reviewers: string[]
   quorum: "all" | "any" | number
+  excludeActors?: string[]
   timeout?: number
   revisionLimit?: number
   autoAdvance?: boolean
+}
+
+/** A condition attached to an approve_with_conditions decision */
+export type ReviewCondition = {
+  id: string
+  description: string
+  fulfilled: boolean
+  fulfilledBy?: string
+  fulfilledAt?: number
 }
 
 /** Gate instance state */
@@ -122,10 +134,16 @@ export type ReviewGateState = {
   outputs: string[]
   reviewer?: { kind: string; id: string }
   decisionId?: string
+  decision?: string
+  decisionReason?: string
+  decisionEvidence?: string[]
+  decisionAffectedAssets?: string[]
+  decisionRequiredChanges?: string[]
   parentGateId?: string
   blocking: boolean
   createdAt: number
   resolvedAt?: number
+  conditions?: ReviewCondition[]
 }
 
 /** Intent Model — structured interpretation of raw human intent */
@@ -264,6 +282,20 @@ export type DivergenceGateState = {
   resolvedAt?: number
 }
 
+/** Convergence Certification — post-execution intent fidelity record */
+export type ConvergenceCertificationState = {
+  id: string
+  missionId: string
+  expeditionId: string
+  alignmentContractId: string
+  status: "certified" | "diverged" | "insufficient_evidence"
+  decision: "converged" | "diverged" | "insufficient_evidence"
+  confidence: number
+  failureClasses: string[]
+  certifiedAt: number
+  certifier: { kind: string; id: string }
+}
+
 /** Objective — specific measurable outcome within an expedition */
 export type Objective = {
   id: string
@@ -384,7 +416,11 @@ export type Repository = {
   versionStrategy: "semver" | "calver" | "build" | "custom"
 }
 
-/** Canonical state — the single authoritative materialized projection */
+/** Canonical state — the single authoritative materialized projection.
+ *
+ * Contains only irreducible domain truth. Workflow, governance, execution,
+ * audit, and cache fields are derived separately by buildDerivedState().
+ */
 export type CanonicalState = {
   version: number
   stateHash: string
@@ -395,20 +431,10 @@ export type CanonicalState = {
   projects: Record<string, Project>
   missions: Record<string, Mission>
   expeditions: Record<string, Expedition>
-  reviewGateExpeditions: Record<string, ReviewGateExpeditionState>
   objectives: Record<string, Objective>
   discoveries: Record<string, Discovery>
   decisions: Record<string, Decision>
-  intentModels: Record<string, IntentModelState>
-  refinementSessions: Record<string, RefinementSessionState>
-  refinementReports: Record<string, RefinementReportState>
-  alignmentContracts: Record<string, AlignmentContractState>
   referenceEvidence: Record<string, ReferenceEvidenceState>
-  divergenceGates: Record<string, DivergenceGateState>
-  generatedWorkItems: Record<string, GeneratedWorkItem>
-  executions: Record<string, Execution>
-  executionIntents: Record<string, ExecutionIntentState>
-  executionGraphs: Record<string, ExecutionGraphState>
   repository?: Repository
   lastEventOffset: number
 }

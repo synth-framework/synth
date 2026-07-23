@@ -94,6 +94,7 @@ function makeObservation(
   subject: string,
   evidenceReference: string,
   confidence: PlanningObservationConfidence,
+  timestamp: number,
   overrides: Record<string, unknown> = {},
 ): PlanningObservation {
   return {
@@ -103,7 +104,7 @@ function makeObservation(
     payload: { subject, name: subject, ...overrides },
     evidenceReference,
     confidence,
-    timestamp: Date.now(),
+    timestamp,
   }
 }
 
@@ -130,6 +131,7 @@ export function buildObservations(
   repositoryType: RepositoryType,
   projectModel: ProjectModel,
   findings: { items: Finding[] },
+  timestamp: number,
 ): PlanningObservation[] {
   const observations: PlanningObservation[] = []
   const languages = canonicalLanguages(projectModel)
@@ -150,6 +152,7 @@ export function buildObservations(
       missionSubject,
       "evidence-mission",
       mapConfidenceLabel(projectModel.lifecycleStage.confidence.label),
+      timestamp,
       {
         purpose: missionPurpose,
         lifecycleStage: projectModel.lifecycleStage.value,
@@ -164,6 +167,7 @@ export function buildObservations(
         language,
         "evidence-language",
         "high",
+        timestamp,
         { repositoryType },
       ),
     )
@@ -176,6 +180,7 @@ export function buildObservations(
         framework.name,
         "evidence-framework",
         mapConfidenceLabel(framework.confidence.label),
+        timestamp,
         { repositoryType },
       ),
     )
@@ -188,6 +193,7 @@ export function buildObservations(
         capability.name,
         "evidence-capability",
         capability.available ? "high" : "low",
+        timestamp,
         { available: capability.available, repositoryType },
       ),
     )
@@ -200,6 +206,7 @@ export function buildObservations(
         finding.description,
         finding.id,
         mapConfidenceLabel(finding.confidence.label),
+        timestamp,
         {
           category: finding.category,
           severity: finding.severity,
@@ -238,7 +245,7 @@ export function createCliConsumer(): DiscoveryConsumer<CliConsumerContext, CliCo
       }
 
       const repositoryType = classifyRepository(projectModel)
-      const observations = buildObservations(repositoryType, projectModel, findings)
+      const observations = buildObservations(repositoryType, projectModel, findings, session.completedAt)
 
       return {
         repositoryType,

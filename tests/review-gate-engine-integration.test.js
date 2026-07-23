@@ -2,6 +2,7 @@ import { describe, it } from "node:test"
 import assert from "node:assert"
 import { applyDomain } from "../dist/domain/execution.js"
 import { createEmptyState, rebuildState } from "../dist/runtime/replay.js"
+import { buildDerivedState } from "../dist/state/derived/index.js"
 import { GATE_POLICIES } from "../dist/governance/review-gates.js"
 
 const humanReviewer = { kind: "human", id: "operator" }
@@ -39,10 +40,11 @@ function createRunner() {
   const eventLog = []
   let seq = 0
 
-  return function run(capability, payload) {
+  function run(capability, payload) {
     const state = rebuildState(eventLog)
+    const derivedState = buildDerivedState(eventLog)
     const invocation = { actor: "test", capability, payload }
-    const result = applyDomain(invocation, state, { ...makeCtx(), currentState: state })
+    const result = applyDomain(invocation, state, derivedState, { ...makeCtx(), currentState: state })
     for (const e of result.events) {
       eventLog.push({
         id: `evt-${seq}`,
@@ -57,8 +59,10 @@ function createRunner() {
       })
       seq += 1
     }
-    return rebuildState(eventLog)
+    return buildDerivedState(eventLog)
   }
+  run.getEvents = () => eventLog
+  return run
 }
 
 void describe("Review Gate Engine Integration", () => {

@@ -2,7 +2,7 @@
 // DOMAIN: Execution Logic (Pure)
 // ============================================================
 
-import type { CanonicalState, CapabilityInvocation, CapabilityResult, Discovery, DomainContext, ExecutionContext, IntentModelState } from "../types/index.js"
+import type { CanonicalState, DerivedState, CapabilityInvocation, CapabilityResult, Discovery, DomainContext, ExecutionContext, IntentModelState } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import * as workItemLogic from "./workitem.js"
 import * as planLogic from "./plan.js"
@@ -18,9 +18,10 @@ import {
   engineResolveAcceptanceGate,
   engineCloseExpedition,
   engineApproveRefinedIntent,
+  engineFulfillCondition,
   isBlockedByUpstreamGate,
 } from "../governance/review-gate-engine.js"
-import type { GatePolicy, ReviewDecisionType } from "../governance/review-gates.js"
+import { GATE_POLICIES, type GatePolicy, type ReviewDecisionType } from "../governance/review-gates.js"
 import { createIntentModel, reviseIntentModel, validateIntentModel } from "../governance/intent-model.js"
 import { startRefinement, answerQuestion, submitForRefinedIntent, supersedeRefinement } from "../governance/refinement-layer.js"
 import { createRefinementReport, validateRefinementReport } from "../governance/refinement-report.js"
@@ -33,13 +34,21 @@ import {
   supersedeAlignmentContract,
 } from "../governance/alignment-contract.js"
 import { createReferenceEvidence, validateReferenceEvidence, bindEvidenceToContract } from "../governance/reference-evidence.js"
-import { openDivergenceGate, resolveDivergenceGate, isAligned } from "../governance/divergence-gate.js"
+import { openDivergenceGate, resolveDivergenceGate, resolveDivergenceGateWithProposalEvaluation, isAligned } from "../governance/divergence-gate.js"
+import type { Proposal, ProposalEvaluationRuleSet, EvaluationResult } from "../governance/proposal-evaluation/types.js"
+import { evaluateProposal } from "../governance/proposal-evaluation/index.js"
+import { program027RuleSet } from "../governance/proposal-evaluation/rules/program-027.js"
+import { certifyConvergence, buildObservedFeatures } from "../governance/convergence-certification/index.js"
+import type { CertificationSubject } from "../governance/convergence-certification/types.js"
+import { mapToReviewDecision, mapToAcceptanceDecision } from "../governance/proposal-evaluation/decision-mapping.js"
+import { resolveGovernanceContext } from "../governance/governance-context-resolver.js"
 import { projectMission, ProjectionInvariantError, ProjectionCompletenessError } from "../governance/project-mission.js"
 
-/** Execute domain logic — pure function: (intent, state, ctx) → result */
+/** Execute domain logic — pure function: (intent, state, derivedState, ctx) → result */
 export function applyDomain(
   intent: CapabilityInvocation,
   state: CanonicalState,
+  derivedState: DerivedState,
   ctx: DomainContext,
 ): CapabilityResult {
   switch (intent.capability) {
@@ -188,11 +197,11 @@ export function applyDomain(
       if (!alignmentContractId || alignmentContractId === "undefined") {
         throw new Error("ALIGNMENT_CONTRACT_REQUIRED: ApproveMission requires an alignment contract")
       }
-      const contract = state.alignmentContracts[alignmentContractId]
+      const contract = derivedState.alignmentContracts[alignmentContractId]
       if (!contract) {
         throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${alignmentContractId}`)
       }
-      const alignedGate = Object.values(state.divergenceGates).find(
+      const alignedGate = Object.values(derivedState.divergenceGates).find(
         (g) => g.contractId === alignmentContractId && g.status === "aligned"
       )
       if (!alignedGate) {
@@ -264,7 +273,7 @@ export function applyDomain(
 
     case "StartExpedition": {
       const id = String(intent.payload.id)
-      if (isBlockedByUpstreamGate(state, id)) {
+      if (isBlockedByUpstreamGate(state, derivedState, id)) {
         throw new Error(`UPSTREAM_GATE_BLOCKED: Expedition ${id} cannot start while an upstream gate is unresolved`)
       }
       const existing = state.expeditions[id]
@@ -317,7 +326,7 @@ export function applyDomain(
 
     case "StartRefinementSession": {
       const intentModelId = String(intent.payload.intentModelId)
-      const model = state.intentModels[intentModelId]
+      const model = derivedState.intentModels[intentModelId]
       if (!model) {
         throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
       }
@@ -340,11 +349,11 @@ export function applyDomain(
       const sessionId = String(intent.payload.sessionId)
       const questionId = String(intent.payload.questionId)
       const answer = String(intent.payload.answer)
-      const session = state.refinementSessions[sessionId]
+      const session = derivedState.refinementSessions[sessionId]
       if (!session) {
         throw new Error(`REFINEMENT_SESSION_NOT_FOUND: ${sessionId}`)
       }
-      const model = state.intentModels[session.intentModelId]
+      const model = derivedState.intentModels[session.intentModelId]
       if (!model) {
         throw new Error(`INTENT_MODEL_NOT_FOUND: ${session.intentModelId}`)
       }
@@ -372,7 +381,7 @@ export function applyDomain(
 
     case "SubmitIntentModel": {
       const intentModelId = String(intent.payload.intentModelId)
-      const model = state.intentModels[intentModelId]
+      const model = derivedState.intentModels[intentModelId]
       if (!model) {
         throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
       }
@@ -384,8 +393,8 @@ export function applyDomain(
 
     case "SupersedeIntentModel": {
       const intentModelId = String(intent.payload.intentModelId)
-      const model = state.intentModels[intentModelId]
-      const session = Object.values(state.refinementSessions).find((s) => s.intentModelId === intentModelId)
+      const model = derivedState.intentModels[intentModelId]
+      const session = Object.values(derivedState.refinementSessions).find((s) => s.intentModelId === intentModelId)
       if (!model) {
         throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
       }
@@ -402,12 +411,12 @@ export function applyDomain(
 
     case "CreateRefinementReport": {
       const sessionId = String(intent.payload.sessionId)
-      const session = state.refinementSessions[sessionId]
+      const session = derivedState.refinementSessions[sessionId]
       if (!session) {
         throw new Error(`REFINEMENT_SESSION_NOT_FOUND: ${sessionId}`)
       }
       const intentModelId = session.intentModelId
-      const finalModel = state.intentModels[intentModelId]
+      const finalModel = derivedState.intentModels[intentModelId]
       if (!finalModel) {
         throw new Error(`INTENT_MODEL_NOT_FOUND: ${intentModelId}`)
       }
@@ -442,7 +451,7 @@ export function applyDomain(
 
     case "ApproveRefinementReport": {
       const reportId = String(intent.payload.reportId)
-      const report = state.refinementReports[reportId]
+      const report = derivedState.refinementReports[reportId]
       if (!report) {
         throw new Error(`REFINEMENT_REPORT_NOT_FOUND: ${reportId}`)
       }
@@ -510,7 +519,7 @@ export function applyDomain(
 
     case "SubmitAlignmentContract": {
       const contractId = String(intent.payload.contractId)
-      const contract = state.alignmentContracts[contractId]
+      const contract = derivedState.alignmentContracts[contractId]
       if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
       const submitted = submitAlignmentContract(contract as import("../governance/alignment-contract.js").AlignmentContract)
       return {
@@ -524,7 +533,7 @@ export function applyDomain(
     case "ApproveAlignmentContract": {
       const contractId = String(intent.payload.contractId)
       const reviewer = intent.payload.reviewer as { kind: string; id: string }
-      const contract = state.alignmentContracts[contractId]
+      const contract = derivedState.alignmentContracts[contractId]
       if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
       const approved = approveAlignmentContract(
         contract as import("../governance/alignment-contract.js").AlignmentContract,
@@ -547,16 +556,16 @@ export function applyDomain(
     // Mission Projection capability (EXP-REFINE-014)
     case "ProjectMission": {
       const contractId = String(intent.payload.alignmentContractId)
-      const contractState = state.alignmentContracts[contractId]
+      const contractState = derivedState.alignmentContracts[contractId]
       if (!contractState) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
       if (contractState.status !== "approved") {
         throw new Error(`ALIGNMENT_CONTRACT_NOT_APPROVED: ${contractId}`)
       }
 
-      const intentModelState = state.intentModels[contractState.intentModelId]
+      const intentModelState = derivedState.intentModels[contractState.intentModelId]
       if (!intentModelState) throw new Error(`INTENT_MODEL_NOT_FOUND: ${contractState.intentModelId}`)
 
-      const refinementReportState = Object.values(state.refinementReports).find(
+      const refinementReportState = Object.values(derivedState.refinementReports).find(
         (r) => r.intentModelId === contractState.intentModelId
       )
       if (!refinementReportState) throw new Error(`REFINEMENT_REPORT_NOT_FOUND: ${contractState.intentModelId}`)
@@ -645,7 +654,7 @@ export function applyDomain(
 
     case "OpenDivergenceGate": {
       const contractId = String(intent.payload.contractId)
-      const contract = state.alignmentContracts[contractId]
+      const contract = derivedState.alignmentContracts[contractId]
       if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${contractId}`)
       if (contract.status !== "approved") {
         throw new Error(`ALIGNMENT_CONTRACT_NOT_APPROVED: ${contractId}`)
@@ -667,7 +676,7 @@ export function applyDomain(
       const reviewer = intent.payload.reviewer as { kind: string; id: string }
       const reason = String(intent.payload.reason)
       const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
-      const gate = state.divergenceGates[gateId]
+      const gate = derivedState.divergenceGates[gateId]
       if (!gate) throw new Error(`DIVERGENCE_GATE_NOT_FOUND: ${gateId}`)
       const { gate: resolvedGate, report } = resolveDivergenceGate(
         gate as import("../governance/divergence-gate.js").DivergenceGate,
@@ -691,13 +700,57 @@ export function applyDomain(
       }
     }
 
+    case "EvaluateAndResolveDivergenceGate": {
+      const gateId = String(intent.payload.gateId)
+      const proposal = intent.payload.proposal as Proposal
+      const ruleSetId = String(intent.payload.ruleSetId || "program-027-homepage")
+      const reviewer = intent.payload.reviewer as { kind: string; id: string }
+      const gate = derivedState.divergenceGates[gateId]
+      if (!gate) throw new Error(`DIVERGENCE_GATE_NOT_FOUND: ${gateId}`)
+      const contract = derivedState.alignmentContracts[gate.contractId]
+      if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${gate.contractId}`)
+
+      // For now, only the Program 027 rule set is supported. Future rule sets can be registered here.
+      const ruleSet: ProposalEvaluationRuleSet = ruleSetId === "program-027-homepage"
+        ? program027RuleSet
+        : (() => { throw new Error(`RULE_SET_NOT_FOUND: ${ruleSetId}`) })()
+
+      const { gate: resolvedGate, report, evaluation } = resolveDivergenceGateWithProposalEvaluation(
+        gate as import("../governance/divergence-gate.js").DivergenceGate,
+        proposal,
+        contract as import("../governance/alignment-contract.js").AlignmentContract,
+        ruleSet,
+        reviewer as { kind: "human" | "ai" | "council" | "engine" | "asset_owner"; id: string }
+      )
+
+      return {
+        events: [
+          {
+            type: "DIVERGENCE_GATE_RESOLVED",
+            payload: {
+              gateId: resolvedGate.id,
+              contractId: resolvedGate.contractId,
+              decision: resolvedGate.status,
+              reportId: report.id,
+              evaluation: {
+                decision: evaluation.decision,
+                confidence: evaluation.confidence,
+                matchedDriftClasses: evaluation.matchedDriftClasses,
+                reasoning: evaluation.reasoning,
+              },
+            },
+          },
+        ],
+      }
+    }
+
     // Review gate capabilities (EXP-PROGRAM-035)
     case "ApproveRefinedIntent": {
       const expeditionId = String(intent.payload.expeditionId)
       const refinedIntentInput = intent.payload.refinedIntent as Record<string, unknown>
       const reviewer = intent.payload.reviewer as { kind: string; id: string }
       const policy = intent.payload.policy as Record<string, unknown>
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineApproveRefinedIntent(
         current,
         expeditionId,
@@ -712,7 +765,7 @@ export function applyDomain(
       const expeditionId = String(intent.payload.expeditionId)
       const implementationReference = String(intent.payload.implementationReference)
       const policy = intent.payload.policy as Record<string, unknown>
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineOpenReviewGate(current, expeditionId, implementationReference, policy as GatePolicy)
       return { events: result.events }
     }
@@ -725,7 +778,7 @@ export function applyDomain(
       const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
       const affectedAssets = Array.isArray(intent.payload.affectedAssets) ? intent.payload.affectedAssets.map(String) : []
       const requiredChanges = Array.isArray(intent.payload.requiredChanges) ? intent.payload.requiredChanges.map(String) : []
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineResolveReviewGate(
         current,
         decision,
@@ -744,7 +797,7 @@ export function applyDomain(
       const reviewer = intent.payload.reviewer as { kind: string; id: string }
       const reason = String(intent.payload.reason)
       const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineRequestRevision(
         current,
         gateId,
@@ -758,7 +811,7 @@ export function applyDomain(
     case "OpenAcceptanceGate": {
       const expeditionId = String(intent.payload.expeditionId)
       const policy = intent.payload.policy as Record<string, unknown>
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineOpenAcceptanceGate(current, policy as GatePolicy)
       return { events: result.events }
     }
@@ -769,7 +822,7 @@ export function applyDomain(
       const reviewer = intent.payload.reviewer as { kind: string; id: string }
       const reason = String(intent.payload.reason)
       const evidence = Array.isArray(intent.payload.evidence) ? intent.payload.evidence.map(String) : []
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineResolveAcceptanceGate(
         current,
         decision,
@@ -780,9 +833,127 @@ export function applyDomain(
       return { events: result.events }
     }
 
+    case "EvaluateAndResolveReviewGate": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const implementationReference = String(intent.payload.implementationReference)
+      const proposal = intent.payload.proposal as Proposal
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
+      const { alignmentContract, ruleSet } = resolveGovernanceContext(expeditionId, state, derivedState)
+      const evaluation = evaluateProposal(proposal, alignmentContract, ruleSet)
+      const decision = mapToReviewDecision(evaluation)
+      const openResult = engineOpenReviewGate(current, expeditionId, implementationReference, GATE_POLICIES.automatic())
+      const resolved = engineResolveReviewGate(
+        openResult.state,
+        decision,
+        { kind: "engine", id: "proposal-evaluation" },
+        evaluation.evidence.summary,
+        [...evaluation.reasoning, ...evaluation.matchedDriftClasses.map((id) => `Matched drift class: ${id}`)],
+        evaluation.evidence.violatedContractFields,
+        evaluation.evidence.violatedIntentClauses,
+        evaluation
+      )
+      return { events: [...openResult.events, ...resolved.events] }
+    }
+
+    case "EvaluateAndResolveAcceptanceGate": {
+      const expeditionId = String(intent.payload.expeditionId)
+      let current = ensureReviewGateExpedition(derivedState, expeditionId)
+      if (current.status !== "approved" && current.status !== "awaiting_acceptance") {
+        throw new Error(`ACCEPTANCE_EVALUATION_INVALID_STATE: expedition ${expeditionId} is ${current.status}`)
+      }
+      const evaluation = current.evaluation
+      if (!evaluation) {
+        throw new Error(`ACCEPTANCE_EVALUATION_MISSING: expedition ${expeditionId} has no review evaluation`)
+      }
+      const decision = mapToAcceptanceDecision(evaluation)
+      const events: Array<{ type: string; payload: Record<string, unknown> }> = []
+      if (current.status === "approved") {
+        const openResult = engineOpenAcceptanceGate(current, GATE_POLICIES.automatic())
+        events.push(...openResult.events)
+        current = openResult.state
+      }
+      const resolved = engineResolveAcceptanceGate(
+        current,
+        decision,
+        { kind: "engine", id: "proposal-evaluation" },
+        evaluation.evidence.summary,
+        [...evaluation.reasoning, ...evaluation.matchedDriftClasses.map((id) => `Matched drift class: ${id}`)],
+        evaluation
+      )
+      events.push(...resolved.events)
+      return { events }
+    }
+
+    case "CertifyConvergence": {
+      const missionId = String(intent.payload.missionId)
+      const expeditionId = String(intent.payload.expeditionId)
+      const alignmentContractId = String(intent.payload.alignmentContractId)
+      const mission = state.missions[missionId]
+      if (!mission) throw new Error(`MISSION_NOT_FOUND: ${missionId}`)
+      const contract = derivedState.alignmentContracts[alignmentContractId]
+      if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${alignmentContractId}`)
+
+      const observedFeatures = intent.payload.observedFeatures as Record<string, boolean> | undefined
+      if (!observedFeatures) {
+        throw new Error("OBSERVED_FEATURES_REQUIRED: CertifyConvergence requires observed outcome features")
+      }
+      const observedProposal = buildObservedFeatures(observedFeatures)
+      const ruleSetId = String(intent.payload.ruleSetId || "program-027-homepage")
+      const ruleSet: ProposalEvaluationRuleSet = ruleSetId === "program-027-homepage"
+        ? program027RuleSet
+        : (() => { throw new Error(`RULE_SET_NOT_FOUND: ${ruleSetId}`) })()
+      const evaluation = evaluateProposal(observedProposal, contract as import("../governance/alignment-contract.js").AlignmentContract, ruleSet)
+
+      const subject: CertificationSubject = {
+        missionId,
+        expeditionId,
+        artifacts: Array.isArray(intent.payload.artifacts) ? (intent.payload.artifacts as CertificationSubject["artifacts"]) : [],
+        runtimeEvidence: Array.isArray(intent.payload.runtimeEvidence)
+          ? (intent.payload.runtimeEvidence as CertificationSubject["runtimeEvidence"])
+          : [],
+        executionEvidence: Array.isArray(intent.payload.executionEvidence)
+          ? (intent.payload.executionEvidence as CertificationSubject["executionEvidence"])
+          : [],
+      }
+
+      const result = certifyConvergence(subject, evaluation)
+      const certifier = (intent.payload.certifier as { kind: string; id: string }) ?? { kind: "engine", id: "convergence-certification" }
+      const eventType = result.decision === "converged" ? "CONVERGENCE_CERTIFIED" : "CONVERGENCE_DIVERGED"
+
+      return {
+        events: [
+          {
+            type: eventType,
+            payload: {
+              certificationId: `convergence-certification-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+              missionId,
+              expeditionId,
+              alignmentContractId,
+              decision: result.decision,
+              confidence: result.confidence,
+              failureClasses: result.failureClasses,
+              certifier,
+              result,
+            },
+          },
+        ],
+        result,
+      }
+    }
+
+    case "FulfillCondition": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const gateId = String(intent.payload.gateId)
+      const conditionId = String(intent.payload.conditionId)
+      const fulfilledBy = String(intent.payload.fulfilledBy || intent.actor || "unknown")
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
+      const result = engineFulfillCondition(current, gateId, conditionId, fulfilledBy)
+      return { events: result.events }
+    }
+
     case "CloseExpedition": {
       const expeditionId = String(intent.payload.expeditionId)
-      const current = ensureReviewGateExpedition(state, expeditionId)
+      const current = ensureReviewGateExpedition(derivedState, expeditionId)
       const result = engineCloseExpedition(current)
       return { events: result.events }
     }

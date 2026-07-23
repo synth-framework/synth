@@ -49,10 +49,11 @@ export type Postcondition = {
   evaluate: (events: SynthEvent[], state: CanonicalState) => boolean
 }
 
-/** Capability handler — pure function that computes events from intent + state + context */
+/** Capability handler — pure function that computes events from intent + state + derived state + context */
 export type CapabilityHandler = (ctx: {
   intent: CapabilityInvocation
   state: CanonicalState
+  derivedState: import("./derived-state.js").DerivedState
   executionCtx: DomainContext
 }) => CapabilityResult
 
@@ -63,6 +64,7 @@ export type CapabilityResult = {
     payload: Record<string, unknown>
   }>
   result?: unknown
+  mutations?: import("./transaction.js").MutationRequest[]
 }
 
 /** Capability registry — stores all registered capabilities */

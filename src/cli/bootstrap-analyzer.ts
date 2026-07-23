@@ -147,7 +147,7 @@ export async function analyzeRepository(targetDir: string): Promise<RepositoryAn
   }
 
   const repositoryType = consumerOutput.repositoryType as RepositoryType
-  const observations = buildObservations(repositoryType, projectModel, findings)
+  const observations = buildObservations(repositoryType, projectModel, findings, session.completedAt)
 
   const agentContext = generateAgentContext(projectModel, session, sourceHistory)
 

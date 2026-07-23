@@ -1,7 +1,8 @@
 // EXP-EXEC-001 — Execution Intent Model regression tests
-// Verifies that execution-intent lifecycle events update canonical state.
+// Verifies that execution-intent lifecycle events update derived state.
 
 import { rebuildState } from "../dist/runtime/replay.js"
+import { buildDerivedState } from "../dist/state/derived/index.js"
 import assert from "node:assert"
 import test from "node:test"
 
@@ -64,14 +65,15 @@ test("Execution Intent Model: lifecycle events update state", () => {
   ]
 
   const state = rebuildState(events)
+  const derived = buildDerivedState(events)
 
-  assert.strictEqual(state.executionIntents["I-1"].status, "completed")
-  assert.strictEqual(state.executionIntents["I-1"].capability, "filesystem")
-  assert.strictEqual(state.executionGraphs["E-1"].phase, "projected")
-  assert.strictEqual(state.executionGraphs["E-1"].branch, "exp/e-1-execution")
-  assert.strictEqual(state.executionGraphs["E-1"].baseCommit, "abc123")
-  assert.strictEqual(state.executionGraphs["E-1"].resultCommit, "def456")
-  assert.strictEqual(state.executionGraphs["E-1"].projectionType, "pull_request")
+  assert.strictEqual(derived.executionIntents["I-1"].status, "completed")
+  assert.strictEqual(derived.executionIntents["I-1"].capability, "filesystem")
+  assert.strictEqual(derived.executionGraphs["E-1"].phase, "projected")
+  assert.strictEqual(derived.executionGraphs["E-1"].branch, "exp/e-1-execution")
+  assert.strictEqual(derived.executionGraphs["E-1"].baseCommit, "abc123")
+  assert.strictEqual(derived.executionGraphs["E-1"].resultCommit, "def456")
+  assert.strictEqual(derived.executionGraphs["E-1"].projectionType, "pull_request")
 })
 
 test("Execution Intent Model: failure and rollback update phase", () => {
@@ -109,8 +111,9 @@ test("Execution Intent Model: failure and rollback update phase", () => {
   ]
 
   const state = rebuildState(events)
+  const derived = buildDerivedState(events)
 
-  assert.strictEqual(state.executionIntents["I-1"].status, "rolledback")
-  assert.strictEqual(state.executionIntents["I-1"].failureReason, "permission denied")
-  assert.strictEqual(state.executionGraphs["E-1"].phase, "rolledback")
+  assert.strictEqual(derived.executionIntents["I-1"].status, "rolledback")
+  assert.strictEqual(derived.executionIntents["I-1"].failureReason, "permission denied")
+  assert.strictEqual(derived.executionGraphs["E-1"].phase, "rolledback")
 })

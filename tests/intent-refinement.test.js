@@ -2,6 +2,7 @@ import { describe, it } from "node:test"
 import assert from "node:assert"
 import { applyDomain } from "../dist/domain/execution.js"
 import { createEmptyState, rebuildState } from "../dist/runtime/replay.js"
+import { buildDerivedState } from "../dist/state/derived/index.js"
 import { createIntentModel, validateIntentModel, computeConfidence } from "../dist/governance/intent-model.js"
 import { startRefinement, answerQuestion, submitForRefinedIntent } from "../dist/governance/refinement-layer.js"
 
@@ -39,10 +40,11 @@ function createRunner() {
   const eventLog = []
   let seq = 0
 
-  return function run(capability, payload) {
+  function run(capability, payload) {
     const state = rebuildState(eventLog)
+    const derivedState = buildDerivedState(eventLog)
     const invocation = { actor: "test", capability, payload }
-    const result = applyDomain(invocation, state, { ...makeCtx(), currentState: state })
+    const result = applyDomain(invocation, state, derivedState, { ...makeCtx(), currentState: state })
     for (const e of result.events) {
       eventLog.push({
         id: `evt-${seq}`,
@@ -59,6 +61,8 @@ function createRunner() {
     }
     return rebuildState(eventLog)
   }
+  run.getEvents = () => eventLog
+  return run
 }
 
 void describe("Intent Model", () => {
@@ -128,8 +132,9 @@ void describe("Refinement Layer", () => {
 void describe("Intent Refinement Domain Integration", () => {
   void it("creates an Intent Model via domain capability", () => {
     const run = createRunner()
-    const state = run("CreateIntentModel", { input: makeInput() })
-    const model = Object.values(state.intentModels)[0]
+    run("CreateIntentModel", { input: makeInput() })
+    const derived = buildDerivedState(run.getEvents())
+    const model = Object.values(derived.intentModels)[0]
     assert.ok(model)
     assert.strictEqual(model.status, "sufficient")
   })
@@ -137,17 +142,19 @@ void describe("Intent Refinement Domain Integration", () => {
   void it("runs a clarification session and submits the model", () => {
     const run = createRunner()
 
-    let state = run("CreateIntentModel", {
+    run("CreateIntentModel", {
       input: {
         rawIntentReference: "homepage-request",
         explicitObjectives: ["Build a homepage"],
       },
     })
-    const model = Object.values(state.intentModels)[0]
+    let derived = buildDerivedState(run.getEvents())
+    const model = Object.values(derived.intentModels)[0]
     assert.ok(model.confidenceLevel < 0.8)
 
-    state = run("StartRefinementSession", { intentModelId: model.id })
-    const session = Object.values(state.refinementSessions)[0]
+    run("StartRefinementSession", { intentModelId: model.id })
+    derived = buildDerivedState(run.getEvents())
+    const session = Object.values(derived.refinementSessions)[0]
     assert.ok(session.questions.length > 0)
 
     const questions = session.questions
@@ -160,26 +167,29 @@ void describe("Intent Refinement Domain Integration", () => {
       if (question.id === "q-problem") answer = "SYNTH needs a public entry point"
       if (question.id === "q-out-of-scope") answer = "Backend runtime"
       if (question.id === "q-risk") answer = "Performance on low-end devices"
-      state = run("AnswerRefinementQuestion", {
+      run("AnswerRefinementQuestion", {
         sessionId: session.id,
         questionId: question.id,
         answer,
       })
     }
 
-    const answeredModel = Object.values(state.intentModels)[0]
+    derived = buildDerivedState(run.getEvents())
+    const answeredModel = Object.values(derived.intentModels)[0]
     assert.ok(answeredModel.confidenceLevel >= 0.8)
 
-    state = run("SubmitIntentModel", { intentModelId: answeredModel.id })
-    assert.strictEqual(Object.values(state.intentModels)[0].status, "sufficient")
+    run("SubmitIntentModel", { intentModelId: answeredModel.id })
+    derived = buildDerivedState(run.getEvents())
+    assert.strictEqual(Object.values(derived.intentModels)[0].status, "sufficient")
   })
 
   void it("rejects submission of an insufficient model", () => {
     const run = createRunner()
-    const state = run("CreateIntentModel", {
+    run("CreateIntentModel", {
       input: { rawIntentReference: "x", explicitObjectives: ["Build a homepage"] },
     })
-    const model = Object.values(state.intentModels)[0]
+    const derived = buildDerivedState(run.getEvents())
+    const model = Object.values(derived.intentModels)[0]
     assert.throws(() => run("SubmitIntentModel", { intentModelId: model.id }), /confidence is too low/)
   })
 })

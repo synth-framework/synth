@@ -8,6 +8,7 @@ import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
 import { bootstrap } from "../dist/core/bootstrap.js"
+import { buildDerivedState } from "../dist/state/derived/index.js"
 import { createAlignedContract, createAlignmentContract, createIntentModel, approveAlignmentContract } from "./helpers/alignment-fixture.js"
 
 let ctxCounter = 0
@@ -197,8 +198,9 @@ test("Divergence gate events are replayable", async () => {
   assert.equal(resolved.payload.decision, "aligned", "Resolved decision should be aligned")
 
   const state = await ctx.runtime.getState()
-  assert.equal(state.alignmentContracts[contractId].status, "approved", "Contract should be approved in replay state")
-  assert.equal(state.divergenceGates[gateId].status, "aligned", "Gate should be aligned in replay state")
+  const derived = buildDerivedState(events)
+  assert.equal(derived.alignmentContracts[contractId].status, "approved", "Contract should be approved in derived state")
+  assert.equal(derived.divergenceGates[gateId].status, "aligned", "Gate should be aligned in derived state")
 })
 
 await run()

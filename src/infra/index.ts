@@ -8,7 +8,6 @@ export * from "./checkpoint-store.js"
 export * from "./git-adapter.js"
 export * from "./filesystem.js"
 export * from "./event-store.guard.js"
-export * from "./paths.js"
 
 import { EventStore, InMemoryEventStore, PartitionStore, SegmentStore } from "./event-store.js"
 import { StateStore, InMemoryStateStore, type IStateStore } from "./state-store.js"
@@ -51,11 +50,11 @@ export async function createInfra(config: InfraConfig = {}): Promise<Infra> {
       ? EventStore.createAuthorized(config.eventLogPath)
       : new InMemoryEventStore()
   )
-  const partitionStore = new PartitionStore(partitionCount, config.streamDir)
-  const segmentStore = new SegmentStore(1000, config.streamDir)
+  const partitionStore = PartitionStore.createAuthorized(partitionCount, config.streamDir)
+  const segmentStore = SegmentStore.createAuthorized(1000, config.streamDir)
 
   const stateStore: IStateStore = isFile
-    ? new StateStore(config.statePath)
+    ? StateStore.createAuthorized(config.statePath)
     : new InMemoryStateStore()
 
   const checkpointStore: ICheckpointStore = isFile

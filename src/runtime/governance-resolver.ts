@@ -18,10 +18,10 @@
 import type { SynthEvent, CanonicalState, Mission } from "../types/index.js"
 import { rebuildState, createEmptyState } from "./replay.js"
 import {
-  getRuntimeDataDir,
-  getRuntimeSnapshotDir,
+  dataDir,
+  snapshotsDir,
   hasManifest,
-} from "../infra/paths.js"
+} from "../sdk/paths/index.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
@@ -37,8 +37,8 @@ import type {
 import { buildCanonicalState } from "./canonical-state-builder.js"
 import type { NormalizationNotice } from "./historical-normalizer.js"
 import type { ReferenceResolutionNotice } from "./reference-resolver.js"
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import { loadHistoricalAliasRegistry, type HistoricalAliasRegistry } from "./historical-aliases.js"
 
 export type ResolveGovernanceContextOptions = {
@@ -133,32 +133,7 @@ function mergeSnapshotState(
   }
 
   const approvedMissions = getApprovedMissionsFromSnapshots(storedSnapshots)
-  const base: CanonicalState = state ?? {
-    version: 1,
-    stateHash: "snapshot-derived",
-    lifecycle: "uninitialized",
-    workItems: {},
-    plans: {},
-    milestones: {},
-    projects: {},
-    missions: {},
-    expeditions: {},
-    reviewGateExpeditions: {},
-    objectives: {},
-    discoveries: {},
-    decisions: {},
-    intentModels: {},
-    refinementSessions: {},
-    refinementReports: {},
-    alignmentContracts: {},
-    referenceEvidence: {},
-    divergenceGates: {},
-    generatedWorkItems: {},
-    executions: {},
-    executionIntents: {},
-    executionGraphs: {},
-    lastEventOffset: 0,
-  }
+  const base: CanonicalState = state ?? createEmptyState()
 
   for (const mission of approvedMissions) {
     if (base.missions[mission.id]) {
@@ -272,18 +247,18 @@ export async function resolveGovernanceContext(
 ): Promise<GovernanceResolutionResult> {
   const manifestExists = hasManifest(rootDir)
 
-  const dataDir = options?.dataDir ?? getRuntimeDataDir(rootDir)
+  const resolvedDataDir = options?.dataDir ?? dataDir(rootDir)
   const rootFs = createPosixFilesystemProvider(rootDir)
-  const dataFs = createPosixFilesystemProvider(dataDir)
+  const dataFs = createPosixFilesystemProvider(resolvedDataDir)
 
   const events = await readEventLog(dataFs, "event-log.jsonl")
   const persistedState = (await readJsonMaybe<CanonicalState>(dataFs, "canonical-state.json")) ?? null
-  const decisions = await listDecisions(dataDir, undefined, dataFs)
+  const decisions = await listDecisions(resolvedDataDir, undefined, dataFs)
   const historicalAliases = await loadHistoricalAliasRegistry(dataFs)
 
   let snapshots: StoredSnapshot[] = []
   try {
-    snapshots = await createFileSystemSnapshotStore(getRuntimeSnapshotDir(rootDir)).list()
+    snapshots = await createFileSystemSnapshotStore(snapshotsDir(rootDir)).list()
   } catch {
     snapshots = []
   }

@@ -21,10 +21,11 @@ import { RuntimeEngine } from "../runtime/engine.js"
 import { createAPI } from "../api/index.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import { createCapabilityRegistry } from "../capability/index.js"
-import { createAdapterRegistry } from "../adapters/registry.js"
+import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { GenesisIntake } from "../genesis/index.js"
 import { Registry } from "../capability/registry.js"
-import { getRuntimeSnapshotDir } from "../infra/paths.js"
+import { snapshotsDir } from "../sdk/paths/index.js"
+import { root } from "../sdk/workspace/index.js"
 import { ExecutionGate } from "../control/execution-gate.js"
 import { Tracer, Logger } from "../observability/tracer.js"
 import { GovernanceEngine } from "../governance/governance-engine.js"
@@ -149,7 +150,7 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
   // Governed projects persist under `.synth/data/snapshots`. Ungoverned
   // trees (including the SYNTH source repo) fall back to the legacy
   // repo-root `data/snapshots` path until they are initialized.
-  const snapshotStore = createFileSystemSnapshotStore(getRuntimeSnapshotDir(process.cwd()))
+  const snapshotStore = createFileSystemSnapshotStore(snapshotsDir(root()))
   const api = createAPI(gate, planning, missionStudio, adapterRegistry, snapshotStore)
 
   // === STEP 13: GENESIS (through the single mutation authority) ===

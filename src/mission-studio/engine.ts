@@ -51,16 +51,17 @@ export class MissionStudio {
   // Session lifecycle
   // ============================================================
 
-  startSession(observations: PlanningObservation[]): PlanningSession {
+  startSession(observations: PlanningObservation[], timestamp?: number): PlanningSession {
     const normalized = this.intake.normalize(observations)
     const evidence = this.intake.buildEvidenceCollection(normalized)
     const unknowns = this.generateUnknowns(normalized, evidence)
     const confidence = this.computeConfidence(normalized, evidence, unknowns)
     const worldModel = this.buildWorldModel(normalized, evidence, unknowns, confidence)
+    const now = timestamp ?? Date.now()
 
     return {
       id: this.sessionId(normalized),
-      createdAt: Date.now(),
+      createdAt: now,
       observations: normalized,
       evidence,
       questions: this.generateQuestions(unknowns, normalized),
@@ -420,12 +421,13 @@ export class MissionStudio {
   // Wizard / Planning Operations
   // ============================================================
 
-  plan(session: PlanningSession, operation: PlanningOperation): MissionStudioResult<unknown> {
+  plan(session: PlanningSession, operation: PlanningOperation, timestamp?: number): MissionStudioResult<unknown> {
+    const now = timestamp ?? Date.now()
     switch (operation.kind) {
       case "ApproveProposal":
-        return this.approveProposal(session, operation.proposalId)
+        return this.approveProposal(session, operation.proposalId, now)
       case "RejectProposal":
-        return this.rejectProposal(session, operation.proposalId)
+        return this.rejectProposal(session, operation.proposalId, now)
       case "MergeObjectives":
         return this.mergeObjectives(session, operation.sourceIds, operation.targetName)
       case "SplitObjective":
@@ -433,25 +435,25 @@ export class MissionStudio {
       case "RenameComponent":
         return this.renameNode(session, operation.nodeId, operation.newName)
       case "AcceptObservation":
-        return this.acceptObservation(session, operation.observationId)
+        return this.acceptObservation(session, operation.observationId, now)
       case "RejectObservation":
-        return this.rejectObservation(session, operation.observationId)
+        return this.rejectObservation(session, operation.observationId, now)
       case "AddConstraint":
         return this.addConstraint(session, operation.name, operation.description, operation.observationIds)
       case "RemoveAssumption":
-        return this.removeAssumption(session, operation.nodeId)
+        return this.removeAssumption(session, operation.nodeId, now)
       case "RequestEvidence":
         return this.requestEvidence(session, operation.question, operation.reason)
       case "GenerateClarificationQuestions":
         return this.regenerateQuestions(session)
       case "PrioritizeExpeditions":
-        return this.prioritizeExpeditions(session, operation.expeditionIds)
+        return this.prioritizeExpeditions(session, operation.expeditionIds, now)
       case "PrioritizeObjectives":
-        return this.prioritizeObjectives(session, operation.objectiveIds)
+        return this.prioritizeObjectives(session, operation.objectiveIds, now)
       case "EstimateRisk":
-        return this.estimateRisk(session, operation.nodeId, operation.severity)
+        return this.estimateRisk(session, operation.nodeId, operation.severity, now)
       case "RecordDecision":
-        return this.recordDecision(session, operation.type, operation.rationale, operation.evidenceRefs)
+        return this.recordDecision(session, operation.type, operation.rationale, operation.evidenceRefs, now)
       default:
         return { success: false, session, error: "Unknown planning operation" }
     }
@@ -475,6 +477,7 @@ export class MissionStudio {
     session: PlanningSession,
     parentSnapshot?: ApprovedMissionModelSnapshot,
     actor?: string,
+    timestamp?: number,
   ): MissionStudioResult<ApprovedMissionModelSnapshot> {
     // Computed confidence is authoritative (EXP-TRUST-002): the stored
     // field rides an editable artifact and is never trusted. Every return
@@ -510,6 +513,7 @@ export class MissionStudio {
       }
     }
 
+    const now = timestamp ?? Date.now()
     const snapshot: ApprovedMissionModelSnapshot = {
       id: this.hash(`approved-${session.id}-${session.worldModel.version}`),
       version: SNAPSHOT_SCHEMA_VERSION,
@@ -517,7 +521,7 @@ export class MissionStudio {
       sessionId: session.id,
       worldModel: session.worldModel,
       proposals,
-      timestamp: Date.now(),
+      timestamp: now,
       lineage: undefined,
     }
 
@@ -538,14 +542,14 @@ export class MissionStudio {
   // Helpers
   // ============================================================
 
-  private approveProposal(session: PlanningSession, proposalId: string): MissionStudioResult<unknown> {
+  private approveProposal(session: PlanningSession, proposalId: string, timestamp: number): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-approve-${proposalId}`),
       type: "ApproveProposal",
       rationale: `Approved proposal ${proposalId}`,
       evidenceRefs: [],
       observationIds: [],
-      timestamp: Date.now(),
+      timestamp,
     }
     return {
       success: true,
@@ -553,14 +557,14 @@ export class MissionStudio {
     }
   }
 
-  private rejectProposal(session: PlanningSession, proposalId: string): MissionStudioResult<unknown> {
+  private rejectProposal(session: PlanningSession, proposalId: string, timestamp: number): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-reject-${proposalId}`),
       type: "RejectProposal",
       rationale: `Rejected proposal ${proposalId}`,
       evidenceRefs: [],
       observationIds: [],
-      timestamp: Date.now(),
+      timestamp,
     }
     return {
       success: true,
@@ -632,26 +636,26 @@ export class MissionStudio {
     return { success: true, session: this.updateWorldModel(session, nodes) }
   }
 
-  private acceptObservation(session: PlanningSession, observationId: string): MissionStudioResult<unknown> {
+  private acceptObservation(session: PlanningSession, observationId: string, timestamp: number): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-accept-obs-${observationId}`),
       type: "AcceptObservation",
       rationale: `Accepted observation ${observationId}`,
       evidenceRefs: [session.evidence.byObservationId.get(observationId)?.id].filter(Boolean) as string[],
       observationIds: [observationId],
-      timestamp: Date.now(),
+      timestamp,
     }
     return { success: true, session: this.addDecision(session, decision) }
   }
 
-  private rejectObservation(session: PlanningSession, observationId: string): MissionStudioResult<unknown> {
+  private rejectObservation(session: PlanningSession, observationId: string, timestamp: number): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-reject-obs-${observationId}`),
       type: "RejectObservation",
       rationale: `Rejected observation ${observationId}`,
       evidenceRefs: [],
       observationIds: [observationId],
-      timestamp: Date.now(),
+      timestamp,
     }
     return { success: true, session: this.addDecision(session, decision) }
   }
@@ -678,7 +682,7 @@ export class MissionStudio {
     return { success: true, session: this.updateWorldModel(session, nodes) }
   }
 
-  private removeAssumption(session: PlanningSession, nodeId: string): MissionStudioResult<unknown> {
+  private removeAssumption(session: PlanningSession, nodeId: string, timestamp: number): MissionStudioResult<unknown> {
     const nodes = new Map(session.worldModel.nodes)
     const node = nodes.get(nodeId)
     if (!node || node.kind !== "assumption") return { success: false, session, error: "Assumption not found" }
@@ -690,7 +694,7 @@ export class MissionStudio {
       rationale: `Removed assumption ${nodeId}`,
       evidenceRefs: node.evidenceRefs,
       observationIds: node.observationIds,
-      timestamp: Date.now(),
+      timestamp,
     }
     return { success: true, session: this.addDecision(this.updateWorldModel(session, nodes), decision) }
   }
@@ -728,27 +732,27 @@ export class MissionStudio {
     }
   }
 
-  private prioritizeExpeditions(session: PlanningSession, expeditionIds: string[]): MissionStudioResult<unknown> {
+  private prioritizeExpeditions(session: PlanningSession, expeditionIds: string[], timestamp: number): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-prioritize-${expeditionIds.sort().join("-")}`),
       type: "PrioritizeExpeditions",
       rationale: `Prioritized expeditions: ${expeditionIds.join(", ")}`,
       evidenceRefs: [],
       observationIds: expeditionIds,
-      timestamp: Date.now(),
+      timestamp,
       metadata: { order: expeditionIds },
     }
     return { success: true, session: this.addDecision(session, decision) }
   }
 
-  private prioritizeObjectives(session: PlanningSession, objectiveIds: string[]): MissionStudioResult<unknown> {
+  private prioritizeObjectives(session: PlanningSession, objectiveIds: string[], timestamp: number): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-prioritize-obj-${objectiveIds.sort().join("-")}`),
       type: "PrioritizeObjectives",
       rationale: `Prioritized objectives: ${objectiveIds.join(", ")}`,
       evidenceRefs: [],
       observationIds: objectiveIds,
-      timestamp: Date.now(),
+      timestamp,
       metadata: { order: objectiveIds },
     }
     return { success: true, session: this.addDecision(session, decision) }
@@ -758,6 +762,7 @@ export class MissionStudio {
     session: PlanningSession,
     nodeId: string,
     severity: "low" | "medium" | "high" | "critical",
+    timestamp: number,
   ): MissionStudioResult<unknown> {
     const nodes = new Map(session.worldModel.nodes)
     const node = nodes.get(nodeId)
@@ -771,7 +776,7 @@ export class MissionStudio {
       rationale: `Estimated risk ${nodeId} as ${severity}`,
       evidenceRefs: node.evidenceRefs,
       observationIds: node.observationIds,
-      timestamp: Date.now(),
+      timestamp,
     }
     return { success: true, session: this.addDecision(this.updateWorldModel(session, nodes), decision) }
   }
@@ -781,6 +786,7 @@ export class MissionStudio {
     type: string,
     rationale: string,
     evidenceRefs: string[],
+    timestamp: number,
   ): MissionStudioResult<unknown> {
     const decision: PlanningDecision = {
       id: this.hash(`decision-${type}-${rationale}`),
@@ -788,7 +794,7 @@ export class MissionStudio {
       rationale,
       evidenceRefs,
       observationIds: [],
-      timestamp: Date.now(),
+      timestamp,
     }
     return { success: true, session: this.addDecision(session, decision) }
   }
