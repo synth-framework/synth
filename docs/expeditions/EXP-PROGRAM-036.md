@@ -1,6 +1,6 @@
 # EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 
-**Status:** Proposed  
+**Status:** Active — Intent Pipeline Built, Convergence Certification Implemented  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -10,6 +10,25 @@
 **Constitutional Impact:** Medium  
 **Public Impact:** Medium  
 **Execution Impact:** High
+
+---
+
+## Implementation Status
+
+This program was originally chartered as a design-then-build program with 5 phases. Since the charter was written, the following has been implemented through GOVERNABILITY and REFINE expeditions:
+
+| Component | Status | Evidence |
+|---|---|---|
+| **Intent Model artifacts** | ✅ Complete | Domain types in `types.ts`, evidence docs for Program 027 |
+| **Refinement Session lifecycle** | ✅ Complete | `StartRefinementSession`, `AnswerRefinementQuestion` in `execution.ts` |
+| **Alignment Contract** | ✅ Complete | Domain types, Program 027 contract `alignment-contract.json` |
+| **Divergence Gate + Proposal Evaluation** | ✅ Complete | `evaluateProposal()`, `EvaluateAndResolveDivergenceGate`, 12 rules, 8 drift classes |
+| **Convergence Certification** | ✅ Complete | `src/governance/convergence-certification/` — 4 dimensions, explainability, tests |
+| **Reference Evidence Binding** | ✅ Complete | Type infrastructure |
+| **Regression Certification** | ✅ Partial Pass | EXP-GOVERNABILITY-001: 8/8 drift classes rejected, 4/4 valid branches admitted |
+| **Governability enforcement tests** | ✅ Complete | `tests/convergence-certification.test.js` (9 tests), `tests/proposal-evaluation.test.js` (15 tests) |
+
+**Remaining work:** Interactive Decision Acquisition, full-scenario certification through EXP-REFINE-009, Program 027 pilot validation.
 
 ---
 
@@ -121,44 +140,40 @@ Governance Layer
 
 ## Execution Phases
 
-Program 036 is executed in five dependency-ordered phases:
+Program 036 is executed in five dependency-ordered phases. Phases 0-2 are substantially complete. Phase 3 (Interactive Refinement) is deferred. Phase 4 (Integration & Certification) is in progress.
 
-- **Phase 0** defines the canonical governance lifecycle state machine that all subsequent phases obey.
-- **Phase 1** defines the vocabulary and artifacts of intent modeling.
-- **Phase 2** defines the Alignment Contract and the Divergence Gate that validates it.
-- **Phase 3** introduces Interactive Decision Acquisition to eliminate residual uncertainty through structured, adapter-independent interactions.
-- **Phase 4** binds reference evidence, certifies convergence, integrates refinement into Mission Studio, and uses Program 027 as the pilot.
+### Phase 0 — Governance Lifecycle Specification — ✅ Complete, EXP-REFINE-015 Pending
 
-### Phase 0 — Governance Lifecycle Specification
-
-Produce the canonical specification for SYNTH's full governance lifecycle before any further implementation proceeds. This phase ensures all gates, states, transitions, satisfiers, events, and replay expectations are explicit and reviewable.
+Canonical specification for SYNTH's full governance lifecycle. Evidence-grounded Mission drafting is a pending extension.
 
 ```text
 EXP-REFINE-012  Governance Lifecycle State Machine
+EXP-REFINE-015  Evidence-Grounded Mission Drafting
 ```
 
-### Phase 1 — Refinement Model
+### Phase 1 — Refinement Model — ✅ Substantially Complete, EXP-REFINE-016 Pending
 
-Define the canonical refinement process, artifacts, and lifecycle.
+Canonical refinement process, artifacts, and lifecycle defined and implemented. Artifact scope and completion validation is a pending extension.
 
 ```text
-EXP-REFINE-011  Intent Interpretation Model
-EXP-REFINE-001  Refinement Layer Model
-EXP-REFINE-004  Refinement Questions Engine
+EXP-REFINE-011  Intent Interpretation Model    ← Intent model types exist
+EXP-REFINE-001  Refinement Layer Model          ← RefinementSession/Report types exist
+EXP-REFINE-004  Refinement Questions Engine     ← Questions infrastructure exists
+EXP-REFINE-016  Artifact Scope & Completion Validation
 ```
 
-### Phase 2 — Alignment Artifacts
+### Phase 2 — Alignment Artifacts — ✅ Complete
 
-Define the Alignment Contract and Divergence Gate semantics.
+Alignment Contract, Divergence Gate, and proposal evaluation semantics defined and implemented.
 
 ```text
-EXP-REFINE-002  Alignment Contract
-EXP-REFINE-003  Divergence Gate
+EXP-REFINE-002  Alignment Contract              ← Types + Program 027 contract
+EXP-REFINE-003  Divergence Gate                 ← evaluateProposal() + gate capabilities
 ```
 
-### Phase 3 — Interactive Refinement
+### Phase 3 — Interactive Refinement — Pending (Deferred)
 
-Introduce structured decision acquisition so the Refinement Layer can eliminate uncertainty through deterministic, adapter-independent interactions.
+Structured decision acquisition to eliminate residual uncertainty.
 
 ```text
 EXP-REFINE-010  Interactive Decision Acquisition
@@ -167,16 +182,16 @@ EXP-REFINE-010  Interactive Decision Acquisition
                 Interactive Decision Artifacts
 ```
 
-### Phase 4 — Convergence Certification, Evidence Binding, and Integration
+### Phase 4 — Convergence Certification, Evidence Binding, and Integration — Partial
 
-Bind reference evidence to the Alignment Contract, certify final outcomes against original intent, integrate refinement into Mission Studio, and use Program 027 as the pilot.
+Reference evidence binding, convergence certification, integration, and certification pilot.
 
 ```text
-EXP-REFINE-005  Reference Evidence Binding
-EXP-REFINE-006  Convergence Certification
-EXP-REFINE-007  Mission Studio Integration
-EXP-REFINE-008  Program 027 Retrofit
-EXP-REFINE-009  Certification
+EXP-REFINE-005  Reference Evidence Binding      ← Types exist
+EXP-REFINE-006  Convergence Certification       ← ✅ Complete (implementation + tests)
+EXP-REFINE-007  Mission Studio Integration      ← Pending
+EXP-REFINE-008  Program 027 Retrofit            ← In progress
+EXP-REFINE-009  Certification                   ← Pending
 ```
 
 ---
@@ -518,8 +533,11 @@ Revision requested
 
 ## Relationship to Other Work
 
-- **ADR-037 — Genesis Lifecycle and Alignment Contracts** elevates this program into the three-layer SYNTH architecture and defines the Genesis Alignment Layer.
+- **ADR-048 — Genesis Lifecycle and Alignment Contracts** elevates this program into the three-layer SYNTH architecture and defines the Genesis Alignment Layer.
 - **EXP-PROGRAM-035 — Intent Refinement & Review Governance** provides the gate engine and execution-control mechanisms that the Divergence Gate extends.
+- **EXP-GOVERNABILITY-001 — Regression Certification** certified that 8/8 drift classes are rejected and 4/4 valid branches admitted through the Divergence Gate.
+- **EXP-GOVERNABILITY-003 — Proposal Evaluation Capability** supplies the deterministic evaluation layer consumed by the Divergence Gate.
+- **EXP-GOVERNABILITY-005 — Convergence Certification** implements the post-implementation intent convergence check.
 - **EXP-PROGRAM-027 — Mission Studio Homepage** is paused and becomes the pilot certification project for the Genesis Alignment Layer.
 - **EXP-PROGRAM-030 — Intelligent Governance Orchestration** will schedule Divergence Gates as part of the validation planner.
 - **EXP-PROGRAM-032 — AI Agent Integration** will operate within alignment policies; AI agents may assist refinement but cannot approve their own interpretation under non-Automatic policies.

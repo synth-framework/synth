@@ -64,7 +64,7 @@ The Divergence Gate answers: *"Do we agree that the Alignment Contract accuratel
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
+- ADR-047 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance
 - EXP-REFINE-001 — Refinement Layer Model

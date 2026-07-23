@@ -1,6 +1,6 @@
 # EXP-PROGRAM-027 — Mission Studio Homepage
 
-**Status:** Active — Governance Architecture v1.0 Pilot  
+**Status:** Active — Governance Architecture v1.0 Certified  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -51,7 +51,7 @@ Turn the SYNTH homepage into a production-quality Mission Studio experience:
 
 ## Governance Lifecycle
 
-Program 027 is the first program executed under **Governance Architecture v1.0** (ADR-036, ADR-037, ADR-045). The homepage itself must project this lifecycle.
+Program 027 is the first program executed under **Governance Architecture v1.0** (ADR-047, ADR-048, ADR-045). The homepage itself must project this lifecycle.
 
 ```text
 Genesis
@@ -584,7 +584,36 @@ This package is what the Review Gate actually evaluates. "Please review" is no l
 
 ---
 
-## Frozen Work
+## Governance Certification
+
+Program 027 has been certified under the full Governance Architecture v1.0 lifecycle. The following certifications have completed:
+
+| Certification | Status | Evidence |
+|---|---|---|
+| **EXP-GOVERNABILITY-001** — Governability Regression | ✅ Pass (full) | `docs/governance/program-027/governability-regression-certification.json` |
+| **EXP-GATE-012** — Three-Gate Model (Program 035) | ✅ Pass | `tests/gate-012-certification.test.js` |
+| **EXP-REFINE-009** — Alignment Governance (Program 036) | ✅ Pass | `tests/refine-009-certification.test.js` |
+
+**Certified capabilities:**
+- Deterministic Proposal Evaluation (D01–D08 drift class rejection, V01–V04 valid branch admission)
+- Divergence Gate automated resolution
+- Review Gate lifecycle (approve, revision_required, condition tracking, superseded mapping)
+- Acceptance Gate enforcement
+- Convergence Certification (post-implementation intent comparison)
+- Alignment Contract invalidation on Mission change
+- Upstream-gate stop condition (dependent expedition blocking)
+- Dependency enforcement (GATE-013, ADR-050)
+
+**Governance artifacts:**
+- `docs/governance/program-027/governability-regression-certification.json` — Full certification report
+- `docs/governance/program-027/intent-model.json` — Refined Intent baseline
+- `docs/governance/program-027/alignment-contract.json` — Alignment Contract baseline
+- `docs/governance/program-027/alignment-review-package.md` — Alignment evidence package
+- `docs/governance/program-027/replay-specification.json` — Drift class definitions
+- `docs/governance/program-027/convergence-certification-criteria.md` — Convergence criteria
+- `docs/governance/program-027/governability-benchmark.json` — Benchmark specification
+
+Frozen Work
 
 The following expeditions are **frozen** exactly as implemented. They are not to be rewritten or silently improved. They become baseline evidence for the new governance model.
 
@@ -758,9 +787,14 @@ Additionally:
 - **EXP-PROGRAM-024 — Canonical Knowledge & Validation** provides the knowledge graph and validation concepts.
 - **EXP-PROGRAM-025 — Incremental Governance** ensures homepage changes are validated efficiently.
 - **EXP-PROGRAM-026 — AI Agent Interoperability** provides the agent protocols the homepage may demonstrate.
-- **EXP-PROGRAM-035 — Intent Refinement & Review Governance** provides Review Gates, Acceptance Gates, and execution governance.
-- **EXP-PROGRAM-036 — Intent Refinement & Alignment Governance** provides the Genesis Layer, Alignment Contract, and Divergence Gate.
+- **EXP-PROGRAM-035 — Intent Refinement & Review Governance** provides Review Gates, Acceptance Gates, and execution governance. Certified by EXP-GATE-012.
+- **EXP-PROGRAM-036 — Intent Refinement & Alignment Governance** provides the Genesis Layer, Alignment Contract, and Divergence Gate. Certified by EXP-REFINE-009.
+- **EXP-GATE-013 — Dependency Graph & Enforcement** provides runtime dependency enforcement between governance stages. Uses Policy Engine (ADR-050).
+- **EXP-REFINE-015, EXP-REFINE-016** provide evidence-file and artifact-validation CLI commands.
 - **ADR-045 — Governance Lifecycle & State Machine Specification** is the canonical lifecycle under which Program 027 executes.
+- **ADR-047 — Intent Refinement and Alignment Governance** defines the alignment model certified by REFINE-009.
+- **ADR-048 — Genesis Lifecycle and Alignment Contracts** defines the Genesis layer structure.
+- **ADR-050 — Execution Gate State Dependency Enforcement** documents the certified freeze lift for GATE-013 dependency enforcement.
 
 ---
 

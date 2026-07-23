@@ -7,7 +7,7 @@
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  
 **Authority:** Synth Architectural Constitution  
-**Depends On:** EXP-GATE-001, EXP-GATE-002, EXP-GATE-003, EXP-GATE-004, EXP-GATE-005, EXP-GATE-006, EXP-GATE-007, EXP-GATE-008, EXP-GATE-009, EXP-GATE-010, EXP-GATE-011, EXP-PROGRAM-027 Phase 1 baseline  
+**Depends On:** EXP-GATE-013, EXP-GOVERNABILITY-003, EXP-GOVERNABILITY-004, EXP-GOVERNABILITY-005, EXP-PROGRAM-027 Phase 1 baseline, EXP-HOME-026, EXP-HOME-027  
 **Blocks:** Era IV — Testing & Stabilization
 
 ---
@@ -130,10 +130,10 @@ This expedition validates, but does not modify, the protected artifacts introduc
 
 EXP-GATE-012 is the final expedition of **EXP-PROGRAM-035 — Intent Refinement & Review Governance** (Phase 5: Certification). It closes the program by proving that the governance model works in practice before the model is frozen for the testing/stabilization era.
 
-- **EXP-GATE-001 through EXP-GATE-007** supply the vocabulary, artifacts, and policies being exercised.
-- **EXP-GATE-008 and EXP-GATE-009** supply the engine and revision governance being certified.
-- **EXP-GATE-010** supplies the Mission Studio visualization used to observe gate state.
-- **EXP-GATE-011** applies the model to Program 027 and produces the baseline candidate.
+- **EXP-GOVERNABILITY-003** supplies the deterministic Proposal Evaluation Capability consumed by gate decisions.
+- **EXP-GOVERNABILITY-004** wires the evaluation into Review Gate and Acceptance Gate lifecycles with event serialization.
+- **EXP-GOVERNABILITY-005** supplies Convergence Certification for post-implementation intent verification.
+- **EXP-HOME-026 / EXP-HOME-027** supply the Program 027 Intent Model and Alignment Contract used as the certification baseline.
 - **EXP-GATE-012** executes the certification scenarios against that baseline and produces the final evidence.
 
 ---

@@ -71,6 +71,6 @@ Mission Studio should surface refinement, alignment, and convergence as first-cl
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
+- ADR-047 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-PROGRAM-027 — Mission Studio Homepage

@@ -1,8 +1,8 @@
-# EXP-HOME-002 — Mission Studio Component Catalog (v2)
+# EXP-HOME-002 — Mission Studio Component Catalog (v3)
 
 > **Architecture expedition.** Build the component catalog for Mission Studio: reusable, token-driven, state-machine-aware UI primitives that implement the Mission Studio Design System.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
@@ -26,101 +26,119 @@ Impact:
 
 ## Objective
 
-Create the component catalog that makes Mission Studio concrete. Every component must be reusable across phases, fully token-driven, state-machine-aware, and documented with Storybook stories covering all interactive states. This catalog supersedes any prior Mission Workspace component scope.
+Create the component catalog that makes Mission Studio concrete. Every component must be reusable across phases, fully token-driven, state-machine-aware, and support the progressive collapse continuum (immersive → compact → sticky bar). This catalog supersedes any prior Mission Workspace component scope.
 
 ---
 
 ## Origin Evidence
 
-Mission Studio requires a consistent vocabulary of workspace, sidebar, artifact, navigation, content, feedback, and motion components. Without a shared catalog, phase-specific expeditions will duplicate effort, diverge in behavior, and introduce inconsistent interactions.
+Mission Studio requires a consistent vocabulary of workspace, sidebar, artifact, navigation, content, feedback, and motion components. Without a shared catalog, phase-specific expeditions will duplicate effort, diverge in behavior, and introduce inconsistent interactions. The v3 design introduces progressive collapse and a sticky workspace bar, requiring new components and morph behaviors.
 
 ---
 
 ## Required Change
 
-### 1.1 Workspace components
+### 1.1 Navigation components
 
 | Component | Responsibility |
-|-----------|----------------|
-| Mission Window | Primary container for the active phase and artifacts. |
-| Workspace Header | Persistent header showing Mission title, phase, governance status, and global actions. |
-| Workspace Footer | Persistent footer showing runtime status, evidence count, replay position, and repository state. |
-| Workspace Divider | Structural separator between sidebar, workspace, and footer. |
-| Sticky Container | Scroll-sticky wrapper that pins Mission Studio during the lifecycle scroll. |
+|---|---|
+| Global Nav | Sticky top navigation (56px): logo, links (Product, Architecture, Docs, Community), GitHub, Start Mission button. |
+| Mission Header | Inside the MS shell: logo, mission title, status chips (Planning, Governed, Replay Ready). Transitions into sticky bar. |
+| Sticky Workspace Bar | Post-collapse bar (72px): mission context only, no sidebar. Always sticky. Contains logo, mission name, status chips, confidence, Open Workspace button. |
 
-### 1.2 Sidebar components
+### 1.2 Workspace components
 
 | Component | Responsibility |
-|-----------|----------------|
-| Sidebar | Persistent phase navigation and status panel. |
-| Sidebar Section | Grouping primitive for phases or related items. |
-| Sidebar Phase | Interactive phase entry with state, progress, and highlight. |
-| Sidebar Status | Compact status badge for a phase or section. |
-| Sidebar Progress | Progress bar or stepper showing lifecycle advancement. |
-| Sidebar Transition | Animated transition when the active phase changes. |
+|---|---|
+| Mission Shell | Full-viewport container: header + body (sidebar + workspace) + footer. Collapses through 6 states. |
+| Sidebar | Phase list with status dots (✓ completed, ● active, ○ pending). Retracts through 3 stages: full labels → icons only → removed. |
+| Workspace | Artifact surface. Content changes per phase. Compresses from full cards to summary. |
+| Footer | Status bar: phase name, progress, metadata. |
 
 ### 1.3 Artifact Card components
 
 | Component | Responsibility |
-|-----------|----------------|
-| Intent | Raw visitor intent captured as an artifact. |
-| Discovery | Discovery findings, unknowns, and observations. |
-| Constraints | Discovered constraints and boundaries. |
-| Domain | Domain entities, relationships, bounded contexts. |
-| Mission | Mission purpose, objectives, success criteria. |
-| Expedition | Expedition subject, goal, status, and dependencies. |
-| Governance | Governance status, approval boundary, and audit trail. |
-| Replay | Replay event, state transition, timestamp, state hash. |
-| Evidence | Observation, confidence, source, and rationale. |
-| Repository Summary | Repository state, branch, events, and readiness. |
-| Unknown | Open question or unresolved unknown. |
-| Finding | Validated discovery finding. |
-| Recommendation | Proposed action or improvement. |
+|---|---|
+| Intent | Blue-tinted card: visitor intent, goals, confidence. |
+| Discovery | Teal-tinted card: findings, capabilities, constraints. |
+| Mission | Purple-tinted card: name, purpose, objectives, success criteria. |
+| Expedition | Indigo-tinted card: name, goal, status. |
+| Governance | Green-tinted card: validation, approval, replay readiness. |
+| Replay | Violet-tinted card: timeline, evidence, audit log. |
+| Evidence | Card: observation, confidence, source. |
+| Architecture | Card: layer, responsibility, dependencies. |
+| Constraints | Card: discovered boundaries and limitations. |
+| Repository Summary | Card: status, artifacts, event count. |
 
-### 1.4 Navigation components
+Artifact cards use a colored left border (3px) matching their semantic color. Cards have generous padding (24px), 16px border radius, and elevate on hover.
+
+### 1.4 Input components
 
 | Component | Responsibility |
-|-----------|----------------|
-| Breadcrumb | Location within Mission Studio hierarchy or phase flow. |
-| Timeline | Phase or event timeline with current position. |
-| Phase Indicator | Compact current-phase badge or pill. |
-| Status Strip | Horizontal strip of status badges. |
-| Workspace Navigation | Controls for advancing, returning, or jumping between phases. |
+|---|---|
+| Textarea | Large, calm, generous padding. For intent input. |
+| Input | Standard text input with clear focus state. |
+| Segmented Control | Mode selector (Greenfield / Brownfield / Knowledge). |
+| Select | Dropdown selector. |
 
 ### 1.5 Content components
 
 | Component | Responsibility |
-|-----------|----------------|
+|---|---|
 | Code | Syntax-highlighted or plain code block. |
 | Command | CLI-style command display with copy action. |
-| Terminal | Terminal emulator surface for command output. |
-| Metrics | Numeric metrics with labels, units, and trend indicators. |
-| Empty State | Empty-state illustration and call-to-action. |
+| Empty State | Empty-state with call-to-action. |
 | Loading | Loading spinner or progress indicator. |
-| Skeleton | Content placeholder respecting layout. |
 | Error | Error message with recovery action. |
 | Success | Success confirmation with evidence. |
 
-### 1.6 Feedback components
+### 1.6 Status components
 
 | Component | Responsibility |
-|-----------|----------------|
+|---|---|
+| Chip | Compact status indicator (Planning, Governed, Replay Ready). |
+| Badge | Phase badge (current phase label). |
+| Progress | Progress bar or stepper. |
+| Confidence | Percentage confidence indicator. |
+
+### 1.7 Timeline components
+
+| Component | Responsibility |
+|---|---|
+| Replay Timeline | Horizontal timeline with event markers and scrubber. |
+| Execution Timeline | Phase-by-phase execution progress. |
+
+### 1.8 Feedback components
+
+| Component | Responsibility |
+|---|---|
 | Toast | Transient notification. |
 | Callout | Inline informational, warning, or error notice. |
-| Banner | Persistent top-level message. |
-| Notification | Dismissible status update. |
 
-### 1.7 Motion components
+### 1.9 Button components
 
 | Component | Responsibility |
-|-----------|----------------|
-| Crossfade | Opacity crossfade between two elements. |
-| Artifact Morph | Layout-preserving transition between artifact states. |
-| Timeline Progress | Animated timeline advancement. |
-| Sidebar Advance | Smooth phase highlight movement in the sidebar. |
-| Workspace Transition | Coordinated enter/leave transition for phase changes. |
+|---|---|
+| Primary | Filled accent button. |
+| Secondary | Subtle border button. |
+| Ghost | Borderless button. |
+| Icon | Circular minimal button. |
+| Link | Text link. |
 
-### 1.8 Storybook coverage
+### 1.10 Collapse behavior
+
+Every component must define its behavior across the 6 collapse states:
+
+| State | Sidebar | Cards | Inputs | Header |
+|---|---|---|---|---|
+| Immersive | Full labels + dots | Full cards | Textarea | Normal |
+| Replay | Full (✓ completed) | Timeline | Hidden | Normal |
+| Begin Collapse | Narrower | Summary | Single line | Pinned |
+| Compact | Icons only | One row | Hidden | Compact |
+| Sidebar Retracted | Removed | Metadata | Hidden | Compact |
+| Sticky Bar | None | None | None | 72px bar |
+
+### 1.11 Storybook coverage
 
 Every component must include stories for:
 
@@ -134,7 +152,9 @@ Completed
 Failed
 Selected
 Disabled
-Interactive
+Collapse-state-immersive
+Collapse-state-compact
+Collapse-state-sticky
 ```
 
 Where a state is not applicable, the story must explicitly document why.
@@ -144,13 +164,14 @@ Where a state is not applicable, the story must explicitly document why.
 ## Deliverables
 
 1. **Mission Studio Component Catalog Specification** under `docs/design/mission-workspace.md`.
-2. **Implemented component library** covering Workspace, Sidebar, Artifact Cards, Navigation, Content, Feedback, and Motion categories.
+2. **Implemented component library** covering Navigation, Workspace, Artifact Cards, Inputs, Content, Status, Timeline, Feedback, and Buttons.
    - `website/js/components.js` — canonical component catalog.
    - `website/storybook.html` + `website/js/storybook-app.js` — component preview/stories.
-3. **Storybook workspace** with all required stories.
-4. **Component API documentation** for props, events, slots, and accessibility attributes.
+3. **Storybook workspace** with all required stories including collapse states.
+4. **Component API documentation** for props, events, and accessibility attributes.
 5. **State mapping table** linking each component to its valid states and transitions.
-6. **Token-derivation audit** showing that every visual value resolves through EXP-HOME-001 tokens.
+6. **Collapse behavior table** per component (how each component morphs through 6 states).
+7. **Token-derivation audit** showing that every visual value resolves through EXP-HOME-001 tokens.
 
 ---
 
@@ -158,11 +179,13 @@ Where a state is not applicable, the story must explicitly document why.
 
 - Every component listed in this charter is implemented and documented.
 - All components derive their visual properties exclusively from EXP-HOME-001 tokens.
-- Every component has Storybook stories for Default, Hover, Focus, Pressed, Loading, Completed, Failed, Selected, Disabled, and Interactive where applicable.
+- Every component has Storybook stories for Default, Hover, Focus, Pressed, Loading, Completed, Failed, Selected, Disabled, and collapse states where applicable.
 - Components are keyboard accessible and expose correct ARIA roles, states, and properties.
 - Workspace, Sidebar, and Artifact Card components integrate correctly in the Mission Studio shell.
+- The Sticky Workspace Bar renders correctly at 72px with no sidebar.
+- The sidebar retracts physically through 3 stages (labels → icons → removed).
 - Motion components respect reduced-motion preferences.
-- The catalog supports both light and dark themes without per-component overrides.
+- The catalog supports light theme only.
 - No decorative component exists without a runtime mapping.
 
 ---
@@ -178,14 +201,38 @@ Where a state is not applicable, the story must explicitly document why.
 
 ## Success Criteria
 
-The expedition succeeds when any phase in Mission Studio can be assembled from existing catalog components, and when a designer or engineer can reason about a new component by referencing the catalog's taxonomy, states, and stories.
+The expedition succeeds when any phase in Mission Studio can be assembled from existing catalog components, when the progressive collapse produces smooth, physically plausible transitions, and when a designer or engineer can reason about a new component by referencing the catalog's taxonomy, states, and stories.
 
 ---
+
+## Completion Evidence
+
+| Deliverable | Status | Evidence |
+|---|---|---|
+| Component catalog | ✅ Complete | `website/js/components.js` — 16 render functions covering all specs |
+| Navigation components | ✅ Complete | Global Nav (`synth-nav`), Sticky Workspace Bar (`ms-sticky-bar`) |
+| Workspace components | ✅ Complete | Mission Shell, Sidebar with 3 retraction stages, Workspace surface, Footer |
+| Artifact cards | ✅ Complete | Intent, Discovery, Mission, Expedition, Governance, Replay, + internal kinds |
+| Input components | ✅ Complete | Textarea, Input, Segmented Control, Select |
+| Content components | ✅ Complete | Code, Command, Empty State, Loading, Error, Success |
+| Status components | ✅ Complete | Chip, Badge, Progress, Confidence |
+| Timeline components | ✅ Complete | Replay Timeline, Execution Timeline |
+| Feedback components | ✅ Complete | Toast, Callout |
+| Button components | ✅ Complete | Primary, Secondary, Ghost, Icon, Link |
+| Collapse behavior | ✅ Complete | 6-state morph via `handleProgressiveCollapse()` in `mission-studio-app.js` |
+| Light-only theme | ✅ Complete | No dark theme toggle or references |
+| All render tests pass | ✅ Complete | `node website/js/components.test.js` — 9/9 pass |
+| Runtime tests pass | ✅ Complete | `node website/js/homepage-runtime/runtime.test.js` — 8/8 pass |
+| Public vocabulary audit | ✅ Complete | `node tests/homepage-public-vocabulary.test.js` — 2/2 pass |
+| Pipeline step component | ✅ Complete | Pill-shaped containers with 100px radius, shadow, hover/active states |
+| CTA button refinement | ✅ Complete | Border weight, shadow, hover/active transitions |
+| Card label typography | ✅ Complete | 11px uppercase with 0.08em tracking, card body 14px at 1.7 line-height |
 
 ## Related documents
 
 - `docs/design/mission-workspace.md`
 - `docs/design/lds-002.md`
+- `docs/design/homepage-specification.md`
 - `docs/expeditions/EXP-HOME-001.md`
 - `docs/expeditions/EXP-HOME-003.md`
 - `docs/expeditions/EXP-HOME-013.md`

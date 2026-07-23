@@ -1,145 +1,129 @@
-# EXP-HOME-026 — Homepage Intent Model
+# EXP-HOME-026 — Workspace Shell Architecture
 
-> **Genesis expedition.** Capture the explicit and implicit intent for the Mission Studio homepage before any implementation proceeds.
+> **Structural expedition.** Reframe the entire homepage as a continuous Mission Studio workspace shell that transitions between expanded and collapsed density states. Introduce `WorkspaceShell` as the root layout primitive — every visible element becomes a child of the shell.
 
-**Status:** Refinement Report Approved — Approved for Alignment  
-**Kind:** Genesis Expedition  
+**Status:** Completed  
+**Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** none  
-**Blocks:** EXP-HOME-027, EXP-HOME-028, EXP-HOME-001, EXP-HOME-002, EXP-HOME-003, EXP-HOME-025
-
-> **Authority:** ADR-045 — Governance Lifecycle & State Machine Specification
-
----
-
-```yaml
-Impact:
-  Constitutional: No
-  Product: Yes
-  User Facing: Yes
-  Architecture Freeze: Safe
-  Requires ADR: No
-```
+**Depends On:** EXP-HOME-001 (Design Language), EXP-HOME-002 (Component Catalog)  
+**Blocks:** EXP-HOME-027, EXP-HOME-028
 
 ---
 
 ## Objective
 
-Produce a canonical `Intent Model` for the Mission Studio homepage that captures not only what was explicitly requested, but also the implicit expectations, forbidden interpretations, and unresolved ambiguity that would otherwise be lost.
-
----
-
-## Origin Evidence
-
-Program 027 began with the directive to make Mission Studio the SYNTH homepage. The existing design boards, LDS-002 tokens, component catalog, and storyboard references contain strong visual intent, but they do not by themselves constitute a governed interpretation. The homepage incident demonstrated that an agent can be compliant with specifications while diverging from intent. This expedition prevents that failure mode by making the intent explicit and reviewable before implementation resumes.
+The homepage is currently structured as a landing page with an embedded Mission Studio section. The target model treats the entire page as **one persistent Mission Studio workspace** whose density adapts with scrolling — not a sequence of independent sections. This expedition introduces `WorkspaceShell` as the root container that owns all content, and defines the expanded and collapsed states of the shell.
 
 ---
 
 ## Required Change
 
-### 1.1 Explicit objectives
+### Pass 1 — Structural Refactor
 
-- The SYNTH homepage is the first screen of SYNTH.
-- Mission Studio is the homepage, not a component within a marketing page.
-- The homepage immerses visitors in a guided, interactive Mission Studio experience.
-- Supporting content appears only after Mission Studio completes its lifecycle.
+Reframe the homepage so that Mission Studio is the persistent application shell rather than a hero section.
 
-### 1.2 Implicit objectives
+1. Introduce `WorkspaceShell` as the root layout container.
+2. Move Canonical Artifacts, Deterministic Engineering, AI Native sections inside the shell.
+3. Define expanded and collapsed states of the shell.
+4. Eliminate hero terminology — the initial state is `WorkspaceShell: expanded`, not a "landing hero."
 
-- The experience should feel like entering a deterministic synthesis environment, not browsing a SaaS landing page.
-- The visual language must project engineering trust, calm, and clarity.
-- Every visible element must correspond to a real SYNTH concept.
-- The homepage must be comprehensible to a first-time visitor within five minutes.
+**Exit criteria:** Every visible element on the homepage is a direct or transitive child of `WorkspaceShell`.
 
-### 1.3 Forbidden interpretations
+### Layout Primitives
 
-- Generic SaaS dashboard
-- Marketing-first landing page
-- Chat interface as the primary interaction model
-- Decorative AI imagery disconnected from runtime concepts
-- Page-jump navigation instead of persistent workspace
+Introduce workspace-level layout components:
 
-### 1.4 Allowed interpretations
+| Component | Responsibility |
+|---|---|
+| `WorkspaceShell` | Root container. Owns expanded/collapsed states. Manages sticky behavior. |
+| `WorkspaceToolbar` | Top bar inside shell: mission context, status, confidence. Becomes sticky bar on collapse. |
+| `WorkspaceRail` | Left navigation rail. Three states: expanded (labels) → compact (icons) → hidden. |
+| `WorkspaceContent` | Scrollable content area. Houses all sections. |
+| `WorkspaceSection` | Named section within content: header + body. |
+| `WorkspacePanel` | Generic panel container with header, body, footer. |
+| `WorkspaceGrid` | 12-column grid container. |
+| `WorkspaceFooter` | Bottom status bar. |
 
-- Scroll-driven workspace phase transitions
-- Hero section that invites visitors into Mission Studio
-- Light workspace theme as default
-- Typography and spacing adjustments within token system
+### Ownership Model
+
+```
+┌─────────────────────────────────────────────┐
+│ Global Navigation (72px)                     │
+├─────────────────────────────────────────────┤
+│ WorkspaceShell                               │
+│  ├── WorkspaceToolbar                        │
+│  │   ├── Logo + Mission name                 │
+│  │   ├── Status chips (Contract, Governed)   │
+│  │   ├── Confidence indicator                │
+│  │   └── Open Workspace button               │
+│  ├── WorkspaceRail (expanded/collapsed/hidden)│
+│  │   ├── Intent                              │
+│  │   ├── Discovery                           │
+│  │   ├── Mission                             │
+│  │   ├── Expeditions                         │
+│  │   ├── Governance                          │
+│  │   └── Replay                              │
+│  ├── WorkspaceContent                        │
+│  │   ├── WorkspaceSection — Intent           │
+│  │   ├── WorkspaceSection — Discovery        │
+│  │   ├── WorkspaceSection — Mission          │
+│  │   ├── WorkspaceSection — Expeditions      │
+│  │   ├── WorkspaceSection — Governance       │
+│  │   ├── WorkspaceSection — Replay           │
+│  │   ├── WorkspaceSection — Canonical        │
+│  │   ├── WorkspaceSection — Engineering      │
+│  │   └── WorkspaceSection — Open Source      │
+│  └── WorkspaceFooter                         │
+└─────────────────────────────────────────────┘
+```
+
+All content — including what was previously "homepage sections" — lives inside the shell.
 
 ---
 
-## Definition of Done
+## Deliverables
 
-- [x] Intent Model artifact is created for Program 027.
-- [x] Intent Model references all canonical evidence (design boards, LDS-002, storyboards, existing frozen expeditions).
-- [x] Explicit objectives, implicit objectives, forbidden interpretations, and allowed interpretations are documented.
-- [x] Confidence level and known unknowns are recorded.
-- [x] Refinement Gate resolves to `Refined Intent` with an approved Refinement Report.
-- [x] Refinement Report is explicitly approved for alignment (governance decision separate from recommendation).
-- [x] Intent Model is approved for Alignment Contract creation.
-
----
-
-## Artifacts
-
-### Intent Model
-
-The canonical Intent Model for Program 027 is recorded at:
-
-```text
-docs/governance/program-027/intent-model.json
-```
-
-Registered in the event store via:
-
-```bash
-synth intent create --file docs/governance/program-027/intent-model.json
-```
-
-### Refinement Report
-
-The Refinement Report capturing the inaugural Program 036 review is recorded at:
-
-```text
-docs/governance/program-027/refinement-report.json
-```
-
-Produced via:
-
-```bash
-synth intent refine --intent-model-id intent-model-mru144mr-j9lxxw \
-  --answers docs/governance/program-027/refinement-answers.json \
-  --recommendation approve_for_alignment \
-  --reason "Refinement review confirms intent is clear, evidence-bound, and aligned with Governance Architecture v1.0."
-```
-
-The Intent Model was then submitted for downstream Alignment Contract creation:
-
-```bash
-synth intent submit --intent-model-id intent-model-mru144mr-j9lxxw
-```
-
-### Refinement Approval
-
-The Refinement Report was reviewed and explicitly approved for alignment, preserving the constitutional distinction between recommendation and governance decision:
-
-```bash
-synth intent approve --report-id refinement-report-mru1jfin-5blzig \
-  --decision approved_for_alignment \
-  --reason "Refinement Report reviewed and approved. Intent Model is clear, evidence-bound, and ready for Alignment Contract creation under Governance Architecture v1.0."
-```
-
-## Out of Scope
-
-- Alignment Contract creation (EXP-HOME-027).
-- Mission approval (EXP-HOME-028).
-- Any homepage implementation.
+1. `WorkspaceShell` CSS/component as the root layout container.
+2. `WorkspaceToolbar` component with expanded/collapsed states.
+3. `WorkspaceRail` component with 3-state transition.
+4. `WorkspaceContent`, `WorkspaceSection`, `WorkspacePanel`, `WorkspaceGrid` primitives.
+5. Restructured `index.html` — all elements as children of `WorkspaceShell`.
+6. Ownership diagram in `docs/design/workspace-architecture.md`.
 
 ---
 
 ## Acceptance Criteria
 
-- A contributor can read the Intent Model and understand what the homepage is supposed to feel like, not just what components it contains.
-- The Intent Model is bound to at least one visual reference and one behavioral reference.
-- Forbidden interpretations are non-empty and specific enough to prevent generic dashboard drift.
+- Every element on the homepage is a child of `WorkspaceShell`.
+- `WorkspaceToolbar` renders correctly in expanded and collapsed states.
+- `WorkspaceRail` transitions through 3 states (labels → icons → hidden).
+- No "hero" section or terminology exists in the HTML structure.
+- The shell transitions smoothly between expanded and collapsed states.
+- All existing tests continue to pass.
+
+---
+
+## Out of Scope
+
+- Visual styling or design token changes (EXP-HOME-027).
+- Motion choreography or continuous interpolation (EXP-HOME-028).
+- Component refactoring of individual cards or features.
+
+---
+
+## Completion Evidence
+
+- `website/index.html` — all elements restructured under `WorkspaceShell`, `WorkspaceToolbar` replaces hero, `WorkspaceRail` sidebar added, `WorkspaceContent` wraps all sections, `WorkspaceFooter` added
+- `website/styles.css` — `.workspace-shell`, `.workspace-toolbar`, `.workspace-toolbar-inner`, `.workspace-toolbar-collapsed`, `.workspace-rail`, `.ws-rail-nav`, `.ws-rail-item`, `.workspace-content`, `.workspace-section`, `.workspace-footer` structural styles
+- `website/js/mission-studio-app.js` — element references updated to new workspace IDs, shell state management
+- No "hero" section or terminology exists in HTML structure
+- All 152 tests passing (synth: 121, proposal-evaluation: 15, governance-evaluation: 7, convergence-certification: 9)
+
+## Related documents
+
+- `docs/design/homepage-specification.md`
+- `docs/expeditions/EXP-HOME-001.md`
+- `docs/expeditions/EXP-HOME-027.md`
+- `docs/expeditions/EXP-HOME-028.md`
+- `docs/expeditions/EXP-PROGRAM-027.md`

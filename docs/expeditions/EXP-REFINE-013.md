@@ -303,7 +303,7 @@ This package is the artifact that Mission Review evaluates. A reviewer must be a
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
+- ADR-047 — Intent Refinement and Alignment Governance
 - ADR-045 — Governance Lifecycle & State Machine Specification
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-REFINE-002 — Alignment Contract

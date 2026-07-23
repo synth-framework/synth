@@ -217,8 +217,8 @@ No refinement logic depends on a specific AI provider or UI surface.
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
-- ADR-037 — Genesis Lifecycle and Alignment Contracts
+- ADR-047 — Intent Refinement and Alignment Governance
+- ADR-048 — Genesis Lifecycle and Alignment Contracts
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-REFINE-001 — Refinement Layer Model
 - EXP-REFINE-004 — Refinement Questions Engine

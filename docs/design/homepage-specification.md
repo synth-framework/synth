@@ -1,287 +1,420 @@
-# Mission Studio Homepage Specification
+# SYNTH Mission Studio Homepage
 
-> **Canonical specification for the SYNTH homepage under EXP-PROGRAM-027 v2.** Mission Studio is the homepage; everything else is supporting content.
+## Product UX Specification
 
----
+### Homepage → Workspace → Persistent Application Shell
 
-## Principle
-
-The SYNTH homepage is not a marketing page with a demo attached. It is a production-quality Mission Studio experience embedded in a scroll-driven page. Visitors do not read about SYNTH — they use it.
+**Version:** 1.0 (Exploration Baseline)
 
 ---
 
-## Homepage structure
+# 1. Vision
 
-```text
-Section 0 — Hero
-  Logo
-  Tagline
-  Primary CTA
-  Install command
-  Entry point into Mission Studio
+The homepage is **not separate from the product.**
 
-Section 1 — Mission Studio (sticky)
-  Header
-  Sidebar
-  Workspace
-  Footer
+The homepage *is* Mission Studio.
 
-Section 2 — Mission Lifecycle (scroll-driven)
-  Intent
-  Discovery
-  Mission
-  Expeditions
-  Governance
-  Replay
-  Architecture
-  Repository Summary
+Instead of navigating away from marketing into an application, the visitor is immediately placed inside the product.
 
-Section 3 — Supporting Content (after Mission Studio releases)
-  Capabilities
-  Examples
-  Documentation
-  Open Source
-  Community
-  Footer
+As the visitor scrolls, the interface continuously transforms until it becomes the permanent application shell that accompanies every subsequent section.
+
+The experience should feel closer to:
+
+- macOS window minimization
+- VisionOS transitions
+- Dynamic Island morphing
+- Apple keynote storytelling
+- Linear
+- Arc Browser
+- Figma
+
+The important principle is:
+
+> **Nothing disappears. Everything transforms.**
+
+---
+
+# 2. UX Principles
+
+## Principle 1
+
+The user never leaves the application.
+
+There is no visual breakpoint where "homepage ends."
+
+---
+
+## Principle 2
+
+Context is never lost.
+
+Mission / Status / Replay / Governance always remain available.
+
+---
+
+## Principle 3
+
+Scrolling changes interface density — not information hierarchy.
+
+Expanded → Condensed → Persistent
+
+---
+
+## Principle 4
+
+Every state is the same interface.
+
+Not three pages. One interface.
+
+---
+
+# 3. Experience Timeline
+
 ```
+Page loads
 
----
+↓
 
-## Section 0 — Hero
+Hero
 
-The hero is brief. Its only job is to orient the visitor and invite them into Mission Studio.
+↓
 
-### Elements
+Mission Studio (full viewport)
 
-- **Logo** — links to top of page.
-- **Tagline** — "Humans explore. SYNTH remembers. AI executes deterministically."
-- **Primary CTA** — "Try Mission Studio" or "Experience SYNTH"; scrolls to Mission Studio.
-- **Install command** — `curl -fsSL https://synth-framework.github.io/synth/install.sh | sh`
-- **Secondary link** — View on GitHub.
+↓
 
-### Behavior
-
-- Hero occupies full viewport height.
-- Scrolling past the hero triggers Mission Studio to enter.
-- No parallax or heavy animation.
-
----
-
-## Section 1 — Mission Studio
-
-Mission Studio is a persistent application shell that becomes sticky and remains pinned until the lifecycle completes.
-
-### Shell
-
-```text
-+-----------------------------+
-| Header                      |
-+-----------------------------+
-| Sidebar | Workspace         |
-|         |                   |
-|         |                   |
-+-----------------------------+
-| Footer (status bar)         |
-+-----------------------------+
-```
-
-### Header
-
-- Logo / wordmark
-- Current phase label
-- Governance status badge
-- Documentation link
-
-### Sidebar
-
-- Vertical phase list
-- Current phase highlighted
-- Completed phases show checkmark
-- Future phases muted
-- Progress indicator
-
-### Workspace
-
-- Hosts phase-specific content
-- Artifact cards appear here
-- Replay timeline appears here
-- Governance visualization appears here
-
-### Footer / Status Bar
-
-- Replay status
-- Governance status
-- Evidence count / confidence
-- Runtime readiness
-- Current state hash (during Replay)
-
----
-
-## Section 2 — Mission Lifecycle
-
-Scroll progress through this section drives the Mission Studio state machine. The workspace remains sticky; only its internal state changes.
-
-### Phases
-
-| Phase | Workspace Content | Sidebar Highlight | Status Message |
-|---|---|---|---|
-| Intent | Intent input + source selector + examples | Intent | Waiting for intent |
-| Discovery | Discovery artifact + unknowns list | Discovery | Analyzing |
-| Mission | Mission proposal artifact | Mission | Mission proposed |
-| Expeditions | Expedition proposal cards | Expeditions | Expeditions ready |
-| Governance | Before/after governance comparison | Governance | Governed |
-| Replay | Replay timeline + scrubber | Replay | Replay available |
-| Architecture | Layered architecture diagram | Architecture | Architecture projected |
-| Repository Summary | Repository status summary | Repository | Repository ready |
-
-### Scroll behavior
-
-- Each phase occupies a scroll segment of equal height.
-- Workspace pins at the top of Section 2.
-- Scroll progress maps to phase index.
-- Visitor can also click sidebar phases to jump.
-- Reverse scrolling moves to previous phases.
-
-### Animations
-
-- Phase transitions use crossfade + subtle slide.
-- Artifact cards enter with staggered delay.
-- Sidebar highlight animates to new phase.
-- Reduced motion disables transitions.
-
----
-
-## Section 3 — Supporting Content
-
-Mission Studio releases (unpins) after Repository Summary completes. The remaining page scrolls normally.
-
-### Sections
-
-1. **Capabilities** — grid of SYNTH capabilities, including adapters.
-2. **Examples** — certified example projects.
-3. **Documentation** — links to canonical guides and references.
-4. **Open Source** — repository link and contribution info.
-5. **Community** — ways to engage.
-6. **Footer** — copyright, license, governance model link.
-
-### Behavior
-
-- No sticky behavior.
-- Standard responsive grid.
-- Lazy-load below-fold images if any.
-
----
-
-## Mission Studio State Machine
-
-```text
-Idle
-  ↓  trigger: hero scrolled out / CTA clicked
 Intent
-  ↓  trigger: visitor enters intent or selects example
+
+↓
+
 Discovery
-  ↓  trigger: discovery artifacts generated
+
+↓
+
 Mission
-  ↓  trigger: mission proposal generated
+
+↓
+
 Expeditions
-  ↓  trigger: expeditions proposed
+
+↓
+
 Governance
-  ↓  trigger: governance state visualized
+
+↓
+
 Replay
-  ↓  trigger: replay timeline shown
-Architecture
-  ↓  trigger: architecture diagram shown
-Repository Summary
-  ↓  trigger: repository summary shown
-Complete
-  ↓  trigger: Mission Studio releases
-Supporting Content
+
+↓
+
+Workspace begins collapsing
+
+↓
+
+Homepage sections appear
+
+↓
+
+Workspace becomes sticky header
+
+↓
+
+Homepage continues
+
+↓
+
+Footer
 ```
 
-### State definitions
+---
 
-Every state defines:
+# 4. Scroll Storyboard
 
-- **Purpose** — what the visitor learns in this phase.
-- **Displayed artifacts** — which Artifact Cards are visible.
-- **Sidebar state** — which phases are past/current/future.
-- **Header state** — phase label, governance badge.
-- **Status badges** — footer status messages.
-- **Commands** — available actions (e.g., "Advance", "Show Replay").
-- **Timeline** — replay or phase timeline position.
-- **Animation** — how the transition looks.
-- **Scroll transition** — how scroll maps to this state.
-- **Accessibility** — screen reader announcements, focus management.
-- **Runtime events** — which sample events correspond to this state.
+## Scene 01 — Hero
+
+```
+Logo
+Navigation
+Headline
+Mission Studio preview
+CTA
+≈ 100vh
+Mission Studio dominates the viewport.
+```
+
+## Scene 02 — Mission Studio (Full Height)
+
+```
+Sidebar
+Mission Header
+Intent
+  Inputs
+  Cards
+  Selectors
+  Metadata
+  Status Chips
+```
+
+Workspace fills almost entire screen.
+
+## Scene 03 — Discovery
+
+Mission Studio content changes only. Outer shell remains identical. Only center content animates.
+
+## Scene 04 — Mission
+
+Same shell. Mission definition.
+
+## Scene 05 — Expeditions
+
+Cards become expedition cards.
+
+## Scene 06 — Governance
+
+Validation. Approval. Replay readiness.
+
+## Scene 07 — Replay
+
+Timeline. Evidence. Replay summary. User has completed Mission Studio.
 
 ---
 
-## Sticky behavior
+# 5. Progressive Collapse
 
-### Sticky start
+Begins immediately after Replay exits the viewport. Mission Studio does NOT disappear. It compresses.
 
-Mission Studio becomes sticky when its top edge reaches the viewport top, as the visitor scrolls out of the Hero.
+Animation duration: ≈300–500px scroll distance
 
-### Sticky release
+## Sidebar
 
-Mission Studio releases when Repository Summary completes and the visitor scrolls into Supporting Content.
+Expanded → Icon + Label → Icons only → Removed
 
-### Performance
+The sidebar disappears completely by the final state. Navigation responsibility transfers to the homepage.
 
-- Use CSS `position: sticky` where possible.
-- Avoid JavaScript scroll listeners for pinning.
-- Use `IntersectionObserver` for sticky threshold detection if needed.
+## Content Area
 
----
+Large cards → Compact cards → Single row summary
 
-## Responsive behavior
+## Inputs
 
-### Desktop (>1024px)
+Textarea → Single line → Mission title only
 
-- Full three-panel layout: sidebar, workspace, status bar.
+## Metadata
 
-### Tablet (768–1024px)
+Large blocks → Inline chips → Header badges
 
-- Sidebar collapses to a compact horizontal stepper above the workspace.
-- Workspace remains sticky.
+## Header
 
-### Mobile (<768px)
-
-- Sidebar becomes a bottom sheet or hideable drawer.
-- Workspace stacks vertically.
-- Status bar remains visible.
+Normal → Pinned → Sticky
 
 ---
 
-## Accessibility
+# 6. Final State
 
-- Skip link to main content.
-- Focus-visible styles on all interactive elements.
-- Screen reader live region announces phase changes.
-- Keyboard navigation: Tab through controls, Enter to activate, Arrow keys for replay scrubber.
-- `prefers-reduced-motion` disables phase transitions.
-- Color contrast meets WCAG 2.2 AA.
+Mission Studio becomes **Sticky Workspace Bar.**
+
+Height: 64–80px
+
+```
+Mission Studio
+  Mission: Space Mission Tracker
+  Status: Governed
+  Replay Ready
+  Confidence
+  Replay
+  [Open Workspace button]
+```
+
+No sidebar. No left navigation. No floating panels. The sticky workspace spans the entire page width, directly below global navigation. This is the permanent application context.
 
 ---
 
-## Performance budgets
+# 7. Homepage Sections
 
-| Metric | Budget |
+After collapse, homepage becomes traditional content while preserving application context.
+
+1. **Canonical Artifacts** — Grid: Mission Brief, Architecture, Constraints, Expeditions, Replay, Evidence
+2. **Deterministic Engineering** — Feature section: Deterministic, Replayable, Governed, Observable, Immutable
+3. **AI Native Development** — Cards: Intent, Planning, Execution, Governance, Replay
+4. **Architecture** — Kernel, Planning Engine, Execution Engine, Ledger, Replay
+5. **Open Source** — Community, GitHub, Documentation, CLI
+
+---
+
+# 8. Design References
+
+Apple / Linear / Figma / Arc / Notion
+
+Minimal. Editorial. Soft. Professional.
+
+---
+
+# 9. Color Tokens
+
+```
+--bg-primary           #FFFFFF
+--surface              #FCFCFD
+--border               #E8E8EC
+--divider              #F2F2F4
+--text-primary         #111827
+--text-secondary       #6B7280
+```
+
+### Semantic
+
+| Concept | Color |
 |---|---|
-| First Contentful Paint | ≤ 1.2 s |
-| Largest Contentful Paint | ≤ 2.5 s |
-| Total Blocking Time | ≤ 200 ms |
-| Cumulative Layout Shift | ≤ 0.1 |
-| Scroll animation frame rate | 60 fps |
+| Intent | Blue |
+| Discovery | Teal |
+| Mission | Purple |
+| Expedition | Indigo |
+| Governance | Green |
+| Replay | Violet |
+| Warning | Orange |
+| Danger | Red |
 
 ---
 
-## Related documents
+# 10. Elevation
 
-- [EXP-PROGRAM-027 — Mission Studio Homepage](../expeditions/EXP-PROGRAM-027.md)
-- [LDS-002 — Mission Studio Design System](lds-002.md)
-- [Mission Workspace Specification](mission-workspace.md)
-- [Artifact System Specification](artifact-system.md)
-- [Motion System Specification](motion-system.md)
-- [Performance Specification](performance.md)
-- [Accessibility Specification](accessibility.md)
+4 levels only:
+
+| Level | Usage |
+|---|---|
+| 0 | No shadow |
+| 1 | Cards |
+| 2 | Dialogs |
+| 3 | Floating |
+| 4 | Navigation |
+
+Soft shadows only. No hard Material Design shadows.
+
+---
+
+# 11. Radius
+
+| Element | Radius |
+|---|---|
+| Cards | 16px |
+| Inputs | 12px |
+| Buttons | 12px |
+| Dialogs | 24px |
+| Workspace | 24px |
+
+---
+
+# 12. Typography
+
+Typeface: Inter
+
+| Role | Size |
+|---|---|
+| Hero | 56px |
+| H1 | 40px |
+| H2 | 32px |
+| H3 | 24px |
+| Body | 16px |
+| Caption | 14px |
+| Small | 12px |
+
+Generous spacing. Editorial rhythm.
+
+---
+
+# 13. Spacing Scale
+
+```
+4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96
+```
+
+Never invent arbitrary spacing.
+
+---
+
+# 14. Motion Language
+
+Everything should feel physically connected.
+
+**Use:** Opacity, Scale, Translate, Height, Radius, Padding
+
+**Avoid:** Instant disappearance, hard cuts, opacity-only transitions
+
+**Prefer:** FLIP animations, shared element transitions, morphing layouts
+
+---
+
+# 15. Component Catalog
+
+## Navigation
+- Global Nav
+- Mission Header
+- Sticky Workspace Bar
+
+## Workspace
+- Mission Studio
+- Sidebar
+- Mission Canvas
+- Inspector
+
+## Inputs
+- Textarea, Input, Segmented Control, Select, Checkbox, Radio
+
+## Cards
+- Mission Card, Artifact Card, Status Card, Evidence Card, Expedition Card, Feature Card
+
+## Status
+- Chip, Badge, Progress, Confidence, Validation
+
+## Timeline
+- Replay Timeline, Execution Timeline, Audit Timeline
+
+## Buttons
+- Primary, Secondary, Ghost, Icon, Link
+
+## Empty States
+- Discovery Empty, Mission Empty, Artifacts Empty, Replay Empty
+
+## Feedback
+- Loading, Skeleton, Success, Error, Warning
+
+---
+
+# 16. Component Behavior
+
+Mission Studio is stateful across the scroll journey. Rather than remounting new UIs, the same component tree should be preserved to enable shared-element transitions and maintain context.
+
+The collapse should primarily be driven by layout properties: width, height, padding, gap, opacity (secondary content only), border radius, typography scale.
+
+Avoid replacing components with different implementations when a responsive variant can achieve the same result.
+
+---
+
+# 17. Implementation Architecture
+
+```
+<HomePage>
+  <Hero/>
+  <MissionStudio>
+    Expanded → Compact → StickyWorkspace
+  </MissionStudio>
+  <CanonicalArtifacts/>
+  <DeterministicEngineering/>
+  <AINative/>
+  <Architecture/>
+  <OpenSource/>
+  <Footer/>
+</HomePage>
+```
+
+`MissionStudio` should own its presentation state driven by scroll progress (0.0 to 1.0). The homepage interpolates a single interface through expanded, condensed, and sticky variants.
+
+---
+
+# 18. Success Criteria
+
+- The homepage feels like entering the product immediately.
+- Users perceive a single, continuous interface rather than separate marketing and application pages.
+- The transition from immersive workspace to sticky contextual shell is smooth and physically plausible.
+- The final sticky workspace bar contains only mission context (no sidebar) and remains visible throughout the remainder of the homepage.
+- Every animation reinforces continuity, preserving orientation and reducing cognitive load.
+- The visual language remains consistent with the established SYNTH design system and component catalog throughout the entire experience.

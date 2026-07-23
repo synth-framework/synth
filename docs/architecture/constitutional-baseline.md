@@ -25,6 +25,7 @@
 **Discovery Evidence & Replay ADR:** [ADR-015 — Discovery Evidence & Replay Integration](../adr/ADR-015-discovery-evidence-replay.md)
 **AI Environment Planning ADR:** [ADR-016 — AI Environment Planning](../adr/ADR-016-ai-environment-planning.md)
 **Constitutional Compliance ADR:** [ADR-017 — Constitutional Compliance & Core Boundary Enforcement](../adr/ADR-017-constitutional-compliance-core-boundary.md)
+**Dependency Enforcement ADR:** [ADR-050 — Execution Gate State Dependency Enforcement](../adr/ADR-050-execution-gate-state-dependency-enforcement.md)
 **Latest Verified Proof:** `proof/proof-2026-07-13T03-29-32-198Z.json`
 
 ---
@@ -127,6 +128,35 @@ Must pass before merge. The command runs:
 ## Replay Compatibility Policy
 
 The canonical replay engine must continue to understand all events written after this baseline. Legacy aliases (e.g., `TICKET_CREATED`) remain supported. Deprecated events may be archived but must remain replayable.
+
+---
+
+## Mutation Authority Invariant
+
+```text
+INVARIANT: Mutation Authority
+
+No repository mutation may occur unless:
+
+1. An approved Mission or authorized Expedition exists.
+2. The mutation scope is contained within the approved scope.
+3. The lifecycle state permits execution.
+4. The actor is operating through the ExecutionGate.
+```
+
+Formal condition:
+
+```text
+CanMutate =
+  AuthorityExists
+  ∧ ScopeAllowed
+  ∧ LifecycleAllowsMutation
+  ∧ ExecutionGateOpen
+```
+
+Failure mode: `BLOCK_MUTATION` — the mutation is rejected and an `UNAUTHORIZED_MUTATION_ATTEMPT` policy event is emitted.
+
+The ExecutionGate is the sole runtime enforcer of this invariant. Agents do not decide authority; the runtime resolves authority from the repository state.
 
 ---
 

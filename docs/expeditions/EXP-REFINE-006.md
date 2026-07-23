@@ -83,7 +83,7 @@ timestamp
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
+- ADR-047 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance
 - EXP-REFINE-002 — Alignment Contract

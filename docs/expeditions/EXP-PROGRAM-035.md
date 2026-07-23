@@ -1,6 +1,6 @@
 # EXP-PROGRAM-035 — Intent Refinement & Review Governance
 
-**Status:** Proposed  
+**Status:** Active — Engine Complete, Integration & Certification Remain  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -16,6 +16,25 @@
 > ## Final architectural program before the testing/stabilization era
 >
 > Program 035 is the last architectural program in Era III. After it succeeds, the SYNTH governance model is frozen and the project shifts into extensive real-world testing, defect fixing, ergonomics refinement, and completion of active programs under the new model. No new architectural concepts are introduced unless testing reveals genuine gaps.
+
+---
+
+## Implementation Status
+
+This program was originally chartered as a design-then-build program with 5 phases. Since the charter was written, the following has been implemented through dedicated GOVERNABILITY expeditions and work streams:
+
+| Component | Status | Evidence |
+|---|---|---|
+| **Review Gate engine** (`review-gate-engine.ts`) | ✅ Complete | `engineResolveReviewGate()`, `engineResolveAcceptanceGate()` |
+| **EvaluationResult carried in events** | ✅ Complete | Serialized in REVIEW_GATE_RESOLVED / ACCEPTANCE_GATE_RESOLVED payloads |
+| **Proposal Evaluation Capability** | ✅ Complete | `evaluateProposal()` with program027RuleSet, 12 rules |
+| **EvaluateAndResolveReviewGate capability** | ✅ Complete | Wired in `execution.ts` |
+| **EvaluateAndResolveAcceptanceGate capability** | ✅ Complete | Wired in `execution.ts` |
+| **Governance enforcement tests** | ✅ Complete | `tests/governance-evaluation-enforcement.test.js` |
+| **GovernanceContextResolver** | ✅ Complete | Resolves evaluation context for gate decisions |
+| **Decision mapping (evaluation → gate decision)** | ✅ Complete | `decision-mapping.ts` |
+
+**Remaining work:** Formal completion policy definitions, Mission Studio integration, Program 027 certification pilot, and full scenario certification.
 
 ---
 
@@ -102,39 +121,40 @@ Each gate is a decision point, not an approval itself. Decisions are governance 
 
 ## Execution Phases
 
-Program 035 is executed in five dependency-ordered phases. Phases 1 and 2 define vocabulary and artifacts without touching runtime code. Phase 3 modifies execution. Phase 4 retrofits existing systems. Phase 5 certifies the model.
+Program 035 is executed in five dependency-ordered phases. Phases 1-3 (model, artifacts, engine) are substantially complete through GOVERNABILITY expeditions. Phases 4-5 (integration, certification) remain.
 
-### Phase 1 — Governance Model
+### Phase 1 — Governance Model — ✅ Substantially Complete
 
-Define vocabulary, state machines, artifacts, and governance rules.
+Vocabulary, state machines, artifacts, and governance rules defined.
 
 ```text
 EXP-GATE-001  Review Lifecycle
-EXP-GATE-002  Completion Policies
+EXP-GATE-002  Completion Policies         ← Outstanding: formal policy definitions
 EXP-GATE-003  Refinement Lifecycle
-EXP-GATE-004  Decision Model
+EXP-GATE-004  Decision Model              ← Partially implemented in decision-mapping.ts
 ```
 
-### Phase 2 — Artifacts
+### Phase 2 — Artifacts — ✅ Substantially Complete
 
-Define the canonical schemas that flow through the system.
+Canonical schemas flow through the system via event payloads and derived state.
 
 ```text
-EXP-GATE-005  Review Gate Package
+EXP-GATE-005  Review Gate Package          ← Event schema exists
 EXP-GATE-006  Refined Intent Artifact
-EXP-GATE-007  Acceptance Policies
+EXP-GATE-007  Acceptance Policies          ← Outstanding: formal policy definitions
 ```
 
-### Phase 3 — Engine
+### Phase 3 — Engine — ✅ Complete (partial), EXP-GATE-013 Pending (per ADR-050)
 
-Modify execution behavior so gates are enforced.
+Execution behavior modified so gates are enforced. Delivered through GOVERNABILITY-003/004. Dependency graph enforcement is a pending extension (see ADR-050 for freeze lift scope).
 
 ```text
-EXP-GATE-008  Review Gate Engine
-EXP-GATE-009  Revision Governance
+EXP-GATE-008  Review Gate Engine           ← review-gate-engine.ts
+EXP-GATE-009  Revision Governance          ← engineResolveReviewGate / RequestRevision
+EXP-GATE-013  Gate State & Dependency Enforcement
 ```
 
-### Phase 4 — Integration
+### Phase 4 — Integration — Pending
 
 Retrofit existing systems and test against a real project.
 
@@ -143,7 +163,7 @@ EXP-GATE-010  Mission Studio Integration
 EXP-GATE-011  Retrofit Program 027
 ```
 
-### Phase 5 — Certification
+### Phase 5 — Certification — Pending
 
 Prove the lifecycle behaves correctly across scenarios.
 
@@ -530,9 +550,13 @@ Dependent expeditions paused
 ## Relationship to Other Work
 
 - **EXP-PROGRAM-027 — Mission Studio Homepage** is paused and becomes the pilot certification project for Intent Refinement & Review Governance.
+- **EXP-PROGRAM-036 — Intent Refinement & Alignment Governance** provides the alignment contracts and divergence gates against which Review Gate evaluates convergence.
+- **EXP-GOVERNABILITY-003 — Proposal Evaluation Capability** supplies the deterministic evaluation layer consumed by Review and Acceptance Gates.
+- **EXP-GOVERNABILITY-004 — Governance Evaluation Enforcement** wires evaluation into Review Gate and Acceptance Gate lifecycles.
 - **EXP-PROGRAM-030 — Intelligent Governance Orchestration** will schedule Refinement, Review, and Acceptance Gates as part of the validation planner.
 - **EXP-PROGRAM-032 — AI Agent Integration** will operate within gate policies; AI agents may review each other's work but cannot self-approve under non-Automatic policies.
 - **EXP-PROGRAM-022 — Genesis** provides the lifecycle that these gates extend.
+- **ADR-050 — Execution Gate State Dependency Enforcement** documents the freeze lift required for GATE-013's runtime enforcement.
 
 ---
 

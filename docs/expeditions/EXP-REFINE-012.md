@@ -109,7 +109,7 @@ A contributor can read ADR-045 and understand:
 
 ## Dependencies
 
-- ADR-037 — Genesis Lifecycle and Alignment Contracts
+- ADR-048 — Genesis Lifecycle and Alignment Contracts
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 

@@ -1,7 +1,7 @@
-# ADR-036 — Intent Refinement and Alignment Governance
+# ADR-047 — Intent Refinement and Alignment Governance
 
-**Status:** Proposed  
-**Date:** 2026-07-20  
+**Status:** Accepted  
+**Date:** 2026-07-21  
 **Author:** SYNTH Architecture  
 **Deciders:** Architecture Owner  
 **Stakeholders:** Operators, AI Agents, Mission Studio, Governance

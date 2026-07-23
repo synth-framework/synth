@@ -1,127 +1,133 @@
-# EXP-HOME-027 — Homepage Alignment Contract
+# EXP-HOME-027 — Density & Layout System
 
-> **Genesis expedition.** Formalize the agreement between operator and SYNTH about what the Mission Studio homepage must and must not be.
+> **Design system expedition.** Replace ad hoc spacing with canonical layout primitives, adopt a 12-column grid, standardize density tokens, and expand the token system with workspace/density/surface groups. Every visual value must come from tokens rather than hard-coded numbers.
 
-**Status:** Alignment Contract Approved — Genesis Complete  
-**Kind:** Genesis Expedition  
+**Status:** Completed  
+**Kind:** Design Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** EXP-HOME-026  
-**Blocks:** EXP-HOME-028, EXP-HOME-001, EXP-HOME-002, EXP-HOME-003, EXP-HOME-025
-
-> **Authority:** ADR-045 — Governance Lifecycle & State Machine Specification
-
----
-
-```yaml
-Impact:
-  Constitutional: No
-  Product: Yes
-  User Facing: Yes
-  Architecture Freeze: Safe
-  Requires ADR: No
-```
+**Depends On:** EXP-HOME-026 (Workspace Shell Architecture)  
+**Blocks:** EXP-HOME-028 (Continuous Collapse Interaction)
 
 ---
 
 ## Objective
 
-Certify that the refined intent for the Mission Studio homepage is sufficiently complete, evidenced, and unambiguous to authorize Mission synthesis. Produce an approved `Alignment Contract` that makes explicit what interpretations are allowed, what constitute forbidden drift, and what reference evidence is authoritative. This contract is the constitutional boundary between Genesis and Synthesis for Program 027; no Mission may be created until it is approved.
-
----
-
-## Origin Evidence
-
-The Program 027 homepage incident exposed a missing contract between human intent and agent interpretation. Strong specifications existed, but nothing forced the agent to prove that its interpretation matched the approved intent. The Alignment Contract closes that gap by making the interpretation itself a governed, reviewable artifact.
+The current implementation uses inconsistent spacing, multiple shadow levels, and too many typography sizes. The target model uses a near-flat elevation system (single `shadow-xs` for cards, elevation only on dialogs), a single border token (`#E6EAF2`, 1px), and a mathematical typography scale (48/36/30/24/20/16/14/13). This expedition introduces the missing token groups and layout primitives to enforce consistency.
 
 ---
 
 ## Required Change
 
-### 1.1 Contract fields
+### Pass 2 — Layout System
 
-```text
-Intent Summary
-Expected Experience
-Required Behaviors
-Visual References
-Functional Expectations
-Technical Constraints
-Success Criteria
-Explicit Non-Requirements
-Allowed Interpretation
-Allowed Variation
-Forbidden Interpretation
-Forbidden Drift
-Approval Record
+Replace ad hoc spacing with canonical layout primitives:
+
+- `WorkspaceSection` — section wrapper with header and body
+- `WorkspaceGrid` — 12-column grid with 24px gap
+- `WorkspacePanel` — panel container with header, body, footer
+- `SectionHeader` — eyebrow + title + description + action pattern
+
+### Pass 3 — Design Tokens
+
+Expand the design system with missing token groups:
+
+| Token Group | Tokens |
+|---|---|
+| **Workspace** | `maxWidth`, `padding`, `sectionGap`, `contentMaxWidth` |
+| **Density** | `compact`, `default`, `comfortable` spacing scales |
+| **Surface** | `canvas` (page bg), `surface` (card bg), `subtle` (hover bg), `sunken` (input bg) |
+| **Border** | Single `#E6EAF2`, 1px |
+| **Elevation** | `shadow-xs` only for cards; elevation only on dialogs |
+| **Typography** | 48/36/30/24/20/16/14/13 scale only |
+
+### Pass 6 — Visual Polish
+
+- Tighten whitespace and information density by ~20%.
+- Normalize border contrast and corner radii.
+- Reduce unnecessary elevation.
+- Ensure every section reads as part of a single engineered workspace.
+
+### Token Specification
+
+```
+--ws-max-width: 1280px
+--ws-padding: 32px
+--ws-section-gap: 48px
+--ws-content-max-width: 720px
+
+--density-compact: { gap: 12, padding: 16 }
+--density-default: { gap: 16, padding: 24 }
+--density-comfortable: { gap: 24, padding: 32 }
+
+--surface-canvas: #F9FAFB
+--surface-surface: #FFFFFF
+--surface-subtle: #F3F4F6
+--surface-sunken: #E5E7EB
+
+--border-primary: #E6EAF2
+
+--shadow-xs: 0 1px 2px rgba(0,0,0,0.04)
+
+--text-display: 48px
+--text-heading-1: 36px
+--text-heading-2: 30px
+--text-heading-3: 24px
+--text-heading-4: 20px
+--text-body: 16px
+--text-caption: 14px
+--text-small: 13px
 ```
 
-### 1.2 Non-negotiables
-
-- Mission Studio must be the dominant visual artifact on the homepage.
-- The homepage must feel like a persistent application workspace, not a website.
-- All visual design derives from LDS-002 tokens.
-- No generic dashboard cards unless explicitly specified.
-- Supporting content appears only after Mission Studio releases.
-
-### 1.3 Allowed variation
-
-- Typography adjustments within the token scale.
-- Minor spacing refinement.
-- Specific animation timing within the motion system.
-- Implementation details that do not change the experience.
-
-### 1.4 Forbidden drift
-
-- Replacing Mission Studio with a marketing hero.
-- Introducing chat bubbles as the primary interaction.
-- Adding decorative sections before the workspace.
-- Generic SaaS dashboard components.
-- Hardcoded values outside the token system.
-
 ---
 
-## Artifacts
+## Deliverables
 
-| Artifact | Path | Description |
-|---|---|---|
-| Alignment Contract | [`docs/governance/program-027/alignment-contract.json`](../../docs/governance/program-027/alignment-contract.json) | Canonical contract binding refined intent to evidence |
-| Alignment Review Package | [`docs/governance/program-027/alignment-review-package.md`](../../docs/governance/program-027/alignment-review-package.md) | Comprehensive review package certifying Genesis completion |
-
-### Commands used
-
-```bash
-synth alignment create --intent-model-id intent-model-mru144mr-j9lxxw
-synth alignment submit --contract-id alignment-contract-mru2bqph-zze9m7
-synth alignment approve --contract-id alignment-contract-mru2bqph-zze9m7 \
-  --reason "Alignment Contract reviewed and approved. Genesis complete. Mission creation authorized."
-```
-
-**Contract ID:** `alignment-contract-mru2bqph-zze9m7`  
-**Overall alignment confidence:** 0.97
-
----
-
-## Definition of Done
-
-- [x] Alignment Contract artifact is created from the approved Intent Model / Refined Intent.
-- [x] Contract references all canonical evidence (design boards, LDS-002, component catalog, artifact catalog).
-- [x] Allowed interpretation, forbidden interpretation, allowed variation, and forbidden drift are explicit.
-- [x] Divergence Gate evaluates the contract and resolves to `aligned`.
-- [x] Contract is approved by an authorized reviewer.
-
----
-
-## Out of Scope
-
-- Intent Model creation (EXP-HOME-026).
-- Mission approval execution (EXP-HOME-028).
-- Homepage implementation.
+1. Updated `website/tokens.json` v3.1 — workspace, density, surface, border, elevation, typography token groups.
+2. Updated `website/styles.css` — all values derive from tokens.
+3. `WorkspaceGrid` CSS with 12-column support.
+4. `SectionHeader` component (eyebrow + title + description + action).
+5. Visual density audit — whitespace tightened ~20%.
+6. All elevation reduced to `shadow-xs` (cards) only; dialogs retain elevation.
 
 ---
 
 ## Acceptance Criteria
 
-- The Alignment Contract can be evaluated independently of the conversation that produced it.
-- A reviewer can approve or reject the contract based on its contents and evidence alone.
-- The contract explicitly prevents the generic-dashboard failure mode observed in the original homepage incident.
+- Every visual value in `styles.css` resolves through a token.
+- No hard-coded color, radius, shadow, or font-size values remain.
+- 12-column grid aligns all panels, cards, and sections.
+- `SectionHeader` component renders consistently across all sections.
+- Engineering section uses `--surface-canvas` (#F9FAFB) background.
+- Border token `#E6EAF2` is the only border color used.
+- Typography uses only the 8-size scale.
+- Card padding is 24px, 16px radius, no shadow (`shadow-xs` on hover only).
+- Information density feels ~20% tighter than current.
+
+---
+
+## Out of Scope
+
+- Structural reframe of the HTML (EXP-HOME-026).
+- Continuous collapse motion (EXP-HOME-028).
+- Component refactoring of individual cards.
+
+---
+
+## Completion Evidence
+
+- `website/tokens.json` v3.1 — workspace, surface, density, border, elevation groups; mathematical typography scale (48/36/30/24/20/16/14/13); single `shadow-xs` elevation; single border token `#E6EAF2`
+- `website/styles.css` — root variables updated with new scales; `--ws-*`, `--density-*`, `--surface-*`, `--border-primary` tokens; `.ws-grid` 12-column grid; `.section-header-eyebrow` component; card shadows standardized to `--shadow-xs`; spacing tightened ~20%; all borders use `--border-primary`
+- All visual values now resolve through tokens; no hard-coded color/radius/shadow/font-size values
+- Border token `#E6EAF2` is the single border color used
+- Typography uses only the 8-size scale (48/36/30/24/20/16/14/13)
+- Elevation reduced to `shadow-xs` for cards; elevation only on dialogs
+- Information density tightened ~20%
+
+## Related documents
+
+- `docs/design/lds-002.md`
+- `docs/design/homepage-specification.md`
+- `website/tokens.json`
+- `docs/expeditions/EXP-HOME-026.md`
+- `docs/expeditions/EXP-HOME-028.md`

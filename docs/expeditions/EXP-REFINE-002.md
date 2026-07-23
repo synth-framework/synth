@@ -83,7 +83,7 @@ version
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
+- ADR-047 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-REFINE-011 — Intent Interpretation Model
 - EXP-REFINE-001 — Refinement Layer Model

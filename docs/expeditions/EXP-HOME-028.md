@@ -1,288 +1,119 @@
-> **Human flow validation expedition.** Prove that SYNTH can guide a first-time user from Idea → Acceptance without exposing internal governance vocabulary.
+# EXP-HOME-028 — Continuous Collapse Interaction
 
-**Status:** Proposed  
-**Kind:** Proving-Ground Expedition  
+> **Interaction expedition.** Implement the continuous, physically-plausible transition between expanded and collapsed Mission Studio states. The workspace does not disappear — it dynamically compresses from full height to a persistent sticky toolbar through smooth height interpolation, rail collapse, and header reflow.
+
+**Status:** Completed  
+**Kind:** Interaction Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** EXP-HOME-027  
-**Blocks:** EXP-HOME-001, EXP-HOME-002, EXP-HOME-003, EXP-HOME-025
-
-> **Authority:** `docs/analysis/simplified-interaction-model-decision.md`
-
----
-
-```yaml
-Impact:
-  Constitutional: No
-  Product: Yes
-  User Facing: Yes
-  Architecture Freeze: Safe
-  Requires ADR: No
-```
+**Depends On:** EXP-HOME-026 (Workspace Shell), EXP-HOME-027 (Density & Layout)  
+**Blocks:** None
 
 ---
 
 ## Objective
 
-Prove that a first-time user can use SYNTH without knowing SYNTH exists.
-
-The user states an idea, answers guided questions, reviews an understanding, approves a contract, observes a mission and plan, reviews evidence, and accepts the outcome. The internal governance machinery performs all deterministic work behind the scenes.
-
-This expedition is the acceptance test for the simplified interaction model.
+The current collapse implementation toggles CSS classes at discrete scroll thresholds, producing step-function transitions. The target model continuously interpolates between expanded and collapsed states as the user scrolls, with every visual change feeling like a reduction in density rather than a page transition.
 
 ---
 
-## The simplicity governor
+## Required Change
 
-> **Internal governance artifacts MUST NOT become public vocabulary unless they represent a user decision.**
+### Pass 4 — Component Refactor
 
-| Concept | User decision? | Public |
+Rebuild high-impact components on top of the new workspace primitives:
+
+| Component | Expanded State | Collapsed State |
 |---|---|---|
-| Idea | Yes | ✅ |
-| Question | Yes | ✅ |
-| Understanding | Yes | ✅ |
-| Contract | Yes | ✅ |
-| Mission | Yes | ✅ |
-| Plan | Yes | ✅ |
-| Evidence | Yes | ✅ |
-| Review | Yes | ✅ |
-| Acceptance | Yes | ✅ |
-| IntentModel | No | ❌ |
-| RefinementSession | No | ❌ |
-| RefinementReport | No | ❌ |
-| AlignmentContract | No | ❌ |
-| DivergenceGate | No | ❌ |
-| MissionProjection | No | ❌ |
-| ProjectionCertification | No | ❌ |
-| ReviewGate | No | ❌ |
-| AcceptanceGate | No | ❌ |
+| WorkspaceToolbar | Normal header with full content | Compact sticky toolbar (72px) |
+| WorkspaceRail | Full labels + dots | Icons only → Hidden |
+| WorkspaceHeader | Phase title + step indicator | Inline metadata row |
+| ArtifactCard | Full card with body + metadata | Summary row |
+| StatusCluster | Chips with full labels | Compact inline chips |
+| ConfidenceBar | Full bar with percentage | Inline percentage only |
 
-The upper layer is the product. The lower layer is the engine.
+### Pass 5 — Interaction & Motion
 
----
+Implement the continuous transition:
 
-## Human-facing flow
+1. **Toolbar compression:** Height smoothly interpolates from ~420px to 72px based on scroll progress.
+2. **Rail collapse:** Width smoothly transitions from 200px → 48px → 0px using CSS `width` + `transition`.
+3. **Header reflow:** Content shifts from expanded layout to inline compact layout.
+4. **Smooth height interpolation:** Scroll progress (0.0–1.0) maps to shell height via a CSS custom property (`--collapse-progress`) updated on scroll.
+5. **Sticky behavior:** Once collapsed, the toolbar remains sticky at the top of the viewport for the remainder of the page.
 
-```text
-1. Idea
-   User states: "I want a homepage for my AI tool."
+No content should disappear abruptly. Every change should be a continuous reduction in density.
 
-2. Question
-   SYNTH asks:
-   • "Who is it for?"
-   • "What should they feel?"
-   • "What is the one action they should take?"
-   • "What must it NOT look like?"
-   • "Which reference is authoritative?"
+### Motion System
 
-3. Understanding
-   SYNTH presents: "Here is what I understand you want..."
+```
+Duration: tied to scroll velocity, not clock
+Easing: linear (scroll-driven)
+Properties to animate: height, width, padding, gap, opacity (secondary), border-radius
+Properties NOT to animate: transform (except hover), background-color, box-shadow
 
-4. Contract
-   SYNTH asks: "Approve this contract and I will build it."
+Timing:
+  height: 0–500ms effective (scroll-distance-driven)
+  width: sync with height
+  opacity: 200ms delay after height begins
+```
 
-5. Mission
-   SYNTH shows: "This is the Mission I derived from your contract."
+### Collapse Progress Mapping
 
-6. Plan
-   SYNTH shows: "This is how I will execute the Mission."
-
-7. Execution
-   SYNTH executes and produces evidence.
-
-8. Review
-   SYNTH asks: "Does this match what we agreed?"
-
-9. Acceptance
-   SYNTH asks: "Do you accept this outcome?"
+```
+scrollProgress 0.0–0.5: expanded (full workspace, rail visible)
+scrollProgress 0.5–0.7: rail transitions to icons only
+scrollProgress 0.7–0.85: rail hidden, content begins compressing
+scrollProgress 0.85–1.0: toolbar compresses to 72px sticky bar
+scrollProgress >1.0: sticky bar persists at viewport top
 ```
 
 ---
 
-## Internal mapping
+## Deliverables
 
-The homepage uses the internal machinery but never exposes it.
-
-| Human-facing step | Internal capability | Internal artifacts |
-|---|---|---|
-| Idea | `CreateIntentModel` | `IntentModel` |
-| Question | `StartRefinementSession`, `AnswerRefinementQuestion` | `RefinementQuestion`, `RefinementSession` |
-| Understanding | `CreateRefinementReport`, `CreateAlignmentContract` | `RefinementReport`, `AlignmentContract` |
-| Contract | `ApproveAlignmentContract`, `OpenDivergenceGate`, `ResolveDivergenceGate` | `AlignmentContract`, `DivergenceGate`, `DivergenceReport` |
-| Mission | `ProjectMission` | `MissionProjectionPackage`, `ProjectionCertification`, `Mission` |
-| Plan | `CreateExpedition` | `Expedition`, `RefinedIntent` |
-| Execution | `StartExpedition`, `CompleteExpedition` | `ImplementationEvidence` |
-| Review | `OpenReviewGate`, `ResolveReviewGate`, `RequestRevision` | `ReviewGatePackage`, `ReviewDecision` |
-| Acceptance | `OpenAcceptanceGate`, `ResolveAcceptanceGate`, `CloseExpedition` | `AcceptanceGatePackage`, `AcceptanceRecord` |
-
----
-
-## Capability verification
-
-All internal capabilities required for the flow already exist in `src/domain/execution.ts`:
-
-| Public step | Internal capability | Status |
-|---|---|---|
-| Idea | `CreateIntentModel` | ✅ Implemented |
-| Question | `StartRefinementSession`, `AnswerRefinementQuestion` | ✅ Implemented |
-| Understanding | `CreateRefinementReport`, `CreateAlignmentContract` | ✅ Implemented |
-| Contract | `SubmitAlignmentContract`, `ApproveAlignmentContract`, `OpenDivergenceGate`, `ResolveDivergenceGate` | ✅ Implemented |
-| Mission | `ProjectMission` | ✅ Implemented |
-| Plan | `CreateExpedition`, `ApproveExpedition` | ✅ Implemented |
-| Execution | `CommitExpedition`, `StartExpedition`, `CompleteExpedition` | ✅ Implemented |
-| Review | `OpenReviewGate`, `ResolveReviewGate`, `RequestRevision` | ✅ Implemented |
-| Acceptance | `OpenAcceptanceGate`, `ResolveAcceptanceGate`, `CloseExpedition` | ✅ Implemented |
-
-No new capabilities are required.
-
----
-
-## Implementation order
-
-### Step 1 — Public state resolver
-
-Build a resolver that maps internal state to public experience state.
-
-```text
-Internal State
-       ↓
-Public Experience State
-       ↓
-UI
-```
-
-Example:
-
-Internal:
-
-```text
-IntentModel.status = submitted
-RefinementApproval = approved
-AlignmentContract = approved
-MissionProjection = certified
-```
-
-Public:
-
-```text
-CurrentStep: Contract
-Message: "Review what I understand before I begin building."
-```
-
-This is the most important piece. It is the boundary between the engine and the product.
-
-### Step 2 — Thin UI views
-
-Build one view per public step. These are presentation components, not new concepts.
-
-| View | Purpose |
-|---|---|
-| `IdeaInput` | Capture the user's initial idea. |
-| `QuestionFlow` | Present one question at a time; collect answers. |
-| `UnderstandingCard` | Summarize what SYNTH understood; allow correction. |
-| `ContractApproval` | Present the Contract; approve or reject. |
-| `MissionView` | Display the derived Mission. |
-| `PlanView` | Display Expeditions as plan steps. |
-| `EvidenceView` | Show implementation evidence. |
-| `ReviewView` | Ask whether evidence matches the Contract. |
-| `AcceptanceView` | Final accept/reject action. |
-
-### Step 3 — Forbidden vocabulary test
-
-Automated check that homepage output does not contain internal governance terms.
-
-Forbidden terms in public mode:
-
-```text
-Alignment
-Divergence
-Projection
-Certification
-Gate
-Artifact
-Governance
-RefinementSession
-RefinementReport
-RefinedIntent
-AcceptanceRecord
-```
-
-These may appear only inside developer/debug mode.
-
----
-
-## Definition of Done
-
-- [ ] Public state resolver maps internal state to public experience state.
-- [ ] Thin UI views exist for all 9 public steps.
-- [ ] A first-time user can state an idea on the homepage.
-- [ ] SYNTH generates and presents guided questions.
-- [ ] SYNTH presents an Understanding summary for confirmation.
-- [ ] SYNTH presents a Contract for approval.
-- [ ] SYNTH derives and displays a Mission after Contract approval.
-- [ ] SYNTH derives and displays a Plan after Mission creation.
-- [ ] SYNTH executes the Plan and produces Evidence.
-- [ ] SYNTH presents Evidence for Review.
-- [ ] SYNTH presents a final Acceptance step.
-- [ ] Forbidden vocabulary test passes for public UI output.
-
----
-
-## Forbidden vocabulary
-
-The homepage must never display these terms to the user in public mode:
-
-- Alignment Contract
-- Divergence Gate
-- Mission Projection
-- Mission Projection Package
-- Projection Certification
-- Refinement Session
-- Refinement Report
-- Refined Intent
-- Review Gate
-- Review Gate Package
-- Review Decision
-- Acceptance Gate
-- Acceptance Gate Package
-- Acceptance Record
-- Convergence Report
-- Gate Policy
-- Reviewer Kind
-- Governance State Machine
-- Artifact
-- Governance
+1. Continuous scroll-driven collapse in `mission-studio-app.js` using `--collapse-progress` CSS custom property.
+2. CSS interpolation for all animated properties (height, width, padding, gap, opacity).
+3. WorkspaceToolbar expanded → collapsed transition.
+4. WorkspaceRail 3-state transition (labels → icons → hidden).
+5. WorkspaceHeader reflow from full to inline.
+6. Sticky bar persistence after full collapse.
+7. Reduced-motion fallback (`prefers-reduced-motion`).
 
 ---
 
 ## Acceptance Criteria
 
-1. A first-time user can complete the entire flow without documentation.
-2. The flow matches the 9-term public vocabulary: Idea, Question, Understanding, Contract, Mission, Plan, Evidence, Review, Acceptance.
-3. Each step is visually distinct and explains what is happening in plain language.
-4. The Contract step clearly states what is being approved.
-5. The Mission and Plan steps visibly connect to the approved Contract.
-6. Evidence in the Review step is tied back to the Contract.
-7. Acceptance is a single, clear final action.
-8. Public UI output passes the forbidden vocabulary test.
+- Scrolling smoothly compresses the workspace from expanded to sticky toolbar.
+- No step-function jumps — every visual change interpolates.
+- The rail physically slides under content (width transition), not fades.
+- The sticky toolbar spans full width at 72px with no sidebar.
+- All content remains accessible in both expanded and collapsed states.
+- Reduced-motion mode collapses opacity-only with no height/width animation.
+- At no point does content "disappear" — it compresses.
+- The sticky toolbar persists at the viewport top for all remaining content.
 
 ---
 
 ## Out of Scope
 
-- Modifying internal governance types or events.
-- Renaming code artifacts.
-- Adding new gates or capabilities.
-- Implementing the full homepage design system.
-- Launching the homepage publicly.
-- Creating new programs, ADRs, or artifact families.
+- Structural reframe of HTML (EXP-HOME-026).
+- Token system expansion (EXP-HOME-027).
+- Visual polish or density tightening.
 
 ---
 
-## Related
+## Completion Evidence
 
-- `docs/analysis/synth-consolidation-review.md`
-- `docs/analysis/simplified-interaction-model-decision.md`
-- `docs/analysis/homepage-simplicity-proving-ground.md`
-- EXP-HOME-027 — Homepage Alignment Contract
-- EXP-PROGRAM-027 — Mission Studio Homepage
+- `website/js/mission-studio-app.js` — `handleProgressiveCollapse()` rewritten to set continuous `--collapse-progress` CSS custom property (0.0–1.0) based on scroll position; no discrete state toggling
+- `website/styles.css` — `--collapse-progress` driven interpolation: toolbar inner max-height/opacity/padding compress; collapsed bar fades in past 60% progress; rail width interpolates 200→0px; rail label opacity interpolates; `position: sticky` at `top: var(--nav-height)` for toolbar; reduced-motion fallback via `@media (prefers-reduced-motion: reduce)` (opacity-only)
+- No step-function transitions — every visual change interpolates continuously
+- Sticky bar persists at viewport top after full collapse
+- Reduced-motion mode collapses opacity-only with no height/width animation
+
+## Related documents
+
+- `docs/design/lds-002.md`
+- `docs/design/homepage-specification.md`
+- `docs/expeditions/EXP-HOME-026.md`
+- `docs/expeditions/EXP-HOME-027.md`

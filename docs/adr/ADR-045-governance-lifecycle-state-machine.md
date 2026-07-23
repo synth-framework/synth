@@ -28,13 +28,13 @@ The lifecycle is intentionally layered so that each layer can evolve independent
 
 ## Governance Architecture v1.0
 
-This ADR, together with ADR-036 — Intent Refinement and Alignment Governance and ADR-037 — Genesis Lifecycle and Alignment Contracts, constitutes the canonical governance architecture of SYNTH.
+This ADR, together with ADR-047 — Intent Refinement and Alignment Governance and ADR-048 — Genesis Lifecycle and Alignment Contracts, constitutes the canonical governance architecture of SYNTH.
 
 ```text
 Governance Architecture v1.0
 
-ADR-036  Intent Refinement and Alignment Governance
-ADR-037  Genesis Lifecycle and Alignment Contracts
+ADR-047  Intent Refinement and Alignment Governance
+ADR-048  Genesis Lifecycle and Alignment Contracts
 ADR-045  Governance Lifecycle & State Machine Specification
 ```
 
@@ -372,8 +372,8 @@ Rejected. The distinction must be between "who implemented" and "who reviews," n
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
-- ADR-037 — Genesis Lifecycle and Alignment Contracts
+- ADR-047 — Intent Refinement and Alignment Governance
+- ADR-048 — Genesis Lifecycle and Alignment Contracts
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-REFINE-013 — Mission Projection & Derivation
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance

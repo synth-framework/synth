@@ -1,7 +1,7 @@
-# ADR-037 — Genesis Lifecycle and Alignment Contracts
+# ADR-048 — Genesis Lifecycle and Alignment Contracts
 
-**Status:** Proposed  
-**Date:** 2026-07-20  
+**Status:** Accepted  
+**Date:** 2026-07-21  
 **Author:** SYNTH Architecture  
 **Deciders:** Architecture Owner  
 **Stakeholders:** Operators, AI Agents, Mission Studio, Governance
@@ -306,7 +306,7 @@ Rejected. Automated divergence detection is valuable but depends on the Alignmen
 
 ## Related
 
-- ADR-036 — Intent Refinement and Alignment Governance
+- ADR-047 — Intent Refinement and Alignment Governance
 - EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - EXP-PROGRAM-035 — Intent Refinement & Review Governance
 - EXP-PROGRAM-027 — Mission Studio Homepage
