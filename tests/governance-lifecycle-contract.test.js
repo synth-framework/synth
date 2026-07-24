@@ -105,7 +105,49 @@ async function approveMission(projectDir, subject, purpose) {
 
   const missionId = approveOutput.runtime?.missionId
   assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
-  return { draftId, missionId }
+  return { draftId, missionId, gateCtx, contractId }
+}
+
+async function certifyConvergence(gateCtx, missionId, expeditionId, contractId) {
+  const result = await gateCtx.api.handleIntent({
+    actor: "test",
+    capability: "CertifyConvergence",
+    payload: {
+      missionId,
+      expeditionId,
+      alignmentContractId: contractId,
+      observedFeatures: {
+        hasPersistentHeader: true,
+        hasPersistentSidebar: true,
+        hasScrollDrivenPhases: true,
+      },
+      ruleSetId: "program-027-homepage",
+      artifacts: [
+        {
+          path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`,
+          hash: `test-${missionId}-${expeditionId}`,
+          description: "Test implementation reference",
+        },
+      ],
+      runtimeEvidence: [
+        {
+          source: `synth://missions/${missionId}/expeditions/${expeditionId}/runtime`,
+          observation: "Runtime behavior observed",
+          timestamp: 0,
+        },
+      ],
+      executionEvidence: [
+        {
+          executionId: `test-execution-${expeditionId}`,
+          result: "passed",
+          outcome: "completed",
+        },
+      ],
+      certifier: { kind: "engine", id: "convergence-certification" },
+    },
+  })
+  assert(result.status === "ok", `CertifyConvergence must succeed: ${result.error}`)
+  assert(result.result?.decision === "converged", `Convergence certification must converge, got ${result.result?.decision}`)
 }
 
 async function testMissionLifecycleEmitsRequiredEvents(projectDir) {
@@ -131,7 +173,7 @@ async function testMissionLifecycleEmitsRequiredEvents(projectDir) {
 }
 
 async function testExpeditionLifecycleEmitsRequiredEvents(projectDir) {
-  const { missionId } = await approveMission(projectDir, "Expedition Host Mission", "Host expedition contract test")
+  const { missionId, gateCtx, contractId } = await approveMission(projectDir, "Expedition Host Mission", "Host expedition contract test")
 
   const createResult = runSynth(
     ["expedition", "create", "--mission", missionId, "--subject", "Contract Expedition", "--goal", "Test goal"],
@@ -150,6 +192,8 @@ async function testExpeditionLifecycleEmitsRequiredEvents(projectDir) {
 
   const startResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
   assert(startResult.status === 0, `expedition start must exit 0:\n${startResult.stderr}`)
+
+  await certifyConvergence(gateCtx, missionId, draftId, contractId)
 
   const evidencePath = path.join(projectDir, "evidence.txt")
   await fs.writeFile(evidencePath, "contract evidence", "utf-8")
