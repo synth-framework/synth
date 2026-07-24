@@ -8,8 +8,8 @@ Replay re-derives the state from the event history and compares it against the o
 |---|---|
 | Events replayed | 32 |
 | Hash chain valid | true |
-| Operational state hash | `1824574964` |
-| Replayed state hash | `1824574964` |
+| Operational state hash | `2120181512` |
+| Replayed state hash | `2120181512` |
 | Divergences | 0 |
 | Verdict | **CONSISTENT** |
 
