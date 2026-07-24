@@ -1,0 +1,152 @@
+{
+  "schema": "synth-capability-list-v1",
+  "description": "Auto-generated capability list extracted from src/capability/registry.ts. Baseline for verifying against the hand-authored capability-validation-map.json.",
+  "generatedAt": "2026-07-22T19:41:22.221Z",
+  "count": 36,
+  "capabilities": [
+    {
+      "name": "AcceptDecision",
+      "description": "Accept a proposed decision"
+    },
+    {
+      "name": "ActivatePlan",
+      "description": "Activate a plan"
+    },
+    {
+      "name": "AddObjective",
+      "description": "Add an objective to an expedition"
+    },
+    {
+      "name": "ApproveExpedition",
+      "description": "Approve an expedition"
+    },
+    {
+      "name": "ApproveMission",
+      "description": "Approve a mission"
+    },
+    {
+      "name": "ApprovePromotion",
+      "description": "Approve a proposed promotion"
+    },
+    {
+      "name": "ArchiveMission",
+      "description": "Archive a mission"
+    },
+    {
+      "name": "BlockWorkItem",
+      "description": "Block a work item"
+    },
+    {
+      "name": "CertifyConvergence",
+      "description": "Certify that a mission outcome remains converged with approved intent"
+    },
+    {
+      "name": "CommitExpedition",
+      "description": "Commit an approved expedition to runtime"
+    },
+    {
+      "name": "CompleteExpedition",
+      "description": "Complete an expedition"
+    },
+    {
+      "name": "CompleteMilestone",
+      "description": "Complete a milestone"
+    },
+    {
+      "name": "CompleteMission",
+      "description": "Complete a mission"
+    },
+    {
+      "name": "CompleteObjective",
+      "description": "Complete an objective"
+    },
+    {
+      "name": "CompletePlan",
+      "description": "Complete a plan"
+    },
+    {
+      "name": "CompleteWorkItem",
+      "description": "Complete a work item"
+    },
+    {
+      "name": "CreateBranch",
+      "description": "Create a governed branch"
+    },
+    {
+      "name": "CreateExpedition",
+      "description": "Create a new expedition"
+    },
+    {
+      "name": "CreateMilestone",
+      "description": "Create a new milestone"
+    },
+    {
+      "name": "CreateMission",
+      "description": "Create a new mission"
+    },
+    {
+      "name": "CreatePlan",
+      "description": "Create a new plan"
+    },
+    {
+      "name": "CreateProject",
+      "description": "Create a new project"
+    },
+    {
+      "name": "CreateRelease",
+      "description": "Create a governed release"
+    },
+    {
+      "name": "CreateWorkItem",
+      "description": "Create a new work item"
+    },
+    {
+      "name": "FilesystemWrite",
+      "description": "Write a file through the ExecutionGate mutation boundary"
+    },
+    {
+      "name": "InitializeProject",
+      "description": "Initialize the current directory as a SYNTH project"
+    },
+    {
+      "name": "InitializeRepository",
+      "description": "Initialize repository governance state"
+    },
+    {
+      "name": "MergePullRequest",
+      "description": "Merge an approved pull request"
+    },
+    {
+      "name": "OpenPullRequest",
+      "description": "Open a pull request as a promotion proposal"
+    },
+    {
+      "name": "RecordDecision",
+      "description": "Record and accept a new architectural decision"
+    },
+    {
+      "name": "RecordDiscovery",
+      "description": "Record a discovery"
+    },
+    {
+      "name": "RecordRepair",
+      "description": "Record that a replay repair was accepted and applied"
+    },
+    {
+      "name": "RejectDecision",
+      "description": "Reject a decision"
+    },
+    {
+      "name": "StartExpedition",
+      "description": "Start an expedition"
+    },
+    {
+      "name": "StartMilestone",
+      "description": "Start a milestone"
+    },
+    {
+      "name": "StartWorkItem",
+      "description": "Start work on a work item"
+    }
+  ]
+}

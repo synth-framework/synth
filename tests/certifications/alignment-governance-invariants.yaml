@@ -1,0 +1,78 @@
+id: alignment-governance-invariants
+name: Alignment Governance Constitutional Invariants
+description: >
+  Regression suite for EXP-PROGRAM-036.
+  Validates that Mission approval cannot bypass Alignment,
+  that an Alignment Contract is built from an Intent Model and Divergence Gate,
+  and that replay reconstructs the alignment chain deterministically.
+taxonomy:
+  - governance.alignment
+  - constitutional.invariant
+level: 2
+
+workspace:
+  files:
+    - path: package.json
+      content: '{"name": "cert-alignment-test", "version": "1.0.0"}'
+
+setup:
+  - name: bootstrap project
+    command: ["bootstrap", ".", "--approve"]
+    expect:
+      status: 0
+      jsonPath:
+        status: "ok"
+
+  - name: create mission draft
+    command: ["mission", "create", "--subject", "Alignment Invariant Mission", "--purpose", "Certify alignment governance"]
+    capture:
+      jsonPath:
+        draftId: "draftId"
+    expect:
+      status: 0
+
+  - name: add certain evidence
+    command: ["mission", "evidence", "add", "--draft-id", "{{draftId}}", "--subject", "Conclusive evidence", "--purpose", "Raises confidence", "--confidence", "certain"]
+    capture:
+      jsonPath:
+        evidenceDraftId: "draftId"
+    expect:
+      status: 0
+
+steps:
+  - name: mission approve without alignment contract is rejected
+    command: ["mission", "approve", "--draft-id", "{{evidenceDraftId}}"]
+    expect:
+      status: "non-zero"
+      stdoutContains:
+        - "ALIGNMENT_CONTRACT_REQUIRED"
+
+  - name: prepare alignment package
+    command: ["alignment", "prepare"]
+    capture:
+      jsonPath:
+        contractId: "contractId"
+        intentModelId: "intentModelId"
+        gateId: "gateId"
+    expect:
+      status: 0
+      stdoutContains:
+        - "AlignmentPrepared"
+        - '"intentModelId":'
+        - '"contractId":'
+        - '"gateId":'
+
+  - name: mission approve with aligned contract succeeds
+    command: ["mission", "approve", "--draft-id", "{{evidenceDraftId}}", "--alignment-contract-id", "{{contractId}}"]
+    expect:
+      status: 0
+      jsonPath:
+        decision.approved: true
+
+recovery: []
+
+verify:
+  - name: replay reconstructs alignment deterministically
+    command: ["explain", "replay"]
+    expect:
+      status: 0

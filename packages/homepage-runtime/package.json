@@ -1,0 +1,28 @@
+{
+  "name": "@synth-framework/homepage-runtime",
+  "version": "0.1.0",
+  "description": "Browser-compatible, in-memory runtime for the SYNTH Mission Studio homepage.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "keywords": [
+    "synth",
+    "mission-studio",
+    "homepage",
+    "runtime"
+  ],
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

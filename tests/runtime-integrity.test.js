@@ -5,34 +5,11 @@
 // dist/ hashes against a build-time manifest.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import os from "os"
+import { runSynth, parseJson, assertCliBuilt } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const DIST_MANIFEST_PATH = path.resolve(process.cwd(), "dist", "dist-manifest.json")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
 
 function assert(condition, message) {
   if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
@@ -72,11 +49,11 @@ async function testDoctorDetectsTamperedDistFile() {
 }
 
 async function main() {
+  await assertCliBuilt()
   try {
-    await fs.access(CLI_PATH)
     await fs.access(DIST_MANIFEST_PATH)
   } catch {
-    console.error("[SKIP] CLI or dist manifest not built. Run 'npm run build' first.")
+    console.error("[SKIP] Dist manifest not built. Run 'npm run build' first.")
     process.exit(0)
   }
 

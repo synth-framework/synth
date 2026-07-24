@@ -16,8 +16,8 @@
 // execution-state mutation authority.
 // ============================================================
 
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import { canonicalHash } from "./canonical-json.js"
 
 const RECORD_SCHEMA = "synth-draft-integrity-v1"

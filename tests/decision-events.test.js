@@ -10,6 +10,8 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { bootstrap } from "../dist/core/bootstrap.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const DIST_SYNTH = path.join(REPO_ROOT, "dist", "cli", "synth.js")
@@ -67,8 +69,21 @@ function evidenceAdd(dir, draftId, subject) {
   return r.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
 }
 
-function approve(dir, draftId) {
-  return runCli(dir, ["mission", "approve", "--draft-id", draftId])
+async function approve(dir, draftId) {
+  // Phase 2 governance: Mission approval requires an aligned Alignment Contract.
+  // The CLI operator workflow for creating this contract is not yet implemented,
+  // so tests construct it directly through the governance capabilities.
+  const dataDir = path.join(dir, ".synth", "data")
+  const gateCtx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      eventLogPath: path.join(dataDir, "event-log.jsonl"),
+      statePath: path.join(dataDir, "canonical-state.json"),
+    },
+  })
+  const { contractId } = await createAlignedContract(gateCtx)
+
+  return runCli(dir, ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId])
 }
 
 function readDecisions(dir) {
@@ -84,7 +99,7 @@ function readDecisions(dir) {
   }
 }
 
-function main() {
+async function main() {
   if (!fs.existsSync(DIST_SYNTH)) {
     console.error("dist/cli/synth.js not found; run `npm run build` first.")
     process.exit(1)
@@ -95,7 +110,7 @@ function main() {
     const dir = makeWorkspace()
     try {
       const draftId = createDraft(dir)
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "N9 fixture: below-threshold draft is rejected")
       const decisions = readDecisions(dir)
       const rejection = decisions.find((d) => d.type === "MISSION_APPROVAL_REJECTED" && d.draftId === draftId)
@@ -114,7 +129,7 @@ function main() {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(r.output.includes('"approved": true'), "Approval fixture: sufficiently evidenced draft approves")
       const decisions = readDecisions(dir)
       const approval = decisions.find((d) => d.type === "MISSION_APPROVAL_APPROVED" && d.draftId === draftId)
@@ -134,7 +149,7 @@ function main() {
       const draft = JSON.parse(fs.readFileSync(file, "utf8"))
       draft.confidence.overall = 0.95
       fs.writeFileSync(file, JSON.stringify(draft, null, 2))
-      approve(dir, draftId)
+      await approve(dir, draftId)
       const decisions = readDecisions(dir)
       const rejection = decisions.find((d) => d.type === "MISSION_DRAFT_INTEGRITY_REJECTED" && d.draftId === draftId)
       assert(Boolean(rejection), "Integrity fixture: the integrity rejection is persisted")
@@ -150,8 +165,8 @@ function main() {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
-      approve(dir, draftId)
-      const second = approve(dir, draftId)
+      await approve(dir, draftId)
+      const second = await approve(dir, draftId)
       assert(/already approved/i.test(second.output), "Idempotency: re-approval says the draft is already approved")
       const approvals = readDecisions(dir).filter((d) => d.type === "MISSION_APPROVAL_APPROVED" && d.draftId === draftId)
       assert(approvals.length === 1, `Idempotency: exactly one approval decision recorded (found ${approvals.length})`)
@@ -169,7 +184,7 @@ function main() {
       const draft = JSON.parse(fs.readFileSync(file, "utf8"))
       draft.approvalState = "approved"
       fs.writeFileSync(file, JSON.stringify(draft, null, 2))
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!/already approved/i.test(r.output), "Field forgery: approvalState in the draft is ignored")
       assert(!r.output.includes('"approved": true'), "Field forgery: no approval from an editable field")
     } finally {
@@ -182,9 +197,9 @@ function main() {
     const dir = makeWorkspace()
     try {
       const first = createDraft(dir)
-      approve(dir, first)
+      await approve(dir, first)
       const second = createDraft(dir)
-      approve(dir, second)
+      await approve(dir, second)
       const all = runCli(dir, ["mission", "decisions"])
       assert((all.output.match(/MISSION_APPROVAL_REJECTED/g) || []).length >= 2, "Read surface: lists every recorded decision")
       const filtered = runCli(dir, ["mission", "decisions", "--draft-id", first])
@@ -200,9 +215,9 @@ function main() {
     const dir = makeWorkspace()
     try {
       const first = createDraft(dir)
-      approve(dir, first)
+      await approve(dir, first)
       const second = createDraft(dir)
-      approve(dir, second)
+      await approve(dir, second)
       const file = path.join(dir, ".synth", "data", "decisions.jsonl")
       const lines = fs.readFileSync(file, "utf8").split("\n").filter(Boolean)
       fs.writeFileSync(file, [...lines.slice(1), ""].join("\n"))
@@ -218,4 +233,7 @@ function main() {
   if (failed > 0) process.exit(1)
 }
 
-main()
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

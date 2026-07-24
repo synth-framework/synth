@@ -111,7 +111,7 @@ export function createOperationalArtifactCorrelationCapability(): CorrelationCap
  * FilesystemProvider.
  */
 export function createOperationalArtifactObservationCapabilityWithProvider(
-  provider: import("../../environment/filesystem-capability.js").FilesystemProvider,
+  provider: import("../../infra/filesystem-provider.js").FilesystemProvider,
 ): ObservationCapability {
   return {
     id: OPERATIONAL_ARTIFACT_CAPABILITY_ID,

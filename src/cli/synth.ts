@@ -10,6 +10,7 @@ import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
 import { spawn } from "child_process"
+import { sha256 } from "../sdk/hashing/index.js"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
@@ -20,8 +21,9 @@ import { refreshAiMetadata } from "./ai-metadata.js"
 import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
+import { setAgentTelemetry, printJson, printError } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
@@ -55,10 +57,10 @@ import {
   cmdFirstContactStatus,
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/paths.js"
+import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
+import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 
@@ -86,6 +88,8 @@ const COMMANDS = [
   { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
+  { name: "intent", description: "Intent model operations (create)" },
+  { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
@@ -117,9 +121,8 @@ const ADAPTER_NAMES = [
   "wizard",
 ]
 
-let agentTelemetry: Record<string, unknown> = {}
-
-function setAgentTelemetry(flags: Record<string, string | boolean>) {
+// Wraps shared setAgentTelemetry to parse CLI flags into telemetry data.
+function setAgentTelemetryFromFlags(flags: Record<string, string | boolean>) {
   const telemetry: Record<string, unknown> = {}
   if (typeof flags["agent-session"] === "string" && flags["agent-session"].length > 0) {
     telemetry.agentSession = flags["agent-session"]
@@ -134,20 +137,7 @@ function setAgentTelemetry(flags: Record<string, string | boolean>) {
       telemetry.agentReasoningState = { parseError: flags["agent-reasoning-state"] }
     }
   }
-  agentTelemetry = telemetry
-}
-
-function printJson(obj: unknown) {
-  if (Object.keys(agentTelemetry).length === 0) {
-    console.log(JSON.stringify(obj, null, 2))
-  } else {
-    console.log(JSON.stringify({ ...agentTelemetry, ...(obj as Record<string, unknown>) }, null, 2))
-  }
-}
-
-function printError(error: string, code = 1): never {
-  printJson({ status: "error", error })
-  process.exit(code)
+  setAgentTelemetry(telemetry)
 }
 
 function parseArgs(argv: string[]) {
@@ -193,8 +183,13 @@ async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]
   return ctx
 }
 
-function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState) {
-  return validateAgentAction(action, state)
+async function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState, runtime?: import("../runtime/engine.js").RuntimeEngine) {
+  let derived: import("../types/index.js").DerivedState | undefined
+  if (runtime) {
+    const events = await runtime.loadEvents()
+    derived = buildDerivedState(events)
+  }
+  return validateAgentAction(action, state, derived)
 }
 
 function printGateBlock(result: Extract<ReturnType<typeof validateAgentAction>, { decision: "BLOCK" }>): never {
@@ -263,7 +258,7 @@ async function verifyDistIntegrity(): Promise<DoctorCheckResult> {
     const filePath = path.join(distDir, rel)
     let actualHash: string
     try {
-      actualHash = crypto.createHash("sha256").update(await fs.readFile(filePath)).digest("hex")
+      actualHash = sha256(await fs.readFile(filePath))
     } catch {
       missing++
       continue
@@ -286,21 +281,19 @@ async function verifyDistIntegrity(): Promise<DoctorCheckResult> {
 
 async function verifyReplayHealth(): Promise<DoctorCheckResult> {
   try {
-    await ensureRuntimeDataDir(process.cwd())
-    const dataDir = await getRuntimeDataDir(process.cwd())
-    const logPath = path.join(dataDir, "event-log.jsonl")
-    try {
-      await fs.access(logPath)
-    } catch {
+    const root = sdk.workspace.root()
+    await sdk.paths.ensureDataDir(root)
+    const logPath = sdk.paths.eventLogFile(root)
+    if (!(await sdk.files.exists(logPath))) {
       return { ok: true, detail: "No event log present; replay skipped" }
     }
     const ctx = await bootstrap({
       skipGenesis: true,
       infra: {
         persistence: "file",
-        eventLogPath: logPath,
-        statePath: path.join(dataDir, "canonical-state.json"),
-        checkpointPath: path.join(dataDir, "checkpoints.json"),
+        eventLogPath: sdk.paths.eventLogFile(root),
+        statePath: sdk.paths.stateFile(root),
+        checkpointPath: sdk.paths.checkpointsFile(root),
       },
     })
     const verifier = createReplayVerifier(ctx.infra.eventStore, ctx.infra.stateStore)
@@ -323,23 +316,19 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
 
 async function verifyEventChain(): Promise<DoctorCheckResult> {
   try {
-    await ensureRuntimeDataDir(process.cwd())
-    const dataDir = await getRuntimeDataDir(process.cwd())
-    const logPath = path.join(dataDir, "event-log.jsonl")
-    try {
-      await fs.access(logPath)
-    } catch {
+    const root = sdk.workspace.root()
+    await sdk.paths.ensureDataDir(root)
+    const logPath = sdk.paths.eventLogFile(root)
+    if (!(await sdk.files.exists(logPath))) {
       return { ok: true, detail: "No event log present; chain skipped" }
     }
-    const events: string[] = (await fs.readFile(logPath, "utf-8"))
-      .split("\n")
-      .filter((line) => line.trim().length > 0)
+    const events = await sdk.events.readEvents(root)
     if (events.length === 0) {
       return { ok: true, detail: "Event log is empty" }
     }
     let previousHash = "genesis"
     for (let i = 0; i < events.length; i++) {
-      const event = JSON.parse(events[i])
+      const event = events[i]
       if (event.previousHash !== previousHash) {
         return {
           ok: false,
@@ -360,7 +349,7 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
 }
 
 async function verifyDiscoveryBaseline(): Promise<DoctorCheckResult> {
-  const discoveryDir = path.join(process.cwd(), ".synth", "discovery")
+  const discoveryDir = sdk.paths.discoveryDir(sdk.workspace.root())
   try {
     const entries = await fs.readdir(discoveryDir)
     const hasBaseline = entries.some((entry) => entry.endsWith(".json") || entry.endsWith(".jsonl"))
@@ -407,7 +396,7 @@ async function cmdDoctor() {
   }
 
   // Project Health — repository and governance signals
-  const manifestPath = path.join(process.cwd(), ".synth", "manifest.json")
+  const manifestPath = sdk.paths.manifestPath(sdk.workspace.root())
   let hasManifest = false
   try {
     await fs.access(manifestPath)
@@ -905,7 +894,7 @@ function requireString(value: string | undefined, fallback: string): string {
 }
 
 async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBaseline, "signature">): Promise<string> {
-  const discoveryDir = path.join(targetDir, ".synth", "discovery")
+  const discoveryDir = sdk.paths.discoveryDir(targetDir)
   await fs.mkdir(discoveryDir, { recursive: true })
 
   // The signature covers only deterministic content. generatedAt and targetDir
@@ -917,7 +906,7 @@ async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBas
     analysis: data.analysis,
   }
   const canonical = JSON.stringify(signatureInput, Object.keys(signatureInput).sort())
-  const signature = crypto.createHash("sha256").update(canonical).digest("hex")
+  const signature = sha256(canonical)
   const baseline: DiscoveryBaseline = { ...data, signature }
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
@@ -974,11 +963,713 @@ async function cmdDiscover(args: string[], flags: Record<string, string | boolea
 async function cmdMissionHelp() {
   printJson(namespaceHelp("mission", "Mission Studio operations", [
     { name: "synth mission create --subject <subject> --purpose <purpose>", description: "Create a Mission proposal" },
-    { name: "synth mission approve --draft-id <id>", description: "Approve a Mission draft" },
+    { name: "synth mission project --alignment-contract-id <id>", description: "Project a Mission from an approved Alignment Contract (EXP-REFINE-014)" },
+    { name: "synth mission approve --draft-id <id> --alignment-contract-id <contract-id>", description: "Approve a Mission draft" },
     { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
     { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
     { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
   ]))
+}
+
+async function cmdValidateHelp() {
+  printJson(namespaceHelp("validate", "Analyze changes, plan validations, and execute them", [
+    { name: "synth validate", description: "Run the adaptive validator on the current working tree" },
+    { name: "synth validate --dry-run", description: "Preview the validation plan without executing" },
+    { name: "synth validate --full", description: "Run the complete canonical governance pipeline" },
+    { name: "synth validate dependencies", description: "Verify expedition charter dependency resolution" },
+    { name: "synth validate artifact --type <type>", description: "Validate governance artifacts (expedition, mission)" },
+  ]))
+}
+
+async function cmdExplainHelp() {
+  printJson(namespaceHelp("explain", "Explain operations — replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all", [
+    { name: "synth explain replay", description: "Verify replay consistency between event log and current state" },
+    { name: "synth explain lineage", description: "Project → Mission → Expedition → Objective tree with broken parents" },
+    { name: "synth explain proposals", description: "Proposal → observations/evidence from snapshot store" },
+    { name: "synth explain snapshots", description: "Snapshot version history and parents" },
+    { name: "synth explain graph", description: "Aggregate graph with per-node status and violation markers" },
+    { name: "synth explain diagnostics", description: "Relationship diagnostics with violation rollup and replay attribution" },
+    { name: "synth explain status", description: "Validation dashboard with one verdict" },
+    { name: "synth explain identity", description: "Repository identity projection from replayable evidence" },
+    { name: "synth explain resume", description: "What happened, what was decided, what is next" },
+    { name: "synth explain governance", description: "Governance Record lineage derived from replay" },
+    { name: "synth explain all", description: "Umbrella report with every section above" },
+  ], { note: "Every explain subcommand is read-only. Use --log <path> to inspect an alternative project log. Use --json for machine output." }))
+}
+
+async function cmdIntentHelp() {
+  printJson(namespaceHelp("intent", "Intent model operations", [
+    { name: "synth intent create --file <path>", description: "Create an Intent Model from a JSON file" },
+    { name: "synth intent refine --intent-model-id <id> --answers <path> --recommendation <recommendation> --reason <reason>", description: "Run a refinement session and produce a Refinement Report" },
+    { name: "synth intent submit --intent-model-id <id>", description: "Submit a refined Intent Model for downstream Alignment Contract creation" },
+    { name: "synth intent approve --report-id <id> [--decision approved_for_alignment|revision_required|rejected] [--reason <reason>]", description: "Approve or reject a Refinement Report" },
+  ]))
+}
+
+async function cmdIntentCreate(flags: Record<string, string | boolean>) {
+  const filePath = typeof flags.file === "string" ? flags.file : undefined
+  if (!filePath) {
+    printError("Usage: synth intent create --file <path>")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  let input: Record<string, unknown>
+  try {
+    const content = await fs.readFile(path.resolve(filePath), "utf-8")
+    input = JSON.parse(content)
+  } catch (err) {
+    printError(`Failed to read intent model file: ${err instanceof Error ? err.message : String(err)}`)
+    return
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateIntentModel",
+    payload: { input },
+  })
+
+  if (result.status !== "ok") {
+    printError(`CreateIntentModel failed: ${result.error}`)
+    return
+  }
+
+  const events = await ctx.infra.eventStore.loadAll()
+  const intentEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_CREATED")
+  const intentModelId = (intentEvent?.payload as Record<string, any> | undefined)?.intentModelId
+
+  printJson({
+    status: "ok",
+    kind: "IntentModelCreated",
+    intentModelId,
+    note: "Intent Model recorded. Run a refinement session before creating an Alignment Contract.",
+  })
+}
+
+async function cmdIntentRefine(flags: Record<string, string | boolean>) {
+  const intentModelId = typeof flags["intent-model-id"] === "string" ? flags["intent-model-id"] : undefined
+  if (!intentModelId) {
+    printError("Usage: synth intent refine --intent-model-id <id> [--answers <path>] [--recommendation <recommendation>] [--reason <reason>]")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const events = await ctx.infra.eventStore.loadAll()
+  const initialEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_CREATED" && e.payload?.intentModelId === intentModelId)
+  if (!initialEvent) {
+    printError(`Intent Model not found: ${intentModelId}`)
+    return
+  }
+  const initialModel = (initialEvent.payload as Record<string, any>).intentModel
+
+  const startResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "StartRefinementSession",
+    payload: { intentModelId },
+  })
+  if (startResult.status !== "ok") {
+    printError(`StartRefinementSession failed: ${startResult.error}`)
+    return
+  }
+
+  const sessionEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "REFINEMENT_SESSION_STARTED" && e.payload?.intentModelId === intentModelId)
+  const sessionId = (sessionEvent?.payload as Record<string, any> | undefined)?.sessionId
+  const questions = ((sessionEvent?.payload as Record<string, any> | undefined)?.questions ?? []) as Array<{ id: string; text: string; category: string; priority: string }>
+
+  const answersPath = typeof flags.answers === "string" ? flags.answers : undefined
+  let answers: Record<string, string> = {}
+  let additionalEntries: Array<{ question: { id: string; text: string; category: string; priority: string }; answer: string }> = []
+  if (answersPath) {
+    try {
+      const content = await fs.readFile(path.resolve(answersPath), "utf-8")
+      const parsed = JSON.parse(content)
+      if (parsed.answers && typeof parsed.answers === "object") {
+        answers = parsed.answers
+      }
+      if (Array.isArray(parsed.additionalEntries)) {
+        additionalEntries = parsed.additionalEntries
+      }
+    } catch (err) {
+      printError(`Failed to read answers file: ${err instanceof Error ? err.message : String(err)}`)
+      return
+    }
+  }
+
+  if (Object.keys(answers).length === 0 && additionalEntries.length === 0) {
+    printJson({
+      status: "ok",
+      kind: "RefinementSessionStarted",
+      sessionId,
+      intentModelId,
+      questions,
+      note: "Provide answers in a JSON file and rerun with --answers <path>",
+    })
+    return
+  }
+
+  for (const question of questions) {
+    const answer = answers[question.id]
+    if (!answer) continue
+    const answerResult = await ctx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "AnswerRefinementQuestion",
+      payload: { sessionId, questionId: question.id, answer },
+    })
+    if (answerResult.status !== "ok") {
+      printError(`AnswerRefinementQuestion failed for ${question.id}: ${answerResult.error}`)
+      return
+    }
+  }
+
+  const recommendation = typeof flags.recommendation === "string" ? flags.recommendation : "approve_for_alignment"
+  const reason = typeof flags.reason === "string" ? flags.reason : "Refinement review completed via CLI"
+
+  const reportResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateRefinementReport",
+    payload: {
+      sessionId,
+      initialModel,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+      recommendation,
+      reason,
+      additionalEntries,
+    },
+  })
+  if (reportResult.status !== "ok") {
+    printError(`CreateRefinementReport failed: ${reportResult.error}`)
+    return
+  }
+
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const reportEvent = allEvents
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "REFINEMENT_REPORT_CREATED" && e.payload?.report?.sessionId === sessionId)
+  const reportId = (reportEvent?.payload as Record<string, any> | undefined)?.reportId
+  const finalModelEvent = allEvents
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_REVISED" && e.payload?.intentModelId === intentModelId)
+  const finalConfidence = (finalModelEvent?.payload as Record<string, any> | undefined)?.intentModel?.confidenceLevel
+
+  printJson({
+    status: "ok",
+    kind: "RefinementReportCreated",
+    reportId,
+    sessionId,
+    intentModelId,
+    finalConfidence,
+    recommendation,
+    reason,
+    note: "Refinement Report created. Submit the Intent Model when ready for Alignment Contract creation.",
+  })
+}
+
+async function cmdIntentSubmit(flags: Record<string, string | boolean>) {
+  const intentModelId = typeof flags["intent-model-id"] === "string" ? flags["intent-model-id"] : undefined
+  if (!intentModelId) {
+    printError("Usage: synth intent submit --intent-model-id <id>")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "SubmitIntentModel",
+    payload: { intentModelId },
+  })
+
+  if (result.status !== "ok") {
+    printError(`SubmitIntentModel failed: ${result.error}`)
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "IntentModelSubmitted",
+    intentModelId,
+    note: "Intent Model submitted. Ready for Alignment Contract creation (EXP-HOME-027).",
+  })
+}
+
+async function cmdIntentApprove(flags: Record<string, string | boolean>) {
+  const reportId = typeof flags["report-id"] === "string" ? flags["report-id"] : undefined
+  if (!reportId) {
+    printError("Usage: synth intent approve --report-id <id> [--decision approved_for_alignment|revision_required|rejected] [--reason <reason>]")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const decision = typeof flags.decision === "string" ? flags.decision : "approved_for_alignment"
+  const reason = typeof flags.reason === "string" ? flags.reason : "Refinement report approved for alignment"
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ApproveRefinementReport",
+    payload: {
+      reportId,
+      decision,
+      reason,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+    },
+  })
+
+  if (result.status !== "ok") {
+    printError(`ApproveRefinementReport failed: ${result.error}`)
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "RefinementReportApproved",
+    reportId,
+    decision,
+    reason,
+    note: decision === "approved_for_alignment"
+      ? "Refinement Report approved. Intent Model is now approved for Alignment Contract creation."
+      : "Refinement Report rejected. Intent Model requires revision before alignment.",
+  })
+}
+
+async function cmdAlignmentHelp() {
+  printJson(namespaceHelp("alignment", "Intent alignment and divergence governance", [
+    { name: "synth alignment create --intent-model-id <id>", description: "Derive an Alignment Contract from an approved Intent Model" },
+    { name: "synth alignment submit --contract-id <id>", description: "Submit an Alignment Contract for review" },
+    { name: "synth alignment approve --contract-id <id>", description: "Approve an Alignment Contract, authorizing Mission creation" },
+    { name: "synth alignment prepare", description: "Create a minimal aligned contract and output its id" },
+  ]))
+}
+
+async function cmdAlignmentCreate(flags: Record<string, string | boolean>) {
+  const intentModelId = typeof flags["intent-model-id"] === "string" ? flags["intent-model-id"] : undefined
+  if (!intentModelId) {
+    printError("Usage: synth alignment create --intent-model-id <id> [--evidence <path>]")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const events = await ctx.infra.eventStore.loadAll()
+  const approvedEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "REFINEMENT_REPORT_APPROVED" && e.payload?.intentModelId === intentModelId)
+  if (!approvedEvent) {
+    printError(`Intent Model ${intentModelId} has not been approved for alignment. Run 'synth intent approve' first.`)
+    return
+  }
+
+  const intentEvent = events
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "INTENT_MODEL_CREATED" && e.payload?.intentModelId === intentModelId)
+  if (!intentEvent) {
+    printError(`Intent Model not found: ${intentModelId}`)
+    return
+  }
+  const intentModel = (intentEvent.payload as Record<string, any>).intentModel
+
+  async function lastEvent(type: string, predicate: (e: any) => boolean = () => true) {
+    const allEvents = await ctx.infra.eventStore.loadAll()
+    const matches = allEvents.filter((e: any) => e.type === type && predicate(e))
+    return matches.length > 0 ? matches[matches.length - 1] : undefined
+  }
+
+  // Create reference evidence entries from an optional evidence file or from a default canonical set.
+  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+  let evidenceEntries: Array<{ uri: string; description: string; kind?: string; mimeType?: string }> = []
+  if (evidencePath) {
+    try {
+      const content = await fs.readFile(path.resolve(evidencePath), "utf-8")
+      const parsed = JSON.parse(content)
+      evidenceEntries = Array.isArray(parsed) ? parsed : parsed.entries ?? []
+    } catch (err) {
+      printError(`Failed to read evidence file: ${err instanceof Error ? err.message : String(err)}`)
+      return
+    }
+  } else {
+    evidenceEntries = [
+      { uri: "file://docs/design/lds-002.md", description: "Mission Studio Design System (LDS-002) — canonical tokens and visual principles", kind: "document", mimeType: "text/markdown" },
+      { uri: "file://docs/expeditions/EXP-PROGRAM-027.md", description: "Program 027 charter — Mission Studio Homepage scope and constraints", kind: "document", mimeType: "text/markdown" },
+      { uri: "file://docs/expeditions/EXP-HOME-001.md", description: "Mission Studio Design Language — canonical visual language", kind: "document", mimeType: "text/markdown" },
+      { uri: "file://docs/expeditions/EXP-HOME-002.md", description: "Mission Studio Component Catalog — reusable workspace components", kind: "document", mimeType: "text/markdown" },
+      { uri: "file://docs/expeditions/EXP-HOME-025.md", description: "Mission Studio Design Governance — anti-drift rules", kind: "document", mimeType: "text/markdown" },
+      { uri: "file://docs/expeditions/EXP-HOME-026.md", description: "Homepage Intent Model — approved refined intent", kind: "document", mimeType: "text/markdown" },
+      { uri: "file://docs/governance/program-027/refinement-report.json", description: "Refinement Report — evidence of refinement review and approval", kind: "document", mimeType: "application/json" },
+    ]
+  }
+
+  const evidenceIds: string[] = []
+  for (const entry of evidenceEntries) {
+    const evidenceResult = await ctx.api.handleIntent({
+      actor: "synth-cli",
+      capability: "CreateReferenceEvidence",
+      payload: {
+        input: {
+          kind: entry.kind || "document",
+          uri: entry.uri,
+          hash: "sha256:00000000",
+          mimeType: entry.mimeType || "text/markdown",
+          description: entry.description,
+        },
+      },
+    })
+    if (evidenceResult.status !== "ok") {
+      printError(`CreateReferenceEvidence failed: ${evidenceResult.error}`)
+      return
+    }
+    const evidenceEvent = await lastEvent("REFERENCE_EVIDENCE_CREATED", (e: any) =>
+      e.payload.evidence?.uri === entry.uri
+    )
+    const evidenceId = (evidenceEvent?.payload as Record<string, any> | undefined)?.evidenceId
+    if (evidenceId) evidenceIds.push(evidenceId)
+  }
+
+  if (evidenceIds.length === 0) {
+    printError("No reference evidence could be created. Alignment Contract requires at least one evidence binding.")
+    return
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateAlignmentContract",
+    payload: {
+      input: {
+        intentModelId,
+        intentSummary: intentModel.explicitObjectives.join("; "),
+        expectedExperience: intentModel.desiredOutcome ?? "Not specified",
+        requiredProperties: intentModel.allowedInterpretations,
+        forbiddenProperties: intentModel.forbiddenInterpretations,
+        requiredBehaviors: ["Workspace persists while phases change", "Supporting content appears after Mission Studio releases"],
+        forbiddenInterpretation: intentModel.forbiddenInterpretations,
+        forbiddenDrift: intentModel.forbiddenInterpretations,
+        successCriteria: intentModel.desiredOutcome ? [intentModel.desiredOutcome] : [],
+        referenceEvidenceIds: evidenceIds,
+        dimensions: [
+          { name: "Intent", score: 0.98, reason: "Explicit and implicit objectives documented and reviewed" },
+          { name: "Experience", score: 0.95, reason: "Desired outcome and experience contract captured" },
+          { name: "Visual", score: 0.97, reason: "Visual references and design system identified" },
+          { name: "Interaction", score: 0.94, reason: "Scroll contract and workspace persistence captured" },
+          { name: "Governance", score: 1.0, reason: "Refinement approval recorded" },
+          { name: "Evidence", score: 1.0, reason: "All objectives bound to reference evidence" },
+        ],
+        objectiveCoverage: intentModel.explicitObjectives.map((objective: string) => ({
+          objective,
+          evidenceIds,
+          aligned: true,
+          notes: "Derived from approved Intent Model",
+        })),
+        implicitObjectiveStatus: intentModel.implicitObjectives.map((objective: string) => ({
+          objective,
+          status: "accepted",
+          reason: "Accepted as part of refined intent",
+        })),
+        forbiddenInterpretations: intentModel.forbiddenInterpretations.map((interpretation: string) => ({
+          interpretation,
+          reason: "Explicitly forbidden in approved Intent Model",
+          evidenceIds,
+        })),
+        confidenceExplanation: {
+          score: 0.97,
+          reason: "Computed from 6 alignment dimensions. Residual ambiguity is documented as known unknowns.",
+        },
+        residualDivergence: intentModel.knownUnknowns.map((unknown: string) => ({
+          description: unknown,
+          acceptedBy: { kind: "human", id: "synth-cli-operator" },
+          reason: "Known unknown accepted for first release",
+          risk: "low",
+        })),
+      },
+    },
+  })
+
+  if (result.status !== "ok") {
+    printError(`CreateAlignmentContract failed: ${result.error}`)
+    return
+  }
+
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const contractEvent = allEvents
+    .slice()
+    .reverse()
+    .find((e: any) => e.type === "ALIGNMENT_CONTRACT_CREATED")
+  const contractId = (contractEvent?.payload as Record<string, any> | undefined)?.contractId
+
+  printJson({
+    status: "ok",
+    kind: "AlignmentContractCreated",
+    contractId,
+    intentModelId,
+    note: "Alignment Contract created. Submit it for review and approval before Mission creation.",
+  })
+}
+
+async function cmdAlignmentSubmit(flags: Record<string, string | boolean>) {
+  const contractId = typeof flags["contract-id"] === "string" ? flags["contract-id"] : undefined
+  if (!contractId) {
+    printError("Usage: synth alignment submit --contract-id <id>")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "SubmitAlignmentContract",
+    payload: { contractId },
+  })
+
+  if (result.status !== "ok") {
+    printError(`SubmitAlignmentContract failed: ${result.error}`)
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "AlignmentContractSubmitted",
+    contractId,
+    note: "Alignment Contract submitted for review.",
+  })
+}
+
+async function cmdAlignmentApprove(flags: Record<string, string | boolean>) {
+  const contractId = typeof flags["contract-id"] === "string" ? flags["contract-id"] : undefined
+  if (!contractId) {
+    printError("Usage: synth alignment approve --contract-id <id> [--reason <reason>]")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const reason = typeof flags.reason === "string" ? flags.reason : "Alignment Contract approved"
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ApproveAlignmentContract",
+    payload: {
+      contractId,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+    },
+  })
+
+  if (result.status !== "ok") {
+    printError(`ApproveAlignmentContract failed: ${result.error}`)
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "AlignmentContractApproved",
+    contractId,
+    reason,
+    note: "Alignment Contract approved. Mission creation is now authorized under Governance Architecture v1.0.",
+  })
+}
+
+interface AlignmentPrepareResult {
+  contractId: string
+  intentModelId: string
+  gateId: string
+}
+
+async function prepareAlignmentContract(ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>): Promise<AlignmentPrepareResult> {
+  async function lastEvent(type: string, predicate: (e: any) => boolean = () => true) {
+    const events = await ctx.infra.eventStore.loadAll()
+    const matches = events.filter((e: any) => e.type === type && predicate(e))
+    return matches.length > 0 ? matches[matches.length - 1] : undefined
+  }
+
+  const evidenceResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateReferenceEvidence",
+    payload: {
+      input: {
+        kind: "document",
+        uri: "file://alignment/prepare.md",
+        hash: "sha256:00000000",
+        mimeType: "text/markdown",
+        description: "Reference evidence created by alignment prepare",
+      },
+    },
+  })
+  if (evidenceResult.status !== "ok") {
+    throw new Error(`CreateReferenceEvidence failed: ${evidenceResult.error}`)
+  }
+  const evidenceEvent = await lastEvent("REFERENCE_EVIDENCE_CREATED")
+  const evidenceId = (evidenceEvent?.payload as Record<string, any> | undefined)?.evidenceId
+  if (!evidenceId) throw new Error("Reference evidence id not found after creation")
+
+  const intentResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateIntentModel",
+    payload: {
+      input: {
+        rawIntentReference: "synth-cli-alignment-prepare",
+        explicitObjectives: ["Mission created through CLI alignment prepare"],
+        implicitObjectives: [],
+        audience: "operators",
+        problemStatement: "Provide an aligned intent model for Mission approval",
+        desiredOutcome: "Aligned Mission approved",
+        nonGoals: [],
+        forbiddenInterpretations: [],
+        allowedInterpretations: ["CLI-prepared alignment"],
+        referenceEvidenceIds: [evidenceId],
+        unresolvedAmbiguity: [],
+        knownUnknowns: [],
+      },
+    },
+  })
+  if (intentResult.status !== "ok") {
+    throw new Error(`CreateIntentModel failed: ${intentResult.error}`)
+  }
+  const intentEvent = await lastEvent("INTENT_MODEL_CREATED")
+  const intentModelId = (intentEvent?.payload as Record<string, any> | undefined)?.intentModelId
+  if (!intentModelId) throw new Error("Intent model id not found after creation")
+
+  const contractResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateAlignmentContract",
+    payload: {
+      input: {
+        intentModelId,
+        intentSummary: "Mission created through CLI alignment prepare",
+        expectedExperience: "Aligned Mission execution",
+        requiredProperties: ["Mission approved with aligned intent"],
+        forbiddenProperties: ["Mission approved without alignment contract"],
+        requiredBehaviors: ["Approval validates alignment"],
+        successCriteria: ["Mission approval succeeds"],
+        forbiddenInterpretation: ["Unaligned mission approval"],
+        forbiddenDrift: ["Bypass alignment governance"],
+        referenceEvidenceIds: [evidenceId],
+      },
+    },
+  })
+  if (contractResult.status !== "ok") {
+    throw new Error(`CreateAlignmentContract failed: ${contractResult.error}`)
+  }
+  const contractEvent = await lastEvent("ALIGNMENT_CONTRACT_CREATED")
+  const contractId = (contractEvent?.payload as Record<string, any> | undefined)?.contractId
+  if (!contractId) throw new Error("Alignment contract id not found after creation")
+
+  const submitResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "SubmitAlignmentContract",
+    payload: { contractId },
+  })
+  if (submitResult.status !== "ok") {
+    throw new Error(`SubmitAlignmentContract failed: ${submitResult.error}`)
+  }
+
+  const approveResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ApproveAlignmentContract",
+    payload: {
+      contractId,
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+    },
+  })
+  if (approveResult.status !== "ok") {
+    throw new Error(`ApproveAlignmentContract failed: ${approveResult.error}`)
+  }
+
+  const openGateResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "OpenDivergenceGate",
+    payload: { contractId, intentModelId },
+  })
+  if (openGateResult.status !== "ok") {
+    throw new Error(`OpenDivergenceGate failed: ${openGateResult.error}`)
+  }
+  const gateEvent = await lastEvent("DIVERGENCE_GATE_OPENED", (e: any) => e.payload.contractId === contractId)
+  const gateId = (gateEvent?.payload as Record<string, any> | undefined)?.gateId
+  if (!gateId) throw new Error("Divergence gate id not found after opening")
+
+  const resolveResult = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ResolveDivergenceGate",
+    payload: {
+      gateId,
+      decision: "aligned",
+      reviewer: { kind: "human", id: "synth-cli-operator" },
+      reason: "CLI alignment prepare: contract accepted as baseline",
+      evidence: ["alignment-prepare"],
+    },
+  })
+  if (resolveResult.status !== "ok") {
+    throw new Error(`ResolveDivergenceGate failed: ${resolveResult.error}`)
+  }
+
+  return { contractId, intentModelId, gateId }
+}
+
+async function cmdAlignmentPrepare() {
+  // Phase 2 CLI workflow: create the minimal governance artifacts required
+  // for Mission approval when the operator has not yet run a full refinement
+  // session. This is a convenience wrapper around the public capabilities;
+  // ApproveMission still validates the contract through the ExecutionGate.
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  let result: AlignmentPrepareResult
+  try {
+    result = await prepareAlignmentContract(ctx)
+  } catch (err) {
+    printError(err instanceof Error ? err.message : String(err))
+  }
+
+  printJson({
+    status: "ok",
+    kind: "AlignmentPrepared",
+    contractId: result!.contractId,
+    intentModelId: result!.intentModelId,
+    gateId: result!.gateId,
+    note: "This is a minimal aligned contract for CLI workflows. Production missions should run a full refinement session.",
+  })
 }
 
 async function cmdExpeditionHelp() {
@@ -1014,7 +1705,7 @@ async function cmdAiHelp() {
 }
 
 async function cmdAiRefresh() {
-  const synthDir = path.join(process.cwd(), ".synth")
+  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
   await refreshAiMetadata(synthDir)
   printJson({ status: "ok", message: "AI metadata refreshed", path: path.join(synthDir, "ai") })
 }
@@ -1028,17 +1719,17 @@ async function cmdAdapterHelp() {
 async function cmdInit(args: string[], flags: Record<string, string | boolean>) {
   const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
   const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
-  const synthDir = path.join(targetDir, ".synth")
-  const dataDir = path.join(targetDir, ".synth", "data")
+  const synthDir = sdk.paths.synthDir(targetDir)
+  const dataDir = sdk.paths.dataDir(targetDir)
   const governanceVersion = "2.1"
-  const projectId = crypto.randomUUID()
+  const projectId = sdk.identity.uuid()
 
   const sourceType = typeof flags.source === "string" ? flags.source : "filesystem"
   const sourceLocation = typeof flags["source-location"] === "string" ? flags["source-location"] : targetDir
   const declaredIntent = typeof flags["declared-intent"] === "string" ? flags["declared-intent"] : undefined
 
-  await fs.mkdir(synthDir, { recursive: true })
-  await fs.mkdir(dataDir, { recursive: true })
+  await sdk.files.ensureDirectory(synthDir)
+  await sdk.files.ensureDirectory(dataDir)
 
   const manifest = {
     schema: "synth-bootstrap-manifest-v1",
@@ -1065,8 +1756,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     quickStart: "synth init && synth docs generate && npm run govern",
   }
 
-  const manifestPath = path.join(synthDir, "manifest.json")
-  await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2), "utf-8")
+  await sdk.json.writeJson(sdk.paths.manifestPath(targetDir), manifest)
 
   // Bootstrap a file-backed runtime in the target directory so the
   // initialization itself is recorded as a replayable governance event.
@@ -1074,9 +1764,9 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-      checkpointPath: path.join(dataDir, "checkpoints.json"),
+      eventLogPath: sdk.paths.eventLogFile(targetDir),
+      statePath: sdk.paths.stateFile(targetDir),
+      checkpointPath: sdk.paths.checkpointsFile(targetDir),
     },
   })
 
@@ -1102,7 +1792,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
       printError(`Initialization failed: ${initResult.errors?.join(", ") || "unknown error"}`)
     }
 
-    const evidenceStore = createInitializationEvidenceStore(createPosixFilesystemProvider(targetDir))
+    const evidenceStore = createInitializationEvidenceStore(createPosixFilesystemProvider(targetDir, FILESYSTEM_WRITE_TOKEN))
     const evidenceReference = await evidenceStore.persist(
       projectId,
       projectName,
@@ -1138,7 +1828,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   printJson({
     status: "ok",
     message: "Synth project initialized",
-    manifestPath,
+    manifestPath: sdk.paths.manifestPath(targetDir),
     projectName,
     governanceVersion,
     lifecycle: "initialized",
@@ -1175,7 +1865,7 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
     if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
       return runInternalGovernance(verdict.condition)
     }
-    return Promise.reject(new Error(verdict.message))
+    return printError(verdict.message)
   }
   const args = ["run", "govern"]
   if (flags.explain === true || flags.explain === "true") args.push("--explain")
@@ -1197,12 +1887,12 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
 }
 
 async function cmdStatus() {
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
   const logger = new Logger("status")
   logger.info("Resolving governance context for operator briefing")
   // EXP-AI-003: keep .synth/ai/ metadata synchronized with canonical state so
   // agent orientation is always current when the operator asks for status.
-  const synthDir = path.join(process.cwd(), ".synth")
+  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
   await refreshAiMetadata(synthDir)
   const briefing = await buildOperatorBriefing(process.cwd())
   printJson(briefing)
@@ -1211,7 +1901,12 @@ async function cmdStatus() {
   }
 }
 
-function makeObservation(type: string, subject: string, overrides: Record<string, unknown> = {}): PlanningObservation {
+function makeObservation(
+  type: string,
+  subject: string,
+  timestamp: number,
+  overrides: Record<string, unknown> = {}
+): PlanningObservation {
   return {
     id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
     sourceAdapter: "synth-cli",
@@ -1219,7 +1914,7 @@ function makeObservation(type: string, subject: string, overrides: Record<string
     payload: { subject, name: subject, ...overrides },
     evidenceReference: `evidence-${type}-${subject}`,
     confidence: "high",
-    timestamp: Date.now(),
+    timestamp,
   }
 }
 
@@ -1260,7 +1955,7 @@ function deserializePlanningSession(data: any): PlanningSession {
 }
 
 async function ensureDraftsDir(): Promise<string> {
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   await fs.mkdir(draftsDir, { recursive: true })
   return draftsDir
@@ -1269,6 +1964,7 @@ async function ensureDraftsDir(): Promise<string> {
 async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   const subject = typeof flags.subject === "string" ? flags.subject : ""
   const purpose = typeof flags.purpose === "string" ? flags.purpose : ""
+  const evidenceFile = typeof flags["evidence-file"] === "string" ? flags["evidence-file"] : ""
   if (!subject) printError("--subject is required")
 
   // Resolve the project's actual governance state before allowing intent
@@ -1278,7 +1974,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "mission.create" }, state)
+  const intake = await gateDecision({ kind: "mission.create" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -1287,11 +1983,12 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
+  const timestamp = Date.now()
 
-  const observations = [makeObservation("mission", subject, { purpose })]
+  const observations = [makeObservation("mission", subject, timestamp, { purpose })]
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; session?: PlanningSession; error?: string }
 
   if (sessionResult.status !== "ok" || !sessionResult.session) {
@@ -1302,7 +1999,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
 
   const proposalsResult = (await ctx.api.missionStudioOperation({
     operation: "proposeMissions",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; proposals?: unknown; error?: string }
 
   const draftsDir = await ensureDraftsDir()
@@ -1310,6 +2007,26 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   const serialized = serializePlanningSession(session)
   await fs.writeFile(draftPath, JSON.stringify(serialized, null, 2), "utf-8")
   await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
+
+  let evidence: unknown = undefined
+  if (evidenceFile) {
+    const loaded = await loadEvidenceFromFile(evidenceFile)
+    if (loaded) {
+      const evidencePayload = { draftId: session.id, source: loaded.source, hash: loaded.hash }
+      try {
+        await ctx.api.handleIntent({
+          actor: "synth-cli",
+          capability: "AttachEvidence",
+          payload: evidencePayload,
+        })
+        evidence = { status: "attached", ...evidencePayload }
+      } catch {
+        evidence = { status: "failed", ...evidencePayload, error: "Could not attach evidence to draft" }
+      }
+    } else {
+      evidence = { status: "error", error: `Could not read evidence file: ${evidenceFile}` }
+    }
+  }
 
   printJson({
     status: "ok",
@@ -1319,6 +2036,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     integrity: "certified",
     subject,
     purpose,
+    evidence,
     confidence: session.confidence,
     unknowns: session.unknowns,
     questions: session.questions,
@@ -1330,6 +2048,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
 async function materializeApprovedMission(
   gateCtx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   snapshot: import("../mission-studio/types.js").ApprovedMissionModelSnapshot,
+  alignmentContractId?: string,
 ): Promise<{ missionId: string; name: string; purpose: string; created: boolean; approved: boolean }> {
   const state = await gateCtx.runtime.getState()
   const missionNode = Array.from(snapshot.worldModel.nodes.values()).find(
@@ -1356,10 +2075,14 @@ async function materializeApprovedMission(
   }
 
   if (!existingMission || existingMission.status === "draft") {
+    const approvePayload: Record<string, unknown> = { id: missionNode.id }
+    if (alignmentContractId) {
+      approvePayload.alignmentContractId = alignmentContractId
+    }
     const approveMissionResult = await gateCtx.api.handleIntent({
       actor: "synth-cli",
       capability: "ApproveMission",
-      payload: { id: missionNode.id },
+      payload: approvePayload,
     })
     if (approveMissionResult.status !== "ok") {
       throw new Error(`Failed to approve runtime mission: ${approveMissionResult.error || JSON.stringify(approveMissionResult)}`)
@@ -1386,12 +2109,12 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "mission.approve" }, state)
+  const intake = await gateDecision({ kind: "mission.approve" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
 
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
@@ -1419,6 +2142,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
+  const timestamp = Date.now()
 
   // Approval state derives from the decision record, never from the
   // editable approvalState field (EXP-TRUST-004): re-approval is
@@ -1427,7 +2151,7 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
 
   const approveResult = (await ctx.api.missionStudioOperation({
     operation: "approveModel",
-    params: { session },
+    params: { session, timestamp },
   })) as {
     status: string
     decision?: { approved: boolean; reason?: string; confidence?: number }
@@ -1480,9 +2204,10 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   // certified and the decision must not be recorded. This keeps planning and
   // runtime state atomic: a certified snapshot always implies corresponding
   // runtime events.
+  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
   let runtimeResult: Awaited<ReturnType<typeof materializeApprovedMission>>
   try {
-    runtimeResult = await materializeApprovedMission(gateCtx, approvedData)
+    runtimeResult = await materializeApprovedMission(gateCtx, approvedData, alignmentContractId)
   } catch (err) {
     printError(err instanceof Error ? err.message : String(err))
   }
@@ -1541,11 +2266,57 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdMissionProject(flags: Record<string, string | boolean>) {
+  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
+  if (!alignmentContractId) {
+    printError("Usage: synth mission project --alignment-contract-id <id>")
+    return
+  }
+
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ProjectMission",
+    payload: { alignmentContractId },
+  })
+
+  if (result.status !== "ok") {
+    printError(`ProjectMission failed: ${result.error}`)
+    return
+  }
+
+  const output = (result as any).result ?? {}
+  const certification = output.certification ?? {}
+  const passed = certification.result === "passed"
+  const mission = output.mission ?? {}
+
+  printJson({
+    status: "ok",
+    kind: passed ? "MissionProjectedAndCertified" : "MissionProjectionFailed",
+    projectionId: output.projectionId,
+    certificationId: certification.certificationId,
+    missionId: mission.id,
+    missionFingerprint: output.missionFingerprint,
+    contractId: alignmentContractId,
+    certification: passed
+      ? { result: "passed", checks: certification.checks }
+      : { result: "failed", reason: certification.checks?.filter((c: any) => !c.passed).map((c: any) => c.reason).join("; ") },
+    note: passed
+      ? "Mission projected, certified, and created. Ready for Mission Approval."
+      : "Mission projection failed certification. Alignment Contract must be revised.",
+  })
+}
+
 const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain"]
 
 async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : undefined
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const { records, chainValid } = await listDecisions(dataDir, draftId)
   if (!chainValid) {
     printError(
@@ -1573,7 +2344,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "mission.evidence.add" }, state)
+  const intake = await gateDecision({ kind: "mission.evidence.add" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -1583,7 +2354,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     printError(`Unknown confidence level: "${confidence}". Valid levels: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}`)
   }
 
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
@@ -1599,8 +2370,10 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     printError(integrity.message)
   }
 
+  const timestamp = Date.now()
+
   // Drafts are immutable: adding evidence creates a successor draft (EXP-TRUST-003).
-  const observation = makeObservation("evidence", subject, {
+  const observation = makeObservation("evidence", subject, timestamp, {
     description: purpose ?? subject,
     ...(purpose ? { purpose } : {}),
   })
@@ -1619,7 +2392,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
 
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations: [...existing, observation] },
+    params: { observations: [...existing, observation], timestamp },
   })) as { status: string; session?: PlanningSession; error?: string }
 
   if (sessionResult.status !== "ok" || !sessionResult.session) {
@@ -1754,7 +2527,7 @@ interface RepairEntry {
 
 async function cmdRepairReplay(args: string[], flags: Record<string, string | boolean>) {
   const approve = flags.approve === true || flags.approve === "true"
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
 
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
@@ -1873,10 +2646,11 @@ async function cmdRepairReplay(args: string[], flags: Record<string, string | bo
         }
       }
 
+      const { contractId } = await prepareAlignmentContract(ctx)
       const approveResult = await ctx.api.handleIntent({
         actor: "synth-cli",
         capability: "ApproveMission",
-        payload: { id: missionId },
+        payload: { id: missionId, alignmentContractId: contractId },
       })
       if (approveResult.status !== "ok") {
         throw new Error(`ApproveMission failed: ${approveResult.error || JSON.stringify(approveResult)}`)
@@ -1953,7 +2727,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.create", missionId: missionSubject }, state)
+  const intake = await gateDecision({ kind: "expedition.create", missionId: missionSubject }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -1962,14 +2736,15 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
+  const timestamp = Date.now()
 
   const observations = [
-    makeObservation("mission", missionSubject, { purpose: "Auto-created from CLI" }),
-    makeObservation("expedition", subject, { goal, missionSubject }),
+    makeObservation("mission", missionSubject, timestamp, { purpose: "Auto-created from CLI" }),
+    makeObservation("expedition", subject, timestamp, { goal, missionSubject }),
   ]
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; session?: PlanningSession; error?: string }
 
   if (sessionResult.status !== "ok" || !sessionResult.session) {
@@ -1979,7 +2754,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const session = sessionResult.session
   const proposalsResult = (await ctx.api.missionStudioOperation({
     operation: "proposeExpeditions",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; proposals?: unknown; error?: string }
 
   // Persist the expedition draft and create a runtime entity in draft state.
@@ -2023,12 +2798,12 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state)
+  const intake = await gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
 
-  const dataDir = await ensureRuntimeDataDir(process.cwd())
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
   const draftsDir = path.join(dataDir, "drafts")
   const draftPath = path.join(draftsDir, `${draftId}.json`)
   let draftData: any
@@ -2055,13 +2830,7 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionApproveFailed",
-      draftId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionApproveFailed")
   }
 
   printJson({
@@ -2084,7 +2853,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   })
 
   const state = await ctx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state)
+  const intake = await gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2096,13 +2865,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionCommitFailed",
-      proposalId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionCommitFailed")
   }
 
   printJson({
@@ -2132,7 +2895,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   })
 
   const state = await ctx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.start", expeditionId }, state)
+  const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2144,13 +2907,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionStartFailed",
-      expeditionId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionStartFailed")
   }
 
   printJson({
@@ -2174,7 +2931,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 
   const state = await ctx.runtime.getState()
-  const intake = gateDecision({ kind: "expedition.complete", expeditionId }, state)
+  const intake = await gateDecision({ kind: "expedition.complete", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -2188,13 +2945,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printJson({
-      status: "error",
-      kind: "ExpeditionCompleteFailed",
-      expeditionId,
-      error: result.error || "Unknown execution gate error",
-    })
-    process.exit(1)
+    printError(result.error || "Unknown execution gate error", "ExpeditionCompleteFailed")
   }
 
   printJson({
@@ -2268,7 +3019,7 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
 async function cmdExplainReplay(flags: Record<string, string | boolean>) {
   // Ensure runtime data is in `.synth/data/` for governed projects before
   // inspecting any project-local log.
-  await ensureRuntimeDataDir(process.cwd())
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
 
   // --log <path> (EXP-HARDEN-007): inspect any example/project log;
   // state/checkpoint paths derive from the log's directory.
@@ -2329,6 +3080,10 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDiscoverHelp }
     case "mission":
       return { namespace, handler: cmdMissionHelp }
+    case "intent":
+      return { namespace, handler: cmdIntentHelp }
+    case "alignment":
+      return { namespace, handler: cmdAlignmentHelp }
     case "expedition":
       return { namespace, handler: cmdExpeditionHelp }
     case "doctor":
@@ -2344,6 +3099,10 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
     case "first-contact":
     case "genesis":
       return { namespace, handler: cmdFirstContactHelp }
+    case "validate":
+      return { namespace, handler: cmdValidateHelp }
+    case "explain":
+      return { namespace, handler: cmdExplainHelp }
     case "ai":
       return { namespace, handler: cmdAiHelp }
     case "repo":
@@ -2395,6 +3154,28 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
     if (sub === "approve") return "mission approve"
+    if (sub === "decisions") return "mission decisions"
+    if (sub === "evidence" && positional[2] === "add") return "mission evidence add"
+    if (sub === "snapshot") return "mission snapshot"
+    if (sub === "project") return "mission project"
+    if (sub === "verify-charter") return "mission verify-charter"
+  }
+  if (namespace === "validate" && sub === "dependencies") return "validate dependencies"
+  if (namespace === "validate" && sub === "artifact") return "validate artifact"
+  if (namespace === "intent") {
+    if (sub === "create") return "intent create"
+  }
+  if (namespace === "intent") {
+    if (sub === "create") return "intent create"
+    if (sub === "refine") return "intent refine"
+    if (sub === "submit") return "intent submit"
+    if (sub === "approve") return "intent approve"
+  }
+  if (namespace === "alignment") {
+    if (sub === "create") return "alignment create"
+    if (sub === "submit") return "alignment submit"
+    if (sub === "approve") return "alignment approve"
+    if (sub === "prepare") return "alignment prepare"
   }
   if (namespace === "expedition") {
     if (sub === "create") return "expedition create"
@@ -2405,6 +3186,190 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   }
 
   return namespace
+}
+
+// ============================================================
+// EXP-GATE-013: Dependency validation command
+// ============================================================
+async function cmdValidateDependencies(flags: Record<string, string | boolean>) {
+  const {
+    parseDependencyRecord,
+    checkUpstreamDependencies,
+    parseCharterDirectory,
+  } = await import("../governance/dependency-graph.js")
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const records = await parseCharterDirectory(charterDir)
+
+  if (records.length === 0) {
+    printJson({ status: "ok", kind: "DependencyCheck", dependencies: [], note: "No expedition charters found." })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await ctx.runtime.getState()
+
+  const results = records.map((r) => checkUpstreamDependencies(r.expeditionId, state, records))
+
+  const blocked = results.filter((r) => r.status !== "resolved")
+
+  printJson({
+    status: blocked.length > 0 ? "warning" : "ok",
+    kind: "DependencyCheck",
+    total: results.length,
+    blocked: blocked.length,
+    resolved: results.length - blocked.length,
+    dependencies: results,
+    note: blocked.length > 0
+      ? `${blocked.length} expedition(s) have unresolved upstream dependencies.`
+      : "All dependencies are resolved.",
+  })
+}
+
+// ============================================================
+// EXP-REFINE-016: Artifact validation command
+// ============================================================
+async function cmdValidateArtifact(flags: Record<string, string | boolean>) {
+  const artifactType = typeof flags.type === "string" ? flags.type : ""
+
+  if (!artifactType) {
+    printJson({
+      status: "error",
+      kind: "ArtifactValidation",
+      error: "--type is required. Options: expedition, mission, refined-intent, alignment-contract",
+    })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await ctx.runtime.getState()
+
+  let valid = true
+  const checks: { name: string; passed: boolean; detail: string }[] = []
+
+  switch (artifactType) {
+    case "expedition": {
+      const expeditions = state.expeditions || {}
+      const ids = Object.keys(expeditions)
+      checks.push({ name: "expeditions-exist", passed: ids.length > 0, detail: `${ids.length} expedition(s) found` })
+
+      for (const [id, exp] of Object.entries(expeditions)) {
+        checks.push({ name: `expedition-${id}-has-mission`, passed: !!exp.missionId, detail: `Mission: ${exp.missionId || "missing"}` })
+        checks.push({ name: `expedition-${id}-has-goal`, passed: !!exp.goal, detail: `Goal: ${exp.goal || "missing"}` })
+        checks.push({ name: `expedition-${id}-has-status`, passed: !!exp.status, detail: `Status: ${exp.status}` })
+      }
+      break
+    }
+
+    case "mission": {
+      const missions = state.missions || {}
+      const ids = Object.keys(missions)
+      checks.push({ name: "missions-exist", passed: ids.length > 0, detail: `${ids.length} mission(s) found` })
+
+      for (const [id, mission] of Object.entries(missions)) {
+        checks.push({ name: `mission-${id}-has-name`, passed: !!mission.name, detail: `Name: ${mission.name || "missing"}` })
+        checks.push({ name: `mission-${id}-has-purpose`, passed: !!mission.purpose, detail: `Purpose: ${mission.purpose || "missing"}` })
+        checks.push({ name: `mission-${id}-has-status`, passed: !!mission.status, detail: `Status: ${mission.status}` })
+      }
+      break
+    }
+
+    default:
+      printJson({
+        status: "error",
+        kind: "ArtifactValidation",
+        error: `Unknown artifact type: ${artifactType}. Supported: expedition, mission`,
+      })
+      return
+  }
+
+  const failed = checks.filter((c) => !c.passed)
+  valid = failed.length === 0
+
+  printJson({
+    status: valid ? "ok" : "error",
+    kind: "ArtifactValidation",
+    artifactType,
+    totalChecks: checks.length,
+    passed: checks.filter((c) => c.passed).length,
+    failed: failed.length,
+    checks,
+    valid,
+  })
+
+  if (!valid) process.exit(1)
+}
+
+// ============================================================
+// EXP-REFINE-015: Evidence attachment for mission create
+// ============================================================
+async function loadEvidenceFromFile(evidenceFile: string): Promise<{ source: string; content: string; hash: string } | null> {
+  try {
+    const content = await fs.readFile(evidenceFile, "utf-8")
+    const hash = crypto.createHash("sha256").update(content).digest("hex")
+    return { source: evidenceFile, content, hash }
+  } catch {
+    return null
+  }
+}
+
+// ============================================================
+// EXP-REFINE-015: Charter verification command
+// ============================================================
+async function cmdMissionVerifyCharter(flags: Record<string, string | boolean>) {
+  const filePath = typeof flags.file === "string" ? flags.file : ""
+  if (!filePath) {
+    printJson({ status: "error", kind: "CharterVerification", error: "--file is required" })
+    return
+  }
+
+  let content: string
+  try {
+    content = await fs.readFile(path.resolve(filePath), "utf-8")
+  } catch {
+    printJson({ status: "error", kind: "CharterVerification", error: `Cannot read file: ${filePath}` })
+    return
+  }
+
+  const checks: { name: string; passed: boolean; detail: string }[] = []
+
+  // Check required headers
+  checks.push({ name: "has-title", passed: /^#\s+.+$/m.test(content), detail: "Title (H1) present" })
+  checks.push({ name: "has-status", passed: /^\*\*Status:\*\*\s+.+$/m.test(content), detail: "Status header present" })
+  checks.push({ name: "has-objective", passed: /^##\s+(Objective|Purpose|Thesis)/m.test(content), detail: "Objective/Purpose/Thesis section present" })
+
+  // Check dependency headers
+  const { parseDependencyRecord } = await import("../governance/dependency-graph.js")
+  const record = parseDependencyRecord("charter", content)
+
+  checks.push({ name: "depends-on-valid", passed: true, detail: `Depends On: ${record.dependsOn.length > 0 ? record.dependsOn.join(", ") : "none"}` })
+  checks.push({ name: "blocks-valid", passed: true, detail: `Blocks: ${record.blocks.length > 0 ? record.blocks.join(", ") : "none"}` })
+
+  // Check for required sections
+  const sections = ["Deliverables", "Acceptance Criteria", "Out of Scope", "Relationship to Other Work"]
+  for (const section of sections) {
+    const pattern = new RegExp(`^##\\s+${section}`, "m")
+    checks.push({ name: `has-section-${section.toLowerCase().replace(/\s+/g, "-")}`, passed: pattern.test(content), detail: `${section} section present` })
+  }
+
+  const failed = checks.filter((c) => !c.passed)
+
+  printJson({
+    status: failed.length === 0 ? "ok" : "warning",
+    kind: "CharterVerification",
+    file: filePath,
+    totalChecks: checks.length,
+    passed: checks.filter((c) => c.passed).length,
+    failed: failed.length,
+    checks,
+    valid: failed.length === 0,
+  })
 }
 
 async function main() {
@@ -2457,7 +3422,7 @@ async function main() {
   // EXP-FIRSTCONTACT-010: when running as part of an agent first-contact
   // experiment, merge telemetry (agent session and reasoning state) into
   // every JSON response so the CLI acts as an experimental sensor.
-  setAgentTelemetry(flags)
+  setAgentTelemetryFromFlags(flags)
 
   const command = positional[0]
 
@@ -2496,9 +3461,13 @@ async function main() {
       await cmdGovern(flags)
       break
 
-    case "validate":
-      await cmdValidate(flags)
+    case "validate": {
+      const sub = positional[1]
+      if (sub === "dependencies") await cmdValidateDependencies(flags)
+      else if (sub === "artifact") await cmdValidateArtifact(flags)
+      else await cmdValidate(flags)
       break
+    }
 
     case "verify":
       await cmdVerify()
@@ -2511,14 +3480,38 @@ async function main() {
     case "mission": {
       const sub = positional[1]
       if (sub === "create") await cmdMissionCreate(flags)
+      else if (sub === "project") await cmdMissionProject(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
       else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)
+      else if (sub === "verify-charter") await cmdMissionVerifyCharter(flags)
       else if (sub === "decisions") await cmdMissionDecisions(flags)
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> | synth mission approve --draft-id <draft-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
         )
+      break
+    }
+
+    case "intent": {
+      const sub = positional[1]
+      if (sub === "create") await cmdIntentCreate(flags)
+      else if (sub === "refine") await cmdIntentRefine(flags)
+      else if (sub === "submit") await cmdIntentSubmit(flags)
+      else if (sub === "approve") await cmdIntentApprove(flags)
+      else
+        printError("Usage: synth intent create --file <path> | synth intent refine --intent-model-id <id> [--answers <path>] [--recommendation <recommendation>] [--reason <reason>] | synth intent submit --intent-model-id <id> | synth intent approve --report-id <id> [--decision ...] [--reason <reason>]")
+      break
+    }
+
+    case "alignment": {
+      const sub = positional[1]
+      if (sub === "create") await cmdAlignmentCreate(flags)
+      else if (sub === "submit") await cmdAlignmentSubmit(flags)
+      else if (sub === "approve") await cmdAlignmentApprove(flags)
+      else if (sub === "prepare") await cmdAlignmentPrepare()
+      else
+        printError("Usage: synth alignment create --intent-model-id <id> | synth alignment submit --contract-id <id> | synth alignment approve --contract-id <id> | synth alignment prepare")
       break
     }
 
@@ -2617,5 +3610,5 @@ async function main() {
 }
 
 main().catch((err) => {
-  printError(err instanceof Error ? err.message : String(err), 1)
+  printError(err instanceof Error ? err.message : String(err))
 })

@@ -7,9 +7,8 @@
 // until approval / materialization.
 // ============================================================
 
-import fs from "fs/promises"
 import path from "path"
-import crypto from "crypto"
+import * as sdk from "../sdk/index.js"
 import { extractIntent } from "../first-contact/extract/index.js"
 import type { IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
 import { clarify, DefaultClarificationStrategy } from "../first-contact/clarify/index.js"
@@ -40,17 +39,10 @@ interface ApprovedEnvelope {
   artifactHash: string
 }
 
-function printJson(obj: unknown): void {
-  console.log(JSON.stringify(obj, null, 2))
-}
-
-function printError(error: string, code = 1): never {
-  printJson({ status: "error", error })
-  process.exit(code)
-}
+import { printJson, printError } from "./print.js"
 
 function uuid(): string {
-  return crypto.randomUUID()
+  return sdk.identity.uuid()
 }
 
 function nowIso(): string {
@@ -58,7 +50,7 @@ function nowIso(): string {
 }
 
 function artifactDraftPaths(cwd: string) {
-  const dir = path.join(cwd, ".synth", "first-contact")
+  const dir = sdk.paths.firstContactDir(sdk.workspace.root(cwd))
   return {
     dir,
     draftPath: path.join(dir, "draft.json"),
@@ -69,18 +61,13 @@ function artifactDraftPaths(cwd: string) {
 
 async function ensureFirstContactDir(cwd: string): Promise<string> {
   const dir = artifactDraftPaths(cwd).dir
-  await fs.mkdir(dir, { recursive: true })
+  await sdk.files.ensureDirectory(dir)
   return dir
 }
 
 async function tryReadDraft(cwd: string): Promise<DraftEnvelope | undefined> {
   const { draftPath } = artifactDraftPaths(cwd)
-  try {
-    const raw = await fs.readFile(draftPath, "utf-8")
-    return JSON.parse(raw) as DraftEnvelope
-  } catch {
-    return undefined
-  }
+  return sdk.json.readJsonMaybe<DraftEnvelope>(draftPath)
 }
 
 async function readDraft(cwd: string): Promise<DraftEnvelope> {
@@ -100,7 +87,7 @@ async function writeDraft(cwd: string, artifact: IntentExtractionResult): Promis
     artifact,
     updatedAt: nowIso(),
   }
-  await fs.writeFile(draftPath, JSON.stringify(envelope, null, 2) + "\n", "utf-8")
+  await sdk.json.writeJsonNewline(draftPath, envelope)
   return draftPath
 }
 
@@ -108,17 +95,12 @@ async function appendTranscript(cwd: string, entries: TranscriptEntry[]): Promis
   const { transcriptPath } = artifactDraftPaths(cwd)
   if (entries.length === 0) return
   const lines = entries.map((e) => JSON.stringify(e)).join("\n") + "\n"
-  await fs.appendFile(transcriptPath, lines, "utf-8")
+  await sdk.files.appendFile(transcriptPath, lines)
 }
 
 async function tryReadApproved(cwd: string): Promise<ApprovedEnvelope | undefined> {
   const { approvedPath } = artifactDraftPaths(cwd)
-  try {
-    const raw = await fs.readFile(approvedPath, "utf-8")
-    return JSON.parse(raw) as ApprovedEnvelope
-  } catch {
-    return undefined
-  }
+  return sdk.json.readJsonMaybe<ApprovedEnvelope>(approvedPath)
 }
 
 async function readApproved(cwd: string): Promise<ApprovedEnvelope> {
@@ -132,7 +114,7 @@ async function readApproved(cwd: string): Promise<ApprovedEnvelope> {
 async function writeApproved(cwd: string, envelope: ApprovedEnvelope): Promise<string> {
   const { approvedPath } = artifactDraftPaths(cwd)
   await ensureFirstContactDir(cwd)
-  await fs.writeFile(approvedPath, JSON.stringify(envelope, null, 2) + "\n", "utf-8")
+  await sdk.json.writeJsonNewline(approvedPath, envelope)
   return approvedPath
 }
 
@@ -382,7 +364,7 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
 }
 
 export async function cmdFirstContactStatus(args: string[], flags: Record<string, string | boolean>): Promise<void> {
-  const paths = artifactDraftPaths(process.cwd())
+  const artifactPaths = artifactDraftPaths(process.cwd())
   const draft = await tryReadDraft(process.cwd())
   const approved = await tryReadApproved(process.cwd())
 
@@ -404,8 +386,8 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     status: "ok",
     kind: "FirstContactStatus",
     state,
-    draftPath: draft ? paths.draftPath : undefined,
-    approvedPath: approved ? paths.approvedPath : undefined,
+    draftPath: draft ? artifactPaths.draftPath : undefined,
+    approvedPath: approved ? artifactPaths.approvedPath : undefined,
     intent: artifact?.intent.description,
     confidence: artifact?.confidence,
     canApprove: strategy?.canApprove ?? false,

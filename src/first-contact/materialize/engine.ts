@@ -5,9 +5,9 @@
 // only after Discovery approval (EXP-AIFC-007).
 // ============================================================
 
-import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
+import * as sdk from "../../sdk/index.js"
 import type {
   MaterializationOptions,
   MaterializationResult,
@@ -94,14 +94,11 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
     throw new Error("Cannot materialize: approved artifact is missing intent.")
   }
 
-  const synthDir = path.join(projectRoot, ".synth")
-  const dataDir = path.join(synthDir, "data")
-  const firstContactDir = path.join(synthDir, "first-contact")
-  const proposalsDir = path.join(synthDir, "proposals")
+  const root = projectRoot
 
-  await fs.mkdir(dataDir, { recursive: true })
-  await fs.mkdir(firstContactDir, { recursive: true })
-  await fs.mkdir(proposalsDir, { recursive: true })
+  await sdk.files.ensureDirectory(sdk.paths.dataDir(root))
+  await sdk.files.ensureDirectory(sdk.paths.firstContactDir(root))
+  await sdk.files.ensureDirectory(sdk.paths.proposalsDir(root))
 
   const artifactId = approvedArtifact.id ?? `artifact-${uuid()}`
   const enrichedArtifact = {
@@ -194,33 +191,27 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
   const state = events.reduce(applyEvent, createEmptyState())
   state.stateHash = computeStateHash(state)
 
-  const manifestPath = path.join(synthDir, "manifest.json")
-  const eventLogPath = path.join(dataDir, "event-log.jsonl")
-  const statePath = path.join(dataDir, "canonical-state.json")
-  const artifactPath = path.join(firstContactDir, "discovery-artifact.json")
-  const transcriptPath = path.join(firstContactDir, "transcript.jsonl")
-  const missionProposalPath = path.join(proposalsDir, "mission-proposal.json")
-  const expeditionProposalsPath = path.join(proposalsDir, "expedition-proposals.json")
+  const manifestPath = sdk.paths.manifestPath(root)
+  const eventLogPath = sdk.paths.eventLogFile(root)
+  const statePath = sdk.paths.stateFile(root)
+  const artifactPath = path.join(sdk.paths.firstContactDir(root), "discovery-artifact.json")
+  const transcriptPath = path.join(sdk.paths.firstContactDir(root), "transcript.jsonl")
+  const missionProposalPath = path.join(sdk.paths.proposalsDir(root), "mission-proposal.json")
+  const expeditionProposalsPath = path.join(sdk.paths.proposalsDir(root), "expedition-proposals.json")
 
-  await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n", "utf-8")
-  await fs.writeFile(
+  await sdk.json.writeJsonNewline(manifestPath, manifest)
+  await sdk.files.writeFile(
     eventLogPath,
     events.map((e) => JSON.stringify(e)).join("\n") + "\n",
-    "utf-8",
   )
-  await fs.writeFile(statePath, JSON.stringify(state, null, 2) + "\n", "utf-8")
-  await fs.writeFile(artifactPath, JSON.stringify(enrichedArtifact, null, 2) + "\n", "utf-8")
-  await fs.writeFile(
+  await sdk.json.writeJsonNewline(statePath, state)
+  await sdk.json.writeJsonNewline(artifactPath, enrichedArtifact)
+  await sdk.files.writeFile(
     transcriptPath,
     approvedArtifact.transcript.map((t) => JSON.stringify(t)).join("\n") + "\n",
-    "utf-8",
   )
-  await fs.writeFile(missionProposalPath, JSON.stringify(mission, null, 2) + "\n", "utf-8")
-  await fs.writeFile(
-    expeditionProposalsPath,
-    JSON.stringify(expeditions, null, 2) + "\n",
-    "utf-8",
-  )
+  await sdk.json.writeJsonNewline(missionProposalPath, mission)
+  await sdk.json.writeJsonNewline(expeditionProposalsPath, expeditions)
 
   return {
     projectRoot,

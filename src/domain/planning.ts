@@ -110,6 +110,7 @@ export function createExpedition(
     objectives: [],
     discoveries: [],
     decisions: [],
+    dependsOn: [],
     metadata: {},
     createdAt: now,
     updatedAt: now,

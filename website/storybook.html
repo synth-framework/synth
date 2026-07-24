@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mission Studio Design Reference — Synth</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      --sb-bg: var(--bg);
+      --sb-surface: var(--surface);
+      --sb-border: var(--border);
+      --sb-text: var(--text);
+      --sb-muted: var(--text-muted);
+    }
+    .sb-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--ms-space-6);
+      color: var(--sb-text);
+    }
+    .sb-page > header {
+      margin-bottom: var(--ms-space-8);
+      padding-bottom: var(--ms-space-6);
+      border-bottom: 1px solid var(--sb-border);
+    }
+    .sb-page > header h1 {
+      font-size: var(--ms-text-3xl);
+      letter-spacing: var(--ms-letter-spacing-tight);
+      margin: 0 0 var(--ms-space-2);
+    }
+    .sb-page > header p {
+      color: var(--sb-muted);
+      margin: 0;
+      max-width: 720px;
+    }
+    .sb-section {
+      margin-bottom: var(--ms-space-10);
+    }
+    .sb-section h2 {
+      font-size: var(--ms-text-2xl);
+      margin: 0 0 var(--ms-space-2);
+      color: var(--sb-text);
+      letter-spacing: var(--ms-letter-spacing-tight);
+    }
+    .sb-section > p {
+      color: var(--sb-muted);
+      margin: 0 0 var(--ms-space-5);
+      max-width: 720px;
+    }
+    .sb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--ms-space-5);
+    }
+    .sb-story {
+      background: var(--sb-surface);
+      border: 1px solid var(--sb-border);
+      border-radius: var(--ms-radius-lg);
+      padding: var(--ms-space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--ms-space-4);
+    }
+    .sb-story h3 {
+      font-size: var(--ms-text-xs);
+      color: var(--sb-muted);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .sb-workspace-preview {
+      background: var(--ms-bg);
+      border: 1px solid var(--ms-border);
+      border-radius: var(--ms-radius-lg);
+      padding: var(--ms-space-4);
+      flex: 1;
+    }
+    .sb-lifecycle-preview {
+      width: 220px;
+      background: var(--ms-surface);
+      border: 1px solid var(--ms-border);
+      border-radius: var(--ms-radius-lg);
+      padding: var(--ms-space-4);
+    }
+    .sb-full-width {
+      grid-column: 1 / -1;
+    }
+    .sb-token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--ms-space-3);
+    }
+    .sb-token {
+      display: flex;
+      align-items: center;
+      gap: var(--ms-space-3);
+      padding: var(--ms-space-3);
+      background: var(--sb-surface);
+      border: 1px solid var(--sb-border);
+      border-radius: var(--ms-radius-md);
+    }
+    .sb-token-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--ms-radius-sm);
+      border: 1px solid var(--sb-border);
+      flex-shrink: 0;
+    }
+    .sb-token-name {
+      font-size: var(--ms-text-sm);
+      font-weight: var(--ms-font-weight-semibold);
+      color: var(--sb-text);
+    }
+    .sb-token-value {
+      font-size: var(--ms-text-xs);
+      color: var(--sb-muted);
+      font-family: var(--ms-font-mono);
+    }
+    .sb-typo-sample {
+      background: var(--sb-surface);
+      border: 1px solid var(--sb-border);
+      border-radius: var(--ms-radius-md);
+      padding: var(--ms-space-4);
+    }
+    .sb-typo-sample p {
+      margin: 0 0 var(--ms-space-2);
+      color: var(--sb-text);
+    }
+    .sb-typo-label {
+      font-size: var(--ms-text-xs);
+      color: var(--sb-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav aria-label="Primary">
+      <a href="index.html" class="logo">Synth<span>.</span></a>
+      <div class="nav-links">
+        <a href="index.html">Homepage</a>
+        <a href="docs.html">Docs</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="sb-page" id="sb-page">
+    <header>
+      <h1>Mission Studio Design Reference</h1>
+      <p>Canonical visual grammar for SYNTH Mission Studio. Components are organized from the workspace surface down to primitives, matching LDS-002 v2.1.</p>
+    </header>
+
+    <section class="sb-section">
+      <h2>Workspace States</h2>
+      <p>The persistent application shell: header, footer, and workspace surface.</p>
+      <div class="sb-grid" id="sb-workspace"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Sidebar States</h2>
+      <p>Mission lifecycle navigation. Past phases show ✓, active shows ●, future shows ○.</p>
+      <div class="sb-grid" id="sb-sidebar"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Mission Lifecycle</h2>
+      <p>Complete flow from intent through repository summary, rendered inside the Mission Studio workspace.</p>
+      <div class="sb-grid" id="sb-lifecycle"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Artifact Catalog</h2>
+      <p>Document-like artifacts produced by the runtime. Each artifact uses a concept-aware semantic surface.</p>
+      <div class="sb-grid" id="sb-artifacts"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Interactions & Feedback</h2>
+      <p>Intent surface, replay controls, empty states, loading, errors, and callouts.</p>
+      <div class="sb-grid" id="sb-content"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Typography</h2>
+      <p>Type scale used across Mission Studio and homepage.</p>
+      <div class="sb-grid" id="sb-typography"></div>
+    </section>
+
+    <section class="sb-section">
+      <h2>Tokens</h2>
+      <p>Semantic color families defined in LDS-002 v2.1. Each concept provides base, soft, background, text, and icon tokens.</p>
+      <div class="sb-grid" id="sb-tokens"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/storybook-app.js"></script>
+</body>
+</html>

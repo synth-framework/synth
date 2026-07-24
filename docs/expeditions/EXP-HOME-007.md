@@ -1,13 +1,15 @@
-# EXP-HOME-007 — Replay Experience
+# EXP-HOME-007 — Mission Phase (v2)
 
-> **Product expedition.** Embed a replay timeline that updates homepage artifacts as the visitor scrubs through events.
+> **Product expedition.** Define the Mission phase inside Mission Studio: Mission artifact, approval boundary, and the commitment that governs all downstream work.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** EXP-HOME-002 (Mission Workspace), EXP-HOME-004 (Artifact System)  
+**Depends On:** EXP-HOME-003 (Mission Studio UI Specification), EXP-HOME-004 (Homepage / Mission Studio Integration)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/replay-experience.md`](../design/replay-experience.md).
 
 ---
 
@@ -24,61 +26,113 @@ Impact:
 
 ## Objective
 
-Demonstrate Replay as a core SYNTH capability by letting visitors scrub through a sample event log and watch the workspace reconstruct state.
+Transform the former Replay Experience scope into the Mission phase of Mission Studio. This phase displays the proposed Mission, explains its purpose and success criteria, surfaces the approval boundary, and demonstrates that governance begins at the moment of commitment.
 
 ---
 
 ## Origin Evidence
 
-Replay is a foundational SYNTH concept, but it is hard to explain statically. An interactive timeline makes determinism and state reconstruction visceral.
+A Mission is the contract between intent and execution. Visitors must understand that SYNTH does not proceed until the Mission is approved, and that the approval boundary is what makes subsequent work governable and replayable.
 
 ---
 
 ## Required Change
 
-### 1.1 Replay timeline
+### 1.1 Phase purpose
 
-- Horizontal timeline of events.
-- Event markers for Intent, Discovery, Mission, Expedition, Approval, Completion.
-- Scrubber to move backward and forward through history.
+- Present the proposed Mission derived from intent and Discovery.
+- Show purpose, objectives, success criteria, and constraints.
+- Surface the approval boundary.
+- Transition to Expeditions only after Mission is approved.
 
-### 1.2 Scrubbing behavior
+### 1.2 Mission artifact
 
-- As the scrubber moves, the workspace artifacts update to reflect state at that point.
-- Status bar shows replay position and state hash.
-- Highlights the event currently under the scrubber.
+- **Mission Card:** subject, purpose, objectives, success criteria.
+- **Evidence Summary:** findings and unknowns that informed the Mission.
+- **Constraint List:** constraints carried forward from Discovery.
+- **Approval Boundary:** visual indicator that Mission approval is required before Expeditions.
 
-### 1.3 Sample event log
+### 1.3 Approval boundary
 
-A deterministic, curated event log representing a complete Genesis → Mission → Expedition lifecycle. It does not depend on visitor input.
+- Mission starts in `Proposed` state.
+- Approval action is available after the Mission has been reviewed.
+- Approval emits a runtime event and advances governance status.
+- The boundary is visible: unapproved Mission blocks Expedition creation.
+
+### 1.4 Sidebar state
+
+- Mission phase is highlighted.
+- Discovery is marked completed.
+- Approval status appears in the sidebar phase entry.
+- Progress indicator advances only after approval.
+
+### 1.5 Status badges
+
+- Status: `Proposed`, `Under Review`, `Approved`, `Governed`.
+
+### 1.6 Commands
+
+- `Approve Mission` — advances governance state and unlocks Expeditions.
+- `Review Discovery` — returns to Discovery phase.
+- `View Evidence` — highlights evidence summary.
+
+### 1.7 Scroll transition
+
+- Entering Mission phase focuses the Mission artifact.
+- Scrolling forward reveals objectives, success criteria, constraints, and approval boundary in sequence.
+- Approval is the gating action for advancing to Expeditions.
+
+### 1.8 Animation
+
+- Mission artifact enters with emphasis appropriate to its central role.
+- Approval boundary animates from pending to approved state.
+- Unlocking Expeditions is signaled through sidebar and workspace together.
 
 ---
 
 ## Deliverables
 
-1. **Replay Experience Specification** under `docs/design/replay-experience.md`.
-2. **Replay timeline component**.
-3. **Sample event log** and replay state builder.
-4. **Tests** verifying artifact updates match event log position.
+1. **Mission Phase Specification** under `docs/design/replay-experience.md`.
+2. **Mission artifact component** with subject, purpose, objectives, success criteria, and constraints.
+3. **Approval boundary component** with pending and approved states.
+4. **Governance status integration** reflecting Mission approval.
+5. **Tests** verifying Mission rendering, approval flow, and phase gating.
 
 ---
 
 ## Acceptance Criteria
 
-- Scrubbing the timeline updates workspace artifacts deterministically.
-- The timeline shows all major lifecycle events.
-- Replay position and state hash are visible.
+- Mission artifact displays purpose, objectives, success criteria, and constraints.
+- Approval boundary is visible and actionable.
+- Mission must be approved before Expeditions phase is reachable.
+- Approval emits a runtime event and updates governance status.
+- Sidebar, header, and status badges reflect Mission state.
+- Scroll transitions guide the visitor through Mission content before approval.
+- Animations respect reduced-motion preferences.
 
 ---
 
 ## Out of Scope
 
-- Workflow visualization (EXP-HOME-005).
-- Governance visualization (EXP-HOME-006).
-- Real event log from a repository.
+- Discovery phase (EXP-HOME-006).
+- Expeditions phase (EXP-HOME-008).
+- Full Mission lifecycle implementation (EXP-PROGRAM-022).
+- Real repository mutation.
 
 ---
 
 ## Success Criteria
 
-The expedition succeeds when a visitor can scrub through history and see how SYNTH reconstructs state from events.
+The expedition succeeds when a visitor can articulate the Mission, understand why approval matters, and see that Expeditions are unlocked only after governance approval.
+
+---
+
+## Related documents
+
+- `docs/design/replay-experience.md`
+- `docs/design/genesis-experience.md`
+- `docs/design/mission-workspace.md`
+- `docs/expeditions/EXP-HOME-003.md`
+- `docs/expeditions/EXP-HOME-004.md`
+- `docs/expeditions/EXP-HOME-006.md`
+- `docs/expeditions/EXP-HOME-008.md`

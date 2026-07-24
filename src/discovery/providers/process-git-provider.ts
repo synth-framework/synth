@@ -7,7 +7,7 @@
 // repository or fetches from remotes.
 // ============================================================
 
-import { execSync, type ExecSyncOptionsWithStringEncoding } from "child_process"
+import { execFileSync } from "child_process"
 import {
   type GitBranch,
   type GitCommit,
@@ -19,21 +19,21 @@ import {
 } from "./git-provider.js"
 
 function runGit(path: string, args: string[]): string {
-  return execSync(`git ${args.join(" ")}`, {
+  return execFileSync("git", args, {
     cwd: path,
     encoding: "utf8",
     timeout: 5000,
-  } as unknown as Parameters<typeof execSync>[1])
+  })
 }
 
 function isGitRepository(path: string): boolean {
   try {
-    execSync("git rev-parse --git-dir", {
+    execFileSync("git", ["rev-parse", "--git-dir"], {
       cwd: path,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       timeout: 5000,
-    } as unknown as Parameters<typeof execSync>[1])
+    })
     return true
   } catch {
     return false

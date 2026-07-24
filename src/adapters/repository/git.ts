@@ -5,10 +5,10 @@
 // All repository operations flow through this adapter.
 // ============================================================
 
-import { execSync } from "child_process"
+import { execFileSync, execSync } from "child_process"
 import fs from "fs"
 import path from "path"
-import crypto from "crypto"
+import { shortHash } from "../../sdk/hashing/index.js"
 import type {
   AdapterState,
   AdapterHealth,
@@ -27,18 +27,18 @@ import type {
   MergeResult,
 } from "./types.js"
 
-function git(cwd: string, args: string): string {
+function git(cwd: string, args: string[]): string {
   try {
-    return execSync(`git ${args}`, { cwd, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] } as any).trim()
+    return execFileSync("git", args, { cwd, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] } as any).trim()
   } catch (err: any) {
     const stderr = err.stderr?.toString().trim() || err.message
-    throw new Error(`GIT_ERROR: git ${args} failed: ${stderr}`)
+    throw new Error(`GIT_ERROR: git ${args.join(" ")} failed: ${stderr}`)
   }
 }
 
-function gitSilent(cwd: string, args: string): string | null {
+function gitSilent(cwd: string, args: string[]): string | null {
   try {
-    return execSync(`git ${args}`, { cwd, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] } as any).trim()
+    return execFileSync("git", args, { cwd, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] } as any).trim()
   } catch {
     return null
   }
@@ -101,18 +101,18 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
 
   private currentBranch(): string {
     if (!this.isGitRepo()) return "none"
-    return git(this.repoPath(), "rev-parse --abbrev-ref HEAD")
+    return git(this.repoPath(), ["rev-parse", "--abbrev-ref", "HEAD"])
   }
 
   private hasUncommittedChanges(): boolean {
     if (!this.isGitRepo()) return false
-    const status = git(this.repoPath(), "status --porcelain")
+    const status = git(this.repoPath(), ["status", "--porcelain"])
     return status.length > 0
   }
 
   private hasRemote(): boolean {
     if (!this.isGitRepo()) return false
-    const remotes = gitSilent(this.repoPath(), "remote")
+    const remotes = gitSilent(this.repoPath(), ["remote"])
     return remotes !== null && remotes.length > 0
   }
 
@@ -178,15 +178,15 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
       fs.mkdirSync(cwd, { recursive: true })
     }
     if (!this.isGitRepo()) {
-      git(cwd, "init")
+      git(cwd, ["init"])
       if (this._config?.defaultBranch) {
-        git(cwd, `checkout -b ${this._config.defaultBranch}`)
+        git(cwd, ["checkout", "-b", this._config.defaultBranch])
       }
       if (this._config?.email) {
-        git(cwd, `config user.email "${this._config.email}"`)
+        git(cwd, ["config", "user.email", this._config.email])
       }
       if (this._config?.username) {
-        git(cwd, `config user.name "${this._config.username}"`)
+        git(cwd, ["config", "user.name", this._config.username])
       }
     }
     return this.setState("configured")
@@ -237,20 +237,20 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
 
   async createBranch(name: string): Promise<AdapterState> {
     const cwd = this.repoPath()
-    git(cwd, `checkout -b ${name}`)
+    git(cwd, ["checkout", "-b", name])
     return this.setState(this._state)
   }
 
   async checkout(name: string): Promise<AdapterState> {
     const cwd = this.repoPath()
-    git(cwd, `checkout ${name}`)
+    git(cwd, ["checkout", name])
     return this.setState(this._state)
   }
 
   async commit(message: string): Promise<AdapterState> {
     const cwd = this.repoPath()
-    git(cwd, "add -A")
-    git(cwd, `commit -m "${message.replace(/"/g, '\\"')}"`)
+    git(cwd, ["add", "-A"])
+    git(cwd, ["commit", "-m", message])
     return this.setState(this._state)
   }
 
@@ -352,25 +352,25 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   async merge(source: string, target: string): Promise<MergeResult> {
     const cwd = this.repoPath()
     try {
-      git(cwd, `checkout ${target}`)
-      git(cwd, `merge --no-ff -m "Promote ${source} into ${target}" ${source}`)
-      const commit = git(cwd, "rev-parse HEAD")
+      git(cwd, ["checkout", target])
+      git(cwd, ["merge", "--no-ff", "-m", `Promote ${source} into ${target}`, source])
+      const commit = git(cwd, ["rev-parse", "HEAD"])
       return { success: true, sourceBranch: source, targetBranch: target, commit, message: `Merged ${source} into ${target}` }
     } catch (err: any) {
-      git(cwd, "merge --abort")
+      git(cwd, ["merge", "--abort"])
       return { success: false, sourceBranch: source, targetBranch: target, message: err.message }
     }
   }
 
   async push(remote = "origin"): Promise<AdapterState> {
     const cwd = this.repoPath()
-    git(cwd, `push ${remote} ${this.currentBranch()}`)
+    git(cwd, ["push", remote, this.currentBranch()])
     return this.setState("operational")
   }
 
   async pull(remote = "origin"): Promise<AdapterState> {
     const cwd = this.repoPath()
-    git(cwd, `pull ${remote} ${this.currentBranch()}`)
+    git(cwd, ["pull", remote, this.currentBranch()])
     return this.setState("operational")
   }
 
@@ -602,7 +602,7 @@ npm run govern
   }
 
   private hash(input: string): string {
-    return crypto.createHash("sha256").update(input).digest("hex").slice(0, 12)
+    return shortHash(input)
   }
 }
 

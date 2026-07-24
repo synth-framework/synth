@@ -14,7 +14,8 @@
 //   node dist/cli/adapter.js promote feature/test
 // ============================================================
 
-import { createAdapterRegistry } from "../adapters/registry.js"
+import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
+import { printJson, printError } from "./print.js"
 
 function parseConfigArgs(args: string[]): Record<string, string> {
   const config: Record<string, string> = {}
@@ -29,28 +30,28 @@ async function main() {
   const [command, adapterName, ...rest] = process.argv.slice(2)
 
   if (!command) {
-    console.log("Usage: adapter <command> [adapter] [args...]")
-    process.exit(1)
+    printError("Usage: adapter <command> [adapter] [args...]")
   }
 
   const registry = createAdapterRegistry()
 
   switch (command) {
     case "list": {
-      console.log("Available adapters:", registry.list().join(", "))
+      printJson({ status: "ok", kind: "AdapterList", adapters: registry.list() })
       break
     }
 
     case "info": {
       const name = adapterName || "repository"
       const adapter = registry.create(name)
-      console.log(JSON.stringify({
+      printJson({
         status: "ok",
+        kind: "AdapterInfo",
         name,
         metadata: adapter.metadata,
         state: adapter.state,
         health: adapter.health,
-      }, null, 2))
+      })
       break
     }
 
@@ -58,7 +59,7 @@ async function main() {
       const name = adapterName || "repository"
       const adapter = registry.create(name)
       const state = await adapter.enable()
-      console.log(`Adapter '${name}' enabled. State: ${state}`)
+      printJson({ status: "ok", kind: "AdapterEnabled", name, state })
       break
     }
 
@@ -66,7 +67,7 @@ async function main() {
       const name = adapterName || "repository"
       const adapter = registry.create(name)
       const state = await adapter.disable()
-      console.log(`Adapter '${name}' disabled. State: ${state}`)
+      printJson({ status: "ok", kind: "AdapterDisabled", name, state })
       break
     }
 
@@ -85,7 +86,7 @@ async function main() {
         signingKey: config.signingKey,
       })
       const state = await adapter.validate()
-      console.log(`Adapter '${name}' configured. State: ${state}`)
+      printJson({ status: "ok", kind: "AdapterConfigured", name, state })
       break
     }
 
@@ -94,7 +95,7 @@ async function main() {
       const adapter = registry.create(name)
       await adapter.enable()
       const status = await (adapter as any).status()
-      console.log(JSON.stringify(status, null, 2))
+      printJson(status)
       break
     }
 
@@ -103,7 +104,7 @@ async function main() {
       const adapter = registry.create(name)
       await adapter.enable()
       const health = await (adapter as any).health()
-      console.log(JSON.stringify(health, null, 2))
+      printJson(health)
       break
     }
 
@@ -118,59 +119,55 @@ async function main() {
         promotionMode: "direct",
       })
       const state = await (adapter as any).initialize()
-      console.log(`Adapter '${name}' initialized. State: ${state}`)
+      printJson({ status: "ok", kind: "AdapterInitialized", name, state })
       break
     }
 
     case "create-branch": {
       const branchName = adapterName
       if (!branchName) {
-        console.error("Branch name required")
-        process.exit(1)
+        printError("Branch name required")
       }
       const adapter = registry.create("repository")
       await adapter.enable()
       const state = await (adapter as any).createBranch(branchName)
-      console.log(`Created branch '${branchName}'. State: ${state}`)
+      printJson({ status: "ok", kind: "BranchCreated", branchName, state })
       break
     }
 
     case "checkout": {
       const branchName = adapterName
       if (!branchName) {
-        console.error("Branch name required")
-        process.exit(1)
+        printError("Branch name required")
       }
       const adapter = registry.create("repository")
       await adapter.enable()
       const state = await (adapter as any).checkout(branchName)
-      console.log(`Checked out '${branchName}'. State: ${state}`)
+      printJson({ status: "ok", kind: "BranchCheckedOut", branchName, state })
       break
     }
 
     case "commit": {
       const message = adapterName
       if (!message) {
-        console.error("Commit message required")
-        process.exit(1)
+        printError("Commit message required")
       }
       const adapter = registry.create("repository")
       await adapter.enable()
       const state = await (adapter as any).commit(message)
-      console.log(`Committed. State: ${state}`)
+      printJson({ status: "ok", kind: "CommitCreated", message, state })
       break
     }
 
     case "promote": {
       const branchName = adapterName
       if (!branchName) {
-        console.error("Branch name required")
-        process.exit(1)
+        printError("Branch name required")
       }
       const adapter = registry.create("repository")
       await adapter.enable()
       const result = await (adapter as any).promote(branchName)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -180,7 +177,7 @@ async function main() {
       const adapter = registry.create(name)
       await adapter.enable()
       const state = await (adapter as any).installHooks()
-      console.log(`Hooks installed for '${name}'. State: ${state}`)
+      printJson({ status: "ok", kind: "HooksInstalled", name, state })
       break
     }
 
@@ -188,13 +185,12 @@ async function main() {
       const title = adapterName
       const body = rest.join(" ")
       if (!title) {
-        console.error("Issue title required")
-        process.exit(1)
+        printError("Issue title required")
       }
       const adapter = registry.create("github") as any
       await adapter.enable()
       const result = await adapter.createIssue(title, body)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -202,13 +198,12 @@ async function main() {
     case "github-create-pr": {
       const [title, head, base, ...bodyParts] = [adapterName, ...rest]
       if (!title || !head || !base) {
-        console.error("Usage: github-create-pr <title> <head> <base> [body]")
-        process.exit(1)
+        printError("Usage: github-create-pr <title> <head> <base> [body]")
       }
       const adapter = registry.create("github") as any
       await adapter.enable()
       const result = await adapter.createPullRequest(title, head, base, bodyParts.join(" "))
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -216,13 +211,12 @@ async function main() {
     case "github-merge-pr": {
       const number = parseInt(adapterName || "", 10)
       if (isNaN(number)) {
-        console.error("Pull request number required")
-        process.exit(1)
+        printError("Pull request number required")
       }
       const adapter = registry.create("github") as any
       await adapter.enable()
       const result = await adapter.mergePullRequest(number)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -230,13 +224,12 @@ async function main() {
     case "tdd-generate-test": {
       const [requirement, targetModule, functionName] = [adapterName, ...rest]
       if (!requirement || !targetModule || !functionName) {
-        console.error("Usage: tdd-generate-test <requirement> <target-module> <function-name>")
-        process.exit(1)
+        printError("Usage: tdd-generate-test <requirement> <target-module> <function-name>")
       }
       const adapter = registry.create("tdd") as any
       await adapter.enable()
       const result = await adapter.generateTest(requirement, targetModule, functionName)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -245,7 +238,7 @@ async function main() {
       const adapter = registry.create("tdd") as any
       await adapter.enable()
       const result = await adapter.verifyFailure()
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -254,7 +247,7 @@ async function main() {
       const adapter = registry.create("tdd") as any
       await adapter.enable()
       const result = await adapter.verifyImplementation()
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -262,13 +255,12 @@ async function main() {
     case "tdd-evidence": {
       const requirement = adapterName
       if (!requirement) {
-        console.error("Requirement description required")
-        process.exit(1)
+        printError("Requirement description required")
       }
       const adapter = registry.create("tdd") as any
       await adapter.enable()
       const result = await adapter.generateEvidence(requirement)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -276,13 +268,12 @@ async function main() {
     case "bdd-create-feature": {
       const [missionId, name, ...descParts] = [adapterName, ...rest]
       if (!name) {
-        console.error("Usage: bdd-create-feature <mission-id> <name> [description]")
-        process.exit(1)
+        printError("Usage: bdd-create-feature <mission-id> <name> [description]")
       }
       const adapter = registry.create("bdd") as any
       await adapter.enable()
       const result = await adapter.createFeature(missionId || undefined, name, descParts.join(" "))
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -290,13 +281,12 @@ async function main() {
     case "bdd-create-scenario": {
       const [featureId, name, ...restArgs] = [adapterName, ...rest]
       if (!featureId || !name) {
-        console.error("Usage: bdd-create-scenario <feature-id> <name>")
-        process.exit(1)
+        printError("Usage: bdd-create-scenario <feature-id> <name>")
       }
       const adapter = registry.create("bdd") as any
       await adapter.enable()
       const result = await adapter.createScenario(featureId, name, ["precondition"], "action", ["expected outcome"])
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -305,7 +295,7 @@ async function main() {
       const adapter = registry.create("bdd") as any
       await adapter.enable()
       const result = await adapter.generateAcceptanceTests(adapterName)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -314,7 +304,7 @@ async function main() {
       const adapter = registry.create("bdd") as any
       await adapter.enable()
       const result = await adapter.verifyBehavior(adapterName)
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
@@ -323,19 +313,17 @@ async function main() {
       const adapter = registry.create("bdd") as any
       await adapter.enable()
       const result = await adapter.generateBehaviorEvidence()
-      console.log(JSON.stringify(result, null, 2))
+      printJson(result)
       process.exit(result.success ? 0 : 1)
       break
     }
 
     default: {
-      console.error(`Unknown command: ${command}`)
-      process.exit(1)
+      printError(`Unknown command: ${command}`)
     }
   }
 }
 
 main().catch((err) => {
-  console.error("FATAL:", err.message)
-  process.exit(1)
+  printError(`FATAL: ${err.message}`)
 })

@@ -9,8 +9,11 @@
 // event log compact while preserving full provenance.
 // ============================================================
 
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import path from "path"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
+import * as sdk from "../sdk/index.js"
+import { stringifyJson } from "../sdk/json/index.js"
 import type { InitializationEvidence } from "../adapters/initialization-adapter.js"
 import type { ProjectModel } from "./project-model.js"
 
@@ -53,7 +56,7 @@ function sanitizeTimestamp(timestamp: string): string {
 export function createInitializationEvidenceStore(
   fs: FilesystemProvider,
 ): InitializationEvidenceStore {
-  const evidenceDir = ".synth/data/evidence/initialization"
+  const evidenceDir = path.relative(fs.root, sdk.paths.initializationEvidenceDir(fs.root))
 
   return {
     async persist(
@@ -77,7 +80,7 @@ export function createInitializationEvidenceStore(
         model,
       }
 
-      await fs.writeFile(relativePath, JSON.stringify(artifact, null, 2))
+      await fs.writeFile(relativePath, stringifyJson(artifact))
       return relativePath
     },
   }

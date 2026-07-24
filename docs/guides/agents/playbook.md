@@ -179,6 +179,21 @@ Status: stable
 - [ ] Approach proposed
 - [ ] ADRs written (if needed)
 
+## Play 9: Before Modifying Any File
+
+**When:** Any agent is about to edit, create, or delete a file.
+
+**Invariant:**
+
+1. Determine which approved artifacts govern that file.
+2. Use those artifacts as the implementation authority.
+3. If no governing artifacts can be identified, stop and ask.
+
+**Checklist:**
+- [ ] Governing expedition, ADR, or specification identified
+- [ ] File change is justified by those artifacts
+- [ ] Operator consulted if no governing artifact exists
+
 ## Related Documents
 
 - [Constitution](constitution.md) — Rules governing all plays

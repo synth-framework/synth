@@ -11,6 +11,12 @@ import type {
   Project,
   Mission,
   Expedition,
+  ReviewGateState,
+  ReviewGatePolicy,
+  IntentModelState,
+  RefinementReportState,
+  AlignmentContractState,
+  ReferenceEvidenceState,
   Objective,
   Discovery,
   Decision,
@@ -37,10 +43,8 @@ export function createEmptyState(): CanonicalState {
     objectives: {},
     discoveries: {},
     decisions: {},
-    generatedWorkItems: {},
-    executions: {},
-    executionIntents: {},
-    executionGraphs: {},
+    referenceEvidence: {},
+    repository: undefined,
     lastEventOffset: 0,
   }
 }
@@ -206,10 +210,26 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       if (mission) state.missions[mission.id] = mission
       break
     }
+    case "MISSION_PROJECTED": {
+      // Projection package is materialized from the event log; no state mutation required.
+      break
+    }
+    case "PROJECTION_CERTIFIED": {
+      // Certification result is materialized from the event log; no state mutation required.
+      break
+    }
+    case "PROJECTION_CERTIFICATION_FAILED": {
+      // Failure is materialized from the event log; no state mutation required.
+      break
+    }
     case "MISSION_APPROVED": {
       const missionId = String(payload.id)
       if (state.missions[missionId]) {
-        state.missions[missionId] = { ...state.missions[missionId], status: "active", updatedAt: event.timestamp }
+        const update: Partial<typeof state.missions[typeof missionId]> = { status: "active", updatedAt: event.timestamp }
+        if (typeof payload.alignmentContractId === "string") {
+          update.alignmentContractId = payload.alignmentContractId
+        }
+        state.missions[missionId] = { ...state.missions[missionId], ...update }
       }
       break
     }
@@ -239,6 +259,16 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_AUTHORIZED": {
+      // Authorized expeditions are recorded as committed without changing the
+      // Expedition status enum (surgical governance change; see Mutation
+      // Authority Invariant in the Constitutional Baseline).
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "committed", updatedAt: event.timestamp }
+      }
+      break
+    }
     case "EXPEDITION_COMMITTED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
@@ -260,6 +290,36 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    case "REFERENCE_EVIDENCE_CREATED": {
+      const evidence = payload.evidence as ReferenceEvidenceState
+      if (evidence) state.referenceEvidence[evidence.id] = evidence
+      break
+    }
+
+
+
+
     case "OBJECTIVE_ADDED": {
       const objective = payload.objective as Objective
       if (objective) state.objectives[objective.id] = objective
@@ -399,6 +459,7 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
             objectives: [],
             discoveries: [String(payload.discoveryArtifactId ?? "")],
             decisions: [],
+            dependsOn: [],
             metadata: { source: "first-contact" },
             createdAt: event.timestamp,
             updatedAt: event.timestamp,
@@ -408,131 +469,22 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       break
     }
 
-    case "WORK_ITEM_GENERATED": {
-      const workItem = payload.workItem as GeneratedWorkItem
-      if (workItem) state.generatedWorkItems[workItem.id] = workItem
-      break
-    }
+
 
     case "SYSTEM_GENESIS": {
       state.version = 1
       break
     }
-    case "TRANSACTION_STARTED": {
-      const txId = String(payload.txId)
-      state.executions[txId] = {
-        id: txId,
-        capability: "",
-        intent: {},
-        txId,
-        startedAt: event.timestamp,
-        status: "success",
-      }
-      break
-    }
 
-    // Execution intent lifecycle (EXP-EXEC-001)
-    case "EXECUTION_INTENT_CREATED": {
-      const intentId = String(payload.intentId)
-      state.executionIntents[intentId] = {
-        id: intentId,
-        expeditionId: String(payload.expeditionId),
-        objectiveId: String(payload.objectiveId),
-        workItemId: String(payload.workItemId),
-        sequence: Number(payload.sequence ?? 0),
-        capability: String(payload.capability),
-        operation: String(payload.operation),
-        target: String(payload.target ?? ""),
-        status: "pending",
-        dependencies: Array.isArray(payload.dependencies) ? payload.dependencies.map(String) : [],
-      }
-      break
-    }
-    case "EXECUTION_INTENT_GRAPH_CREATED": {
-      const expeditionId = String(payload.expeditionId)
-      state.executionGraphs[expeditionId] = {
-        expeditionId,
-        branch: String(payload.branch ?? ""),
-        phase: "approved",
-        intentIds: Array.isArray(payload.intentIds) ? payload.intentIds.map(String) : [],
-      }
-      break
-    }
-    case "EXPEDITION_BRANCH_CREATED": {
-      const expeditionId = String(payload.expeditionId)
-      const graph = state.executionGraphs[expeditionId]
-      if (graph) {
-        graph.branch = String(payload.branch)
-        graph.baseCommit = String(payload.baseCommit)
-        graph.phase = "branch-created"
-      }
-      break
-    }
-    case "EXECUTION_INTENT_STARTED": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "running"
-        intent.startedAt = event.timestamp
-      }
-      const graph = state.executionGraphs[String(payload.expeditionId)]
-      if (graph) {
-        graph.phase = "executing"
-        graph.currentIntentId = intentId
-      }
-      break
-    }
-    case "EXECUTION_INTENT_COMPLETED": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "completed"
-        intent.completedAt = event.timestamp
-      }
-      break
-    }
-    case "EXECUTION_INTENT_FAILED": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "failed"
-        intent.failureReason = String(payload.reason)
-        intent.completedAt = event.timestamp
-      }
-      const graph = state.executionGraphs[String(payload.expeditionId)]
-      if (graph) graph.phase = "failed"
-      break
-    }
-    case "EXECUTION_INTENT_ROLLEDBACK": {
-      const intentId = String(payload.intentId)
-      const intent = state.executionIntents[intentId]
-      if (intent) {
-        intent.status = "rolledback"
-        intent.completedAt = event.timestamp
-      }
-      const graph = state.executionGraphs[String(payload.expeditionId)]
-      if (graph) graph.phase = "rolledback"
-      break
-    }
-    case "EXPEDITION_EXECUTION_COMMITTED": {
-      const expeditionId = String(payload.expeditionId)
-      const graph = state.executionGraphs[expeditionId]
-      if (graph) {
-        graph.phase = "committed"
-        graph.resultCommit = String(payload.commit)
-      }
-      break
-    }
-    case "EXPEDITION_EXECUTION_PROJECTED": {
-      const expeditionId = String(payload.expeditionId)
-      const graph = state.executionGraphs[expeditionId]
-      if (graph) {
-        graph.phase = "projected"
-        graph.projectionType = payload.projectionType as "pull_request" | "patch" | "diff"
-        graph.projectionUrl = payload.projectionUrl ? String(payload.projectionUrl) : undefined
-      }
-      break
-    }
+
+
+
+
+
+
+
+
+
 
     // Repository governance lifecycle (EXP-PROGRAM-028)
     case "REPOSITORY_INITIALIZED": {
@@ -668,19 +620,16 @@ export function computeStateHash(state: CanonicalState): string {
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
+    referenceEvidence: Object.keys(state.referenceEvidence).sort(),
   }
   // Backward-compatible hash: only include lifecycle once the project has
   // been initialized. Empty/uninitialized states preserve their legacy hash.
   if (state.lifecycle === "initialized") {
     data.lifecycle = state.lifecycle
   }
-  // Backward-compatible hash: only include new collections when populated.
-  // Logs recorded before EXP-EXEC-001 have empty execution collections.
-  if (Object.keys(state.executionIntents).length > 0) {
-    data.executionIntents = Object.keys(state.executionIntents).sort()
-  }
-  if (Object.keys(state.executionGraphs).length > 0) {
-    data.executionGraphs = Object.keys(state.executionGraphs).sort()
+  // Backward-compatible hash: only include repository when populated.
+  if (state.repository) {
+    data.repository = Object.keys(state.repository.branches).sort()
   }
   const str = JSON.stringify(data)
   let hash = 0

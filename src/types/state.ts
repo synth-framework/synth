@@ -51,8 +51,23 @@ export type Mission = {
   id: string
   name: string
   purpose: string
-  status: "draft" | "active" | "completed" | "archived"
+  status: "projected" | "draft" | "active" | "completed" | "archived"
+  projectionStatus?: "projected" | "certified" | "failed"
   expeditions: string[]
+  objectives?: string[]
+  constraints?: string[]
+  nonGoals?: string[]
+  allowedVariation?: string[]
+  forbiddenDrift?: string[]
+  referenceEvidence?: string[]
+  lineage?: {
+    alignmentContractId: string
+    intentModelId: string
+    refinementReportId: string
+  }
+  fingerprint?: string
+  projectionId?: string
+  alignmentContractId?: string
   metadata: Record<string, unknown>
   createdAt: number
   updatedAt: number
@@ -68,9 +83,217 @@ export type Expedition = {
   objectives: string[]
   discoveries: string[]
   decisions: string[]
+  dependsOn: string[]
   metadata: Record<string, unknown>
   createdAt: number
   updatedAt: number
+}
+
+/** Review gate expedition state — governed execution checkpoint */
+export type ReviewGateExpeditionState = {
+  expeditionId: string
+  status: "proposed" | "executing" | "implementation_complete" | "awaiting_review" | "revision_requested" | "approved" | "awaiting_acceptance" | "accepted" | "closed" | "rejected"
+  gates: ReviewGateState[]
+  refinedIntentId?: string
+  reviewPackageId?: string
+  reviewDecisionId?: string
+  /** Persisted proposal-evaluation result that produced the review decision. */
+  evaluation?: import("../governance/proposal-evaluation/types.js").EvaluationResult
+  acceptancePackageId?: string
+  acceptanceRecordId?: string
+  currentGateId?: string
+}
+
+/** Minimal gate policy stored in replay state */
+export type ReviewGatePolicy = {
+  reviewers: string[]
+  quorum: "all" | "any" | number
+  excludeActors?: string[]
+  timeout?: number
+  revisionLimit?: number
+  autoAdvance?: boolean
+}
+
+/** A condition attached to an approve_with_conditions decision */
+export type ReviewCondition = {
+  id: string
+  description: string
+  fulfilled: boolean
+  fulfilledBy?: string
+  fulfilledAt?: number
+}
+
+/** Gate instance state */
+export type ReviewGateState = {
+  id: string
+  gateType: "refinement" | "review" | "acceptance"
+  expeditionId: string
+  policy: ReviewGatePolicy
+  status: "pending" | "awaiting_review" | "approved" | "revision_requested" | "rejected" | "accepted" | "closed"
+  inputs: string[]
+  outputs: string[]
+  reviewer?: { kind: string; id: string }
+  decisionId?: string
+  decision?: string
+  decisionReason?: string
+  decisionEvidence?: string[]
+  decisionAffectedAssets?: string[]
+  decisionRequiredChanges?: string[]
+  parentGateId?: string
+  blocking: boolean
+  createdAt: number
+  resolvedAt?: number
+  conditions?: ReviewCondition[]
+}
+
+/** Intent Model — structured interpretation of raw human intent */
+export type IntentModelState = {
+  id: string
+  rawIntentReference: string
+  explicitObjectives: string[]
+  implicitObjectives: string[]
+  audience?: string
+  problemStatement?: string
+  desiredOutcome?: string
+  nonGoals: string[]
+  forbiddenInterpretations: string[]
+  allowedInterpretations: string[]
+  interpretations: Array<{
+    kind: string
+    text: string
+    evidence?: string[]
+  }>
+  referenceEvidenceIds: string[]
+  confidenceLevel: number
+  unresolvedAmbiguity: string[]
+  knownUnknowns: string[]
+  status: string
+  refinementApproval?: {
+    reportId: string
+    decision: "approved_for_alignment" | "revision_required" | "rejected"
+    approvedBy?: { kind: string; id: string }
+    rejectedBy?: { kind: string; id: string }
+    reason: string
+    approvedAt: number
+  }
+  version: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** Refinement Session — clarification loop for an Intent Model */
+export type RefinementSessionState = {
+  id: string
+  intentModelId: string
+  status: "active" | "clarifying" | "sufficient" | "insufficient" | "superseded"
+  questions: Array<{
+    id: string
+    text: string
+    category: string
+    priority: string
+  }>
+  answers: Array<{ questionId: string; text: string }>
+  version: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** Refinement Report — captured outcome of a refinement session */
+export type RefinementReportState = {
+  id: string
+  sessionId: string
+  intentModelId: string
+  createdAt: number
+  reviewer: { kind: string; id: string }
+  initialConfidence: number
+  finalConfidence: number
+  entries: Array<{
+    question: {
+      id: string
+      text: string
+      category: string
+      priority: string
+    }
+    answer: string
+  }>
+  assumptionsRemoved: string[]
+  forbiddenInterpretationsAdded: string[]
+  allowedInterpretationsAdded: string[]
+  evidenceLinked: string[]
+  openQuestions: string[]
+  recommendation: string
+  reason: string
+}
+
+/** Alignment Contract — formal agreement before Mission creation */
+export type AlignmentContractState = {
+  id: string
+  intentModelId: string
+  refinedIntentId?: string
+  intentSummary: string
+  expectedExperience: string
+  requiredProperties: string[]
+  forbiddenProperties: string[]
+  requiredBehaviors: string[]
+  visualReferences: string[]
+  behavioralReferences: string[]
+  functionalExpectations: string[]
+  technicalConstraints: string[]
+  successCriteria: string[]
+  explicitNonRequirements: string[]
+  allowedInterpretation: string[]
+  allowedVariation: string[]
+  forbiddenInterpretation: string[]
+  forbiddenDrift: string[]
+  referenceEvidenceIds: string[]
+  dimensions?: Array<{ name: string; score: number; reason: string }>
+  objectiveCoverage?: Array<{ objective: string; evidenceIds: string[]; aligned: boolean; notes?: string }>
+  implicitObjectiveStatus?: Array<{ objective: string; status: string; reason: string }>
+  forbiddenInterpretations?: Array<{ interpretation: string; reason: string; evidenceIds: string[] }>
+  confidenceExplanation?: { score: number; reason: string }
+  residualDivergence?: Array<{ description: string; acceptedBy: { kind: string; id: string }; reason: string; risk: string }>
+  status: string
+  approvedBy?: { kind: string; id: string }
+  approvedAt?: number
+  version: number
+  createdAt: number
+  updatedAt: number
+}
+
+/** Reference Evidence — bound artifact justifying a requirement */
+export type ReferenceEvidenceState = {
+  id: string
+  kind: string
+  uri: string
+  hash?: string
+  mimeType?: string
+  description?: string
+  capturedAt: number
+}
+
+/** Divergence Gate — pre-Mission alignment checkpoint */
+export type DivergenceGateState = {
+  id: string
+  contractId: string
+  intentModelId: string
+  status: string
+  reportId?: string
+  createdAt: number
+  resolvedAt?: number
+}
+
+/** Convergence Certification — post-execution intent fidelity record */
+export type ConvergenceCertificationState = {
+  id: string
+  missionId: string
+  expeditionId: string
+  alignmentContractId: string
+  status: "certified" | "diverged" | "insufficient_evidence"
+  decision: "converged" | "diverged" | "insufficient_evidence"
+  confidence: number
+  failureClasses: string[]
+  certifiedAt: number
+  certifier: { kind: string; id: string }
 }
 
 /** Objective — specific measurable outcome within an expedition */
@@ -193,7 +416,11 @@ export type Repository = {
   versionStrategy: "semver" | "calver" | "build" | "custom"
 }
 
-/** Canonical state — the single authoritative materialized projection */
+/** Canonical state — the single authoritative materialized projection.
+ *
+ * Contains only irreducible domain truth. Workflow, governance, execution,
+ * audit, and cache fields are derived separately by buildDerivedState().
+ */
 export type CanonicalState = {
   version: number
   stateHash: string
@@ -207,10 +434,7 @@ export type CanonicalState = {
   objectives: Record<string, Objective>
   discoveries: Record<string, Discovery>
   decisions: Record<string, Decision>
-  generatedWorkItems: Record<string, GeneratedWorkItem>
-  executions: Record<string, Execution>
-  executionIntents: Record<string, ExecutionIntentState>
-  executionGraphs: Record<string, ExecutionGraphState>
+  referenceEvidence: Record<string, ReferenceEvidenceState>
   repository?: Repository
   lastEventOffset: number
 }

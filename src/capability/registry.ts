@@ -2,7 +2,8 @@
 // CAPABILITY: Registry System
 // ============================================================
 
-import type { Capability, CapabilityInvocation, CapabilityResult, CanonicalState, DomainContext } from "../types/index.js"
+import type { Capability, CapabilityInvocation, CapabilityResult, CanonicalState, DerivedState, DomainContext } from "../types/index.js"
+import { applyDomain } from "../domain/execution.js"
 import {
   createWorkItem, startWorkItem, completeWorkItem, blockWorkItem,
   createPlan, activatePlan, completePlan,
@@ -41,7 +42,7 @@ export class Registry {
 
   execute(
     name: string,
-    ctx: { intent: CapabilityInvocation; state: CanonicalState; executionCtx: DomainContext },
+    ctx: { intent: CapabilityInvocation; state: CanonicalState; derivedState: DerivedState; executionCtx: DomainContext },
   ): CapabilityResult {
     const cap = this.resolve(name)
     if (!cap) throw new Error(`UNKNOWN_CAPABILITY: ${name}`)
@@ -59,6 +60,9 @@ export class Registry {
 
   freeze(): void {
     this._frozen = true
+    for (const [, value] of this.capabilities) {
+      Object.freeze(value)
+    }
     Object.freeze(this.capabilities)
   }
 
@@ -430,15 +434,35 @@ export function createDefaultCapabilities(): Capability[] {
         },
       ],
       postconditions: [],
-      invariantsChecked: [],
+      invariantsChecked: ["alignment_contract_aligned"],
       sideEffects: false,
       executionClass: "sync",
-      handler: ({ intent, state, executionCtx }) => {
+      handler: ({ intent, state, derivedState, executionCtx }) => {
         const id = String(intent.payload.id)
         const existing = state.missions[id]
         if (!existing) return { events: [{ type: "MISSION_APPROVED", payload: { id, status: "active" } }] }
+        const alignmentContractId = String(intent.payload.alignmentContractId || existing.alignmentContractId || "")
+        if (!alignmentContractId || alignmentContractId === "undefined") {
+          throw new Error("ALIGNMENT_CONTRACT_REQUIRED: ApproveMission requires an alignment contract")
+        }
+        const contract = derivedState.alignmentContracts[alignmentContractId]
+        if (!contract) {
+          throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${alignmentContractId}`)
+        }
+        const alignedGate = Object.values(derivedState.divergenceGates).find(
+          (g) => g.contractId === alignmentContractId && g.status === "aligned"
+        )
+        if (!alignedGate) {
+          throw new Error(`DIVERGENCE_GATE_NOT_ALIGNED: Mission cannot be approved without an aligned divergence gate for contract ${alignmentContractId}`)
+        }
         const updated = approveMission(existing, executionCtx)
-        return { events: [{ type: "MISSION_APPROVED", payload: { id: updated.id, status: updated.status } }], result: updated }
+        return {
+          events: [{
+            type: "MISSION_APPROVED",
+            payload: { id: updated.id, status: updated.status, alignmentContractId },
+          }],
+          result: { ...updated, alignmentContractId },
+        }
       },
     },
     {
@@ -453,15 +477,62 @@ export function createDefaultCapabilities(): Capability[] {
         },
       ],
       postconditions: [],
-      invariantsChecked: [],
+      invariantsChecked: ["convergence_certification_required"],
       sideEffects: false,
       executionClass: "sync",
-      handler: ({ intent, state, executionCtx }) => {
+      handler: ({ intent, state, derivedState, executionCtx }) => {
         const id = String(intent.payload.id)
         const existing = state.missions[id]
         if (!existing) return { events: [{ type: "MISSION_COMPLETED", payload: { id, status: "completed" } }] }
+        const hasValidCertification = Object.values(derivedState.convergenceCertifications).some(
+          (c) => c.missionId === id && c.decision === "converged"
+        )
+        if (!hasValidCertification) {
+          throw new Error(`CONVERGENCE_CERTIFICATION_REQUIRED: Mission ${id} cannot be completed without a converged certification`)
+        }
         const updated = completeMission(existing, executionCtx)
         return { events: [{ type: "MISSION_COMPLETED", payload: { id: updated.id, status: updated.status } }], result: updated }
+      },
+    },
+    {
+      name: "CertifyConvergence",
+      description: "Certify that a mission outcome remains converged with approved intent",
+      inputSchema: {
+        required: ["missionId", "expeditionId", "alignmentContractId", "observedFeatures"],
+        types: {
+          missionId: "string",
+          expeditionId: "string",
+          alignmentContractId: "string",
+          observedFeatures: "object",
+          artifacts: "array",
+          runtimeEvidence: "array",
+          executionEvidence: "array",
+          ruleSetId: "string",
+          certifier: "object",
+        },
+      },
+      outputSchema: { events: ["CONVERGENCE_CERTIFIED", "CONVERGENCE_DIVERGED"], resultType: "ConvergenceResult" },
+      preconditions: [
+        {
+          name: "mission_exists",
+          evaluate: (intent, state) => { const missionId = String(intent.payload.missionId); return missionId in state.missions },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: ["deterministic_convergence_evaluation"],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, derivedState, executionCtx }) => {
+        return applyDomain(
+          {
+            capability: "CertifyConvergence",
+            payload: intent.payload as Record<string, unknown>,
+            actor: intent.actor ?? "synth-cli-operator",
+          },
+          state,
+          derivedState,
+          executionCtx
+        )
       },
     },
     {
@@ -981,6 +1052,71 @@ export function createDefaultCapabilities(): Capability[] {
         return {
           events: [{ type: "RELEASE_CREATED", payload: { releaseId, tag, targetCommit, evidenceReference } }],
           result: { releaseId, tag, targetCommit, evidenceReference },
+        }
+      },
+    },
+
+    // Condition fulfillment capability (EXP-GOV-015)
+    {
+      name: "FulfillCondition",
+      description: "Fulfill a condition on a review gate",
+      inputSchema: {
+        required: ["expeditionId", "gateId", "conditionId"],
+        types: {
+          expeditionId: "string",
+          gateId: "string",
+          conditionId: "string",
+          fulfilledBy: "string",
+        },
+      },
+      outputSchema: { events: ["CONDITION_FULFILLED"], resultType: "void" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, derivedState, executionCtx }) => {
+        return applyDomain(
+          {
+            capability: "FulfillCondition",
+            payload: intent.payload as Record<string, unknown>,
+            actor: intent.actor ?? "synth-cli-operator",
+          },
+          state,
+          derivedState,
+          executionCtx
+        )
+      },
+    },
+
+    // Filesystem mutation capability (EXP-CAPABILITY-BOUNDARY-001)
+    {
+      name: "FilesystemWrite",
+      description: "Write a file through the ExecutionGate mutation boundary",
+      inputSchema: {
+        required: ["path", "content"],
+        types: { path: "string", content: "string" },
+      },
+      outputSchema: { events: [], resultType: "MutationResult" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: true,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const target = String(intent.payload.path)
+        const content = String(intent.payload.content)
+        return {
+          events: [],
+          mutations: [
+            {
+              capability: "filesystem",
+              operation: "write",
+              target,
+              payload: { content },
+            },
+          ],
+          result: { target },
         }
       },
     },

@@ -3,79 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Synth — Humans explore. SYNTH remembers. AI executes deterministically.</title>
+  <title>Synth — From idea to accepted outcome</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <header>
-    <nav>
-      <a href="index.html" class="logo">Synth<span>.</span></a>
-      <div class="nav-links">
+<body class="synth-homepage">
+  <a href="#workspace-content" class="skip-link">Skip to main content</a>
+
+  <header class="synth-nav">
+    <div class="synth-nav-inner">
+      <a href="index.html" class="synth-logo">
+        <span class="synth-logo-mark">S</span>
+        <span>Synth</span>
+      </a>
+      <nav class="synth-nav-links" aria-label="Primary">
+        <a href="#mission-studio">Product</a>
+        <a href="#canonical-artifacts">Architecture</a>
         <a href="docs.html">Docs</a>
-        <a href="quick-start.html">Quick Start</a>
-        <a href="examples.html">Examples</a>
-        <a href="mission-studio.html">Mission Studio</a>
-        <a href="architecture.html">Architecture</a>
-        <a href="community.html">Community</a>
-        <a href="first-contact/">First Contact</a>
+        <a href="https://github.com/synth-framework/synth" target="_blank" rel="noopener noreferrer">Community</a>
+      </nav>
+      <div class="synth-nav-actions">
+        <a href="https://github.com/synth-framework/synth" class="btn btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="#mission-studio" class="btn btn-primary btn-sm">Start Mission</a>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <main>
-    <section class="hero">
-      <h1>Humans explore. SYNTH remembers. AI executes deterministically.</h1>
-      <p>From an idea to replayable software through Missions, Expeditions, and Proof. Synth turns human intent into approved plans, records every action as an immutable event, and lets Replay prove the state is correct.</p>
-      <div class="code-block"><code>curl -fsSL https://synth-framework.github.io/synth/install.sh | sh</code></div>
-      <p class="hero-alt">Or install with <code>npm install -g @synth-framework/synth</code></p>
-      <div class="cta-group">
-        <a href="quick-start.html" class="btn btn-primary">Get Started in 5 Minutes</a>
-        <a href="https://github.com/synth-framework/synth" class="btn btn-secondary">View on GitHub</a>
+  <div class="workspace-shell" id="workspace-shell" data-state="expanded">
+
+    <div class="workspace-toolbar" id="workspace-toolbar" data-state="expanded">
+      <div class="workspace-toolbar-inner">
+        <div class="synth-pill">Idea → Accepted outcome</div>
+        <h1>Turn ideas into governed software</h1>
+        <p class="workspace-toolbar-lead">Describe what you want. SYNTH asks the right questions, confirms understanding, builds a plan, executes it, and proves the result.</p>
+        <div class="workspace-toolbar-actions">
+          <a href="#mission-studio" class="btn btn-primary btn-lg">Try Mission Studio</a>
+          <a href="docs.html" class="btn btn-secondary btn-lg">Read the docs</a>
+        </div>
       </div>
-      <p class="hero-note">AI operators: read <a href="https://github.com/synth-framework/synth/blob/main/AGENTS.md">AGENTS.md</a> first.</p>
-    </section>
-
-    <section>
-      <h2>Seven public concepts</h2>
-      <p>Synth is explained with exactly seven concepts. Everything else is implementation detail.</p>
-      <div class="card-grid">
-        <div class="card"><h3>Mission</h3><p>The strategic goal you are working toward.</p></div>
-        <div class="card"><h3>Expedition</h3><p>A bounded investigation or build that moves the mission forward.</p></div>
-        <div class="card"><h3>Evidence</h3><p>What you know and how confidently you know it.</p></div>
-        <div class="card"><h3>Plan</h3><p>The approved path forward, ready to execute.</p></div>
-        <div class="card"><h3>Event</h3><p>An immutable record that something happened.</p></div>
-        <div class="card"><h3>State</h3><p>The current picture, derived from events.</p></div>
-        <div class="card"><h3>Replay</h3><p>Rebuilding state from events to prove correctness.</p></div>
+      <div class="workspace-toolbar-collapsed" id="workspace-toolbar-collapsed">
+        <div class="ws-bar">
+          <div class="ws-bar-left">
+            <span class="ws-bar-logo">
+              <span class="synth-logo-mark">S</span>
+              <span>Synth</span>
+            </span>
+            <span class="ws-bar-mission" id="ws-bar-mission">Mission Studio</span>
+            <div class="ws-bar-chips" id="ws-bar-chips">
+              <span class="ms-chip ms-chip-active">Planning</span>
+              <span class="ms-chip ms-chip-governed">Governed</span>
+            </div>
+          </div>
+          <div class="ws-bar-right">
+            <span class="ws-bar-confidence" id="ws-bar-confidence">85% confidence</span>
+            <a href="#mission-studio" class="btn btn-primary">Open Workspace</a>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <section>
-      <h2>The public flow</h2>
-      <div class="code-block"><code>Idea → Mission Draft → Approval → Mission → Expedition → Plan → Validation → Governance → Proof → Events → State → Replay</code></div>
-      <p>Every step produces evidence. The event log is the source of truth. Validation gives fast local feedback; Governance produces the canonical proof. Replay verifies that the current state matches the history.</p>
-    </section>
+    <aside class="workspace-rail" id="workspace-rail" data-state="expanded" aria-label="Workspace navigation">
+      <nav class="ws-rail-nav">
+        <a href="#workspace-toolbar" class="ws-rail-item" data-section="intent">
+          <span class="ws-rail-dot" style="background:#3B82F6"></span>
+          <span class="ws-rail-label">Intent</span>
+        </a>
+        <a href="#mission-studio" class="ws-rail-item" data-section="discovery">
+          <span class="ws-rail-dot" style="background:#14B8A6"></span>
+          <span class="ws-rail-label">Discovery</span>
+        </a>
+        <a href="#mission-studio" class="ws-rail-item" data-section="mission">
+          <span class="ws-rail-dot" style="background:#8B5CF6"></span>
+          <span class="ws-rail-label">Mission</span>
+        </a>
+        <a href="#canonical-artifacts" class="ws-rail-item" data-section="expeditions">
+          <span class="ws-rail-dot" style="background:#6366F1"></span>
+          <span class="ws-rail-label">Expeditions</span>
+        </a>
+        <a href="#deterministic-engineering" class="ws-rail-item" data-section="governance">
+          <span class="ws-rail-dot" style="background:#10B981"></span>
+          <span class="ws-rail-label">Governance</span>
+        </a>
+        <a href="#ai-native" class="ws-rail-item" data-section="replay">
+          <span class="ws-rail-dot" style="background:#7C3AED"></span>
+          <span class="ws-rail-label">Replay</span>
+        </a>
+      </nav>
+    </aside>
 
-    <section>
-      <h2>Why Synth?</h2>
-      <div class="card-grid">
-        <div class="card"><h3>Auditability</h3><p>Every decision and action is recorded. Nothing is hidden.</p></div>
-        <div class="card"><h3>Determinism</h3><p>Same events produce the same state, every time.</p></div>
-        <div class="card"><h3>Governance</h3><p>Actions are checked against the approved plan before execution.</p></div>
+    <div class="workspace-content" id="workspace-content" tabindex="-1">
+
+      <section class="workspace-section mission-studio-section" id="mission-studio" aria-label="Mission Studio">
+        <div class="mission-studio-section-label">Mission Studio</div>
+        <div class="mission-studio-sticky" id="mission-studio-sticky">
+          <div class="ms-shell" id="ms-shell">
+            <div id="ms-live-region" class="ms-hidden" aria-live="polite" aria-atomic="true"></div>
+            <div class="ms-header">
+              <div class="ms-header-left">
+                <span class="ms-logo-mark">S</span>
+                <span class="ms-header-title">Mission Studio</span>
+                <span class="ms-header-mission" id="ms-header-mission">Build a CRM</span>
+              </div>
+              <div class="ms-header-right">
+                <div class="ms-header-status" id="ms-header-status">Idle</div>
+              </div>
+            </div>
+
+            <div class="ms-body">
+              <aside class="ms-sidebar" id="ms-sidebar" aria-label="Mission phases">
+                <nav class="ms-phase-list" id="ms-phase-list"></nav>
+              </aside>
+
+              <div class="ms-workspace" id="ms-workspace">
+                <div class="ms-workspace-scroll" id="ms-workspace-scroll">
+                  <div class="ms-workspace-content" id="ms-workspace-content">
+                    <div class="ms-intro" id="ms-intro">
+                      <h2>Turn intent into a governed Mission.</h2>
+                      <p>Type an idea below or pick a curated example. Watch SYNTH extract intent, model the domain, propose expeditions, project architecture, and summarize the repository.</p>
+                      <div class="ms-source-selector" id="ms-source-selector" role="group" aria-label="Entry mode">
+                        <button type="button" class="ms-btn ms-source-option ms-source-active" data-mode="greenfield">Greenfield</button>
+                        <button type="button" class="ms-btn ms-source-option" data-mode="brownfield">Brownfield</button>
+                        <button type="button" class="ms-btn ms-source-option" data-mode="knowledge">Knowledge</button>
+                        <button type="button" class="ms-btn ms-source-option" data-mode="conversation">Conversation</button>
+                      </div>
+                      <form id="ms-intent-form" class="ms-intent-form" aria-label="Intent discovery">
+                        <input id="ms-intent-input" type="text" placeholder="e.g., Create a homepage for an AI product" autocomplete="off" aria-label="Describe what you want to build" />
+                        <button type="submit" class="ms-btn ms-btn-primary">Start</button>
+                      </form>
+                      <div id="ms-examples" class="ms-examples"></div>
+                    </div>
+
+                    <div class="ms-artifacts" id="ms-artifacts"></div>
+
+                    <div class="ms-controls" id="ms-controls">
+                      <p class="ms-hint">Type an idea or pick an example to begin.</p>
+                    </div>
+
+                    <div id="ms-replay-controls" class="ms-replay-controls ms-hidden" aria-label="Replay controls">
+                      <button id="ms-replay-prev" class="ms-btn ms-btn-icon" aria-label="Previous event">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                      </button>
+                      <label for="ms-replay-slider">Replay</label>
+                      <input id="ms-replay-slider" type="range" min="0" max="0" value="0" aria-label="Scrub through event history" />
+                      <button id="ms-replay-next" class="ms-btn ms-btn-icon" aria-label="Next event">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ms-footer">
+              <div class="ms-footer-status" id="ms-footer-status">Ready</div>
+              <div class="ms-footer-meta" id="ms-footer-meta"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-section" id="canonical-artifacts">
+        <div class="section-header">
+          <h2>Canonical artifacts</h2>
+          <p>Every SYNTH concept produces a document-like artifact. Intent, Discovery, Mission, Expedition, Governance, Replay — each with a semantic color, structure, and lifecycle.</p>
+        </div>
+        <div class="artifact-grid">
+          <article class="ms-card ms-card-intent">
+            <div class="ms-card-header">
+              <div class="ms-card-kind">Intent</div>
+            </div>
+            <h4 class="ms-card-title">Idea</h4>
+            <div class="ms-card-body">
+              <p>Goals, confidence, and origin. The starting point of every mission.</p>
+            </div>
+          </article>
+          <article class="ms-card ms-card-discovery">
+            <div class="ms-card-header">
+              <div class="ms-card-kind">Discovery</div>
+            </div>
+            <h4 class="ms-card-title">Understanding</h4>
+            <div class="ms-card-body">
+              <p>Findings, constraints, capabilities. SYNTH asks questions until ambiguity is gone.</p>
+            </div>
+          </article>
+          <article class="ms-card ms-card-mission">
+            <div class="ms-card-header">
+              <div class="ms-card-kind">Mission</div>
+            </div>
+            <h4 class="ms-card-title">Purpose</h4>
+            <div class="ms-card-body">
+              <p>Approved contract with objectives and success criteria. The boundary between understanding and building.</p>
+            </div>
+          </article>
+          <article class="ms-card ms-card-expedition">
+            <div class="ms-card-header">
+              <div class="ms-card-kind">Expedition</div>
+            </div>
+            <h4 class="ms-card-title">Execution</h4>
+            <div class="ms-card-body">
+              <p>Plan items with goals, status, and dependencies. Each produces replayable evidence.</p>
+            </div>
+          </article>
+          <article class="ms-card ms-card-governance">
+            <div class="ms-card-header">
+              <div class="ms-card-kind">Governance</div>
+            </div>
+            <h4 class="ms-card-title">Approval</h4>
+            <div class="ms-card-body">
+              <p>Validation gates, approval boundaries, and conformance checks. Every state change is governed.</p>
+            </div>
+          </article>
+          <article class="ms-card ms-card-replay">
+            <div class="ms-card-header">
+              <div class="ms-card-kind">Replay</div>
+            </div>
+            <h4 class="ms-card-title">Determinism</h4>
+            <div class="ms-card-body">
+              <p>Event timeline with scrubber. Every past state can be reconstructed from the event log.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="workspace-section" id="deterministic-engineering">
+        <div class="section-header">
+          <h2>Deterministic engineering</h2>
+          <p>SYNTH replaces ad-hoc development with replayable, governed execution. Every action is recorded, every state is provable.</p>
+        </div>
+        <div class="pipeline">
+          <div class="pipeline-step">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Model
+          </div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+            Plan
+          </div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Execute
+          </div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Govern
+          </div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Replay
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-section" id="ai-native">
+        <div class="section-header">
+          <h2>AI-native architecture</h2>
+          <p>SYNTH is built for human-AI collaboration from the ground up. Every capability is designed to augment engineering judgment, not replace it.</p>
+        </div>
+        <div class="feature-grid" id="ms-capabilities-grid">
+        </div>
+      </section>
+
+      <section class="workspace-section section-cta">
+        <div class="cta-box">
+          <h2>Ready to try SYNTH?</h2>
+          <p>Open Mission Studio and walk through the journey from idea to acceptance.</p>
+          <a href="#mission-studio" class="btn btn-primary btn-lg">Open Mission Studio</a>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="workspace-footer">
+      <div class="ws-footer-status">SYNTH v2</div>
+      <div class="ws-footer-meta" id="ws-footer-meta"></div>
+    </footer>
+  </div>
+
+  <footer class="synth-footer">
+    <div class="synth-footer-inner">
+      <div class="synth-footer-brand">
+        <span class="synth-logo-mark">S</span>
+        <span>Synth</span>
       </div>
-    </section>
-
-    <section>
-      <h2>Example gallery</h2>
-      <p>Certified example projects demonstrate Synth on realistic repositories. Each one passes <code>npm run govern</code> and produces a proof artifact.</p>
-      <div class="cta-group">
-        <a href="examples.html" class="btn btn-primary">Browse examples</a>
-        <a href="https://github.com/synth-framework/synth/tree/main/examples" class="btn btn-secondary">View on GitHub</a>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <p>Synth v2 is frozen and in Era II — Adoption. <a href="https://github.com/synth-framework/synth/blob/main/docs/adr/ADR-004-synth-eras-and-protected-assets.md">Read the governance model</a>.</p>
+      <nav class="synth-footer-links" aria-label="Footer">
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/synth-framework/synth" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/synth-framework/synth/discussions" target="_blank" rel="noopener noreferrer">Community</a>
+      </nav>
+      <p class="synth-footer-note">Humans explore. SYNTH remembers. AI executes deterministically.</p>
+    </div>
   </footer>
+
+  <script type="module" src="js/mission-studio-app.js"></script>
 </body>
 </html>

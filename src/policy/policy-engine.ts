@@ -77,6 +77,9 @@ export class PolicyEngine {
   /** Freeze the policy engine — no further policy changes */
   freeze(): void {
     this._frozen = true
+    for (const [, value] of this.policies) {
+      Object.freeze(value)
+    }
     Object.freeze(this.policies)
   }
 

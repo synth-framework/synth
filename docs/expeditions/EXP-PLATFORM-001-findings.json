@@ -1,0 +1,186 @@
+{
+  "audit": "EXP-PLATFORM-001",
+  "scope": "src/",
+  "date": "2026-07-21",
+  "methodology": "ripgrep --no-ignore over src/ TypeScript files",
+  "summary": {
+    "totalTypeScriptFiles": 278,
+    "concernsAudited": 15,
+    "concernsWithCanonicalOwner": 7,
+    "concernsWithoutCanonicalOwner": 8,
+    "totalInlinedConsumers": 228
+  },
+  "concerns": [
+    {
+      "name": "Paths",
+      "canonicalOwner": "src/infra/paths.ts",
+      "proposedSdkModule": "sdk.paths",
+      "currentImplementations": 1,
+      "inlinedConsumers": 28,
+      "canonicalConsumers": 9,
+      "target": 1,
+      "status": "partial",
+      "priority": "P0"
+    },
+    {
+      "name": "Workspace root",
+      "canonicalOwner": null,
+      "proposedSdkModule": "sdk.workspace",
+      "currentImplementations": 30,
+      "inlinedConsumers": 30,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "missing",
+      "priority": "P0"
+    },
+    {
+      "name": "Filesystem (sync)",
+      "canonicalOwner": "src/infra/filesystem.ts",
+      "proposedSdkModule": "sdk.files",
+      "currentImplementations": 1,
+      "inlinedConsumers": 9,
+      "canonicalConsumers": 13,
+      "target": 1,
+      "status": "partial",
+      "priority": "P1"
+    },
+    {
+      "name": "Filesystem (async)",
+      "canonicalOwner": "src/infra/filesystem-provider.ts",
+      "proposedSdkModule": "sdk.files",
+      "currentImplementations": 1,
+      "inlinedConsumers": 45,
+      "canonicalConsumers": 13,
+      "target": 1,
+      "status": "partial",
+      "priority": "P1"
+    },
+    {
+      "name": "JSON read",
+      "canonicalOwner": "src/runtime/governance-resolver.ts (readJsonMaybe)",
+      "proposedSdkModule": "sdk.json",
+      "currentImplementations": 1,
+      "inlinedConsumers": 9,
+      "canonicalConsumers": 2,
+      "target": 1,
+      "status": "partial",
+      "priority": "P1"
+    },
+    {
+      "name": "JSON write",
+      "canonicalOwner": null,
+      "proposedSdkModule": "sdk.json",
+      "currentImplementations": 18,
+      "inlinedConsumers": 18,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "missing",
+      "priority": "P1"
+    },
+    {
+      "name": "Hashing",
+      "canonicalOwner": "src/core/hash.ts",
+      "proposedSdkModule": "sdk.hashing",
+      "currentImplementations": 1,
+      "inlinedConsumers": 35,
+      "canonicalConsumers": 7,
+      "target": 1,
+      "status": "partial",
+      "priority": "P1"
+    },
+    {
+      "name": "Identity",
+      "canonicalOwner": null,
+      "proposedSdkModule": "sdk.identity",
+      "currentImplementations": 12,
+      "inlinedConsumers": 12,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "missing",
+      "priority": "P2"
+    },
+    {
+      "name": "Temp directories/files",
+      "canonicalOwner": null,
+      "proposedSdkModule": "sdk.temp",
+      "currentImplementations": 2,
+      "inlinedConsumers": 2,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "missing",
+      "priority": "P2"
+    },
+    {
+      "name": "Process execution",
+      "canonicalOwner": null,
+      "proposedSdkModule": "sdk.process",
+      "currentImplementations": 16,
+      "inlinedConsumers": 16,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "missing",
+      "priority": "P2"
+    },
+    {
+      "name": "Event log access",
+      "canonicalOwner": "src/infra/event-store.ts + src/runtime/governance-resolver.ts",
+      "proposedSdkModule": "sdk.events",
+      "currentImplementations": 2,
+      "inlinedConsumers": 13,
+      "canonicalConsumers": 9,
+      "target": 1,
+      "status": "partial",
+      "priority": "P2"
+    },
+    {
+      "name": "Canonical state access",
+      "canonicalOwner": "src/infra/state-store.ts + src/runtime/governance-resolver.ts",
+      "proposedSdkModule": "sdk.state",
+      "currentImplementations": 2,
+      "inlinedConsumers": 13,
+      "canonicalConsumers": 8,
+      "target": 1,
+      "status": "partial",
+      "priority": "P2"
+    },
+    {
+      "name": "Manifest / config",
+      "canonicalOwner": "src/infra/paths.ts + src/runtime/governance-resolver.ts",
+      "proposedSdkModule": "sdk.manifest",
+      "currentImplementations": 2,
+      "inlinedConsumers": 11,
+      "canonicalConsumers": 11,
+      "target": 1,
+      "status": "partial",
+      "priority": "P1"
+    },
+    {
+      "name": "Logging",
+      "canonicalOwner": null,
+      "proposedSdkModule": "sdk.logging",
+      "currentImplementations": 12,
+      "inlinedConsumers": 12,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "missing",
+      "priority": "P3"
+    },
+    {
+      "name": "Environment",
+      "canonicalOwner": "src/environment/ (deprecated)",
+      "proposedSdkModule": null,
+      "currentImplementations": 5,
+      "inlinedConsumers": 5,
+      "canonicalConsumers": 0,
+      "target": 1,
+      "status": "deprecated",
+      "priority": "P3"
+    }
+  ],
+  "recommendations": {
+    "P0": ["sdk.paths", "sdk.workspace"],
+    "P1": ["sdk.files", "sdk.json", "sdk.hashing", "sdk.manifest"],
+    "P2": ["sdk.identity", "sdk.temp", "sdk.process", "sdk.events", "sdk.state"],
+    "P3": ["sdk.logging"]
+  }
+}

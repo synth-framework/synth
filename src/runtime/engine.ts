@@ -26,6 +26,7 @@ import type { IStateStore } from "../infra/state-store.js"
 import type { ICheckpointStore } from "../infra/checkpoint-store.js"
 import { execute } from "./executor.js"
 import { rebuildState } from "./replay.js"
+
 import { PartitionRouter, EventProducer, ConsumerGroup } from "./partition-router.js"
 
 export type RuntimeConfig = {
@@ -96,10 +97,12 @@ export class RuntimeEngine {
     invocation: CapabilityInvocation,
     context: ExecutionContext,
   ): Promise<import("../types/index.js").ExecutionResult> {
-    const currentState = await this.getState()
+    const events = await this.eventStore.loadAll()
+    const currentState = rebuildState(events)
     const ctx = {
       ...context,
       currentState,
+      events,
       capabilityRegistry: this.capabilityRegistry,
     }
 

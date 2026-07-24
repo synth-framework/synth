@@ -66,8 +66,13 @@ function evidenceAdd(dir, draftId, subject) {
   return r.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
 }
 
-function approve(dir, draftId) {
-  return runCli(dir, ["mission", "approve", "--draft-id", draftId])
+function align(dir) {
+  const r = runCli(dir, ["alignment", "prepare"])
+  return r.output.match(/"contractId":\s*"([^"]+)")?.[1]
+}
+
+function approve(dir, draftId, contractId) {
+  return runCli(dir, ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId])
 }
 
 function readEventLog(dir) {
@@ -106,7 +111,8 @@ function main() {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
-      const r = approve(dir, draftId)
+      const contractId = align(dir)
+      const r = approve(dir, draftId, contractId)
       assert(r.status === 0, "Approval fixture: mission approval succeeds")
       assert(/"approved": true/.test(r.output), "Approval fixture: output reports approved")
 
@@ -131,7 +137,8 @@ function main() {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
-      approve(dir, draftId)
+      const contractId = align(dir)
+      approve(dir, draftId, contractId)
 
       // Simulate a runtime-side failure: the certified snapshot remains, but
       // the runtime events that should have accompanied it are lost.
@@ -160,7 +167,8 @@ function main() {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
-      approve(dir, draftId)
+      const contractId = align(dir)
+      approve(dir, draftId, contractId)
 
       const logFile = path.join(dir, ".synth", "data", "event-log.jsonl")
       const surviving = readEventLog(dir).filter(
@@ -193,7 +201,8 @@ function main() {
       let draftId = createDraft(dir)
       draftId = evidenceAdd(dir, draftId, "Operator domain knowledge")
       draftId = evidenceAdd(dir, draftId, "Operational constraints")
-      approve(dir, draftId)
+      const contractId = align(dir)
+      approve(dir, draftId, contractId)
 
       const rerun = runCli(dir, ["repair", "replay", "--approve"])
       assert(rerun.status === 0, "Idempotent repair: exits successfully")

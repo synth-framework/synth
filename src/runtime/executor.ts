@@ -10,14 +10,18 @@ import type {
   CapabilityInvocation,
   ExecutionResult,
   CanonicalState,
+  DerivedState,
+  SynthEvent,
   Capability,
   ExecutionContext as SystemExecutionContext,
 } from "../types/index.js"
 import { applyDomain, toEvents } from "../domain/index.js"
 import { applyEvent, computeStateHash } from "./replay.js"
+import { buildDerivedState } from "../state/derived/index.js"
 
 export type ExecutionContext = SystemExecutionContext & {
   currentState: CanonicalState
+  events: SynthEvent[]
   capabilityRegistry?: Map<string, Capability>
 }
 
@@ -43,11 +47,14 @@ export async function execute(
   // === STEP 1: RESOLVE CAPABILITY (registry override) ===
   let domainResult
 
+  const derivedState: DerivedState = buildDerivedState(ctx.events)
+
   if (ctx.capabilityRegistry && ctx.capabilityRegistry.has(invocation.capability)) {
     const cap = ctx.capabilityRegistry.get(invocation.capability)!
     domainResult = cap.handler({
       intent: invocation,
       state: ctx.currentState,
+      derivedState,
       executionCtx: {
         timestamp: ctx.timestamp,
         commandId: ctx.commandId,
@@ -55,7 +62,7 @@ export async function execute(
     })
   } else {
     // Pure domain execution: applyDomain resolves by name
-    domainResult = applyDomain(invocation, ctx.currentState, ctx)
+    domainResult = applyDomain(invocation, ctx.currentState, derivedState, ctx)
   }
 
   // === STEP 2: GENERATE EVENTS ===
@@ -86,5 +93,6 @@ export async function execute(
     output: domainResult.result || { events: events.length },
     transaction: tx,
     events,
+    mutations: domainResult.mutations,
   }
 }

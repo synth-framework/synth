@@ -30,7 +30,7 @@ import { rebuildState, validateAggregateGraph } from "../runtime/replay.js"
 import type { AggregateGraphViolation } from "../runtime/replay.js"
 import type { SynthEvent } from "../types/index.js"
 import { computeEventHash, stableStringify } from "./hash.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import {
   loadHistoricalAliasRegistry,
   createEmptyHistoricalAliasRegistry,

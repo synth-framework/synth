@@ -12,6 +12,7 @@
 
 import fs from "fs/promises"
 import path from "path"
+import * as sdk from "../sdk/index.js"
 import type { CanonicalState } from "../types/index.js"
 import { writeAiInteractionManifest } from "./ai-interaction-manifest.js"
 
@@ -263,28 +264,20 @@ export async function writeAiMetadata(
 }
 
 export async function refreshAiMetadata(synthDir: string): Promise<void> {
-  const dataDir = path.join(synthDir, "data")
-  const eventLogPath = path.join(dataDir, "event-log.jsonl")
-  const statePath = path.join(dataDir, "canonical-state.json")
-  const manifestPath = path.join(synthDir, "manifest.json")
+  const root = path.dirname(synthDir)
 
-  let state: CanonicalState | undefined
+  let state: CanonicalState | null
   try {
-    const stateContent = await fs.readFile(statePath, "utf-8")
-    state = JSON.parse(stateContent) as CanonicalState
+    state = await sdk.state.readState(root)
   } catch {
-    // If state is unavailable, skip refresh. The manifest alone is insufficient
-    // for lifecycle metadata, so we do not write stale partial metadata.
+    // If state is unavailable or malformed, skip refresh.
+    return
+  }
+  if (!state) {
     return
   }
 
-  let manifest: { name?: string; governanceVersion?: string } = {}
-  try {
-    const manifestContent = await fs.readFile(manifestPath, "utf-8")
-    manifest = JSON.parse(manifestContent) as { name?: string; governanceVersion?: string }
-  } catch {
-    // Use defaults if manifest cannot be read.
-  }
+  const manifest = await sdk.manifest.readManifestMaybe<{ name?: string; governanceVersion?: string }>(root) ?? {}
 
   await writeAiMetadata(synthDir, state, manifest)
 }

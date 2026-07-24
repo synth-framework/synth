@@ -11,11 +11,8 @@
 // are conducted.
 // ============================================================
 
-import { spawnSync } from "child_process"
-import fs from "fs/promises"
 import path from "path"
-import os from "os"
-import crypto from "crypto"
+import * as sdk from "../sdk/index.js"
 import type { Scenario, Turn, AgentReasoningState } from "./scenarios.js"
 
 export interface TurnResult {
@@ -99,9 +96,8 @@ function runSynth(
     fullArgs.push("--agent-reasoning-state", JSON.stringify(telemetry.agentReasoningState))
   }
 
-  const result = spawnSync("node", [cliPath, ...fullArgs], {
+  const result = sdk.process.spawnSync("node", [cliPath, ...fullArgs], {
     cwd,
-    encoding: "utf-8",
     timeout: 30000,
   })
   return {
@@ -139,8 +135,8 @@ function shallowDiff(
 async function writeRepositoryFiles(root: string, files: Record<string, string>): Promise<void> {
   for (const [relativePath, content] of Object.entries(files)) {
     const fullPath = path.join(root, relativePath)
-    await fs.mkdir(path.dirname(fullPath), { recursive: true })
-    await fs.writeFile(fullPath, content, "utf-8")
+    await sdk.files.ensureDirectory(path.dirname(fullPath))
+    await sdk.files.writeFile(fullPath, content)
   }
 }
 
@@ -160,11 +156,11 @@ export async function runScenario(
   scenario: Scenario,
   options: RunOptions,
 ): Promise<SessionArtifact> {
-  const sessionId = options.sessionId || crypto.randomUUID()
-  const repositoryRoot = options.repositoryRoot || (await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-")))
+  const sessionId = options.sessionId || sdk.identity.uuid()
+  const repositoryRoot = options.repositoryRoot || (await sdk.temp.directory("synth-first-contact-"))
   const cliPath = path.resolve(options.cliPath)
 
-  await fs.mkdir(repositoryRoot, { recursive: true })
+  await sdk.files.ensureDirectory(repositoryRoot)
   await writeRepositoryFiles(repositoryRoot, scenario.repositoryFiles)
 
   const artifact: SessionArtifact = {
@@ -224,7 +220,7 @@ export async function saveSessionArtifact(
   artifact: SessionArtifact,
   outputDir: string,
 ): Promise<string> {
-  await fs.mkdir(outputDir, { recursive: true })
+  await sdk.files.ensureDirectory(outputDir)
   const filename = `${nowIso().replace(/[:.]/g, "-")}-${artifact.sessionId}.json`
   return saveSessionArtifactAs(artifact, outputDir, filename)
 }
@@ -239,9 +235,9 @@ export async function saveSessionArtifactAs(
   outputDir: string,
   filename: string,
 ): Promise<string> {
-  await fs.mkdir(outputDir, { recursive: true })
+  await sdk.files.ensureDirectory(outputDir)
   const filePath = path.join(outputDir, filename)
-  await fs.writeFile(filePath, JSON.stringify(artifact, null, 2), "utf-8")
+  await sdk.json.writeJson(filePath, artifact)
   return filePath
 }
 
@@ -254,7 +250,7 @@ export async function saveSessionReport(
   report: SessionReport,
   outputDir: string,
 ): Promise<string> {
-  await fs.mkdir(outputDir, { recursive: true })
+  await sdk.files.ensureDirectory(outputDir)
   const filename = `${nowIso().replace(/[:.]/g, "-")}-${report.sessionId}-report.json`
   return saveSessionReportAs(report, outputDir, filename)
 }
@@ -269,9 +265,9 @@ export async function saveSessionReportAs(
   outputDir: string,
   filename: string,
 ): Promise<string> {
-  await fs.mkdir(outputDir, { recursive: true })
+  await sdk.files.ensureDirectory(outputDir)
   const filePath = path.join(outputDir, filename)
-  await fs.writeFile(filePath, JSON.stringify(report, null, 2), "utf-8")
+  await sdk.json.writeJson(filePath, report)
   return filePath
 }
 

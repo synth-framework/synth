@@ -28,10 +28,12 @@ export type ExecutionPhase =
   | "POLICY_CHECK"
   | "RESOLVE_CAPABILITY"
   | "EXECUTE_DOMAIN"
+  | "MUTATE_EXTERNAL"
   | "EMIT_EVENTS"
   | "PERSIST_EVENTS"
   | "REBUILD_STATE"
   | "COMMIT_TRANSACTION"
+  | "LIFECYCLE_CONTINUATION"
 
 /** Phase result — output of a single contract step */
 export type PhaseResult<T = unknown> = {
@@ -69,6 +71,7 @@ export const CONTRACT_STEPS: ExecutionPhase[] = [
   "POLICY_CHECK",
   "RESOLVE_CAPABILITY",
   "EXECUTE_DOMAIN",
+  "MUTATE_EXTERNAL",
   "EMIT_EVENTS",
   "PERSIST_EVENTS",
   "REBUILD_STATE",

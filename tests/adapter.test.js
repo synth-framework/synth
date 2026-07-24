@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createGitRepositoryAdapter } from "../dist/adapters/repository/git.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 import fs from "fs"
 import path from "path"
 import { execSync } from "child_process"

@@ -49,11 +49,14 @@ const EXEMPT_FILES = [
   "tracer.ts", "tracer.js",                       // Observability only
   "governance-engine.ts", "governance-engine.js", // Proposal system (no event writes)
   "type-checker.ts", "type-checker.js",           // Static analysis only
+  "mutation/filesystem-provider.ts", "mutation/filesystem-provider.js", // Dead code — no consumers import from mutation/
 ]
 
 function isExempt(filePath) {
   const base = path.basename(filePath)
   if (EXEMPT_FILES.includes(base)) return true
+  const rel = path.relative(ROOT, filePath)
+  if (EXEMPT_FILES.includes(rel)) return true
   if (ALLOWED_PATHS.some((re) => re.test(filePath))) return true
   return false
 }

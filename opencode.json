@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "myprovider/gpt-4o",
+  "provider": {
+    "myprovider": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Bluesminds",
+      "options": {
+        "baseURL": "https://api.bluesminds.com/v1",
+        "apiKey": "sk-JkK773g78BycKHEzXxYWq0JaSScwciB4hjSpqH0PmuVi674B"
+      },
+      "models": {
+        "deepseek-ai/deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash"
+        },
+        "deepseek-ai/deepseek-v4-pro": {
+          "name": "DeepSeek V4 Pro"
+        },
+        "nvidia-deepseek-flash": {
+          "name": "NVIDIA DeepSeek Flash"
+        },
+        "meta/llama-3.3-70b-instruct": {
+          "name": "Llama 3.3 70B"
+        },
+        "gpt-4o": {
+          "name": "GPT-4o"
+        },
+        "gpt-5.2-chat": {
+          "name": "GPT-5.2 Chat"
+        },
+        "grok-4.5": {
+          "name": "Grok 4.5"
+        },
+        "grok-4.5-high": {
+          "name": "Grok 4.5 High"
+        },
+        "gpt-5-mini": {
+          "name": "GPT-5 Mini"
+        },
+        "mistralai/codestral-22b-instruct-v0.1": {
+          "name": "Codestral 22B"
+        },
+        "deepseek-ai/deepseek-coder-6.7b-instruct": {
+          "name": "DeepSeek Coder 6.7B"
+        }
+      }
+    }
+  }
+}

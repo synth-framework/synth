@@ -2,12 +2,16 @@
 
 > **Engineering expedition.** Adapt the Mission Workspace and homepage sections for all screen sizes.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Engineering Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-002 (Mission Workspace)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/responsive-implementation.md`](../design/responsive-implementation.md).
 
 ---
 

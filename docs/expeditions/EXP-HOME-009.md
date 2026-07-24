@@ -1,13 +1,15 @@
-# EXP-HOME-009 — Capabilities Explorer
+# EXP-HOME-009 — Governance & Replay Phase (v2)
 
-> **Product expedition.** Build a grid of runtime concepts that links to documentation.
+> **Product expedition.** Define the Governance & Replay phase inside Mission Studio: governance visualization, replay timeline, scrubber, state hash, and the proof of deterministic execution.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Product Expedition  
-**Priority:** Medium  
+**Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** EXP-HOME-004 (Artifact System)  
+**Depends On:** EXP-HOME-003 (Mission Studio UI Specification), EXP-HOME-004 (Homepage / Mission Studio Integration)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/capabilities-explorer.md`](../design/capabilities-explorer.md).
 
 ---
 
@@ -24,69 +26,121 @@ Impact:
 
 ## Objective
 
-Provide a browsable grid of SYNTH capabilities that reinforces the public vocabulary and links visitors to canonical documentation.
+Transform the former Capabilities Explorer scope into the Governance & Replay phase of Mission Studio. This phase demonstrates that SYNTH's output is governed, replayable, and deterministic. It combines governance visualization with an interactive replay timeline that reconstructs state from events.
 
 ---
 
 ## Origin Evidence
 
-Visitors need a quick overview of what SYNTH does. A capabilities grid grounded in runtime concepts is more honest than a feature marketing grid.
+Governance and Replay are foundational SYNTH concepts, but they are abstract. An interactive timeline that shows events, approvals, state hashes, and reconstructed artifacts makes determinism visceral.
 
 ---
 
 ## Required Change
 
-### 1.1 Capabilities
+### 1.1 Phase purpose
 
-```text
-Mission
-Discovery
-Governance
-Replay
-Compiler
-Kernel
-Knowledge
-Architecture
-```
+- Visualize governance status across the lifecycle.
+- Provide a scrubbable replay timeline of events.
+- Show state hash at each replay position.
+- Demonstrate that state is reconstructed from events, not stored as a snapshot.
 
-### 1.2 Card behavior
+### 1.2 Governance visualization
 
-- Each capability is an Artifact Card variant.
-- Hover reveals a one-sentence description.
-- Click links to the canonical documentation page.
+- **Governance Status Panel:** approved Mission, governed Expeditions, evidence summary.
+- **Approval Trail:** sequence of approval events with timestamps and actors.
+- **Comparison View:** before/after contrast showing drift vs. governed state.
+- **Event Log:** list of runtime events with type, payload, and state hash.
 
-### 1.3 Consistency
+### 1.3 Replay timeline
 
-- Use semantic colors.
-- Maintain calm computing principles.
-- Avoid feature-checklist language.
+- Horizontal timeline of lifecycle events.
+- Event markers for Intent, Discovery, Mission Proposed, Mission Approved, Expedition Proposed, Expedition Started, Governance Verified, Replay Advanced, Completed.
+- Scrubber to move backward and forward through history.
+- Current event is highlighted.
+
+### 1.4 Scrubber
+
+- Scrubbing updates workspace artifacts to reflect state at that point.
+- State hash is visible and updates with scrubber position.
+- Status bar shows replay position.
+- Scrubber is keyboard accessible.
+
+### 1.5 State hash
+
+- A state hash is displayed for each replay position.
+- Hash changes deterministically with each event.
+- Hovering or focusing the hash reveals a short explanation.
+
+### 1.6 Sidebar state
+
+- Governance & Replay phase is highlighted.
+- Expeditions phase is marked completed.
+- Progress indicator nears completion.
+- Governance status badge shows `Governed`.
+
+### 1.7 Status badges
+
+- Status: `Replaying`, `Governed`, `Verified`, `Deterministic`.
+
+### 1.8 Scroll transition
+
+- Entering the phase shows the governance panel and replay timeline.
+- Scrolling forward scrubs the timeline forward.
+- Scrolling backward scrubs the timeline backward.
+- At the end of the phase, Mission Studio completes and releases into supporting content.
+
+### 1.9 Animation
+
+- Timeline advances with smooth, controlled motion.
+- Artifacts crossfade to their state at the scrubber position.
+- State hash updates with a subtle transition.
 
 ---
 
 ## Deliverables
 
-1. **Capabilities Explorer Specification** under `docs/design/capabilities-explorer.md`.
-2. **Capabilities grid component**.
-3. **Documentation links** for each capability.
+1. **Governance & Replay Phase Specification** under `docs/design/capabilities-explorer.md`.
+2. **Governance status panel** and approval trail components.
+3. **Replay timeline and scrubber** components.
+4. **State hash display** with explanatory interaction.
+5. **Sample event log** representing a complete lifecycle.
+6. **Tests** verifying scrubber behavior, artifact updates, and state hash correctness.
 
 ---
 
 ## Acceptance Criteria
 
-- Each capability maps to a runtime SYNTH concept.
-- Grid is responsive and accessible.
-- Links lead to canonical documentation.
+- Governance status, approval trail, and event log are visible.
+- Scrubbing the timeline updates workspace artifacts deterministically.
+- State hash is visible and updates with each event position.
+- Sidebar, header, and status badges reflect Governance & Replay state.
+- Keyboard and screen reader users can operate the scrubber.
+- Replay uses a deterministic, curated event log.
+- Mission Studio completes and releases cleanly after the phase ends.
+- Animations respect reduced-motion preferences.
 
 ---
 
 ## Out of Scope
 
-- Architecture explorer (EXP-HOME-008).
-- Genesis experience (EXP-HOME-003).
-- Workflow visualization (EXP-HOME-005).
+- Expeditions phase (EXP-HOME-008).
+- Real repository event log.
+- Changes to SYNTH Replay or governance implementation.
 
 ---
 
 ## Success Criteria
 
-The expedition succeeds when a visitor can browse capabilities and understand which SYNTH concept each represents.
+The expedition succeeds when a visitor can scrub through history, see artifacts reconstruct from events, and explain why governance and replay make SYNTH deterministic.
+
+---
+
+## Related documents
+
+- `docs/design/capabilities-explorer.md`
+- `docs/design/genesis-experience.md`
+- `docs/design/mission-workspace.md`
+- `docs/expeditions/EXP-HOME-003.md`
+- `docs/expeditions/EXP-HOME-004.md`
+- `docs/expeditions/EXP-HOME-008.md`
