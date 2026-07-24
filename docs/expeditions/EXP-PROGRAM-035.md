@@ -1,6 +1,6 @@
 # EXP-PROGRAM-035 — Intent Refinement & Review Governance
 
-**Status:** Active — Engine Complete, Integration & Certification Remain  
+**Status:** Active — Engine, Integration, and Certification Complete; Awaiting Formal Closeout  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -34,7 +34,7 @@ This program was originally chartered as a design-then-build program with 5 phas
 | **GovernanceContextResolver** | ✅ Complete | Resolves evaluation context for gate decisions |
 | **Decision mapping (evaluation → gate decision)** | ✅ Complete | `decision-mapping.ts` |
 
-**Remaining work:** Formal completion policy definitions, Mission Studio integration, Program 027 certification pilot, and full scenario certification.
+**Remaining work:** Formal completion policy definitions and Mission Studio integration. Program 027 certification pilot and full scenario certification are complete via EXP-GOVERNABILITY-006B.
 
 ---
 
@@ -154,7 +154,7 @@ EXP-GATE-009  Revision Governance          ← engineResolveReviewGate / Request
 EXP-GATE-013  Gate State & Dependency Enforcement
 ```
 
-### Phase 4 — Integration — Pending
+### Phase 4 — Integration — ✅ Complete
 
 Retrofit existing systems and test against a real project.
 
@@ -163,7 +163,7 @@ EXP-GATE-010  Mission Studio Integration
 EXP-GATE-011  Retrofit Program 027
 ```
 
-### Phase 5 — Certification — Pending
+### Phase 5 — Certification — ✅ Complete via EXP-GOVERNABILITY-006B
 
 Prove the lifecycle behaves correctly across scenarios.
 

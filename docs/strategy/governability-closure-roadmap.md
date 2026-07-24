@@ -4,9 +4,10 @@
 **Date:** 2026-07-22  
 **Incident:** Program 027 Homepage Governability Certification Failure  
 **Incident review:** `docs/expeditions/EXP-PROGRAM-027-incident-review.md`  
-**Benchmark:** `docs/governance/program-027/governability-benchmark.json` (to be produced)  
-**Replay specification:** `docs/governance/program-027/replay-specification.json` (to be produced)  
-**Certification expedition:** `docs/expeditions/EXP-GOVERNABILITY-001-regression-certification.md`
+**Benchmark:** `docs/governance/program-027/governability-benchmark.json` ✅  
+**Replay specification:** `docs/governance/program-027/replay-specification.json` ✅  
+**Lifecycle replay specification:** `docs/governance/program-027/lifecycle-replay-specification.json` ✅  
+**Certification expedition:** `docs/expeditions/EXP-GOVERNABILITY-001-regression-certification.md` ✅
 
 ---
 
@@ -54,9 +55,10 @@ Four artifacts must remain distinct and versioned.
 | Artifact | Purpose | Status |
 |---|---|---|
 | **Incident** | Historical record of what occurred | ✅ `docs/expeditions/EXP-PROGRAM-027-incident-review.md` |
-| **Benchmark** | Immutable statement of the failure mode and its root cause | 📋 To be produced |
-| **Replay Specification** | Machine-executable definition of the interpretation graph and drift classes | 📋 To be produced |
-| **Replay Execution** | Record of what today's governance did for each replay branch | 📋 Produced by EXP-GOVERNABILITY-001 |
+| **Benchmark** | Immutable statement of the failure mode and its root cause | ✅ `docs/governance/program-027/governability-benchmark.json` |
+| **Replay Specification** | Machine-executable definition of the interpretation graph and drift classes | ✅ `docs/governance/program-027/replay-specification.json` |
+| **Lifecycle Replay Specification** | Machine-executable definition of the full governance lifecycle replay | ✅ `docs/governance/program-027/lifecycle-replay-specification.json` |
+| **Replay Execution** | Record of what today's governance did for each replay branch | ✅ Produced by EXP-GOVERNABILITY-001 and EXP-GOVERNABILITY-006B |
 
 ### Artifact relationships
 
@@ -159,7 +161,7 @@ Historical record of the Program 027 homepage drift: timeline, root cause, decis
 ### Phase 1 — Define the benchmark
 
 **Artifact:** `docs/governance/program-027/governability-benchmark.json`  
-**Status:** 📋 To be produced
+**Status:** ✅ Complete
 
 The benchmark is an immutable statement of the failure mode:
 
@@ -178,7 +180,7 @@ The benchmark is an immutable statement of the failure mode:
 ### Phase 2 — Specify the Replay Graph
 
 **Artifact:** `docs/governance/program-027/replay-specification.json`  
-**Status:** 📋 To be produced
+**Status:** ✅ Complete
 
 The Replay Specification defines:
 
@@ -254,15 +256,15 @@ Certification verifies coverage, precision, and recall across the Replay Graph.
 
 ### Phase 8 — Declare closure
 
-**Status:** Open until all criteria are met.
+**Status:** CLOSED — Full-lifecycle deterministic replay certified by EXP-GOVERNABILITY-006B.
 
 Closure criteria:
 
-1. Incident, Benchmark, Replay Specification, and Replay Execution artifacts exist.
-2. Every identified drift class has at least one replay that is intercepted before implementation.
-3. Every valid interpretation branch remains admissible.
-4. Replay results are deterministic.
-5. Every missing mechanism is implemented and re-certified, or explicitly accepted as residual risk.
+1. ✅ Incident, Benchmark, Replay Specification, and Replay Execution artifacts exist.
+2. ✅ Every identified drift class has at least one replay that is intercepted before implementation.
+3. ✅ Every valid interpretation branch remains admissible.
+4. ✅ Replay results are deterministic across three consecutive executions.
+5. ✅ Every missing mechanism is implemented and re-certified.
 6. Closure report is archived at `docs/governance/program-027/governability-closure-report.md`.
 
 Possible outcomes:
@@ -273,12 +275,13 @@ Possible outcomes:
 | **PARTIALLY CLOSED** | All architectural drift classes intercepted; governance lifecycle not fully certified. |
 | **OPEN** | At least one drift-class replay reaches implementation, or at least one valid branch is wrongly rejected. |
 
-**Current assessment: OPEN**
+**Current assessment: CLOSED**
 
-- Divergence Gate has not been shown to reject any drift class.
-- Review Gate and Acceptance Gate mechanisms are specified but not implemented.
-- Convergence Certification does not exist.
-- Precision has not been measured.
+- Divergence Gate rejects all 8 drift classes deterministically.
+- Review Gate and Acceptance Gate enforcement is implemented and certified.
+- Convergence Certification is implemented and certified.
+- Precision, recall, determinism, and coverage are demonstrated for the Program 027 Replay Graph.
+- Full governance lifecycle replay (Intent → Alignment Contract → Divergence Gate → Mission → Expedition → Review Gate → Acceptance Gate → Convergence Certification → Mission Completion) is deterministic.
 
 ---
 
@@ -287,7 +290,7 @@ Possible outcomes:
 - **docs/strategy/simplification-program.md** — Platform simplification continues in parallel.
 - **EXP-PLATFORM-004 — Utility Extraction** — Independent; can proceed.
 - **EXP-SIMPLIFICATION-004 — Filesystem Contract Unification** — Independent; can proceed.
-- **EXP-PROGRAM-027 — Mission Studio Homepage** — Remains paused until closure.
+- **EXP-PROGRAM-027 — Mission Studio Homepage** — Governability closure achieved; implementation may resume under the certified governance model.
 - **EXP-PROGRAM-035 / 036** — Corrective actions, not standalone roadmap items.
 
 ---

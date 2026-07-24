@@ -251,7 +251,9 @@ export class ExecutionGate {
             invocation.actor,
           )
           if (continuation) {
-            return this.execute(continuation.invocation, lifecycleDepth + 1)
+            // Execute the next lifecycle step but discard its return — the
+            // caller receives this invocation's result, not the child's.
+            await this.execute(continuation.invocation, lifecycleDepth + 1)
           }
         } catch (lifecycleErr) {
           // Lifecycle continuation failed but the original transaction is

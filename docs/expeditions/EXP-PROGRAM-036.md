@@ -1,6 +1,6 @@
 # EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 
-**Status:** Active — Intent Pipeline Built, Convergence Certification Implemented  
+**Status:** Active — Intent Pipeline, Convergence Certification, and Full-Lifecycle Certification Complete; Awaiting Formal Closeout  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -25,10 +25,10 @@ This program was originally chartered as a design-then-build program with 5 phas
 | **Divergence Gate + Proposal Evaluation** | ✅ Complete | `evaluateProposal()`, `EvaluateAndResolveDivergenceGate`, 12 rules, 8 drift classes |
 | **Convergence Certification** | ✅ Complete | `src/governance/convergence-certification/` — 4 dimensions, explainability, tests |
 | **Reference Evidence Binding** | ✅ Complete | Type infrastructure |
-| **Regression Certification** | ✅ Partial Pass | EXP-GOVERNABILITY-001: 8/8 drift classes rejected, 4/4 valid branches admitted |
+| **Regression Certification** | ✅ PASS | EXP-GOVERNABILITY-001 + EXP-GOVERNABILITY-006B: full-lifecycle deterministic replay certified |
 | **Governability enforcement tests** | ✅ Complete | `tests/convergence-certification.test.js` (9 tests), `tests/proposal-evaluation.test.js` (15 tests) |
 
-**Remaining work:** Interactive Decision Acquisition, full-scenario certification through EXP-REFINE-009, Program 027 pilot validation.
+**Remaining work:** Interactive Decision Acquisition (deferred). Full-scenario certification through EXP-REFINE-009 and Program 027 pilot validation are complete via EXP-GOVERNABILITY-006B.
 
 ---
 
@@ -182,7 +182,7 @@ EXP-REFINE-010  Interactive Decision Acquisition
                 Interactive Decision Artifacts
 ```
 
-### Phase 4 — Convergence Certification, Evidence Binding, and Integration — Partial
+### Phase 4 — Convergence Certification, Evidence Binding, and Integration — ✅ Complete
 
 Reference evidence binding, convergence certification, integration, and certification pilot.
 
