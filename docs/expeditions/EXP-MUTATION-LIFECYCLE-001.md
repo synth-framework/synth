@@ -2,7 +2,7 @@
 
 > Route all SYNTH-controlled mutations through `ExecutionGate.execute()` and define the controlled exception model for genesis operations.
 
-**Status:** Proposed  
+**Status:** Approved  
 **Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  

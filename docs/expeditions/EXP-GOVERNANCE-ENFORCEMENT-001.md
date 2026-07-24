@@ -2,11 +2,11 @@
 
 > Ensure SYNTH cannot operationalize architectural decisions before their governance authority is complete.
 
-**Status:** Proposed  
+**Status:** Approved  
 **Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
-**Authority:** `ADR-046` (pending acceptance), `ADR-004`, `ADR-026`, `ADR-035`, `ADR-039`, `ADR-045`, Constitutional Baseline Mutation Authority Invariant, Constitution Provision 52  
+**Authority:** `ADR-046` (accepted 2026-07-24), `ADR-004`, `ADR-026`, `ADR-035`, `ADR-039`, `ADR-045`, Constitutional Baseline Mutation Authority Invariant, Constitution Provision 52  
 **Touches Protected Assets:** Yes — `ExecutionGate`  
 **Depends On:** `EXP-CAPABILITY-BOUNDARY-001`  
 **Blocks:** `EXP-MUTATION-LIFECYCLE-001` (clarifies priority)

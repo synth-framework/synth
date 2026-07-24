@@ -1,7 +1,7 @@
 # ADR-046 — Implementation Authority Ordering
 
-**Status:** Proposed  
-**Date:** 2026-07-21  
+**Status:** Accepted  
+**Date:** 2026-07-24  
 **Author:** SYNTH Architecture  
 **Deciders:** Architecture Owner, Program Stewards  
 **Stakeholders:** Operators, AI Agents, Mission Studio, Governance
