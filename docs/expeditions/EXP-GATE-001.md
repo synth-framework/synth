@@ -2,7 +2,8 @@
 
 > **Governance model expedition.** Define the post-implementation review lifecycle and the decision taxonomy that turns `Implementation Complete` into `Accepted` or `Closed`.
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. The review lifecycle model was implemented and integrated into the governance model as part of the program closeout.
 **Kind:** Governance Model Expedition  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  
 **Priority:** High  

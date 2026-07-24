@@ -1,6 +1,6 @@
 # EXP-PLATFORM-002 — SDK Surface
 
-**Status:** Draft  
+**Status:** Completed  
 **Scope:** Internal Platform SDK canonical infrastructure contracts  
 
 ---

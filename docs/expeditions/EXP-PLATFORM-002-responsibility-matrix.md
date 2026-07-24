@@ -1,5 +1,8 @@
 # EXP-PLATFORM-002 — Responsibility Matrix
 
+**Status:** Completed  
+**Expedition:** `EXP-PLATFORM-002`
+
 | Concern | Canonical Owner | Current Implementations | Consumers | Action |
 |---|---|---|---|---|
 | Workspace root | `sdk/workspace` | `process.cwd()` in 30 files | All features | CREATE SDK, MIGRATE |

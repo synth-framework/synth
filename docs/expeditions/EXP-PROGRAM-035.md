@@ -1,6 +1,6 @@
 # EXP-PROGRAM-035 — Intent Refinement & Review Governance
 
-**Status:** Active — Engine, Integration, and Certification Complete; Awaiting Formal Closeout  
+**Status:** Completed and accepted — Engine, integration, and certification complete. EXP-GATE-013 (dependency graph enforcement) is deferred as a future ADR-050 freeze-lift expedition.  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

@@ -2,7 +2,8 @@
 
 > **Governance expedition.** Define the three completion policies — Automatic, Human Approval Required, and AI Approval Required — map them to expedition kinds, and establish the rule that an implementation agent cannot approve its own work.
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Completion policies were implemented as part of the program closeout.
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

@@ -3,6 +3,7 @@
 > **Genesis expedition.** Enforce scope boundaries on artifact edits and auto-verify completion criteria against referenced deliverables.
 
 **Status:** Proposed  
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Artifact Scope & Completion Validation remains proposed for future implementation and was not required for program closeout.
 **Kind:** Genesis Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

@@ -1,6 +1,6 @@
 # EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 
-**Status:** Active — Intent Pipeline, Convergence Certification, and Full-Lifecycle Certification Complete; Awaiting Formal Closeout  
+**Status:** Completed and accepted — Intent pipeline, Convergence Certification, and full-lifecycle certification complete. EXP-REFINE-007, EXP-REFINE-009, EXP-REFINE-010, EXP-REFINE-014, EXP-REFINE-015, and EXP-REFINE-016 are deferred to future work.  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

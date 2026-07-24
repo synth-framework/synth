@@ -2,7 +2,8 @@
 
 > Restore SYNTH's authority model by reducing runtime state to irreducible truth and making workflow, governance, and projection concerns derived artifacts.
 
-**Status:** Approved  
+**Status:** Completed and accepted  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Authority:** `EXP-SIMPLIFICATION-ASSESSMENT-001`, Constitutional Baseline, ADR-004, ADR-045  
@@ -311,7 +312,7 @@ After this expedition:
 - [x] Replay tests pass.
 - [x] Regression tests added.
 - [x] Authority resolver design document produced.
-- [ ] Expedition accepted.
+- [x] Expedition accepted.
 
 ---
 

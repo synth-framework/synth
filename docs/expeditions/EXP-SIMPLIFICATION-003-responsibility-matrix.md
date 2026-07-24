@@ -3,6 +3,9 @@
 > Every directory, service, registry, provider, and adapter in scope gets exactly one row.
 > This matrix is authoritative: every code change must correspond to one decision here.
 
+**Status:** Completed  
+**Expedition:** `EXP-SIMPLIFICATION-003`
+
 ## Classification key
 
 | Decision | Meaning |

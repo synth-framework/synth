@@ -2,7 +2,7 @@
 
 > What must live inside the kernel, and what is allowed to live outside it.
 
-**Status:** Approved  
+**Status:** Completed  
 **Expedition:** `EXP-COMPLEXITY-AUDIT-001`  
 **Date:** 2026-07-21  
 

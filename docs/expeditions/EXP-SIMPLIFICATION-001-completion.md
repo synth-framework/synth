@@ -2,6 +2,9 @@
 
 > Recorded after implementation and verification.
 
+**Status:** Completed  
+**Expedition:** `EXP-SIMPLIFICATION-001`
+
 ```yaml
 EXP-SIMPLIFICATION-001:
   status: completed

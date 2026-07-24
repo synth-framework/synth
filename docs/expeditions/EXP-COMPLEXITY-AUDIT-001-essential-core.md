@@ -2,7 +2,7 @@
 
 > Subsystems that pass the kernel test: their removal would prevent SYNTH from establishing canonical truth.
 
-**Status:** Draft  
+**Status:** Completed  
 **Expedition:** `EXP-COMPLEXITY-AUDIT-001`  
 **Date:** 2026-07-21  
 

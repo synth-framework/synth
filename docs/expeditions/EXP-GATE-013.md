@@ -3,6 +3,7 @@
 > **Engine expedition.** Enforce dependency chains between expeditions, propagate certification status across the gate graph, and block downstream work when upstream gates are unresolved or in `partial_pass` state.
 
 **Status:** Proposed  
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Dependency graph enforcement remains a pending extension per ADR-050 and was not required for program closeout.
 **Kind:** Engine Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  

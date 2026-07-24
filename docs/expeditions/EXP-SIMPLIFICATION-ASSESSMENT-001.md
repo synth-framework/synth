@@ -2,7 +2,8 @@
 
 > Determine whether SYNTH's current complexity is essential or accumulated, before adding more governance machinery.
 
-**Status:** Proposed  
+**Status:** Completed and accepted  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Discovery / Analysis Expedition  
 **Priority:** High  
 **Authority:** `ADR-039` Architectural Convergence Review, Constitutional Baseline  
@@ -213,11 +214,11 @@ This expedition does **not** perform the remedy. It only classifies.
 
 ## Definition of Done
 
-- [ ] State complexity report written.
-- [ ] Event inventory written.
-- [ ] Concept inventory written.
-- [ ] Code ownership map written.
-- [ ] Runtime-ahead-of-authority classification table written.
-- [ ] Final assessment and recommendation written.
-- [ ] No repository mutations performed.
-- [ ] Expedition accepted.
+- [x] State complexity report written.
+- [x] Event inventory written.
+- [x] Concept inventory written.
+- [x] Code ownership map written.
+- [x] Runtime-ahead-of-authority classification table written.
+- [x] Final assessment and recommendation written.
+- [x] No repository mutations performed.
+- [x] Expedition accepted.

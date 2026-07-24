@@ -1,5 +1,8 @@
 # EXP-PLATFORM-002 — Duplication Map
 
+**Status:** Completed  
+**Expedition:** `EXP-PLATFORM-002`
+
 | Operation | Duplicates | Locations | SDK Owner | Estimated Reduction |
 |---|---|---|---|---|
 | `.synth/data` path | 28 | CLI, verification, bootstrap, adapters, workspace | `sdk/paths` | 28 call sites → 1 function |

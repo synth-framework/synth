@@ -2,7 +2,7 @@
 
 > Subsystems and patterns that exist because of evolution rather than necessity.
 
-**Status:** Draft  
+**Status:** Completed  
 **Expedition:** `EXP-COMPLEXITY-AUDIT-001`  
 **Date:** 2026-07-21  
 

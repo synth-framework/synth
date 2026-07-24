@@ -2,6 +2,10 @@
 
 > Phase III of the SYNTH simplification program: reduce the number of ways complex objects are constructed.
 
+**Status:** Completed  
+**Program:** EXP-PROGRAM-041 — Platform Canonicalization  
+**Kind:** Architecture Expedition
+
 ## Authority
 
 - Depends on: `EXP-PLATFORM-001`, `EXP-PLATFORM-002`

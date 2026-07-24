@@ -2,7 +2,8 @@
 
 > **Engine expedition.** Implement `RevisionRequested` and `RevisionCompleted` as first-class, replayable governance events and define how revision loops pause, resume, and invalidate downstream dependent expeditions.
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Revision governance was implemented via engineResolveReviewGate / RequestRevision as part of the program closeout.
 **Kind:** Engine Expedition  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  
 **Priority:** High  

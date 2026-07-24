@@ -2,7 +2,7 @@
 
 > Specifies how every non-canonical field is computed from the event log.
 
-**Status:** Draft  
+**Status:** Completed  
 **Expedition:** `EXP-SIMPLIFICATION-001`  
 **Date:** 2026-07-21  
 **Authority:** `EXP-SIMPLIFICATION-ASSESSMENT-001-report.md`

@@ -3,6 +3,7 @@
 > Establish `ExecutionGate.execute()` as the one unavoidable mutation surface for all SYNTH-controlled changes.
 
 **Status:** Completed  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Authority:** ADR-004 Protected Assets, ADR-026 Governance Lifecycle Freeze, ADR-035 Genesis Protocol, Constitutional Baseline Mutation Authority Invariant  

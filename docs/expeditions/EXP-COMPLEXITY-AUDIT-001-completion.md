@@ -2,7 +2,7 @@
 
 > Final evidence-backed recommendation on SYNTH complexity and the path forward.
 
-**Status:** Draft  
+**Status:** Completed and accepted  
 **Expedition:** `EXP-COMPLEXITY-AUDIT-001`  
 **Date:** 2026-07-21  
 **Authority:** Approved by operator  

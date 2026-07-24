@@ -1,6 +1,7 @@
 # EXP-REFINE-009 — Certification
 
-**Status:** Proposed  
+**Status:** Completed and accepted
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Full-lifecycle certification was completed via EXP-GOVERNABILITY-006B.
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

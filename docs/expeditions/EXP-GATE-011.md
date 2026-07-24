@@ -1,6 +1,7 @@
 # EXP-GATE-011 — Retrofit Program 027
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Program 027 retrofit was completed as part of the program closeout.
 **Kind:** Integration Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  
