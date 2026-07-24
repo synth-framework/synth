@@ -21,7 +21,7 @@ import { refreshAiMetadata } from "./ai-metadata.js"
 import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
-import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
@@ -1792,7 +1792,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
       printError(`Initialization failed: ${initResult.errors?.join(", ") || "unknown error"}`)
     }
 
-    const evidenceStore = createInitializationEvidenceStore(createPosixFilesystemProvider(targetDir))
+    const evidenceStore = createInitializationEvidenceStore(createPosixFilesystemProvider(targetDir, FILESYSTEM_WRITE_TOKEN))
     const evidenceReference = await evidenceStore.persist(
       projectId,
       projectName,
