@@ -364,16 +364,9 @@ test("Full Genesis → Synthesis → Governance lifecycle produces deterministic
   assert.equal(result.result.decision, "converged", "Outcome should be converged")
   assert.equal(result.result.deterministic, true, "Result should be deterministic")
 
-  // 12. Complete the Mission
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CompleteMission",
-    payload: { id: missionId },
-  })
-  assert.equal(result.status, "ok", `CompleteMission failed: ${result.error}`)
-
+  // 12. CONVERGENCE_CERTIFIED (converged) auto-chains CompleteMission.
   const finalState = await ctx.runtime.getState()
-  assert.equal(finalState.missions[missionId].status, "completed", "Mission should be completed")
+  assert.equal(finalState.missions[missionId].status, "completed", "Mission should be completed by lifecycle auto-chain")
 
   // 13. Verify all event types are present and deterministic
   const allEvents = await ctx.infra.eventStore.loadAll()
@@ -798,16 +791,9 @@ test("Convergence Certification gates Mission completion: blocked when divergent
   assert.equal(result.status, "ok", `CertifyConvergence should succeed: ${result.error}`)
   assert.equal(result.result.decision, "converged", "Aligned features should produce converged decision")
 
-  // 3. Now CompleteMission should succeed
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CompleteMission",
-    payload: { id: missionId },
-  })
-  assert.equal(result.status, "ok", `CompleteMission should succeed after converged certification: ${result.error}`)
-
+  // 3. CONVERGENCE_CERTIFIED (converged) auto-chains CompleteMission.
   const finalState = await ctx.runtime.getState()
-  assert.equal(finalState.missions[missionId].status, "completed", "Mission should be completed")
+  assert.equal(finalState.missions[missionId].status, "completed", "Mission should be completed by lifecycle auto-chain")
 })
 
 // ============================================================

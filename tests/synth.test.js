@@ -943,7 +943,7 @@ test("Expedition: full expedition lifecycle", async () => {
   const decisionResult = await ctx.api.handleIntent({ actor: "test", capability: "RecordDecision", payload: { id: "DC-FULL", expeditionId: "E-FULL", title: "Full Lifecycle Decision", chosenAlternative: 0 } })
   assert.equal(decisionResult.status, "ok", `RecordDecision should succeed: ${decisionResult.error}`)
 
-  // Complete expedition
+  // Complete expedition; converged certification auto-chains mission completion.
   await ctx.api.handleIntent({ actor: "test", capability: "CompleteExpedition", payload: { id: "E-FULL" } })
   await ctx.api.handleIntent({
     actor: "test",
@@ -962,7 +962,6 @@ test("Expedition: full expedition lifecycle", async () => {
       executionEvidence: [{ kind: "execution", id: "build", eventIds: ["e1"], summary: "Build passed" }],
     },
   })
-  await ctx.api.handleIntent({ actor: "test", capability: "CompleteMission", payload: { id: "M-FULL" } })
 
   // Verify state
   const events = await ctx.infra.eventStore.loadAll()
