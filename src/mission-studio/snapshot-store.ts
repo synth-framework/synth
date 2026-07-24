@@ -12,7 +12,7 @@
 // ============================================================
 
 import type { FilesystemProvider } from "../infra/filesystem-provider.js"
-import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import type { StoredSnapshot, ApprovedMissionModelSnapshot, PlanningSession } from "./types.js"
 import { certifySnapshot, migrateStoredSnapshot } from "./snapshot-integrity.js"
 
@@ -72,7 +72,7 @@ export class FileSystemSnapshotStore implements SnapshotStore {
   private readonly fs: FilesystemProvider
 
   constructor(private dir: string, fsProvider?: FilesystemProvider) {
-    this.fs = fsProvider ?? createPosixFilesystemProvider(dir)
+    this.fs = fsProvider ?? createPosixFilesystemProvider(dir, FILESYSTEM_WRITE_TOKEN)
   }
 
   async save(stored: StoredSnapshot): Promise<void> {
