@@ -1,6 +1,6 @@
 # EXP-PROGRAM-027 — Mission Studio Homepage
 
-**Status:** Active — Governance Architecture v1.0 Certified  
+**Status:** Completed and accepted — Governance Architecture v1.0 Certified. All Phase 1 expeditions completed, all governance certifications passed, and the Mission Studio homepage is released as the canonical SYNTH first experience.  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  

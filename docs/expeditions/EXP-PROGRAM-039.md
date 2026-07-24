@@ -1,6 +1,6 @@
 # EXP-PROGRAM-039 — Documentation Remediation Program
 
-**Status:** Active  
+**Status:** Completed and accepted — All chartered expeditions completed: Program 027 incident review merged, references updated, and Programs 035/036 expedition statuses reconciled.  
 **Kind:** Program  
 **Priority:** Medium  
 **Authority:** Synth Architectural Constitution  
