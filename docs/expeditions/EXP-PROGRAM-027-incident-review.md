@@ -1,4 +1,4 @@
-# Program 027 Homepage Governability Incident Review
+# EXP-PROGRAM-027 — Homepage Governability Incident Review
 
 **Incident:** Governability regression — implementation conformed to expedition specifications but diverged from human intent.  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

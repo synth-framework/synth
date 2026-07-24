@@ -1,4 +1,4 @@
-# EXP-SIMPLIFICATION-003 Responsibility Matrix
+# EXP-SIMPLIFICATION-003 — Responsibility Matrix
 
 > Every directory, service, registry, provider, and adapter in scope gets exactly one row.
 > This matrix is authoritative: every code change must correspond to one decision here.
