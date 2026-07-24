@@ -19,8 +19,9 @@
   ],
   "artifactStatus": {
     "incidentReview": {
-      "path": "docs/expeditions/EXP-PROGRAM-027-incident-review.md",
-      "status": "complete"
+      "path": "docs/expeditions/EXP-PROGRAM-027.md",
+      "status": "complete",
+      "note": "Merged from docs/expeditions/EXP-PROGRAM-027-incident-review.md on 2026-07-24. The incident review content is preserved in the 'Incident Review and Governability Closure' section of the program charter."
     },
     "benchmark": {
       "path": "docs/governance/program-027/governability-benchmark.json",

@@ -613,6 +613,137 @@ Program 027 has been certified under the full Governance Architecture v1.0 lifec
 - `docs/governance/program-027/convergence-certification-criteria.md` — Convergence criteria
 - `docs/governance/program-027/governability-benchmark.json` — Benchmark specification
 
+---
+
+## Incident Review and Governability Closure
+
+> **Merged from `docs/expeditions/EXP-PROGRAM-027-incident-review.md`.**
+>
+> The standalone incident-review file has been merged into this program charter to preserve a single authoritative record for EXP-PROGRAM-027. The historical analysis below is retained verbatim; certification status has been updated to reflect completion.
+
+### Executive summary
+
+Program 027 was chartered to make Mission Studio the SYNTH homepage. It had strong specifications, design tokens, component catalogs, explicit anti-goals, and approved expeditions. Despite this, the implementation drifted toward a generic SaaS dashboard aesthetic. The agent was **compliant with the expedition definitions of done** but **not converged with the originating human intent**.
+
+This was a **governability certification failure**, not an implementation failure. The existing lifecycle governed execution correctness but did not provide a repeatable way to prove it prevented intent drift. The gap has since been addressed by ADR-047 (Intent Refinement and Alignment Governance) and ADR-048 (Genesis Lifecycle and Alignment Contracts). The failure is now reconstructed as an immutable benchmark so that the replay can prove the failure mode is preventable.
+
+### Timeline
+
+| Phase | Artifact / gate | What happened |
+|---|---|---|
+| Charter | EXP-PROGRAM-027 | Mission Studio becomes the SYNTH homepage. |
+| Design baseline | EXP-HOME-001, EXP-HOME-002, EXP-HOME-025 | Design language, component catalog, and anti-drift rules approved. |
+| Synthesis | EXP-HOME-004 through EXP-HOME-018 | Implementation expeditions executed against their individual DoDs. |
+| Observation | Homepage drift detected | Implementation accumulated generic dashboard patterns (metric cards, promotional sections, disconnected widgets) despite explicit anti-goals. |
+| Diagnosis | ADR-047, ADR-048 | Root cause identified: no governed transformation from raw intent to executable understanding. |
+| Corrective Genesis | EXP-HOME-026 | Intent Model captured explicit, implicit, forbidden, and allowed interpretations. |
+| Corrective alignment | EXP-HOME-027 | Alignment Contract approved; Divergence Gate resolves to `aligned`. |
+| Certification | EXP-GOVERNABILITY-001 / EXP-GOVERNABILITY-006B | Full-lifecycle deterministic replay certified. |
+
+### The failure mode
+
+The lifecycle began at the Mission artifact:
+
+```text
+Intent
+  ↓
+Mission
+  ↓
+Expedition
+  ↓
+Implementation
+```
+
+There was no governed checkpoint that asked:
+
+> "Does the Mission artifact accurately represent the human intent?"
+
+The Mission allowed an **interpretation space** containing many admissible outcomes — generic dashboards, marketing pages, chat interfaces, persistent workspaces — all consistent with the same specification. Governance failed because it did not collapse that space to acceptable interpretations. The expeditions had strong DoDs, but each DoD validated a narrow slice of output. The aggregate output could satisfy every expedition while violating the overall experience contract.
+
+### Why existing governance did not catch it
+
+| Existing mechanism | What it checked | Why it failed |
+|---|---|---|
+| Expedition DoDs | Per-expedition acceptance criteria | Each expedition was locally correct; no artifact checked global intent convergence. |
+| Review Gates | Implementation against expedition spec | Specs did not encode the full intent; compliance ≠ convergence. |
+| Design governance rules (EXP-HOME-025) | Visual rules and anti-patterns | Rules were advisory relative to expeditions, not binding at Mission creation. |
+| Replay | Event determinism and state correctness | Replay verifies what was built, not whether it should have been built. |
+
+### What changed
+
+```text
+Human Intent
+      ↓
+Intent Model
+      ↓
+Refinement Session
+      ↓
+Refined Intent Artifact
+      ↓
+Alignment Contract
+      ↓
+Reference Evidence Binding
+      ↓
+Divergence Gate  ←  NEW: alignment checkpoint
+      ↓
+Mission
+      ↓
+Expedition
+      ↓
+Implementation
+      ↓
+Review Gate
+      ↓
+Acceptance Gate
+      ↓
+Convergence Certification  ←  NEW: outcome-vs-intent check
+```
+
+| Artifact | Purpose | Introduced by |
+|---|---|---|
+| Intent Model | Capture explicit, implicit, forbidden, and ambiguous intent | ADR-047 |
+| Refined Intent Artifact | Contract-ready interpretation | ADR-047 |
+| Alignment Contract | Formal agreement between operator and SYNTH | ADR-047 / ADR-048 |
+| Reference Evidence Binding | Bind requirements to images, designs, examples | ADR-048 |
+| Divergence Gate | Block Mission creation until alignment is proven | ADR-047 / ADR-048 |
+| Convergence Certification | Compare final outcome to original intent | ADR-047 / ADR-048 |
+
+### Failure-to-fix traceability matrix
+
+| Failure observed | Addressed by | Mechanism | Status |
+|---|---|---|---|
+| Multiple infrastructure choices for same operation | EXP-PLATFORM-002 | Canonical Internal SDK | ✅ Complete |
+| Hidden construction inputs | EXP-PLATFORM-003 | Explicit timestamp/id parameters | ✅ Complete |
+| Capability ambiguity | EXP-PLATFORM-001 | Canonical Infrastructure Matrix | ✅ Complete |
+| Intent captured incorrectly | EXP-PROGRAM-036 / ADR-047 | Intent Model + Refinement Layer | ✅ Certified |
+| Agreement not validated before execution | EXP-PROGRAM-036 / ADR-048 | Alignment Contract + Divergence Gate | ✅ Certified |
+| Drift detected before implementation | Divergence Gate | `revision_required` / `rejected` states | ✅ Certified |
+| Drift detected before merge | EXP-PROGRAM-035 / Review Gate | Review Gate, Acceptance Gate | ✅ Certified |
+| Implementation-vs-intent convergence | Convergence Certification | Compare outcome to Alignment Contract | ✅ Certified |
+| Authority ordering violations | ADR-046 | Runtime evaluates authority chain before representing state | ✅ Certified |
+
+### Governability closure status
+
+Closure is declared in `docs/strategy/governability-closure-roadmap.md`:
+
+- Every identified drift class (D01–D08) has at least one replay that is intercepted before implementation.
+- Every valid interpretation branch (V01–V04) remains admissible.
+- Replay results are deterministic across three consecutive executions.
+- Missing mechanisms are implemented and re-certified.
+
+### Related artifacts
+
+- `docs/adr/ADR-047-intent-refinement-and-alignment-governance.md`
+- `docs/adr/ADR-048-genesis-lifecycle-and-alignment-contracts.md`
+- `docs/strategy/governability-closure-roadmap.md`
+- `docs/governance/program-027/intent-model.json`
+- `docs/governance/program-027/alignment-contract.json`
+- `docs/governance/program-027/refinement-report.json`
+- `docs/governance/program-027/governability-benchmark.json`
+- `docs/governance/program-027/governability-regression-certification.json`
+
+---
+
 Frozen Work
 
 The following expeditions are **frozen** exactly as implemented. They are not to be rewritten or silently improved. They become baseline evidence for the new governance model.

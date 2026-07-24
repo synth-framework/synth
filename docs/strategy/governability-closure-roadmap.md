@@ -3,7 +3,7 @@
 **Status:** Strategic roadmap  
 **Date:** 2026-07-22  
 **Incident:** Program 027 Homepage Governability Certification Failure  
-**Incident review:** `docs/expeditions/EXP-PROGRAM-027-incident-review.md`  
+**Incident review:** `docs/expeditions/EXP-PROGRAM-027.md` *(merged from `EXP-PROGRAM-027-incident-review.md` on 2026-07-24; see "Incident Review and Governability Closure" section)*  
 **Benchmark:** `docs/governance/program-027/governability-benchmark.json` ✅  
 **Replay specification:** `docs/governance/program-027/replay-specification.json` ✅  
 **Lifecycle replay specification:** `docs/governance/program-027/lifecycle-replay-specification.json` ✅  
@@ -54,7 +54,7 @@ Four artifacts must remain distinct and versioned.
 
 | Artifact | Purpose | Status |
 |---|---|---|
-| **Incident** | Historical record of what occurred | ✅ `docs/expeditions/EXP-PROGRAM-027-incident-review.md` |
+| **Incident** | Historical record of what occurred | ✅ `docs/expeditions/EXP-PROGRAM-027.md` *(merged from `EXP-PROGRAM-027-incident-review.md`)* |
 | **Benchmark** | Immutable statement of the failure mode and its root cause | ✅ `docs/governance/program-027/governability-benchmark.json` |
 | **Replay Specification** | Machine-executable definition of the interpretation graph and drift classes | ✅ `docs/governance/program-027/replay-specification.json` |
 | **Lifecycle Replay Specification** | Machine-executable definition of the full governance lifecycle replay | ✅ `docs/governance/program-027/lifecycle-replay-specification.json` |
@@ -152,9 +152,9 @@ A governable system must have high recall and high precision. Blocking everythin
 
 **Artifact:** Incident review  
 **Status:** ✅ Complete  
-**Path:** `docs/expeditions/EXP-PROGRAM-027-incident-review.md`
+**Path:** `docs/expeditions/EXP-PROGRAM-027.md` *(merged from `EXP-PROGRAM-027-incident-review.md` on 2026-07-24)*
 
-Historical record of the Program 027 homepage drift: timeline, root cause, decision chain, failure matrix.
+Historical record of the Program 027 homepage drift: timeline, root cause, decision chain, failure matrix. The standalone incident-review file was merged into the program charter to eliminate a duplicate active program record while preserving the historical analysis.
 
 ---
 
