@@ -22,9 +22,6 @@ on:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    outputs:
-      validation-plan: ${{ steps.plan.outputs.plan }}
-      changed-files: ${{ steps.plan.outputs.changed-files }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,11 +42,7 @@ jobs:
         run: |
           # Compute changed files relative to the base branch.
           changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | tr '\n' ',' | sed 's/,$//')
-          echo "changed-files=$changed" >> "$GITHUB_OUTPUT"
-          node scripts/govern-profiler.js --dry-run --explain --profile ${{ inputs.profile || 'pull-request' }} --changes "$changed" > plan.json
-          echo "plan<<EOF" >> "$GITHUB_OUTPUT"
-          cat plan.json >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          node scripts/govern-profiler.js --dry-run --explain --profile ${{ inputs.profile || 'pull-request' }} --changes "$changed"
 
   execute:
     runs-on: ubuntu-latest
@@ -69,7 +62,7 @@ jobs:
 
       - name: Run incremental governance
         run: |
-          changed="${{ needs.plan.outputs.changed-files }}"
+          changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | tr '\n' ',' | sed 's/,$//')
           node scripts/govern-profiler.js --profile ${{ inputs.profile || 'pull-request' }} --changes "$changed"
 
       - name: Upload governance baseline
