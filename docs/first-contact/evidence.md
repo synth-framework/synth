@@ -56,8 +56,8 @@ Documentation projections produced during the journey:
 
 - Consistent: true
 - Chain valid: true
-- Live state hash: `2120181512`
-- Replayed state hash: `2120181512`
+- Live state hash: `1824574964`
+- Replayed state hash: `1824574964`
 - Graph valid: true
 - Graph violations: 0
 
@@ -71,7 +71,7 @@ Archive A (`examples/first-contact/recorded-journey/evidence-archive/`) is the o
 | Events | 32 | 32 |
 | Event type census | 12 types | identical to A |
 | Replay | consistent, chain valid | consistent, chain valid |
-| Live state hash == replayed hash | `1017598047` == `1017598047` | `2120181512` == `2120181512` |
+| Live state hash == replayed hash | `707567213` == `707567213` | `1824574964` == `1824574964` |
 | Aggregate graph violations | 36 | 0 |
 | — `broken-navigation` | 12 | 0 |
 | — `broken-parent-reference` | 12 | 0 |
