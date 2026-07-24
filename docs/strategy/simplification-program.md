@@ -149,7 +149,7 @@ N consumers per owner
 
 ### Stage 2 — Internal SDK
 
-See `docs/expeditions/EXP-SIMPLIFICATION-003A.md` (EXP-PLATFORM-002).
+See `docs/expeditions/EXP-PLATFORM-002.md` (formerly EXP-SIMPLIFICATION-003A).
 
 #### SDK design principles
 

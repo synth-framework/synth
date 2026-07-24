@@ -1,5 +1,8 @@
 # EXP-PLATFORM-002 — Migration Order
 
+**Status:** Completed  
+**Expedition:** `EXP-PLATFORM-002`
+
 ## Wave 1 — Repository Reality ✅ COMPLETE
 
 1. `sdk.workspace`

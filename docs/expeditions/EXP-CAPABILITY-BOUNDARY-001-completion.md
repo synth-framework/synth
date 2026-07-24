@@ -2,6 +2,9 @@
 
 > Recorded after implementation and verification.
 
+**Status:** Completed  
+**Expedition:** `EXP-CAPABILITY-BOUNDARY-001`
+
 ```yaml
 EXP-CAPABILITY-BOUNDARY-001:
   status: completed

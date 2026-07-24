@@ -1,6 +1,9 @@
 # EXP-PLATFORM-003 — Canonical Construction Matrix
 
-Captured after EXP-PLATFORM-002 established the Internal Platform SDK.
+> Captured after EXP-PLATFORM-002 established the Internal Platform SDK.
+
+**Status:** Completed  
+**Expedition:** `EXP-PLATFORM-003`
 
 ## Methodology
 

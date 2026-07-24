@@ -2,6 +2,10 @@
 
 > Phase 3 of the SYNTH simplification program: eliminate duplicate responsibilities across the extension/discovery models.
 
+**Status:** Completed  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
+**Kind:** Architecture Expedition
+
 ## Authority
 
 - Depends on: `EXP-COMPLEXITY-AUDIT-001`, `EXP-SIMPLIFICATION-002` (test infrastructure)

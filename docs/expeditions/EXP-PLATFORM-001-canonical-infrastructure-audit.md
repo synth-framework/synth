@@ -2,6 +2,10 @@
 
 > Phase III of the SYNTH simplification program: find every infrastructure concern that lacks a single canonical owner.
 
+**Status:** Completed  
+**Program:** EXP-PROGRAM-041 — Platform Canonicalization  
+**Kind:** Audit Expedition
+
 ## Authority
 
 - Depends on: `EXP-SIMPLIFICATION-003` (extension model unification)

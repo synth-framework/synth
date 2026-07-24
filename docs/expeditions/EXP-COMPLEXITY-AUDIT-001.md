@@ -2,7 +2,8 @@
 
 > Determine whether SYNTH is currently at its minimum necessary complexity by measuring every major subsystem against the user problems it solves and the guarantees it provides.
 
-**Status:** Approved  
+**Status:** Completed and accepted  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Read-Only Assessment Expedition  
 **Priority:** Critical  
 **Authority:** `EXP-SIMPLIFICATION-001`, Constitutional Baseline, ADR-004  
@@ -263,6 +264,7 @@ After this expedition:
 - [x] Complexity Budget produced.
 - [x] Final recommendation produced.
 - [x] No repository mutations occurred during the expedition.
+- [x] Expedition accepted.
 
 ---
 

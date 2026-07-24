@@ -1,7 +1,11 @@
 # EXP-PLATFORM-002 — Internal Platform SDK
 
-> Also referenced as EXP-SIMPLIFICATION-003A.  
-> Phase III of the SYNTH simplification program: create the canonical internal infrastructure layer.
+> Phase III of the SYNTH simplification program: create the canonical internal infrastructure layer.  
+> Formerly referenced as EXP-SIMPLIFICATION-003A.
+
+**Status:** Completed  
+**Program:** EXP-PROGRAM-041 — Platform Canonicalization  
+**Kind:** Architecture Expedition
 
 ## Authority
 
@@ -431,8 +435,8 @@ Approve as an insertion into the simplification program before `EXP-SIMPLIFICATI
 
 Required deliverables:
 
-1. `EXP-SIMPLIFICATION-003A-responsibility-matrix.md`
-2. `EXP-SIMPLIFICATION-003A-sdk-surface.md`
-3. `EXP-SIMPLIFICATION-003A-duplication-map.md`
-4. `EXP-SIMPLIFICATION-003A-migration-order.md`
-5. `EXP-SIMPLIFICATION-003A-deletion-list.md`
+1. `EXP-PLATFORM-002-responsibility-matrix.md`
+2. `EXP-PLATFORM-002-sdk-surface.md`
+3. `EXP-PLATFORM-002-duplication-map.md`
+4. `EXP-PLATFORM-002-migration-order.md`
+5. `EXP-PLATFORM-002-deletion-list.md`

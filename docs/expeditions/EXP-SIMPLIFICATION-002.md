@@ -2,6 +2,10 @@
 
 > Phase 2 of the SYNTH simplification program: reduce duplicated test infrastructure before simplifying production subsystems.
 
+**Status:** Completed  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
+**Kind:** Engineering Expedition
+
 ## Authority
 
 - Depends on: `EXP-COMPLEXITY-AUDIT-001`, `EXP-CAPABILITY-BOUNDARY-001`

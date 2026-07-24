@@ -2,7 +2,7 @@
 
 > Cost/value rating for every major SYNTH subsystem.
 
-**Status:** Draft  
+**Status:** Completed  
 **Expedition:** `EXP-COMPLEXITY-AUDIT-001`  
 **Date:** 2026-07-21  
 

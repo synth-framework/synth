@@ -2,7 +2,7 @@
 
 > How SYNTH decides what is authoritative, what is derived, what may mutate, and who owns a transition after canonical-state simplification.
 
-**Status:** Draft  
+**Status:** Completed  
 **Expedition:** `EXP-SIMPLIFICATION-001`  
 **Date:** 2026-07-21  
 **Authority:** `EXP-SIMPLIFICATION-001.md`, `ADR-046`, `ADR-045`, Constitutional Baseline  

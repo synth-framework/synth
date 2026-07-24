@@ -1,5 +1,8 @@
 # EXP-PLATFORM-002 — Deletion List
 
+**Status:** Completed  
+**Expedition:** `EXP-PLATFORM-002`
+
 ## Confirmed deletions after migration
 
 | File / Helper | Reason | Wave |

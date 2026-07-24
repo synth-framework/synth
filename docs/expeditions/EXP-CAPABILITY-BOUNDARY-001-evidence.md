@@ -1,6 +1,9 @@
 # EXP-CAPABILITY-BOUNDARY-001 — Pre-Change Evidence
 
-Captured before implementation. Baseline for verifying the mutation boundary change.
+> Captured before implementation. Baseline for verifying the mutation boundary change.
+
+**Status:** Completed  
+**Expedition:** `EXP-CAPABILITY-BOUNDARY-001`
 
 ---
 

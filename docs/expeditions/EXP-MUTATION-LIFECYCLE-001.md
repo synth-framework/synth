@@ -3,6 +3,7 @@
 > Route all SYNTH-controlled mutations through `ExecutionGate.execute()` and define the controlled exception model for genesis operations.
 
 **Status:** Proposed  
+**Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Authority:** ADR-004 Protected Assets, ADR-026 Governance Lifecycle Freeze, ADR-035 Genesis Protocol, EXP-CAPABILITY-BOUNDARY-001, Constitutional Baseline Mutation Authority Invariant  
