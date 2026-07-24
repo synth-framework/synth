@@ -1,0 +1,92 @@
+{
+  "id": "alignment-contract-mru2bqph-zze9m7",
+  "intentModelId": "intent-model-mru144mr-j9lxxw",
+  "intentSummary": "Make Mission Studio the SYNTH homepage.; Immerse visitors in a guided, interactive Mission Studio experience.; Project every SYNTH lifecycle phase inside a persistent workspace.; Release Mission Studio only after its lifecycle completes, then show supporting content.; Certify that a first-time visitor understands SYNTH in under five minutes without external documentation.",
+  "expectedExperience": "A visitor lands on the SYNTH homepage and experiences Mission Studio as the product. They leave understanding intent modeling, discovery, missions, expeditions, governance, replay, and architecture because they interacted with them directly.",
+  "requiredProperties": [
+    "Scroll-driven workspace phase transitions.",
+    "Hero section that invites visitors into Mission Studio.",
+    "Light workspace theme as the default experience.",
+    "Typography and spacing adjustments within the LDS-002 token scale.",
+    "Demo operator adapter that simulates AI execution deterministically."
+  ],
+  "forbiddenProperties": [
+    "Generic SaaS dashboard with metric cards and promotional banners.",
+    "Marketing-first landing page where Mission Studio is one section among many.",
+    "Chat interface with decorative AI imagery.",
+    "Page-jump navigation instead of a persistent workspace.",
+    "Hardcoded visual values outside the LDS-002 token system."
+  ],
+  "requiredBehaviors": [
+    "Workspace persists while phases change",
+    "Supporting content appears after Mission Studio releases"
+  ],
+  "visualReferences": [],
+  "behavioralReferences": [],
+  "functionalExpectations": [],
+  "technicalConstraints": [],
+  "successCriteria": [
+    "A visitor lands on the SYNTH homepage and experiences Mission Studio as the product. They leave understanding intent modeling, discovery, missions, expeditions, governance, replay, and architecture because they interacted with them directly."
+  ],
+  "explicitNonRequirements": [],
+  "allowedInterpretation": [],
+  "allowedVariation": [],
+  "forbiddenInterpretation": [
+    "Generic SaaS dashboard with metric cards and promotional banners.",
+    "Marketing-first landing page where Mission Studio is one section among many.",
+    "Chat interface with decorative AI imagery.",
+    "Page-jump navigation instead of a persistent workspace.",
+    "Hardcoded visual values outside the LDS-002 token system."
+  ],
+  "forbiddenDrift": [
+    "Generic SaaS dashboard with metric cards and promotional banners.",
+    "Marketing-first landing page where Mission Studio is one section among many.",
+    "Chat interface with decorative AI imagery.",
+    "Page-jump navigation instead of a persistent workspace.",
+    "Hardcoded visual values outside the LDS-002 token system."
+  ],
+  "referenceEvidenceIds": [
+    "evidence-mru2bqhs-p1tht8",
+    "evidence-mru2bqj8-9w1xrz",
+    "evidence-mru2bqkh-b73vzb",
+    "evidence-mru2bqll-ox7cta",
+    "evidence-mru2bqmi-etp8uf",
+    "evidence-mru2bqnn-j9nhzu",
+    "evidence-mru2bqok-14qabg"
+  ],
+  "dimensions": [
+    { "name": "Intent", "score": 0.98, "reason": "Explicit and implicit objectives documented and reviewed" },
+    { "name": "Experience", "score": 0.95, "reason": "Desired outcome and experience contract captured" },
+    { "name": "Visual", "score": 0.97, "reason": "Visual references and design system identified" },
+    { "name": "Interaction", "score": 0.94, "reason": "Scroll contract and workspace persistence captured" },
+    { "name": "Governance", "score": 1.0, "reason": "Refinement approval recorded" },
+    { "name": "Evidence", "score": 1.0, "reason": "All objectives bound to reference evidence" }
+  ],
+  "objectiveCoverage": [
+    { "objective": "Make Mission Studio the SYNTH homepage", "evidence": ["Program 027 charter", "EXP-HOME-001"], "aligned": true },
+    { "objective": "Immerse visitors in Mission Studio", "evidence": ["EXP-HOME-001", "EXP-HOME-002", "LDS-002"], "aligned": true },
+    { "objective": "Project lifecycle phases in workspace", "evidence": ["EXP-HOME-002", "EXP-HOME-026"], "aligned": true },
+    { "objective": "Release Mission Studio before supporting content", "evidence": ["EXP-HOME-026", "Program 027 charter"], "aligned": true },
+    { "objective": "Five-minute comprehension", "evidence": ["EXP-HOME-026 desired outcome"], "aligned": true }
+  ],
+  "implicitObjectiveStatus": [
+    { "objective": "Product demonstration", "status": "accepted" },
+    { "objective": "Interactive experience", "status": "accepted" },
+    { "objective": "Not marketing-first", "status": "accepted" }
+  ],
+  "forbiddenInterpretations": [
+    { "interpretation": "Generic SaaS dashboard", "evidence": "EXP-HOME-025 design governance rules" },
+    { "interpretation": "Marketing landing page", "evidence": "EXP-HOME-026 forbidden interpretations" },
+    { "interpretation": "Chat interface as primary interaction", "evidence": "EXP-HOME-026 forbidden interpretations" },
+    { "interpretation": "Page-jump navigation", "evidence": "EXP-HOME-026 scroll contract" },
+    { "interpretation": "Hardcoded values outside token system", "evidence": "LDS-002 token mandate" }
+  ],
+  "residualDivergence": [
+    { "description": "Live agent integration may be required before launch", "risk": "Low", "reason": "Accepted for first release; demo adapter sufficient" },
+    { "description": "Dark theme toggle requirement unclear", "risk": "Low", "reason": "Defaults to light; can be added later without structural change" }
+  ],
+  "status": "approved",
+  "version": 1,
+  "createdAt": 1784602625525,
+  "updatedAt": 1784602625525
+}

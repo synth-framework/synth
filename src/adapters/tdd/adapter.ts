@@ -225,8 +225,14 @@ test("${functionName} satisfies: ${requirement}", () => {
     // the authoritative signal of success or failure; the symbol counts are
     // used only for reporting.
     const command = `node --test --test-reporter spec ${testFiles.map((f) => path.join(this.testDir(), f)).join(" ")}`
+    // When the TDD adapter is invoked from inside the Node test runner, the
+    // parent sets NODE_TEST_CONTEXT=child-v8. That marker must not propagate
+    // to the child test process or the runner will believe it is already a
+    // nested child and will exit without executing any tests.
+    const childEnv = { ...process.env }
+    delete childEnv.NODE_TEST_CONTEXT
     try {
-      const output = execSync(command, { cwd: process.cwd(), encoding: "utf-8", stdio: "pipe" } as any)
+      const output = execSync(command, { cwd: process.cwd(), encoding: "utf-8", stdio: "pipe", env: childEnv } as any)
       const passing = (output.match(/✔/g) || []).length
       const failing = (output.match(/✖/g) || []).length
       return { success: failing === 0, passing, failing, message: `Tests: ${passing} passing, ${failing} failing` }

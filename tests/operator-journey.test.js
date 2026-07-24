@@ -20,6 +20,7 @@ import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
 import { documentFromKnowledgeBase } from "../dist/documentation/documentation-expedition.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
 function makeObservation(type, subject, overrides = {}) {
   return {
@@ -185,14 +186,34 @@ test("Operator Journey completes end-to-end and produces certification evidence"
   // Step 6 — Execution
   // ============================================================
   const t6 = now()
+  const { contractId } = await createAlignedContract(ctx)
+
   const executionIntents = [
-    { capability: "ApproveMission", payload: { id: missionProposal.id } },
+    { capability: "ApproveMission", payload: { id: missionProposal.id, alignmentContractId: contractId } },
     { capability: "ApproveExpedition", payload: { id: expeditionProposal.id } },
     { capability: "CommitExpedition", payload: { id: expeditionProposal.id } },
     { capability: "StartExpedition", payload: { id: expeditionProposal.id } },
     { capability: "CompleteObjective", payload: { id: objectiveProposal.id } },
     { capability: "CompleteExpedition", payload: { id: expeditionProposal.id } },
-    { capability: "CompleteMission", payload: { id: missionProposal.id } },
+    {
+      capability: "CertifyConvergence",
+      payload: {
+        missionId: missionProposal.id,
+        expeditionId: expeditionProposal.id,
+        alignmentContractId: contractId,
+        observedFeatures: {
+          hasPersistentHeader: true,
+          hasPersistentSidebar: true,
+          hasScrollDrivenPhases: true,
+        },
+        artifacts: [{ kind: "artifact", id: "homepage", path: "/homepage.html", description: "Governed homepage" }],
+        runtimeEvidence: [{ kind: "runtime", id: "render", source: "browser", observation: "Workspace renders", timestamp: Date.now() }],
+        executionEvidence: [{ kind: "execution", id: "build", eventIds: ["e1"], summary: "Build passed" }],
+        ruleSetId: "program-027-homepage",
+        certifier: { kind: "engine", id: "convergence-certification" },
+      },
+    },
+    // CONVERGENCE_CERTIFIED (converged) auto-chains CompleteMission in the runtime.
   ]
 
   for (const intent of executionIntents) {

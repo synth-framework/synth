@@ -226,8 +226,8 @@ export class DiscoveryOrchestrator {
     this.overrides = config.overrides
   }
 
-  async discover(ctx: ObservationContext): Promise<DiscoveryResult> {
-    const start = Date.now()
+  async discover(ctx: ObservationContext, timestamp?: number): Promise<DiscoveryResult> {
+    const start = timestamp ?? Date.now()
     const observations: DiscoveryObservation[] = []
 
     for (const rule of this.rules) {
@@ -246,7 +246,7 @@ export class DiscoveryOrchestrator {
           name: "ruleError",
           value: error instanceof Error ? error.message : String(error),
           confidence: "none",
-          timestamp: Date.now(),
+          timestamp: start,
         })
       }
     }

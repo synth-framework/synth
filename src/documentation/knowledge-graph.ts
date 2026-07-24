@@ -13,6 +13,25 @@ export function buildKnowledgeGraph(sources: MarkdownKnowledge[]): KnowledgeGrap
   const conceptMap = new Map<string, Concept>()
 
   for (const source of sources) {
+    // Build enriched metadata for classified documents
+    let nodeMetadata: Record<string, string> | undefined = undefined
+    if (source.documentClass === "adr" && source.adrMetadata) {
+      nodeMetadata = {
+        documentClass: "adr",
+        adrStatus: source.adrMetadata.status,
+        adrDate: source.adrMetadata.date,
+        adrDeciders: source.adrMetadata.deciders,
+      }
+    } else if (source.documentClass === "expedition" && source.expeditionMetadata) {
+      nodeMetadata = {
+        documentClass: "expedition",
+        expeditionStatus: source.expeditionMetadata.status,
+        expeditionKind: source.expeditionMetadata.kind,
+        expeditionPriority: source.expeditionMetadata.priority,
+        expeditionProgram: source.expeditionMetadata.program,
+      }
+    }
+
     // Document node
     nodes.push({
       id: source.id,
@@ -22,6 +41,7 @@ export function buildKnowledgeGraph(sources: MarkdownKnowledge[]): KnowledgeGrap
       domain: source.domain,
       audience: source.audience,
       sources: [source.id],
+      metadata: nodeMetadata,
     })
 
     // Link edges
@@ -33,11 +53,19 @@ export function buildKnowledgeGraph(sources: MarkdownKnowledge[]): KnowledgeGrap
       })
     }
 
-    // Mine concepts from headings and list items
-    const candidates = [...source.headings, ...source.listItems]
-    for (const candidate of candidates) {
+    // Mine concepts from headings and list items, weighted by heading depth
+    const weightedCandidates: { text: string; level: number }[] = [
+      ...source.headingDetails.map((h) => ({ text: h.text, level: h.level })),
+      ...source.listItems.map((item) => ({ text: item, level: 99 })),
+    ]
+    weightedCandidates.sort((a, b) => a.level - b.level)
+    const seenConcepts = new Set<string>()
+    for (const { text: candidate } of weightedCandidates) {
       const name = normalizeConceptName(candidate)
       if (!name) continue
+
+      if (seenConcepts.has(name)) continue
+      seenConcepts.add(name)
 
       const existing = conceptMap.get(name)
       if (existing) {

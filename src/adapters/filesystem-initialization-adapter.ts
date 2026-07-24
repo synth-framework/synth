@@ -15,7 +15,7 @@ import type {
   SourceType,
 } from "./initialization-adapter.js"
 import type { LifecycleStage, DomainModel, Constraint, ConfidenceScore } from "../initialization/project-model.js"
-import { createPosixFilesystemProvider, type FilesystemProvider } from "../environment/filesystem-capability.js"
+import { createPosixFilesystemProvider, type FilesystemProvider } from "../infra/filesystem-provider.js"
 
 export const FILESYSTEM_ADAPTER_VERSION = "1.0.0"
 

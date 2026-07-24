@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { bootstrap } from "../dist/core/bootstrap.js"
-import { AdapterRegistry } from "../dist/adapters/registry.js"
+import { AdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 
 function createMockAdapter(name, observations = []) {
   return {

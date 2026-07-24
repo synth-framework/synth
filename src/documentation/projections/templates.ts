@@ -52,6 +52,39 @@ ${conceptList(graph, 50)}
 `
 }
 
+function expeditionList(graph: KnowledgeGraph): string {
+  const expNodes = graph.nodes.filter(
+    (n) => n.metadata?.documentClass === "expedition" && n.metadata?.expeditionStatus,
+  )
+  if (expNodes.length === 0) return "- No expeditions found in knowledge base.\n"
+  expNodes.sort((a, b) => {
+    const pa = a.metadata!.expeditionPriority || "Z"
+    const pb = b.metadata!.expeditionPriority || "Z"
+    const order: Record<string, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 }
+    return (order[pa] ?? 99) - (order[pb] ?? 99)
+  })
+  return expNodes
+    .map(
+      (n) =>
+        `- **[${n.label}](${n.id})** — Status: ${n.metadata!.expeditionStatus}, Priority: ${n.metadata!.expeditionPriority || "unknown"}, Program: ${n.metadata!.expeditionProgram || "unknown"}`,
+    )
+    .join("\n")
+}
+
+function adrList(graph: KnowledgeGraph): string {
+  const adrNodes = graph.nodes.filter(
+    (n) => n.metadata?.documentClass === "adr" && n.metadata?.adrStatus,
+  )
+  if (adrNodes.length === 0) return "- No ADRs found in knowledge base.\n"
+  adrNodes.sort((a, b) => ((b.metadata?.adrDate ?? "") > (a.metadata?.adrDate ?? "") ? -1 : 1))
+  return adrNodes
+    .map(
+      (n) =>
+        `- **[${n.label}](${n.id})** — Status: ${n.metadata!.adrStatus}, Date: ${n.metadata!.adrDate || "unknown"}, Deciders: ${n.metadata!.adrDeciders || "unknown"}`,
+    )
+    .join("\n")
+}
+
 export function architectureTemplate(graph: KnowledgeGraph): string {
   const architectureConcepts = sortedConcepts(graph).filter(
     (c) =>
@@ -78,6 +111,10 @@ ${
     ? architectureConcepts.map((c) => `- **${c.name}** — ${c.description}`).join("\n")
     : conceptList(graph)
 }
+
+## Architecture Decisions
+
+${adrList(graph)}
 
 ## Knowledge Sources
 
@@ -139,6 +176,10 @@ export function operatorGuideTemplate(graph: KnowledgeGraph): string {
 ## Working with Synth
 
 This guide covers the operator journey from idea to done.
+
+## Active Expeditions
+
+${expeditionList(graph)}
 
 ## Core Operator Concepts
 

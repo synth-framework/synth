@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createGitHubAdapter } from "../dist/adapters/github/adapter.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 
 function createMockFetch(responses) {
   const calls = []

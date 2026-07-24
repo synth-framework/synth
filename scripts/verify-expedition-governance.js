@@ -15,7 +15,52 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const EXPEDITIONS_DIR = path.resolve(__dirname, "..", "docs", "expeditions")
 const REGISTRY_PATH = path.join(EXPEDITIONS_DIR, "prefix-registry.json")
 
-const EXPEDITION_ID_PATTERN = /^EXP-[A-Z0-9-]+-\d+$/
+// Allow optional single-letter suffix (e.g., 006A, 006B) for expedition splits.
+const EXPEDITION_ID_PATTERN = /^EXP-[A-Z0-9-]+-\d+[A-Z]?$/
+
+// Filename suffixes that identify sub-artifacts of a parent expedition.
+const SUB_ARTIFACT_SUFFIXES = [
+  "evidence",
+  "completion",
+  "report",
+  "matrix",
+  "budget",
+  "list",
+  "map",
+  "order",
+  "surface",
+  "audit",
+  "design",
+  "contract",
+  "accidental-complexity",
+  "essential-core",
+  "kernel-boundary",
+  "simplification-matrix",
+  "complexity-budget",
+  "canonical-infrastructure-audit",
+  "infrastructure-matrix",
+  "deletion-list",
+  "duplication-map",
+  "migration-order",
+  "responsibility-matrix",
+  "sdk-surface",
+  "construction-canonicalization",
+  "construction-matrix",
+  "utility-extraction",
+  "authority-resolver-design",
+  "derived-state-contract",
+  "incident-review",
+]
+
+function isSubArtifact(file) {
+  const base = path.basename(file, ".md")
+  // Match the canonical expedition ID and capture any trailing suffix.
+  const match = base.match(/^(EXP-[A-Z0-9-]+-\d+[A-Z]?)(?:-(.+))?$/)
+  if (!match) return false
+  const suffix = match[2]
+  if (!suffix) return false
+  return SUB_ARTIFACT_SUFFIXES.includes(suffix)
+}
 
 function splitIds(value) {
   if (!value || value.trim() === "") return []
@@ -86,24 +131,30 @@ function validate(entries, registry) {
       continue
     }
 
-    idCounts.set(entry.id, (idCounts.get(entry.id) || 0) + 1)
-    idToEntry.set(entry.id, entry)
+    const isSub = isSubArtifact(entry.file)
+
+    if (!isSub) {
+      idCounts.set(entry.id, (idCounts.get(entry.id) || 0) + 1)
+      idToEntry.set(entry.id, entry)
+    }
 
     if (entry.isProgram) {
-      if (entry.program) {
+      if (entry.program && !isSubArtifact(entry.file)) {
         issues.push({
           file: entry.file,
           severity: "error",
           message: `Program ${entry.id} must not reference another Program`,
         })
       }
-      programCounts.set(entry.id, (programCounts.get(entry.id) || 0) + 1)
-      programTitles.set(entry.id, entry.title)
+      if (!isSub) {
+        programCounts.set(entry.id, (programCounts.get(entry.id) || 0) + 1)
+        programTitles.set(entry.id, entry.title)
+      }
       continue
     }
 
-    // Validate prefix is registered
-    const prefixMatch = entry.id.match(/^EXP-([A-Z0-9-]+)-\d+$/)
+    // Validate prefix is registered (strip optional trailing letter for prefix lookup)
+    const prefixMatch = entry.id.match(/^EXP-([A-Z0-9-]+)-\d+[A-Z]?$/)
     const prefix = prefixMatch ? prefixMatch[1] : null
     if (!prefix || !registeredPrefixes.includes(prefix)) {
       issues.push({
@@ -115,7 +166,10 @@ function validate(entries, registry) {
 
     // Validate program reference exists
     // Legacy expeditions may lack a Program line; require it only for Active expeditions.
-    if (!entry.program) {
+    // Sub-artifacts inherit program assignment from their parent expedition.
+    if (isSub) {
+      // no program assignment required for sub-artifacts
+    } else if (!entry.program) {
       if (entry.status === "Active") {
         issues.push({
           file: entry.file,
@@ -161,6 +215,7 @@ function validate(entries, registry) {
   // Check cross-references in Depends On / Blocks
   for (const entry of entries) {
     if (entry.isProgram) continue
+    if (isSubArtifact(entry.file)) continue
     for (const ref of [...entry.dependsOn, ...entry.blocks]) {
       if (!idToEntry.has(ref)) {
         issues.push({
@@ -176,6 +231,7 @@ function validate(entries, registry) {
   const activeProgramsByExpedition = new Map()
   for (const entry of entries) {
     if (entry.isProgram) continue
+    if (isSubArtifact(entry.file)) continue
     if (!entry.program || !entry.status) continue
     const programEntry = idToEntry.get(entry.program)
     if (!programEntry) continue

@@ -2,7 +2,7 @@
 // INFRA: Git Adapter
 // ============================================================
 
-import { execSync } from "child_process"
+import { execFileSync } from "child_process"
 
 export interface GitAdapter {
   commit(message: string, files?: string[]): string
@@ -20,7 +20,7 @@ export class GitAdapterImpl implements GitAdapter {
 
   private execGit(args: string[]): string {
     try {
-      return execSync(`git ${args.join(" ")}`, {
+      return execFileSync("git", args, {
         cwd: this.repoPath,
         encoding: "utf-8",
       }).trim()

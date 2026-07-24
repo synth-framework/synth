@@ -8,6 +8,9 @@
 
 import { promises as fs, constants as fsConstants } from "fs"
 import path from "path"
+import * as sdk from "../sdk/index.js"
+import { synthDir } from "../sdk/paths/index.js"
+import { root } from "../sdk/workspace/index.js"
 import type { CapabilityRegistry } from "../types/index.js"
 import { ExecutionArtifactAdapter } from "./artifact-adapter.js"
 import { CanonicalLanguageAuditor } from "./language-auditor.js"
@@ -91,16 +94,14 @@ export class WorkspaceCognitionEnvironment {
     })
 
     try {
-      const { execSync } = await import("child_process")
-      const npmVersion = execSync("npm --version", { encoding: "utf-8", timeout: 5000 } as any).trim()
+      const npmVersion = sdk.process.execSync("npm --version", { timeout: 5000 }).trim()
       checks.push({ name: "npm", status: "PASS", detail: `v${npmVersion}` })
     } catch {
       checks.push({ name: "npm", status: "FAIL", detail: "not found or not executable" })
     }
 
     try {
-      const { execSync } = await import("child_process")
-      const gitVersion = execSync("git --version", { encoding: "utf-8", timeout: 5000 } as any).trim().split(" ")[2]
+      const gitVersion = sdk.process.execSync("git --version", { timeout: 5000 }).trim().split(" ")[2]
       checks.push({ name: "Git", status: "PASS", detail: `v${gitVersion}` })
     } catch {
       checks.push({ name: "Git", status: "WARN", detail: "not found — version history unavailable" })
@@ -432,38 +433,38 @@ export class WorkspaceCognitionEnvironment {
   async writeDescriptors() {
     const desc = await this.generateWorkspaceDescriptor()
 
-    const synthDir = path.join(process.cwd(), ".synth")
-    await fs.mkdir(synthDir, { recursive: true })
+    const synthRoot = synthDir(root())
+    await fs.mkdir(synthRoot, { recursive: true })
 
     this.orientationCount++
     this.lastOrientationAt = new Date().toISOString()
 
     const files: string[] = []
 
-    await fs.writeFile(path.join(synthDir, "workspace.json"), JSON.stringify(desc, null, 2))
+    await fs.writeFile(path.join(synthRoot, "workspace.json"), JSON.stringify(desc, null, 2))
     files.push("workspace.json")
 
-    await fs.writeFile(path.join(synthDir, "health.json"), JSON.stringify(desc.health, null, 2))
+    await fs.writeFile(path.join(synthRoot, "health.json"), JSON.stringify(desc.health, null, 2))
     files.push("health.json")
 
-    await fs.writeFile(path.join(synthDir, "context.json"), JSON.stringify(desc.engineeringContext, null, 2))
+    await fs.writeFile(path.join(synthRoot, "context.json"), JSON.stringify(desc.engineeringContext, null, 2))
     files.push("context.json")
 
     await fs.writeFile(
-      path.join(synthDir, "architecture.json"),
+      path.join(synthRoot, "architecture.json"),
       JSON.stringify({ version: "1.0.0", generatedAt: desc.generatedAt, ...desc.architecture }, null, 2),
     )
     files.push("architecture.json")
 
     await fs.writeFile(
-      path.join(synthDir, "language.json"),
+      path.join(synthRoot, "language.json"),
       JSON.stringify({ version: "1.0.0", generatedAt: desc.generatedAt, ...desc.language }, null, 2),
     )
     files.push("language.json")
 
     this.phaseLog.push({ phase: this.orientationCount, name: "orientation", durationMs: 0, status: "completed" })
     await fs.writeFile(
-      path.join(synthDir, "memory.json"),
+      path.join(synthRoot, "memory.json"),
       JSON.stringify({
         version: "1.0.0",
         generatedAt: desc.generatedAt,

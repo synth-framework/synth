@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createConfidenceAdapter } from "../dist/adapters/confidence/adapter.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 
 function makeObservation(category, subject, confidence = "high", evidence = [{ description: "evidence", fingerprint: "abc" }]) {
   return {

@@ -2,7 +2,7 @@
 // GENESIS: System Initialization Layer
 // ============================================================
 
-import crypto from "crypto"
+import { uuid } from "../sdk/identity/index.js"
 import type { SynthEvent, CanonicalState, Capability } from "../types/index.js"
 import { Registry } from "../capability/registry.js"
 import { ExecutionGate } from "../control/execution-gate.js"
@@ -77,7 +77,7 @@ export class GenesisIntake {
     if (input.initialProjects) {
       for (const project of input.initialProjects) {
         const event: SynthEvent = {
-          id: crypto.randomUUID(),
+          id: uuid(),
           type: "PROJECT_CREATED",
           timestamp: Date.now(),
           transactionId: "genesis-tx",
@@ -102,7 +102,7 @@ export class GenesisIntake {
     if (input.initialPlans) {
       for (const plan of input.initialPlans) {
         const event: SynthEvent = {
-          id: crypto.randomUUID(),
+          id: uuid(),
           type: "PLAN_CREATED",
           timestamp: Date.now(),
           transactionId: "genesis-tx",
@@ -128,7 +128,7 @@ export class GenesisIntake {
     if (input.initialWorkItems) {
       for (const workItem of input.initialWorkItems) {
         const event: SynthEvent = {
-          id: crypto.randomUUID(),
+          id: uuid(),
           type: "WORK_ITEM_CREATED",
           timestamp: Date.now(),
           transactionId: "genesis-tx",
@@ -155,7 +155,7 @@ export class GenesisIntake {
     if (input.seedEvents) {
       for (const seed of input.seedEvents) {
         const event: SynthEvent = {
-          id: crypto.randomUUID(),
+          id: uuid(),
           type: seed.type,
           timestamp: Date.now(),
           transactionId: "genesis-tx",

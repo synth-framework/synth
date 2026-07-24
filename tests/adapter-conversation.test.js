@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createConversationAdapter } from "../dist/adapters/conversation/adapter.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 
 test("AdapterRegistry lists conversation adapter", () => {
   const registry = createAdapterRegistry()

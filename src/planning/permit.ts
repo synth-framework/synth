@@ -29,11 +29,11 @@ export class PlanningPermit {
     Object.freeze(this)
   }
 
-  static create(txId: string, planningIntent: PlanningIntent, planningKey: string): PlanningPermit {
-    const timestamp = Date.now()
-    const payload = `${txId}:${planningIntent.capability}:${planningIntent.actor}:${timestamp}`
+  static create(txId: string, planningIntent: PlanningIntent, planningKey: string, timestamp?: number): PlanningPermit {
+    const now = timestamp ?? Date.now()
+    const payload = `${txId}:${planningIntent.capability}:${planningIntent.actor}:${now}`
     const signature = crypto.createHmac("sha256", planningKey).update(payload).digest("hex")
-    return new PlanningPermit(txId, planningIntent, timestamp, signature)
+    return new PlanningPermit(txId, planningIntent, now, signature)
   }
 
   static verify(permit: PlanningPermit, planningKey: string): boolean {

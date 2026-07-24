@@ -8,6 +8,7 @@ import {
   createPosixFilesystemProvider,
   createInMemoryFilesystemProvider,
 } from "../dist/environment/index.js"
+import { FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
 import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -19,7 +20,7 @@ test("InMemoryFilesystemProvider reads initial files", async () => {
 })
 
 test("InMemoryFilesystemProvider writes and reads files", async () => {
-  const fs = createInMemoryFilesystemProvider()
+  const fs = createInMemoryFilesystemProvider({}, FILESYSTEM_WRITE_TOKEN)
   await fs.writeFile("/docs/readme.md", "# Hello")
   const content = await fs.readFile("/docs/readme.md")
   assert.strictEqual(content, "# Hello")
@@ -61,7 +62,7 @@ test("InMemoryFilesystemProvider deletes files", async () => {
 
 test("PosixFilesystemProvider reads and writes files", async () => {
   const dir = await mkdtemp(join(tmpdir(), "synth-fs-test-"))
-  const fs = createPosixFilesystemProvider(dir)
+  const fs = createPosixFilesystemProvider(dir, FILESYSTEM_WRITE_TOKEN)
   await fs.writeFile("test.txt", "hello")
   const content = await fs.readFile("test.txt")
   assert.strictEqual(content, "hello")

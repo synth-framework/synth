@@ -5,17 +5,17 @@
 import { promises as fs } from "fs"
 import path from "path"
 import type { ConsumerCheckpoint } from "../types/index.js"
-import { getRuntimeDataDir } from "./paths.js"
+import { dataDir } from "../sdk/paths/index.js"
 
-const CHECKPOINT_FILE = path.join(getRuntimeDataDir(process.cwd()), "checkpoints.json")
+const CHECKPOINT_FILE = path.join(dataDir(process.cwd()), "checkpoints.json")
 
 export interface ICheckpointStore {
   initialize(): Promise<void>
   get(group: string, partition: number): ConsumerCheckpoint | undefined
   commit(checkpoint: ConsumerCheckpoint): Promise<void>
-  reset(group: string, partition: number): Promise<void>
+  reset(group: string, partition: number, timestamp?: number): Promise<void>
   getForGroup(group: string): ConsumerCheckpoint[]
-  initCheckpoints(group: string, partitionCount: number): Promise<void>
+  initCheckpoints(group: string, partitionCount: number, timestamp?: number): Promise<void>
 }
 
 export class CheckpointStore implements ICheckpointStore {
@@ -66,18 +66,19 @@ export class CheckpointStore implements ICheckpointStore {
 
   async commit(checkpoint: ConsumerCheckpoint): Promise<void> {
     const key = this.key(checkpoint.consumerGroup, checkpoint.partition)
-    this.cache.set(key, { ...checkpoint, updatedAt: Date.now() })
+    // Preserve the caller-provided updatedAt; do not discover wall-clock time here.
+    this.cache.set(key, { ...checkpoint })
     this.dirty = true
     await this.save()
   }
 
-  async reset(group: string, partition: number): Promise<void> {
+  async reset(group: string, partition: number, timestamp?: number): Promise<void> {
     const key = this.key(group, partition)
     this.cache.set(key, {
       consumerGroup: group,
       partition,
       lastCommittedOffset: 0,
-      updatedAt: Date.now(),
+      updatedAt: timestamp ?? Date.now(),
     })
     this.dirty = true
     await this.save()
@@ -89,7 +90,8 @@ export class CheckpointStore implements ICheckpointStore {
     )
   }
 
-  async initCheckpoints(group: string, partitionCount: number): Promise<void> {
+  async initCheckpoints(group: string, partitionCount: number, timestamp?: number): Promise<void> {
+    const now = timestamp ?? Date.now()
     for (let i = 0; i < partitionCount; i++) {
       const key = this.key(group, i)
       if (!this.cache.has(key)) {
@@ -97,7 +99,7 @@ export class CheckpointStore implements ICheckpointStore {
           consumerGroup: group,
           partition: i,
           lastCommittedOffset: 0,
-          updatedAt: Date.now(),
+          updatedAt: now,
         })
       }
     }
@@ -116,18 +118,19 @@ export class InMemoryCheckpointStore implements ICheckpointStore {
   }
 
   async commit(checkpoint: ConsumerCheckpoint): Promise<void> {
+    // Preserve the caller-provided updatedAt; do not discover wall-clock time here.
     this.checkpoints.set(
       `${checkpoint.consumerGroup}:${checkpoint.partition}`,
-      { ...checkpoint, updatedAt: Date.now() }
+      { ...checkpoint }
     )
   }
 
-  async reset(group: string, partition: number): Promise<void> {
+  async reset(group: string, partition: number, timestamp?: number): Promise<void> {
     this.checkpoints.set(`${group}:${partition}`, {
       consumerGroup: group,
       partition,
       lastCommittedOffset: 0,
-      updatedAt: Date.now(),
+      updatedAt: timestamp ?? Date.now(),
     })
   }
 
@@ -137,7 +140,8 @@ export class InMemoryCheckpointStore implements ICheckpointStore {
     )
   }
 
-  async initCheckpoints(group: string, partitionCount: number): Promise<void> {
+  async initCheckpoints(group: string, partitionCount: number, timestamp?: number): Promise<void> {
+    const now = timestamp ?? Date.now()
     for (let i = 0; i < partitionCount; i++) {
       const key = `${group}:${i}`
       if (!this.checkpoints.has(key)) {
@@ -145,7 +149,7 @@ export class InMemoryCheckpointStore implements ICheckpointStore {
           consumerGroup: group,
           partition: i,
           lastCommittedOffset: 0,
-          updatedAt: Date.now(),
+          updatedAt: now,
         })
       }
     }

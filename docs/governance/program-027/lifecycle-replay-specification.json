@@ -1,0 +1,200 @@
+{
+  "id": "lifecycle-replay-specification-program-027",
+  "benchmarkId": "governability-benchmark-program-027",
+  "expedition": "EXP-GOVERNABILITY-006B",
+  "purpose": "Define the full-lifecycle replay graph for deterministic governance certification of Program 027.",
+  "lifecycle": {
+    "stages": [
+      { "order": 1, "name": "IntentSubmitted", "capability": "CreateIntentModel", "actor": "operator" },
+      { "order": 2, "name": "AlignmentContractCreated", "capability": "CreateAlignmentContract", "actor": "operator" },
+      { "order": 3, "name": "AlignmentContractSubmitted", "capability": "SubmitAlignmentContract", "actor": "operator" },
+      { "order": 4, "name": "AlignmentContractApproved", "capability": "ApproveAlignmentContract", "actor": "operator" },
+      { "order": 5, "name": "DivergenceGateOpened", "capability": "OpenDivergenceGate", "actor": "operator" },
+      { "order": 6, "name": "DivergenceGateResolved", "capability": "EvaluateAndResolveDivergenceGate", "actor": "engine" },
+      { "order": 7, "name": "MissionCreated", "capability": "CreateMission", "actor": "operator" },
+      { "order": 8, "name": "MissionApproved", "capability": "ApproveMission", "actor": "operator" },
+      { "order": 9, "name": "ExpeditionCreated", "capability": "CreateExpedition", "actor": "operator" },
+      { "order": 10, "name": "ExpeditionApproved", "capability": "ApproveExpedition", "actor": "operator" },
+      { "order": 11, "name": "ExpeditionCommitted", "capability": "CommitExpedition", "actor": "operator" },
+      { "order": 12, "name": "ExpeditionStarted", "capability": "StartExpedition", "actor": "operator" },
+      { "order": 13, "name": "RefinedIntentApproved", "capability": "ApproveRefinedIntent", "actor": "operator" },
+      { "order": 14, "name": "ReviewGateOpened", "capability": "OpenReviewGate", "actor": "operator" },
+      { "order": 15, "name": "ReviewGateResolved", "capability": "EvaluateAndResolveReviewGate", "actor": "engine" },
+      { "order": 16, "name": "RevisionRequested", "capability": "RequestRevision", "actor": "engine" },
+      { "order": 17, "name": "AcceptanceGateOpened", "capability": "OpenAcceptanceGate", "actor": "operator" },
+      { "order": 18, "name": "AcceptanceGateResolved", "capability": "EvaluateAndResolveAcceptanceGate", "actor": "engine" },
+      { "order": 19, "name": "ExpeditionCompleted", "capability": "CompleteExpedition", "actor": "operator" },
+      { "order": 20, "name": "ConvergenceCertified", "capability": "CertifyConvergence", "actor": "engine" },
+      { "order": 21, "name": "MissionCompleted", "capability": "CompleteMission", "actor": "operator" }
+    ],
+    "expectedEventSequence": [
+      "SYSTEM_GENESIS",
+      "REFERENCE_EVIDENCE_CREATED",
+      "INTENT_MODEL_CREATED",
+      "ALIGNMENT_CONTRACT_CREATED",
+      "ALIGNMENT_CONTRACT_SUBMITTED",
+      "ALIGNMENT_CONTRACT_CREATED",
+      "ALIGNMENT_CONTRACT_APPROVED",
+      "ALIGNMENT_CONTRACT_CREATED",
+      "DIVERGENCE_GATE_OPENED",
+      "DIVERGENCE_GATE_RESOLVED",
+      "MISSION_CREATED",
+      "MISSION_APPROVED",
+      "EXPEDITION_CREATED",
+      "EXPEDITION_APPROVED",
+      "EXPEDITION_COMMITTED",
+      "EXPEDITION_STARTED",
+      "REFINED_INTENT_APPROVED",
+      "REVIEW_GATE_OPENED",
+      "REVIEW_GATE_RESOLVED",
+      "ACCEPTANCE_GATE_OPENED",
+      "ACCEPTANCE_GATE_RESOLVED",
+      "EXPEDITION_COMPLETED",
+      "CONVERGENCE_CERTIFIED",
+      "MISSION_COMPLETED"
+    ]
+  },
+  "determinism": {
+    "description": "A replay is deterministic when three independent executions with identical inputs produce semantically equivalent outputs. Runtime identifiers and timestamps are generated with Date.now()/Math.random(), so certification compares normalized event logs and a semantic state hash (SHA-256 of the normalized canonical state) rather than raw IDs.",
+    "volatileEventFields": ["id", "timestamp", "transactionId", "eventHash", "previousHash", "partition", "offset"],
+    "volatilePayloadFields": ["id", "evidenceId", "intentModelId", "contractId", "gateId", "reportId", "decisionId", "missionId", "expeditionId", "refinedIntentId", "reviewPackageId", "acceptancePackageId", "recordId", "certificationId", "revisionRequestId", "conditionId", "createdAt", "updatedAt", "approvedAt", "capturedAt", "resolvedAt", "executedAt", "certifiedAt", "timestamp"],
+    "comparedEventFields": ["type", "capability", "actor", "payload"],
+    "comparedStateFields": ["stateHash", "missions", "expeditions", "alignmentContracts", "divergenceGates", "reviewGateExpeditions", "convergenceCertifications"],
+    "requiredRuns": 3,
+    "normalization": "Deep recursive normalization replaces generated IDs and timestamps with deterministic placeholders; the state hash used for comparison is a SHA-256 of the normalized canonical state."
+  },
+  "replays": [
+    {
+      "replayId": "happy-path",
+      "type": "happy",
+      "name": "Full lifecycle with aligned implementation",
+      "description": "Exercises the complete governance lifecycle from raw intent to Mission completion using only valid interpretations.",
+      "expectedOutcome": "Mission completed",
+      "proposal": {
+        "kind": "feature-list",
+        "features": [
+          { "kind": "boolean", "name": "hasPersistentHeader", "value": true },
+          { "kind": "boolean", "name": "hasPersistentSidebar", "value": true },
+          { "kind": "boolean", "name": "hasScrollDrivenPhases", "value": true },
+          { "kind": "boolean", "name": "hasPersistentWorkspace", "value": true },
+          { "kind": "boolean", "name": "hasShortHero", "value": true },
+          { "kind": "boolean", "name": "hasHeroCtaIntoWorkspace", "value": true }
+        ]
+      },
+      "observedFeatures": {
+        "hasPersistentHeader": true,
+        "hasPersistentSidebar": true,
+        "hasScrollDrivenPhases": true,
+        "hasPersistentWorkspace": true,
+        "hasShortHero": true,
+        "hasHeroCtaIntoWorkspace": true,
+        "hasLightThemeDefault": true,
+        "hasOptionalDarkMode": true
+      },
+      "expectedGateDecisions": {
+        "divergenceGate": "aligned",
+        "reviewGate": "approved",
+        "acceptanceGate": "accepted",
+        "convergence": "converged"
+      }
+    },
+    {
+      "replayId": "recovery-revision-loop",
+      "type": "recovery",
+      "name": "Implementation rejected at Review Gate, revised, then accepted",
+      "description": "Exercises the revision loop: an initial drifted implementation triggers a warning-level rule at Review Gate, a RequestRevision transitions the expedition back to executing, and a revised aligned implementation passes Review, Acceptance, and Convergence.",
+      "expectedOutcome": "Mission completed after revision",
+      "initialProposal": {
+        "kind": "feature-list",
+        "features": [
+          { "kind": "boolean", "name": "hasPersistentHeader", "value": true },
+          { "kind": "boolean", "name": "hasPersistentSidebar", "value": true },
+          { "kind": "boolean", "name": "hasScrollDrivenPhases", "value": true },
+          { "kind": "boolean", "name": "hasPersistentWorkspace", "value": true },
+          { "kind": "boolean", "name": "hasShortHero", "value": true },
+          { "kind": "boolean", "name": "hasHeroCtaIntoWorkspace", "value": false }
+        ]
+      },
+      "revisedProposal": {
+        "kind": "feature-list",
+        "features": [
+          { "kind": "boolean", "name": "hasPersistentHeader", "value": true },
+          { "kind": "boolean", "name": "hasPersistentSidebar", "value": true },
+          { "kind": "boolean", "name": "hasScrollDrivenPhases", "value": true },
+          { "kind": "boolean", "name": "hasPersistentWorkspace", "value": true },
+          { "kind": "boolean", "name": "hasShortHero", "value": true },
+          { "kind": "boolean", "name": "hasHeroCtaIntoWorkspace", "value": true }
+        ]
+      },
+      "observedFeatures": {
+        "hasPersistentHeader": true,
+        "hasPersistentSidebar": true,
+        "hasScrollDrivenPhases": true,
+        "hasPersistentWorkspace": true,
+        "hasShortHero": true,
+        "hasHeroCtaIntoWorkspace": true,
+        "hasLightThemeDefault": true
+      },
+      "expectedGateDecisions": {
+        "divergenceGate": "aligned",
+        "reviewGateInitial": "revision_required",
+        "reviewGateRevised": "approved",
+        "acceptanceGate": "accepted",
+        "convergence": "converged"
+      }
+    },
+    {
+      "replayId": "drift-divergence-rejected",
+      "type": "drift",
+      "name": "Drift rejected at Divergence Gate",
+      "description": "A generic dashboard proposal is rejected before Mission approval.",
+      "driftClassId": "D01",
+      "expectedOutcome": "Mission blocked",
+      "proposal": {
+        "kind": "feature-list",
+        "features": [
+          { "kind": "boolean", "name": "hasMetricCards", "value": true },
+          { "kind": "boolean", "name": "hasPromotionalBanners", "value": true },
+          { "kind": "boolean", "name": "hasDisconnectedWidgets", "value": true }
+        ]
+      },
+      "expectedGateDecisions": {
+        "divergenceGate": "rejected"
+      }
+    },
+    {
+      "replayId": "drift-convergence-fails",
+      "type": "drift",
+      "name": "Valid proposal but diverged outcome fails Convergence Certification",
+      "description": "The Divergence Gate approves a valid proposal, but the final observed outcome diverges and is rejected at Convergence Certification.",
+      "driftClassId": "D02",
+      "expectedOutcome": "Mission completion blocked",
+      "proposal": {
+        "kind": "feature-list",
+        "features": [
+          { "kind": "boolean", "name": "hasPersistentHeader", "value": true },
+          { "kind": "boolean", "name": "hasPersistentSidebar", "value": true },
+          { "kind": "boolean", "name": "hasScrollDrivenPhases", "value": true }
+        ]
+      },
+      "observedFeatures": {
+        "hasPersistentHeader": true,
+        "hasMarketingHero": true,
+        "hasFeatureGrid": true,
+        "hasMissionStudioAsSection": true
+      },
+      "expectedGateDecisions": {
+        "divergenceGate": "aligned",
+        "reviewGate": "approved",
+        "acceptanceGate": "accepted",
+        "convergence": "diverged"
+      }
+    }
+  ],
+  "certificationPrinciples": [
+    "Every lifecycle stage must emit a deterministic event.",
+    "Every drift-class replay must be intercepted at the expected gate.",
+    "Every valid branch must remain admissible through Mission completion.",
+    "Replaying the same lifecycle with identical inputs must produce semantically identical event logs and state hashes."
+  ]
+}

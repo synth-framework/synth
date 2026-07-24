@@ -1,13 +1,15 @@
-# EXP-HOME-004 — Artifact System
+# EXP-HOME-004 — Homepage / Mission Studio Integration (v2)
 
-> **Architecture expedition.** Define Artifact Card variants and behavior for the homepage.
+> **Architecture expedition.** Define how Mission Studio becomes the SYNTH homepage: the hero handoff, sticky threshold, scroll controller, section synchronization, state machine, animation contracts, and performance constraints.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
 **Kind:** Architecture Expedition  
-**Priority:** High  
+**Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
-**Depends On:** EXP-HOME-001 (Mission Studio Design Language)  
-**Blocks:** EXP-HOME-003, EXP-HOME-007, EXP-HOME-014
+**Depends On:** EXP-HOME-001 (Mission Studio Design Language), EXP-HOME-002 (Mission Studio Component Catalog), EXP-HOME-003 (Mission Studio UI Specification)  
+**Blocks:** EXP-HOME-005, EXP-HOME-006, EXP-HOME-007, EXP-HOME-008, EXP-HOME-009, EXP-HOME-015
+
+> **Specification:** See [`docs/design/homepage-specification.md`](../design/homepage-specification.md).
 
 ---
 
@@ -24,70 +26,127 @@ Impact:
 
 ## Objective
 
-Create a unified Artifact Card system that represents every object produced during the Genesis demo and across the homepage. Cards are not decorative; each maps to a SYNTH concept.
+Replace the former Artifact System scope with a new, integrated specification: Mission Studio is the homepage. This expedition defines how the public page transitions from a lightweight hero into a sticky, persistent Mission Studio application, drives lifecycle phases through scroll, and releases into supporting content only after the lifecycle completes.
 
 ---
 
 ## Origin Evidence
 
-The homepage needs to display Intent, Discovery, Domain, Mission, Expedition, Evidence, Replay, and Architecture artifacts. Without a consistent card system, the workspace will feel fragmented.
+A visitor arriving at the SYNTH homepage should not feel like they are moving from a marketing page into a demo. The entire homepage is the Mission Studio experience; supporting content exists only after Mission Studio has completed its work. This requires careful coordination between page scroll, application state, animation, and performance.
 
 ---
 
 ## Required Change
 
-### 1.1 Card variants
+### 1.1 Hero → Mission Window handoff
 
-- **Intent Card:** raw user request.
-- **Discovery Card:** extracted findings and unknowns.
-- **Domain Card:** entities, relationships, bounded contexts.
-- **Mission Card:** purpose, objectives, success criteria.
-- **Expedition Card:** subject, goal, status.
-- **Evidence Card:** observation, confidence, source.
-- **Replay Card:** event, state transition, timestamp.
-- **Architecture Card:** layer, responsibility, dependency.
+- The hero contains the SYNTH identity, tagline, install command, and a single primary call-to-action.
+- Scrolling past the hero transitions the visitor into Mission Studio.
+- The transition is animated: hero content fades or translates while Mission Studio fades in and becomes the dominant element.
+- No page jump or route change occurs.
 
-### 1.2 Card anatomy
+### 1.2 Sticky threshold
 
-- Semantic color border.
-- Type icon or badge.
-- Title and summary.
-- Confidence or status indicator where applicable.
-- Expandable detail panel.
+- Mission Studio becomes sticky at a well-defined scroll position.
+- Threshold is configurable and testable across breakpoints.
+- The threshold accounts for header, footer, and safe-area insets.
+- A fallback exists for viewports too short to support sticky behavior.
 
-### 1.3 Interactions
+### 1.3 Scroll controller
 
-- Hover: subtle elevation.
-- Click: expand details or focus in workspace.
-- Timeline scrub (for Replay cards): update card state.
+- A scroll controller maps overall page scroll progress to Mission Studio phase progress.
+- Each phase occupies a configurable scroll range.
+- Scroll snapping is optional and must not break keyboard or reduced-motion accessibility.
+- Reverse scroll must reverse phase transitions deterministically.
+
+### 1.4 Section synchronization
+
+- Page sections correspond to lifecycle phases.
+- As a section enters the active scroll range, Mission Studio advances to the matching phase.
+- Supporting sections (capabilities, examples, docs, community) are only active after Mission Studio releases.
+
+### 1.5 State machine
+
+- Mission Studio state machine is driven by scroll progress and by user interaction.
+- States: Idle, Intent, Discovery, Constraints, Domain, Mission, Expeditions, Governance, Replay, Architecture, Repository Summary, Complete.
+- Transitions are guarded by runtime readiness and by scroll position.
+
+### 1.6 Animation contracts
+
+- Phase enter/leave animations are declarative and parameterized.
+- Animation durations and easings derive from EXP-HOME-001 motion tokens.
+- Contracts define which elements animate together and which animate independently.
+- Reduced-motion contracts collapse animations.
+
+### 1.7 Performance constraints
+
+- Scroll-driven animations target 60 FPS.
+- Layout thrashing is avoided: prefer transform and opacity animations.
+- Long-running computations are chunked or offloaded.
+- Lazy loading is used for below-the-fold supporting content.
+
+### 1.8 Supporting content release
+
+- Supporting content begins only after Mission Studio reaches the Complete state.
+- The release transition unsticks Mission Studio and restores normal document scroll.
+- Supporting content remains anchored in SYNTH concepts and links to canonical documentation.
 
 ---
 
 ## Deliverables
 
-1. **Artifact System Specification** under `docs/design/artifact-system.md`.
-2. **Card component library** with all variants.
-3. **Storybook or demo page** showing each variant.
-4. **Mapping table** linking each card to a SYNTH concept.
+1. **Homepage / Mission Studio Integration Specification** under `docs/design/homepage-specification.md` (v2 structure already specifies hero handoff, sticky shell, scroll controller, and release).
+2. **Hero handoff specification** with animation and timing.
+3. **Sticky threshold definition** and breakpoint behavior.
+4. **Scroll controller design** with phase-to-scroll-range mapping.
+5. **Section synchronization contract** between page sections and Mission Studio phases.
+6. **State machine integration contract** tying scroll and interaction to phase transitions.
+7. **Animation contracts** for hero handoff, phase transitions, sticky release, and supporting content entry.
+8. **Performance budget and test plan**.
 
 ---
 
 ## Acceptance Criteria
 
-- Every card variant maps to a real SYNTH artifact type.
-- Cards share a consistent anatomy and interaction model.
-- Cards are accessible and responsive.
+- Mission Studio behaves as one persistent application; there is no page-jump feeling.
+- Hero handoff transitions smoothly into Mission Studio.
+- Sticky threshold is deterministic across breakpoints.
+- Scroll progress drives phase transitions forward and backward.
+- Supporting content appears only after Mission Studio releases.
+- Animation contracts are documented and derive from EXP-HOME-001 tokens.
+- Performance targets: 60 FPS scroll animations, first contentful paint within budget, lazy-loaded supporting content.
+- Keyboard and reduced-motion users can navigate the full experience.
 
 ---
 
 ## Out of Scope
 
-- Genesis experience logic (EXP-HOME-003).
-- Workflow visualization (EXP-HOME-005).
-- Replay timeline (EXP-HOME-007).
+- Design tokens (EXP-HOME-001).
+- Component catalog implementation (EXP-HOME-002).
+- Mission Studio shell and phase content specification (EXP-HOME-003).
+- Phase-specific behavior (EXP-HOME-005 through EXP-HOME-009).
+- Motion system choreography (EXP-HOME-013).
 
 ---
 
 ## Success Criteria
 
-The expedition succeeds when any artifact produced by the Genesis demo can be rendered by an existing card variant.
+The expedition succeeds when the homepage can be described as a single, continuous experience from hero through Mission Studio to supporting sections, with no perceptible boundary between page and application.
+
+---
+
+## Related documents
+
+- `docs/design/artifact-system.md`
+- `docs/design/genesis-experience.md`
+- `docs/design/mission-workspace.md`
+- `docs/design/lds-002.md`
+- `docs/expeditions/EXP-PROGRAM-027.md`
+- `docs/expeditions/EXP-HOME-001.md`
+- `docs/expeditions/EXP-HOME-002.md`
+- `docs/expeditions/EXP-HOME-003.md`
+- `docs/expeditions/EXP-HOME-005.md`
+- `docs/expeditions/EXP-HOME-006.md`
+- `docs/expeditions/EXP-HOME-007.md`
+- `docs/expeditions/EXP-HOME-008.md`
+- `docs/expeditions/EXP-HOME-009.md`

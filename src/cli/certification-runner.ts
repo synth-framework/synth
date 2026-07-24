@@ -8,11 +8,10 @@
 // a certification coverage matrix.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import fsSync from "fs"
-import os from "os"
 import path from "path"
+import * as sdk from "../sdk/index.js"
 import { load as loadYaml } from "js-yaml"
 
 export type CertificationLevel = 1 | 2 | 3
@@ -192,9 +191,8 @@ function runStep(
   context: Record<string, unknown>,
 ): StepResult {
   const command = interpolateCommand(step.command, context)
-  const result = spawnSync("node", [cliPath, ...command], {
+  const result = sdk.process.spawnSync("node", [cliPath, ...command], {
     cwd: workspaceDir,
-    encoding: "utf-8",
     timeout: 120000,
   })
 
@@ -224,13 +222,13 @@ function runStep(
 }
 
 async function prepareWorkspace(scenario: CertificationScenario): Promise<string> {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), `synth-cert-${scenario.id}-`))
+  const tmpDir = await sdk.temp.directory(`synth-cert-${scenario.id}-`)
 
   if (scenario.workspace?.files) {
     for (const file of scenario.workspace.files) {
       const filePath = path.join(tmpDir, file.path)
-      await fs.mkdir(path.dirname(filePath), { recursive: true })
-      await fs.writeFile(filePath, file.content, "utf-8")
+      await sdk.files.ensureDirectory(path.dirname(filePath))
+      await sdk.files.writeFile(filePath, file.content)
     }
   }
 
@@ -421,16 +419,16 @@ export async function runCertification(options: CertificationOptions): Promise<C
   }
 
   if (options.outputDir) {
-    await fs.mkdir(options.outputDir, { recursive: true })
+    await sdk.files.ensureDirectory(options.outputDir)
     const reportPath = path.join(options.outputDir, `certification-report-${Date.now()}.json`)
-    await fs.writeFile(reportPath, JSON.stringify(report, null, 2), "utf-8")
+    await sdk.json.writeJson(reportPath, report)
   }
 
   return report
 }
 
 async function getSynthVersion(cliPath: string): Promise<string> {
-  const result = spawnSync("node", [cliPath, "--version"], { encoding: "utf-8", timeout: 30000 })
+  const result = sdk.process.spawnSync("node", [cliPath, "--version"], { timeout: 30000 })
   return (result.stdout || "unknown").trim()
 }
 

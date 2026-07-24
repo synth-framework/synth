@@ -30,6 +30,15 @@ import {
   validateGraphIntegrity,
   GRAPH_INTEGRITY_VALIDATOR_VERSION,
 } from "../dist/core/graph-integrity.js"
+import {
+  makeEvent,
+  missionCreated,
+  expeditionCreated,
+  objectiveAdded,
+  workItemCreated,
+  workItemGenerated,
+  validLog,
+} from "./helpers/kernel-event-fixtures.js"
 
 // ============================================================
 // Fixtures
@@ -45,108 +54,6 @@ const FIRST_CONTACT_ARCHIVE = path.join(
 )
 const LEGACY_LOG = path.join(process.cwd(), "data", "event-log.jsonl")
 const REPO_PROOF_DIR = path.join(process.cwd(), "proof")
-
-let seq = 0
-function makeEvent(type, payload) {
-  seq += 1
-  // No hash-chain fields: graph integrity does not depend on the chain.
-  return {
-    id: `evt-${seq}`,
-    type,
-    timestamp: seq,
-    transactionId: "tx-test",
-    capability: "test",
-    actor: "test",
-    payload,
-  }
-}
-
-function missionCreated(id, overrides = {}) {
-  return makeEvent("MISSION_CREATED", {
-    mission: {
-      id,
-      name: `Mission ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      expeditions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-    },
-  })
-}
-
-function expeditionCreated(id, missionId, overrides = {}) {
-  return makeEvent("EXPEDITION_CREATED", {
-    expedition: {
-      id,
-      name: `Expedition ${id}`,
-      goal: "goal",
-      status: "draft",
-      objectives: [],
-      discoveries: [],
-      decisions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(missionId === undefined ? {} : { missionId }),
-    },
-  })
-}
-
-function objectiveAdded(id, expeditionId, overrides = {}) {
-  return makeEvent("OBJECTIVE_ADDED", {
-    objective: {
-      id,
-      title: `Objective ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
-
-function workItemCreated(id) {
-  return makeEvent("WORK_ITEM_CREATED", {
-    workItem: {
-      id,
-      status: "idle",
-      dependencies: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-    },
-  })
-}
-
-function workItemGenerated(id, objectiveId, overrides = {}) {
-  return makeEvent("WORK_ITEM_GENERATED", {
-    workItem: {
-      id,
-      title: `Work Item ${id}`,
-      status: "generated",
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(objectiveId === undefined ? {} : { objectiveId }),
-    },
-  })
-}
-
-function validLog() {
-  return [
-    missionCreated("m1"),
-    expeditionCreated("e1", "m1"),
-    objectiveAdded("o1", "e1"),
-  ]
-}
 
 function invariantOf(report, invariant) {
   const found = report.invariants.find((i) => i.invariant === invariant)

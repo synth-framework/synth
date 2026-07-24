@@ -26,14 +26,7 @@ import {
 
 const BRANCH_TYPES: BranchType[] = ["main", "release", "mission", "expedition", "hotfix"]
 
-function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
-}
-
-function printError(error: string, code = 1): never {
-  printJson({ status: "error", error })
-  process.exit(code)
-}
+import { printJson, printError } from "./print.js"
 
 async function bootstrapWithCapabilities() {
   const ctx = await bootstrap({

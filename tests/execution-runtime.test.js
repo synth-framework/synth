@@ -3,47 +3,7 @@
 import { synthesizeIntents, buildIntentGraph, executeGraph } from "../dist/execution/index.js"
 import assert from "node:assert"
 import test from "node:test"
-
-function makeWorkItem(id, metadata) {
-  return {
-    id,
-    expeditionId: "EXP-1",
-    objectiveId: "OBJ-1",
-    title: "work item",
-    status: "generated",
-    metadata,
-    createdAt: Date.now(),
-  }
-}
-
-function makeExpedition(id) {
-  return {
-    id,
-    missionId: "M-1",
-    name: "execution expedition",
-    goal: "execute",
-    status: "approved",
-    objectives: ["OBJ-1"],
-    discoveries: [],
-    decisions: [],
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
-
-function makeObjective(id, expeditionId) {
-  return {
-    id,
-    expeditionId,
-    title: "objective",
-    purpose: "purpose",
-    status: "draft",
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
+import { makeWorkItem, makeExpedition, makeObjective } from "./helpers/execution-fixtures.js"
 
 test("synthesizeIntents: writeFile produces filesystem intent", () => {
   const workItem = makeWorkItem("WI-1", {

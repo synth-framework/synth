@@ -33,6 +33,7 @@ import {
   loadDiscoveryEvidence,
   verifyDiscoveryReplay,
 } from "../dist/environment/index.js"
+import { FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
 
 async function main() {
   console.log("\n═══════════════════════════════════════════════════")
@@ -60,7 +61,7 @@ async function main() {
   console.log("  [2/3] Persisting and reloading evidence artifact...")
   const tempRoot = mkdtempSync(join(tmpdir(), "synth-discovery-evidence-"))
   try {
-    const fs = createPosixFilesystemProvider(tempRoot)
+    const fs = createPosixFilesystemProvider(tempRoot, FILESYSTEM_WRITE_TOKEN)
     await persistDiscoveryEvidence(fs, first.evidence)
     const loaded = await loadDiscoveryEvidence(fs)
     if (!loaded) {

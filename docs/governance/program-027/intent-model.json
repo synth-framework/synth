@@ -1,0 +1,69 @@
+{
+  "rawIntentReference": "program-027-homepage",
+  "explicitObjectives": [
+    "Make Mission Studio the SYNTH homepage.",
+    "Immerse visitors in a guided, interactive Mission Studio experience.",
+    "Project every SYNTH lifecycle phase inside a persistent workspace.",
+    "Release Mission Studio only after its lifecycle completes, then show supporting content.",
+    "Certify that a first-time visitor understands SYNTH in under five minutes without external documentation."
+  ],
+  "implicitObjectives": [
+    "The homepage must feel like entering a deterministic synthesis environment, not browsing a SaaS landing page.",
+    "The visual language must project engineering trust, calm, and clarity.",
+    "Every visible element must correspond to a real SYNTH concept or runtime artifact.",
+    "The experience should demonstrate SYNTH's governance philosophy rather than merely describe it.",
+    "Scroll and phase transitions should feel like a single persistent application, not page navigation."
+  ],
+  "audience": "First-time visitors to synth-framework.github.io, including developers, engineering leaders, and AI agents discovering SYNTH",
+  "problemStatement": "Existing project homepages explain SYNTH through static marketing content. Visitors must read documentation to understand what SYNTH is, how it works, and why it differs from other AI-engineering tools.",
+  "desiredOutcome": "A visitor lands on the SYNTH homepage and experiences Mission Studio as the product. They leave understanding intent modeling, discovery, missions, expeditions, governance, replay, and architecture because they interacted with them directly.",
+  "nonGoals": [
+    "Build a traditional marketing landing page.",
+    "Generate code from the homepage UI.",
+    "Provide a chat interface as the primary interaction model.",
+    "Support live AI operator execution in the first release.",
+    "Expose repository mutation capabilities from the homepage."
+  ],
+  "forbiddenInterpretations": [
+    "Generic SaaS dashboard with metric cards and promotional banners.",
+    "Marketing-first landing page where Mission Studio is one section among many.",
+    "Chat interface with decorative AI imagery.",
+    "Page-jump navigation instead of a persistent workspace.",
+    "Hardcoded visual values outside the LDS-002 token system."
+  ],
+  "allowedInterpretations": [
+    "Scroll-driven workspace phase transitions.",
+    "Hero section that invites visitors into Mission Studio.",
+    "Light workspace theme as the default experience.",
+    "Typography and spacing adjustments within the LDS-002 token scale.",
+    "Demo operator adapter that simulates AI execution deterministically."
+  ],
+  "interpretations": [
+    {
+      "kind": "explicit_objective",
+      "text": "Mission Studio is the homepage, not a component within a marketing page.",
+      "evidence": ["docs/expeditions/EXP-PROGRAM-027.md", "docs/design/lds-002.md"]
+    },
+    {
+      "kind": "implicit_objective",
+      "text": "The experience should feel like entering a deterministic synthesis environment.",
+      "evidence": ["docs/expeditions/EXP-PROGRAM-027.md"]
+    },
+    {
+      "kind": "forbidden",
+      "text": "Generic SaaS dashboard with metric cards and promotional banners.",
+      "evidence": ["docs/expeditions/EXP-HOME-025.md"]
+    },
+    {
+      "kind": "allowed",
+      "text": "Scroll-driven workspace phase transitions.",
+      "evidence": ["docs/expeditions/EXP-HOME-004.md"]
+    }
+  ],
+  "referenceEvidenceIds": [],
+  "unresolvedAmbiguity": [],
+  "knownUnknowns": [
+    "Whether live agent integration will be required before public launch or can remain a deterministic demo.",
+    "Whether the homepage will need a dark theme toggle in the first release or can default to light only."
+  ]
+}

@@ -2,13 +2,14 @@
 
 > **Design expedition.** This charter contains the design brief, copy, layout, and animation behavior for the SYNTH marketing homepage hero. It is an authored artifact under EXP-PROGRAM-020.
 
-**Status:** Accepted  
+**Status:** Superseded  
 **Started:** 2026-07-18  
+**Closed:** 2026-07-20  
 **Kind:** Design Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-020 — Website Experience  
-**Depends On:** EXP-PROGRAM-004, EXP-PROGRAM-009  
-**Blocks:** EXP-WEB-002 scenario pages, EXP-WEB-003 design system
+**Superseded By:** EXP-HOME-003 — Genesis Experience  
+**Depends On:** EXP-PROGRAM-004, EXP-PROGRAM-009
 
 ---
 
@@ -20,6 +21,12 @@ Impact:
   Architecture Freeze: Safe
   Requires ADR: No
 ```
+
+---
+
+## Superseded
+
+This expedition is **superseded** by [EXP-HOME-003 — Genesis Experience](EXP-HOME-003.md). Its design brief, copy, and scenario scripts are preserved as reference input for the Genesis Experience expedition under EXP-PROGRAM-027. See [EXP-CONVERGENCE-001](EXP-CONVERGENCE-001.md) for the convergence decision.
 
 ---
 

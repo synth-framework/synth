@@ -2,12 +2,13 @@
 
 > **Program charter.** This document defines the Website Experience program for the SYNTH public website and its derived onboarding surfaces.
 
-**Status:** Accepted  
+**Status:** Closed — Superseded by EXP-PROGRAM-027  
 **Started:** 2026-07-18  
+**Closed:** 2026-07-20  
 **Kind:** Product Program  
 **Priority:** High  
 **Depends On:** EXP-PROGRAM-004, EXP-PROGRAM-009  
-**Blocks:** Future public narrative and onboarding improvements
+**Superseded By:** EXP-PROGRAM-027 — Mission Studio Homepage
 
 ---
 
@@ -34,6 +35,12 @@ Own the SYNTH public website as a deterministic projection of product intent. Th
 - Demonstrate SYNTH in action through interactive, scenario-driven hero experiences.
 - Keep website copy, structure, and assets synchronized with the canonical product narrative.
 - Treat design work as governed artifacts with traceable intent, evidence, and acceptance criteria.
+
+---
+
+## Convergence
+
+This program has been superseded by **EXP-PROGRAM-027 — Mission Studio Homepage**. The overlap was reviewed in **EXP-CONVERGENCE-001**. Program 027 absorbs all 020 scope and reframes the homepage as the first interactive projection of the SYNTH lifecycle rather than a separate marketing surface. EXP-WEB-001 is superseded and its scenario content feeds into EXP-HOME-003.
 
 ---
 

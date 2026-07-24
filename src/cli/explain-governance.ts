@@ -7,32 +7,22 @@
 //   synth explain governance [--json]
 // ============================================================
 
-import fs from "fs/promises"
 import path from "path"
+import * as sdk from "../sdk/index.js"
 import { deriveGovernanceRecords } from "../core/governance-record-projection.js"
 import type { GovernanceRecordLineage } from "../types/governance-record.js"
-import { ensureRuntimeDataDir } from "../infra/paths.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
+import type { SynthEvent } from "../types/index.js"
+import { ensureDataDir, eventLogFile } from "../sdk/paths/index.js"
+import { root } from "../sdk/workspace/index.js"
+import { printJson, printError } from "./print.js"
 
-function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
-}
-
-function fail(error: string): never {
-  printJson({ status: "error", error })
-  process.exit(1)
-}
-
-async function readEventLog(logPath: string) {
-  try {
-    const text = await fs.readFile(logPath, "utf-8")
-    return text
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => JSON.parse(line))
-  } catch {
-    return []
-  }
+async function readEventLogFromPath(logPath: string): Promise<Record<string, unknown>[]> {
+  const text = await sdk.files.readFileMaybe(logPath)
+  if (text === undefined) return []
+  return text
+    .split("\n")
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line))
 }
 
 /**
@@ -41,20 +31,19 @@ async function readEventLog(logPath: string) {
 export async function cmdExplainGovernance(flags: Record<string, string | boolean>): Promise<void> {
   const logFlag = flags.log
   if (logFlag !== undefined && typeof logFlag !== "string") {
-    fail("--log requires a path")
+    printError("--log requires a path")
   }
 
-  const cwd = process.cwd()
-  await ensureRuntimeDataDir(cwd)
-  const dataDir = getRuntimeDataDir(cwd)
-  const defaultLogPath = path.join(dataDir, "event-log.jsonl")
+  const cwd = root()
+  await ensureDataDir(cwd)
+  const defaultLogPath = eventLogFile(cwd)
   const logPath = logFlag ? path.resolve(cwd, logFlag) : defaultLogPath
 
-  if (!(await fs.access(logPath).then(() => true).catch(() => false))) {
-    fail(`event log not found: ${logFlag ?? path.relative(cwd, defaultLogPath)}`)
+  if (!(await sdk.files.exists(logPath))) {
+    printError(`event log not found: ${logFlag ?? path.relative(cwd, defaultLogPath)}`)
   }
 
-  const events = await readEventLog(logPath)
+  const events = (logFlag ? await readEventLogFromPath(logPath) : await sdk.events.readEvents(cwd)) as SynthEvent[]
   const lineage = deriveGovernanceRecords(events)
 
   printJson(lineage)

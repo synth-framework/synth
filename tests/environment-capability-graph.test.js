@@ -11,7 +11,7 @@ import {
   createCapabilityGraphResolver,
   CAPABILITY_CATALOG,
   CAPABILITY_DEPENDENCIES,
-} from "../dist/environment/index.js"
+} from "../dist/discovery/index.js"
 
 function makeEvidence(providers = []) {
   return {

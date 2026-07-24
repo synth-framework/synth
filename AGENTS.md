@@ -14,6 +14,15 @@ SYNTH is a deterministic execution system for engineering work. Humans explore, 
 - Let **Replay** prove the state is correct.
 - Validate source-code changes with targeted tests; ensure the operator runs the full governance pipeline before merge (ADR-043).
 
+## Code modification rule
+
+Source code changes follow a simple rule based on whether expeditions exist:
+
+- **No expeditions exist:** Free to write code, but only after the operator explicitly grants permission. This is discovery/prototyping mode — no governance lifecycle applies yet.
+- **Expeditions exist:** The agent must read them before writing code. All file changes must be scoped to expedition deliverables. Update expedition documentation before implementation. Expedition status transitions go through the gate lifecycle (`draft → approved → committed → executing → completed`). Do not bypass expeditions by writing code outside their scope.
+
+When in doubt, ask the operator: "Should I create an expedition for this, or is this pre-governance discovery work?"
+
 ## Hard constraints
 
 - **Never bypass Mission Studio.** Mission approval is explicit.

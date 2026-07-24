@@ -31,7 +31,8 @@
 
 import { rebuildState, validateAggregateGraph } from "../runtime/replay.js"
 import type { AggregateGraphViolation } from "../runtime/replay.js"
-import type { CanonicalState, SynthEvent } from "../types/index.js"
+import type { CanonicalState, DerivedState, SynthEvent } from "../types/index.js"
+import { buildDerivedState } from "../state/derived/index.js"
 
 // ============================================================
 // Types
@@ -302,6 +303,7 @@ export function validateGraphIntegrity(
   state?: CanonicalState,
 ): GraphIntegrityReport {
   const replayed = state ?? rebuildState(events)
+  const derivedState: DerivedState = buildDerivedState(events)
 
   const violations: GraphIntegrityViolation[] = validateAggregateGraph(events, replayed)
   violations.push(...validateGeneratedWorkItems(events, replayed))
@@ -311,7 +313,7 @@ export function validateGraphIntegrity(
   const missions = Object.keys(replayed.missions).length
   const expeditions = Object.values(replayed.expeditions)
   const objectives = Object.values(replayed.objectives)
-  const generatedWorkItems = Object.values(replayed.generatedWorkItems)
+  const generatedWorkItems = Object.values(derivedState.generatedWorkItems)
 
   let edges = 0
   for (const expedition of expeditions) {

@@ -9,7 +9,7 @@
 // approve, reject, merge, split, refine.
 // ============================================================
 
-import crypto from "crypto"
+import { shortHash } from "../../sdk/hashing/index.js"
 import type {
   AdapterState,
   AdapterHealth,
@@ -60,7 +60,7 @@ export class WizardAdapterImpl implements WizardAdapter {
   }
 
   private hash(input: string): string {
-    return crypto.createHash("sha256").update(input).digest("hex").slice(0, 12)
+    return shortHash(input)
   }
 
   async discover(): Promise<AdapterState> {

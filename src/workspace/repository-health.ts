@@ -7,6 +7,7 @@
 
 import { promises as fs } from "fs"
 import path from "path"
+import { synthDir } from "../sdk/paths/index.js"
 import type { CapabilityRegistry } from "../types/index.js"
 import type { StateReader, HealthStatus } from "./types.js"
 
@@ -80,7 +81,7 @@ export class RepositoryHealth {
     checks.push({ category: "documentation", name: "Architecture docs", status: await this._dirCheck(path.join(root, "docs", "architecture")), path: "docs/architecture/" })
     checks.push({ category: "documentation", name: "Operator docs", status: await this._dirCheck(path.join(root, "docs", "operator")), path: "docs/operator/" })
 
-    checks.push({ category: "workspace", name: ".synth directory", status: await this._dirCheck(path.join(root, ".synth")), path: ".synth/" })
+    checks.push({ category: "workspace", name: ".synth directory", status: await this._dirCheck(synthDir(root)), path: ".synth/" })
 
     const anyFailed = checks.some((c) => c.status === "fail")
 

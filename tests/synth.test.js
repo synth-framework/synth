@@ -30,6 +30,9 @@ import {
   WorkspaceCognitionEnvironment, CanonicalLanguageAuditor,
   RepositoryHealth, SemanticVerifier, ExecutionArtifactAdapter,
 } from "../dist/workspace/index.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { buildDerivedState } from "../dist/state/derived/index.js"
+import { rebuildState as replayRebuildState } from "../dist/runtime/replay.js"
 
 // ---- Test harness ----
 const TESTS = []
@@ -788,15 +791,18 @@ test("P2: state store hash integrity on save/load cycle", async () => {
 test("Expedition: capability registry includes Expedition capabilities", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
-  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, and repository governance capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 34, `Registry must have 34 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, repository governance, convergence certification, and filesystem mutation capabilities
+  assert.equal(ctx.capabilityRegistry.size(), 37, `Registry must have 37 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
+  assert.ok(ctx.capabilityRegistry.has("FilesystemWrite"), "Registry must have FilesystemWrite")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
   assert.ok(ctx.capabilityRegistry.has("CreateExpedition"), "Registry must have CreateExpedition")
   assert.ok(ctx.capabilityRegistry.has("ApproveExpedition"), "Registry must have ApproveExpedition")
+  assert.ok(ctx.capabilityRegistry.has("CertifyConvergence"), "Registry must have CertifyConvergence")
   assert.ok(ctx.capabilityRegistry.has("CommitExpedition"), "Registry must have CommitExpedition")
   assert.ok(ctx.capabilityRegistry.has("StartExpedition"), "Registry must have StartExpedition")
   assert.ok(ctx.capabilityRegistry.has("CompleteExpedition"), "Registry must have CompleteExpedition")
+  assert.ok(ctx.capabilityRegistry.has("FulfillCondition"), "Registry must have FulfillCondition")
   assert.ok(ctx.capabilityRegistry.has("AddObjective"), "Registry must have AddObjective")
   assert.ok(ctx.capabilityRegistry.has("CompleteObjective"), "Registry must have CompleteObjective")
   assert.ok(ctx.capabilityRegistry.has("RecordDiscovery"), "Registry must have RecordDiscovery")
@@ -829,7 +835,8 @@ test("Expedition: ApproveMission transitions status to active", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-2", name: "Test Mission" } })
-  const result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-2" } })
+  const { contractId } = await createAlignedContract(ctx)
+  const result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-2", alignmentContractId: contractId } })
   assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
   const events = await ctx.infra.eventStore.loadAll()
   const approveEvent = events.find((e) => e.type === "MISSION_APPROVED" && e.payload.id === "M-2")
@@ -916,7 +923,8 @@ test("Expedition: full expedition lifecycle", async () => {
 
   // Create Mission
   await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-FULL", name: "Full Test Mission", purpose: "Test full lifecycle" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-FULL" } })
+  const { contractId } = await createAlignedContract(ctx)
+  await ctx.api.handleIntent({ actor: "test", capability: "ApproveMission", payload: { id: "M-FULL", alignmentContractId: contractId } })
 
   // Create, commit, and start Expedition
   await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-FULL", missionId: "M-FULL", name: "Full Expedition", goal: "Test everything" } })
@@ -935,9 +943,25 @@ test("Expedition: full expedition lifecycle", async () => {
   const decisionResult = await ctx.api.handleIntent({ actor: "test", capability: "RecordDecision", payload: { id: "DC-FULL", expeditionId: "E-FULL", title: "Full Lifecycle Decision", chosenAlternative: 0 } })
   assert.equal(decisionResult.status, "ok", `RecordDecision should succeed: ${decisionResult.error}`)
 
-  // Complete expedition
+  // Complete expedition; converged certification auto-chains mission completion.
   await ctx.api.handleIntent({ actor: "test", capability: "CompleteExpedition", payload: { id: "E-FULL" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CompleteMission", payload: { id: "M-FULL" } })
+  await ctx.api.handleIntent({
+    actor: "test",
+    capability: "CertifyConvergence",
+    payload: {
+      missionId: "M-FULL",
+      expeditionId: "E-FULL",
+      alignmentContractId: contractId,
+      observedFeatures: {
+        hasPersistentHeader: true,
+        hasPersistentSidebar: true,
+        hasScrollDrivenPhases: true,
+      },
+      artifacts: [{ kind: "artifact", id: "homepage", path: "/homepage.html", description: "Homepage implementation" }],
+      runtimeEvidence: [{ kind: "runtime", id: "render", source: "puppeteer", observation: "Workspace renders", timestamp: Date.now() }],
+      executionEvidence: [{ kind: "execution", id: "build", eventIds: ["e1"], summary: "Build passed" }],
+    },
+  })
 
   // Verify state
   const events = await ctx.infra.eventStore.loadAll()
@@ -1108,7 +1132,8 @@ test("PCE: commissionMission transitions mission to active", async () => {
   if (!ctx.isSealed) ctx.seal()
 
   await ctx.api.plan({ operation: "chartMission", params: { id: "M-PCE-2", name: "Commission Test" } })
-  const result = await ctx.api.plan({ operation: "commissionMission", params: { id: "M-PCE-2" } })
+  const { contractId } = await createAlignedContract(ctx)
+  const result = await ctx.api.plan({ operation: "commissionMission", params: { id: "M-PCE-2" }, context: { alignmentContractId: contractId } })
 
   assert.ok(result.events, "Result must include events")
   assert.equal(result.events[0]?.type, "MISSION_APPROVED")
@@ -1214,8 +1239,9 @@ test("PCE: full planning pipeline — mission → expedition → objective synth
   })
   assert.ok(mission.events, "chartMission must produce events")
 
-  // Step 2: Commission mission
-  await ctx.api.plan({ operation: "commissionMission", params: { id: "M-FULL-PCE" } })
+  // Step 2: Create alignment contract and commission mission
+  const { contractId } = await createAlignedContract(ctx)
+  await ctx.api.plan({ operation: "commissionMission", params: { id: "M-FULL-PCE" }, context: { alignmentContractId: contractId } })
 
   // Step 3: Chart expedition
   const expedition = await ctx.api.plan({
@@ -1573,6 +1599,172 @@ test("Remediation: RecordDecision capability creates accepted decision", async (
   assert.equal(result.status, "ok", `RecordDecision failed: ${result.error}`)
   const state = await ctx.runtime.getState()
   assert.equal(state.decisions["D-DEC"].status, "accepted")
+})
+
+// ============================================================
+// EXP-SIMPLIFICATION-001 — Derived State Regression Tests
+// ============================================================
+
+test("Simplification: CanonicalState does not contain derived workflow fields", () => {
+  const events = [
+    { type: "SYSTEM_GENESIS", timestamp: 1, actor: "system", payload: { version: 1 } },
+    { type: "MISSION_CREATED", timestamp: 2, actor: "test", payload: { id: "M-SIMP", name: "Simplification Mission", status: "draft" } },
+    { type: "REVIEW_GATE_OPENED", timestamp: 3, actor: "test", payload: { expeditionId: "E-SIMP", gateId: "G-1", reviewPackageId: "RP-1" } },
+    { type: "INTENT_MODEL_CREATED", timestamp: 4, actor: "test", payload: { intentModel: { id: "IM-1", status: "draft" } } },
+    { type: "EXECUTION_INTENT_CREATED", timestamp: 5, actor: "test", payload: { intentId: "XI-1", expeditionId: "E-SIMP", objectiveId: "O-1", workItemId: "W-1", capability: "filesystem", operation: "write", target: "tmp.txt" } },
+    { type: "WORK_ITEM_GENERATED", timestamp: 6, actor: "test", payload: { workItem: { id: "GW-1", expeditionId: "E-SIMP", objectiveId: "O-1", title: "Generated", status: "generated" } } },
+  ]
+  const state = replayRebuildState(events)
+
+  assert.equal(state.reviewGateExpeditions, undefined, "reviewGateExpeditions must not be canonical")
+  assert.equal(state.intentModels, undefined, "intentModels must not be canonical")
+  assert.equal(state.refinementSessions, undefined, "refinementSessions must not be canonical")
+  assert.equal(state.refinementReports, undefined, "refinementReports must not be canonical")
+  assert.equal(state.alignmentContracts, undefined, "alignmentContracts must not be canonical")
+  assert.equal(state.divergenceGates, undefined, "divergenceGates must not be canonical")
+  assert.equal(state.generatedWorkItems, undefined, "generatedWorkItems must not be canonical")
+  assert.equal(state.executions, undefined, "executions must not be canonical")
+  assert.equal(state.executionIntents, undefined, "executionIntents must not be canonical")
+  assert.equal(state.executionGraphs, undefined, "executionGraphs must not be canonical")
+})
+
+test("Simplification: DerivedState reconstructs review gate state from events", () => {
+  const events = [
+    { type: "REVIEW_GATE_OPENED", timestamp: 1, actor: "test", payload: { expeditionId: "E-RG", gateId: "G-1", reviewPackageId: "RP-1" } },
+    { type: "REVIEW_GATE_RESOLVED", timestamp: 2, actor: "test", payload: { expeditionId: "E-RG", gateId: "G-1", decision: "approve", decisionId: "D-1" } },
+  ]
+  const derived = buildDerivedState(events)
+
+  assert.ok(derived.reviewGateExpeditions["E-RG"], "Review gate expedition state must exist")
+  assert.equal(derived.reviewGateExpeditions["E-RG"].status, "approved", "Review gate must resolve to approved")
+  assert.equal(derived.reviewGateExpeditions["E-RG"].gates.length, 1, "Review gate must have one gate")
+})
+
+test("Simplification: DerivedState reconstructs Genesis alignment state from events", () => {
+  const events = [
+    { type: "INTENT_MODEL_CREATED", timestamp: 1, actor: "test", payload: { intentModel: { id: "IM-1", status: "draft" } } },
+    { type: "INTENT_MODEL_SUBMITTED", timestamp: 2, actor: "test", payload: { intentModelId: "IM-1" } },
+    { type: "ALIGNMENT_CONTRACT_CREATED", timestamp: 3, actor: "test", payload: { contract: { id: "AC-1", status: "draft", referenceEvidenceIds: [] } } },
+    { type: "ALIGNMENT_CONTRACT_APPROVED", timestamp: 4, actor: "test", payload: { contractId: "AC-1", approvedBy: { kind: "human", id: "operator" } } },
+  ]
+  const derived = buildDerivedState(events)
+
+  assert.equal(derived.intentModels["IM-1"].status, "sufficient", "Intent model must be marked sufficient")
+  assert.equal(derived.alignmentContracts["AC-1"].status, "approved", "Alignment contract must be approved")
+})
+
+test("Simplification: DerivedState reconstructs execution intent graph from events", () => {
+  const events = [
+    { type: "EXECUTION_INTENT_GRAPH_CREATED", timestamp: 1, actor: "test", payload: { expeditionId: "E-EX", intentIds: ["XI-1"] } },
+    { type: "EXPEDITION_BRANCH_CREATED", timestamp: 2, actor: "test", payload: { expeditionId: "E-EX", branch: "feature/E-EX", baseCommit: "abc123" } },
+    { type: "EXECUTION_INTENT_STARTED", timestamp: 3, actor: "test", payload: { expeditionId: "E-EX", intentId: "XI-1" } },
+    { type: "EXPEDITION_EXECUTION_COMMITTED", timestamp: 4, actor: "test", payload: { expeditionId: "E-EX", commit: "def456" } },
+  ]
+  const derived = buildDerivedState(events)
+
+  assert.equal(derived.executionGraphs["E-EX"].phase, "committed", "Execution graph must reach committed phase")
+  assert.equal(derived.executionGraphs["E-EX"].branch, "feature/E-EX", "Execution graph must retain branch")
+  assert.equal(derived.executionGraphs["E-EX"].resultCommit, "def456", "Execution graph must record result commit")
+})
+
+test("Simplification: Generated work items are derived, not canonical", () => {
+  const events = [
+    { type: "MISSION_CREATED", timestamp: 1, actor: "test", payload: { id: "M-GW", name: "Generated Work Item Mission", status: "draft" } },
+    { type: "EXPEDITION_CREATED", timestamp: 2, actor: "test", payload: { id: "E-GW", missionId: "M-GW", name: "Generated Work Item Expedition", status: "draft" } },
+    { type: "OBJECTIVE_ADDED", timestamp: 3, actor: "test", payload: { id: "O-GW", expeditionId: "E-GW", title: "Objective" } },
+    { type: "WORK_ITEM_GENERATED", timestamp: 4, actor: "test", payload: { workItem: { id: "GW-1", expeditionId: "E-GW", objectiveId: "O-GW", title: "Generated Work Item", status: "generated" } } },
+  ]
+  const state = replayRebuildState(events)
+  const derived = buildDerivedState(events)
+
+  assert.equal(state.generatedWorkItems, undefined, "CanonicalState must not contain generatedWorkItems")
+  assert.ok(derived.generatedWorkItems["GW-1"], "DerivedState must contain generated work item")
+  assert.equal(derived.generatedWorkItems["GW-1"].objectiveId, "O-GW", "Generated work item must retain objective edge")
+})
+
+test("Simplification: Replay hash is stable and excludes derived fields", () => {
+  const events = [
+    { type: "SYSTEM_GENESIS", timestamp: 1, actor: "system", payload: { version: 1 } },
+    { type: "MISSION_CREATED", timestamp: 2, actor: "test", payload: { id: "M-HASH", name: "Hash Mission", status: "draft" } },
+    { type: "REVIEW_GATE_OPENED", timestamp: 3, actor: "test", payload: { expeditionId: "E-HASH", gateId: "G-1", reviewPackageId: "RP-1" } },
+  ]
+  const state = replayRebuildState(events)
+
+  assert.ok(state.stateHash, "Canonical state must have a state hash")
+  assert.equal(typeof state.stateHash, "string", "stateHash must be a string")
+  assert.equal(state.reviewGateExpeditions, undefined, "stateHash must not include derived fields")
+})
+
+test("SDK Path Ownership: CLI/core/runtime do not construct .synth paths directly", async () => {
+  const srcRoot = path.resolve(process.cwd(), "src")
+  const forbiddenDirs = ["cli", "core", "runtime", "workspace"]
+  const violations = []
+  const forbiddenPattern = /path\.(join|resolve)\s*\([^)]*["']\.synth/
+
+  for (const dir of forbiddenDirs) {
+    const dirPath = path.join(srcRoot, dir)
+    let entries
+    try {
+      entries = await fs.readdir(dirPath, { recursive: true })
+    } catch {
+      continue
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry)
+      const stat = await fs.stat(fullPath)
+      if (!stat.isFile()) continue
+      if (!fullPath.endsWith(".ts") && !fullPath.endsWith(".js")) continue
+      const content = await fs.readFile(fullPath, "utf-8")
+      if (forbiddenPattern.test(content)) {
+        violations.push(path.relative(srcRoot, fullPath))
+      }
+    }
+  }
+
+  assert.deepEqual(
+    violations,
+    [],
+    `Forbidden direct .synth path construction in: ${violations.join(", ")}`,
+  )
+})
+
+test("SDK Event/State Ownership: CLI/workspace do not construct canonical artifact paths directly", async () => {
+  const srcRoot = path.resolve(process.cwd(), "src")
+  const forbiddenDirs = ["cli", "workspace"]
+  const allowedFiles = [
+    "cli/explain-observability.ts",
+    "cli/resume-briefing.ts",
+  ]
+  const violations = []
+  const artifactPattern = /path\.(join|resolve)\s*\([^)]*["'](event-log\.jsonl|canonical-state\.json)["']/g
+
+  for (const dir of forbiddenDirs) {
+    const dirPath = path.join(srcRoot, dir)
+    let entries
+    try {
+      entries = await fs.readdir(dirPath, { recursive: true })
+    } catch {
+      continue
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry)
+      const stat = await fs.stat(fullPath)
+      if (!stat.isFile()) continue
+      if (!fullPath.endsWith(".ts") && !fullPath.endsWith(".js")) continue
+      const relativePath = path.relative(srcRoot, fullPath)
+      if (allowedFiles.includes(relativePath.replace(/\\/g, "/"))) continue
+      const content = await fs.readFile(fullPath, "utf-8")
+      if (artifactPattern.test(content)) {
+        violations.push(relativePath)
+      }
+    }
+  }
+
+  assert.deepEqual(
+    violations,
+    [],
+    `Forbidden direct event/state artifact path construction in: ${violations.join(", ")}`,
+  )
 })
 
 // ============================================================

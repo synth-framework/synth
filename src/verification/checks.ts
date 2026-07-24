@@ -7,6 +7,8 @@
 
 import fs from "fs/promises"
 import path from "path"
+import * as sdk from "../sdk/index.js"
+import { synthDir } from "../sdk/paths/index.js"
 import type {
   VerificationCheck,
   VerificationCheckResult,
@@ -128,7 +130,7 @@ export const checkProjectionConsistency: VerificationCheck = async (ctx) => {
     }
   }
 
-  const forbiddenStatusFile = path.join(ctx.cwd, ".synth", "expeditions.json")
+  const forbiddenStatusFile = path.join(synthDir(ctx.cwd), "expeditions.json")
   try {
     await fs.access(forbiddenStatusFile)
     violations.push(
@@ -313,10 +315,9 @@ export const checkAssertionProvenance: VerificationCheck = async (ctx) => {
 export const checkGovernanceInvariants: VerificationCheck = async (ctx) => {
   const violations: VerificationViolation[] = []
 
-  const manifestPath = path.join(ctx.cwd, ".synth", "manifest.json")
   if (ctx.hasManifest) {
-    try {
-      const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
+    const manifest = await sdk.manifest.readManifestMaybe<Record<string, any>>(ctx.cwd)
+    if (manifest) {
       const vocab = manifest.publicVocabulary
       const expected = ["Mission", "Expedition", "Evidence", "Plan", "Event", "State", "Replay"].sort()
       if (!Array.isArray(vocab) || JSON.stringify([...vocab].sort()) !== JSON.stringify(expected)) {
@@ -333,8 +334,6 @@ export const checkGovernanceInvariants: VerificationCheck = async (ctx) => {
           }),
         )
       }
-    } catch {
-      violations.push(v("Manifest exists but is not valid JSON.", { nextStep: "synth init" }))
     }
   }
 

@@ -45,7 +45,7 @@ export const FILESYSTEM_OBSERVATION_CONTRACT = {
  * Useful for testing.
  */
 export function createFilesystemObservationCapabilityWithProvider(
-  provider: import("../../environment/filesystem-capability.js").FilesystemProvider,
+  provider: import("../../infra/filesystem-provider.js").FilesystemProvider,
 ): ObservationCapability {
   return {
     id: FILESYSTEM_CAPABILITY_ID,

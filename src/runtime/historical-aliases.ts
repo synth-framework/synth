@@ -13,7 +13,7 @@
 // projects, `data/governance/historical-aliases.json` for ungoverned repos).
 // ============================================================
 
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
 import type { AggregateGraphNode } from "./replay.js"
 
 export const HISTORICAL_ALIASES_SCHEMA_VERSION = "1.0.0"

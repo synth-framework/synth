@@ -14,7 +14,11 @@ export {
   type DiscoveryProviderContext,
   type DiscoverySessionProvider,
 } from "./session-provider.js"
-export { createAdapterRegistry } from "./adapter-registry.js"
+export {
+  createAdapterRegistry,
+  type DiscoveryAdapterRegistry,
+  type DiscoveryAdapterRegistryOptions,
+} from "./adapter-registry.js"
 export { executeProjectionCapabilities } from "./projection-capability-executor.js"
 export {
   createFilesystemDiscoveryAdapter,
@@ -78,6 +82,22 @@ export {
   PROJECT_MODEL_CAPABILITY_VERSION,
   PROJECT_MODEL_PROJECTION_TYPE,
 } from "./projections/project-model-capability.js"
+export {
+  buildCapabilityReport,
+  renderCapabilityReportMarkdown,
+  CAPABILITY_FAMILIES,
+  CAPABILITY_PLANNING_GUIDANCE,
+  type CapabilityReport,
+  type CapabilityReportEntry,
+} from "./projections/capability-report.js"
+export {
+  createCapabilityGraph,
+  createCapabilityGraphResolver,
+  CapabilityGraphBuilder,
+  CapabilityResolver,
+  CAPABILITY_CATALOG,
+  CAPABILITY_DEPENDENCIES,
+} from "./projections/capability-graph.js"
 export { canonicalize, serializeCanonical, hashCanonical } from "./canonical.js"
 export { verifyDiscoveryReplay } from "./replay.js"
 export { createConsumerRegistry } from "./consumer-registry.js"

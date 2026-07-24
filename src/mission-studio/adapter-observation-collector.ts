@@ -9,7 +9,7 @@
 // never mutates runtime state, the event store, or the filesystem.
 // ============================================================
 
-import type { AdapterRegistry } from "../adapters/registry.js"
+import type { AdapterRegistry } from "./adapter-registry.js"
 import type { Observation, ObservationBatch } from "../types/observation.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import { mapObservationsToPlanningObservations } from "./adapter-mapper.js"

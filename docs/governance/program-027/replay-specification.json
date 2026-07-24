@@ -1,0 +1,309 @@
+{
+  "id": "replay-specification-program-027",
+  "benchmarkId": "governability-benchmark-program-027",
+  "purpose": "Define the interpretation graph and replay inputs for Program 027 governability certification.",
+  "interpretationSpace": {
+    "root": "Mission: Make Mission Studio the SYNTH homepage",
+    "description": "From the Program 027 Mission, multiple homepage implementations are admissible under the original expedition specifications. This graph exercises the branches that must be rejected (drift classes) and those that must remain admissible (valid branches)."
+  },
+  "replayBranches": [
+    {
+      "branchId": "D01",
+      "type": "drift",
+      "driftClassId": "D01",
+      "name": "Generic dashboard drift",
+      "input": {
+        "description": "Homepage proposal where the dominant visual language is a generic SaaS dashboard: metric cards, promotional banners, KPI rows, disconnected widgets, and decorative charts.",
+        "visualElements": ["metric cards", "promotional banners", "KPI rows", "disconnected widgets"],
+        "references": ["docs/design/lds-002.md", "docs/expeditions/EXP-HOME-025.md"]
+      },
+      "expectedOutcome": "rejected or revision_required",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Violates the Alignment Contract forbidden drift clause for generic dashboards."
+    },
+    {
+      "branchId": "D02",
+      "type": "drift",
+      "driftClassId": "D02",
+      "name": "Marketing-first landing",
+      "input": {
+        "description": "Homepage proposal where Mission Studio appears as one section among many marketing sections: hero, feature grid, testimonials, pricing, then a small Mission Studio widget.",
+        "visualElements": ["marketing hero", "feature grid", "testimonials", "pricing section", "Mission Studio widget"],
+        "references": ["docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "rejected",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Violates the experience contract 'homepage IS Mission Studio.'"
+    },
+    {
+      "branchId": "D03",
+      "type": "drift",
+      "driftClassId": "D03",
+      "name": "Chat-primary interface",
+      "input": {
+        "description": "Homepage proposal where the dominant interaction is a chat interface with decorative AI imagery and prompt suggestions.",
+        "visualElements": ["chat bubble", "decorative AI imagery", "prompt suggestions"],
+        "references": ["docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "rejected",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Listed as a forbidden interpretation in the Intent Model and Alignment Contract."
+    },
+    {
+      "branchId": "D04",
+      "type": "drift",
+      "driftClassId": "D04",
+      "name": "Page-jump navigation",
+      "input": {
+        "description": "Homepage proposal where each lifecycle phase is rendered as a separate page with conventional navigation links.",
+        "visualElements": ["separate pages", "navigation links", "page jumps"],
+        "references": ["docs/expeditions/EXP-HOME-004.md", "docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "rejected",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Violates the scroll-driven persistent workspace contract."
+    },
+    {
+      "branchId": "D05",
+      "type": "drift",
+      "driftClassId": "D05",
+      "name": "Storybook aesthetic",
+      "input": {
+        "description": "Homepage proposal where components are displayed as isolated specimens in a grid rather than integrated into a coherent workspace.",
+        "visualElements": ["component grid", "isolated specimens", "detached examples"],
+        "references": ["docs/expeditions/EXP-HOME-002.md", "docs/expeditions/EXP-HOME-025.md"]
+      },
+      "expectedOutcome": "rejected or revision_required",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Violates the persistent workspace integration requirement."
+    },
+    {
+      "branchId": "D06",
+      "type": "drift",
+      "driftClassId": "D06",
+      "name": "Placeholder artifacts",
+      "input": {
+        "description": "Homepage proposal using fake terminal output, mock mission data, or placeholder screenshots unrelated to actual runtime events.",
+        "visualElements": ["fake terminal output", "mock data", "placeholder screenshots"],
+        "references": ["docs/expeditions/EXP-PROGRAM-027.md"]
+      },
+      "expectedOutcome": "rejected or revision_required",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Every visible element must correspond to a real SYNTH concept or runtime artifact."
+    },
+    {
+      "branchId": "D07",
+      "type": "drift",
+      "driftClassId": "D07",
+      "name": "Hardcoded values",
+      "input": {
+        "description": "Homepage proposal using one-off colors, spacing, or typography outside the LDS-002 token system.",
+        "visualElements": ["one-off colors", "custom spacing", "non-token typography"],
+        "references": ["docs/design/lds-002.md"]
+      },
+      "expectedOutcome": "rejected or revision_required",
+      "expectedInterceptPoint": "Divergence Gate or Review Gate",
+      "rationale": "Violates the LDS-002 token mandate."
+    },
+    {
+      "branchId": "D08",
+      "type": "drift",
+      "driftClassId": "D08",
+      "name": "Workspace dilution",
+      "input": {
+        "description": "Homepage proposal where Mission Studio shell is present but decorative marketing content dominates the viewport.",
+        "visualElements": ["Mission Studio shell", "dominant marketing content", "decorative sections"],
+        "references": ["docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "rejected or revision_required",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Mission Studio must be the dominant visual artifact."
+    },
+    {
+      "branchId": "V01",
+      "type": "valid",
+      "validBranchId": "V01",
+      "name": "Persistent workspace",
+      "input": {
+        "description": "Homepage proposal where Mission Studio is the persistent application shell and lifecycle phases are scroll-driven workspace states.",
+        "visualElements": ["persistent header", "sidebar", "workspace", "scroll-driven phases"],
+        "references": ["docs/expeditions/EXP-PROGRAM-027.md", "docs/expeditions/EXP-HOME-004.md"]
+      },
+      "expectedOutcome": "aligned",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Matches the approved Alignment Contract."
+    },
+    {
+      "branchId": "V02",
+      "type": "valid",
+      "validBranchId": "V02",
+      "name": "Hero invitation",
+      "input": {
+        "description": "Homepage proposal with a short hero section that invites the visitor and then transitions into the Mission Studio workspace.",
+        "visualElements": ["short hero", "CTA into Mission Studio", "persistent workspace"],
+        "references": ["docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "aligned",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Allowed interpretation: hero invites visitors into Mission Studio."
+    },
+    {
+      "branchId": "V03",
+      "type": "valid",
+      "validBranchId": "V03",
+      "name": "Deterministic demo",
+      "input": {
+        "description": "Homepage proposal using a simulated operator adapter that demonstrates SYNTH execution deterministically without a live agent.",
+        "visualElements": ["demo operator adapter", "deterministic execution", "replay visualization"],
+        "references": ["docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "aligned",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Allowed interpretation: demo adapter simulates AI execution deterministically."
+    },
+    {
+      "branchId": "V04",
+      "type": "valid",
+      "validBranchId": "V04",
+      "name": "Light-theme default",
+      "input": {
+        "description": "Homepage proposal defaulting to a light workspace theme with an optional dark mode toggle.",
+        "visualElements": ["light theme", "optional dark mode"],
+        "references": ["docs/design/lds-002.md", "docs/expeditions/EXP-HOME-026.md"]
+      },
+      "expectedOutcome": "aligned",
+      "expectedInterceptPoint": "Divergence Gate",
+      "rationale": "Allowed variation within LDS-002 token scale."
+    }
+  ],
+  "lifecycleStages": [
+    {
+      "stage": "Intent submitted",
+      "expectedState": "Refinement required"
+    },
+    {
+      "stage": "Refinement completed",
+      "expectedState": "Sufficient for contract"
+    },
+    {
+      "stage": "Alignment Contract submitted",
+      "expectedState": "Approved if complete; rejected if insufficient"
+    },
+    {
+      "stage": "Divergence Gate",
+      "expectedState": "Drift rejected; valid branches aligned"
+    },
+    {
+      "stage": "Mission creation",
+      "expectedState": "Blocked unless Divergence Gate is aligned"
+    },
+    {
+      "stage": "Expedition approval",
+      "expectedState": "Blocked unless Mission approved"
+    },
+    {
+      "stage": "Review Gate",
+      "expectedState": "Reject if drift survives"
+    },
+    {
+      "stage": "Acceptance Gate",
+      "expectedState": "Reject if drift survives"
+    },
+    {
+      "stage": "Convergence Certification",
+      "expectedState": "Reject if outcome diverges from intent"
+    }
+  ],
+  "ruleToDriftClassMappings": [
+    {
+      "ruleId": "forbidden-drift-generic-dashboard",
+      "driftClassId": "D01",
+      "featureNames": ["hasMetricCards", "hasPromotionalBanners", "hasDisconnectedWidgets"],
+      "contractField": "forbiddenDrift",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-interpretation-marketing-landing",
+      "driftClassId": "D02",
+      "featureNames": ["hasMarketingHero", "hasFeatureGrid", "hasMissionStudioAsSection"],
+      "contractField": "forbiddenInterpretation",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-interpretation-chat-primary",
+      "driftClassId": "D03",
+      "featureNames": ["hasChatPrimaryInteraction", "hasDecorativeAiImagery"],
+      "contractField": "forbiddenInterpretation",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-drift-page-jump-navigation",
+      "driftClassId": "D04",
+      "featureNames": ["hasSeparateLifecyclePages", "hasPageJumpNavigation"],
+      "contractField": "forbiddenDrift",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-drift-storybook-aesthetic",
+      "driftClassId": "D05",
+      "featureNames": ["hasComponentGrid", "hasIsolatedSpecimens"],
+      "contractField": "forbiddenDrift",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-drift-placeholder-artifacts",
+      "driftClassId": "D06",
+      "featureNames": ["hasFakeTerminalOutput", "hasMockData", "hasPlaceholderScreenshots"],
+      "contractField": "forbiddenDrift",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-drift-hardcoded-values",
+      "driftClassId": "D07",
+      "featureNames": ["hasHardcodedColors", "hasHardcodedSpacing", "hasNonTokenTypography"],
+      "contractField": "forbiddenDrift",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "forbidden-drift-workspace-dilution",
+      "driftClassId": "D08",
+      "featureNames": ["hasMissionStudioShell", "hasDominantMarketingContent"],
+      "contractField": "forbiddenDrift",
+      "expectedOutcome": "fail"
+    },
+    {
+      "ruleId": "required-behavior-persistent-workspace",
+      "validBranchId": "V01",
+      "featureNames": ["hasPersistentHeader", "hasPersistentSidebar", "hasScrollDrivenPhases"],
+      "contractField": "requiredBehaviors",
+      "expectedOutcome": "pass"
+    },
+    {
+      "ruleId": "allowed-interpretation-hero-invitation",
+      "validBranchId": "V02",
+      "featureNames": ["hasShortHero", "hasHeroCtaIntoWorkspace", "hasPersistentWorkspace"],
+      "contractField": "allowedInterpretation",
+      "expectedOutcome": "pass"
+    },
+    {
+      "ruleId": "allowed-interpretation-deterministic-demo",
+      "validBranchId": "V03",
+      "featureNames": ["hasDemoOperatorAdapter", "hasDeterministicExecution"],
+      "contractField": "allowedInterpretation",
+      "expectedOutcome": "pass"
+    },
+    {
+      "ruleId": "allowed-variation-light-theme-default",
+      "validBranchId": "V04",
+      "featureNames": ["hasLightThemeDefault", "hasOptionalDarkMode"],
+      "contractField": "allowedVariation",
+      "expectedOutcome": "pass"
+    }
+  ],
+  "certificationPrinciples": [
+    "Every drift class must have at least one replay branch.",
+    "Every drift-class replay must be intercepted before implementation.",
+    "Every valid branch must remain admissible.",
+    "Replaying the same branch must produce the same outcome."
+  ]
+}

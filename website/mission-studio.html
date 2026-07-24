@@ -6,57 +6,110 @@
   <title>Mission Studio — Synth</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <header>
-    <nav>
-      <a href="index.html" class="logo">Synth<span>.</span></a>
-      <div class="nav-links">
+<body class="synth-homepage">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="synth-nav">
+    <div class="synth-nav-inner">
+      <a href="index.html" class="synth-logo">
+        <span class="synth-logo-mark">S</span>
+        <span>Synth</span>
+      </a>
+      <nav class="synth-nav-links" aria-label="Primary">
+        <a href="index.html#mission-studio">Mission Studio</a>
+        <a href="index.html#workflow">How it works</a>
+        <a href="index.html#capabilities">Capabilities</a>
         <a href="docs.html">Docs</a>
-        <a href="quick-start.html">Quick Start</a>
-        <a href="examples.html">Examples</a>
-        <a href="mission-studio.html">Mission Studio</a>
-        <a href="architecture.html">Architecture</a>
-        <a href="community.html">Community</a>
-        <a href="first-contact/">First Contact</a>
-      </div>
-    </nav>
+      </nav>
+      <a href="https://github.com/synth-framework/synth" class="ms-btn ms-btn-secondary ms-btn-sm" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
   </header>
 
-  <main>
-    <section class="hero">
-      <h1>Mission Studio</h1>
-      <p>The planning environment where ideas become approved missions.</p>
+  <main id="main-content">
+    <section class="synth-hero synth-hero-compact">
+      <div class="synth-hero-content">
+        <div class="synth-pill">Product surface</div>
+        <h1>Mission Studio</h1>
+        <p class="synth-hero-lead">The interactive environment where a human idea becomes an accepted, evidence-backed outcome.</p>
+      </div>
     </section>
 
-    <section>
-      <h2>What Mission Studio does</h2>
-      <ol class="steps">
-        <li><strong>Chart a mission.</strong> Capture the strategic goal.</li>
-        <li><strong>Gather evidence.</strong> Record what you know before deciding.</li>
-        <li><strong>Define expeditions.</strong> Break the mission into bounded pieces of work.</li>
-        <li><strong>Add objectives.</strong> Make each expedition concrete.</li>
-        <li><strong>Approve the plan.</strong> Commit an immutable snapshot.</li>
-      </ol>
+    <section class="synth-section">
+      <div class="synth-section-header">
+        <h2>What Mission Studio does</h2>
+        <p>The nine public steps of the SYNTH journey, all in one place.</p>
+      </div>
+      <div class="synth-workflow">
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">1</div>
+          <h3>Idea</h3>
+          <p>The user describes what they want to build.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">2</div>
+          <h3>Questions</h3>
+          <p>SYNTH asks for the clarity it needs.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">3</div>
+          <h3>Understanding</h3>
+          <p>SYNTH presents what it understood for confirmation.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">4</div>
+          <h3>Contract</h3>
+          <p>The user approves the boundary between understanding and building.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">5</div>
+          <h3>Mission</h3>
+          <p>SYNTH derives the mission from the approved contract.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">6</div>
+          <h3>Plan</h3>
+          <p>The mission becomes a set of executable plan items.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">7</div>
+          <h3>Evidence</h3>
+          <p>Execution produces evidence that the work happened.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">8</div>
+          <h3>Review</h3>
+          <p>The user compares the outcome to the contract.</p>
+        </div>
+        <div class="synth-workflow-step">
+          <div class="synth-workflow-number">9</div>
+          <h3>Acceptance</h3>
+          <p>The user accepts the outcome and the journey is complete.</p>
+        </div>
+      </div>
     </section>
 
-    <section>
-      <h2>What Mission Studio does not do</h2>
-      <p>Mission Studio does not execute work. Execution happens through the approved plan, where every action is checked and recorded as an event.</p>
-    </section>
-
-    <section>
-      <h2>Snapshot lineage</h2>
-      <p>Every approval produces a new snapshot that references the previous one. You can review what changed, when, and why.</p>
-    </section>
-
-    <section>
-      <h2>Learn more</h2>
-      <p>Read the full <a href="https://github.com/synth-framework/synth/blob/main/docs/operator/mission-studio-guide.md">Mission Studio Guide</a>.</p>
+    <section class="synth-section synth-section-cta">
+      <div class="synth-cta-box">
+        <h2>Try it now</h2>
+        <p>Return to the homepage and open Mission Studio to walk through the complete journey.</p>
+        <a href="index.html#mission-studio" class="ms-btn ms-btn-primary ms-btn-lg">Open Mission Studio</a>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <p><a href="index.html">← Back to Synth</a></p>
+  <footer class="synth-footer">
+    <div class="synth-footer-inner">
+      <div class="synth-footer-brand">
+        <span class="synth-logo-mark">S</span>
+        <span>Synth</span>
+      </div>
+      <nav class="synth-footer-links" aria-label="Footer">
+        <a href="docs.html">Docs</a>
+        <a href="examples.html">Examples</a>
+        <a href="https://github.com/synth-framework/synth" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+      <p class="synth-footer-note">Humans explore. SYNTH remembers. AI executes deterministically.</p>
+    </div>
   </footer>
 </body>
 </html>

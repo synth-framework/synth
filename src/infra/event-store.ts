@@ -6,16 +6,16 @@ import { promises as fs } from "fs"
 import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
 import { IllegalMutationError } from "../core/errors.js"
-import { getRuntimeDataDir } from "./paths.js"
+import { dataDir } from "../sdk/paths/index.js"
 
-const EVENT_LOG_FILE = path.join(getRuntimeDataDir(process.cwd()), "event-log.jsonl")
-const EVENT_STREAM_DIR = path.join(getRuntimeDataDir(process.cwd()), "event-stream")
+const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
+const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
 
 /** Module-private authorization token for EventStore writes.
  *  Only createGuardedEventStore can obtain it, ensuring writes flow
  *  through the single mutation authority.
  */
-const EVENT_STORE_WRITE_TOKEN = Symbol("EVENT_STORE_WRITE_TOKEN")
+export const EVENT_STORE_WRITE_TOKEN = Symbol("EVENT_STORE_WRITE_TOKEN")
 
 export class EventStore {
   private filePath: string
@@ -55,13 +55,13 @@ export class EventStore {
     await fs.mkdir(path.dirname(this.filePath), { recursive: true })
   }
 
-  async append(event: SynthEvent): Promise<void> {
+  async append(event: SynthEvent, _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     const line = JSON.stringify(event) + "\n"
     await fs.appendFile(this.filePath, line)
   }
 
-  async appendBatch(events: SynthEvent[]): Promise<void> {
+  async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     if (events.length === 0) return
     const lines = events.map((e: SynthEvent) => JSON.stringify(e)).join("\n") + "\n"
@@ -109,12 +109,12 @@ export class InMemoryEventStore extends EventStore {
 
   async initialize(): Promise<void> {}
 
-  async append(event: SynthEvent): Promise<void> {
+  async append(event: SynthEvent, _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     this.events.push(JSON.parse(JSON.stringify(event)))
   }
 
-  async appendBatch(events: SynthEvent[]): Promise<void> {
+  async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     for (const event of events) {
       this.events.push(JSON.parse(JSON.stringify(event)))
@@ -135,13 +135,22 @@ export class InMemoryEventStore extends EventStore {
   }
 }
 
+export const PARTITION_STORE_WRITE_TOKEN = Symbol("PARTITION_STORE_WRITE_TOKEN")
+export const SEGMENT_STORE_WRITE_TOKEN = Symbol("SEGMENT_STORE_WRITE_TOKEN")
+
 export class PartitionStore {
+  static createAuthorized(partitionCount?: number, baseDir?: string): PartitionStore {
+    return new PartitionStore(partitionCount, baseDir, PARTITION_STORE_WRITE_TOKEN)
+  }
+
   private baseDir: string
   private partitionCount: number
+  private authorized: boolean
 
-  constructor(partitionCount: number = 4, baseDir: string = EVENT_STREAM_DIR) {
+  constructor(partitionCount: number = 4, baseDir: string = EVENT_STREAM_DIR, authToken?: symbol) {
     this.partitionCount = partitionCount
     this.baseDir = baseDir
+    this.authorized = authToken === PARTITION_STORE_WRITE_TOKEN
   }
 
   async initialize(): Promise<void> {
@@ -161,7 +170,17 @@ export class PartitionStore {
     return Math.abs(hash) % this.partitionCount
   }
 
+  protected ensureAuthorized(): void {
+    if (!this.authorized) {
+      throw new IllegalMutationError(
+        "ILLEGAL_PARTITIONSTORE_WRITE: PartitionStore writes must pass through the ExecutionGate. " +
+          "Direct instantiation of PartitionStore is not an authorized mutation path."
+      )
+    }
+  }
+
   async append(partition: number, event: PartitionedEvent): Promise<void> {
+    this.ensureAuthorized()
     const file = this.filePath(partition)
     await fs.mkdir(path.dirname(file), { recursive: true })
     const line = JSON.stringify(event) + "\n"
@@ -198,12 +217,17 @@ export class PartitionStore {
 }
 
 export class SegmentStore {
+  static createAuthorized(maxSegmentSize?: number, baseDir?: string): SegmentStore {
+    return new SegmentStore(maxSegmentSize, baseDir, SEGMENT_STORE_WRITE_TOKEN)
+  }
   private baseDir: string
   private maxSegmentSize: number
+  private authorized: boolean
 
-  constructor(maxSegmentSize: number = 1000, baseDir: string = EVENT_STREAM_DIR) {
+  constructor(maxSegmentSize: number = 1000, baseDir: string = EVENT_STREAM_DIR, authToken?: symbol) {
     this.maxSegmentSize = maxSegmentSize
     this.baseDir = baseDir
+    this.authorized = authToken === SEGMENT_STORE_WRITE_TOKEN
   }
 
   private segmentDir(partition: number): string {
@@ -242,7 +266,17 @@ export class SegmentStore {
     }
   }
 
+  protected ensureAuthorized(): void {
+    if (!this.authorized) {
+      throw new IllegalMutationError(
+        "ILLEGAL_SEGMENTSTORE_WRITE: SegmentStore writes must pass through the ExecutionGate. " +
+          "Direct instantiation of SegmentStore is not an authorized mutation path."
+      )
+    }
+  }
+
   async append(partition: number, event: PartitionedEvent): Promise<void> {
+    this.ensureAuthorized()
     const segmentId = await this.getCurrentSegmentId(partition)
     const file = this.segmentPath(partition, segmentId)
     const line = JSON.stringify(event) + "\n"

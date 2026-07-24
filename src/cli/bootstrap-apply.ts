@@ -5,10 +5,8 @@
 // applies SYNTH configuration to the target directory.
 // ============================================================
 
-import fs from "fs/promises"
 import path from "path"
-import crypto from "crypto"
-import { spawn } from "child_process"
+import * as sdk from "../sdk/index.js"
 import { bootstrap } from "../core/bootstrap.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
@@ -23,7 +21,7 @@ export type BootstrapOptions = {
   projectName?: string
 }
 
-function makeObservation(type: string, subject: string, overrides: Record<string, unknown> = {}) {
+function makeObservation(type: string, subject: string, timestamp: number, overrides: Record<string, unknown> = {}) {
   return {
     id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
     sourceAdapter: "synth-bootstrap",
@@ -31,11 +29,12 @@ function makeObservation(type: string, subject: string, overrides: Record<string
     payload: { subject, name: subject, ...overrides },
     evidenceReference: `evidence-${type}-${subject}`,
     confidence: "high",
-    timestamp: Date.now(),
+    timestamp,
   }
 }
 
 async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepository>>) {
+  const timestamp = Date.now()
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
@@ -66,7 +65,7 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
           discoverySessionHash: analysis.discoverySessionHash,
         },
       }
-    : makeObservation("mission", missionSubject, {
+    : makeObservation("mission", missionSubject, timestamp, {
         purpose: missionPurpose,
         discoverySessionId: analysis.discoverySessionId,
         discoverySessionHash: analysis.discoverySessionHash,
@@ -83,7 +82,7 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
 
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; session?: unknown; error?: string }
 
   if (sessionResult.status !== "ok") {
@@ -92,12 +91,12 @@ async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepo
 
   const missionProposals = (await ctx.api.missionStudioOperation({
     operation: "proposeMissions",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; proposals?: unknown[]; error?: string }
 
   const expeditionProposals = (await ctx.api.missionStudioOperation({
     operation: "proposeExpeditions",
-    params: { observations },
+    params: { observations, timestamp },
   })) as { status: string; proposals?: unknown[]; error?: string }
 
   const firstExpeditionSubject = "Brownfield Baseline Discovery"
@@ -119,11 +118,10 @@ async function initSynthProject(
   projectName: string,
   agentContext?: import("./bootstrap-context.js").AgentContext,
 ) {
-  const synthDir = path.join(targetDir, ".synth")
-  const dataDir = path.join(targetDir, ".synth", "data")
+  const root = sdk.workspace.root(targetDir)
   const governanceVersion = "2.1"
-  await fs.mkdir(synthDir, { recursive: true })
-  await fs.mkdir(dataDir, { recursive: true })
+  await sdk.files.ensureDirectory(sdk.paths.synthDir(root))
+  await sdk.files.ensureDirectory(sdk.paths.dataDir(root))
 
   const version = "2.0.0" // bootstrap does not need to read package.json; manifest will be regenerated on init
   const manifest = {
@@ -167,16 +165,16 @@ async function initSynthProject(
     quickStart: "synth bootstrap --approve && npm run govern",
   }
 
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2), "utf-8")
+  await sdk.json.writeJson(sdk.paths.manifestPath(root), manifest)
 
   // Record the initialization as a replayable governance event.
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-      checkpointPath: path.join(dataDir, "checkpoints.json"),
+      eventLogPath: sdk.paths.eventLogFile(root),
+      statePath: sdk.paths.stateFile(root),
+      checkpointPath: sdk.paths.checkpointsFile(root),
     },
   })
   for (const name of ctx.capabilityRegistry.list()) {
@@ -190,7 +188,7 @@ async function initSynthProject(
       actor: "synth-bootstrap",
       capability: "InitializeProject",
       payload: {
-        projectId: crypto.randomUUID(),
+        projectId: sdk.identity.uuid(),
         name: projectName,
         governanceVersion,
       },
@@ -201,16 +199,12 @@ async function initSynthProject(
   }
 
   const finalState = await ctx.runtime.getState()
-  await writeAgentArtifacts(synthDir, projectName, finalState, manifest)
+  await writeAgentArtifacts(sdk.paths.synthDir(root), projectName, finalState, manifest)
 
   // Write the Agent Context Contract last so it takes precedence over the
   // generic runtime orientation context.json.
   if (agentContext) {
-    await fs.writeFile(
-      path.join(synthDir, "context.json"),
-      JSON.stringify(agentContext, null, 2),
-      "utf-8",
-    )
+    await sdk.json.writeJson(path.join(sdk.paths.synthDir(root), "context.json"), agentContext)
   }
 }
 
@@ -234,7 +228,7 @@ async function generateDocs(targetDir: string) {
 
 async function scaffoldWebsite(targetDir: string, projectName: string) {
   const websiteDir = path.join(targetDir, "website")
-  await fs.mkdir(websiteDir, { recursive: true })
+  await sdk.files.ensureDirectory(websiteDir)
 
   const indexHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -250,41 +244,30 @@ async function scaffoldWebsite(targetDir: string, projectName: string) {
 </html>
 `
 
-  await fs.writeFile(path.join(websiteDir, "index.html"), indexHtml, "utf-8")
-  await fs.writeFile(path.join(websiteDir, "README.md"), `# ${projectName} Website\n\nStatic website generated by Synth bootstrap.\n`, "utf-8")
+  await sdk.files.writeFile(path.join(websiteDir, "index.html"), indexHtml)
+  await sdk.files.writeFile(path.join(websiteDir, "README.md"), `# ${projectName} Website\n\nStatic website generated by Synth bootstrap.\n`)
 }
 
 async function scaffoldExample(targetDir: string, projectName: string) {
   const examplesDir = path.join(targetDir, "examples")
-  await fs.mkdir(examplesDir, { recursive: true })
+  await sdk.files.ensureDirectory(examplesDir)
   const exampleDir = path.join(examplesDir, "bootstrap-generated")
-  await fs.mkdir(exampleDir, { recursive: true })
+  await sdk.files.ensureDirectory(exampleDir)
 
-  await fs.writeFile(
+  await sdk.files.writeFile(
     path.join(exampleDir, "README.md"),
     `# ${projectName} Example\n\nGenerated by Synth bootstrap.\n`,
-    "utf-8",
   )
 }
 
 async function runGovern(targetDir: string): Promise<{ success: boolean; output: string }> {
   const verdict = checkGovernDelegation(targetDir)
   if (!verdict.allowed) return { success: false, output: verdict.message }
-  return new Promise((resolve) => {
-    const child = spawn(npmCommand(), ["run", "govern"], {
-      cwd: targetDir,
-      stdio: "pipe",
-      env: verdict.childEnv,
-    })
-
-    let output = ""
-    child.stdout?.on("data", (data) => { output += data })
-    child.stderr?.on("data", (data) => { output += data })
-
-    child.on("close", (code) => {
-      resolve({ success: code === 0, output })
-    })
+  const result = await sdk.process.spawn(npmCommand(), ["run", "govern"], {
+    cwd: targetDir,
+    env: verdict.childEnv,
   })
+  return { success: result.status === 0, output: result.stdout + result.stderr }
 }
 
 export async function runBootstrap(targetDir: string, options: BootstrapOptions) {
@@ -319,11 +302,8 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
 
   // Generate docs only if docs directory exists; otherwise this is a fresh project.
   const docsDir = path.join(resolvedDir, "docs")
-  try {
-    await fs.access(docsDir)
+  if (await sdk.files.exists(docsDir)) {
     await generateDocs(resolvedDir)
-  } catch {
-    // no docs directory; skip generation
   }
 
   if (options.withWebsite) {
@@ -340,9 +320,8 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
     success: true,
     output: governDelegationMessage("missing-package-json"),
   }
-  try {
-    await fs.access(packageJsonPath)
-    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"))
+  if (await sdk.files.exists(packageJsonPath)) {
+    const packageJson = await sdk.json.readJson<Record<string, any>>(packageJsonPath)
     if (packageJson.scripts?.govern) {
       governResult = await runGovern(resolvedDir)
     } else {
@@ -351,8 +330,6 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
         output: governDelegationMessage("missing-govern-script"),
       }
     }
-  } catch {
-    // no package.json; keep missing-package-json message
   }
 
   return {

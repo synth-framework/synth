@@ -17,8 +17,9 @@ import {
 } from "../runtime/governance-resolver.js"
 import { deriveValidTransition } from "../runtime/transition-engine.js"
 import { toResumeNextAction } from "../runtime/status-projection.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/paths.js"
+import { dataDir, ensureDataDir } from "../sdk/paths/index.js"
+import { root } from "../sdk/workspace/index.js"
+import { printJson, printError } from "./print.js"
 import type { SynthEvent, CanonicalState } from "../types/index.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
 
@@ -69,14 +70,7 @@ export type ResumeBriefing = {
   warnings: Warning[]
 }
 
-function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
-}
-
-function fail(error: string): never {
-  printJson({ status: "error", error })
-  process.exit(1)
-}
+// printJson and printError imported from ./print.js
 
 function extractName(payload: any): string | undefined {
   if (!payload || typeof payload !== "object") return undefined
@@ -270,11 +264,11 @@ export async function buildResumeBriefing(
   cwd: string,
   overrides?: { logPath?: string; statePath?: string; snapshotsDir?: string },
 ): Promise<ResumeBriefing> {
-  const dataDir = overrides?.logPath
+  const resolvedDataDir = overrides?.logPath
     ? path.dirname(path.resolve(cwd, overrides.logPath))
-    : getRuntimeDataDir(cwd)
+    : dataDir(cwd)
 
-  const result = await resolveGovernanceContext(cwd, { dataDir })
+  const result = await resolveGovernanceContext(cwd, { dataDir: resolvedDataDir })
 
   if (isGovernanceResolutionFailure(result)) {
     // Resume is a diagnostic command; even when resolution fails we
@@ -376,12 +370,12 @@ export async function buildResumeBriefing(
 export async function cmdExplainResume(flags: Record<string, string | boolean>): Promise<void> {
   const logFlag = flags.log
   if (logFlag !== undefined && typeof logFlag !== "string") {
-    fail("--log requires a path")
+    printError("--log requires a path")
   }
 
   const cwd = process.cwd()
   if (!logFlag) {
-    await ensureRuntimeDataDir(cwd)
+    await ensureDataDir(cwd)
   }
   const overrides = logFlag
     ? {

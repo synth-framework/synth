@@ -1,0 +1,84 @@
+{
+  "id": "governability-benchmark-program-027",
+  "incident": "Program 027 Homepage Governability Certification Failure",
+  "incidentReviewPath": "docs/expeditions/EXP-PROGRAM-027-incident-review.md",
+  "failureClass": "compliant but not converged",
+  "failureStatement": "Program 027 had strong specifications, design tokens, component catalogs, and explicit anti-goals. The implementation still drifted toward a generic SaaS dashboard aesthetic. The agent was compliant with expedition definitions of done but not converged with the originating human intent.",
+  "rootCause": "The Mission allowed an interpretation space containing many admissible outcomes. Governance did not collapse that space to acceptable interpretations before implementation.",
+  "driftClasses": [
+    {
+      "id": "D01",
+      "name": "Generic dashboard",
+      "description": "Metric cards, promotional banners, disconnected widgets, or other generic SaaS dashboard patterns become the dominant visual language."
+    },
+    {
+      "id": "D02",
+      "name": "Marketing-first landing",
+      "description": "Mission Studio appears as one section among many marketing sections rather than as the homepage itself."
+    },
+    {
+      "id": "D03",
+      "name": "Chat-primary interface",
+      "description": "Chat bubbles or decorative AI imagery become the dominant interaction model."
+    },
+    {
+      "id": "D04",
+      "name": "Page-jump navigation",
+      "description": "Lifecycle phases are rendered as separate pages instead of a persistent workspace."
+    },
+    {
+      "id": "D05",
+      "name": "Storybook aesthetic",
+      "description": "Components are displayed as isolated specimens rather than integrated into a coherent workspace."
+    },
+    {
+      "id": "D06",
+      "name": "Placeholder artifacts",
+      "description": "Fake terminal output, mock data, or other placeholders unrelated to runtime are used."
+    },
+    {
+      "id": "D07",
+      "name": "Hardcoded values",
+      "description": "Visual values are defined outside the LDS-002 token system."
+    },
+    {
+      "id": "D08",
+      "name": "Workspace dilution",
+      "description": "Mission Studio shell is present but not the dominant visual artifact."
+    }
+  ],
+  "validBranches": [
+    {
+      "id": "V01",
+      "name": "Persistent workspace",
+      "description": "Mission Studio is the homepage; lifecycle phases are scroll-driven workspace states."
+    },
+    {
+      "id": "V02",
+      "name": "Hero invitation",
+      "description": "A short hero section invites the visitor into Mission Studio, then transitions into the persistent workspace."
+    },
+    {
+      "id": "V03",
+      "name": "Deterministic demo",
+      "description": "A simulated operator execution demonstrates SYNTH deterministically without requiring a live agent."
+    },
+    {
+      "id": "V04",
+      "name": "Light-theme default",
+      "description": "The workspace defaults to a light theme; dark mode is optional."
+    }
+  ],
+  "correctiveActions": [
+    {
+      "program": "EXP-PROGRAM-036",
+      "purpose": "Intent capture, refinement, alignment contract, divergence gate"
+    },
+    {
+      "program": "EXP-PROGRAM-035",
+      "purpose": "Review gate, acceptance gate, execution-correctness enforcement"
+    }
+  ],
+  "certificationExpedition": "EXP-GOVERNABILITY-001",
+  "closureCriteriaPath": "docs/strategy/governability-closure-roadmap.md"
+}

@@ -2,12 +2,16 @@
 
 > **Product expedition.** Link homepage artifacts and concepts to canonical SYNTH documentation.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Product Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-004 (Artifact System), EXP-HOME-008 (Architecture Explorer), EXP-HOME-009 (Capabilities Explorer)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/documentation-integration.md`](../design/documentation-integration.md).
 
 ---
 

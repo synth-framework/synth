@@ -11,7 +11,7 @@
 import {
   createPosixFilesystemProvider,
   type FilesystemProvider,
-} from "../../environment/filesystem-capability.js"
+} from "../../infra/filesystem-provider.js"
 import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation } from "../types.js"
 
 export const FILESYSTEM_ADAPTER_ID = "discovery:filesystem"

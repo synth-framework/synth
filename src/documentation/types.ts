@@ -27,6 +27,9 @@ export type MarkdownKnowledge = {
   /** Headings found in the document */
   headings: string[]
 
+  /** Heading details with depth levels for weighting */
+  headingDetails: { text: string; level: number }[]
+
   /** Bulleted list items found in the document */
   listItems: string[]
 
@@ -35,6 +38,15 @@ export type MarkdownKnowledge = {
 
   /** Raw body text (first paragraph after title) */
   summary?: string
+
+  /** Document classification */
+  documentClass?: "adr" | "expedition" | "reference" | "other"
+
+  /** Parsed ADR metadata (Status, Date, Deciders) */
+  adrMetadata?: { status: string; date: string; deciders: string }
+
+  /** Parsed Expedition metadata (Status, Kind, Priority, Program) */
+  expeditionMetadata?: { status: string; kind: string; priority: string; program: string }
 }
 
 /** A concept mined from one or more knowledge sources. */
@@ -61,6 +73,8 @@ export type KnowledgeNode = {
   domain?: string
   audience?: string
   sources: string[]
+  /** Arbitrary metadata attached to enriched document nodes (ADR status, expedition fields, etc.) */
+  metadata?: Record<string, string>
 }
 
 /** A directed edge in the knowledge graph. */

@@ -10,9 +10,10 @@
 //   synth explain identity [--json]
 // ============================================================
 
-import fs from "fs/promises"
 import path from "path"
-import { getRuntimeDataDir } from "../infra/paths.js"
+import * as sdk from "../sdk/index.js"
+import { dataDir, manifestPath } from "../sdk/paths/index.js"
+import { printJson } from "./print.js"
 
 export type RepositoryIdentity = {
   status: "ok"
@@ -34,44 +35,8 @@ export type RepositoryIdentity = {
   }
 }
 
-function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
-}
-
-async function pathExists(target: string): Promise<boolean> {
-  try {
-    await fs.access(target)
-    return true
-  } catch {
-    return false
-  }
-}
-
-async function readJsonMaybe(target: string): Promise<Record<string, any> | undefined> {
-  try {
-    return JSON.parse(await fs.readFile(target, "utf-8"))
-  } catch {
-    return undefined
-  }
-}
-
-async function listMaybe(dir: string): Promise<string[]> {
-  try {
-    return await fs.readdir(dir)
-  } catch {
-    return []
-  }
-}
-
-async function countEventLog(eventLogPath: string): Promise<number> {
-  try {
-    const text = await fs.readFile(eventLogPath, "utf-8")
-    const trimmed = text.trim()
-    if (!trimmed) return 0
-    return trimmed.split("\n").length
-  } catch {
-    return 0
-  }
+async function countEventLog(root: string): Promise<number> {
+  return sdk.events.countEvents(root)
 }
 
 /**
@@ -81,17 +46,19 @@ async function countEventLog(eventLogPath: string): Promise<number> {
  * evidence every time the command runs.
  */
 export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryIdentity> {
-  const dataDir = getRuntimeDataDir(cwd)
-  const manifest = await readJsonMaybe(path.join(cwd, ".synth", "manifest.json"))
-  const state = await readJsonMaybe(path.join(dataDir, "canonical-state.json"))
-  const eventCount = await countEventLog(path.join(dataDir, "event-log.jsonl"))
+  const rootDataDir = dataDir(cwd)
+  const manifest = await sdk.json.readJsonMaybe<Record<string, any>>(manifestPath(cwd))
+  const state = await sdk.state.readState(cwd)
+  const eventCount = await countEventLog(cwd)
 
-  const drafts = (await listMaybe(path.join(dataDir, "drafts"))).filter((f) => f.endsWith(".json"))
-  const snapshots = (await listMaybe(path.join(dataDir, "snapshots"))).filter((f) => f.endsWith(".json"))
-  const expeditionFiles = (await listMaybe(path.join(cwd, "docs", "expeditions"))).filter(
+  const drafts = (await sdk.files.listDirectory(path.join(rootDataDir, "drafts"))).filter((f) => f.endsWith(".json"))
+  const snapshots = (await sdk.files.listDirectory(path.join(rootDataDir, "snapshots"))).filter((f) =>
+    f.endsWith(".json")
+  )
+  const expeditionFiles = (await sdk.files.listDirectory(path.join(cwd, "docs", "expeditions"))).filter(
     (f) => f.startsWith("EXP-") && f.endsWith(".md"),
   )
-  const recordedJourney = await pathExists(path.join(cwd, "recorded-journey"))
+  const recordedJourney = await sdk.files.exists(path.join(cwd, "recorded-journey"))
 
   const missions = state?.missions ?? {}
   const missionCount = Object.keys(missions).length
@@ -104,9 +71,9 @@ export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryId
     kind = manifest?.projectName ? `${manifest.projectName} example` : "SYNTH First Contact example"
   } else if (manifest?.schema === "synth-bootstrap-manifest-v1") {
     kind = manifest.projectName || "SYNTH project"
-  } else if (expeditionFiles.length > 0 && (await pathExists(path.join(cwd, "src")))) {
+  } else if (expeditionFiles.length > 0 && (await sdk.files.exists(path.join(cwd, "src")))) {
     kind = "SYNTH source repository"
-  } else if (await pathExists(path.join(cwd, ".synth", "manifest.json"))) {
+  } else if (await sdk.files.exists(manifestPath(cwd))) {
     kind = "SYNTH project directory"
   } else {
     kind = "Unclassified repository"

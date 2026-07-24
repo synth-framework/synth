@@ -5,7 +5,7 @@
 // Deterministic for a fixed artifact and adapter version.
 // ============================================================
 
-import crypto from "crypto"
+import { stableId } from "../../../sdk/hashing/index.js"
 import type {
   Ambiguity,
   AmbiguityClass,
@@ -28,11 +28,6 @@ import type { IntentExtractionResult } from "../../../first-contact/extract/type
 
 const ADAPTER_ID = "rule-based-intent-modeler"
 const ADAPTER_VERSION = "1.0.0"
-
-function stableId(...parts: string[]): string {
-  const normalized = parts.map((p) => p.toLowerCase().trim()).join("|")
-  return crypto.createHash("sha256").update(normalized).digest("hex").slice(0, 16)
-}
 
 function avg(values: number[]): number {
   if (values.length === 0) return 0

@@ -12,8 +12,15 @@ import { CheckpointStore } from "../infra/checkpoint-store.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/paths.js"
+import {
+  dataDir,
+  ensureDataDir,
+  eventLogFile,
+  stateFile,
+  checkpointsFile,
+  snapshotsDir,
+  manifestPath,
+} from "../sdk/paths/index.js"
 import type { VerificationContext, DecisionRecord } from "./types.js"
 
 async function pathExists(target: string): Promise<boolean> {
@@ -34,18 +41,20 @@ async function listDraftIds(draftsDir: string): Promise<string[]> {
 }
 
 export async function buildVerificationContext(cwd: string): Promise<VerificationContext> {
-  await ensureRuntimeDataDir(cwd)
-  const dataDir = getRuntimeDataDir(cwd)
-  const eventLogPath = path.join(dataDir, "event-log.jsonl")
-  const statePath = path.join(dataDir, "canonical-state.json")
-  const checkpointPath = path.join(dataDir, "checkpoints.json")
-  const snapshotsDir = path.join(dataDir, "snapshots")
-  const draftsDir = path.join(dataDir, "drafts")
-  const manifestPath = path.join(cwd, ".synth", "manifest.json")
+  await ensureDataDir(cwd)
+  const rootDataDir = dataDir(cwd)
+  const eventLogPath = eventLogFile(cwd)
+  const statePath = stateFile(cwd)
+  const checkpointPath = checkpointsFile(cwd)
+  const snapshotsDataDir = snapshotsDir(cwd)
+  const draftsDir = path.join(rootDataDir, "drafts")
+  const manifest = manifestPath(cwd)
 
-  const hasManifest = await pathExists(manifestPath)
+  const hasManifest = await pathExists(manifest)
   const hasEventLog = await pathExists(eventLogPath)
 
+  // Read-only instances: no write token provided, so
+  // ensureAuthorized() will throw on any write attempt.
   const eventStore = new EventStore(eventLogPath)
   const stateStore = new StateStore(statePath)
   const checkpointStore = new CheckpointStore(checkpointPath)
@@ -53,7 +62,7 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
 
   const verifier = createReplayVerifier(eventStore, stateStore)
 
-  const decisionsRead = await listDecisions(dataDir)
+  const decisionsRead = await listDecisions(rootDataDir)
   const decisions: { records: DecisionRecord[]; chainValid: boolean } = {
     records: decisionsRead.records.map((r) => ({
       type: r.type,
@@ -69,7 +78,7 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
   let snapshotIds: string[] = []
   let snapshotError: string | undefined
   try {
-    const snapshotStore = createFileSystemSnapshotStore(snapshotsDir)
+    const snapshotStore = createFileSystemSnapshotStore(snapshotsDataDir)
     const stored = await snapshotStore.list()
     snapshotIds = stored.map((s) => s.snapshot.id)
   } catch (err) {
@@ -80,7 +89,7 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
 
   return {
     cwd,
-    dataDir,
+    dataDir: rootDataDir,
     hasManifest,
     hasEventLog,
     eventStore,

@@ -49,29 +49,25 @@ import { getSnapshotLineage } from "../mission-studio/snapshot-lineage.js"
 import type { GraphIntegrityViolation } from "../core/graph-integrity.js"
 import type { ReplayAttributionReport } from "../core/replay-attribution.js"
 import type { StoredSnapshot } from "../mission-studio/types.js"
-import type { CanonicalState, SynthEvent } from "../types/index.js"
-import { getRuntimeDataDir } from "../infra/paths.js"
-import { ensureRuntimeDataDir } from "../infra/paths.js"
+import type { CanonicalState, DerivedState, SynthEvent } from "../types/index.js"
+import { buildDerivedState } from "../state/derived/index.js"
+import {
+  dataDir,
+  ensureDataDir,
+  eventLogFile,
+  stateFile,
+  checkpointsFile,
+  snapshotsDir,
+} from "../sdk/paths/index.js"
+import { root } from "../sdk/workspace/index.js"
+import { printJson, printError } from "./print.js"
 
 export const EXPLAIN_OBSERVABILITY_VERSION = 1
 
 const DEFAULT_LOG_DISPLAY = path.posix.join(
-  path.relative(process.cwd(), getRuntimeDataDir(process.cwd())).replace(/\\/g, "/") || ".",
+  path.relative(root(), dataDir(root())).replace(/\\/g, "/") || ".",
   "event-log.jsonl",
 )
-
-// ============================================================
-// Small local helpers (mirroring src/cli/synth.ts idioms)
-// ============================================================
-
-function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
-}
-
-function fail(error: string): never {
-  printJson({ status: "error", error })
-  process.exit(1)
-}
 
 function flagOn(flags: Record<string, string | boolean>, name: string): boolean {
   return flags[name] === true || flags[name] === "true"
@@ -111,19 +107,30 @@ export type ExplainPaths = {
 export function resolveExplainPaths(flags: Record<string, string | boolean>): ExplainPaths {
   const logFlag = flags.log
   if (logFlag !== undefined && typeof logFlag !== "string") {
-    fail("--log requires a path")
+    printError("--log requires a path")
   }
-  const logPath = logFlag
-    ? path.resolve(process.cwd(), logFlag)
-    : path.join(process.cwd(), DEFAULT_LOG_DISPLAY)
-  const logDir = path.dirname(logPath)
+  const cwd = process.cwd()
+  if (logFlag) {
+    const logPath = path.resolve(cwd, logFlag)
+    const logDir = path.dirname(logPath)
+    return {
+      logPath,
+      logDisplay: logFlag,
+      logDir,
+      statePath: path.join(logDir, "canonical-state.json"),
+      checkpointPath: path.join(logDir, "checkpoint.json"),
+      snapshotsDir: path.join(logDir, "snapshots"),
+    }
+  }
+
+  const projectRoot = root()
   return {
-    logPath,
-    logDisplay: logFlag ?? DEFAULT_LOG_DISPLAY,
-    logDir,
-    statePath: path.join(logDir, "canonical-state.json"),
-    checkpointPath: path.join(logDir, "checkpoint.json"),
-    snapshotsDir: path.join(logDir, "snapshots"),
+    logPath: eventLogFile(projectRoot),
+    logDisplay: DEFAULT_LOG_DISPLAY,
+    logDir: dataDir(projectRoot),
+    statePath: stateFile(projectRoot),
+    checkpointPath: checkpointsFile(projectRoot),
+    snapshotsDir: snapshotsDir(projectRoot),
   }
 }
 
@@ -139,7 +146,7 @@ type ExplainContext = {
 async function loadExplainContext(flags: Record<string, string | boolean>): Promise<ExplainContext> {
   const paths = resolveExplainPaths(flags)
   if (typeof flags.log === "string" && !(await pathExists(paths.logPath))) {
-    fail(`event log not found: ${flags.log}`)
+    printError(`event log not found: ${flags.log}`)
   }
 
   // File persistence is required to read real logs; bootstrap with
@@ -254,6 +261,7 @@ const KIND_LABEL: Record<AggregateNode["kind"], string> = {
 
 function stateLookup(
   state: CanonicalState,
+  derivedState: DerivedState,
   kind: AggregateNode["kind"],
   id: string,
 ): { status?: string; name?: string; title?: string } | undefined {
@@ -267,13 +275,14 @@ function stateLookup(
     case "objective":
       return state.objectives[id]
     case "generatedWorkItem":
-      return state.generatedWorkItems[id]
+      return derivedState.generatedWorkItems[id]
   }
 }
 
 function buildAggregateTree(ec: ExplainContext): { roots: AggregateNode[]; nodes: AggregateNode[] } {
   const annotations = violationsByAggregate(ec.graph.violations)
   const nodes = new Map<string, AggregateNode>()
+  const derivedState = buildDerivedState(ec.events)
 
   // First registration wins, mirroring validateAggregateGraph: duplicate
   // creations are flagged through the violation annotations, not by
@@ -289,7 +298,7 @@ function buildAggregateTree(ec: ExplainContext): { roots: AggregateNode[]; nodes
         spec.parentKey && typeof entity?.[spec.parentKey] === "string"
           ? (entity[spec.parentKey] as string)
           : undefined
-      const materialized = stateLookup(ec.state, spec.kind, id)
+      const materialized = stateLookup(ec.state, derivedState, spec.kind, id)
       const name =
         materialized?.name ??
         materialized?.title ??
@@ -451,7 +460,7 @@ async function buildProposalsReport(ec: ExplainContext): Promise<Record<string, 
     }
   }
   if (load.stored === null) {
-    fail(`snapshot certification failed at ${ec.paths.snapshotsDir}: ${load.error ?? "unknown"}`)
+    printError(`snapshot certification failed at ${ec.paths.snapshotsDir}: ${load.error ?? "unknown"}`)
   }
 
   const proposals: ProposalEntry[] = []
@@ -520,7 +529,7 @@ async function buildSnapshotsReport(ec: ExplainContext): Promise<Record<string, 
     }
   }
   if (load.stored === null) {
-    fail(`snapshot certification failed at ${ec.paths.snapshotsDir}: ${load.error ?? "unknown"}`)
+    printError(`snapshot certification failed at ${ec.paths.snapshotsDir}: ${load.error ?? "unknown"}`)
   }
 
   const stored = load.stored
@@ -902,12 +911,12 @@ export async function cmdExplainObservability(
   flags: Record<string, string | boolean>,
 ): Promise<void> {
   if (!sub || !["lineage", "proposals", "snapshots", "graph", "diagnostics", "status", "all"].includes(sub)) {
-    fail(USAGE)
+    printError(USAGE)
   }
 
   // Migrate legacy data/ into .synth/data/ for governed projects before
   // resolving any default paths.
-  await ensureRuntimeDataDir(process.cwd())
+  await ensureDataDir(root())
 
   const json = flagOn(flags, "json")
   const summary = flagOn(flags, "summary")

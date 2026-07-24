@@ -9,6 +9,8 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { bootstrap } from "../dist/core/bootstrap.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
@@ -73,17 +75,75 @@ async function createAndApproveMission(projectDir) {
   assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
   const draftId2 = parseJson(evidenceResult.stdout).draftId
 
-  const approveResult = runSynth(["mission", "approve", "--draft-id", draftId2], projectDir)
+  // Phase 2 governance: Mission approval requires an aligned Alignment Contract.
+  // The CLI operator workflow for creating this contract is not yet implemented,
+  // so tests construct it directly through the governance capabilities.
+  const dataDir = path.join(projectDir, ".synth", "data")
+  const gateCtx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      eventLogPath: path.join(dataDir, "event-log.jsonl"),
+      statePath: path.join(dataDir, "canonical-state.json"),
+    },
+  })
+  const { contractId } = await createAlignedContract(gateCtx)
+
+  const approveResult = runSynth(
+    ["mission", "approve", "--draft-id", draftId2, "--alignment-contract-id", contractId],
+    projectDir,
+  )
   assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
   const approveOutput = parseJson(approveResult.stdout)
   assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
   assert(approveOutput.decision?.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
   const missionId = approveOutput.runtime?.missionId
   assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
-  return missionId
+  return { missionId, gateCtx, contractId }
 }
 
-async function testLifecycleTransitions(projectDir, missionId) {
+async function certifyConvergence(gateCtx, missionId, expeditionId, contractId) {
+  const result = await gateCtx.api.handleIntent({
+    actor: "test",
+    capability: "CertifyConvergence",
+    payload: {
+      missionId,
+      expeditionId,
+      alignmentContractId: contractId,
+      observedFeatures: {
+        hasPersistentHeader: true,
+        hasPersistentSidebar: true,
+        hasScrollDrivenPhases: true,
+      },
+      ruleSetId: "program-027-homepage",
+      artifacts: [
+        {
+          path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`,
+          hash: `test-${missionId}-${expeditionId}`,
+          description: "Test implementation reference",
+        },
+      ],
+      runtimeEvidence: [
+        {
+          source: `synth://missions/${missionId}/expeditions/${expeditionId}/runtime`,
+          observation: "Runtime behavior observed",
+          timestamp: 0,
+        },
+      ],
+      executionEvidence: [
+        {
+          executionId: `test-execution-${expeditionId}`,
+          result: "passed",
+          outcome: "completed",
+        },
+      ],
+      certifier: { kind: "engine", id: "convergence-certification" },
+    },
+  })
+  assert(result.status === "ok", `CertifyConvergence must succeed: ${result.error}`)
+  assert(result.result?.decision === "converged", `Convergence certification must converge, got ${result.result?.decision}`)
+}
+
+async function testLifecycleTransitions(projectDir, missionId, gateCtx, contractId) {
   const createResult = runSynth(
     ["expedition", "create", "--mission", missionId, "--subject", "Test Expedition", "--goal", "Test goal"],
     projectDir,
@@ -112,6 +172,8 @@ async function testLifecycleTransitions(projectDir, missionId) {
   assert(startOutput.kind === "ExpeditionStarted", `expedition start should return ExpeditionStarted, got ${startOutput.kind}`)
   assert(startOutput.result.status === "executing", `expedition should be executing, got ${startOutput.result.status}`)
 
+  await certifyConvergence(gateCtx, missionId, draftId, contractId)
+
   const completeResult = runSynth(["expedition", "complete", "--id", draftId, "--evidence", "/tmp/evidence.txt"], projectDir)
   assert(completeResult.status === 0, `expedition complete must exit 0:\n${completeResult.stderr}`)
   const completeOutput = parseJson(completeResult.stdout)
@@ -134,7 +196,7 @@ async function testMissingMissionRejection(projectDir) {
   console.log("[PASS] Expedition create rejects a missing mission")
 }
 
-async function testInvalidTransitions(projectDir, missionId) {
+async function testInvalidTransitions(projectDir, missionId, gateCtx, contractId) {
   const createResult = runSynth(
     ["expedition", "create", "--mission", missionId, "--subject", "Invalid Expedition", "--goal", "Invalid goal"],
     projectDir,
@@ -162,6 +224,7 @@ async function testInvalidTransitions(projectDir, missionId) {
 
   // Start and complete, then try to start again.
   runSynth(["expedition", "start", "--id", draftId], projectDir)
+  await certifyConvergence(gateCtx, missionId, draftId, contractId)
   runSynth(["expedition", "complete", "--id", draftId], projectDir)
 
   const restartResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
@@ -196,11 +259,15 @@ async function main() {
   console.log("Running expedition lifecycle tests...")
   const projectDir = await setupProject()
   try {
-    const missionId = await createAndApproveMission(projectDir)
+    const { missionId, gateCtx, contractId } = await createAndApproveMission(projectDir)
     await testMissingMissionRejection(projectDir)
-    await testLifecycleTransitions(projectDir, missionId)
-    await testInvalidTransitions(projectDir, missionId)
-    await testLegacyExpeditionIdFlag(projectDir, missionId)
+    await testLifecycleTransitions(projectDir, missionId, gateCtx, contractId)
+    // Convergence certification auto-chains mission completion, so the remaining
+    // transition tests need fresh active missions.
+    const { missionId: missionId2, gateCtx: gateCtx2, contractId: contractId2 } = await createAndApproveMission(projectDir)
+    await testInvalidTransitions(projectDir, missionId2, gateCtx2, contractId2)
+    const { missionId: missionId3 } = await createAndApproveMission(projectDir)
+    await testLegacyExpeditionIdFlag(projectDir, missionId3)
     console.log("\nAll expedition lifecycle tests passed.")
   } finally {
     await fs.rm(projectDir, { recursive: true, force: true })

@@ -16,8 +16,8 @@
 // execution-state mutation authority.
 // ============================================================
 
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { canonicalHash } from "./canonical-json.js"
 
 const RECORD_SCHEMA = "synth-draft-integrity-v1"
@@ -106,7 +106,7 @@ export async function writeDraftIntegrityRecord(
   serializedDraft: Record<string, unknown>,
   fsProvider?: FilesystemProvider,
 ): Promise<DraftIntegrityRecord> {
-  const fs = fsProvider ?? createPosixFilesystemProvider(draftsDir)
+  const fs = fsProvider ?? createPosixFilesystemProvider(draftsDir, FILESYSTEM_WRITE_TOKEN)
   const name = recordName(draftId)
   if (await fs.pathExists(name)) {
     throw new Error(`INVARIANT_VIOLATION: draft integrity record ${draftId} already exists`)

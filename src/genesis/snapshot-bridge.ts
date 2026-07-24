@@ -143,6 +143,7 @@ export function snapshotToSeedEvents(snapshot: ApprovedMissionModelSnapshot): Ar
       objectives: [],
       discoveries: [],
       decisions: [],
+      dependsOn: [],
       metadata: { source: "ApprovedMissionModelSnapshot" },
       createdAt: timestamp,
       updatedAt: timestamp,

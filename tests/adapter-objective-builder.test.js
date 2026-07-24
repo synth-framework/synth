@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createObjectiveBuilderAdapter } from "../dist/adapters/objective-builder/adapter.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 
 function makeObservation(category, subject, snippet = "") {
   return {

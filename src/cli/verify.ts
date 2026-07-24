@@ -6,10 +6,7 @@
 // ============================================================
 
 import { runVerification } from "../verification/engine.js"
-
-function printJson(obj: unknown) {
-  console.log(JSON.stringify(obj, null, 2))
-}
+import { printJson } from "./print.js"
 
 export async function cmdVerify(): Promise<void> {
   const report = await runVerification(process.cwd())

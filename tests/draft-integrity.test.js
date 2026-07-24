@@ -6,16 +6,19 @@
 // integrity record. Forgery (the TaskPRO chronology: overall 0.67→0.85)
 // must produce a prescriptive rejection, never approval.
 
-import { spawnSync } from "node:child_process"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
-import { fileURLToPath } from "node:url"
 
 import { MissionStudio } from "../dist/mission-studio/engine.js"
-
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const DIST_SYNTH = path.join(REPO_ROOT, "dist", "cli", "synth.js")
+import {
+  assertCliBuilt,
+  makeWorkspace,
+  cleanup,
+  createDraft,
+  readDraft,
+  writeDraft,
+  approveWithAlignment as approve,
+} from "./helpers/trust-workflow.js"
 
 const TAMPER_PATTERN = /integrity (record|violation)|tamper|divergen/i
 
@@ -32,58 +35,6 @@ function assert(condition, message) {
   }
 }
 
-function makeWorkspace() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-draft-"))
-  const init = runCli(dir, ["init", "--name", "Draft Integrity Test"])
-  if (init.status !== 0) {
-    throw new Error(`synth init failed in test workspace: ${init.output}`)
-  }
-  return dir
-}
-
-function cleanup(dir) {
-  fs.rmSync(dir, { recursive: true, force: true })
-}
-
-function runCli(dir, args) {
-  const env = { ...process.env }
-  delete env.SYNTH_GOVERN_DEPTH
-  const res = spawnSync(process.execPath, [DIST_SYNTH, ...args], {
-    cwd: dir,
-    env,
-    timeout: 30000,
-    encoding: "utf8",
-    killSignal: "SIGKILL",
-  })
-  return {
-    status: res.status,
-    output: `${res.stdout || ""}${res.stderr || ""}`,
-    timedOut: Boolean(res.error && res.error.code === "ETIMEDOUT"),
-  }
-}
-
-function createDraft(dir) {
-  const r = runCli(dir, ["mission", "create", "--subject", "Fixture Mission", "--purpose", "Demonstrate deterministic planning."])
-  const match = r.output.match(/"draftId":\s*"([^"]+)"/)
-  return { draftId: match ? match[1] : undefined, result: r }
-}
-
-function draftPath(dir, draftId) {
-  return path.join(dir, ".synth", "data", "drafts", `${draftId}.json`)
-}
-
-function readDraft(dir, draftId) {
-  return JSON.parse(fs.readFileSync(draftPath(dir, draftId), "utf8"))
-}
-
-function writeDraft(dir, draftId, data) {
-  fs.writeFileSync(draftPath(dir, draftId), JSON.stringify(data, null, 2))
-}
-
-function approve(dir, draftId) {
-  return runCli(dir, ["mission", "approve", "--draft-id", draftId])
-}
-
 function makeObservation(overrides = {}) {
   return {
     id: "obs-fixture-1",
@@ -97,22 +48,19 @@ function makeObservation(overrides = {}) {
   }
 }
 
-function main() {
-  if (!fs.existsSync(DIST_SYNTH)) {
-    console.error("dist/cli/synth.js not found; run `npm run build` first.")
-    process.exit(1)
-  }
+async function main() {
+  assertCliBuilt()
 
   // 1. TaskPRO forgery, verbatim: edit confidence overall upward.
   {
-    const dir = makeWorkspace()
+    const dir = makeWorkspace("draft-forgery")
     try {
-      const { draftId } = createDraft(dir)
+      const draftId = createDraft(dir)
       assert(Boolean(draftId), "Forgery fixture: draft created")
       const draft = readDraft(dir, draftId)
       draft.confidence.overall = 0.95
       writeDraft(dir, draftId, draft)
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "Forgery fixture: forged confidence is not approved")
       assert(TAMPER_PATTERN.test(r.output), "Forgery fixture: rejection names the integrity violation")
     } finally {
@@ -122,10 +70,10 @@ function main() {
 
   // 2. Untouched draft keeps rc.2 behavior exactly (below-threshold rejection, guard silent).
   {
-    const dir = makeWorkspace()
+    const dir = makeWorkspace("draft-untouched")
     try {
-      const { draftId } = createDraft(dir)
-      const r = approve(dir, draftId)
+      const draftId = createDraft(dir)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "Untouched draft: not approved (rc.2 parity)")
       assert(/threshold|confidence/i.test(r.output), "Untouched draft: rejection is the confidence gate, not integrity")
       assert(!TAMPER_PATTERN.test(r.output), "Untouched draft: integrity guard stays silent")
@@ -136,15 +84,15 @@ function main() {
 
   // 3. Hand-crafted draft with no integrity record is uncertifiable.
   {
-    const dir = makeWorkspace()
+    const dir = makeWorkspace("draft-handcrafted")
     try {
-      const { draftId } = createDraft(dir)
+      const draftId = createDraft(dir)
       const draft = readDraft(dir, draftId)
       const forgedId = "handcrafted-forged"
       draft.id = forgedId
       draft.confidence.overall = 0.95
       writeDraft(dir, forgedId, draft)
-      const r = approve(dir, forgedId)
+      const r = await approve(dir, forgedId)
       assert(!r.output.includes('"approved": true'), "Hand-crafted draft: not approved")
       assert(/integrity record/i.test(r.output), "Hand-crafted draft: rejection cites the missing integrity record")
     } finally {
@@ -154,13 +102,13 @@ function main() {
 
   // 4. Editing draft inputs (not just the score) is detected.
   {
-    const dir = makeWorkspace()
+    const dir = makeWorkspace("draft-input-edit")
     try {
-      const { draftId } = createDraft(dir)
+      const draftId = createDraft(dir)
       const draft = readDraft(dir, draftId)
       draft.observations[0].payload.purpose = "Rewritten after creation."
       writeDraft(dir, draftId, draft)
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "Input edit: not approved")
       assert(TAMPER_PATTERN.test(r.output), "Input edit: rejection names the integrity violation")
     } finally {
@@ -197,12 +145,12 @@ function main() {
 
   // 6. Breaking the integrity chain invalidates successors.
   {
-    const dir = makeWorkspace()
+    const dir = makeWorkspace("draft-chain-break")
     try {
       const first = createDraft(dir)
       const second = createDraft(dir)
-      fs.rmSync(path.join(dir, ".synth", "data", "drafts", `${first.draftId}.integrity.json`), { force: true })
-      const r = approve(dir, second.draftId)
+      fs.rmSync(path.join(dir, ".synth", "data", "drafts", `${first}.integrity.json`), { force: true })
+      const r = await approve(dir, second)
       assert(!r.output.includes('"approved": true'), "Chain break: successor draft not approved")
       assert(/integrity violation/i.test(r.output), "Chain break: rejection cites the broken integrity chain")
     } finally {
@@ -225,4 +173,7 @@ function main() {
   if (failed > 0) process.exit(1)
 }
 
-main()
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

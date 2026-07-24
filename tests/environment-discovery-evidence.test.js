@@ -16,6 +16,7 @@ import {
   loadDiscoveryEvidence,
   DISCOVERY_EVIDENCE_PATH,
 } from "../dist/environment/index.js"
+import { FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
 
 function makeInMemoryContext(files = {}, dirs = {}, env = {}, cwd = "/test") {
   const fileMap = { ...files }
@@ -108,7 +109,7 @@ test("verifyDiscoveryReplay detects tampered classification", async () => {
 
 test("persist and load round-trip through the Filesystem capability", async () => {
   const evidence = await produceEvidence()
-  const fs = createInMemoryFilesystemProvider()
+  const fs = createInMemoryFilesystemProvider({}, FILESYSTEM_WRITE_TOKEN)
   await persistDiscoveryEvidence(fs, evidence)
   const loaded = await loadDiscoveryEvidence(fs)
   assert.ok(loaded !== undefined)

@@ -2,12 +2,16 @@
 
 > **Engineering expedition.** Ensure the homepage meets WCAG standards and is usable by everyone.
 
-**Status:** Proposed  
+**Status:** Completed (pending acceptance)  
+**Started:** 2026-07-20  
+**Completed:** 2026-07-20  
 **Kind:** Engineering Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Depends On:** EXP-HOME-002 (Mission Workspace), EXP-HOME-004 (Artifact System)  
 **Blocks:** EXP-HOME-015
+
+> **Specification:** See [`docs/design/accessibility.md`](../design/accessibility.md).
 
 ---
 

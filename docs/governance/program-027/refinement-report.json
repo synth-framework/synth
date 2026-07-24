@@ -1,0 +1,86 @@
+{
+  "id": "refinement-report-mru1jfin-5blzig",
+  "sessionId": "refinement-session-mru1gp51-alh88f",
+  "intentModelId": "intent-model-mru144mr-j9lxxw",
+  "createdAt": 1784601304655,
+  "reviewer": {
+    "kind": "human",
+    "id": "synth-cli-operator"
+  },
+  "initialConfidence": 0.9,
+  "finalConfidence": 0.95,
+  "entries": [
+    {
+      "question": {
+        "id": "verify-objective-alignment",
+        "text": "Objective Alignment: Does the Intent Model clearly state that the homepage is Mission Studio first, not a marketing landing page, dashboard, documentation portal, or product tour?",
+        "category": "objective",
+        "priority": "high"
+      },
+      "answer": "Confirmed. Explicit objective: 'Make Mission Studio the SYNTH homepage.' Implicit objective: 'The homepage must feel like entering a deterministic synthesis environment, not browsing a SaaS landing page.' Non-goals exclude traditional marketing landing page and chat interface. Forbidden interpretations exclude generic SaaS dashboard, marketing-first landing page, and wizard/embedded demo."
+    },
+    {
+      "question": {
+        "id": "verify-experience-contract",
+        "text": "Experience Contract: Does the Intent Model explicitly state that the homepage itself IS the first Mission Studio experience, not that it contains Mission Studio?",
+        "category": "experience",
+        "priority": "high"
+      },
+      "answer": "Confirmed. Desired outcome: 'A visitor lands on the SYNTH homepage and experiences Mission Studio as the product.' Explicit objective: 'Immerse visitors in a guided, interactive Mission Studio experience.' Forbidden interpretation: 'Marketing-first landing page where Mission Studio is one section among many.' Supporting content appears only after Mission Studio releases."
+    },
+    {
+      "question": {
+        "id": "verify-visual-evidence-binding",
+        "text": "Visual Evidence Binding: Does the Intent Model reference accepted design boards, accepted design system, and accepted component catalog as binding evidence?",
+        "category": "reference",
+        "priority": "high"
+      },
+      "answer": "Confirmed and strengthened. The answer to q-authoritative binds the Mission Studio design boards, LDS-002, and the component catalog. Reference evidence is now linked to the intent model. Any implementation must be traceable to these references."
+    },
+    {
+      "question": {
+        "id": "verify-scroll-contract",
+        "text": "Scroll Contract: Does the Intent Model specify that the application shell persists while the workspace changes?",
+        "category": "behavior",
+        "priority": "high"
+      },
+      "answer": "Confirmed. Implicit objective: 'Scroll and phase transitions should feel like a single persistent application, not page navigation.' Allowed interpretation: 'Scroll-driven workspace phase transitions.' Forbidden interpretation: 'Page-jump navigation instead of a persistent workspace.' EXP-HOME-004 covers homepage / Mission Studio integration with sticky behavior."
+    },
+    {
+      "question": {
+        "id": "verify-structural-constraints",
+        "text": "Structural Constraints: Does the Intent Model require the implementation to preserve sidebar, workspace, header, artifact cards, timeline, and lifecycle throughout the experience?",
+        "category": "constraint",
+        "priority": "high"
+      },
+      "answer": "Confirmed. Mission Studio is specified as a persistent application with header, sidebar, workspace, status, and footer. EXP-HOME-002 defines reusable components for workspace, sidebar, artifact cards, motion, and feedback. Every visible component corresponds to a runtime object."
+    },
+    {
+      "question": {
+        "id": "verify-forbidden-interpretations",
+        "text": "Forbidden Interpretations: Are the failure modes from the original homepage incident explicitly forbidden?",
+        "category": "constraint",
+        "priority": "high"
+      },
+      "answer": "Confirmed and expanded. Forbidden interpretations include: generic SaaS dashboard, marketing-first landing page, chat interface with decorative AI imagery, page-jump navigation, hardcoded values outside tokens, generic component library, separate pages for lifecycle phases, placeholder artifacts, fake terminal output unrelated to runtime, and disconnected storybook aesthetic."
+    },
+    {
+      "question": {
+        "id": "verify-evidence-coverage",
+        "text": "Evidence Coverage: Can every objective be traced through reference boards, design spec, component spec, homepage spec, and Mission Studio spec?",
+        "category": "reference",
+        "priority": "medium"
+      },
+      "answer": "Confirmed. Each objective maps to canonical evidence: design boards (visual), LDS-002 (tokens/principles), EXP-HOME-001 (design language), EXP-HOME-002 (component catalog), EXP-HOME-003 (UI specification), EXP-HOME-004 (homepage integration), and EXP-HOME-025 (design governance). Interpreations in the Intent Model explicitly cite these references."
+    }
+  ],
+  "assumptionsRemoved": [],
+  "forbiddenInterpretationsAdded": [],
+  "allowedInterpretationsAdded": [],
+  "evidenceLinked": [
+    "The Mission Studio design boards (docs/design/) are the authoritative reference for the visual experience. LDS-002 (docs/design/lds-002.md) is authoritative for tokens, themes, and visual principles. The component catalog defined in EXP-HOME-002 is authoritative for reusable UI. The frozen expeditions EXP-HOME-001, EXP-HOME-002, and EXP-HOME-025 are baseline evidence."
+  ],
+  "openQuestions": [],
+  "recommendation": "approve_for_alignment",
+  "reason": "Refinement review confirms intent is clear, evidence-bound, and aligned with Governance Architecture v1.0. Approved for Alignment Contract creation."
+}

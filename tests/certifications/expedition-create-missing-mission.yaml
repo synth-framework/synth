@@ -47,8 +47,16 @@ recovery:
     expect:
       status: 0
 
+  - name: prepare alignment contract
+    command: ["alignment", "prepare"]
+    capture:
+      jsonPath:
+        contractId: "contractId"
+    expect:
+      status: 0
+
   - name: approve the mission
-    command: ["mission", "approve", "--draft-id", "{{evidenceDraftId}}"]
+    command: ["mission", "approve", "--draft-id", "{{evidenceDraftId}}", "--alignment-contract-id", "{{contractId}}"]
     capture:
       jsonPath:
         missionId: "runtime.missionId"

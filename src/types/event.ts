@@ -58,11 +58,44 @@ export type StateEvent =
   | { type: "MISSION_APPROVED"; missionId: string }
   | { type: "MISSION_COMPLETED"; missionId: string }
   | { type: "MISSION_ARCHIVED"; missionId: string }
+  | { type: "MISSION_PROJECTED"; projectionId: string; contractId: string; missionFingerprint: string }
+  | { type: "PROJECTION_CERTIFIED"; certificationId: string; projectionId: string; checks: unknown[] }
+  | { type: "PROJECTION_CERTIFICATION_FAILED"; certificationId: string; projectionId: string; reason: string }
   | { type: "EXPEDITION_CREATED"; expeditionId: string; missionId: string; name: string }
   | { type: "EXPEDITION_APPROVED"; expeditionId: string }
+  | { type: "EXPEDITION_AUTHORIZED"; expeditionId: string }
   | { type: "EXPEDITION_COMMITTED"; expeditionId: string }
   | { type: "EXPEDITION_STARTED"; expeditionId: string }
   | { type: "EXPEDITION_COMPLETED"; expeditionId: string }
+  // Review gate lifecycle (EXP-PROGRAM-035)
+  | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
+  | { type: "REVIEW_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; decision: string }
+  | { type: "CONDITION_FULFILLED"; expeditionId: string; gateId: string; conditionId: string; fulfilledBy?: string }
+  | { type: "REVISION_REQUESTED"; expeditionId: string; gateId: string; revisionRequestId: string; reason: string }
+  | { type: "ACCEPTANCE_GATE_OPENED"; expeditionId: string; gateId: string; acceptancePackageId: string; policy: unknown }
+  | { type: "ACCEPTANCE_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; recordId: string; decision: string }
+  | { type: "EXPEDITION_CLOSED"; expeditionId: string }
+  | { type: "REFINED_INTENT_APPROVED"; expeditionId: string; refinedIntentId: string; refinedIntent: unknown }
+  // Intent refinement lifecycle (EXP-PROGRAM-036)
+  | { type: "INTENT_MODEL_CREATED"; intentModelId: string; intentModel: unknown }
+  | { type: "INTENT_MODEL_REVISED"; intentModelId: string; intentModel: unknown }
+  | { type: "INTENT_MODEL_SUBMITTED"; intentModelId: string }
+  | { type: "INTENT_MODEL_SUPERSEDED"; intentModelId: string }
+  | { type: "REFINEMENT_SESSION_STARTED"; sessionId: string; intentModelId: string; questions: unknown[] }
+  | { type: "REFINEMENT_QUESTION_ANSWERED"; sessionId: string; questionId: string; answer: string }
+  | { type: "REFINEMENT_REPORT_CREATED"; reportId: string; report: unknown }
+  | { type: "REFINEMENT_REPORT_APPROVED"; reportId: string; intentModelId: string; approvedBy: unknown; reason: string }
+  | { type: "REFINEMENT_REPORT_REJECTED"; reportId: string; intentModelId: string; rejectedBy: unknown; reason: string }
+  // Alignment and divergence lifecycle (EXP-PROGRAM-036 Phase 2)
+  | { type: "ALIGNMENT_CONTRACT_CREATED"; contractId: string; contract: unknown }
+  | { type: "ALIGNMENT_CONTRACT_SUBMITTED"; contractId: string }
+  | { type: "ALIGNMENT_CONTRACT_APPROVED"; contractId: string; approvedBy: unknown }
+  | { type: "ALIGNMENT_CONTRACT_REJECTED"; contractId: string; reason: string }
+  | { type: "ALIGNMENT_CONTRACT_SUPERSEDED"; contractId: string }
+  | { type: "REFERENCE_EVIDENCE_CREATED"; evidenceId: string; evidence: unknown }
+  | { type: "REFERENCE_EVIDENCE_BOUND"; contractId: string; evidenceId: string }
+  | { type: "DIVERGENCE_GATE_OPENED"; gateId: string; contractId: string; intentModelId: string }
+  | { type: "DIVERGENCE_GATE_RESOLVED"; gateId: string; contractId: string; decision: string; reportId: string }
   | { type: "OBJECTIVE_ADDED"; objectiveId: string; expeditionId: string; title: string }
   | { type: "DISCOVERY_RECORDED"; discoveryId: string; expeditionId: string }
   | { type: "DECISION_ACCEPTED"; decisionId: string }
@@ -93,6 +126,9 @@ export type StateEvent =
   | { type: "PROMOTION_PROPOSED"; promotionId: string; pullRequestId: string; from: string; to: string; evidenceReference?: string }
   | { type: "PROMOTION_APPROVED"; promotionId: string; approver: string }
   | { type: "RELEASE_CREATED"; releaseId: string; tag: string; targetCommit: string; evidenceReference?: string }
+  // Convergence Certification lifecycle (EXP-GOVERNABILITY-005)
+  | { type: "CONVERGENCE_CERTIFIED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
+  | { type: "CONVERGENCE_DIVERGED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
 
 /** Execution events — represent transaction lifecycle */
 export type ExecutionEvent =

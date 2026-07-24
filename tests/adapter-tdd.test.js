@@ -5,9 +5,13 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createTddAdapter } from "../dist/adapters/tdd/adapter.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
 import fs from "fs"
 import path from "path"
+import {
+  assertAdapterListed,
+  assertAdapterLifecycle,
+  assertAdapterHealth,
+} from "./helpers/adapter-lifecycle.js"
 
 const TEST_DIR = path.join(process.cwd(), "tests")
 
@@ -19,27 +23,18 @@ function cleanupGeneratedTests() {
 }
 
 test("AdapterRegistry lists tdd adapter", () => {
-  const registry = createAdapterRegistry()
-  assert.ok(registry.list().includes("tdd"))
+  assertAdapterListed("tdd")
 })
 
-test("TddAdapter starts in discovered state", () => {
-  const adapter = createTddAdapter()
-  assert.strictEqual(adapter.state, "discovered")
-  assert.strictEqual(adapter.metadata.category, "methodology")
-  assert.strictEqual(adapter.metadata.kind, "tdd")
-})
-
-test("TddAdapter transitions through lifecycle", async () => {
-  const adapter = createTddAdapter()
-  await adapter.configure({ testDirectory: TEST_DIR, sourceDirectory: path.join(process.cwd(), "src"), coverageEnabled: false })
-  assert.strictEqual(adapter.state, "configured")
-  await adapter.validate()
-  assert.strictEqual(adapter.state, "validated")
-  await adapter.enable()
-  assert.strictEqual(adapter.state, "enabled")
-  await adapter.disable()
-  assert.strictEqual(adapter.state, "disabled")
+test("TddAdapter starts in discovered state and transitions through lifecycle", async () => {
+  await assertAdapterLifecycle(
+    () => createTddAdapter(),
+    {
+      testDirectory: TEST_DIR,
+      sourceDirectory: path.join(process.cwd(), "src"),
+      coverageEnabled: false,
+    },
+  )
 })
 
 test("TddAdapter generates a failing test skeleton", async () => {
@@ -124,8 +119,5 @@ test("TddAdapter generates evidence with timeline", async () => {
 })
 
 test("TddAdapter health check passes when directories exist", async () => {
-  const adapter = createTddAdapter()
-  await adapter.enable()
-  const health = await adapter.checkHealth()
-  assert.strictEqual(health.healthy, true)
+  await assertAdapterHealth(() => createTddAdapter())
 })

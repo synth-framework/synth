@@ -5,7 +5,7 @@
 // Deterministic for fixed inputs and adapter version.
 // ============================================================
 
-import crypto from "crypto"
+import { stableId } from "../../sdk/hashing/index.js"
 import type {
   AdrProjection,
   DocumentationProjection,
@@ -26,11 +26,6 @@ import type {
 const ADAPTER_ID = "rule-based-knowledge-modeler"
 const ADAPTER_VERSION = "1.0.0"
 const GRAPH_VERSION = "1.0.0"
-
-function stableId(...parts: string[]): string {
-  const normalized = parts.map((p) => p.toLowerCase().trim()).join("|")
-  return crypto.createHash("sha256").update(normalized).digest("hex").slice(0, 16)
-}
 
 function provenance(sourceNodeId?: string, sourceField?: string) {
   return {

@@ -158,6 +158,58 @@
       "name": "Website Experience",
       "description": "Public website expeditions (homepage, scenario pages, design system, onboarding surfaces)."
     },
+    "ADOPT": {
+      "name": "Ecosystem Adoption",
+      "description": "Adoption and community growth expeditions."
+    },
+    "CAPABILITY-BOUNDARY": {
+      "name": "Runtime Capability Boundary",
+      "description": "Runtime capability boundary and execution isolation expeditions."
+    },
+    "COMPLEXITY-AUDIT": {
+      "name": "Complexity Audit",
+      "description": "Complexity reduction assessment and simplification analysis expeditions."
+    },
+    "DOC": {
+      "name": "Documentation Remediation",
+      "description": "Legacy documentation projection expeditions."
+    },
+    "GATE": {
+      "name": "Governance Gate Lifecycle",
+      "description": "Refinement, Review, and Acceptance gate lifecycle expeditions."
+    },
+    "GOVERNABILITY": {
+      "name": "Governability Certification",
+      "description": "Governability regression certification and lifecycle proof expeditions."
+    },
+    "GOVERNANCE-ENFORCEMENT": {
+      "name": "Governance Enforcement",
+      "description": "Governance enforcement capability expeditions."
+    },
+    "MUTATION-LIFECYCLE": {
+      "name": "Mutation Lifecycle",
+      "description": "Mutation lifecycle and state transition expeditions."
+    },
+    "PLATFORM": {
+      "name": "Platform Architecture",
+      "description": "Platform architecture, canonical infrastructure, and SDK consolidation expeditions."
+    },
+    "REFINE": {
+      "name": "Intent Refinement",
+      "description": "Intent refinement and Genesis layer expeditions."
+    },
+    "SEC": {
+      "name": "Security",
+      "description": "Security architecture and hardening expeditions."
+    },
+    "SIMPLIFICATION": {
+      "name": "Simplification",
+      "description": "Simplification and responsibility migration expeditions."
+    },
+    "SIMPLIFICATION-ASSESSMENT": {
+      "name": "Simplification Assessment",
+      "description": "Simplification assessment and reporting expeditions."
+    },
     "PROGRAM": {
       "name": "Program",
       "description": "Program-level containers that group related expeditions.",

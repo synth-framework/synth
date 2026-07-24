@@ -30,6 +30,7 @@ export type ExecutionResult = {
   output: unknown
   transaction: Transaction
   events: SynthEvent[]
+  mutations?: MutationRequest[]
 }
 
 /** Intent request — external entry into the system */
@@ -38,6 +39,28 @@ export type IntentRequest = {
   capability: string
   payload: Record<string, unknown>
   context?: Record<string, unknown>
+}
+
+/** Mutation request — a request to mutate an external resource (filesystem, repository, etc.) */
+export type MutationRequest = {
+  capability: string
+  operation: string
+  target: string
+  payload: unknown
+  actor?: string
+}
+
+/** Mutation result — outcome of applying a mutation request */
+export type MutationResult = {
+  success: boolean
+  target: string
+  error?: string
+}
+
+/** Mutation provider — performs mutations for a given capability namespace */
+export type MutationProvider = {
+  readonly namespace: string
+  mutate(request: MutationRequest): Promise<MutationResult>
 }
 
 /** Intent response — system output to external callers */

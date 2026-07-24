@@ -6,7 +6,7 @@
 // Deterministic for a fixed graph and adapter version.
 // ============================================================
 
-import crypto from "crypto"
+import { stableId, shortHash } from "../../../sdk/hashing/index.js"
 import { spawnSync } from "child_process"
 import type {
   AcceptanceScenario,
@@ -24,14 +24,9 @@ import type { KnowledgeGraph, KnowledgeNode } from "../../types.js"
 const ADAPTER_ID = "rule-based-prototype-validator"
 const ADAPTER_VERSION = "1.0.0"
 
-function stableId(...parts: string[]): string {
-  const normalized = parts.map((p) => p.toLowerCase().trim()).join("|")
-  return crypto.createHash("sha256").update(normalized).digest("hex").slice(0, 16)
-}
-
 function computeHash(obj: unknown): string {
   const canonical = JSON.stringify(obj, Object.keys(obj as Record<string, unknown>).sort())
-  return crypto.createHash("sha256").update(canonical).digest("hex").slice(0, 16)
+  return shortHash(canonical, 16)
 }
 
 function buildScenarios(graph: KnowledgeGraph): AcceptanceScenario[] {

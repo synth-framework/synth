@@ -7,13 +7,13 @@
 // It ONLY: receives requests, forwards to gate, returns responses.
 // ============================================================
 
-import crypto from "crypto"
+import * as sdk from "../sdk/index.js"
 import type { IntentRequest, IntentResponse, CapabilityInvocation } from "../types/index.js"
 import type { ExecutionGate, ExecutionGateError } from "../control/execution-gate.js"
 import type { PlanningEngine } from "../planning/index.js"
 import type { MissionStudio } from "../mission-studio/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
-import type { AdapterRegistry } from "../adapters/registry.js"
+import type { AdapterRegistry } from "../mission-studio/adapter-registry.js"
 import type { ApprovedMissionModelSnapshot } from "../mission-studio/types.js"
 import type { SnapshotStore } from "../mission-studio/snapshot-store.js"
 import { validateIntentRequest } from "../validation/validator.js"
@@ -195,39 +195,40 @@ export class SynthAPI {
 
     const { operation, params = {} } = req
     const observations = await this.collectObservations(params)
+    const timestamp = typeof params.timestamp === "number" ? params.timestamp : undefined
 
     switch (operation) {
       case "startSession":
-        return { status: "ok", session: this.missionStudio.startSession(observations) }
+        return { status: "ok", session: this.missionStudio.startSession(observations, timestamp) }
       case "generateQuestions": {
-        const session = this.missionStudio.startSession(observations)
+        const session = this.missionStudio.startSession(observations, timestamp)
         return { status: "ok", questions: session.questions }
       }
       case "computeConfidence": {
-        const session = this.missionStudio.startSession(observations)
+        const session = this.missionStudio.startSession(observations, timestamp)
         return { status: "ok", confidence: session.confidence }
       }
       case "buildWorldModel": {
-        const session = this.missionStudio.startSession(observations)
+        const session = this.missionStudio.startSession(observations, timestamp)
         return { status: "ok", worldModel: session.worldModel }
       }
       case "proposeMissions": {
-        const session = this.missionStudio.startSession(observations)
+        const session = this.missionStudio.startSession(observations, timestamp)
         return { status: "ok", proposals: this.missionStudio.proposeMissions(session) }
       }
       case "proposeExpeditions": {
-        const session = this.missionStudio.startSession(observations)
+        const session = this.missionStudio.startSession(observations, timestamp)
         return { status: "ok", proposals: this.missionStudio.proposeExpeditions(session) }
       }
       case "proposeObjectives": {
-        const session = this.missionStudio.startSession(observations)
+        const session = this.missionStudio.startSession(observations, timestamp)
         return { status: "ok", proposals: this.missionStudio.proposeObjectives(session) }
       }
       case "planOperation": {
         const session = params.session as any
         const op = params.operation as any
         if (!session || !op) return { status: "error", error: "session and operation required" }
-        const result = this.missionStudio.plan(session, op)
+        const result = this.missionStudio.plan(session, op, timestamp)
         return { status: result.success ? "ok" : "error", result }
       }
       case "approveModel": {
@@ -235,7 +236,7 @@ export class SynthAPI {
         if (!session) return { status: "error", error: "session required" }
         const parentSnapshot = params.parentSnapshot as ApprovedMissionModelSnapshot | undefined
         const actor = typeof params.actor === "string" ? params.actor : undefined
-        const result = this.missionStudio.approve(session, parentSnapshot, actor)
+        const result = this.missionStudio.approve(session, parentSnapshot, actor, timestamp)
         if (!result.success) {
           return {
             status: "ok",
@@ -360,7 +361,7 @@ export class SynthAPI {
     // The chain must continue from the last event in the log, not restart at genesis.
     const now = Date.now()
     const rawEvents = seedEvents.map((seed) => ({
-      id: crypto.randomUUID(),
+      id: sdk.identity.uuid(),
       type: seed.type,
       timestamp: now,
       transactionId: "genesis-snapshot-tx",

@@ -14,7 +14,7 @@
 import fs from "fs"
 import path from "path"
 import { execSync } from "child_process"
-import crypto from "crypto"
+import { shortHash } from "../../sdk/hashing/index.js"
 import type { AdapterState, AdapterHealth, AdapterHealthState } from "../../types/index.js"
 import type {
   BddAdapter,
@@ -188,7 +188,7 @@ export class BddAdapterImpl implements BddAdapter {
   }
 
   async createFeature(missionId: string | undefined, name: string, description: string): Promise<CreateFeatureResult> {
-    const id = `feat-${crypto.createHash("sha256").update(name).digest("hex").slice(0, 8)}`
+    const id = `feat-${shortHash(name, 8)}`
     const feature: BddFeature = {
       id,
       missionId,
@@ -213,7 +213,7 @@ export class BddAdapterImpl implements BddAdapter {
     if (!feature) {
       return { success: false, message: `Feature ${featureId} not found` }
     }
-    const id = `sc-${crypto.createHash("sha256").update(`${featureId}-${name}`).digest("hex").slice(0, 8)}`
+    const id = `sc-${shortHash(`${featureId}-${name}`, 8)}`
     const scenario: BddScenario = {
       id,
       name,

@@ -17,7 +17,7 @@ import {
   createReferenceProviders,
   buildCapabilityReport,
   renderCapabilityReportMarkdown,
-} from "../dist/environment/index.js"
+} from "../dist/discovery/index.js"
 
 async function main() {
   const asJson = process.argv.includes("--json")

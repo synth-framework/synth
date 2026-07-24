@@ -14,7 +14,8 @@
 // path for agents.
 // ============================================================
 
-import type { CanonicalState, Mission, Expedition } from "../types/index.js"
+import type { CanonicalState, Mission, Expedition, DerivedState } from "../types/index.js"
+import { isBlockedByUpstreamGate } from "./review-gate-engine.js"
 
 export type AgentAction =
   | { kind: "mission.create" }
@@ -59,7 +60,7 @@ function findExpedition(state: CanonicalState, id: string): Expedition | undefin
  * not semantic correctness. Domain invariants are enforced later by the
  * ExecutionGate and pure domain functions.
  */
-export function validateAgentAction(action: AgentAction, state: CanonicalState): IntakeResult {
+export function validateAgentAction(action: AgentAction, state: CanonicalState, derivedState?: DerivedState): IntakeResult {
   const activeMission = findActiveMission(state)
   const executingExpedition = findExecutingExpedition(state)
 
@@ -82,6 +83,23 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState):
           requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingExpedition.id}`,
         }
       }
+
+      // Governance gate check: verify a Refined Intent exists and
+      // the Alignment Contract passed the Divergence Gate.
+      if (derivedState) {
+        const alignmentContracts = Object.values(derivedState.alignmentContracts)
+        const hasAlignedContract = alignmentContracts.some(
+          (ac) => ac.status === "aligned" || ac.approvedBy !== undefined,
+        )
+        if (!hasAlignedContract) {
+          return {
+            decision: "BLOCK",
+            reason: "Mission approval requires an Alignment Contract that has passed the Divergence Gate. No aligned contract found.",
+            requiredAction: "Complete the Genesis Alignment Layer: capture intent, create an Alignment Contract, and pass the Divergence Gate first.",
+          }
+        }
+      }
+
       return { decision: "ALLOW", activeMissionId: activeMission?.id }
     }
 
@@ -191,6 +209,16 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState):
           requiredAction: `Complete ${executingExpedition.id} before starting ${expedition.id}.`,
         }
       }
+
+      // Governance gate check: verify no upstream expedition blocks this one.
+      if (derivedState && isBlockedByUpstreamGate(state, derivedState, action.expeditionId)) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is blocked by an upstream expedition that has not passed its review gate.`,
+          requiredAction: "Complete the review and acceptance gates on the upstream expedition before starting this one.",
+        }
+      }
+
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 
@@ -210,6 +238,21 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState):
           requiredAction: `Start the expedition first: synth expedition start --expedition-id ${expedition.id}`,
         }
       }
+
+      // Convergence Certification enforcement (EXP-GOV-015 M5)
+      if (derivedState) {
+        const hasConvergenceCertification = Object.values(derivedState.convergenceCertifications).some(
+          (c) => c.expeditionId === action.expeditionId && c.decision === "converged"
+        )
+        if (!hasConvergenceCertification) {
+          return {
+            decision: "BLOCK",
+            reason: "Convergence Certification required before closing expedition",
+            requiredAction: "Run convergence certification on this expedition before completing it.",
+          }
+        }
+      }
+
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 

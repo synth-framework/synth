@@ -13,8 +13,8 @@
 // state (see the EXP-TRUST-004 constitutional note).
 // ============================================================
 
-import type { FilesystemProvider } from "../environment/filesystem-capability.js"
-import { createPosixFilesystemProvider } from "../environment/filesystem-capability.js"
+import type { FilesystemProvider } from "../infra/filesystem-provider.js"
+import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { canonicalHash } from "./canonical-json.js"
 
 const RECORD_SCHEMA = "synth-decision-v1"
@@ -120,7 +120,7 @@ export async function appendDecision(
   input: DecisionInput,
   fsProvider?: FilesystemProvider,
 ): Promise<MissionDecision> {
-  const fs = fsProvider ?? createPosixFilesystemProvider(dataDir)
+  const fs = fsProvider ?? createPosixFilesystemProvider(dataDir, FILESYSTEM_WRITE_TOKEN)
   const records = await readRaw(fs)
   if (!verifyDecisionChain(records)) {
     throw new Error(

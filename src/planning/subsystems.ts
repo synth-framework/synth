@@ -5,7 +5,7 @@
 // no runtime coupling. SideQuestManager keeps in-memory state only.
 // ============================================================
 
-import crypto from "crypto"
+import { uuid as sdkUuid } from "../sdk/identity/index.js"
 
 export type PlanningQuestion = {
   id: string
@@ -83,7 +83,7 @@ export type PlanningState = {
 }
 
 function uuid(): string {
-  return crypto.randomUUID()
+  return sdkUuid()
 }
 
 export class QuestionGenerator {
@@ -134,7 +134,7 @@ export class IntentClassifier {
 }
 
 export class KnowledgeExtractor {
-  extract(documents: Array<string | { content?: string }> = []): ExtractedKnowledge {
+  extract(documents: Array<string | { content?: string }> = [], timestamp?: number): ExtractedKnowledge {
     const knowledge: ExtractedKnowledge = {
       entities: [],
       requirements: [],
@@ -143,7 +143,7 @@ export class KnowledgeExtractor {
       architecture: [],
       dependencies: [],
       concepts: [],
-      extractedAt: Date.now(),
+      extractedAt: timestamp ?? Date.now(),
     }
 
     for (const doc of documents) {
@@ -208,7 +208,11 @@ export class ObjectiveSynthesizer {
 }
 
 export class DiscoveryEvaluator {
-  evaluate(discovery: { id: string; impact?: string }, affectedObjectives: Array<{ id: string } | string> = []): DiscoveryEvaluation {
+  evaluate(
+    discovery: { id: string; impact?: string },
+    affectedObjectives: Array<{ id: string } | string> = [],
+    timestamp?: number,
+  ): DiscoveryEvaluation {
     const impact = discovery.impact || "medium"
     const severityOrder: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 }
     const severity = severityOrder[impact] || 2
@@ -223,7 +227,7 @@ export class DiscoveryEvaluator {
       suggestsObjectives,
       suggestsDecision,
       affectedObjectiveIds: affectedObjectives.map((o) => (typeof o === "string" ? o : o.id)),
-      evaluatedAt: Date.now(),
+      evaluatedAt: timestamp ?? Date.now(),
     }
   }
 }
@@ -251,14 +255,14 @@ export class DecisionEvaluator {
 export class SideQuestManager {
   private sideQuests: SideQuest[] = []
 
-  recognize(description: string, parentObjectiveId?: string, expeditionId?: string): SideQuest {
+  recognize(description: string, parentObjectiveId?: string, expeditionId?: string, timestamp?: number): SideQuest {
     const sq: SideQuest = {
       id: uuid(),
       description,
       parentObjectiveId,
       expeditionId,
       status: "active",
-      createdAt: Date.now(),
+      createdAt: timestamp ?? Date.now(),
       type: "side_quest",
     }
     this.sideQuests.push(sq)
