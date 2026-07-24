@@ -39,7 +39,7 @@ export const workspaceRule: DiscoveryRule = {
   family: "Workspace",
   description: "Detect whether the current directory is a project workspace",
   observe: async (ctx: ObservationContext) => {
-    const entries = await ctx.listDirectory(ctx.cwd)
+    const entries = (await ctx.listDirectory(ctx.cwd)).slice().sort()
     const hasPackageJson = entries.includes("package.json")
     const hasSynthManifest = entries.includes(".synth")
     const hasReadme = entries.includes("README.md") || entries.includes("readme.md")
@@ -92,7 +92,7 @@ export const filesystemRule: DiscoveryRule = {
   family: "Filesystem",
   description: "Detect filesystem capabilities by observing the workspace",
   observe: async (ctx: ObservationContext) => {
-    const entries = await ctx.listDirectory(ctx.cwd)
+    const entries = (await ctx.listDirectory(ctx.cwd)).slice().sort()
     return obs(
       "obs-filesystem-detect",
       "env.filesystem.detect",
@@ -110,7 +110,7 @@ export const packageRule: DiscoveryRule = {
   family: "Package",
   description: "Detect package manager by reading lockfiles and manifest",
   observe: async (ctx: ObservationContext) => {
-    const entries = await ctx.listDirectory(ctx.cwd)
+    const entries = (await ctx.listDirectory(ctx.cwd)).slice().sort()
     const managers: string[] = []
     if (entries.includes("package-lock.json")) managers.push("npm")
     if (entries.includes("pnpm-lock.yaml")) managers.push("pnpm")
