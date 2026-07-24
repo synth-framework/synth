@@ -177,8 +177,18 @@ class RegressionHarness {
       evidence ? JSON.stringify(evidence).slice(0, 200) : "no evidence output",
     )
 
-    // Step 8 — approve the successor mission draft (evidence add supersedes the original).
-    const approveResult = runSynth(["mission", "approve", "--draft-id", currentDraftId], this.projectDir)
+    // Step 8 — prepare an Alignment Contract, then approve the successor mission draft.
+    const alignResult = runSynth(["alignment", "prepare"], this.projectDir)
+    const alignment = parseJson(alignResult.stdout)
+    this.assert(
+      "N2/N3: alignment prepare produces a contract",
+      alignResult.status === 0 && alignment.contractId,
+      alignResult.stdout.slice(0, 300),
+    )
+    const approveResult = runSynth(
+      ["mission", "approve", "--draft-id", currentDraftId, "--alignment-contract-id", alignment.contractId],
+      this.projectDir,
+    )
     const approval = parseJson(approveResult.stdout)
     this.assert(
       "N2/N8: mission approval succeeds and persists",

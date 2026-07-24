@@ -260,7 +260,16 @@ class InterruptionBenchmark {
         draft.draftId = evidence.draftId
       }
     }
-    const approveResult = runSynth(["mission", "approve", "--draft-id", draft.draftId], this.projectDir)
+    const alignResult = runSynth(["alignment", "prepare"], this.projectDir)
+    const alignment = parseJson(alignResult.stdout)
+    if (alignResult.status !== 0 || !alignment.contractId) {
+      console.error(color("red", "Benchmark failed: alignment preparation failed"))
+      process.exit(1)
+    }
+    const approveResult = runSynth(
+      ["mission", "approve", "--draft-id", draft.draftId, "--alignment-contract-id", alignment.contractId],
+      this.projectDir,
+    )
     if (approveResult.status !== 0 || !parseJson(approveResult.stdout).decision?.approved) {
       console.error(color("red", "Benchmark failed: mission approval failed"))
       process.exit(1)

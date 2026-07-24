@@ -154,10 +154,16 @@ async function runModelOnRepository(model, repository, promptSuite) {
       }
 
       const draftId = createParsed.draftId
-      const approveResult = runCommand("synth", ["mission", "approve", "--draft-id", draftId], workDir)
+      const alignResult = runCommand("synth", ["alignment", "prepare"], workDir)
+      const alignParsed = parseJson(alignResult.stdout)
+      const contractId = alignParsed.contractId
+      const approveArgs = contractId
+        ? ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId]
+        : ["mission", "approve", "--draft-id", draftId]
+      const approveResult = runCommand("synth", approveArgs, workDir)
       const approveParsed = parseJson(approveResult.stdout)
       recordPrompt("mission-approve", [
-        { program: "synth", args: ["mission", "approve", "--draft-id", draftId], exitCode: approveResult.status, parsed: approveParsed },
+        { program: "synth", args: approveArgs, exitCode: approveResult.status, parsed: approveParsed },
       ])
 
       if (approveParsed && approveParsed.kind === "MissionApprovalDecision") {
