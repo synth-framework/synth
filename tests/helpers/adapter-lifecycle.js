@@ -11,7 +11,7 @@
 // ============================================================
 
 import assert from "node:assert"
-import { createAdapterRegistry } from "../../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../../dist/mission-studio/adapter-registry.js"
 
 /** Assert that the adapter registry includes the named adapter. */
 export function assertAdapterListed(name) {

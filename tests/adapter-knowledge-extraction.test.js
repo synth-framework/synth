@@ -5,7 +5,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { createKnowledgeExtractionAdapter } from "../dist/adapters/knowledge/adapter.js"
-import { createAdapterRegistry } from "../dist/adapters/registry.js"
+import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 
 function makeObservation(category, subject, confidence = "high") {
   return {
