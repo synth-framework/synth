@@ -3,6 +3,7 @@
 > **Genesis expedition.** Require evidence attachment at Mission creation, verify charter claims against source code, and close the gap between documented intent and implemented reality.
 
 **Status:** Proposed  
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Evidence-Grounded Mission Drafting remains proposed for future implementation and was not required for program closeout.
 **Kind:** Genesis Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

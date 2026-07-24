@@ -1,6 +1,6 @@
 # EXP-DOC-005 — Reconcile Expedition Statuses for Programs 035 and 036
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Documentation Remediation Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-039 — Documentation Remediation Program  
@@ -36,10 +36,10 @@ This status lag creates noise in status reports and may contribute to governance
 
 ## Acceptance Criteria
 
-- [ ] Every child expedition of Program 035 has a status consistent with the program charter.
-- [ ] Every child expedition of Program 036 has a status consistent with the program charter.
-- [ ] Programs 035 and 036 are marked "Completed and accepted" after reconciliation.
-- [ ] Each status change includes a brief rationale note.
+- [x] Every child expedition of Program 035 has a status consistent with the program charter.
+- [x] Every child expedition of Program 036 has a status consistent with the program charter.
+- [x] Programs 035 and 036 are marked "Completed and accepted" after reconciliation.
+- [x] Each status change includes a brief rationale note.
 
 ---
 

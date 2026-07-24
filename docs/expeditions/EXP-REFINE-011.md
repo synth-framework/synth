@@ -1,6 +1,7 @@
 # EXP-REFINE-011 — Intent Interpretation Model
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. The Intent Interpretation Model was implemented as part of the program closeout.
 **Kind:** Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

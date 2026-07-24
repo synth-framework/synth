@@ -1,6 +1,7 @@
 # EXP-REFINE-006 — Convergence Certification
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Convergence Certification was implemented and certified as part of the program closeout.
 **Kind:** Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

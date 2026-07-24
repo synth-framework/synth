@@ -2,7 +2,8 @@
 
 > **Integration expedition.** Surface the Intent Refinement & Review Governance lifecycle inside Mission Studio so operators can see, at a glance, where every expedition stands and what is required to advance it.
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Mission Studio integration was completed as part of the program closeout.
 **Kind:** Integration Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  

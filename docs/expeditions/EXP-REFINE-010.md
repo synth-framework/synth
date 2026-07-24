@@ -1,6 +1,7 @@
 # EXP-REFINE-010 — Interactive Decision Acquisition
 
 **Status:** Proposed  
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Interactive Decision Acquisition is deferred to future work and was not required for program closeout.
 **Kind:** Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

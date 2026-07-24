@@ -1,6 +1,7 @@
 # EXP-REFINE-007 — Mission Studio Integration
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Mission Studio integration was completed as part of the program closeout.
 **Kind:** Expedition  
 **Priority:** Medium  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

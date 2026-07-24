@@ -2,7 +2,8 @@
 
 > **Architecture expedition.** Define the canonical schema for the package produced at every Review Gate.
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. The Review Gate Package event schema was implemented as part of the program closeout.
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  

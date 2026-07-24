@@ -1,6 +1,7 @@
 # EXP-GATE-007 — Acceptance Policies
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Acceptance policies were implemented as part of the program closeout.
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  

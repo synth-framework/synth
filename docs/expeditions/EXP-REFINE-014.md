@@ -3,6 +3,7 @@
 > **Synthesis capability.** Implement the deterministic `ProjectMission` capability specified by EXP-REFINE-013.
 
 **Status:** Proposed  
+**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Mission Projection Capability remains proposed for future implementation and was not required for program closeout.
 **Kind:** Synthesis Capability Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

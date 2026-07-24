@@ -1,6 +1,7 @@
 # EXP-GATE-008 — Review Gate Engine
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. The Review Gate engine was implemented in review-gate-engine.ts as part of the program closeout.
 **Kind:** Engine Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  

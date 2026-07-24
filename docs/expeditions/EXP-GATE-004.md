@@ -2,7 +2,8 @@
 
 > **Governance model expedition.** Define the rich decision vocabulary used at every gate: Approve, Approve with Conditions, Revision Required, Reject, Supersede Expedition, Split Expedition, Merge Expedition, Escalate to Mission, Escalate to Program.
 
-**Status:** Proposed  
+**Status:** Completed
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. The decision model was implemented in decision-mapping.ts as part of the program closeout.
 **Kind:** Governance Model Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  

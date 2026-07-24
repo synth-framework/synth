@@ -2,7 +2,8 @@
 
 > **Certification expedition.** Certify Program 035 — Intent Refinement & Review Governance by executing Program 027 — Mission Studio Homepage as the validation project. Prove the five canonical governance scenarios end-to-end.
 
-**Status:** Proposed  
+**Status:** Completed and accepted
+**Status change note:** Reconciled with EXP-PROGRAM-035 charter on 2026-07-24. Certification passed via Program 027 pilot validation.
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-035 — Intent Refinement & Review Governance  
