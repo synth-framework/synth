@@ -620,7 +620,10 @@ export function computeStateHash(state: CanonicalState): string {
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
-    referenceEvidence: Object.keys(state.referenceEvidence).sort(),
+  }
+  // Backward-compatible hash: only include referenceEvidence when populated.
+  if (Object.keys(state.referenceEvidence).length > 0) {
+    data.referenceEvidence = Object.keys(state.referenceEvidence).sort()
   }
   // Backward-compatible hash: only include lifecycle once the project has
   // been initialized. Empty/uninitialized states preserve their legacy hash.
