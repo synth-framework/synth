@@ -1,11 +1,11 @@
 # EXP-GOVERNABILITY-001 — Governability Regression Certification
 
-**Status:** Accepted — Certification result: PARTIAL PASS  
+**Status:** Accepted — Certification result: PASS  
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  
 **Authority:** Synth Architectural Constitution  
-**Depends on:** ADR-047, ADR-048, EXP-HOME-026, EXP-HOME-027  
+**Depends on:** ADR-047, ADR-048, EXP-HOME-026, EXP-HOME-027, EXP-GOVERNABILITY-006B  
 **Classification:** Application  
 **Kernel:** Protected
 
@@ -53,33 +53,38 @@ Replay again
 
 ## Certification result
 
-**Result: PARTIAL PASS — Successful re-certification after corrective action.**
+**Result: PASS — Full-lifecycle deterministic replay certified by EXP-GOVERNABILITY-006B.**
 
-The Program 027 Replay Graph now executes automatically through the Divergence Gate:
+The Program 027 Replay Graph now executes automatically through the complete governance lifecycle:
 
 - **Recall:** 8/8 drift-class branches are rejected.
 - **Precision:** 4/4 valid branches remain admissible.
-- **Determinism:** Repeated replays produce identical outcomes.
-- **Coverage:** Every identified drift class and valid branch has at least one replay.
+- **Determinism:** Three consecutive full-lifecycle replays produce semantically identical event logs and semantic state hashes.
+- **Coverage:** Every identified drift class has at least one replay, including post-implementation convergence failure.
 
-The corrective action was EXP-GOVERNABILITY-003, which implemented the deterministic Proposal Evaluation Capability consumed by `EvaluateAndResolveDivergenceGate`. The original assumption — that the Divergence Gate alone could prevent drift — was falsified in the first certification run. The missing evaluation layer has now been supplied and proven.
+The full chain is certified:
 
-The certification is **partial**, not closed, because downstream Review Gate / Acceptance Gate enforcement and Convergence Certification are not yet implemented.
+```text
+Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition
+    → Refined Intent → Review Gate → Acceptance Gate → Convergence Certification → Mission Completion
+```
+
+EXP-GOVERNABILITY-003 supplied the deterministic Proposal Evaluation Capability. EXP-GOVERNABILITY-006B certified that the complete lifecycle composes deterministically through public capabilities.
 
 ### Architectural layering insight
 
-The replay now validates the governance stack through the Divergence Gate:
+The replay validates the full governance stack:
 
 ```text
-Current:   Proposal → Proposal Evaluation Capability → Alignment Decision → Divergence Gate state
-Required:  Proposal → Proposal Evaluation → Divergence Gate → Review Gate → Acceptance Gate → Convergence Certification
+Proposal → Proposal Evaluation → Divergence Gate → Review Gate → Acceptance Gate → Convergence Certification
 ```
 
-The Divergence Gate evaluation step is now complete. The remaining gap is downstream gate automation and post-implementation convergence checking.
+No remaining architectural gap is identified for Program 027.
 
 ### Certification report
 
-Full evidence: `docs/governance/program-027/governability-regression-certification.json`
+Full evidence: `docs/governance/program-027/governability-regression-certification.json`  
+Lifecycle replay evidence: `docs/governance/program-027/lifecycle-replay-evidence.json`
 
 ---
 
@@ -238,8 +243,8 @@ The expedition is complete only when:
 |---|---|---|
 | Drift-class replays intercepted | 8/8 (D01–D08) | 8/8 ✅ |
 | Valid-branch replays admitted | 4/4 (V01–V04) | 4/4 ✅ |
-| Replay determinism | 100% | Demonstrated ✅ |
-| Missing mechanisms identified | All recorded | Review Gate, Acceptance Gate, Convergence Certification remain open |
+| Full-lifecycle replay determinism | 3/3 runs identical | Demonstrated ✅ |
+| Missing mechanisms identified | All recorded | None remaining |
 | Kernel files touched | 0 | 0 |
 | New concepts introduced | 0 | 0 |
 | Build/test failures | 0 | 0 |
@@ -250,7 +255,7 @@ The expedition is complete only when:
 
 | Certification result | Recommended next step |
 |---|---|
-| **Pass** | Program 027 implementation may resume; Programs 035 and 036 become enhancements. |
+| **Pass** | Program 027 implementation may resume; governance lifecycle is certified deterministic. |
 | **Partial pass** | Address gaps, then re-run certification before resuming implementation. |
 | **Fail** | Programs 035 and 036 are not future work; they are blockers that must be implemented before any intent-sensitive program proceeds. |
 

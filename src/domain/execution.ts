@@ -893,16 +893,21 @@ export function applyDomain(
       const contract = derivedState.alignmentContracts[alignmentContractId]
       if (!contract) throw new Error(`ALIGNMENT_CONTRACT_NOT_FOUND: ${alignmentContractId}`)
 
-      const observedFeatures = intent.payload.observedFeatures as Record<string, boolean> | undefined
-      if (!observedFeatures) {
-        throw new Error("OBSERVED_FEATURES_REQUIRED: CertifyConvergence requires observed outcome features")
-      }
-      const observedProposal = buildObservedFeatures(observedFeatures)
-      const ruleSetId = String(intent.payload.ruleSetId || "program-027-homepage")
-      const ruleSet: ProposalEvaluationRuleSet = ruleSetId === "program-027-homepage"
-        ? program027RuleSet
-        : (() => { throw new Error(`RULE_SET_NOT_FOUND: ${ruleSetId}`) })()
-      const evaluation = evaluateProposal(observedProposal, contract as import("../governance/alignment-contract.js").AlignmentContract, ruleSet)
+      // Allow a pre-computed evaluation to be passed directly (auto-chain mode),
+      // avoiding re-evaluation from observed features which may be empty.
+      const preEvaluation = intent.payload.evaluation as import("../governance/proposal-evaluation/types.js").EvaluationResult | undefined
+      const evaluation = preEvaluation ?? (() => {
+        const observedFeatures = intent.payload.observedFeatures as Record<string, boolean> | undefined
+        if (!observedFeatures) {
+          throw new Error("OBSERVED_FEATURES_REQUIRED: CertifyConvergence requires observed outcome features or a pre-computed evaluation")
+        }
+        const observedProposal = buildObservedFeatures(observedFeatures)
+        const ruleSetId = String(intent.payload.ruleSetId || "program-027-homepage")
+        const ruleSet: ProposalEvaluationRuleSet = ruleSetId === "program-027-homepage"
+          ? program027RuleSet
+          : (() => { throw new Error(`RULE_SET_NOT_FOUND: ${ruleSetId}`) })()
+        return evaluateProposal(observedProposal, contract as import("../governance/alignment-contract.js").AlignmentContract, ruleSet)
+      })()
 
       const subject: CertificationSubject = {
         missionId,

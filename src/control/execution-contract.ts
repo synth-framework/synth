@@ -33,6 +33,7 @@ export type ExecutionPhase =
   | "PERSIST_EVENTS"
   | "REBUILD_STATE"
   | "COMMIT_TRANSACTION"
+  | "LIFECYCLE_CONTINUATION"
 
 /** Phase result — output of a single contract step */
 export type PhaseResult<T = unknown> = {

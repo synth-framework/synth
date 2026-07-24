@@ -32,7 +32,7 @@ async function cleanData() {
 
 async function makeCtx() {
   const dataDir = makeDataDir()
-  return bootstrap({
+  const ctx = await bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),
       statePath: path.join(dataDir, "canonical-state.json"),
@@ -41,6 +41,14 @@ async function makeCtx() {
     genesis: { projectName: "Convergence Certification Test", systemId: "convergence-test", partitions: 1 },
     skipGenesis: false,
   })
+  // These tests assert each governance stage explicitly.
+  const originalHandleIntent = ctx.api.handleIntent.bind(ctx.api)
+  ctx.api.handleIntent = (req) =>
+    originalHandleIntent({
+      ...req,
+      context: { ...(req.context || {}), disableLifecycleContinuation: true },
+    })
+  return ctx
 }
 
 async function lastEvent(ctx, type, predicate = () => true) {
@@ -340,7 +348,6 @@ test("Mission completes after converged certification", async () => {
     capability: "CompleteMission",
     payload: { id: "M-GATE-OK" },
   })
-
   assert.equal(result.status, "ok", `CompleteMission should succeed after certification: ${result.error}`)
 
   const state = rebuildState(await ctx.infra.eventStore.loadAll())

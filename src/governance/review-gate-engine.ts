@@ -91,7 +91,11 @@ export function engineApproveRefinedIntent(
   }
 }
 
-/** Mark implementation complete and open a Review Gate. */
+/** Mark implementation complete and open a Review Gate.
+ *
+ * Supports both the first review (expedition is `proposed`) and re-review
+ * after a revision cycle (expedition is `executing`).
+ */
 export function engineOpenReviewGate(
   current: ReviewGateExpeditionState | undefined,
   expeditionId: string,
@@ -99,7 +103,14 @@ export function engineOpenReviewGate(
   policy: GatePolicy
 ): ReviewGateEngineResult {
   let rge = current ?? createReviewGateExpedition(expeditionId)
-  rge = fromEngineState(beginExecution(asEngineState(rge)))
+  const status = asEngineState(rge).status
+  if (status === "proposed") {
+    rge = fromEngineState(beginExecution(asEngineState(rge)))
+  } else if (status !== "executing") {
+    throw new Error(
+      `Cannot open review gate from status ${status}. Expected "proposed" or "executing".`
+    )
+  }
   const { expedition, gate, reviewPackage } = completeImplementation(
     asEngineState(rge),
     implementationReference,

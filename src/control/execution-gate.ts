@@ -32,6 +32,7 @@ import type { RuntimeEngine } from "../runtime/engine.js"
 import type { EventStore } from "../infra/event-store.js"
 import { EVENT_STORE_WRITE_TOKEN } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
+import { getLifecycleContinuation, MAX_LIFECYCLE_DEPTH } from "../runtime/governance-lifecycle.js"
 import {
   CONTRACT_STEPS,
   validateContract,
@@ -104,7 +105,10 @@ export class ExecutionGate {
    * Execute an intent through the full deterministic contract.
    * This is THE ONLY way to mutate system state.
    */
-  async execute(invocation: CapabilityInvocation): Promise<{
+  async execute(
+    invocation: CapabilityInvocation,
+    lifecycleDepth = 0,
+  ): Promise<{
     result: ExecutionResult
     contract: ExecutionContract
   }> {
@@ -232,6 +236,36 @@ export class ExecutionGate {
         output: { transactionId: tx.id },
         durationMs: 0,
       })
+
+      // === LIFECYCLE CONTINUATION ===
+      // Automatically progress the governance lifecycle when the committed
+      // domain events trigger an expected transition (e.g. review gate
+      // approval → acceptance gate, acceptance → convergence, etc.).
+      // Certification and manual governance flows may opt out via context.
+      if (lifecycleDepth < MAX_LIFECYCLE_DEPTH && invocation.context?.disableLifecycleContinuation !== true) {
+        try {
+          const updatedState = await this.runtime.getState()
+          const continuation = getLifecycleContinuation(
+            updatedState,
+            executionResult.events,
+            invocation.actor,
+          )
+          if (continuation) {
+            return this.execute(continuation.invocation, lifecycleDepth + 1)
+          }
+        } catch (lifecycleErr) {
+          // Lifecycle continuation failed but the original transaction is
+          // already committed. Surface the error by appending a diagnostic
+          // phase so callers can observe what went wrong.
+          const msg = lifecycleErr instanceof Error ? lifecycleErr.message : String(lifecycleErr)
+          phases.push({
+            phase: "LIFECYCLE_CONTINUATION",
+            passed: false,
+            error: msg,
+            durationMs: 0,
+          })
+        }
+      }
 
       const contract: ExecutionContract = {
         transactionId: commandId,

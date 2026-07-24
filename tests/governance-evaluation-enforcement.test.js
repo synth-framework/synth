@@ -234,7 +234,8 @@ test("[V01] persistent workspace proposal is approved at Review Gate", async () 
   assert.equal(event.payload.evaluation.matchedDriftClasses.length, 0, "Aligned proposal should not match drift classes")
 
   const derived = buildDerivedState(await ctx.infra.eventStore.loadAll())
-  assert.equal(derived.reviewGateExpeditions["E-V01"].status, "approved")
+  // Auto-chaining progresses to acceptance gate, so status is "accepted"
+  assert.equal(derived.reviewGateExpeditions["E-V01"].status, "accepted")
 })
 
 // ------------------------------------------------------------------
@@ -273,23 +274,28 @@ test("Rejected review prevents acceptance and closes expedition", async () => {
   assert.equal(derived.reviewGateExpeditions["E-ACCEPT-REJECT"].status, "rejected")
 })
 
-test("Acceptance Gate accepts when Review Gate approved", async () => {
+test("Acceptance Gate auto-fires after Review Gate approval", async () => {
   const ctx = await makeCtx()
   await approveMission(ctx, "M-ACCEPT-ACCEPT")
   await createExecutingExpedition(ctx, "M-ACCEPT-ACCEPT", "E-ACCEPT-ACCEPT")
   await approveRefinedIntent(ctx, "E-ACCEPT-ACCEPT", "M-ACCEPT-ACCEPT")
 
+  // Single EvaluateAndResolveReviewGate call auto-chains through acceptance gate
   await evaluateAndResolveReviewGate(ctx, "E-ACCEPT-ACCEPT", {
     hasPersistentHeader: true,
     hasPersistentSidebar: true,
     hasScrollDrivenPhases: true,
   })
 
-  const acceptanceEvent = await evaluateAndResolveAcceptanceGate(ctx, "E-ACCEPT-ACCEPT")
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const acceptanceEvent = allEvents
+    .filter((e) => e.type === "ACCEPTANCE_GATE_RESOLVED" && e.payload.expeditionId === "E-ACCEPT-ACCEPT")
+    .pop()
+  assert.ok(acceptanceEvent, "Acceptance gate should auto-resolve after review approval")
   assert.equal(acceptanceEvent.payload.decision, "accepted", "Acceptance should accept when review approved")
   assert.ok(acceptanceEvent.payload.evaluation, "Acceptance event should carry the review evaluation")
 
-  const derived = buildDerivedState(await ctx.infra.eventStore.loadAll())
+  const derived = buildDerivedState(allEvents)
   assert.equal(derived.reviewGateExpeditions["E-ACCEPT-ACCEPT"].status, "accepted")
 })
 
@@ -325,6 +331,99 @@ test("Review Gate evaluation is replay-consistent", async () => {
   assert.deepStrictEqual(eval1.matchedDriftClasses, eval2.matchedDriftClasses)
   assert.deepStrictEqual(eval1.reasoning, eval2.reasoning)
   assert.equal(derived1.reviewGateExpeditions["E-REPLAY"].status, derived2.reviewGateExpeditions["E-REPLAY"].status)
+})
+
+// ------------------------------------------------------------------
+// Automatic Lifecycle Chaining (EXP-GOVERNABILITY-006A)
+//   Single EvaluateAndResolveReviewGate invocation should auto-chain:
+//     Review Gate → Acceptance Gate → Convergence → Mission Complete
+// ------------------------------------------------------------------
+
+test("[L01] Review Gate approval auto-chains through Acceptance Gate, Convergence, and Mission completion", async () => {
+  const ctx = await makeCtx()
+  await approveMission(ctx, "M-L01")
+  await createExecutingExpedition(ctx, "M-L01", "E-L01")
+  await approveRefinedIntent(ctx, "E-L01", "M-L01")
+
+  // Single invocation should trigger the full lifecycle chain
+  const reviewEvent = await evaluateAndResolveReviewGate(ctx, "E-L01", {
+    hasPersistentHeader: true,
+    hasPersistentSidebar: true,
+    hasScrollDrivenPhases: true,
+  })
+
+  assert.equal(reviewEvent.payload.decision, "approve", "Review should approve aligned proposal")
+
+  // Verify all lifecycle events exist
+  const allEvents = await ctx.infra.eventStore.loadAll()
+
+  const reviewResolved = allEvents.filter(
+    (e) => e.type === "REVIEW_GATE_RESOLVED" && e.payload.expeditionId === "E-L01"
+  )
+  assert.equal(reviewResolved.length, 1, "Exactly one REVIEW_GATE_RESOLVED event")
+  assert.equal(reviewResolved[0].payload.decision, "approve")
+
+  const acceptanceOpened = allEvents.filter(
+    (e) => e.type === "ACCEPTANCE_GATE_OPENED" && e.payload.expeditionId === "E-L01"
+  )
+  assert.equal(acceptanceOpened.length, 1, "Exactly one ACCEPTANCE_GATE_OPENED event")
+
+  const acceptanceResolved = allEvents.filter(
+    (e) => e.type === "ACCEPTANCE_GATE_RESOLVED" && e.payload.expeditionId === "E-L01"
+  )
+  assert.equal(acceptanceResolved.length, 1, "Exactly one ACCEPTANCE_GATE_RESOLVED event")
+  assert.equal(acceptanceResolved[0].payload.decision, "accepted")
+
+  const convergenceCertified = allEvents.filter((e) => e.type === "CONVERGENCE_CERTIFIED")
+  assert.equal(convergenceCertified.length, 1, "Exactly one CONVERGENCE_CERTIFIED event")
+  assert.equal(convergenceCertified[0].payload.decision, "converged")
+  assert.equal(convergenceCertified[0].payload.missionId, "M-L01")
+
+  const missionCompleted = allEvents.filter(
+    (e) => e.type === "MISSION_COMPLETED" && e.payload.id === "M-L01"
+  )
+  assert.equal(missionCompleted.length, 1, "Exactly one MISSION_COMPLETED event")
+
+  // Verify event ordering
+  const ri = allEvents.indexOf(reviewResolved[0])
+  const ai = allEvents.indexOf(acceptanceResolved[0])
+  const ci = allEvents.indexOf(convergenceCertified[0])
+  const mi = allEvents.indexOf(missionCompleted[0])
+  assert.ok(ri < ai, "Review gate before acceptance gate")
+  assert.ok(ai < ci, "Acceptance gate before convergence certification")
+  assert.ok(ci < mi, "Convergence certification before mission completion")
+
+  // Verify derived state
+  const derived = buildDerivedState(allEvents)
+  assert.equal(derived.reviewGateExpeditions["E-L01"].status, "accepted", "Expedition should be accepted")
+
+  const state = await ctx.infra.stateStore.load()
+  assert.equal(state.missions["M-L01"].status, "completed", "Mission should be completed")
+})
+
+test("[L02] Rejected review gate does NOT auto-chain to acceptance gate", async () => {
+  const ctx = await makeCtx()
+  await approveMission(ctx, "M-L02")
+  await createExecutingExpedition(ctx, "M-L02", "E-L02")
+  await approveRefinedIntent(ctx, "E-L02", "M-L02")
+
+  // Drifted proposal should be rejected
+  const reviewEvent = await evaluateAndResolveReviewGate(ctx, "E-L02", {
+    hasMetricCards: true,
+    hasPromotionalBanners: true,
+    hasDisconnectedWidgets: true,
+  })
+
+  assert.equal(reviewEvent.payload.decision, "reject", "Review should reject drifted proposal")
+
+  // Verify chain stopped at review gate rejection
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const acceptanceGates = allEvents.filter((e) => e.type === "ACCEPTANCE_GATE_OPENED" || e.type === "ACCEPTANCE_GATE_RESOLVED")
+  assert.equal(acceptanceGates.length, 0, "No acceptance gate events after rejection")
+  const convergences = allEvents.filter((e) => e.type === "CONVERGENCE_CERTIFIED" || e.type === "CONVERGENCE_DIVERGED")
+  assert.equal(convergences.length, 0, "No convergence events after rejection")
+  const completions = allEvents.filter((e) => e.type === "MISSION_COMPLETED")
+  assert.equal(completions.length, 0, "No mission completion after rejection")
 })
 
 // ------------------------------------------------------------------

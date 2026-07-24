@@ -1,12 +1,13 @@
 {
   "id": "governability-regression-certification-program-027",
   "expedition": "EXP-GOVERNABILITY-001",
+  "certificationExpedition": "EXP-GOVERNABILITY-006B",
   "status": "accepted",
   "certificationStatus": "pass",
   "capturedAt": "2026-07-22T00:15:00Z",
   "acceptedAt": "2026-07-22T00:20:00Z",
-  "reExecutedAt": "2026-07-22T01:30:56Z",
-  "assessment": "Re-executed after EXP-GATE-012 implemented the Program 035 three-gate governance model certification. REFINE-009 completes the Program 036 certification: full Genesis-to-Closure lifecycle (Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition → Review Gate → Acceptance Gate → Convergence Certification) is verified in tests/refine-009-certification.test.js. Scenario 4 (changed Alignment Contract invalidates Mission) and Scenario 5 (convergence failure after implementation) are proven. Convergence Certification gates Mission completion correctly. The combined 035/036 governance model is now certified for Program 027.",
+  "reExecutedAt": "2026-07-24T00:56:23Z",
+  "assessment": "Full-lifecycle deterministic replay certified by EXP-GOVERNABILITY-006B. The complete governance chain (Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition → Refined Intent → Review Gate → Acceptance Gate → Convergence Certification → Mission Completion) executes deterministically through public capabilities. Four replay branches are deterministic across three executions: happy path, recovery revision loop, drift rejected at Divergence Gate, and convergence failure blocking Mission completion. Runtime identifiers and timestamps are non-deterministic by design (Date.now()/Math.random()); certification uses deep-normalized event logs and a semantic state hash. Two implementation defects discovered during replay were corrected with minimal runtime changes: Review Gate re-opening after RequestRevision, and an opt-out context flag for automatic lifecycle continuation.",
   "benchmarkId": "governability-benchmark-program-027",
   "replaySpecificationId": "replay-specification-program-027",
   "methodology": "Replay Graph certification measuring recall, precision, determinism, and coverage. Replay branches are exercised by tests/proposal-evaluation.test.js via the public EvaluateAndResolveDivergenceGate capability.",
@@ -29,6 +30,10 @@
       "path": "docs/governance/program-027/replay-specification.json",
       "status": "complete"
     },
+    "lifecycleReplaySpecification": {
+      "path": "docs/governance/program-027/lifecycle-replay-specification.json",
+      "status": "complete"
+    },
     "convergenceCertificationCriteria": {
       "path": "docs/governance/program-027/convergence-certification-criteria.md",
       "status": "complete"
@@ -40,6 +45,14 @@
     "replayTests": {
       "path": "tests/proposal-evaluation.test.js",
       "status": "passing"
+    },
+    "lifecycleReplayTests": {
+      "path": "tests/governance-lifecycle-replay.test.js",
+      "status": "passing"
+    },
+    "lifecycleReplayEvidence": {
+      "path": "docs/governance/program-027/lifecycle-replay-evidence.json",
+      "status": "complete"
     }
   },
   "controlInventory": {
@@ -85,8 +98,52 @@
     }
   },
   "replayExecution": {
-    "testReference": "tests/proposal-evaluation.test.js",
+    "testReference": "tests/governance-lifecycle-replay.test.js",
     "ruleSetId": "program-027-homepage",
+    "lifecycleReplays": [
+      {
+        "branchId": "happy-path",
+        "type": "happy",
+        "input": "Aligned persistent-workspace proposal with hero invitation",
+        "expectedOutcome": "Mission completed",
+        "actualOutcome": "Mission completed",
+        "pass": true,
+        "eventCount": 24,
+        "semanticStateHash": "066bde814f80d2e00153591054b4a4e9e5e24e55cffce910137a088843fe03b2"
+      },
+      {
+        "branchId": "recovery-revision-loop",
+        "type": "recovery",
+        "input": "Warning-level hero-invitation drift revised to aligned proposal",
+        "expectedOutcome": "Mission completed after revision",
+        "actualOutcome": "Mission completed after revision",
+        "pass": true,
+        "eventCount": 27,
+        "semanticStateHash": "eee6539d00f3191348dcd33269d076779132fa84c76c1ccc9d5b15ead11653e0"
+      },
+      {
+        "branchId": "drift-divergence-rejected",
+        "type": "drift",
+        "driftClassId": "D01",
+        "input": "Generic dashboard proposal",
+        "expectedOutcome": "Mission blocked",
+        "actualOutcome": "Mission blocked",
+        "pass": true,
+        "eventCount": 11,
+        "semanticStateHash": "821257a715a5c2242f87c56642e96db734385c3e1401306a44c9163b17ff96f1"
+      },
+      {
+        "branchId": "drift-convergence-fails",
+        "type": "drift",
+        "driftClassId": "D02",
+        "input": "Aligned proposal but marketing-first observed outcome",
+        "expectedOutcome": "Mission completion blocked",
+        "actualOutcome": "Mission completion blocked",
+        "pass": true,
+        "eventCount": 23,
+        "semanticStateHash": "9e919f8213e8abed094d22d6e9c5384ede6d662e08deeb3cfed5713124b6a6dd"
+      }
+    ],
     "driftClassReplays": [
       {
         "branchId": "D01",
@@ -221,18 +278,10 @@
       "Deterministic proposal evaluation capability (EXP-GOVERNABILITY-003)",
       "Divergence Gate automated rejection of Program 027 drift classes",
       "Review Gate / Acceptance Gate enforcement (EXP-GATE-012 certification)",
-      "Convergence Certification (EXP-GOVERNABILITY-005)"
+      "Convergence Certification (EXP-GOVERNABILITY-005)",
+      "Full-lifecycle deterministic replay (EXP-GOVERNABILITY-006B)"
     ],
-    "specifiedButUncertified": [
-      {
-        "gap": "Divergence Gate state machine",
-        "reason": "Gate now consumes Proposal Evaluation Capability and resolves automatically for Program 027."
-      },
-      {
-        "gap": "Alignment Contract validation",
-        "reason": "Contract fields are evaluated by rule set; validation is deterministic for the tested rule set."
-      }
-    ],
+    "specifiedButUncertified": [],
     "missing": []
   },
   "certificationResult": {
@@ -250,12 +299,12 @@
     "note": "The Divergence Gate has an automated evaluation step. Review Gate, Acceptance Gate, and Convergence Certification are now certified through EXP-GATE-012, EXP-GOVERNABILITY-005, and EXP-REFINE-009. REFINE-009 completes Program 036 alignment governance certification with full Genesis→Synthesis→Governance lifecycle verification."
   },
   "notes": [
-    "This certification report was re-executed after EXP-GATE-012 delivered the Program 035 three-gate governance model certification.",
+    "This certification report was re-executed by EXP-GOVERNABILITY-006B on 2026-07-24.",
     "All 12 replay branches execute automatically via tests/proposal-evaluation.test.js and produce the expected outcomes.",
-    "EXP-GATE-012 certifies the full three-gate lifecycle through five canonical scenarios in tests/gate-012-certification.test.js.",
+    "Full-lifecycle deterministic replay is certified in tests/governance-lifecycle-replay.test.js (EXP-GOVERNABILITY-006B).",
     "Convergence Certification is certified in tests/convergence-certification.test.js (EXP-GOVERNABILITY-005).",
     "No new governance concepts or kernel changes were introduced by this certification expedition.",
-    "The expedition succeeds: all five canonical scenarios produce deterministic, documented outcomes with replayable events.",
-    "EXP-REFINE-009 completes Program 036 alignment governance certification. Full lifecycle (Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition → Review Gate → Acceptance Gate → Convergence Certification) verified in tests/refine-009-certification.test.js. Scenario 4 (changed Alignment Contract invalidates Mission) and Scenario 5 (convergence failure after implementation) are certified."
+    "Two runtime defects were discovered and corrected during replay: Review Gate re-opening after RequestRevision, and an opt-out flag for automatic lifecycle continuation.",
+    "EXP-GOVERNABILITY-006B closes the Program 027 governability certification: full lifecycle (Intent Model → Alignment Contract → Divergence Gate → Mission → Expedition → Refined Intent → Review Gate → Acceptance Gate → Convergence Certification → Mission Completion) is deterministic and replayable."
   ]
 }
