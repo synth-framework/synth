@@ -95,7 +95,8 @@ function main() {
     initWorkspace(dir)
     try {
       const { draftId } = createDraft(dir)
-      const r = approve(dir, draftId)
+      const contractId = align(dir)
+      const r = approve(dir, draftId, contractId)
       assert(!r.output.includes('"approved": true'), "N3 fixture: below-threshold draft is rejected")
       assert(/mission evidence add/.test(r.output), "N3 fixture: rejection names the evidence command")
       assert(r.output.includes(draftId), "N3 fixture: rejection references the operator's draft")

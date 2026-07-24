@@ -68,7 +68,7 @@ function evidenceAdd(dir, draftId, subject) {
 
 function align(dir) {
   const r = runCli(dir, ["alignment", "prepare"])
-  return r.output.match(/"contractId":\s*"([^"]+)")?.[1]
+  return r.output.match(/"contractId":\s*"([^"]+)"/)?.[1]
 }
 
 function approve(dir, draftId, contractId) {

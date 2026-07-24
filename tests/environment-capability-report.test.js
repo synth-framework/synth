@@ -7,6 +7,8 @@ import assert from "node:assert"
 import {
   createDiscoveryOrchestrator,
   createReferenceProviders,
+} from "../dist/environment/index.js"
+import {
   buildCapabilityReport,
   renderCapabilityReportMarkdown,
   CAPABILITY_FAMILIES,

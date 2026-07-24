@@ -17,7 +17,7 @@ import {
   createDraft,
   readDraft,
   writeDraft,
-  approveByCli as approve,
+  approveWithAlignment as approve,
 } from "./helpers/trust-workflow.js"
 
 const TAMPER_PATTERN = /integrity (record|violation)|tamper|divergen/i
@@ -48,7 +48,7 @@ function makeObservation(overrides = {}) {
   }
 }
 
-function main() {
+async function main() {
   assertCliBuilt()
 
   // 1. TaskPRO forgery, verbatim: edit confidence overall upward.
@@ -60,7 +60,7 @@ function main() {
       const draft = readDraft(dir, draftId)
       draft.confidence.overall = 0.95
       writeDraft(dir, draftId, draft)
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "Forgery fixture: forged confidence is not approved")
       assert(TAMPER_PATTERN.test(r.output), "Forgery fixture: rejection names the integrity violation")
     } finally {
@@ -73,7 +73,7 @@ function main() {
     const dir = makeWorkspace("draft-untouched")
     try {
       const draftId = createDraft(dir)
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "Untouched draft: not approved (rc.2 parity)")
       assert(/threshold|confidence/i.test(r.output), "Untouched draft: rejection is the confidence gate, not integrity")
       assert(!TAMPER_PATTERN.test(r.output), "Untouched draft: integrity guard stays silent")
@@ -92,7 +92,7 @@ function main() {
       draft.id = forgedId
       draft.confidence.overall = 0.95
       writeDraft(dir, forgedId, draft)
-      const r = approve(dir, forgedId)
+      const r = await approve(dir, forgedId)
       assert(!r.output.includes('"approved": true'), "Hand-crafted draft: not approved")
       assert(/integrity record/i.test(r.output), "Hand-crafted draft: rejection cites the missing integrity record")
     } finally {
@@ -108,7 +108,7 @@ function main() {
       const draft = readDraft(dir, draftId)
       draft.observations[0].payload.purpose = "Rewritten after creation."
       writeDraft(dir, draftId, draft)
-      const r = approve(dir, draftId)
+      const r = await approve(dir, draftId)
       assert(!r.output.includes('"approved": true'), "Input edit: not approved")
       assert(TAMPER_PATTERN.test(r.output), "Input edit: rejection names the integrity violation")
     } finally {
@@ -150,7 +150,7 @@ function main() {
       const first = createDraft(dir)
       const second = createDraft(dir)
       fs.rmSync(path.join(dir, ".synth", "data", "drafts", `${first}.integrity.json`), { force: true })
-      const r = approve(dir, second)
+      const r = await approve(dir, second)
       assert(!r.output.includes('"approved": true'), "Chain break: successor draft not approved")
       assert(/integrity violation/i.test(r.output), "Chain break: rejection cites the broken integrity chain")
     } finally {
@@ -173,4 +173,7 @@ function main() {
   if (failed > 0) process.exit(1)
 }
 
-main()
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
