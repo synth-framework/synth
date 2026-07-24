@@ -27,9 +27,17 @@ setup:
     expect:
       status: 0
 
+  - name: prepare alignment contract
+    command: ["alignment", "prepare"]
+    capture:
+      jsonPath:
+        contractId: "contractId"
+    expect:
+      status: 0
+
 steps:
   - name: mission approve fails without evidence
-    command: ["mission", "approve", "--draft-id", "{{draftId}}"]
+    command: ["mission", "approve", "--draft-id", "{{draftId}}", "--alignment-contract-id", "{{contractId}}"]
     expect:
       status: 0
       jsonPath:

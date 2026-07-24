@@ -3057,14 +3057,14 @@ async function cmdExplainReplay(flags: Record<string, string | boolean>) {
 
 async function cmdAdapter(args: string[]) {
   // Delegate to the existing adapter CLI by spawning it.
-  return new Promise<void>((resolve, reject) => {
+  // Exit directly with the child's code so its stdout/stderr remains the only output.
+  return new Promise<never>((_resolve) => {
     const child = spawn("node", [path.join(__dirname, "adapter.js"), ...args], {
       stdio: "inherit",
       cwd: process.cwd(),
     })
     child.on("close", (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(`adapter command failed with exit code ${code}`))
+      process.exit(code ?? 1)
     })
   })
 }
