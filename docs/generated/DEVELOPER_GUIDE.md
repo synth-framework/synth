@@ -1174,6 +1174,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
+sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
 projection: synth-documentation-expedition-v1
 -->

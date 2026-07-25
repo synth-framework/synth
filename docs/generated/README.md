@@ -53,12 +53,12 @@ Synth is organized into three architectural strata:
 - **A CI check scans homepage source** — A CI check scans homepage source for documentation links and verifies the target files exist.
 - **A class of actions should be** — A class of actions should be restricted
 - **A clear goal** — A clear goal
+- **A CLI that exposes the entire** — **A CLI** that exposes the entire platform as a stable, machine-readable interface.
 - **A cold run with no cache** — A **cold run** with no cache produces the same results as today's full `npm run govern`.
 - **A committed specification from uncommitted drafts** — A committed specification from uncommitted drafts.
 - **A community feedback loop converts signals** — A community feedback loop converts signals into evidence and missions.
 - **a compatibility bridge between two contracts** — a compatibility bridge between two contracts,
-- **A competent implementer can build the** — A competent implementer can build the projection engine from this specification without asking interpretive questions.
-- *…and 15888 more concepts extracted from the knowledge base.*
+- *…and 15914 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,6 +70,6 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
+sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
 projection: synth-documentation-expedition-v1
 -->

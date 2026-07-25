@@ -15,6 +15,7 @@ This guide is for architects making structural decisions.
 - **A constitutional-layer-boundaries document defines Governance vs** — A constitutional-layer-boundaries document defines Governance vs. Implementation with concrete examples from E1.
 - **a decision drawn from the Review** — a decision drawn from the Review Gate decision model;
 - **A deterministic execution substrate with governance** — A deterministic execution substrate with governance as a cryptographic primitive
+- **A governance lifecycle for missions expeditions** — **A governance lifecycle** for missions, expeditions, and decisions.
 - **a human-readable reason for the decision** — a human-readable reason for the decision;
 - **A Implementation happened accidentally Governance failed** — **A — Implementation happened accidentally:** Governance failed; the concept should not have been represented yet.
 - **Acceptance Gate decisions** — Acceptance Gate decisions
@@ -441,6 +442,7 @@ This guide is for architects making structural decisions.
 - **Governance can inspect every state change** — Governance can inspect every state change
 - **Governance can now run independent checks** — Governance can now run independent checks in parallel, reducing wall-clock time for full and cross-cutting runs.
 - **Governance Certification** — Governance Certification
+- **Governance Certified and frozen** — **Governance:** Certified and frozen
 - **Governance check passes or** — Governance check passes, or
 - **Governance check scripts audit-core-boundary js enforces** — **Governance check:** `scripts/audit-core-boundary.js` enforces ADR-006 §7 mechanically — forbidden modules (`fs`, `fs/promises`, `child_process`, `os`, `path`, `net`, `http`, `https`, `process`, `worker_threads`, `cluster`, `dgram`, `dns`, `tls`, plus `node:`-prefixed forms) in the seven Core directories fail governance. Wired into `test:all` (therefore `npm run govern` and the Proof Gate) as `test:core-boundary`.
 - **Governance compliance** — Governance compliance
@@ -481,6 +483,7 @@ This guide is for architects making structural decisions.
 - **Governance model** — Governance model
 - **Governance model changes** — Governance model changes
 - **Governance Modules** — Governance Modules
+- **Governance note** — Governance note
 - **Governance participation** — Governance participation
 - **Governance Pass Rate** — Governance Pass Rate
 - **Governance Philosophy** — Governance Philosophy
@@ -902,6 +905,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
+sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
 projection: synth-documentation-expedition-v1
 -->

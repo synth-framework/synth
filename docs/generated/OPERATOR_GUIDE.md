@@ -384,6 +384,7 @@ This guide covers the operator journey from idea to done.
 - **A declared Mission** — A declared Mission.
 - **A fresh operator can answer what** — A fresh operator can answer "what is this repository, where is it, and what happens next" from `synth status` alone.
 - **A fresh operator human or AI** — A fresh operator (human or AI) can answer "what is this repository, where is it going, and what happens next" without reading source code or writing scratch scripts.
+- **A governance lifecycle for missions expeditions** — **A governance lifecycle** for missions, expeditions, and decisions.
 - **A Mission cannot be completed without** — A Mission cannot be completed without a valid certification.
 - **A Mission cannot be created while** — A Mission cannot be created while the Divergence Gate is not `aligned`.
 - **A mission could be approved without** — A mission could be approved without corresponding runtime events, requiring manual event-log repair.
@@ -861,6 +862,7 @@ This guide covers the operator journey from idea to done.
 - **EXP-VAL-007 Agentic Mission Lifecycle Correction** — EXP-VAL-007 — Agentic Mission Lifecycle Correction
 - **Expedition** — Expedition
 - **Expedition a bounded investigation or build** — **Expedition** — a bounded investigation or build that moves a Mission forward.
+- **Expedition A scoped effort that proves** — **Expedition** — A scoped effort that proves or builds part of a mission.
 - **Expedition acceptance tests** — Expedition acceptance tests.
 - **Expedition accepted and implemented via PR** — Expedition accepted and implemented via PR #40.
 - **Expedition accepted via PR 53** — Expedition accepted via PR #53.
@@ -1218,6 +1220,7 @@ This guide covers the operator journey from idea to done.
 - **Mission Studio visualization of convergence reports** — Mission Studio visualization of convergence reports.
 - **Mission subject derived from project identity** — Mission subject: derived from project identity.
 - **Mission usefulness** — Mission usefulness
+- **Mission What we want to achieve** — **Mission** — What we want to achieve.
 - **Mission Workspace Specification** — Mission Workspace Specification
 - **mission-authoring** — `mission-authoring`
 - **mission-builder expedition-builder objective-builder and wizard adapters** — `mission-builder`, `expedition-builder`, `objective-builder`, and `wizard` adapters produce plans that the **Planning Cognition Engine** and **Mission Studio** also produce.
@@ -1651,6 +1654,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
+sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
 projection: synth-documentation-expedition-v1
 -->

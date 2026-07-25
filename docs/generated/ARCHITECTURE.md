@@ -14,6 +14,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **A compiler kernel change triggers full** — A compiler/kernel change triggers full certification.
 - **A compromised policy engine could silently** — A compromised policy engine could silently approve unauthorized actions
 - **A constitutional-layer-boundaries document defines Governance vs** — A constitutional-layer-boundaries document defines Governance vs. Implementation with concrete examples from E1.
+- **A deterministic runtime that reconstructs state** — **A deterministic runtime** that reconstructs state from events rather than mutating it directly.
 - **A gate may declare a fallback** — A gate may declare a fallback satisfier if the primary is unavailable.
 - **A gate produces allowed blocked** — A gate produces `allowed / blocked`.
 - **A gate s satisfier is part** — A gate's satisfier is part of the gate's policy and is immutable after the gate is created.
@@ -1335,6 +1336,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
+sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
 projection: synth-documentation-expedition-v1
 -->
