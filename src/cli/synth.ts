@@ -2109,6 +2109,19 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
+  // Validate the draft exists before running the approval gate. This gives the
+  // operator a clear input-validation error (Draft not found) before any
+  // lifecycle gate messaging, which is easier to recover from.
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const draftsDir = path.join(dataDir, "drafts")
+  const draftPath = path.join(draftsDir, `${draftId}.json`)
+  let draftData: any
+  try {
+    draftData = JSON.parse(await fs.readFile(draftPath, "utf-8"))
+  } catch {
+    printError(`Draft not found: ${draftPath}`)
+  }
+
   // Resolve the project's actual governance state before allowing approval.
   const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
@@ -2118,16 +2131,6 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const intake = await gateDecision({ kind: "mission.approve" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
-  }
-
-  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
-  const draftsDir = path.join(dataDir, "drafts")
-  const draftPath = path.join(draftsDir, `${draftId}.json`)
-  let draftData: any
-  try {
-    draftData = JSON.parse(await fs.readFile(draftPath, "utf-8"))
-  } catch {
-    printError(`Draft not found: ${draftPath}`)
   }
 
   // Drafts are editable artifacts; certify before trusting anything (EXP-TRUST-002).

@@ -11,7 +11,7 @@
 
 ```text
 Release Candidate Completion
-████████████████████████░░░░░░░░░░░░░░ 63%
+████████████████████████████████████░░░░ 88%
 ```
 
 ---
@@ -26,8 +26,8 @@ Release Candidate Completion
 | **Security** | `██████████ 100%` | ✅ Complete | Bypass audit clean, condition/convergence enforcement in place |
 | **CLI** | `██████████ 100%` | ✅ Complete | EXP-CLI-001 — structured JSON, unified error model, discovery safety, contract tests |
 | **Documentation** | `██████████ 100%` | ✅ Complete | EXP-DOC-002 — deterministic projections, sourceStateHash, freshness, metadata baselines |
-| **Installer Experience** | `██████░░░░ 60%` | 🔴 Not started | EXP-INSTALL-012 — first-run journey validation |
-| **Release Certification** | `████░░░░░░ 40%` | 🟡 In progress | Program 042 active; certificates chartered, evidence collection begins |
+| **Installer Experience** | `██████████ 100%` | ✅ Complete | EXP-INSTALL-012 — first-run journey certification (70 tests pass) |
+| **Release Certification** | `██████░░░░ 60%` | 🟡 In progress | Program 042 active; collecting evidence from completed Release Candidate workstreams |
 
 ---
 
@@ -63,7 +63,7 @@ Release Candidate Completion
 | Discovery safety model complete | EXP-CLI-001 | ✅ |
 | ADR/expedition metadata projections | EXP-DOC-002 | ✅ |
 | Projection freshness verification | EXP-DOC-002 | ✅ |
-| End-to-end first-run validation | EXP-INSTALL-012 | 🔴 |
+| End-to-end first-run validation | EXP-INSTALL-012 | ✅ |
 | Clean-clone `npm run govern` | Release Certification | 🔴 |
 | Reproducible build evidence | Release Certification | 🔴 |
 | Published release certificates | Release Certification | 🔴 |

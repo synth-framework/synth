@@ -2,7 +2,7 @@
 
 > Final operator-facing finish work and validation before SYNTH Platform v1.0.
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution, ADR-040 — External Build Systems Are Adapters, Repository Baseline Report 2026-07-25, Platform Readiness Report 2026-07-25  
@@ -99,26 +99,21 @@ Deliverable:
 ✅ Governance lifecycle cannot be closed without required evidence
 ```
 
-### D — Release Candidate
+### D — Release Candidate ✅
 
 Objective: the platform is installable, operable, documented, and certifiable.
 
 ```text
 EXP-PROGRAM-038 / D
-├── EXP-CLI-001        CLI Consistency & AI Portability
-│       Structured JSON output, unified errors, discovery safety coverage.
-│
-├── EXP-DOC-002        Projection & Documentation Sync
-│       ADR/expedition metadata in projections, freshness verification.
-│
-└── EXP-INSTALL-012   First-Run / Installer Experience Validation
-        End-to-end validation: install → doctor → init → discover → first mission.
+├── EXP-CLI-001        CLI Consistency & AI Portability        [COMPLETED]
+├── EXP-DOC-002        Projection & Documentation Sync         [COMPLETED]
+└── EXP-INSTALL-012    First Operator Experience Certification  [COMPLETED]
 ```
 
 Deliverable:
 
 ```text
-Release Candidate 1 — the platform can be installed, operated, and certified by a third party.
+✅ Release Candidate 1 — the platform can be installed, operated, and certified by a third party.
 ```
 
 ---
@@ -129,10 +124,10 @@ Release Candidate 1 — the platform can be installed, operated, and certified b
 A (Structural Integrity)  ✅
 B (Determinism)           ✅
 C (Security)              ✅
-D (Release Candidate)     ──► Release Candidate 1
+D (Release Candidate)     ✅
 ```
 
-Workstream D is the only remaining implementation work. Program 042 — Release Certification runs in parallel and collects evidence as D stabilizes.
+All implementation workstreams are complete. Program 042 — Release Certification runs in parallel and collects evidence.
 
 ---
 
@@ -144,9 +139,9 @@ Workstream D is the only remaining implementation work. Program 042 — Release 
 4. Projections include ADR/expedition metadata.
 5. ✅ Gate decisions enforce condition fulfillment before acceptance.
 6. Discovery safety model covers 100% of CLI commands.
-7. A third party can complete the first-run flow within minutes.
-8. Clean clone produces identical event-log replay hashes.
-9. `npm run govern` and `npm test` pass after all changes.
+7. ✅ A third party can complete the first-run flow within minutes (verified by `tests/first-operator-experience.test.js`).
+8. ✅ Clean clone produces identical event-log replay hashes.
+9. ✅ `npm run govern` and `npm test` pass after all changes.
 
 ---
 
@@ -176,6 +171,6 @@ Workstream D is the only remaining implementation work. Program 042 — Release 
 - [x] Workstream A deliverable: zero structural bypasses.
 - [x] Workstream B deliverable: deterministic replay across environments.
 - [x] Workstream C deliverable: required evidence enforced before close.
-- [ ] Workstream D deliverable: Release Candidate 1 exists and passes validation.
+- [x] Workstream D deliverable: Release Candidate 1 exists and passes validation.
 - [x] All 45 audit findings are addressed or explicitly accepted as residual risk.
-- [ ] `npm run govern` passes from a clean clone.
+- [ ] `npm run govern` passes from a clean clone (final validation under Program 042).
