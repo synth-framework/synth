@@ -58,7 +58,7 @@ Synth is organized into three architectural strata:
 - **A community feedback loop converts signals** — A community feedback loop converts signals into evidence and missions.
 - **a compatibility bridge between two contracts** — a compatibility bridge between two contracts,
 - **A competent implementer can build the** — A competent implementer can build the projection engine from this specification without asking interpretive questions.
-- *…and 15858 more concepts extracted from the knowledge base.*
+- *…and 15888 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,6 +70,6 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: 9af506f6577a6a93ee2b41fd2f4b612ce5b0d1e3b67c11ab5508334893560adb
+sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
 projection: synth-documentation-expedition-v1
 -->

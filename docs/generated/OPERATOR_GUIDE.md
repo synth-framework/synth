@@ -40,7 +40,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-ENV-010 — Discovery Evidence & Replay Integration](../expeditions/EXP-ENV-010.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: Critical, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-012 — Constitutional Compliance & Migration](../expeditions/EXP-ENV-012.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: Critical, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-FIRSTCONTACT-001 — Public Narrative](../expeditions/EXP-FIRSTCONTACT-001.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
-- **[EXP-FIRSTCONTACT-002 — Canonical Journey Specification](../expeditions/EXP-FIRSTCONTACT-002.md)** — Status: Completed (pending acceptance), Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
+- **[EXP-FIRSTCONTACT-002 — Canonical Journey Specification](../expeditions/EXP-FIRSTCONTACT-002.md)** — Status: Completed and accepted, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-003 — Canonical Recorded Journey](../expeditions/EXP-FIRSTCONTACT-003.md)** — Status: Completed — Canonical recorded journey is shipped; closed as part of Release Candidate portfolio pruning., Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-006 — Comprehension Validation](../expeditions/EXP-FIRSTCONTACT-006.md)** — Status: Completed (pending external validation), Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-010 — Agent Ground Truth Discovery](../expeditions/EXP-FIRSTCONTACT-010.md)** — Status: Completed — Agent ground truth discovery is operational; closed as part of Release Candidate portfolio pruning., Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
@@ -72,15 +72,15 @@ This guide covers the operator journey from idea to done.
 - **[EXP-HARDEN-005 — Graph Integrity](../expeditions/EXP-HARDEN-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HOME-001 — Mission Studio Design Language (v3)](../expeditions/EXP-HOME-001.md)** — Status: Completed, Kind: Design Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-HOME-002 — Mission Studio Component Catalog (v3)](../expeditions/EXP-HOME-002.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-003 — Mission Studio UI Specification (v2)](../expeditions/EXP-HOME-003.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-004 — Homepage / Mission Studio Integration (v2)](../expeditions/EXP-HOME-004.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-015 — Production Certification (v2)](../expeditions/EXP-HOME-015.md)** — Status: Completed (pending acceptance), Kind: Certification Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-016 — Homepage Runtime](../expeditions/EXP-HOME-016.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-017 — Homepage Genesis Projection](../expeditions/EXP-HOME-017.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-019 — Artifact Projection Layer](../expeditions/EXP-HOME-019.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-021 — Mission Studio State Machine](../expeditions/EXP-HOME-021.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-022 — Runtime Abstraction Layer](../expeditions/EXP-HOME-022.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-024 — Projection Contract](../expeditions/EXP-HOME-024.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-003 — Mission Studio UI Specification (v2)](../expeditions/EXP-HOME-003.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-004 — Homepage / Mission Studio Integration (v2)](../expeditions/EXP-HOME-004.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-015 — Production Certification (v2)](../expeditions/EXP-HOME-015.md)** — Status: Completed and accepted, Kind: Certification Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-016 — Homepage Runtime](../expeditions/EXP-HOME-016.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-017 — Homepage Genesis Projection](../expeditions/EXP-HOME-017.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-019 — Artifact Projection Layer](../expeditions/EXP-HOME-019.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-021 — Mission Studio State Machine](../expeditions/EXP-HOME-021.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-022 — Runtime Abstraction Layer](../expeditions/EXP-HOME-022.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-024 — Projection Contract](../expeditions/EXP-HOME-024.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-HOME-025 — Mission Studio Design Governance (v3)](../expeditions/EXP-HOME-025.md)** — Status: Completed, Kind: Design Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-HOME-026 — Workspace Shell Architecture](../expeditions/EXP-HOME-026.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-HOME-027 — Density & Layout System](../expeditions/EXP-HOME-027.md)** — Status: Completed, Kind: Design Expedition, Priority: Critical, Program: EXP-PROGRAM-027 — Mission Studio Homepage
@@ -106,7 +106,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-PROGRAM-006 — Discovery Platform](../expeditions/EXP-PROGRAM-006.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-007 — Environment Independence Program](../expeditions/EXP-PROGRAM-007.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-008 — Documentation & Projections](../expeditions/EXP-PROGRAM-008.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
-- **[EXP-PROGRAM-009 — Canonical First Contact Experience](../expeditions/EXP-PROGRAM-009.md)** — Status: Closed — Superseded pending Era III revision, Kind: Program, Priority: Critical, Program: unknown
+- **[EXP-PROGRAM-009 — Canonical First Contact Experience](../expeditions/EXP-PROGRAM-009.md)** — Status: Closed — Superseded by EXP-PROGRAM-027, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-010 — Constitutional Hardening Program](../expeditions/EXP-PROGRAM-010.md)** — Status: Completed and accepted, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-011 — Operator Trust & CLI Integrity](../expeditions/EXP-PROGRAM-011.md)** — Status: Completed and accepted, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-019 — Universal Initialization](../expeditions/EXP-PROGRAM-019.md)** — Status: Completed and accepted, Kind: Program, Priority: Critical, Program: unknown
@@ -121,7 +121,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-PROGRAM-038 — Release Candidate](../expeditions/EXP-PROGRAM-038.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-040 — Repository Simplification](../expeditions/EXP-PROGRAM-040.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-PROGRAM-041 — Platform Canonicalization](../expeditions/EXP-PROGRAM-041.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
-- **[EXP-PROGRAM-042 — Release Certification](../expeditions/EXP-PROGRAM-042.md)** — Status: Active, Kind: Program, Priority: Critical, Program: unknown
+- **[EXP-PROGRAM-042 — Release Certification](../expeditions/EXP-PROGRAM-042.md)** — Status: Completed and accepted, Kind: Program, Priority: Critical, Program: unknown
 - **[EXP-REFINE-013 — Mission Projection & Derivation](../expeditions/EXP-REFINE-013.md)** — Status: Completed — Mission projection and derivation are operational; closed as part of Release Candidate portfolio pruning., Kind: Genesis Expedition, Priority: Critical, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-014 — Mission Projection Capability](../expeditions/EXP-REFINE-014.md)** — Status: Proposed, Kind: Synthesis Capability Expedition, Priority: Critical, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REL-006 — v2.0.0 Release Certification](../expeditions/EXP-REL-006.md)** — Status: Completed, Kind: Certification Expedition, Priority: Critical, Program: EXP-PROGRAM-002 — SYNTH Public Release Program
@@ -184,11 +184,11 @@ This guide covers the operator journey from idea to done.
 - **[EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage](../expeditions/EXP-CONVERGENCE-001.md)** — Status: Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning., Kind: Architectural Convergence, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-DET-001 — Deterministic Execution](../expeditions/EXP-DET-001.md)** — Status: Completed, Kind: unknown, Priority: High, Program: EXP-PROGRAM-018 — Foundation Architecture Program
 - **[EXP-DISC-001 — Status That Answers](../expeditions/EXP-DISC-001.md)** — Status: Completed — Status taxonomy is in active use; closed as part of Release Candidate portfolio pruning., Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
-- **[EXP-DISC-002 — Extraction Reporting](../expeditions/EXP-DISC-002.md)** — Status: Completed (pending acceptance), Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
-- **[EXP-DISC-003 — Adapter Introspection](../expeditions/EXP-DISC-003.md)** — Status: Completed (pending acceptance), Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
-- **[EXP-DISC-004 — Clean Machine Output](../expeditions/EXP-DISC-004.md)** — Status: Completed (pending acceptance), Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
-- **[EXP-DISC-005 — Runtime Integrity](../expeditions/EXP-DISC-005.md)** — Status: Completed (pending acceptance), Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
-- **[EXP-DISC-006 — Repository Identity](../expeditions/EXP-DISC-006.md)** — Status: Completed (pending acceptance), Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
+- **[EXP-DISC-002 — Extraction Reporting](../expeditions/EXP-DISC-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
+- **[EXP-DISC-003 — Adapter Introspection](../expeditions/EXP-DISC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
+- **[EXP-DISC-004 — Clean Machine Output](../expeditions/EXP-DISC-004.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
+- **[EXP-DISC-005 — Runtime Integrity](../expeditions/EXP-DISC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
+- **[EXP-DISC-006 — Repository Identity](../expeditions/EXP-DISC-006.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
 - **[EXP-DISCOVERY-008 — Operational Discovery](../expeditions/EXP-DISCOVERY-008.md)** — Status: Completed, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
@@ -243,17 +243,17 @@ This guide covers the operator journey from idea to done.
 - **[EXP-GOVERNABILITY-005 — Convergence Certification Implementation](../expeditions/EXP-GOVERNABILITY-005.md)** — Status: Completed — Convergence certification implementation is operational; closed as part of Release Candidate portfolio pruning., Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-GOVERNABILITY-006B — Deterministic Governance Replay & Certification](../expeditions/EXP-GOVERNABILITY-006B.md)** — Status: Completed, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-HARDEN-006 — Validation Expansion](../expeditions/EXP-HARDEN-006.md)** — Status: Completed and accepted, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
-- **[EXP-HOME-005 — Intent Phase (v2)](../expeditions/EXP-HOME-005.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-006 — Discovery Phase (v2)](../expeditions/EXP-HOME-006.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-007 — Mission Phase (v2)](../expeditions/EXP-HOME-007.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-008 — Expeditions Phase (v2)](../expeditions/EXP-HOME-008.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-009 — Governance & Replay Phase (v2)](../expeditions/EXP-HOME-009.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-010 — Responsive Implementation](../expeditions/EXP-HOME-010.md)** — Status: Completed (pending acceptance), Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-011 — Accessibility](../expeditions/EXP-HOME-011.md)** — Status: Completed (pending acceptance), Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-012 — Performance](../expeditions/EXP-HOME-012.md)** — Status: Completed (pending acceptance), Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-018 — Homepage Replay Projection](../expeditions/EXP-HOME-018.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-020 — Curated Demonstration Library](../expeditions/EXP-HOME-020.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-023 — AI Operator Adapter](../expeditions/EXP-HOME-023.md)** — Status: Completed (pending acceptance), Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-005 — Intent Phase (v2)](../expeditions/EXP-HOME-005.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-006 — Discovery Phase (v2)](../expeditions/EXP-HOME-006.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-007 — Mission Phase (v2)](../expeditions/EXP-HOME-007.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-008 — Expeditions Phase (v2)](../expeditions/EXP-HOME-008.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-009 — Governance & Replay Phase (v2)](../expeditions/EXP-HOME-009.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-010 — Responsive Implementation](../expeditions/EXP-HOME-010.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-011 — Accessibility](../expeditions/EXP-HOME-011.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-012 — Performance](../expeditions/EXP-HOME-012.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-018 — Homepage Replay Projection](../expeditions/EXP-HOME-018.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-020 — Curated Demonstration Library](../expeditions/EXP-HOME-020.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-023 — AI Operator Adapter](../expeditions/EXP-HOME-023.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-INSTALL-006 — Website Integration](../expeditions/EXP-INSTALL-006.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-006 — Installation & Distribution
 - **[EXP-INSTALL-007 — Version Manifest](../expeditions/EXP-INSTALL-007.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-006 — Installation & Distribution
 - **[EXP-INSTALL-008 — Upgrade Engine](../expeditions/EXP-INSTALL-008.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-006 — Installation & Distribution
@@ -336,8 +336,8 @@ This guide covers the operator journey from idea to done.
 - **[EXP-GOV-003 — Constitutional Layer Boundaries](../expeditions/EXP-GOV-003.md)** — Status: Completed and accepted, Kind: Documentation Expedition, Priority: Medium, Program: EXP-PROGRAM-014 — Governance Maturation
 - **[EXP-GOV-015 — Gate Decision Completeness](../expeditions/EXP-GOV-015.md)** — Status: Completed, Kind: Governance Expedition, Priority: Medium, Program: EXP-PROGRAM-038 — Audit Remediation
 - **[EXP-HARDEN-007 — Observability](../expeditions/EXP-HARDEN-007.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Medium, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
-- **[EXP-HOME-013 — Motion System](../expeditions/EXP-HOME-013.md)** — Status: Completed (pending acceptance), Kind: Design Expedition, Priority: Medium, Program: EXP-PROGRAM-027 — Mission Studio Homepage
-- **[EXP-HOME-014 — Documentation Integration](../expeditions/EXP-HOME-014.md)** — Status: Completed (pending acceptance), Kind: Product Expedition, Priority: Medium, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-013 — Motion System](../expeditions/EXP-HOME-013.md)** — Status: Completed and accepted, Kind: Design Expedition, Priority: Medium, Program: EXP-PROGRAM-027 — Mission Studio Homepage
+- **[EXP-HOME-014 — Documentation Integration](../expeditions/EXP-HOME-014.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: Medium, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-PROGRAM-039 — Documentation Remediation Program](../expeditions/EXP-PROGRAM-039.md)** — Status: Completed and accepted — All chartered expeditions completed: Program 027 incident review merged, references updated, and Programs 035/036 expedition statuses reconciled., Kind: Program, Priority: Medium, Program: unknown
 - **[EXP-REFINE-004 — Refinement Questions Engine](../expeditions/EXP-REFINE-004.md)** — Status: Completed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-005 — Reference Evidence Binding](../expeditions/EXP-REFINE-005.md)** — Status: Completed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
@@ -1177,6 +1177,7 @@ This guide covers the operator journey from idea to done.
 - **Mission Studio Guide Chart and approve** — Mission Studio Guide — Chart and approve Missions
 - **Mission Studio has zero runtime mutation** — Mission Studio has zero runtime mutation paths.
 - **Mission Studio Homepage Production Certification Report** — Mission Studio Homepage Production Certification Report
+- **Mission Studio homepage v2** — Mission Studio homepage (v2)
 - **Mission Studio intent becomes an approved** — 2. Mission Studio — intent becomes an approved plan
 - **Mission Studio is a persistent application** — **Mission Studio** is a persistent application shell, not a page component.
 - **Mission Studio is introduced as part** — Mission Studio is introduced as part of normal usage.
@@ -1272,6 +1273,7 @@ This guide covers the operator journey from idea to done.
 - **Operator Documents** — Operator Documents
 - **Operator Domain** — Operator Domain
 - **Operator Domain How humans interact with** — Operator Domain — How humans interact with Synth
+- **Operator experience** — Operator experience
 - **Operator experience lessons** — 5. Operator experience lessons
 - **Operator explicitly approves or rejects** — Operator explicitly approves or rejects.
 - **Operator Failures** — Operator Failures
@@ -1649,6 +1651,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 9af506f6577a6a93ee2b41fd2f4b612ce5b0d1e3b67c11ab5508334893560adb
+sourceStateHash: 72d4ce84b650b6eb5cd4b71621d8b78fbc6ba430ffb0faf6503a03ffa1e04997
 projection: synth-documentation-expedition-v1
 -->
