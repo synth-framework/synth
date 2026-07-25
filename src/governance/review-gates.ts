@@ -392,7 +392,7 @@ export function resolveReviewGate(
     }
   } else if (typeof quorum === "number" && quorum > 1) {
     throw new ReviewGateError(
-      `Review gate requires at least ${quorum} approvals, but only one reviewer (${reviewer.id}) is resolving in this call`
+      `Numeric quorum is not supported in SYNTH Platform v1.0 (got ${quorum}). Use "any" or "all".`
     )
   }
 
@@ -560,7 +560,7 @@ export function resolveAcceptanceGate(
     }
   } else if (typeof quorum === "number" && quorum > 1) {
     throw new ReviewGateError(
-      `Acceptance gate requires at least ${quorum} approvals, but only one reviewer (${reviewer.id}) is resolving in this call`
+      `Numeric quorum is not supported in SYNTH Platform v1.0 (got ${quorum}). Use "any" or "all".`
     )
   }
 

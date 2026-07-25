@@ -115,7 +115,25 @@ Important invariants:
 - The implementing agent may not satisfy its own gate (enforced via `excludeActors` in gate policy).
 - A gate may declare a fallback satisfier if the primary is unavailable.
 - A gate's satisfier is part of the gate's policy and is immutable after the gate is created.
-- Quorum rules (`"all"`, `"any"`, or numeric N) are enforced at gate resolution.
+- Quorum rules are enforced at gate resolution.
+
+### Quorum policies in SYNTH Platform v1.0
+
+The v1.0 governance model supports exactly two quorum policies:
+
+| Policy | Semantics | Use case |
+|---|---|---|
+| `"any"` | A single authorized satisfier may resolve the gate. | Automated checks, low-risk changes, AI-verified artifacts. |
+| `"all"` | Every authorized reviewer kind must approve. | High-stakes gates requiring both AI and human sign-off. |
+
+The following are **not supported in v1.0** and are reserved for a future collaborative governance initiative:
+
+- Numeric quorum (`N of M`)
+- Weighted voting
+- Hierarchical approvals
+- Delegated approvals
+
+A gate configured with an unsupported quorum policy will fail deterministically with a clear `ReviewGateError`. This boundary keeps the v1.0 event model, replay semantics, and derived state simple and single-resolution.
 
 ---
 
