@@ -2,10 +2,11 @@
 
 > Ensure SYNTH cannot operationalize architectural decisions before their governance authority is complete.
 
-**Status:** Approved  
+**Status:** Completed and accepted  
 **Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
+**Completed:** 2026-07-24  
 **Authority:** `ADR-046` (accepted 2026-07-24), `ADR-004`, `ADR-026`, `ADR-035`, `ADR-039`, `ADR-045`, Constitutional Baseline Mutation Authority Invariant, Constitution Provision 52  
 **Touches Protected Assets:** Yes — `ExecutionGate`  
 **Depends On:** `EXP-CAPABILITY-BOUNDARY-001`  
@@ -155,13 +156,27 @@ After this expedition:
 
 ## Definition of Done
 
-- [ ] `ADR-046` accepted.
-- [ ] `ImplementationEligibility` type defined.
-- [ ] Authority-state resolver implemented.
-- [ ] `ExecutionGate.execute()` performs eligibility check.
-- [ ] ADR numbering collisions resolved.
-- [ ] `docs/adr/README.md` updated through ADR-046.
-- [ ] Reconciliation note for Proposed ADRs documented.
-- [ ] Regression tests added and passing.
-- [ ] Replay verification passing.
-- [ ] Expedition accepted.
+- [x] `ADR-046` accepted.
+- [x] `ImplementationEligibility` type defined.
+- [x] Authority-state resolver implemented.
+- [x] `ExecutionGate.execute()` performs eligibility check.
+- [x] ADR numbering collisions resolved (by EXP-SIMPLIFICATION-001).
+- [x] `docs/adr/README.md` updated through ADR-046.
+- [x] Reconciliation note for Proposed ADRs documented below.
+- [x] Regression tests added and passing.
+- [x] Replay verification passing (`npm test`).
+- [x] Expedition accepted.
+
+## Completion Evidence
+
+| Deliverable | Location | Status |
+|---|---|---|
+| `ImplementationEligibility` type | `src/governance/implementation-eligibility.ts` | ✅ |
+| ADR registry reader | `src/governance/adr-registry.ts` | ✅ |
+| Expedition authority parser | `src/governance/expedition-authority.ts` | ✅ |
+| ExecutionGate integration | `src/control/execution-gate.ts` | ✅ |
+| Regression tests | `tests/governance/implementation-eligibility.test.js` | ✅ |
+
+## Proposed ADR Reconciliation Note
+
+Runtime state that predates this enforcement is not retroactively ratified. Existing Proposed ADRs remain Proposed until their owning governance process accepts or rejects them. `EXP-MUTATION-LIFECYCLE-001` will classify whether any runtime artifacts produced under Proposed authority are governed mutations (to be reconciled) or legitimate genesis operations (to be documented).
