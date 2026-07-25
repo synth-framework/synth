@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] — 2026-07-25
+
+### Fixed
+
+- `scripts/install.sh` now parses the JSON `synth --version` contract
+  introduced in 2.4.0, so bootstrap installation certification passes.
+- `src/governance/adr-registry.ts` no longer crashes when `docs/adr` is
+  absent, which is the case for the published npm package. This allows
+  `synth init` and `synth doctor` to succeed after a clean global install.
+
 ## [2.4.0] — 2026-07-25
 
 The SYNTH Platform v1.0 Release.
