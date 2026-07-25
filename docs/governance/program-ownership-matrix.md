@@ -4,6 +4,7 @@
 
 **Status:** Completed  
 **Date:** 2026-07-24  
+**Updated:** 2026-07-25 — Phase 0 Repository Baseline Closure  
 **Authority:** EXP-PROGRAM-039 — Documentation Remediation Program  
 **Verification:** `node scripts/verify-expedition-governance.js` passes with zero errors and zero warnings.
 
@@ -18,12 +19,12 @@ The following expeditions were unassigned before this canonicalization pass. Eac
 | EXP-CAPABILITY-BOUNDARY-001 | EXP-PROGRAM-040 — Repository Simplification | Completed |
 | EXP-COMPLEXITY-AUDIT-001 | EXP-PROGRAM-040 — Repository Simplification | Completed and accepted |
 | EXP-CONVERGENCE-001 | EXP-PROGRAM-027 — Mission Studio Homepage | Accepted |
-| EXP-GOVERNANCE-ENFORCEMENT-001 | EXP-PROGRAM-040 — Repository Simplification | Proposed |
-| EXP-MUTATION-LIFECYCLE-001 | EXP-PROGRAM-040 — Repository Simplification | Proposed |
+| EXP-GOVERNANCE-ENFORCEMENT-001 | EXP-PROGRAM-040 — Repository Simplification | Completed and accepted |
+| EXP-MUTATION-LIFECYCLE-001 | EXP-PROGRAM-040 — Repository Simplification | Completed and accepted |
 | EXP-PLATFORM-001 | EXP-PROGRAM-041 — Platform Canonicalization | Completed |
 | EXP-PLATFORM-002 | EXP-PROGRAM-041 — Platform Canonicalization | Completed |
 | EXP-PLATFORM-003 | EXP-PROGRAM-041 — Platform Canonicalization | Completed |
-| EXP-PLATFORM-004 | EXP-PROGRAM-041 — Platform Canonicalization | Proposed |
+| EXP-PLATFORM-004 | EXP-PROGRAM-041 — Platform Canonicalization | Completed |
 | EXP-SIMPLIFICATION-001 | EXP-PROGRAM-040 — Repository Simplification | Completed and accepted |
 | EXP-SIMPLIFICATION-002 | EXP-PROGRAM-040 — Repository Simplification | Completed |
 | EXP-SIMPLIFICATION-003 | EXP-PROGRAM-040 — Repository Simplification | Completed |
@@ -80,8 +81,8 @@ The following expeditions were unassigned before this canonicalization pass. Eac
 | EXP-PROGRAM-037 | Ecosystem Adoption & Community Growth | Proposed |
 | EXP-PROGRAM-038 | Audit Remediation | Proposed |
 | EXP-PROGRAM-039 | Documentation Remediation Program | Completed and accepted |
-| EXP-PROGRAM-040 | Repository Simplification | Active |
-| EXP-PROGRAM-041 | Platform Canonicalization | Active |
+| EXP-PROGRAM-040 | Repository Simplification | Completed |
+| EXP-PROGRAM-041 | Platform Canonicalization | Completed |
 
 ---
 

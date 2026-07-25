@@ -1,11 +1,13 @@
 # EXP-MST-001 — Mission Studio
 
-**Status:** Active
+**Status:** Completed
 **Kind:** Kernel Capability
 **Priority:** High
 **Program:** EXP-PROGRAM-001 — SYNTH Productization Program
 **Depends On:** EXP-SMA-001, EXP-DET-001, EXP-AUD-002, EXP-GOV-001, EXP-ADP-000
 **Blocks:** Sample Projects, Agent UI, Project Templates
+**Completed:** 2026-07-24
+**Closure note:** Mission Studio capability is fully integrated into the SYNTH kernel. All completion criteria are satisfied and the capability is exercised by the full test suite and governance lifecycle. This expedition is closed as part of Repository Baseline Closure (Phase 0).
 
 ---
 

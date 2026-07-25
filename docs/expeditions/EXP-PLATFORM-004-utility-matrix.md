@@ -2,7 +2,7 @@
 
 > Decisions for consolidating duplicated utility functions into the Internal Platform SDK.
 
-**Status:** In Progress  
+**Status:** Completed  
 **Expedition:** EXP-PLATFORM-004  
 **Program:** EXP-PROGRAM-041 — Platform Canonicalization
 
