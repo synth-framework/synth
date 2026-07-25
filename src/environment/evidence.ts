@@ -61,10 +61,16 @@ function contentView(evidence: DiscoveryEvidence): unknown {
   return {
     schema: evidence.schema,
     environment: evidence.environment,
-    observations: evidence.observations.map((observation) => {
-      const { timestamp: _timestamp, ...content } = observation
-      return content
-    }),
+    observations: evidence.observations
+      // Pull-request lists are retrieved from the forge API and can change
+      // between two discovery runs even in an otherwise stable environment.
+      // They are not part of the replay-derived surface, so exclude them
+      // from the deterministic content hash (ADR-015).
+      .filter((observation) => observation.name !== "versioning.pullRequest")
+      .map((observation) => {
+        const { timestamp: _timestamp, ...content } = observation
+        return content
+      }),
     capabilities: evidence.capabilities,
     providers: evidence.providers,
     assumptions: evidence.assumptions,
