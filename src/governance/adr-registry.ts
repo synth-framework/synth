@@ -58,7 +58,18 @@ function readAdrStatus(filePath: string): AdrStatus {
 export function loadAdrRegistry(): AdrRegistry {
   const registry: AdrRegistry = {}
   const adrDir = path.join(repoRoot(), "docs", "adr")
-  const entries = fs.readdirSync(adrDir)
+
+  let entries: string[]
+  try {
+    entries = fs.readdirSync(adrDir)
+  } catch (err) {
+    // Published npm packages do not include docs/adr. Return an empty registry
+    // so the runtime remains functional outside the source repository.
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return registry
+    }
+    throw err
+  }
 
   for (const entry of entries) {
     if (!entry.startsWith("ADR-") || !entry.endsWith(".md")) continue
