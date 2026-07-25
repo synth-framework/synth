@@ -6,22 +6,9 @@
 // ============================================================
 
 import crypto from "crypto"
+import { sortKeys, stableStringify } from "../sdk/json/index.js"
 
-/** Recursively sort object keys for stable serialization. */
-export function sortKeys(obj: unknown): unknown {
-  if (obj === null || typeof obj !== "object") return obj
-  if (Array.isArray(obj)) return obj.map(sortKeys)
-  const sorted: Record<string, unknown> = {}
-  for (const key of Object.keys(obj as Record<string, unknown>).sort()) {
-    sorted[key] = sortKeys((obj as Record<string, unknown>)[key])
-  }
-  return sorted
-}
-
-/** Stable JSON stringify with sorted keys. */
-export function stableStringify(obj: unknown): string {
-  return JSON.stringify(sortKeys(obj))
-}
+export { stableStringify }
 
 /** SHA-256 hex digest of a stable-serialized value. */
 export function sha256(obj: unknown): string {

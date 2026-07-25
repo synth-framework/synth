@@ -26,6 +26,7 @@ import type {
 } from "../types/index.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
+import { sortKeys } from "../sdk/json/index.js"
 import type { Registry } from "../capability/registry.js"
 import type { PolicyEngine } from "../policy/policy-engine.js"
 import type { RuntimeEngine } from "../runtime/engine.js"
@@ -59,16 +60,6 @@ function deterministicCommandId(
     priorStateHash,
   })
   return crypto.createHash("sha256").update(data).digest("hex")
-}
-
-function sortKeys(obj: unknown): unknown {
-  if (obj === null || typeof obj !== "object") return obj
-  if (Array.isArray(obj)) return obj.map(sortKeys)
-  const sorted: Record<string, unknown> = {}
-  for (const key of Object.keys(obj as Record<string, unknown>).sort()) {
-    sorted[key] = sortKeys((obj as Record<string, unknown>)[key])
-  }
-  return sorted
 }
 
 /** Internal error indicating a specific execution phase failed */

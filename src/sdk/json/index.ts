@@ -39,3 +39,19 @@ export function parseJson<T>(raw: string): T {
 export function stringifyJson(data: unknown, space = 2): string {
   return JSON.stringify(data, null, space)
 }
+
+/** Recursively sort object keys for stable, deterministic serialization. */
+export function sortKeys(obj: unknown): unknown {
+  if (obj === null || typeof obj !== "object") return obj
+  if (Array.isArray(obj)) return obj.map(sortKeys)
+  const sorted: Record<string, unknown> = {}
+  for (const key of Object.keys(obj as Record<string, unknown>).sort()) {
+    sorted[key] = sortKeys((obj as Record<string, unknown>)[key])
+  }
+  return sorted
+}
+
+/** Stable JSON stringify: sorted keys, no extra whitespace. */
+export function stableStringify(obj: unknown): string {
+  return JSON.stringify(sortKeys(obj))
+}

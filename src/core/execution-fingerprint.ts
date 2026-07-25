@@ -13,6 +13,7 @@
 // ============================================================
 
 import crypto from "crypto"
+import { sortKeys } from "../sdk/json/index.js"
 
 /** Input to fingerprint generation */
 export type ExecutionRecord = {
@@ -58,14 +59,4 @@ export class ExecutionFingerprint {
   }
 }
 
-/** Sort object keys recursively for deterministic serialization */
-function sortKeys(obj: unknown): unknown {
-  if (obj === null || typeof obj !== "object") return obj
-  if (Array.isArray(obj)) return obj.map(sortKeys)
 
-  const sorted: Record<string, unknown> = {}
-  for (const key of Object.keys(obj as Record<string, unknown>).sort()) {
-    sorted[key] = sortKeys((obj as Record<string, unknown>)[key])
-  }
-  return sorted
-}

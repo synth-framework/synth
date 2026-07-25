@@ -22,6 +22,7 @@ import {
 } from "./orchestrator.js"
 import { dataDir } from "../sdk/paths/index.js"
 import { root } from "../sdk/workspace/index.js"
+import { sortKeys } from "../sdk/json/index.js"
 
 /** Canonical location of the discovery evidence artifact */
 export const DISCOVERY_EVIDENCE_PATH = path.posix.join(
@@ -44,19 +45,6 @@ export type ReplayedEvidence = {
 export type DiscoveryReplayVerification = {
   consistent: boolean
   divergences: string[]
-}
-
-function sortKeys(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeys)
-  if (typeof value === "object" && value !== null) {
-    const record = value as Record<string, unknown>
-    const sorted: Record<string, unknown> = {}
-    for (const key of Object.keys(record).sort()) {
-      sorted[key] = sortKeys(record[key])
-    }
-    return sorted
-  }
-  return value
 }
 
 /** Deterministic JSON serialization: sorted keys, recorded array order preserved */
