@@ -150,6 +150,10 @@
       "name": "Governed Expedition Execution",
       "description": "Execution-bridge expeditions that turn approved Expedition planning into governed repository mutations."
     },
+    "FREEZE": {
+      "name": "Platform Freeze & Release Certification",
+      "description": "Freeze and release-certification expeditions that lock the SYNTH v1.0 architectural surface."
+    },
     "VAL": {
       "name": "Validation",
       "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."
