@@ -320,6 +320,145 @@ Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
+function windsurfRules(model) {
+  return `# ${model.platform.name} Rules for Windsurf
+
+## Role
+
+You are a SYNTH-aware coding assistant. Follow these rules when working in a SYNTH-governed repository.
+
+> ${model.platform.tagline}
+
+## Public vocabulary
+
+${model.publicVocabulary.concepts.map((c) => `- **${c.name}**: ${c.definition}`).join("\n")}
+
+## Command safety
+
+### Safe during discovery
+
+${formatCommandList(discoverySafeCommands(model), "synth")}
+
+### Require explicit approval
+
+${formatCommandList(mutatingCommands(model), "synth")}
+
+## Protected assets
+
+${model.protectedAssets.assets.map((a) => `- ${a.name}: ${a.description}`).join("\n")}
+
+## Governance lifecycle
+
+${model.governanceLifecycle.phases.map((p) => `- ${p.name}: ${p.description}`).join("\n")}
+
+## Source
+
+Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+`
+}
+
+function rooRules(model) {
+  return `# ${model.platform.name} Rules for Roo
+
+## Identity
+
+${model.platform.tagline}
+
+## Public vocabulary (seven concepts)
+
+${model.publicVocabulary.concepts.map((c) => `- ${c.name}: ${c.definition}`).join("\n")}
+
+## Rules
+
+- Use only READ_ONLY and PROPOSAL_ONLY commands during discovery.
+- Never run a MUTATING command without explicit operator approval.
+- Do not modify protected assets without an Architecture Expedition and ADR.
+- Prefer 'synth mission create' and 'synth expedition create' for proposing work.
+- Treat the event log as immutable; state is always derived from events.
+
+## Discovery-safe commands
+
+${formatCommandList(discoverySafeCommands(model), "synth")}
+
+## Protected assets
+
+${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
+
+## Governance lifecycle
+
+${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
+
+## Source
+
+Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+`
+}
+
+function aiderInstructions(model) {
+  return `# ${model.platform.name} Instructions for Aider
+
+## Context
+
+${model.platform.tagline}
+
+## Public vocabulary
+
+${model.publicVocabulary.concepts.map((c) => `- ${c.name}: ${c.definition}`).join("\n")}
+
+## Instructions
+
+1. Read-only analysis is always safe: ${readOnlyCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+2. Proposals do not mutate state: ${proposalCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+3. Mutating commands require approval: ${mutatingCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+4. Never modify Mission Studio, Genesis, Replay, ExecutionGate, Event Model, Capability Model, Constitutional Baseline, or Public Vocabulary without an Architecture Expedition.
+5. Explain SYNTH using only the seven public concepts.
+
+## Protected assets
+
+${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
+
+## Governance lifecycle
+
+${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
+
+## Source
+
+Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+`
+}
+
+function continueRules(model) {
+  return `# ${model.platform.name} Rules for Continue.dev
+
+## Assistant identity
+
+${model.platform.tagline}
+
+## Public vocabulary
+
+${model.publicVocabulary.concepts.map((c) => `- **${c.name}**: ${c.definition}`).join("\n")}
+
+## Command safety
+
+- Discovery-safe: ${discoverySafeCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+- Require approval: ${mutatingCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+
+## Protected assets
+
+${model.protectedAssets.assets.map((a) => `- ${a.name}: ${a.description}`).join("\n")}
+
+${model.protectedAssets.rule}
+
+## Governance lifecycle
+
+${model.governanceLifecycle.phases.map((p) => `- ${p.name}: ${p.description}`).join("\n")}
+
+## Source
+
+Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+`
+}
+
 function mcpManifest(model) {
   const readOnly = readOnlyCommands(model)
   const proposals = proposalCommands(model)
@@ -368,6 +507,10 @@ const PROJECTION_REGISTRY = {
   "gemini-skill": { template: geminiSkill, path: "agent-skills/gemini.md" },
   "cursor-rules": { template: cursorRules, path: "ide-rules/.cursor/rules.mdc" },
   "cline-rules": { template: clineRules, path: "ide-rules/.clinerules" },
+  "windsurf-rules": { template: windsurfRules, path: "ide-rules/.windsurfrules" },
+  "roo-rules": { template: rooRules, path: "ide-rules/.roorules" },
+  "aider-instructions": { template: aiderInstructions, path: "ide-rules/.aider-instructions.md" },
+  "continue-rules": { template: continueRules, path: "ide-rules/.continue/rules.md" },
   "mcp-manifest": {
     template: (model) => stableStringify(mcpManifest(model)),
     path: "mcp/manifest.json",

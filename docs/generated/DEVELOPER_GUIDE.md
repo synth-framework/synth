@@ -304,6 +304,7 @@ This guide is for contributors extending Synth.
 - **Confirm permit matches the invocation capability** — Confirm permit matches the invocation (capability, actor)
 - **Confusing test failures that are artifacts** — Confusing test failures that are artifacts of the agent's own execution, not the code under change.
 - **Connect to CapabilityRegistry** — Connect to CapabilityRegistry
+- **Contract tests asserting all IDE rules** — Contract tests asserting all IDE rules are deterministic and fresh.
 - **Contract tests compile and pass npm** — Contract tests compile and pass; `npm run build` succeeds.
 - **Contract tests proving that every agent** — Contract tests proving that every agent skill is derived from the canonical model and remains deterministic.
 - **Contract tests proving that identical model** — Contract tests proving that identical model inputs produce deterministic outputs.
@@ -1119,6 +1120,7 @@ This guide is for contributors extending Synth.
 - **Unit tests pass for design system** — Unit tests pass for design system, components, and Mission Studio UI.
 - **Unknown adapters exit non-zero with a** — Unknown adapters exit non-zero with a structured error.
 - **Unknown adapters fail with a clear** — Unknown adapters fail with a clear error.
+- **Update contract tests to assert the** — Update contract tests to assert the expanded surface.
 - **Update path constants in tests that** — Update path constants in tests that assert on default layout.
 - **Update tests and fixtures** — 4. Update tests and fixtures
 - **Update tests to assert the expanded** — Update tests to assert the expanded surface.
@@ -1179,6 +1181,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 7d8618ef1f026d2e68f560138ee7ab3e94a6d33b873799e3284806f39b3b3b7b
+sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
 projection: synth-documentation-expedition-v1
 -->

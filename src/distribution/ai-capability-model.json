@@ -249,6 +249,34 @@
       "outputPath": "distribution/ide-rules/.clinerules"
     },
     {
+      "id": "windsurf-rules",
+      "name": "Windsurf Rules",
+      "format": "markdown",
+      "audience": "Windsurf IDE agents",
+      "outputPath": "distribution/ide-rules/.windsurfrules"
+    },
+    {
+      "id": "roo-rules",
+      "name": "Roo Rules",
+      "format": "markdown",
+      "audience": "Roo IDE agents",
+      "outputPath": "distribution/ide-rules/.roorules"
+    },
+    {
+      "id": "aider-instructions",
+      "name": "Aider Instructions",
+      "format": "markdown",
+      "audience": "Aider coding assistant",
+      "outputPath": "distribution/ide-rules/.aider-instructions.md"
+    },
+    {
+      "id": "continue-rules",
+      "name": "Continue.dev Rules",
+      "format": "markdown",
+      "audience": "Continue.dev IDE agents",
+      "outputPath": "distribution/ide-rules/.continue/rules.md"
+    },
+    {
       "id": "mcp-manifest",
       "name": "MCP Server Manifest",
       "format": "json",

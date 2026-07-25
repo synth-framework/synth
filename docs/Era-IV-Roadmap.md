@@ -142,10 +142,10 @@ These are the candidate initiatives for Era IV. They are no longer "pending v1.0
 | --- | --- | --- |
 | EXP-PROGRAM-029 — AI Ecosystem Distribution | AI Ecosystem | **Active** |
 | EXP-DIST-001 — Canonical AI Capability Model | AI Ecosystem | Completed and accepted |
-| EXP-DIST-002 — Agent Skill Projection Pipeline | AI Ecosystem | **Executing** |
+| EXP-DIST-002 — Agent Skill Projection Pipeline | AI Ecosystem | Completed and accepted |
 | EXP-DIST-003 — SYNTH MCP Server | AI Ecosystem | Proposed |
 | EXP-DIST-004 — npm Package Distribution | Distribution | Proposed |
-| EXP-DIST-005 — IDE Rules Projection | IDE Integration | Proposed |
+| EXP-DIST-005 — IDE Rules Projection | IDE Integration | **Executing** |
 
 ### Architecture convergence
 
@@ -242,7 +242,8 @@ Applied acceptance criterion for every proposed item:
 | --- | :---: | :---: | --- |
 | EXP-PROGRAM-029 — AI Ecosystem Distribution | ✅ | ❌ | **Active** — first Era IV program |
 | EXP-DIST-001 — Canonical AI Capability Model | ✅ | ❌ | Completed and accepted |
-| EXP-DIST-002 — Agent Skill Projection Pipeline | ✅ | ❌ | **Executing** — expanding agent skills to ChatGPT, Gemini, Codex, Claude |
+| EXP-DIST-002 — Agent Skill Projection Pipeline | ✅ | ❌ | Completed and accepted |
+| EXP-DIST-005 — IDE Rules Projection | ✅ | ✅ | **Executing** — completing IDE rules for Cursor, Cline, Windsurf, Roo, Aider, Continue.dev |
 | EXP-DIST-003 — SYNTH MCP Server | ✅ | ❌ | Keep proposed; distribution channel |
 | EXP-DIST-004 — npm Package Distribution | ✅ | ❌ | Keep proposed; core distribution |
 | EXP-DIST-005 — IDE Rules Projection | ✅ | ✅ | Keep proposed; adoption + operator speed |
@@ -310,8 +311,9 @@ EXP-PROGRAM-034  Task Engine
 
 1. ✅ **Activate EXP-PROGRAM-029** — active with adoption metric: number of supported AI ecosystems / integrations.
 2. ✅ **Complete EXP-DIST-001** — canonical model, projection engine, and contract tests are done.
-3. **Complete EXP-DIST-002** — expand agent skills to ChatGPT, Gemini, and any additional AI platforms.
-4. **Create Era IV program proposals** for remaining themes, or leave them as `Proposed` until intentional planning begins.
+3. ✅ **Complete EXP-DIST-002** — agent skills expanded to Claude, Codex, ChatGPT, Gemini.
+4. **Complete EXP-DIST-005** — complete IDE rules for Cursor, Cline, Windsurf, Roo, Aider, Continue.dev.
+5. **Create Era IV program proposals** for remaining themes, or leave them as `Proposed` until intentional planning begins.
 4. **Move research items** to a dedicated `research/` or `incubation/` track with no delivery commitment.
 5. **Establish a maintenance backlog** document for `2.4.x` patch work.
 

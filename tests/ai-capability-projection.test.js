@@ -94,14 +94,18 @@ async function testProjectionGeneratesAtLeastThreeSurfaces() {
     assert(names.includes("agent-skills/gemini.md"), "Gemini skill must be generated")
     assert(names.includes("ide-rules/.cursor/rules.mdc"), "Cursor rules must be generated")
     assert(names.includes("ide-rules/.clinerules"), "Cline rules must be generated")
+    assert(names.includes("ide-rules/.windsurfrules"), "Windsurf rules must be generated")
+    assert(names.includes("ide-rules/.roorules"), "Roo rules must be generated")
+    assert(names.includes("ide-rules/.aider-instructions.md"), "Aider instructions must be generated")
+    assert(names.includes("ide-rules/.continue/rules.md"), "Continue.dev rules must be generated")
     assert(names.includes("mcp/manifest.json"), "MCP manifest must be generated")
-    assert(names.length >= 7, `Expected at least 7 projections, got ${names.length}`)
+    assert(names.length >= 11, `Expected at least 11 projections, got ${names.length}`)
 
     const mcp = JSON.parse(files["mcp/manifest.json"])
     assert(Array.isArray(mcp.tools), "MCP manifest must expose tools")
     assert(mcp.tools.length > 0, "MCP manifest must expose at least one tool")
     assert(mcp.public_vocabulary.length === 7, "MCP manifest must include seven public vocabulary concepts")
-    console.log("[PASS] Projection engine generates agent skills and distribution surfaces")
+    console.log("[PASS] Projection engine generates agent skills, IDE rules, and distribution surfaces")
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true })
   }

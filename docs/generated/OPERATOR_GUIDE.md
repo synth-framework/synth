@@ -193,7 +193,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DIST-002 — Agent Skill Projection Pipeline](../expeditions/EXP-DIST-002.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
-- **[EXP-DIST-005 — IDE Rules Projection](../expeditions/EXP-DIST-005.md)** — Status: Proposed, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
+- **[EXP-DIST-005 — IDE Rules Projection](../expeditions/EXP-DIST-005.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DOC-002 — Deterministic Documentation Projections](../expeditions/EXP-DOC-002.md)** — Status: Completed, Kind: Release Candidate Expedition, Priority: High, Program: EXP-PROGRAM-038 — Release Candidate
 - **[EXP-DOCS-003 — Agent Planning Guide Update](../expeditions/EXP-DOCS-003.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-005 — Example Synchronization](../expeditions/EXP-DOCS-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
@@ -1659,6 +1659,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 7d8618ef1f026d2e68f560138ee7ab3e94a6d33b873799e3284806f39b3b3b7b
+sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
 projection: synth-documentation-expedition-v1
 -->

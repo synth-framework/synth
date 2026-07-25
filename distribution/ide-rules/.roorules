@@ -1,0 +1,69 @@
+# SYNTH Rules for Roo
+
+## Identity
+
+Deterministic execution system for engineering work. Humans explore, SYNTH remembers, and AI executes deterministically.
+
+## Public vocabulary (seven concepts)
+
+- Mission: A strategic goal you want to achieve.
+- Expedition: A bounded investigation or build that moves a mission forward.
+- Evidence: What you know and how confidently you know it.
+- Plan: The approved path forward, including the work to do.
+- Event: An immutable record that something happened.
+- State: The current picture of the world, derived from events.
+- Replay: Rebuilding state from events to prove correctness.
+
+## Rules
+
+- Use only READ_ONLY and PROPOSAL_ONLY commands during discovery.
+- Never run a MUTATING command without explicit operator approval.
+- Do not modify protected assets without an Architecture Expedition and ADR.
+- Prefer 'synth mission create' and 'synth expedition create' for proposing work.
+- Treat the event log as immutable; state is always derived from events.
+
+## Discovery-safe commands
+
+- synth `--help` — Show generic help
+- synth `--version` — Print the installed Synth version
+- synth `discover` — Discover repository structure and produce a read-only analysis
+- synth `doctor` — Verify installation and project health
+- synth `status` — Report the current project state
+- synth `explain` — Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)
+- synth `validate` — Analyze changes and plan validations
+- synth `verify` — Verify governance invariants and projection consistency
+- synth `certify` — Run failure and recovery certification scenarios
+- synth `version` — Print the installed Synth version
+- synth `bootstrap --dry-run` — Generate a bootstrap proposal without mutating state
+- synth `mission create` — Create a Mission proposal
+- synth `expedition create` — Create an Expedition proposal
+- synth `first-contact start` — Extract intent and create a first-contact proposal draft
+- synth `first-contact clarify` — Show or apply clarification answers to the draft
+- synth `first-contact project` — Project architecture candidates from the draft
+- synth `first-contact verify` — Verify capability assumptions for the selected architecture
+- synth `first-contact status` — Report the current first-contact state
+- synth `first-contact materialize --dry-run` — Preview what materialization would create
+- synth `genesis start` — Alias for 'first-contact start'
+- synth `genesis project` — Alias for 'first-contact project'
+- synth `genesis verify` — Alias for 'first-contact verify'
+- synth `genesis status` — Alias for 'first-contact status'
+- synth `genesis materialize --dry-run` — Alias for 'first-contact materialize --dry-run'
+
+## Protected assets
+
+- Mission Studio
+- Genesis
+- Replay
+- ExecutionGate
+- Event Model
+- Capability Model
+- Constitutional Baseline
+- Public Vocabulary
+
+## Governance lifecycle
+
+draft → approved → committed → executing → completed
+
+## Source
+
+Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json` (version 1.0.0)
