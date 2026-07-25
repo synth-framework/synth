@@ -34,6 +34,17 @@ node scripts/certify-architecture-baseline.js
 node scripts/certify-release-readiness.js
 ```
 
+## How to validate a clean clone
+
+```bash
+bash scripts/validate-clean-clone.sh [REF]
+```
+
+Run this from any existing checkout to clone the repository into a fresh
+temporary directory, build it, run the governance pipeline, regenerate the
+manifest, and verify all five certification tracks. `REF` defaults to
+`origin/main`; pass `v1.0.0` to validate the release tag.
+
 ## How to run the full governance pipeline
 
 ```bash
