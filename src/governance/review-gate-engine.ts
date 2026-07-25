@@ -189,6 +189,7 @@ export function engineResolveReviewGate(
     affectedAssets,
     requiredChanges,
     reviewer: JSON.parse(JSON.stringify(reviewer)),
+    conditions: gate.conditions ? JSON.parse(JSON.stringify(gate.conditions)) : [],
   }
   if (evaluation) {
     payload.evaluation = JSON.parse(JSON.stringify(evaluation))
@@ -372,7 +373,7 @@ export function engineFulfillCondition(
     events: [
       {
         type: "CONDITION_FULFILLED",
-        payload: { gateId, conditionId, fulfilledBy },
+        payload: { expeditionId: current.expeditionId, gateId, conditionId, fulfilledBy },
       },
     ],
   }

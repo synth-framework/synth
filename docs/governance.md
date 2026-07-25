@@ -185,13 +185,13 @@ Exactly one command runs the full governance pipeline:
 npm run govern
 ```
 
-This executes, in order:
+This invokes the governance profiler/orchestrator (`scripts/govern-profiler.js`), which executes, in order:
 
 1. `npm run build` — TypeScript compilation.
-2. `npm run test:all` — full test suite, SKR compatibility, audit, replay, determinism, adversarial.
+2. `npm run test:all` — full test suite, SKR compatibility, audit, replay, determinism, adversarial, and all other registered checks.
 3. `npm run proof` — generate proof object.
 
-If any step fails, the pipeline fails and no proof is accepted.
+The orchestrator also produces timing, dependency-graph, and baseline artifacts under `proof/`. If any step fails, the pipeline fails and no proof is accepted.
 
 CI adapters must invoke this command. They must not duplicate pipeline logic.
 

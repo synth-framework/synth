@@ -489,6 +489,190 @@ test("[L02] Rejected review gate does NOT auto-chain to acceptance gate", async 
 })
 
 // ------------------------------------------------------------------
+// EXP-GOV-015 — Condition fulfillment and convergence-before-close
+// ------------------------------------------------------------------
+
+test("approve_with_conditions blocks acceptance until all conditions are fulfilled", async () => {
+  const ctx = await makeCtx()
+  await approveMission(ctx, "M-COND")
+  await createExecutingExpedition(ctx, "M-COND", "E-COND")
+  await approveRefinedIntent(ctx, "E-COND", "M-COND")
+
+  let result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenReviewGate",
+    payload: {
+      expeditionId: "E-COND",
+      implementationReference: "cond.html",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "ok", `OpenReviewGate should succeed: ${result.error}`)
+
+  const openEvent = await lastEvent(ctx, "REVIEW_GATE_OPENED", (e) => e.payload.expeditionId === "E-COND")
+  const gateId = openEvent.payload.gateId
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "ResolveReviewGate",
+    payload: {
+      expeditionId: "E-COND",
+      decision: "approve_with_conditions",
+      reviewer: { kind: "human", id: "operator" },
+      reason: "Needs two fixes before acceptance",
+      requiredChanges: ["Fix accessibility", "Add unit tests"],
+    },
+  })
+  assert.equal(result.status, "ok", `ResolveReviewGate should succeed: ${result.error}`)
+
+  const resolvedEvent = await lastEvent(ctx, "REVIEW_GATE_RESOLVED", (e) => e.payload.expeditionId === "E-COND")
+  const conditions = resolvedEvent.payload.conditions
+  assert.ok(Array.isArray(conditions) && conditions.length === 2, "Conditions should be tracked on the resolved event")
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenAcceptanceGate",
+    payload: {
+      expeditionId: "E-COND",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "error", "Acceptance should be blocked with unfulfilled conditions")
+  assert.ok(result.error.includes("unfulfilled conditions"), `Expected unfulfilled conditions error, got ${result.error}`)
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "FulfillCondition",
+    payload: { expeditionId: "E-COND", gateId, conditionId: conditions[0].id, fulfilledBy: "dev" },
+  })
+  assert.equal(result.status, "ok", `FulfillCondition should succeed: ${result.error}`)
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenAcceptanceGate",
+    payload: {
+      expeditionId: "E-COND",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "error", "Acceptance should still be blocked with one remaining condition")
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "FulfillCondition",
+    payload: { expeditionId: "E-COND", gateId, conditionId: conditions[1].id, fulfilledBy: "dev" },
+  })
+  assert.equal(result.status, "ok", `FulfillCondition should succeed: ${result.error}`)
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenAcceptanceGate",
+    payload: {
+      expeditionId: "E-COND",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "ok", `Acceptance should open after all conditions fulfilled: ${result.error}`)
+})
+
+test("CloseExpedition requires certified convergence", async () => {
+  const ctx = await makeCtx()
+  const { contractId } = await approveMission(ctx, "M-CLOSE")
+  await createExecutingExpedition(ctx, "M-CLOSE", "E-CLOSE")
+  await approveRefinedIntent(ctx, "E-CLOSE", "M-CLOSE")
+
+  // Manual acceptance without convergence
+  let result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenReviewGate",
+    payload: {
+      expeditionId: "E-CLOSE",
+      implementationReference: "close.html",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "ok")
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "ResolveReviewGate",
+    payload: {
+      expeditionId: "E-CLOSE",
+      decision: "approve",
+      reviewer: { kind: "human", id: "operator" },
+      reason: "Approved",
+    },
+  })
+  assert.equal(result.status, "ok")
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenAcceptanceGate",
+    payload: {
+      expeditionId: "E-CLOSE",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "ok")
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "ResolveAcceptanceGate",
+    payload: {
+      expeditionId: "E-CLOSE",
+      decision: "accepted",
+      reviewer: { kind: "human", id: "operator" },
+      reason: "Accepted",
+    },
+  })
+  assert.equal(result.status, "ok")
+
+  // Close before convergence must fail
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "CloseExpedition",
+    payload: { expeditionId: "E-CLOSE" },
+  })
+  assert.equal(result.status, "error", "CloseExpedition should fail without convergence certification")
+  assert.ok(result.error.includes("CONVERGENCE_CERTIFICATION_REQUIRED"), `Expected convergence required error, got ${result.error}`)
+
+  // Create a second expedition and use the auto-chain to certify convergence.
+  // (Manual CertifyConvergence would need to perfectly match the contract;
+  // auto-chain carries the review evaluation directly.)
+  await createExecutingExpedition(ctx, "M-CLOSE", "E-CLOSE-OK")
+  await approveRefinedIntent(ctx, "E-CLOSE-OK", "M-CLOSE")
+
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "EvaluateAndResolveReviewGate",
+    payload: {
+      expeditionId: "E-CLOSE-OK",
+      implementationReference: "close-ok.html",
+      proposal: buildProposal({
+        hasPersistentHeader: true,
+        hasPersistentSidebar: true,
+        hasScrollDrivenPhases: true,
+      }),
+    },
+  })
+  assert.equal(result.status, "ok", `Auto-chain review should succeed: ${result.error}`)
+
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const convergenceEvent = allEvents.find(
+    (e) => e.type === "CONVERGENCE_CERTIFIED" && e.payload.expeditionId === "E-CLOSE-OK"
+  )
+  assert.ok(convergenceEvent, "Convergence should be certified by the auto-chain")
+
+  // Close after convergence succeeds
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "CloseExpedition",
+    payload: { expeditionId: "E-CLOSE-OK" },
+  })
+  assert.equal(result.status, "ok", `CloseExpedition should succeed after convergence: ${result.error}`)
+})
+
+// ------------------------------------------------------------------
 // Manual gate capabilities remain untouched
 // ------------------------------------------------------------------
 

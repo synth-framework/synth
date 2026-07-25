@@ -959,6 +959,12 @@ export function applyDomain(
     case "CloseExpedition": {
       const expeditionId = String(intent.payload.expeditionId)
       const current = ensureReviewGateExpedition(derivedState, expeditionId)
+      const certified = Object.values(derivedState.convergenceCertifications ?? {}).some(
+        (c) => c.expeditionId === expeditionId && c.status === "certified"
+      )
+      if (!certified) {
+        throw new Error(`CONVERGENCE_CERTIFICATION_REQUIRED: expedition ${expeditionId} cannot be closed without a certified convergence`)
+      }
       const result = engineCloseExpedition(current)
       return { events: result.events }
     }

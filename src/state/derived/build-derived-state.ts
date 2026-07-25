@@ -119,6 +119,7 @@ export function buildReviewGateExpeditions(
                     decisionRequiredChanges: Array.isArray(payload.requiredChanges) ? payload.requiredChanges as string[] : [],
                     reviewer: payload.reviewer as ReviewGateState["reviewer"],
                     resolvedAt: event.timestamp,
+                    conditions: Array.isArray(payload.conditions) ? payload.conditions as ReviewGateState["conditions"] : undefined,
                   }
                 : g,
             ),
@@ -136,6 +137,31 @@ export function buildReviewGateExpeditions(
             status: "executing",
             gates: rge.gates.map((g) =>
               g.id === gateId ? { ...g, status: "revision_requested" as ReviewGateState["status"] } : g,
+            ),
+          }
+        }
+        break
+      }
+      case "CONDITION_FULFILLED": {
+        const expeditionId = String(payload.expeditionId)
+        const gateId = String(payload.gateId)
+        const conditionId = String(payload.conditionId)
+        const fulfilledBy = String(payload.fulfilledBy || "unknown")
+        const rge = state[expeditionId]
+        if (rge) {
+          state[expeditionId] = {
+            ...rge,
+            gates: rge.gates.map((g) =>
+              g.id === gateId && g.conditions
+                ? {
+                    ...g,
+                    conditions: g.conditions.map((c) =>
+                      c.id === conditionId
+                        ? { ...c, fulfilled: true, fulfilledBy, fulfilledAt: event.timestamp }
+                        : c
+                    ),
+                  }
+                : g
             ),
           }
         }
