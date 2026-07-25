@@ -78,6 +78,9 @@ export async function extractDirectoryKnowledge(dir: string): Promise<{ sources:
       return
     }
 
+    // Deterministic traversal order regardless of filesystem return order.
+    entries.sort((a, b) => a.name.localeCompare(b.name))
+
     for (const entry of entries) {
       const fullPath = path.join(current, entry.name)
       if (entry.isDirectory()) {

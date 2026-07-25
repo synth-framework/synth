@@ -190,7 +190,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DISC-005 — Runtime Integrity](../expeditions/EXP-DISC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
 - **[EXP-DISC-006 — Repository Identity](../expeditions/EXP-DISC-006.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
 - **[EXP-DISCOVERY-008 — Operational Discovery](../expeditions/EXP-DISCOVERY-008.md)** — Status: Completed, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-006 — Discovery Platform
-- **[EXP-DIST-002 — Agent Skill Projection Pipeline](../expeditions/EXP-DIST-002.md)** — Status: Executing, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
+- **[EXP-DIST-002 — Agent Skill Projection Pipeline](../expeditions/EXP-DIST-002.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-005 — IDE Rules Projection](../expeditions/EXP-DIST-005.md)** — Status: Proposed, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
@@ -1659,6 +1659,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 51615cdb73061262e99b2bb0038cd9a11778b208af237da170d6ea9030f52364
+sourceStateHash: 7d8618ef1f026d2e68f560138ee7ab3e94a6d33b873799e3284806f39b3b3b7b
 projection: synth-documentation-expedition-v1
 -->
