@@ -27,6 +27,8 @@ import type {
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import { sortKeys } from "../sdk/json/index.js"
+import { loadAdrRegistry, type AdrRegistry } from "../governance/adr-registry.js"
+import { resolveImplementationEligibility } from "../governance/implementation-eligibility.js"
 import type { Registry } from "../capability/registry.js"
 import type { PolicyEngine } from "../policy/policy-engine.js"
 import type { RuntimeEngine } from "../runtime/engine.js"
@@ -80,6 +82,8 @@ export type MutationAuthorization =
 
 /** Execution Gate — the single mutation authority */
 export class ExecutionGate {
+  private adrRegistry: AdrRegistry
+
   constructor(
     private registry: Registry,
     private policyEngine: PolicyEngine,
@@ -88,7 +92,9 @@ export class ExecutionGate {
     private stateStore: IStateStore,
     private validator: (invocation: CapabilityInvocation) => ValidationResult,
     private mutationProviders: Map<string, MutationProvider> = new Map(),
-  ) {}
+  ) {
+    this.adrRegistry = loadAdrRegistry()
+  }
 
   // ===== PUBLIC API: The only mutation entry points =====
 
@@ -386,8 +392,21 @@ export class ExecutionGate {
       }
     }
 
-    // 4. ExecutionGate must be open (this method is invoked through it).
+    // 4. Implementation authority must be complete (ADR-046).
     const authority = authorizedExpeditions[0]
+    const eligibility = resolveImplementationEligibility({
+      expedition: authority,
+      state,
+      adrRegistry: this.adrRegistry,
+    })
+    if (!eligibility.eligible) {
+      return {
+        allowed: false,
+        reason: `Implementation ineligible for ${authority.id}: ${eligibility.reasons.join("; ")}`,
+      }
+    }
+
+    // 5. ExecutionGate must be open (this method is invoked through it).
     return {
       allowed: true,
       authority: authority.id,
