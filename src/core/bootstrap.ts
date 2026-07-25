@@ -27,6 +27,7 @@ import { Registry } from "../capability/registry.js"
 import { snapshotsDir } from "../sdk/paths/index.js"
 import { root } from "../sdk/workspace/index.js"
 import { ExecutionGate } from "../control/execution-gate.js"
+import { FilesystemMutationProvider } from "../mutation/filesystem-provider.js"
 import { Tracer, Logger } from "../observability/tracer.js"
 import { GovernanceEngine } from "../governance/governance-engine.js"
 import { TypeChecker, buildTypedIR } from "../compiler/type-checker.js"
@@ -122,6 +123,7 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
     infra.stateStore,
     validateInvocation,
   )
+  gate.registerMutationProvider(new FilesystemMutationProvider())
 
   // === STEP 8: PLANNING COGNITION ENGINE (PCE) ===
   logger.info("[8/13] Initializing Planning Cognition Engine...")

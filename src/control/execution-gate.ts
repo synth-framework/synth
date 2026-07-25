@@ -337,6 +337,28 @@ export class ExecutionGate {
       return { committed: 0, finalState }
     }
 
+    // Genesis may only seed structural objects. Operational lifecycle
+    // transitions (authorization, gates, acceptance, convergence) must
+    // execute through the governed operational path so every transition
+    // is backed by an approved Mission and authorized Expedition.
+    const allowedGenesisTypes = new Set([
+      "SYSTEM_GENESIS",
+      "PROJECT_CREATED",
+      "PLAN_CREATED",
+      "WORK_ITEM_CREATED",
+      "MISSION_CREATED",
+      "EXPEDITION_CREATED",
+      "OBJECTIVE_ADDED",
+    ])
+    const forbidden = events
+      .map((e) => e.type)
+      .filter((type) => !allowedGenesisTypes.has(type))
+    if (forbidden.length > 0) {
+      throw new Error(
+        `GENESIS_EVENT_TYPE_REJECTED: genesis cannot seed operational event types: ${[...new Set(forbidden)].join(", ")}`
+      )
+    }
+
     // Single batch commit through the guarded store
     await this.eventStore.appendBatch(events, EVENT_STORE_WRITE_TOKEN)
 

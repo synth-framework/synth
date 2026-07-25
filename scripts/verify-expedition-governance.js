@@ -50,6 +50,7 @@ const SUB_ARTIFACT_SUFFIXES = [
   "authority-resolver-design",
   "derived-state-contract",
   "incident-review",
+  "inventory",
 ]
 
 function isSubArtifact(file) {

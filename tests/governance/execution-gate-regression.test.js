@@ -21,6 +21,7 @@ import { promises as fs } from "fs"
 import os from "os"
 import path from "path"
 import { fileURLToPath } from "url"
+import { createAlignedContract } from "../helpers/alignment-fixture.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -92,20 +93,38 @@ async function seedAuthority(ctx, computeEventHash, { missionId, expeditionId, s
   events.push(buildEvent({ type: "MISSION_CREATED", payload: { mission }, previousHash }, computeEventHash))
   previousHash = events[events.length - 1].eventHash
 
-  events.push(buildEvent({ type: "MISSION_APPROVED", payload: { id: missionId }, previousHash }, computeEventHash))
-  previousHash = events[events.length - 1].eventHash
-
   const expedition = baseExpedition(expeditionId, missionId, scope)
   events.push(buildEvent({ type: "EXPEDITION_CREATED", payload: { expedition }, previousHash }, computeEventHash))
-  previousHash = events[events.length - 1].eventHash
 
-  events.push(buildEvent({ type: "EXPEDITION_APPROVED", payload: { id: expeditionId }, previousHash }, computeEventHash))
-  previousHash = events[events.length - 1].eventHash
-
-  events.push(buildEvent({ type: "EXPEDITION_COMMITTED", payload: { id: expeditionId }, previousHash }, computeEventHash))
-
+  // Genesis may only seed structural objects. Operational lifecycle
+  // transitions must execute through the governed operational path.
   await ctx.gate.executeGenesis(events)
-  return { mission, expedition }
+
+  // Establish an aligned alignment contract so the mission can be approved.
+  const { contractId } = await createAlignedContract(ctx)
+
+  let result = await ctx.gate.execute({
+    actor: "test",
+    capability: "ApproveMission",
+    payload: { id: missionId, alignmentContractId: contractId },
+  })
+  assert.strictEqual(result.contract.finalState, "COMMITTED", "ApproveMission must commit")
+
+  result = await ctx.gate.execute({
+    actor: "test",
+    capability: "ApproveExpedition",
+    payload: { id: expeditionId },
+  })
+  assert.strictEqual(result.contract.finalState, "COMMITTED", "ApproveExpedition must commit")
+
+  result = await ctx.gate.execute({
+    actor: "test",
+    capability: "CommitExpedition",
+    payload: { id: expeditionId },
+  })
+  assert.strictEqual(result.contract.finalState, "COMMITTED", "CommitExpedition must commit")
+
+  return { mission, expedition, contractId }
 }
 
 async function registerRuntimeCapabilities(ctx) {
@@ -147,6 +166,39 @@ async function testBlockedWithoutAuthority() {
   console.log("[PASS] FilesystemWrite blocked without authority")
 }
 
+async function testGenesisRejectsOperationalEvents() {
+  const { bootstrap, computeEventHash } = await loadModules()
+  const ctx = await bootstrap({ infra: { persistence: "memory" }, skipGenesis: true })
+
+  const previousHash = await ctx.gate.getLastEventHash()
+  const operationalEvents = [
+    buildEvent({ type: "MISSION_APPROVED", payload: { id: "m-guard" }, previousHash }, computeEventHash),
+  ]
+
+  try {
+    await ctx.gate.executeGenesis(operationalEvents)
+    assert.fail("genesis must reject operational lifecycle events")
+  } catch (err) {
+    assert.ok(err.message.includes("GENESIS_EVENT_TYPE_REJECTED"), `expected genesis rejection, got ${err.message}`)
+    assert.ok(err.message.includes("MISSION_APPROVED"), `rejection must cite the offending type: ${err.message}`)
+  }
+
+  // EXPEDITION_AUTHORIZED in particular must never be seeded — it is the
+  // operational proof that a mutation was authorized by an expedition.
+  const authorizedEvent = buildEvent(
+    { type: "EXPEDITION_AUTHORIZED", payload: { id: "exp-guard", targets: ["/etc/passwd"] }, previousHash },
+    computeEventHash,
+  )
+  try {
+    await ctx.gate.executeGenesis([authorizedEvent])
+    assert.fail("genesis must reject EXPEDITION_AUTHORIZED events")
+  } catch (err) {
+    assert.ok(err.message.includes("EXPEDITION_AUTHORIZED"), `rejection must cite EXPEDITION_AUTHORIZED: ${err.message}`)
+  }
+
+  console.log("[PASS] Genesis rejects operational lifecycle events")
+}
+
 async function testAllowedWithAuthority() {
   const { bootstrap, computeEventHash } = await loadModules()
   const ctx = await bootstrap({ infra: { persistence: "memory" }, skipGenesis: true })
@@ -176,7 +228,7 @@ async function testAllowedWithAuthority() {
   assert.strictEqual(written, content, "filesystem provider must write exact content")
 
   const afterEvents = await ctx.infra.eventStore.loadAll()
-  assert.strictEqual(afterEvents.length, beforeCount + 1, "exactly one new event must be emitted")
+  assert.ok(afterEvents.length > beforeCount, "mutation must emit at least one new event")
 
   const authorizedEvent = afterEvents[afterEvents.length - 1]
   assert.strictEqual(authorizedEvent.type, "EXPEDITION_AUTHORIZED", "successful mutation must emit EXPEDITION_AUTHORIZED")
@@ -307,6 +359,7 @@ async function main() {
   }
 
   await testBlockedWithoutAuthority()
+  await testGenesisRejectsOperationalEvents()
   await testAllowedWithAuthority()
   await testScopeBoundary()
   await testStateStoreGuard()

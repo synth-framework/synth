@@ -2,12 +2,13 @@
 
 > Route all SYNTH-controlled mutations through `ExecutionGate.execute()` and define the controlled exception model for genesis operations.
 
-**Status:** Approved  
+**Status:** Completed and accepted  
 **Program:** EXP-PROGRAM-040 — Repository Simplification  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Authority:** ADR-004 Protected Assets, ADR-026 Governance Lifecycle Freeze, ADR-035 Genesis Protocol, EXP-CAPABILITY-BOUNDARY-001, Constitutional Baseline Mutation Authority Invariant  
 **Touches Protected Assets:** Yes — `ExecutionGate`, Capability Model, Genesis Boundary  
+**Completed:** 2026-07-24  
 
 ---
 
@@ -173,4 +174,15 @@ This expedition consumes the `ExecutionGate.execute()` mutation boundary from EX
 
 > Are initialization paths mutations, or genesis operations?
 
-This expedition must resolve that distinction and enforce it in code. The wrong answer creates either a circular dependency (forcing genesis through governed authority) or a bypass (allowing product mutations to claim genesis status).
+Resolved: initialization paths that create the governance substrate itself are genesis operations. All product-asset mutations are governed operations. This distinction is enforced in `ExecutionGate.executeGenesis()` by an explicit allowlist of structural seed event types.
+
+---
+
+## Completion Evidence
+
+- **Inventory:** `docs/expeditions/EXP-MUTATION-LIFECYCLE-001-inventory.md` catalogues every direct write in `src/` with classification.
+- **Provider registration:** `FilesystemMutationProvider` is registered in `src/core/bootstrap.ts` immediately after `ExecutionGate` construction.
+- **Genesis guard:** `src/control/execution-gate.ts` `executeGenesis()` rejects operational lifecycle events (`MISSION_APPROVED`, `EXPEDITION_APPROVED`, `EXPEDITION_COMMITTED`, `EXPEDITION_AUTHORIZED`, etc.). Only structural seed events are allowed.
+- **Bypass audit:** `scripts/audit-bypass-map.js` reports `✅ No mutation bypass paths detected`.
+- **Regression test:** `tests/governance/execution-gate-regression.test.js` passes and includes a new `testGenesisRejectsOperationalEvents` case.
+- **Build/test:** `npm run build` and `npm test` pass (121 passed, 0 failed).

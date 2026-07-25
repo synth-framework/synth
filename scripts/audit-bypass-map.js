@@ -49,7 +49,7 @@ const EXEMPT_FILES = [
   "tracer.ts", "tracer.js",                       // Observability only
   "governance-engine.ts", "governance-engine.js", // Proposal system (no event writes)
   "type-checker.ts", "type-checker.js",           // Static analysis only
-  "mutation/filesystem-provider.ts", "mutation/filesystem-provider.js", // Dead code — no consumers import from mutation/
+  "mutation/filesystem-provider.ts", "mutation/filesystem-provider.js", // ExecutionGate-authorized mutation provider (registered in bootstrap)
 ]
 
 function isExempt(filePath) {

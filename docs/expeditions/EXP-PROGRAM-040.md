@@ -2,7 +2,7 @@
 
 > Reduce SYNTH's conceptual complexity by collapsing parallel abstraction layers, hardening the kernel mutation boundary, and making workflow and governance state derived from canonical truth.
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution, ADR-004, ADR-045, ADR-046, ADR-047, ADR-048  
@@ -11,7 +11,8 @@
 **Architecture Impact:** High  
 **Constitutional Impact:** Medium  
 **Public Impact:** Medium  
-**Execution Impact:** High
+**Execution Impact:** High  
+**Completed:** 2026-07-24
 
 ---
 
@@ -43,7 +44,7 @@ Repository Simplification
 ├── Phase 4 — Canonical State Simplification
 │   └── EXP-SIMPLIFICATION-001             Canonical State Simplification & Authority Restoration
 │
-└── Phase 5 — Authority Enforcement (proposed)
+└── Phase 5 — Authority Enforcement ✅
     ├── EXP-GOVERNANCE-ENFORCEMENT-001     Implementation Authority Ordering Enforcement
     └── EXP-MUTATION-LIFECYCLE-001         Mutation Boundary Integration and Genesis Policy
 ```
@@ -84,3 +85,29 @@ Repository Simplification
 - **EXP-PROGRAM-030 — Intelligent Governance Orchestration** owns general validation planning, dependency graphs, and proof-cache orchestration; the authority enforcement here is scoped to the mutation boundary, not the validation schedule.
 - **EXP-PROGRAM-038 — Audit Remediation** builds on `EXP-CAPABILITY-BOUNDARY-001` to close execution-gate bypasses.
 - **docs/strategy/simplification-program.md** is the strategic roadmap that chartered this program.
+
+---
+
+## Closure Evidence
+
+All child expeditions are completed:
+
+| Expedition | Status |
+|------------|--------|
+| EXP-SIMPLIFICATION-ASSESSMENT-001 | Completed and accepted |
+| EXP-COMPLEXITY-AUDIT-001 | Completed and accepted |
+| EXP-CAPABILITY-BOUNDARY-001 | Completed |
+| EXP-SIMPLIFICATION-002 | Completed |
+| EXP-SIMPLIFICATION-003 | Completed |
+| EXP-SIMPLIFICATION-001 | Completed and accepted |
+| EXP-GOVERNANCE-ENFORCEMENT-001 | Completed and accepted |
+| EXP-MUTATION-LIFECYCLE-001 | Completed and accepted |
+
+Final verification:
+
+- `npm run build` passes.
+- `npm test` passes (121 passed, 0 failed).
+- `node scripts/audit-bypass-map.js` reports zero bypass paths.
+- `node scripts/verify-expedition-governance.js` reports zero identity errors and zero warnings.
+- `ExecutionGate.executeGenesis()` enforces the structural-seed allowlist.
+- `FilesystemMutationProvider` is registered and used for governed writes.
