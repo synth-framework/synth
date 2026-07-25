@@ -209,8 +209,8 @@ async function testInvalidTransitions(projectDir, missionId, gateCtx, contractId
   assert(startResult.status !== 0, "expedition start should fail before commit")
   const startOutput = parseJson(startResult.stdout)
   assert(startOutput.status === "error", "start failure should report error status")
-  assert(startOutput.reason.includes("committed"), "start failure should explain that only committed expeditions can be started")
-  assert(startOutput.requiredAction.includes("commit"), "start failure should suggest committing first")
+  assert(startOutput.error && startOutput.error.includes("committed"), `start failure should explain that only committed expeditions can be started, got ${JSON.stringify(startOutput)}`)
+  assert(startOutput.requiredAction && startOutput.requiredAction.includes("commit"), `start failure should suggest committing first, got ${JSON.stringify(startOutput)}`)
 
   // Approve and commit, then try to approve again.
   runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
@@ -220,7 +220,7 @@ async function testInvalidTransitions(projectDir, missionId, gateCtx, contractId
   assert(reapproveResult.status !== 0, "expedition approve should fail when not draft")
   const reapproveOutput = parseJson(reapproveResult.stdout)
   assert(reapproveOutput.status === "error", "re-approve failure should report error status")
-  assert(reapproveOutput.reason.includes("draft"), "re-approve failure should explain draft requirement")
+  assert(reapproveOutput.error && reapproveOutput.error.includes("draft"), `re-approve failure should explain draft requirement, got ${JSON.stringify(reapproveOutput)}`)
 
   // Start and complete, then try to start again.
   runSynth(["expedition", "start", "--id", draftId], projectDir)
@@ -231,7 +231,7 @@ async function testInvalidTransitions(projectDir, missionId, gateCtx, contractId
   assert(restartResult.status !== 0, "expedition start should fail after completion")
   const restartOutput = parseJson(restartResult.stdout)
   assert(restartOutput.status === "error", "restart failure should report error status")
-  assert(restartOutput.reason.includes("committed"), "restart failure should explain committed requirement")
+  assert(restartOutput.error && restartOutput.error.includes("committed"), `restart failure should explain committed requirement, got ${JSON.stringify(restartOutput)}`)
 
   console.log("[PASS] Invalid lifecycle transitions emit clear errors")
 }
@@ -275,6 +275,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err.message)
+  console.error(err.stack || err.message)
   process.exit(1)
 })
