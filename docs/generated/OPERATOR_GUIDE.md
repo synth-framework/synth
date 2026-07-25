@@ -804,6 +804,7 @@ This guide covers the operator journey from idea to done.
 - **EXP-GATE-012 EXP-REFINE-009 Certification expeditions this expedition** — **EXP-GATE-012 / EXP-REFINE-009** — Certification expeditions; this expedition ensures their charters remain consistent with reality before they execute.
 - **EXP-GATE-013 Dependency Graph Enforcement this expedition** — **EXP-GATE-013** — Dependency Graph Enforcement; this expedition provides the evidence grounding; GATE-013 provides the runtime dependency enforcement.
 - **EXP-GENESIS-003 Genesis Validation Mission Materialization** — EXP-GENESIS-003 — Genesis Validation & Mission Materialization
+- **EXP-GOV-023 does not clearly reduce operator** — **EXP-GOV-023** does not clearly reduce operator effort or increase adoption in its current draft form. Keep in Research until it has a user-facing charter.
 - **EXP-GOVERNABILITY-001 This expedition designs the capability** — **EXP-GOVERNABILITY-001:** This expedition designs the capability that 001 identified as missing.
 - **EXP-GOVERNABILITY-001 This expedition enables its re-execution** — **EXP-GOVERNABILITY-001:** This expedition enables its re-execution.
 - **EXP-GOVERNABILITY-005 Convergence Certification this expedition closes** — **EXP-GOVERNABILITY-005** — Convergence Certification; this expedition closes the symmetric gap at the *creation* end of the lifecycle.
@@ -1654,6 +1655,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
+sourceStateHash: 178572be7399688679c3b39b78a81c85125f5ca441d0cf9607c4643cd842e58d
 projection: synth-documentation-expedition-v1
 -->

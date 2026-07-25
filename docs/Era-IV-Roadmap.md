@@ -231,6 +231,39 @@ The v2 Roadmap items above naturally cluster into five themes:
 
 ---
 
+## Era IV readiness review
+
+Applied acceptance criterion for every proposed item:
+
+> **It must increase adoption or reduce operator effort.**
+
+| Item | Advances adoption | Reduces operator effort | Assessment |
+| --- | :---: | :---: | --- |
+| EXP-PROGRAM-029 — AI Ecosystem Distribution | ✅ | ❌ | Keep proposed; high-leverage adoption |
+| EXP-DIST-001 — Canonical AI Capability Model | ✅ | ❌ | Keep proposed; enables AI adoption |
+| EXP-DIST-003 — SYNTH MCP Server | ✅ | ❌ | Keep proposed; distribution channel |
+| EXP-DIST-004 — npm Package Distribution | ✅ | ❌ | Keep proposed; core distribution |
+| EXP-DIST-005 — IDE Rules Projection | ✅ | ✅ | Keep proposed; adoption + operator speed |
+| EXP-PROGRAM-031 — Architectural Convergence | ⚠️ | ⚠️ | Flag for review; structural rather than user-facing |
+| EXP-GATE-013 — Gate State & Dependency Enforcement | ❌ | ⚠️ | Flag for review; governance correctness, not direct operator effort |
+| EXP-PROGRAM-032 — Operator Optimization Pipeline | ❌ | ✅ | Keep proposed; pure operator effort reduction |
+| EXP-REFINE-010 — Interactive Decision Acquisition | ❌ | ✅ | Keep proposed; operator effort reduction |
+| EXP-REFINE-014 — Mission Projection Capability | ❌ | ✅ | Keep proposed; operator effort reduction |
+| EXP-PROGRAM-034 — Task Orchestration Engine | ❌ | ✅ | Defer; major architecture, defer until ecosystem stabilizes |
+| EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth | ✅ | ❌ | Keep proposed; pure adoption |
+| EXP-ADOPT-001..021 | ✅ | ❌ | Keep proposed; adoption block |
+| EXP-GOV-023 — Agent Governance Adherence | ❌ | ❌ | Move to Research |
+| EXP-REFINE-015 — Evidence-Grounded Mission Drafting | ❌ | ✅ | Keep in Research; operator effort but not committed |
+| EXP-REFINE-016 — Artifact Scope & Completion Validation | ❌ | ✅ | Keep in Research; operator effort but not committed |
+
+### Flags
+
+- **EXP-PROGRAM-031** and **EXP-GATE-013** should be explicitly justified before activation. They are architecture-facing and could expand conceptual surface area.
+- **EXP-PROGRAM-034** is explicitly deferred. It changes the execution model and should wait until Era IV themes 1, 2, and 4 are stable.
+- **EXP-GOV-023** does not clearly reduce operator effort or increase adoption in its current draft form. Keep in Research until it has a user-facing charter.
+
+---
+
 ## Completed rebaseline actions
 
 1. ✅ **Closed Program 042** — marked `Completed and accepted` now that `v2.4.1` is released.

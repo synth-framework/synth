@@ -475,6 +475,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **EXP-INSTALL-008 Upgrade Engine** — EXP-INSTALL-008 — Upgrade Engine
 - **EXP-PROGRAM-012 Runtime Self-Description** — EXP-PROGRAM-012 — Runtime Self-Description
 - **EXP-PROGRAM-017 Project Runtime Boundary Hardening Program** — EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program
+- **EXP-PROGRAM-031 and EXP-GATE-013 should be explicitly** — **EXP-PROGRAM-031** and **EXP-GATE-013** should be explicitly justified before activation. They are architecture-facing and could expand conceptual surface area.
 - **EXP-PROGRAM-034 Task Orchestration Engine** — EXP-PROGRAM-034 — Task Orchestration Engine
 - **EXP-PROGRAM-034 Task Orchestration Engine will consume** — **EXP-PROGRAM-034 — Task Orchestration Engine** will consume the canonical task model and SDK paths.
 - **EXP-REFINE-001 Refinement Layer Model** — EXP-REFINE-001 — Refinement Layer Model
@@ -1336,6 +1337,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: c56ae7e0bde0943f6d67013d6908f5279f1556c266e27527783700ab0473fbf5
+sourceStateHash: 178572be7399688679c3b39b78a81c85125f5ca441d0cf9607c4643cd842e58d
 projection: synth-documentation-expedition-v1
 -->
