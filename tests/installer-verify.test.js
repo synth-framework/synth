@@ -154,7 +154,7 @@ async function testVerifyOnlySucceedsWhenSynthAvailable() {
   assert(result.status === 0, "--verify-only must succeed when synth is available")
   assert(result.stdout.includes("Installation Proof:"), "Must emit Installation Proof")
   assert(result.stdout.includes("Status:    ok"), "Proof status must be ok")
-  assert(result.stdout.includes("Version:   synth2.0.0-rc.1"), "Proof must include version")
+  assert(result.stdout.includes("Version:   2.0.0-rc.1"), "Proof must include version")
 }
 
 async function testVerifyOnlyFailsOnVersionMismatch() {

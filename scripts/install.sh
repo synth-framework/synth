@@ -392,9 +392,25 @@ npm_install_cmd() {
   fi
 }
 
+# Synth --version emits a stable JSON contract (e.g., {"version":"2.4.0"}).
+# This helper extracts the version from either JSON or legacy plain-text output
+# so the installer stays compatible across CLI output format changes.
+extract_synth_version() {
+  local output="$1"
+  local version=""
+  version="$(printf "%s" "$output" | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
+  if [ -n "$version" ]; then
+    printf "%s" "$version"
+    return 0
+  fi
+  printf "%s" "$output" | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+[^[:space:]]*' | head -n 1 || true
+}
+
 get_installed_version() {
   if command -v synth >/dev/null 2>&1; then
-    synth --version 2>/dev/null | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+[^[:space:]]*' | head -n 1 || true
+    local output
+    output="$(synth --version 2>/dev/null)"
+    extract_synth_version "$output"
   else
     printf ""
   fi
@@ -462,7 +478,9 @@ expected_binary_path() {
 resolve_installed_version() {
   local synth_bin="$1"
   if [ -n "$synth_bin" ] && [ -x "$synth_bin" ]; then
-    "$synth_bin" --version 2>/dev/null | head -n 1 | tr -d '[:space:]'
+    local output
+    output="$("$synth_bin" --version 2>/dev/null)"
+    extract_synth_version "$output"
   else
     printf ""
   fi
