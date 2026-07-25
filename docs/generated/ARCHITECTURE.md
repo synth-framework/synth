@@ -90,6 +90,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **An attacker with store access could** — An attacker with store access could inject events that appear legitimate
 - **An expedition at executing gate status** — An expedition at `executing` gate status, AND
 - **An independent engineer reading the reports** — An independent engineer reading the reports can answer:
+- **Any change touching the kernel SDK** — Any change touching the kernel, SDK, event model, capability registry, governance lifecycle, or replay engine requires a new Era IV architectural program.
 - **Any Direct Runtime Access structurally impossible** — Any → Direct Runtime Access (structurally impossible)
 - **Any other script whose runtime is** — Any other script whose runtime is short and whose output is directly relevant to the change
 - **API Layer** — API Layer
@@ -379,6 +380,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **ExecutionGate** — ExecutionGate
 - **ExecutionGate API** — `ExecutionGate` API
 - **ExecutionGate API May be modified only** — **ExecutionGate API** — May be modified only by EXP-SEC-001, through the ADR-050 freeze lift already authorized.
+- **ExecutionGate as the single mutation authority** — ExecutionGate as the single mutation authority
 - **ExecutionGate CommandBus** — ExecutionGate (CommandBus)
 - **ExecutionGate docs kernel-freeze md 23-32** — ExecutionGate (`docs/kernel-freeze.md:23-32`)
 - **ExecutionGate execute builds the context at** — `ExecutionGate.execute()` builds the context at command entry.
@@ -748,6 +750,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Not routed through the gate** — Not routed through the gate.
 - **npm is the workflow engine A** — **npm is the workflow engine.** A generic package-manager script block has become the source of truth for SYNTH's own governance orchestration.
 - **npm script test environment-runtime included in** — **npm script:** `test:environment-runtime`, included in `test:all`.
+- **Numeric quorum in governance gates** — Numeric quorum in governance gates
 - **Numeric quorum weighted voting hierarchical delegated** — Numeric quorum, weighted voting, hierarchical/delegated approvals
 - **Objective 1 Restore canonical state boundaries** — Objective 1 — Restore canonical state boundaries
 - **Observation is a frozen kernel type** — `Observation` is a frozen kernel type.
@@ -853,6 +856,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Registering new policies at runtime** — Registering new policies at runtime
 - **Regression test tests governance execution-gate-regression test** — **Regression test:** `tests/governance/execution-gate-regression.test.js` passes and includes a new `testGenesisRejectsOperationalEvents` case.
 - **Relationship to EXP-RUNTIME-001** — Relationship to EXP-RUNTIME-001
+- **Release engineering is part of the** — Release engineering is part of the product
 - **Remove rawEventStore from the public Infra** — Remove `rawEventStore` from the public `Infra` interface.
 - **Rename Capability Intent at architectural layer** — Rename (Capability → Intent at architectural layer)
 - **Rename events to engineering-evolution style** — Rename events to engineering-evolution style
@@ -1337,6 +1341,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 178572be7399688679c3b39b78a81c85125f5ca441d0cf9607c4643cd842e58d
+sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
 projection: synth-documentation-expedition-v1
 -->

@@ -302,6 +302,7 @@ This guide is for architects making structural decisions.
 - **Documentation and constitution reflect Observation as** — Documentation and constitution reflect Observation as a first-class primitive.
 - **Entering the phase shows the governance** — Entering the phase shows the governance panel and replay timeline.
 - **Era II Governance Runtime** — Era II — Governance & Runtime
+- **Era IV governance rule** — Era IV governance rule
 - **Event Model and governance event taxonomy** — Event Model and governance event taxonomy.
 - **Event model or governance model changes** — Event model or governance model changes.
 - **Every decision must be recorded through** — Every decision must be recorded through the proper capability
@@ -318,6 +319,7 @@ This guide is for architects making structural decisions.
 - **Execute governance** — Execute governance
 - **execution authority** — execution authority
 - **ExecutionCoordinator has authority to validate permits** — ExecutionCoordinator has authority to validate permits
+- **ExecutionGate as the single mutation authority** — ExecutionGate as the single mutation authority
 - **ExecutionGate execute permits mutations when authority** — `ExecutionGate.execute()` permits mutations when authority state is complete.
 - **ExecutionGate execute rejects mutations when authority** — `ExecutionGate.execute()` rejects mutations when authority state is incomplete.
 - **Existing constitutional concepts remain unchanged** — Existing constitutional concepts remain unchanged.
@@ -430,6 +432,7 @@ This guide is for architects making structural decisions.
 - **Given observations decisions Mission Studio can** — Given observations + decisions, Mission Studio can regenerate an identical snapshot.
 - **governance** — `governance`
 - **Governance Across Layers** — Governance Across Layers
+- **Governance administration is not implementation** — Governance administration is not implementation
 - **Governance and Agents** — Governance and Agents
 - **Governance and Genesis cannot reliably reference** — Governance and Genesis cannot reliably reference Discovery output.
 - **Governance applies uniformly across all adapters** — Governance applies uniformly across all adapters.
@@ -471,6 +474,7 @@ This guide is for architects making structural decisions.
 - **Governance is structurally enforced not optionally** — Governance is structurally enforced, not optionally applied
 - **Governance Layer** — Governance Layer
 - **Governance Lifecycle** — Governance Lifecycle
+- **Governance lifecycle as the central abstraction** — Governance lifecycle as the central abstraction
 - **Governance Lifecycle Auto-Chain** — Governance Lifecycle Auto-Chain
 - **Governance lifecycle certified** — Governance lifecycle — ✅ certified
 - **Governance Lifecycle Contract** — Governance Lifecycle Contract
@@ -586,6 +590,7 @@ This guide is for architects making structural decisions.
 - **Link to governance documentation** — Link to governance documentation.
 - **Location src governance proposal-evaluation** — Location: `src/governance/proposal-evaluation/`
 - **Made 1 decision** — Made 1 decision
+- **Major architectural decisions** — Major architectural decisions
 - **Major governance failures** — 2. Major governance failures
 - **Make authority enforcement precise** — Make authority enforcement precise.
 - **make governance observable verifiable and replay-derived** — make governance observable, verifiable, and replay-derived
@@ -633,6 +638,7 @@ This guide is for architects making structural decisions.
 - **Not cache approval decisions across turns** — Not cache approval decisions across turns.
 - **Note on Rich Review Decisions** — Note on Rich Review Decisions
 - **npm run govern emits a GovernanceDependencyGraph** — `npm run govern` emits a `GovernanceDependencyGraph` artifact.
+- **Numeric quorum in governance gates** — Numeric quorum in governance gates
 - **Numeric quorum rich decisions score defaults** — Numeric quorum, rich decisions, score defaults — explicitly deferred
 - **Numeric quorum rich review decisions score** — Numeric quorum, rich review decisions, score defaults
 - **Objective 4 Repair ADR governance** — Objective 4 — Repair ADR governance
@@ -712,6 +718,7 @@ This guide is for architects making structural decisions.
 - **Relationship to governance components** — Relationship to governance components
 - **Relationship to unit tests and governance** — Relationship to unit tests and governance proofs
 - **Release governance semantics EXP-PROGRAM-028 EXP-REPO-007** — Release governance semantics (EXP-PROGRAM-028, EXP-REPO-007).
+- **Removed synthetic review decisions** — Removed synthetic review decisions
 - **Renaming or moving other governance files** — Renaming or moving other governance files.
 - **Replay and governance can verify artifact** — Replay and governance can verify artifact integrity by hash.
 - **Replay and governance integration EXP-AIFC-009** — Replay and governance integration (EXP-AIFC-009).
@@ -905,6 +912,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: 178572be7399688679c3b39b78a81c85125f5ca441d0cf9607c4643cd842e58d
+sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
 projection: synth-documentation-expedition-v1
 -->

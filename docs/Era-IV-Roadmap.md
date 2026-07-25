@@ -270,11 +270,46 @@ Applied acceptance criterion for every proposed item:
 2. ✅ **Promoted all `Completed (pending acceptance)`** HOME and DISC expeditions to `Completed and accepted`.
 3. ✅ **Verified** the 4 superseded items point to the correct successors; added `Superseded By` to EXP-PROGRAM-009.
 
+---
+
+## Era IV governance rule
+
+Every Era IV program must identify its adoption metric **before** it identifies its implementation plan.
+
+| Program | Candidate adoption metric |
+| --- | --- |
+| EXP-PROGRAM-029 — AI Ecosystem Distribution | Number of supported AI ecosystems / integrations |
+| EXP-PROGRAM-032 — Operator Optimization Pipeline | Time to complete common operator workflows |
+| EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth | Successful first-time users and community engagement |
+| EXP-PROGRAM-031 — Architectural Convergence | Defer until ecosystem feedback justifies convergence |
+| EXP-PROGRAM-034 — Task Orchestration Engine | Reduction in orchestration complexity after ecosystem maturity |
+
+This shifts governance from *"build this capability"* to *"improve this measurable outcome."*
+
+## Suggested Era IV progression
+
+```text
+EXP-PROGRAM-029  AI Ecosystem Distribution
+        ↓
+EXP-PROGRAM-037  Community & Adoption
+        ↓
+EXP-PROGRAM-032  Operator Optimization
+        ↓
+EXP-PROGRAM-031  Architectural Convergence
+        (only after significant ecosystem feedback)
+        ↓
+EXP-PROGRAM-034  Task Engine
+        (largest architectural investment)
+```
+
+**Program 029 is the recommended first activation.** It creates value outside the repository by making SYNTH available in Claude, Codex, Cursor, Gemini, VS Code, and MCP ecosystems. Program 032 is multiplicative but only improves users who have already adopted SYNTH.
+
 ## Recommended next actions
 
-1. **Create Era IV program proposals** for the five v2 themes above, or leave them as `Proposed` until intentional planning begins.
-2. **Move research items** to a dedicated `research/` or `incubation/` track with no delivery commitment.
-3. **Establish a maintenance backlog** document for `2.4.x` patch work.
+1. **Activate EXP-PROGRAM-029** when ready, with a defined adoption metric.
+2. **Create Era IV program proposals** for remaining themes, or leave them as `Proposed` until intentional planning begins.
+3. **Move research items** to a dedicated `research/` or `incubation/` track with no delivery commitment.
+4. **Establish a maintenance backlog** document for `2.4.x` patch work.
 
 ---
 
