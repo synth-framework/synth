@@ -31,7 +31,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DISCOVERY-005 — Brownfield Genesis Integration](../expeditions/EXP-DISCOVERY-005.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DISCOVERY-006 — Replay Verification](../expeditions/EXP-DISCOVERY-006.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DISCOVERY-007 — IDE / MCP / Web Consumers](../expeditions/EXP-DISCOVERY-007.md)** — Status: Completed, Kind: Product Expedition, Priority: Critical, Program: EXP-PROGRAM-006 — Discovery Platform
-- **[EXP-DIST-001 — Canonical AI Capability Model](../expeditions/EXP-DIST-001.md)** — Status: Proposed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
+- **[EXP-DIST-001 — Canonical AI Capability Model](../expeditions/EXP-DIST-001.md)** — Status: Executing, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DOCS-001 — Documentation Projection System](../expeditions/EXP-DOCS-001.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-002 — Capability Model Documentation](../expeditions/EXP-DOCS-002.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-004 — Environment Layer Reference](../expeditions/EXP-DOCS-004.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-008 — Documentation & Projections
@@ -274,7 +274,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-PROGRAM-022 — AI-Native First Contact](../expeditions/EXP-PROGRAM-022.md)** — Status: Completed and accepted, Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-027 — Mission Studio Homepage](../expeditions/EXP-PROGRAM-027.md)** — Status: Completed and accepted — Governance Architecture v1.0 Certified. All Phase 1 expeditions completed, all governance certifications passed, and the Mission Studio homepage is released as the canonical SYNTH first experience., Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-028 — Repository & Release Governance](../expeditions/EXP-PROGRAM-028.md)** — Status: Completed, Kind: Program, Priority: High, Program: unknown
-- **[EXP-PROGRAM-029 — AI Ecosystem Distribution](../expeditions/EXP-PROGRAM-029.md)** — Status: Proposed, Kind: Program, Priority: High, Program: unknown
+- **[EXP-PROGRAM-029 — AI Ecosystem Distribution](../expeditions/EXP-PROGRAM-029.md)** — Status: Active, Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-032 — Operator Optimization Pipeline](../expeditions/EXP-PROGRAM-032.md)** — Status: Proposed, Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-035 — Intent Refinement & Review Governance](../expeditions/EXP-PROGRAM-035.md)** — Status: Completed and accepted — Engine, integration, and certification complete. EXP-GATE-013 (dependency graph enforcement) is deferred as a future ADR-050 freeze-lift expedition., Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-036 — Intent Refinement & Alignment Governance](../expeditions/EXP-PROGRAM-036.md)** — Status: Completed and accepted — Intent pipeline, Convergence Certification, and full-lifecycle certification complete. EXP-REFINE-007, EXP-REFINE-009, EXP-REFINE-010, EXP-REFINE-014, EXP-REFINE-015, and EXP-REFINE-016 are deferred to future work., Kind: Program, Priority: High, Program: unknown
@@ -1572,6 +1572,7 @@ This guide covers the operator journey from idea to done.
 - **The seven public concepts Mission Expedition** — The seven public concepts (Mission, Expedition, Evidence, Plan, Event, State, Replay) are consistent across pages where they appear.
 - **The workflow shows Intent Discovery Mission** — The workflow shows Intent → Discovery → Mission → Execution → Replay.
 - **There is a flow Idea Mission** — There is a flow: Idea → Mission → Planning → Approval → Commit → Execution → Events → State → Replay.
+- **This expedition intentionally produces architecture not** — This expedition intentionally produces architecture, not a live service. Live distribution channels are owned by downstream EXP-DIST expeditions.
 - **Time to first Expedition** — Time to first Expedition
 - **Time to first Mission** — Time to first Mission
 - **Timeline significant mission expedition objective work-item** — **Timeline** — significant mission/expedition/objective/work-item transitions are summarized in `whatHappened`, with adjacent duplicate suppression for repeated genesis runs.
@@ -1655,6 +1656,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
+sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
 projection: synth-documentation-expedition-v1
 -->

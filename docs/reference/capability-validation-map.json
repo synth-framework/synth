@@ -417,6 +417,22 @@
       ],
       "governanceClass": "documentation"
     },
+    "Distribution": {
+      "unitTests": [
+        "test:ai-capability-projection"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [
+        "src/distribution/",
+        "scripts/project-ai-capabilities.js",
+        "tests/ai-capability-projection.test.js",
+        "distribution/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "documentation"
+    },
     "Domain": {
       "unitTests": [
         "test"

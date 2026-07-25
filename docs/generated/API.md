@@ -336,6 +336,7 @@
 - **src environment versioning-capability ts target operations** — `src/environment/versioning-capability.ts` (target operations)
 - **Step 3 Create Capability Registry** — Step 3: Create Capability Registry
 - **Step 4 Register the Capability** — Step 4: Register the Capability
+- **Survey existing capability definitions in src** — Survey existing capability definitions in `src/capabilities/` and `src/cli/`.
 - **Test coverage tests environment-capability-report test js** — **Test coverage:** `tests/environment-capability-report.test.js` — 8 tests covering 12-family completeness, supported/unsupported entries, unavailable list, assumptions mapping, embedded guidance, determinism, and markdown rendering.
 - **Test coverage tests environment-forge-capability test js** — **Test coverage:** `tests/environment-forge-capability.test.js` — 8 tests covering repository metadata parsing, failure tolerance, issue listing with labels, malformed-entry skipping, PR branch mapping, release listing, unparseable output, and `gh` failure handling — all via scripted ToolProvider fakes (no live `gh` calls).
 - **Test coverage tests environment-process-capability test js** — **Test coverage:** `tests/environment-process-capability.test.js` — 9 tests covering stdout/stderr capture, non-zero exit codes, missing commands as data, stdin piping, timeouts, `cwd` handling, tool location/availability, and tool execution.
@@ -392,6 +393,6 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
+sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
 projection: synth-documentation-expedition-v1
 -->

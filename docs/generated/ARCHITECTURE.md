@@ -19,6 +19,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **A gate produces allowed blocked** — A gate produces `allowed / blocked`.
 - **A gate s satisfier is part** — A gate's satisfier is part of the gate's policy and is immutable after the gate is created.
 - **a new abstraction layer** — a new abstraction layer,
+- **A projection engine that transforms the** — A projection engine that transforms the canonical model into platform-specific artifacts.
 - **A runtime change executes runtime and** — A runtime change executes runtime and dependent validators.
 - **A runtime change produces the full** — A runtime change produces the full governance plan.
 - **A runtime change reports Runtime and** — A runtime change reports `Runtime` and `Replay` as affected with `high` risk.
@@ -776,6 +777,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Persistence layer** — Persistence layer
 - **Phase 1 Snapshot Store** — Phase 1 — Snapshot Store
 - **Phase 2 Core engine** — Phase 2 — Core engine
+- **Phase 2 Projection engine** — Phase 2 — Projection engine
 - **Phase 2 Release gate** — Phase 2 — Release gate
 - **Phase 2 Shared Runtime SDK charter** — Phase 2 — Shared Runtime SDK *(charter only)*
 - **Phase 3 applyEvent Replay Aliases Delegate** — Phase 3: applyEvent — Replay Aliases Delegate Internally
@@ -1341,6 +1343,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
+sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
 projection: synth-documentation-expedition-v1
 -->

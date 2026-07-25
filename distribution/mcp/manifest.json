@@ -1,0 +1,193 @@
+{
+  "description": "Deterministic execution system for engineering work. Humans explore, SYNTH remembers, and AI executes deterministically.",
+  "governance_lifecycle": [
+    "draft",
+    "approved",
+    "committed",
+    "executing",
+    "completed"
+  ],
+  "name": "SYNTH",
+  "npm_package": "@synth-framework/synth",
+  "protected_assets": [
+    "Mission Studio",
+    "Genesis",
+    "Replay",
+    "ExecutionGate",
+    "Event Model",
+    "Capability Model",
+    "Constitutional Baseline",
+    "Public Vocabulary"
+  ],
+  "public_vocabulary": [
+    "Mission",
+    "Expedition",
+    "Evidence",
+    "Plan",
+    "Event",
+    "State",
+    "Replay"
+  ],
+  "repository": "https://github.com/synth-framework/synth",
+  "schema_version": "1.0",
+  "source": {
+    "hash": "43c6ad8006789a0333949b0acad52983151d6b7155fb349f760ff61936d53431",
+    "path": "/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json",
+    "version": "1.0.0"
+  },
+  "tools": [
+    {
+      "command": "synth --help",
+      "description": "Show generic help",
+      "name": "--help",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth --version",
+      "description": "Print the installed Synth version",
+      "name": "--version",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth discover",
+      "description": "Discover repository structure and produce a read-only analysis",
+      "name": "discover",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth doctor",
+      "description": "Verify installation and project health",
+      "name": "doctor",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth status",
+      "description": "Report the current project state",
+      "name": "status",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth explain",
+      "description": "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)",
+      "name": "explain",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth validate",
+      "description": "Analyze changes and plan validations",
+      "name": "validate",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth verify",
+      "description": "Verify governance invariants and projection consistency",
+      "name": "verify",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth certify",
+      "description": "Run failure and recovery certification scenarios",
+      "name": "certify",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth version",
+      "description": "Print the installed Synth version",
+      "name": "version",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth first-contact project",
+      "description": "Project architecture candidates from the draft",
+      "name": "first-contact_project",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth first-contact verify",
+      "description": "Verify capability assumptions for the selected architecture",
+      "name": "first-contact_verify",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth first-contact status",
+      "description": "Report the current first-contact state",
+      "name": "first-contact_status",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth genesis project",
+      "description": "Alias for 'first-contact project'",
+      "name": "genesis_project",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth genesis verify",
+      "description": "Alias for 'first-contact verify'",
+      "name": "genesis_verify",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth genesis status",
+      "description": "Alias for 'first-contact status'",
+      "name": "genesis_status",
+      "safety": "READ_ONLY"
+    },
+    {
+      "command": "synth bootstrap --dry-run",
+      "description": "Generate a bootstrap proposal without mutating state",
+      "name": "bootstrap_--dry-run",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth mission create",
+      "description": "Create a Mission proposal",
+      "name": "mission_create",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth expedition create",
+      "description": "Create an Expedition proposal",
+      "name": "expedition_create",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth first-contact start",
+      "description": "Extract intent and create a first-contact proposal draft",
+      "name": "first-contact_start",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth first-contact clarify",
+      "description": "Show or apply clarification answers to the draft",
+      "name": "first-contact_clarify",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth first-contact materialize --dry-run",
+      "description": "Preview what materialization would create",
+      "name": "first-contact_materialize_--dry-run",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth genesis start",
+      "description": "Alias for 'first-contact start'",
+      "name": "genesis_start",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    },
+    {
+      "command": "synth genesis materialize --dry-run",
+      "description": "Alias for 'first-contact materialize --dry-run'",
+      "name": "genesis_materialize_--dry-run",
+      "note": "Produces a proposal; does not mutate state.",
+      "safety": "PROPOSAL_ONLY"
+    }
+  ],
+  "version": "2.4.1"
+}

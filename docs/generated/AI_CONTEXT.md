@@ -31,6 +31,6 @@ Synth is organized into three architectural strata:
 - The event log is the single source of truth.
 
 <!--
-sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
+sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
 projection: synth-documentation-expedition-v1
 -->

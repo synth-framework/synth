@@ -1,11 +1,11 @@
 # EXP-PROGRAM-029 — AI Ecosystem Distribution
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
 **Scope:** Distribution of SYNTH capabilities across AI models, agents, IDEs, repositories, package managers, forges, and humans  
-**Era:** III — Architecture  
+**Era:** IV — Ecosystem & Adoption  
 **Architecture Impact:** High  
 **Constitutional Impact:** None  
 **Public Impact:** High  

@@ -1,6 +1,6 @@
 # Era IV — Post-v1.0 Portfolio Rebaseline
 
-> **Status:** Draft  
+> **Status:** Active  
 > **Last updated:** 2026-07-25  
 > **Authority:** SYNTH Platform v1.0 Release (`@synth-framework/synth@2.4.1`)
 
@@ -138,13 +138,13 @@ These are the candidate initiatives for Era IV. They are no longer "pending v1.0
 
 ### Distribution & ecosystem
 
-| Item | Theme |
-| --- | --- |
-| EXP-PROGRAM-029 — AI Ecosystem Distribution | AI Ecosystem |
-| EXP-DIST-001 — Canonical AI Capability Model | AI Ecosystem |
-| EXP-DIST-003 — SYNTH MCP Server | AI Ecosystem |
-| EXP-DIST-004 — npm Package Distribution | Distribution |
-| EXP-DIST-005 — IDE Rules Projection | IDE Integration |
+| Item | Theme | Status |
+| --- | --- | --- |
+| EXP-PROGRAM-029 — AI Ecosystem Distribution | AI Ecosystem | **Active** |
+| EXP-DIST-001 — Canonical AI Capability Model | AI Ecosystem | **Executing** |
+| EXP-DIST-003 — SYNTH MCP Server | AI Ecosystem | Proposed |
+| EXP-DIST-004 — npm Package Distribution | Distribution | Proposed |
+| EXP-DIST-005 — IDE Rules Projection | IDE Integration | Proposed |
 
 ### Architecture convergence
 
@@ -239,8 +239,8 @@ Applied acceptance criterion for every proposed item:
 
 | Item | Advances adoption | Reduces operator effort | Assessment |
 | --- | :---: | :---: | --- |
-| EXP-PROGRAM-029 — AI Ecosystem Distribution | ✅ | ❌ | Keep proposed; high-leverage adoption |
-| EXP-DIST-001 — Canonical AI Capability Model | ✅ | ❌ | Keep proposed; enables AI adoption |
+| EXP-PROGRAM-029 — AI Ecosystem Distribution | ✅ | ❌ | **Active** — first Era IV program |
+| EXP-DIST-001 — Canonical AI Capability Model | ✅ | ❌ | **Executing** — canonical model and initial projections |
 | EXP-DIST-003 — SYNTH MCP Server | ✅ | ❌ | Keep proposed; distribution channel |
 | EXP-DIST-004 — npm Package Distribution | ✅ | ❌ | Keep proposed; core distribution |
 | EXP-DIST-005 — IDE Rules Projection | ✅ | ✅ | Keep proposed; adoption + operator speed |
@@ -306,10 +306,11 @@ EXP-PROGRAM-034  Task Engine
 
 ## Recommended next actions
 
-1. **Activate EXP-PROGRAM-029** when ready, with a defined adoption metric.
-2. **Create Era IV program proposals** for remaining themes, or leave them as `Proposed` until intentional planning begins.
-3. **Move research items** to a dedicated `research/` or `incubation/` track with no delivery commitment.
-4. **Establish a maintenance backlog** document for `2.4.x` patch work.
+1. ✅ **Activate EXP-PROGRAM-029** — active with adoption metric: number of supported AI ecosystems / integrations.
+2. **Complete EXP-DIST-001** — finalize canonical model, projection engine, and contract tests.
+3. **Create Era IV program proposals** for remaining themes, or leave them as `Proposed` until intentional planning begins.
+4. **Move research items** to a dedicated `research/` or `incubation/` track with no delivery commitment.
+5. **Establish a maintenance backlog** document for `2.4.x` patch work.
 
 ---
 

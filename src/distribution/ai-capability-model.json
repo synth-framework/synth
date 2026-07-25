@@ -1,0 +1,245 @@
+{
+  "$schema": "synth-ai-capability-model-v1",
+  "version": "1.0.0",
+  "description": "Canonical AI Capability Model for SYNTH Platform v1.0. Single source of truth for agent skills, IDE rules, MCP manifests, and documentation projections.",
+  "platform": {
+    "name": "SYNTH",
+    "version": "2.4.1",
+    "era": "IV — Ecosystem & Adoption",
+    "tagline": "Deterministic execution system for engineering work. Humans explore, SYNTH remembers, and AI executes deterministically.",
+    "website": "https://synth-framework.github.io/synth",
+    "repository": "https://github.com/synth-framework/synth",
+    "npmPackage": "@synth-framework/synth"
+  },
+  "publicVocabulary": {
+    "concepts": [
+      {
+        "name": "Mission",
+        "definition": "A strategic goal you want to achieve.",
+        "example": "Build a customer support portal that lets users track tickets."
+      },
+      {
+        "name": "Expedition",
+        "definition": "A bounded investigation or build that moves a mission forward.",
+        "example": "Design the authentication flow for the support portal."
+      },
+      {
+        "name": "Evidence",
+        "definition": "What you know and how confidently you know it.",
+        "example": "User interviews show 80% of support requests are password resets."
+      },
+      {
+        "name": "Plan",
+        "definition": "The approved path forward, including the work to do.",
+        "example": "Approved plan: implement login page, session management, and password reset."
+      },
+      {
+        "name": "Event",
+        "definition": "An immutable record that something happened.",
+        "example": "Mission approved. Expedition started. Objective completed."
+      },
+      {
+        "name": "State",
+        "definition": "The current picture of the world, derived from events.",
+        "example": "The support portal mission is active, the authentication expedition is executing."
+      },
+      {
+        "name": "Replay",
+        "definition": "Rebuilding state from events to prove correctness.",
+        "example": "Replay the event log to verify that the current state matches the history."
+      }
+    ],
+    "rule": "Use exactly these seven concepts in public-facing explanations. Everything else is implementation detail."
+  },
+  "commandSafety": {
+    "classes": [
+      {
+        "name": "READ_ONLY",
+        "description": "Never mutates repository or governance state. Safe at any time.",
+        "discoverySafe": true
+      },
+      {
+        "name": "PROPOSAL_ONLY",
+        "description": "Produces a proposal but does not mutate state. Safe during discovery.",
+        "discoverySafe": true
+      },
+      {
+        "name": "POTENTIALLY_MUTATING",
+        "description": "May mutate state depending on flags. Not safe during discovery without explicit approval.",
+        "discoverySafe": false
+      },
+      {
+        "name": "MUTATING",
+        "description": "Mutates repository or governance state. Requires explicit approval.",
+        "discoverySafe": false,
+        "requiresApproval": true
+      }
+    ],
+    "commands": [
+      { "command": "--help", "safety": "READ_ONLY", "description": "Show generic help" },
+      { "command": "--version", "safety": "READ_ONLY", "description": "Print the installed Synth version" },
+      { "command": "discover", "safety": "READ_ONLY", "description": "Discover repository structure and produce a read-only analysis" },
+      { "command": "doctor", "safety": "READ_ONLY", "description": "Verify installation and project health" },
+      { "command": "status", "safety": "READ_ONLY", "description": "Report the current project state" },
+      { "command": "explain", "safety": "READ_ONLY", "description": "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
+      { "command": "validate", "safety": "READ_ONLY", "description": "Analyze changes and plan validations" },
+      { "command": "verify", "safety": "READ_ONLY", "description": "Verify governance invariants and projection consistency" },
+      { "command": "certify", "safety": "READ_ONLY", "description": "Run failure and recovery certification scenarios" },
+      { "command": "version", "safety": "READ_ONLY", "description": "Print the installed Synth version" },
+      { "command": "bootstrap --dry-run", "safety": "PROPOSAL_ONLY", "description": "Generate a bootstrap proposal without mutating state" },
+      { "command": "mission create", "safety": "PROPOSAL_ONLY", "description": "Create a Mission proposal" },
+      { "command": "expedition create", "safety": "PROPOSAL_ONLY", "description": "Create an Expedition proposal" },
+      { "command": "first-contact start", "safety": "PROPOSAL_ONLY", "description": "Extract intent and create a first-contact proposal draft" },
+      { "command": "first-contact clarify", "safety": "PROPOSAL_ONLY", "description": "Show or apply clarification answers to the draft" },
+      { "command": "first-contact project", "safety": "READ_ONLY", "description": "Project architecture candidates from the draft" },
+      { "command": "first-contact verify", "safety": "READ_ONLY", "description": "Verify capability assumptions for the selected architecture" },
+      { "command": "first-contact status", "safety": "READ_ONLY", "description": "Report the current first-contact state" },
+      { "command": "first-contact materialize --dry-run", "safety": "PROPOSAL_ONLY", "description": "Preview what materialization would create" },
+      { "command": "genesis start", "safety": "PROPOSAL_ONLY", "description": "Alias for 'first-contact start'" },
+      { "command": "genesis project", "safety": "READ_ONLY", "description": "Alias for 'first-contact project'" },
+      { "command": "genesis verify", "safety": "READ_ONLY", "description": "Alias for 'first-contact verify'" },
+      { "command": "genesis status", "safety": "READ_ONLY", "description": "Alias for 'first-contact status'" },
+      { "command": "genesis materialize --dry-run", "safety": "PROPOSAL_ONLY", "description": "Alias for 'first-contact materialize --dry-run'" },
+      { "command": "bootstrap", "safety": "POTENTIALLY_MUTATING", "description": "Transform a repository into a Synth project (mutating only with --approve)" },
+      { "command": "bootstrap --approve", "safety": "MUTATING", "description": "Apply bootstrap and initialize governance artifacts", "requiresApproval": true },
+      { "command": "docs generate", "safety": "MUTATING", "description": "Generate documentation artifacts", "requiresApproval": true },
+      { "command": "init", "safety": "MUTATING", "description": "Initialize the current directory as a Synth project", "requiresApproval": true },
+      { "command": "mission approve", "safety": "MUTATING", "description": "Approve a Mission draft", "requiresApproval": true },
+      { "command": "expedition approve", "safety": "MUTATING", "description": "Approve an Expedition draft", "requiresApproval": true },
+      { "command": "expedition commit", "safety": "MUTATING", "description": "Commit approved Expedition intent to runtime", "requiresApproval": true },
+      { "command": "expedition start", "safety": "MUTATING", "description": "Start executing a committed Expedition", "requiresApproval": true },
+      { "command": "expedition complete", "safety": "MUTATING", "description": "Complete an executing Expedition", "requiresApproval": true },
+      { "command": "validate --full", "safety": "MUTATING", "description": "Run the complete canonical governance pipeline", "requiresApproval": true },
+      { "command": "govern", "safety": "MUTATING", "description": "Run the full governance pipeline", "requiresApproval": true },
+      { "command": "repair replay --approve", "safety": "MUTATING", "description": "Apply repairs for runtime drift", "requiresApproval": true },
+      { "command": "first-contact approve", "safety": "MUTATING", "description": "Approve the first-contact draft", "requiresApproval": true },
+      { "command": "first-contact materialize --approve", "safety": "MUTATING", "description": "Materialize the approved artifact into a SYNTH project", "requiresApproval": true },
+      { "command": "genesis approve", "safety": "MUTATING", "description": "Alias for 'first-contact approve'", "requiresApproval": true },
+      { "command": "genesis materialize --approve", "safety": "MUTATING", "description": "Alias for 'first-contact materialize --approve'", "requiresApproval": true }
+    ],
+    "rule": "During Discovery, only READ_ONLY and PROPOSAL_ONLY commands are permitted."
+  },
+  "protectedAssets": {
+    "assets": [
+      { "name": "Mission Studio", "description": "Read-only planning environment; sole authority for transforming evidence into approved Mission Models." },
+      { "name": "Genesis", "description": "Authority for committing approved Mission Models to the Kernel through the single mutation authority." },
+      { "name": "Replay", "description": "Mechanism for rebuilding state from events to prove correctness and detect tampering." },
+      { "name": "ExecutionGate", "description": "Single mutation authority through which all persistent state changes flow." },
+      { "name": "Event Model", "description": "Canonical structure and semantics of immutable events." },
+      { "name": "Capability Model", "description": "Registry of system capabilities and their public contracts." },
+      { "name": "Constitutional Baseline", "description": "Architectural provisions defining the foundations of the system." },
+      { "name": "Public Vocabulary", "description": "The seven public concepts used to explain SYNTH." }
+    ],
+    "rule": "Any change to a Protected Asset requires an Architecture Expedition and a new ADR."
+  },
+  "governanceLifecycle": {
+    "phases": [
+      { "name": "draft", "description": "Intent is captured but not yet approved." },
+      { "name": "approved", "description": "Intent is approved and ready to commit." },
+      { "name": "committed", "description": "Intent is committed to runtime state." },
+      { "name": "executing", "description": "Work is actively being performed." },
+      { "name": "completed", "description": "Work is finished and evidence is recorded." }
+    ],
+    "transitions": [
+      { "from": "draft", "to": "approved", "gate": "review and approval" },
+      { "from": "approved", "to": "committed", "gate": "commit to runtime" },
+      { "from": "committed", "to": "executing", "gate": "start execution" },
+      { "from": "executing", "to": "completed", "gate": "complete and record evidence" }
+    ],
+    "rule": "Expeditions are the canonical governance mechanism for all architectural work."
+  },
+  "workflows": [
+    {
+      "name": "Discovery",
+      "description": "Produce a read-only analysis of a repository without mutating state.",
+      "safeCommands": ["discover", "doctor", "status", "explain"],
+      "invariant": "Discovery never mutates the repository."
+    },
+    {
+      "name": "Bootstrap",
+      "description": "Transform a repository into a SYNTH-governed project.",
+      "steps": [
+        "Run 'synth bootstrap --dry-run' to generate a proposal.",
+        "Review the proposal.",
+        "Run 'synth bootstrap --approve' to apply it."
+      ],
+      "invariant": "Bootstrap requires explicit approval."
+    },
+    {
+      "name": "Mission Lifecycle",
+      "description": "Create, approve, and track a strategic goal.",
+      "steps": [
+        "Run 'synth mission create --subject ... --purpose ...' to draft.",
+        "Run 'synth mission approve --draft-id ...' to approve."
+      ],
+      "invariant": "Mission approval requires explicit review evidence."
+    },
+    {
+      "name": "Expedition Lifecycle",
+      "description": "Execute bounded architectural work within a Mission.",
+      "steps": [
+        "Run 'synth expedition create --mission ... --subject ... --goal ...' to draft.",
+        "Run 'synth expedition approve --draft-id ...' to approve.",
+        "Run 'synth expedition commit --expedition-id ...' to commit.",
+        "Run 'synth expedition start --expedition-id ...' to start.",
+        "Run 'synth expedition complete --expedition-id ...' to complete."
+      ],
+      "invariant": "Expedition state transitions through the ExecutionGate."
+    },
+    {
+      "name": "Governance Pipeline",
+      "description": "Run the full canonical validation and proof pipeline.",
+      "commands": ["synth validate --full", "npm run govern"],
+      "invariant": "The governance pipeline is deterministic and reproducible."
+    },
+    {
+      "name": "First Contact / Genesis",
+      "description": "Greenfield onboarding workflow for new projects.",
+      "steps": [
+        "Run 'synth genesis start' to capture intent.",
+        "Run 'synth genesis clarify' to refine understanding.",
+        "Run 'synth genesis project' to review architecture candidates.",
+        "Run 'synth genesis verify' to validate assumptions.",
+        "Run 'synth genesis approve' and 'synth genesis materialize --approve' to create the project."
+      ],
+      "invariant": "Materialization requires explicit approval."
+    }
+  ],
+  "distributionTargets": [
+    {
+      "id": "claude-skill",
+      "name": "Claude Skill / System Prompt",
+      "format": "markdown",
+      "audience": "Claude agents",
+      "outputPath": "distribution/agent-skills/claude.md"
+    },
+    {
+      "id": "codex-instructions",
+      "name": "Codex Repository Instructions",
+      "format": "markdown",
+      "audience": "OpenAI Codex agents",
+      "outputPath": "distribution/agent-skills/codex.md"
+    },
+    {
+      "id": "cursor-rules",
+      "name": "Cursor Rules",
+      "format": "markdown",
+      "audience": "Cursor IDE agents",
+      "outputPath": "distribution/ide-rules/.cursor/rules.mdc"
+    },
+    {
+      "id": "cline-rules",
+      "name": "Cline Rules",
+      "format": "markdown",
+      "audience": "Cline IDE agents",
+      "outputPath": "distribution/ide-rules/.clinerules"
+    },
+    {
+      "id": "mcp-manifest",
+      "name": "MCP Server Manifest",
+      "format": "json",
+      "audience": "MCP clients",
+      "outputPath": "distribution/mcp/manifest.json"
+    }
+  ]
+}

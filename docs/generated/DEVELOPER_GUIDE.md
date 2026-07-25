@@ -75,6 +75,7 @@ This guide is for contributors extending Synth.
 - **Add comprehensive tests for projection DAG** — Add comprehensive tests for projection DAG execution, rule composition, and validation.
 - **Add contract and integration tests for** — Add contract and integration tests for both capabilities.
 - **Add contract certification tests** — 6.8 Add contract certification tests
+- **Add contract tests** — Add contract tests.
 - **Add deterministic certification tests** — Add deterministic certification tests.
 - **Add deterministic certification tests with a** — Add deterministic certification tests with a mock forge.
 - **Add info subcommand to the adapter** — Add `info` subcommand to the adapter CLI.
@@ -304,6 +305,7 @@ This guide is for contributors extending Synth.
 - **Confusing test failures that are artifacts** — Confusing test failures that are artifacts of the agent's own execution, not the code under change.
 - **Connect to CapabilityRegistry** — Connect to CapabilityRegistry
 - **Contract tests compile and pass npm** — Contract tests compile and pass; `npm run build` succeeds.
+- **Contract tests proving that identical model** — Contract tests proving that identical model inputs produce deterministic outputs.
 - **Convention-based metadata in test and script** — Convention-based metadata in test and script files
 - **conversation adapter overlaps with First Contact** — `conversation` adapter overlaps with **First Contact** intent capture.
 - **ConversationAdapter with natural-language intent** — `ConversationAdapter` with natural-language intent
@@ -907,6 +909,7 @@ This guide is for contributors extending Synth.
 - **Subsystems with no test coverage** — Subsystems with no test coverage
 - **Support multiple versioning strategies through adapters** — Support multiple versioning strategies through adapters.
 - **Supported channels latest stable beta nightly** — Supported channels: `latest`, `stable`, `beta`, `nightly`.
+- **Survey existing capability definitions in src** — Survey existing capability definitions in `src/capabilities/` and `src/cli/`.
 - **Synth Adapter Architecture** — Synth Adapter Architecture
 - **synth adapter args delegates to adapter** — `synth adapter <args...>` — delegates to adapter CLI.
 - **synth adapter info describes any registered** — `synth adapter info` describes any registered adapter.
@@ -1174,6 +1177,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
+sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
 projection: synth-documentation-expedition-v1
 -->

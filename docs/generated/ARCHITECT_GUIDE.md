@@ -889,7 +889,6 @@ This guide is for architects making structural decisions.
 - **What decisions are valid at the** — What decisions are valid at the Review Gate?
 - **What decisions were made** — What decisions were made
 - **What governance classes are affected** — What governance classes are affected?
-- **What governance constraints apply** — What governance constraints apply?
 - **What happens after each decision** — What happens after each decision?
 - **When was this decision made** — "When was this decision made?"
 - **Which concepts are constitutional and cannot** — 1. Which concepts are constitutional and cannot disappear?
@@ -912,6 +911,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: 69a78422f84756419f9473e6e63f3299f0ed6d545cc8388df598a0c5afe7b65d
+sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
 projection: synth-documentation-expedition-v1
 -->

@@ -1,0 +1,50 @@
+# SYNTH Rules for Cursor
+
+- Always explain SYNTH using the seven public concepts: Mission, Expedition, Evidence, Plan, Event, State, Replay.
+- During repository discovery, use only READ_ONLY and PROPOSAL_ONLY synth commands.
+- Never invoke a MUTATING synth command without explicit operator approval.
+- Do not modify Mission Studio, Genesis, Replay, ExecutionGate, Event Model, Capability Model, Constitutional Baseline, or Public Vocabulary without an Architecture Expedition.
+- When proposing changes, prefer 'synth mission create' and 'synth expedition create' over ad-hoc edits.
+- Treat events as immutable; state is always derived from events.
+
+## Discovery-safe commands
+
+- `synth --help` — Show generic help
+- `synth --version` — Print the installed Synth version
+- `synth discover` — Discover repository structure and produce a read-only analysis
+- `synth doctor` — Verify installation and project health
+- `synth status` — Report the current project state
+- `synth explain` — Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)
+- `synth validate` — Analyze changes and plan validations
+- `synth verify` — Verify governance invariants and projection consistency
+- `synth certify` — Run failure and recovery certification scenarios
+- `synth version` — Print the installed Synth version
+- `synth bootstrap --dry-run` — Generate a bootstrap proposal without mutating state
+- `synth mission create` — Create a Mission proposal
+- `synth expedition create` — Create an Expedition proposal
+- `synth first-contact start` — Extract intent and create a first-contact proposal draft
+- `synth first-contact clarify` — Show or apply clarification answers to the draft
+- `synth first-contact project` — Project architecture candidates from the draft
+- `synth first-contact verify` — Verify capability assumptions for the selected architecture
+- `synth first-contact status` — Report the current first-contact state
+- `synth first-contact materialize --dry-run` — Preview what materialization would create
+- `synth genesis start` — Alias for 'first-contact start'
+- `synth genesis project` — Alias for 'first-contact project'
+- `synth genesis verify` — Alias for 'first-contact verify'
+- `synth genesis status` — Alias for 'first-contact status'
+- `synth genesis materialize --dry-run` — Alias for 'first-contact materialize --dry-run'
+
+## Protected assets
+
+- Mission Studio
+- Genesis
+- Replay
+- ExecutionGate
+- Event Model
+- Capability Model
+- Constitutional Baseline
+- Public Vocabulary
+
+## Source
+
+Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json` (version 1.0.0)
