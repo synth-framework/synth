@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Replace page-specific state with a unified state machine that drives the entire homepage workspace.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

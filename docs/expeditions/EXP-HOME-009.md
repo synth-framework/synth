@@ -2,7 +2,7 @@
 
 > **Product expedition.** Define the Governance & Replay phase inside Mission Studio: governance visualization, replay timeline, scrubber, state hash, and the proof of deterministic execution.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

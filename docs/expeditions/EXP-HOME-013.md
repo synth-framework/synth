@@ -2,7 +2,7 @@
 
 > **Design expedition.** Define calm, purposeful animation rules for the homepage.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Started:** 2026-07-20  
 **Completed:** 2026-07-20  
 **Kind:** Design Expedition  

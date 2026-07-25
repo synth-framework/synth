@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-002 — Canonical Journey Specification
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  

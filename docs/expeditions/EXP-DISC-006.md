@@ -1,6 +1,6 @@
 # EXP-DISC-006 — Repository Identity
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-012 — Runtime Self-Description  

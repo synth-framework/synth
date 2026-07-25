@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define how Mission Studio becomes the SYNTH homepage: the hero handoff, sticky threshold, scroll controller, section synchronization, state machine, animation contracts, and performance constraints.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

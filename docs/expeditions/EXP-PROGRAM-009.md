@@ -1,6 +1,6 @@
 # EXP-PROGRAM-009 — Canonical First Contact Experience
 
-**Status:** Closed — Superseded pending Era III revision  
+**Status:** Closed — Superseded by EXP-PROGRAM-027  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -10,7 +10,8 @@
 **Constitutional Impact:** Medium  
 **Public Impact:** Critical  
 **Product Impact:** High  
-**Execution Impact:** None
+**Execution Impact:** None  
+**Superseded By:** EXP-PROGRAM-027 — Mission Studio Homepage
 
 ---
 

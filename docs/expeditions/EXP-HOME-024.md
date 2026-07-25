@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Establish a stable interface between the SYNTH runtime and any UI, so Mission Studio can run on web, desktop, VS Code, mobile, or documentation previews without redesign.
 
-**Status:** Completed (pending acceptance)  
+**Status:** Completed and accepted  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  

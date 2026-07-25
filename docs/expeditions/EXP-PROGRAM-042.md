@@ -2,7 +2,7 @@
 
 > Produce authoritative evidence that SYNTH Platform v1.0 is complete, consistent, and reproducible.
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution, Repository Baseline Report 2026-07-25, Platform Readiness Report 2026-07-25  
