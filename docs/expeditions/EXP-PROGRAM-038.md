@@ -1,41 +1,43 @@
-# EXP-PROGRAM-038 — Platform Hardening
+# EXP-PROGRAM-038 — Release Candidate
 
-> Transform the stable architectural baseline into a secure, deterministic, release-ready platform.
+> Final operator-facing finish work and validation before SYNTH Platform v1.0.
 
 **Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
-**Authority:** Synth Architectural Constitution, ADR-040 — External Build Systems Are Adapters, Repository Baseline Report 2026-07-25  
-**Scope:** Cross-domain hardening: structural integrity, determinism, security, and release validation  
+**Authority:** Synth Architectural Constitution, ADR-040 — External Build Systems Are Adapters, Repository Baseline Report 2026-07-25, Platform Readiness Report 2026-07-25  
+**Scope:** CLI consistency, documentation sync, installer experience, and release-candidate validation  
 **Era:** III — Validation & Hardening  
 **Architecture Impact:** High  
 **Constitutional Impact:** Low  
-**Public Impact:** Low  
+**Public Impact:** High  
 **Execution Impact:** High
 
 ---
 
 > ## Era III entry path
 >
-> ADR-040 requires that new Programs in Era III be justified by observed friction from real-world use. The findings in this program originate from a comprehensive system audit (governance framework, execution gate integrity, projections, CLI, security, AI portability) commissioned by the Architecture Owner on 2026-07-22. Each expedition maps to concrete, observed gaps in the existing system — not speculative improvements.
+> ADR-040 requires that new Programs in Era III be justified by observed friction from real-world use. The findings in this program originate from a comprehensive system audit (governance framework, execution gate integrity, projections, CLI, security, AI portability) commissioned by the Architecture Owner on 2026-07-22.
 >
-> Phase 0 (Repository Baseline Closure, 2026-07-25) certified that the architecture era is complete. This program assumes that baseline and moves from architecture to productization.
+> Phase 0 (Repository Baseline Closure, 2026-07-25) certified that the architecture era is complete. Workstreams A/B/C of this program have since closed all hardening gaps. The program now focuses on the **Release Candidate finish line**: the operator-facing surface and the validation required to tag v1.0.
 
 ---
 
 ## Thesis
 
-> **A stable architecture is not a secure architecture. A secure architecture is not a releasable architecture.**
+> **Architecture is complete. The remaining work is release engineering.**
 
-The repository is now architecturally settled. The next objective is to prove that the platform is hard enough to freeze: no bypasses, no nondeterminism, no unvalidated supply chain, and no release path that depends on tribal knowledge.
+The repository is architecturally settled and hardened. The next objective is to ensure a third party can install, initialize, operate, and validate SYNTH without tribal knowledge. The audit findings from 2026-07-22 are closed or accepted as residual risk. The new standard for every change is:
 
-The audit findings from 2026-07-22 are the primary input, but the objective is broader than closing tickets. The objective is to reach **Release Candidate 1**.
+> *Does this move the Release Candidate to 100%?*
+
+If the answer is no, the work belongs to Era IV.
 
 ---
 
 ## Audit Context (input)
 
-On 2026-07-22, a comprehensive audit of the SYNTH codebase was conducted across four domains:
+On 2026-07-22, a comprehensive audit of the SYNTH codebase was conducted across four domains. Workstreams A/B/C addressed those findings:
 
 | Domain | Findings | Critical | High | Medium | Low |
 |--------|----------|----------|------|--------|-----|
@@ -46,85 +48,77 @@ On 2026-07-22, a comprehensive audit of the SYNTH codebase was conducted across 
 
 **Total: 45 findings (5 critical, 12 high, 16 medium, 12 low)**
 
-These findings are distributed across the four workstreams below.
+All findings are now addressed or explicitly deferred beyond v1.0.
 
 ---
 
 ## Workstreams
 
-### A — Structural Integrity
+### A — Structural Integrity ✅
 
 Objective: zero uncontrolled mutation paths.
 
 ```text
 EXP-PROGRAM-038 / A
-└── EXP-SEC-001   Execution Gate Bypass Hardening
-        Close remaining critical/high bypasses (PartitionStore, FilesystemProvider,
-        shell injection) and medium gaps (stack-trace guard, shallow freeze,
-        dead code, verification stores).
+└── EXP-SEC-001   Execution Gate Bypass Hardening  [COMPLETED]
 ```
 
 Deliverable:
 
 ```text
-Zero structural bypasses
+✅ Zero structural bypasses
 ```
 
-### B — Determinism
+### B — Determinism ✅
 
 Objective: clean clone → same hashes → same replay.
 
 ```text
 EXP-PROGRAM-038 / B
-└── EXP-GOV-014   Governance Model & Engine Integrity
-        Update docs/governance.md, fix fake ReviewDecision synthesis,
-        implement real self-approval identity check, quorum enforcement,
-        wire intake gate to governance gate state.
+└── EXP-GOV-014   Governance Model & Engine Integrity  [COMPLETED]
 ```
 
 Deliverable:
 
 ```text
-Reproducible canonical state from event log across environments
+✅ Reproducible canonical state from event log across environments
 ```
 
-### C — Security
+### C — Security ✅
 
-Objective: release-ready supply chain.
+Objective: release-ready governance enforcement.
 
 ```text
 EXP-PROGRAM-038 / C
-└── EXP-GOV-015   Gate Decision Completeness
-        Implement condition fulfillment tracking for approve_with_conditions,
-        add superseded to decision mapping, enforce Convergence Certification
-        before Mission close.
+└── EXP-GOV-015   Gate Decision Completeness  [COMPLETED]
 ```
 
 Deliverable:
 
 ```text
-Governance lifecycle cannot be closed without required evidence
+✅ Governance lifecycle cannot be closed without required evidence
 ```
 
-### D — Release Validation
+### D — Release Candidate
 
-Objective: install, build, govern, replay, release.
+Objective: the platform is installable, operable, documented, and certifiable.
 
 ```text
 EXP-PROGRAM-038 / D
-├── EXP-CLI-001   CLI Consistency & AI Portability
-│       Fix adapter.ts structured output, unify error patterns,
-│       fill discovery mode command registry, add help handlers.
+├── EXP-CLI-001        CLI Consistency & AI Portability
+│       Structured JSON output, unified errors, discovery safety coverage.
 │
-└── EXP-DOC-002   Projection & Documentation Sync
-        Add ADR/expedition-specific extractors, projection freshness
-        verification, capability registry snapshotting in knowledge graph.
+├── EXP-DOC-002        Projection & Documentation Sync
+│       ADR/expedition metadata in projections, freshness verification.
+│
+└── EXP-INSTALL-012   First-Run / Installer Experience Validation
+        End-to-end validation: install → doctor → init → discover → first mission.
 ```
 
 Deliverable:
 
 ```text
-Release Candidate 1
+Release Candidate 1 — the platform can be installed, operated, and certified by a third party.
 ```
 
 ---
@@ -132,26 +126,27 @@ Release Candidate 1
 ## Dependency Chain
 
 ```text
-A (Structural Integrity) ──┐
-B (Determinism) ───────────┤
-C (Security) ──────────────┤──► Release Candidate 1
-D (Release Validation) ────┘
+A (Structural Integrity)  ✅
+B (Determinism)           ✅
+C (Security)              ✅
+D (Release Candidate)     ──► Release Candidate 1
 ```
 
-All four workstreams can execute in parallel. The program is complete when all deliverables are met and the release candidate checklist passes.
+Workstream D is the only remaining implementation work. Program 042 — Release Certification runs in parallel and collects evidence as D stabilizes.
 
 ---
 
 ## Success Criteria
 
-1. Execution bypass count drops from 3 to 0.
-2. `docs/governance.md` accurately describes the three-layer gate model.
+1. ✅ Execution bypass count is zero.
+2. ✅ `docs/governance.md` accurately describes the three-layer gate model and v1.0 quorum boundary.
 3. CLI error output is uniformly structured JSON with `kind` discriminators.
 4. Projections include ADR/expedition metadata.
-5. Gate decisions enforce condition fulfillment before acceptance.
+5. ✅ Gate decisions enforce condition fulfillment before acceptance.
 6. Discovery safety model covers 100% of CLI commands.
-7. Clean clone produces identical event-log replay hashes.
-8. `npm run govern` and `npm test` pass after all hardening.
+7. A third party can complete the first-run flow within minutes.
+8. Clean clone produces identical event-log replay hashes.
+9. `npm run govern` and `npm test` pass after all changes.
 
 ---
 
@@ -166,20 +161,21 @@ All four workstreams can execute in parallel. The program is complete when all d
 
 ## Relationship to Other Work
 
+- **Platform Readiness Report 2026-07-25** — Defines the Release Candidate framing and the v1.0/v2 boundary.
 - **Repository Baseline Report 2026-07-25** — This program assumes that baseline.
 - **ADR-050** — Authorized freeze lift for SEC-001's execution path modifications.
 - **EXP-PROGRAM-035** — GOV-014 fixes gaps in this program's gate engine implementation.
 - **EXP-PROGRAM-036** — GOV-015 extends this program's gate decision model.
 - **EXP-GATE-013** — Dependency enforcement (parallel future work, no overlap).
-- **EXP-PROGRAM-042 — Platform Freeze & Release Certification** — The successor program that freezes the platform after this one hardens it.
+- **EXP-PROGRAM-042 — Release Certification** — Collects evidence in parallel and certifies the platform after this program closes.
 
 ---
 
 ## Definition of Done
 
-- [ ] Workstream A deliverable: zero structural bypasses.
-- [ ] Workstream B deliverable: deterministic replay across environments.
-- [ ] Workstream C deliverable: required evidence enforced before close.
+- [x] Workstream A deliverable: zero structural bypasses.
+- [x] Workstream B deliverable: deterministic replay across environments.
+- [x] Workstream C deliverable: required evidence enforced before close.
 - [ ] Workstream D deliverable: Release Candidate 1 exists and passes validation.
-- [ ] All 45 audit findings are addressed or explicitly accepted as residual risk.
-- [ ] `npm run govern` passes.
+- [x] All 45 audit findings are addressed or explicitly accepted as residual risk.
+- [ ] `npm run govern` passes from a clean clone.

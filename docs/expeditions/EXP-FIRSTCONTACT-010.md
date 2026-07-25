@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-010 — Agent Ground Truth Discovery
 
-**Status:** Accepted  
+**Status:** Completed — Agent ground truth discovery is operational; closed as part of Release Candidate portfolio pruning.
 **Accepted:** 2026-07-18  
 **Started:** 2026-07-18  
 **Kind:** Adoption Expedition  

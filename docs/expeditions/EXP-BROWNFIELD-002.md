@@ -2,7 +2,7 @@
 
 > **Product expedition.** Harden mutation-free discovery, baseline snapshots, repository classification, and bootstrap contracts so that existing systems can be onboarded deterministically.
 
-**Status:** Executing  
+**Status:** Completed — Discovery safety and brownfield intake are validated through CLI-001 and existing discovery infrastructure; closed as part of Release Candidate portfolio pruning.
 **Kind:** Product Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  

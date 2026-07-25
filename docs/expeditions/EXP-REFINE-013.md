@@ -2,7 +2,7 @@
 
 > **Genesis expedition.** Specify how an approved `Alignment Contract` is deterministically projected into a canonical `Mission` artifact.
 
-**Status:** Accepted  
+**Status:** Completed — Mission projection and derivation are operational; closed as part of Release Candidate portfolio pruning.
 **Kind:** Genesis Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

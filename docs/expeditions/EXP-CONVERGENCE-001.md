@@ -2,7 +2,7 @@
 
 > **Architectural convergence review.** This expedition records the decision to subsume EXP-PROGRAM-020 and its chartered expedition EXP-WEB-001 into EXP-PROGRAM-027, eliminating duplicate program tracking for the SYNTH public homepage.
 
-**Status:** Accepted  
+**Status:** Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning.
 **Program:** EXP-PROGRAM-027 — Mission Studio Homepage  
 **Started:** 2026-07-20  
 **Kind:** Architectural Convergence  

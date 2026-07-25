@@ -1,6 +1,6 @@
 # EXP-GOVERNABILITY-002 — Proposal Evaluation Capability Design
 
-**Status:** Accepted  
+**Status:** Completed — Proposal evaluation capability design is implemented; closed as part of Release Candidate portfolio pruning.
 **Kind:** Design Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

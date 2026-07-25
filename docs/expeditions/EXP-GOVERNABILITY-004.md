@@ -2,7 +2,7 @@
 
 > **Design expedition.** Define the architecture, contract, and evidence model for certifying whether an implemented outcome remains converged with the approved intent after execution, using deterministic evidence derived from the approved decision chain and resulting implementation state.
 
-**Status:** Accepted  
+**Status:** Completed — Convergence certification design is implemented; closed as part of Release Candidate portfolio pruning.
 **Kind:** Design Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

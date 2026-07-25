@@ -1,6 +1,6 @@
 # EXP-ADP-000 — Adapter Architecture Specification
 
-**Status:** Accepted  
+**Status:** Completed — Adapter architecture specification is canonical; closed as part of Release Candidate portfolio pruning.
 **Kind:** Constitutional Specification  
 **Program:** EXP-PROGRAM-018 — Foundation Architecture Program  
 **Authority:** Synth Architectural Constitution  

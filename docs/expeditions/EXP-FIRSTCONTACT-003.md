@@ -1,6 +1,6 @@
 # EXP-FIRSTCONTACT-003 — Canonical Recorded Journey
 
-**Status:** Accepted  
+**Status:** Completed — Canonical recorded journey is shipped; closed as part of Release Candidate portfolio pruning.
 **Kind:** Adoption Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-009 — Canonical First Contact Experience  

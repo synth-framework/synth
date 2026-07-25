@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Define the canonical Genesis workflow, artifact schema, and replay/governance integration.
 
-**Status:** Executing  
+**Status:** Completed — Genesis lifecycle and artifact schema are operational; closed as part of Release Candidate portfolio pruning.
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  

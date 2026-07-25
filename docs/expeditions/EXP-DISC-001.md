@@ -1,6 +1,6 @@
 # EXP-DISC-001 — Status That Answers
 
-**Status:** Accepted  
+**Status:** Completed — Status taxonomy is in active use; closed as part of Release Candidate portfolio pruning.
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-012 — Runtime Self-Description  

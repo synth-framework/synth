@@ -1,6 +1,6 @@
 # EXP-GOVERNABILITY-003 — Proposal Evaluation Capability Implementation
 
-**Status:** Accepted  
+**Status:** Completed — Proposal evaluation capability is operational; closed as part of Release Candidate portfolio pruning.
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

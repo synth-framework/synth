@@ -2,7 +2,7 @@
 
 > **Implementation expedition.** Implement the Convergence Certification capability defined by EXP-GOVERNABILITY-004 so that SYNTH can certify whether a completed Mission outcome remains converged with approved human intent.
 
-**Status:** Accepted  
+**Status:** Completed — Convergence certification implementation is operational; closed as part of Release Candidate portfolio pruning.
 **Kind:** Implementation Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  

@@ -2,7 +2,7 @@
 
 > **Architecture expedition.** Capture intent, classify context, extract constraints, and negotiate scope before Mission materialization.
 
-**Status:** Executing  
+**Status:** Completed — Intent capture and classification are operational via Mission Studio and first-contact flow; closed as part of Release Candidate portfolio pruning.
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-023 — Genesis  

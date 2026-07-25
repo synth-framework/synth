@@ -1,6 +1,6 @@
 # EXP-GOVERNABILITY-001 — Governability Regression Certification
 
-**Status:** Accepted — Certification result: PASS  
+**Status:** Completed — Governability regression certification passed; closed as part of Release Candidate portfolio pruning.
 **Kind:** Certification Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  
