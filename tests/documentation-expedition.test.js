@@ -19,6 +19,7 @@ import {
   projectToArchitectGuide,
   projectToAiContext,
   runDocumentationExpedition,
+  computeSourceStateHash,
 } from "../dist/documentation/index.js"
 
 const sampleMarkdown = `---
@@ -188,4 +189,107 @@ test("Documentation Expedition output is deterministic", async () => {
 
   await fs.rm(outDir1, { recursive: true, force: true })
   await fs.rm(outDir2, { recursive: true, force: true })
+})
+
+test("projections embed a deterministic sourceStateHash", async () => {
+  const outDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-hash-"))
+  const sources = [
+    extractMarkdownKnowledge("intro.md", "# Synth\n\nSynth is deterministic."),
+  ]
+
+  const projections = await runDocumentationExpedition(sources, outDir)
+  const expectedHash = computeSourceStateHash(sources)
+
+  assert.ok(projections.length > 0, "projections should be generated")
+  for (const projection of projections) {
+    assert.strictEqual(projection.sourceStateHash, expectedHash, `${projection.filename} should carry the source state hash`)
+    const content = await fs.readFile(path.join(outDir, projection.filename), "utf-8")
+    assert.ok(content.includes(`sourceStateHash: ${expectedHash}`), `${projection.filename} should embed the source state hash`)
+  }
+
+  await fs.rm(outDir, { recursive: true, force: true })
+})
+
+test("sourceStateHash changes when source content changes", () => {
+  const sourcesA = [extractMarkdownKnowledge("intro.md", "# Synth\n\nVersion A.")]
+  const sourcesB = [extractMarkdownKnowledge("intro.md", "# Synth\n\nVersion B.")]
+
+  const hashA = computeSourceStateHash(sourcesA)
+  const hashB = computeSourceStateHash(sourcesB)
+
+  assert.notStrictEqual(hashA, hashB, "different source content should produce different source state hashes")
+})
+
+test("architecture projection lists ADRs with status, date, and deciders", () => {
+  const adrContent = `---
+Title: ADR-001
+---
+
+# ADR-001
+
+**Status:** Accepted  
+**Date:** 2026-07-25  
+**Deciders:** Synth Architecture  
+
+We decided to use deterministic projections.
+`
+  const sources = [
+    extractMarkdownKnowledge("adr/ADR-001.md", adrContent),
+    extractMarkdownKnowledge("intro.md", "# Synth\n\nDeterministic execution system."),
+  ]
+  const graph = normalizeGraph(buildKnowledgeGraph(sources))
+  const doc = projectToArchitecture(graph)
+
+  assert.ok(doc.includes("Architecture Decisions"), "architecture doc should include Architecture Decisions section")
+  assert.ok(doc.includes("ADR-001"), "architecture doc should list ADR-001")
+  assert.ok(doc.includes("Accepted"), "architecture doc should show ADR status")
+  assert.ok(doc.includes("2026-07-25"), "architecture doc should show ADR date")
+  assert.ok(doc.includes("Synth Architecture"), "architecture doc should show ADR deciders")
+})
+
+test("operator guide projection lists expeditions with status, kind, priority, and program", () => {
+  const expeditionContent = `---
+Title: EXP-TEST-001
+---
+
+# EXP-TEST-001
+
+**Status:** Completed  
+**Kind:** Test Expedition  
+**Priority:** High  
+**Program:** EXP-PROGRAM-999  
+
+Test expedition for metadata completeness.
+`
+  const sources = [
+    extractMarkdownKnowledge("expeditions/EXP-TEST-001.md", expeditionContent),
+    extractMarkdownKnowledge("intro.md", "# Synth\n\nDeterministic execution system."),
+  ]
+  const graph = normalizeGraph(buildKnowledgeGraph(sources))
+  const doc = projectToOperatorGuide(graph)
+
+  assert.ok(doc.includes("Active Expeditions"), "operator guide should include Active Expeditions section")
+  assert.ok(doc.includes("EXP-TEST-001"), "operator guide should list EXP-TEST-001")
+  assert.ok(doc.includes("Completed"), "operator guide should show expedition status")
+  assert.ok(doc.includes("Test Expedition"), "operator guide should show expedition kind")
+  assert.ok(doc.includes("High"), "operator guide should show expedition priority")
+  assert.ok(doc.includes("EXP-PROGRAM-999"), "operator guide should show expedition program")
+})
+
+test("concepts are deterministically ordered in projections", () => {
+  const sources = [
+    extractMarkdownKnowledge("z.md", "# Z\n\n- Zebra"),
+    extractMarkdownKnowledge("a.md", "# A\n\n- Apple"),
+    extractMarkdownKnowledge("m.md", "# M\n\n- Mango"),
+  ]
+  const graph = normalizeGraph(buildKnowledgeGraph(sources))
+  const doc1 = projectToReadme(graph)
+  const doc2 = projectToReadme(graph)
+
+  assert.strictEqual(doc1, doc2, "projection should be deterministic for identical inputs")
+  const appleIndex = doc1.indexOf("Apple")
+  const mangoIndex = doc1.indexOf("Mango")
+  const zebraIndex = doc1.indexOf("Zebra")
+  assert.ok(appleIndex < mangoIndex, "Apple should appear before Mango")
+  assert.ok(mangoIndex < zebraIndex, "Mango should appear before Zebra")
 })

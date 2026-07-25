@@ -104,4 +104,5 @@ export type Projection = {
   filename: string
   title: string
   content: string
+  sourceStateHash: string
 }

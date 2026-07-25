@@ -55,7 +55,10 @@ async function readDirFiles(dir) {
 
 async function runProjection(outputDir) {
   const { spawnSync } = await import("child_process")
-  const linkPrefix = path.relative(outputDir, KNOWLEDGE_BASE_DIR).replace(/\\/g, "/")
+  // The committed projections live in docs/generated, so their source links use
+  // the prefix ".." (one level up from docs/generated to docs). Regenerate with
+  // the same prefix so content comparisons are not polluted by path differences.
+  const linkPrefix = ".."
   const result = spawnSync(
     "node",
     [CLI_PATH, "docs", "generate", "--out-dir", outputDir, "--knowledge-base", KNOWLEDGE_BASE_DIR, "--link-prefix", linkPrefix],
@@ -69,6 +72,11 @@ async function runProjection(outputDir) {
     console.error(result.stderr)
     throw new Error(`docs generate failed with exit code ${result.status}`)
   }
+}
+
+function extractSourceStateHash(content) {
+  const match = content.match(/sourceStateHash:\s*([a-f0-9]+)/)
+  return match ? match[1] : null
 }
 
 async function main() {
@@ -107,6 +115,13 @@ async function main() {
       }
       if (regenerated[name] !== existing[name]) {
         console.log(`❌ Stale: ${name} content differs from regenerated output`)
+        hasDiff = true
+        continue
+      }
+      const regenHash = extractSourceStateHash(regenerated[name])
+      const existingHash = extractSourceStateHash(existing[name])
+      if (regenHash && existingHash && regenHash !== existingHash) {
+        console.log(`❌ Stale: ${name} sourceStateHash differs from regenerated output`)
         hasDiff = true
       }
     }

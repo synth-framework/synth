@@ -11,7 +11,7 @@
 
 ```text
 Release Candidate Completion
-██████████████████████░░░░░░░░░░░░░░░░ 58%
+████████████████████████░░░░░░░░░░░░░░ 63%
 ```
 
 ---
@@ -25,7 +25,7 @@ Release Candidate Completion
 | **Replay** | `██████████ 100%` | ✅ Complete | Deterministic replay certified, graph integrity clean |
 | **Security** | `██████████ 100%` | ✅ Complete | Bypass audit clean, condition/convergence enforcement in place |
 | **CLI** | `██████████ 100%` | ✅ Complete | EXP-CLI-001 — structured JSON, unified error model, discovery safety, contract tests |
-| **Documentation** | `███████░░░ 70%` | 🟡 In progress | EXP-DOC-002 — ADR/expedition metadata, freshness verification |
+| **Documentation** | `██████████ 100%` | ✅ Complete | EXP-DOC-002 — deterministic projections, sourceStateHash, freshness, metadata baselines |
 | **Installer Experience** | `██████░░░░ 60%` | 🔴 Not started | EXP-INSTALL-012 — first-run journey validation |
 | **Release Certification** | `████░░░░░░ 40%` | 🟡 In progress | Program 042 active; certificates chartered, evidence collection begins |
 
@@ -36,7 +36,7 @@ Release Candidate Completion
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │  EXP-CLI-001        CLI Consistency          [100%] ✅      │
-│  EXP-DOC-002        Documentation Sync       [70%] 🟡       │
+│  EXP-DOC-002        Documentation Sync       [100%] ✅      │
 │  EXP-INSTALL-012    Installer Experience     [60%] 🔴       │
 └──────────────────┬──────────────────────────────────────────┘
                    │
@@ -61,8 +61,8 @@ Release Candidate Completion
 | CLI structured JSON output | EXP-CLI-001 | ✅ |
 | Unified error model with `kind` | EXP-CLI-001 | ✅ |
 | Discovery safety model complete | EXP-CLI-001 | ✅ |
-| ADR/expedition metadata projections | EXP-DOC-002 | 🟡 |
-| Projection freshness verification | EXP-DOC-002 | 🟡 |
+| ADR/expedition metadata projections | EXP-DOC-002 | ✅ |
+| Projection freshness verification | EXP-DOC-002 | ✅ |
 | End-to-end first-run validation | EXP-INSTALL-012 | 🔴 |
 | Clean-clone `npm run govern` | Release Certification | 🔴 |
 | Reproducible build evidence | Release Certification | 🔴 |

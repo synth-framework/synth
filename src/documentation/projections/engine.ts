@@ -59,25 +59,34 @@ export const DOCUMENTATION_CAPABILITIES = [
 /**
  * Project a knowledge graph into the full documentation set.
  */
-export function projectAll(graph: KnowledgeGraph): Projection[] {
+export function projectAll(graph: KnowledgeGraph, sourceStateHash = ""): Projection[] {
   return DOCUMENTATION_CAPABILITIES.map((cap) => {
+    let content: string
     switch (cap.id) {
       case "readme":
-        return { filename: cap.filename, title: cap.title, content: projectToReadme(graph) }
+        content = projectToReadme(graph)
+        break
       case "architecture":
-        return { filename: cap.filename, title: cap.title, content: projectToArchitecture(graph) }
+        content = projectToArchitecture(graph)
+        break
       case "api-reference":
-        return { filename: cap.filename, title: cap.title, content: projectToApiReference(graph) }
+        content = projectToApiReference(graph)
+        break
       case "operator-guide":
-        return { filename: cap.filename, title: cap.title, content: projectToOperatorGuide(graph) }
+        content = projectToOperatorGuide(graph)
+        break
       case "developer-guide":
-        return { filename: cap.filename, title: cap.title, content: projectToDeveloperGuide(graph) }
+        content = projectToDeveloperGuide(graph)
+        break
       case "architect-guide":
-        return { filename: cap.filename, title: cap.title, content: projectToArchitectGuide(graph) }
+        content = projectToArchitectGuide(graph)
+        break
       case "ai-context":
-        return { filename: cap.filename, title: cap.title, content: projectToAiContext(graph) }
+        content = projectToAiContext(graph)
+        break
       default:
         throw new Error(`Unknown documentation capability: ${cap.id}`)
     }
+    return { filename: cap.filename, title: cap.title, content, sourceStateHash }
   })
 }

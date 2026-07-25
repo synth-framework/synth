@@ -59,7 +59,10 @@ async function readDirFiles(dir) {
 }
 
 async function runProjection(outputDir) {
-  const linkPrefix = path.relative(outputDir, KNOWLEDGE_BASE_DIR).replace(/\\/g, "/")
+  // Use the same link prefix as the committed docs/generated output so that
+  // projection validation exercises the same content shape that freshness
+  // verification compares against.
+  const linkPrefix = ".."
   const result = spawnSync(
     "node",
     [CLI_PATH, "docs", "generate", "--out-dir", outputDir, "--knowledge-base", KNOWLEDGE_BASE_DIR, "--link-prefix", linkPrefix],

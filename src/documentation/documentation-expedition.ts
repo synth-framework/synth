@@ -12,6 +12,7 @@ import { extractMarkdownKnowledge } from "./extractors/markdown.js"
 import { buildKnowledgeGraph } from "./knowledge-graph.js"
 import { normalizeGraph } from "./normalizer.js"
 import { projectAll } from "./projections/engine.js"
+import { sha256 } from "../core/hash.js"
 
 export type ExtractionSummary = {
   filesScanned: number
@@ -19,6 +20,46 @@ export type ExtractionSummary = {
   conceptsExtracted: number
   projectionsGenerated: number
   zeroExtractionWarning: boolean
+}
+
+/**
+ * Compute a deterministic fingerprint of the canonical markdown sources.
+ * The hash is stable across runs as long as the source file set and contents
+ * are unchanged.
+ */
+export function computeSourceStateHash(sources: MarkdownKnowledge[]): string {
+  // Hash a deterministic, sorted representation of every extracted source.
+  // This makes the fingerprint sensitive to content, metadata, headings,
+  // list items, links, and classification changes.
+  const canonical = sources.map((s) => ({
+    id: s.id,
+    title: s.title,
+    domain: s.domain,
+    audience: s.audience,
+    version: s.version,
+    status: s.status,
+    headings: s.headings,
+    listItems: s.listItems,
+    links: s.links,
+    summary: s.summary,
+    documentClass: s.documentClass,
+    adrMetadata: s.adrMetadata,
+    expeditionMetadata: s.expeditionMetadata,
+  }))
+  return sha256(canonical)
+}
+
+/**
+ * Embed a deterministic source-state fingerprint into a projection.
+ */
+function embedSourceStateHash(content: string, sourceStateHash: string): string {
+  const footer = `
+
+<!--
+sourceStateHash: ${sourceStateHash}
+projection: synth-documentation-expedition-v1
+-->`
+  return content.trimEnd() + footer
 }
 
 /**
@@ -70,12 +111,14 @@ export async function runDocumentationExpedition(
   sources: MarkdownKnowledge[],
   outDir: string,
 ): Promise<Projection[]> {
+  const sourceStateHash = computeSourceStateHash(sources)
   const graph = normalizeGraph(buildKnowledgeGraph(sources))
-  const projections = projectAll(graph)
+  const projections = projectAll(graph, sourceStateHash)
 
   await fs.mkdir(outDir, { recursive: true })
   for (const projection of projections) {
-    await fs.writeFile(path.join(outDir, projection.filename), projection.content, "utf-8")
+    const content = embedSourceStateHash(projection.content, projection.sourceStateHash)
+    await fs.writeFile(path.join(outDir, projection.filename), content, "utf-8")
   }
 
   return projections
@@ -97,6 +140,9 @@ export async function documentFromKnowledgeBase(
   linkPrefix?: string,
 ): Promise<{ projections: Projection[]; summary: ExtractionSummary }> {
   const { sources, filesScanned, filesMatched } = await extractDirectoryKnowledge(knowledgeBaseDir)
+  // Deterministic projection requires a stable source ordering independent of
+  // filesystem readdir order.
+  sources.sort((a, b) => a.id.localeCompare(b.id))
   // Generated projections live in outDir; source links must resolve back to
   // the knowledge base. Compute the relative prefix once and prepend it to
   // every source identifier so links like `architecture/01-introduction.md`

@@ -19,6 +19,7 @@ export {
   runDocumentationExpedition,
   documentFromKnowledgeBase,
   extractDirectoryKnowledge,
+  computeSourceStateHash,
 } from "./documentation-expedition.js"
 export type { ExtractionSummary } from "./documentation-expedition.js"
 export type {

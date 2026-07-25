@@ -66,7 +66,7 @@ function expeditionList(graph: KnowledgeGraph): string {
   return expNodes
     .map(
       (n) =>
-        `- **[${n.label}](${n.id})** — Status: ${n.metadata!.expeditionStatus}, Priority: ${n.metadata!.expeditionPriority || "unknown"}, Program: ${n.metadata!.expeditionProgram || "unknown"}`,
+        `- **[${n.label}](${n.id})** — Status: ${n.metadata!.expeditionStatus}, Kind: ${n.metadata!.expeditionKind || "unknown"}, Priority: ${n.metadata!.expeditionPriority || "unknown"}, Program: ${n.metadata!.expeditionProgram || "unknown"}`,
     )
     .join("\n")
 }
