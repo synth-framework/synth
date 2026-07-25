@@ -143,8 +143,8 @@ These are the candidate initiatives for Era IV. They are no longer "pending v1.0
 | EXP-PROGRAM-029 — AI Ecosystem Distribution | AI Ecosystem | **Active** |
 | EXP-DIST-001 — Canonical AI Capability Model | AI Ecosystem | Completed and accepted |
 | EXP-DIST-002 — Agent Skill Projection Pipeline | AI Ecosystem | Completed and accepted |
-| EXP-DIST-003 — SYNTH MCP Server | AI Ecosystem | **Executing** |
-| EXP-DIST-004 — npm Package Distribution | Distribution | Proposed |
+| EXP-DIST-003 — SYNTH MCP Server | AI Ecosystem | Completed and accepted |
+| EXP-DIST-004 — npm Package Distribution | Distribution | **Executing** |
 | EXP-DIST-005 — IDE Rules Projection | IDE Integration | Completed and accepted |
 
 ### Architecture convergence
@@ -244,8 +244,8 @@ Applied acceptance criterion for every proposed item:
 | EXP-DIST-001 — Canonical AI Capability Model | ✅ | ❌ | Completed and accepted |
 | EXP-DIST-002 — Agent Skill Projection Pipeline | ✅ | ❌ | Completed and accepted |
 | EXP-DIST-005 — IDE Rules Projection | ✅ | ✅ | Completed and accepted |
-| EXP-DIST-003 — SYNTH MCP Server | ✅ | ❌ | **Executing** — live MCP server exposing SYNTH tools |
-| EXP-DIST-004 — npm Package Distribution | ✅ | ❌ | Keep proposed; core distribution |
+| EXP-DIST-003 — SYNTH MCP Server | ✅ | ❌ | Completed and accepted |
+| EXP-DIST-004 — npm Package Distribution | ✅ | ❌ | **Executing** — packages publish-ready, MCP server exposed via bin |
 | EXP-PROGRAM-031 — Architectural Convergence | ⚠️ | ⚠️ | Flag for review; structural rather than user-facing |
 | EXP-GATE-013 — Gate State & Dependency Enforcement | ❌ | ⚠️ | Flag for review; governance correctness, not direct operator effort |
 | EXP-PROGRAM-032 — Operator Optimization Pipeline | ❌ | ✅ | Keep proposed; pure operator effort reduction |
@@ -308,11 +308,11 @@ EXP-PROGRAM-034  Task Engine
 
 ## Recommended next actions
 
-1. ✅ **Activate EXP-PROGRAM-029** — active with adoption metric: number of supported AI ecosystems / integrations.
-2. ✅ **Complete EXP-DIST-001** — canonical model, projection engine, and contract tests are done.
-3. ✅ **Complete EXP-DIST-002** — agent skills expanded to Claude, Codex, ChatGPT, Gemini.
+1. ✅ **Activate EXP-DIST-001** — canonical model, projection engine, and contract tests are done.
+2. ✅ **Complete EXP-DIST-002** — agent skills expanded to Claude, Codex, ChatGPT, Gemini.
+3. ✅ **Complete EXP-DIST-003** — live MCP server exposing SYNTH tools.
 4. ✅ **Complete EXP-DIST-005** — IDE rules completed for Cursor, Cline, Windsurf, Roo, Aider, Continue.dev.
-5. **Complete EXP-DIST-003** — live MCP server exposing SYNTH tools.
+5. **Complete EXP-DIST-004** — packages publish-ready on npm.
 6. **Create Era IV program proposals** for remaining themes, or leave them as `Proposed` until intentional planning begins.
 4. **Move research items** to a dedicated `research/` or `incubation/` track with no delivery commitment.
 5. **Establish a maintenance backlog** document for `2.4.x` patch work.

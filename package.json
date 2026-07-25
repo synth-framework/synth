@@ -5,10 +5,12 @@
   "type": "module",
   "main": "dist/main.js",
   "bin": {
-    "synth": "dist/cli/synth.js"
+    "synth": "dist/cli/synth.js",
+    "synth-mcp": "dist/distribution/mcp-server.js"
   },
   "files": [
     "dist/",
+    "distribution/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
@@ -62,9 +64,13 @@
     "test:documentation-projections": "npm run docs:validate-projections && npm run docs:verify-freshness && npm run docs:verify-metadata",
     "test:ai-capability-projection": "node tests/ai-capability-projection.test.js",
     "test:mcp-server": "node tests/mcp-server.test.js",
+    "test:agent-sdk": "node tests/agent-sdk.test.js",
+    "test:package-distribution": "node tests/package-distribution.test.js",
+    "build:agent-sdk": "cd packages/synth-agent-sdk && npm run build",
     "distribution:project": "node scripts/project-ai-capabilities.js",
     "distribution:verify-freshness": "node scripts/project-ai-capabilities.js --check",
     "mcp:start": "node dist/distribution/mcp-server.js",
+    "mcp:bin": "synth-mcp",
     "test:operator-journey": "node tests/operator-journey.test.js",
     "test:public-vocabulary-audit": "node tests/public-vocabulary-audit.test.js",
     "test:freeze-certification": "node tests/freeze-certification.test.js",

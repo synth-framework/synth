@@ -581,7 +581,6 @@ This guide is for architects making structural decisions.
 - **Kernel no kernel mutation authority is** — Kernel — no kernel mutation authority is required.
 - **Kernel or governance semantic changes** — Kernel or governance semantic changes.
 - **Key Design Decision** — Key Design Decision
-- **keywords including synth ai-agent genesis-protocol governance** — `keywords` including `synth`, `ai-agent`, `genesis-protocol`, `governance`
 - **L1 Authority** — L1: Authority
 - **Layer 0 Constitution** — Layer 0: Constitution
 - **Layer 1 CommandBus authority verification** — **Layer 1:** CommandBus authority verification
@@ -716,7 +715,6 @@ This guide is for architects making structural decisions.
 - **Relation to EXP-GOVERNANCE-ENFORCEMENT-001** — 9. Relation to EXP-GOVERNANCE-ENFORCEMENT-001
 - **Relationship to governance components** — Relationship to governance components
 - **Relationship to unit tests and governance** — Relationship to unit tests and governance proofs
-- **Release governance semantics EXP-PROGRAM-028 EXP-REPO-007** — Release governance semantics (EXP-PROGRAM-028, EXP-REPO-007).
 - **Removed synthetic review decisions** — Removed synthetic review decisions
 - **Renaming or moving other governance files** — Renaming or moving other governance files.
 - **Replay and governance can verify artifact** — Replay and governance can verify artifact integrity by hash.
@@ -910,6 +908,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
+sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
 projection: synth-documentation-expedition-v1
 -->

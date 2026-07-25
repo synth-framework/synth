@@ -449,6 +449,22 @@
       ],
       "governanceClass": "tests"
     },
+    "PackageDistribution": {
+      "unitTests": [
+        "test:agent-sdk",
+        "test:package-distribution"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [
+        "packages/synth-agent-sdk/",
+        "tests/agent-sdk.test.js",
+        "tests/package-distribution.test.js"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "release"
+    },
     "Domain": {
       "unitTests": [
         "test"

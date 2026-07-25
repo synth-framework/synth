@@ -81,7 +81,9 @@ This guide is for contributors extending Synth.
 - **Add info subcommand to the adapter** — Add `info` subcommand to the adapter CLI.
 - **Add MCP server capability to docs** — Add MCP server capability to `docs/reference/capability-validation-map.json`.
 - **Add new source adapters deferred to** — Add new source adapters (deferred to EXP-DISCOVERY-003).
+- **Add tests agent-sdk test js covering** — Add `tests/agent-sdk.test.js` covering protocol and metadata exports.
 - **Add tests for store versioning diff** — Add tests for store, versioning, diff, and reconstruction.
+- **Add tests for synth-framework agent-sdk exports** — Add tests for `@synth-framework/agent-sdk` exports.
 - **Add tests mcp-server test js** — Add `tests/mcp-server.test.js`.
 - **Add tests proving bootstrap uses Discovery** — Add tests proving bootstrap uses Discovery output.
 - **Add the Brownfield Certification Test Suite** — Add the Brownfield Certification Test Suite.
@@ -1121,7 +1123,9 @@ This guide is for contributors extending Synth.
 - **Unit tests pass for design system** — Unit tests pass for design system, components, and Mission Studio UI.
 - **Unknown adapters exit non-zero with a** — Unknown adapters exit non-zero with a structured error.
 - **Unknown adapters fail with a clear** — Unknown adapters fail with a clear error.
+- **Update capability-validation-map json** — Update capability-validation-map.json.
 - **Update contract tests to assert the** — Update contract tests to assert the expanded surface.
+- **Update docs reference capability-validation-map json with** — Update `docs/reference/capability-validation-map.json` with a PackageDistribution capability.
 - **Update path constants in tests that** — Update path constants in tests that assert on default layout.
 - **Update tests and fixtures** — 4. Update tests and fixtures
 - **Update tests to assert the expanded** — Update tests to assert the expanded surface.
@@ -1182,6 +1186,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
+sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
 projection: synth-documentation-expedition-v1
 -->

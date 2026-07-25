@@ -357,6 +357,8 @@
 - **Tool Capability Interface** — 2. Tool Capability Interface
 - **Trust Boundaries Capability Isolation Compromise scope** — **Trust Boundaries** + **Capability Isolation** = Compromise scope is limited
 - **Two Capability Layers** — Two Capability Layers
+- **Update capability-validation-map json** — Update capability-validation-map.json.
+- **Update docs reference capability-validation-map json with** — Update `docs/reference/capability-validation-map.json` with a PackageDistribution capability.
 - **Updated docs architecture 07-capability-model md with** — Updated `docs/architecture/07-capability-model.md` with a **Two Capability Layers** section, a **Capability Graph** section (node kinds, edge kinds, deterministic resolution), and ADR cross-links.
 - **Use a private capability token passed** — Use a private capability token passed only by the gate, or encapsulate the store so `append` is not reachable outside the gate module.
 - **Use ForgeCapability to create pull requests** — Use ForgeCapability to create pull requests.
@@ -392,6 +394,6 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
+sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
 projection: synth-documentation-expedition-v1
 -->

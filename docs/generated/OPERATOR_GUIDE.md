@@ -192,7 +192,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DISCOVERY-008 — Operational Discovery](../expeditions/EXP-DISCOVERY-008.md)** — Status: Completed, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DIST-002 — Agent Skill Projection Pipeline](../expeditions/EXP-DIST-002.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
-- **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
+- **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-005 — IDE Rules Projection](../expeditions/EXP-DIST-005.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DOC-002 — Deterministic Documentation Projections](../expeditions/EXP-DOC-002.md)** — Status: Completed, Kind: Release Candidate Expedition, Priority: High, Program: EXP-PROGRAM-038 — Release Candidate
 - **[EXP-DOCS-003 — Agent Planning Guide Update](../expeditions/EXP-DOCS-003.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
@@ -406,6 +406,7 @@ This guide covers the operator journey from idea to done.
 - **Active Mission and Expedition** — Active Mission and Expedition.
 - **activeExpeditionId** — `activeExpeditionId`
 - **activeMissionId** — `activeMissionId`
+- **Actual npm publish requires operator credentials** — Actual npm publish (requires operator credentials and release governance).
 - **Added docs guides operator installing-in-ci md** — Added `docs/guides/operator/installing-in-ci.md` with GitHub Actions examples.
 - **Added docs guides operator troubleshooting md** — Added `docs/guides/operator/troubleshooting.md` covering installation and first-run issues.
 - **Added docs operator 14-local-vs-ci-validation md and** — Added `docs/operator/14-local-vs-ci-validation.md` and updated `docs/operator/README.md`.
@@ -1064,6 +1065,7 @@ This guide covers the operator journey from idea to done.
 - **Managing Multiple Expeditions** — Managing Multiple Expeditions
 - **Map Discovery artifact to Mission** — 7.2 Map Discovery artifact to Mission
 - **Mark expedition as Completed and accepted** — Mark expedition as `Completed and accepted`.
+- **Mark expedition completed** — Mark expedition completed.
 - **Materialized Mission** — Materialized Mission.
 - **Materialized Missions include a reference to** — Materialized Missions include a reference to the originating Discovery artifact.
 - **Materialized Missions trace back to an** — Materialized Missions trace back to an approved Discovery artifact.
@@ -1576,6 +1578,7 @@ This guide covers the operator journey from idea to done.
 - **There is a flow Idea Mission** — There is a flow: Idea → Mission → Planning → Approval → Commit → Execution → Events → State → Replay.
 - **This expedition intentionally produces architecture not** — This expedition intentionally produces architecture, not a live service. Live distribution channels are owned by downstream EXP-DIST expeditions.
 - **This expedition intentionally stops at generated** — This expedition intentionally stops at generated text artifacts. Packaging and publishing skills to marketplaces or registries is future work.
+- **This expedition makes publication possible and** — This expedition makes publication possible and verifiable; it does not perform the publication itself.
 - **Time to first Expedition** — Time to first Expedition
 - **Time to first Mission** — Time to first Mission
 - **Timeline significant mission expedition objective work-item** — **Timeline** — significant mission/expedition/objective/work-item transitions are summarized in `whatHappened`, with adjacent duplicate suppression for repeated genesis runs.
@@ -1659,6 +1662,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
+sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
 projection: synth-documentation-expedition-v1
 -->

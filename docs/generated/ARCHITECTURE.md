@@ -332,7 +332,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Engineering Philosophy Engineering as knowledge** — Engineering Philosophy — Engineering as knowledge
 - **Engineering Philosophy The deeper why behind** — Engineering Philosophy — The deeper "why" behind Synth's approach
 - **Engineering Philosophy The three pillars** — Engineering Philosophy — The three pillars
-- **engines compatibility** — `engines` compatibility
 - **Ensure EventStore append is reachable only** — Ensure `EventStore.append()` is reachable only through `ExecutionGate`.
 - **ensureRuntimeDataDir cwd** — `ensureRuntimeDataDir(cwd)`
 - **ensureRuntimeDataDir migrates existing state rather than** — `ensureRuntimeDataDir` migrates existing state rather than failing.
@@ -1344,6 +1343,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
+sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
 projection: synth-documentation-expedition-v1
 -->
