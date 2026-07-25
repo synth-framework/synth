@@ -230,6 +230,6 @@ Bug fixes, security patches, performance improvements, and documentation updates
 - [x] Track D — Architecture Baseline Certificate published.
 - [x] Track E — Release Readiness Certificate published.
 - [x] SYNTH Platform v1.0 Certification Report published.
-- [ ] The Release Candidate policy is recorded in `docs/governance.md`.
+- [x] The Release Candidate policy is recorded in `docs/governance.md`.
 - [ ] Release Review checklist is completed and signed off.
 - [ ] `npm run govern` passes from a clean clone (final operator validation).

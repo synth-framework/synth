@@ -297,6 +297,24 @@ No provider-specific logic may alter the canonical pipeline. Adapters invoke `np
 
 ---
 
+## Release Candidate Policy
+
+> For SYNTH Platform v1.0, Program 042 — Release Certification is active.
+>
+> **Only the following changes are permitted on the v1.0 branch:**
+>
+> 1. **Defect correction** — fixes for issues discovered during certification.
+> 2. **Certification evidence** — artifacts, measurements, and proofs required by Program 042.
+> 3. **Release artifacts** — changelogs, release notes, version tags, and packaging metadata.
+>
+> **No new capabilities. No architectural expansion. No "while we're here..." improvements.**
+>
+> Anything else belongs to vNext or a post-v1.0 program.
+>
+> After Program 042 closes, any architectural change to the kernel, SDK, event model, governance lifecycle, capability registry, or replay engine requires a new platform program or a v2 architecture initiative.
+
+---
+
 ## Enforcement
 
 Local enforcement:
