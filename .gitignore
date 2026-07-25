@@ -76,7 +76,10 @@ logs/
 # Generated Documentation
 # =============================================================================
 
-docs/generated/
+# NOTE: docs/generated/ is intentionally tracked for SYNTH Platform v1.0 so that
+# the documentation freshness verifier has a committed baseline on a clean clone.
+# Regenerate with: npm run docs:generate
+# docs/generated/
 examples/*/docs-generated/
 
 # =============================================================================

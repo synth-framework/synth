@@ -5,14 +5,23 @@
   "semanticVersion": "1.0.0",
   "packageVersion": "2.3.0",
   "gitTag": "v1.0.0",
-  "gitCommitSha": "a4ba7c02ec9c78ace05d52413cb027a08afabd8c",
-  "gitDescribe": "v2.3.0-199-ga4ba7c0",
-  "generatedAt": "2026-07-25T08:56:04.119Z",
-  "releaseDate": "2026-07-25T08:56:04.119Z",
+  "gitCommitSha": "fb7f479159765f4304f4f5286ed1b0b032ca44f0",
+  "gitDescribe": "v2.3.0-203-gfb7f479",
+  "generatedAt": "2026-07-25T10:43:53.092Z",
+  "releaseDate": "2026-07-25T10:43:53.092Z",
   "nodeEngine": ">=20.0.0",
   "repositoryClean": false,
   "repositoryModifications": [
-    "?? scripts/generate-platform-manifest.js"
+    "M .gitignore",
+    "A  docs/generated/AI_CONTEXT.md",
+    "A  docs/generated/API.md",
+    "A  docs/generated/ARCHITECTURE.md",
+    "A  docs/generated/ARCHITECT_GUIDE.md",
+    "A  docs/generated/DEVELOPER_GUIDE.md",
+    "A  docs/generated/OPERATOR_GUIDE.md",
+    "A  docs/generated/README.md",
+    "M package.json",
+    "M tests/govern-profiler.test.js"
   ],
   "governanceSchemaVersion": "2.1",
   "eventModel": {

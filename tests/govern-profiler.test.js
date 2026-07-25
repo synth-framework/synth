@@ -120,7 +120,7 @@ async function testPercentagesSumToOneHundred() {
   // Each percentage is rounded to one decimal place, so the sum can deviate
   // from 100 by up to ~0.05 per check. Accept a tolerance scaled by check count.
   const tolerance = summary.checks.length * 0.05 + 0.1
-  assert.ok(total >= 99.0 && total <= 100 + tolerance, `percentages sum to ${total}`)
+  assert.ok(total >= 100 - tolerance && total <= 100 + tolerance, `percentages sum to ${total}`)
   console.log("[PASS] percentages sum to approximately 100")
 }
 
