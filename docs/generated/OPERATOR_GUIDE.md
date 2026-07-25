@@ -31,7 +31,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DISCOVERY-005 — Brownfield Genesis Integration](../expeditions/EXP-DISCOVERY-005.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DISCOVERY-006 — Replay Verification](../expeditions/EXP-DISCOVERY-006.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DISCOVERY-007 — IDE / MCP / Web Consumers](../expeditions/EXP-DISCOVERY-007.md)** — Status: Completed, Kind: Product Expedition, Priority: Critical, Program: EXP-PROGRAM-006 — Discovery Platform
-- **[EXP-DIST-001 — Canonical AI Capability Model](../expeditions/EXP-DIST-001.md)** — Status: Executing, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
+- **[EXP-DIST-001 — Canonical AI Capability Model](../expeditions/EXP-DIST-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DOCS-001 — Documentation Projection System](../expeditions/EXP-DOCS-001.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-002 — Capability Model Documentation](../expeditions/EXP-DOCS-002.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-004 — Environment Layer Reference](../expeditions/EXP-DOCS-004.md)** — Status: Completed, Kind: Adoption Expedition, Priority: Critical, Program: EXP-PROGRAM-008 — Documentation & Projections
@@ -1656,6 +1656,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
+sourceStateHash: 7f03141e20e5a32cf828e0d3970b0957dd631e000a03d8c9a706e8436326a259
 projection: synth-documentation-expedition-v1
 -->

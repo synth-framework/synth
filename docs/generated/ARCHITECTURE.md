@@ -1343,6 +1343,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 2e80f0bf1e683cbba83b13077fe6cb8515847c070e10ba01321234f545c46a25
+sourceStateHash: 7f03141e20e5a32cf828e0d3970b0957dd631e000a03d8c9a706e8436326a259
 projection: synth-documentation-expedition-v1
 -->
