@@ -2,8 +2,9 @@
 
 > Every infrastructure capability in SYNTH has exactly one canonical owner through the Internal Platform SDK.
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
+**Closed:** 2026-07-24  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution, ADR-004, ADR-044  
 **Scope:** Canonical infrastructure contracts and construction patterns  
@@ -37,8 +38,8 @@ Platform Canonicalization
 ├── Stage 3 — Construction Consistency
 │   └── EXP-PLATFORM-003                 Construction Canonicalization
 │
-└── Stage 4 — Utility Extraction (proposed)
-    └── EXP-PLATFORM-004                 Utility Extraction
+└── Stage 4 — Utility Extraction
+    └── EXP-PLATFORM-004                 Utility Extraction (completed)
 ```
 
 ---
@@ -64,6 +65,24 @@ Platform Canonicalization
 - No SDK module is added without deleting or deprecating an existing duplicate.
 
 ---
+
+## Closure Evidence
+
+All four stages of EXP-PROGRAM-041 are complete:
+
+| Stage | Expedition | Status |
+|---|---|---|
+| Canonical Infrastructure Audit | EXP-PLATFORM-001 | Completed |
+| Internal Platform SDK | EXP-PLATFORM-002 | Completed |
+| Construction Consistency | EXP-PLATFORM-003 | Completed |
+| Utility Extraction | EXP-PLATFORM-004 | Completed and accepted |
+
+Verification:
+
+- `npm run build` passes.
+- `npm test` passes.
+- `node scripts/verify-expedition-governance.js` reports **0 errors, 0 warnings**.
+- `sortKeys` / `stableStringify` now have a single canonical owner in `src/sdk/json/index.ts`.
 
 ## Relationship to Other Work
 

@@ -2,9 +2,10 @@
 
 > Phase III of the SYNTH simplification program: extract duplicated utilities only after canonical ownership exists.
 
-**Status:** Approved  
+**Status:** Completed and accepted  
 **Program:** EXP-PROGRAM-041 — Platform Canonicalization  
-**Kind:** Cleanup Expedition
+**Kind:** Cleanup Expedition  
+**Completed:** 2026-07-24
 
 ## Authority
 
