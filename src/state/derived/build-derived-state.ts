@@ -117,6 +117,7 @@ export function buildReviewGateExpeditions(
                     decisionEvidence: Array.isArray(payload.evidence) ? payload.evidence as string[] : [],
                     decisionAffectedAssets: Array.isArray(payload.affectedAssets) ? payload.affectedAssets as string[] : [],
                     decisionRequiredChanges: Array.isArray(payload.requiredChanges) ? payload.requiredChanges as string[] : [],
+                    reviewer: payload.reviewer as ReviewGateState["reviewer"],
                     resolvedAt: event.timestamp,
                   }
                 : g,
@@ -189,6 +190,7 @@ export function buildReviewGateExpeditions(
                     decision,
                     decisionReason: String(payload.reason ?? ""),
                     decisionEvidence: Array.isArray(payload.evidence) ? payload.evidence as string[] : [],
+                    reviewer: payload.reviewer as ReviewGateState["reviewer"],
                     resolvedAt: event.timestamp,
                   }
                 : g,

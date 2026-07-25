@@ -2,7 +2,7 @@
 
 > **Governance expedition.** Fix gaps between documented governance model and actual implementation, harden gate engine enforcement.
 
-**Status:** Proposed  
+**Status:** Executing  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-038 — Audit Remediation  
@@ -64,6 +64,15 @@ Impact:
 
 - Condition fulfillment tracking for `approve_with_conditions` (see EXP-GOV-015).
 - Rich review decision implementation (split/merge/supersede/escalate).
+
+---
+
+## Evidence
+
+| Finding | Status | Evidence |
+|---------|--------|----------|
+| H2 — Synthetic ReviewDecision in `engineOpenAcceptanceGate` | **Fixed** | `src/governance/review-gate-engine.ts` now retrieves the real review decision from the stored gate and validates `decision`, `reviewer`, `reason`, and `resolvedAt` before opening acceptance. `src/state/derived/build-derived-state.ts` now persists `payload.reviewer` for `REVIEW_GATE_RESOLVED` and `ACCEPTANCE_GATE_RESOLVED`. Regression tests in `tests/governance-evaluation-enforcement.test.js` prove acceptance cannot open without a resolved review decision and cannot synthesize one from thin air. |
+| H4 — Numeric quorum enforcement | **Deferred** | Per Option C, `all` and `any` semantics are enforced by the existing flow; numeric quorum requires an architectural decision on multi-reviewer accumulation before implementation. |
 
 ---
 

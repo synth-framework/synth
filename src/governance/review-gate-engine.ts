@@ -10,10 +10,12 @@ import type { CanonicalState, DerivedState, ReviewGateExpeditionState } from "..
 import type {
   GatePolicy,
   Reviewer,
+  ReviewerKind,
   ReviewDecisionType,
   AcceptanceDecisionType,
   RefinedIntent,
 } from "./review-gates.js"
+import { ReviewGateError } from "./review-gates.js"
 import type { EvaluationResult } from "./proposal-evaluation/types.js"
 import {
   createReviewGateExpedition,
@@ -56,6 +58,30 @@ function asEngineState(state: ReviewGateExpeditionState): import("./review-gates
 
 function fromEngineState(state: import("./review-gates.js").ReviewGateExpedition): ReviewGateExpeditionState {
   return JSON.parse(JSON.stringify(state)) as ReviewGateExpeditionState
+}
+
+const REVIEW_DECISION_TYPES: ReviewDecisionType[] = [
+  "approve",
+  "approve_with_conditions",
+  "revision_required",
+  "reject",
+  "supersede_expedition",
+  "split_expedition",
+  "merge_expedition",
+  "escalate_to_mission",
+  "escalate_to_program",
+]
+
+const REVIEWER_KINDS: ReviewerKind[] = ["human", "ai", "council", "engine", "asset_owner"]
+
+function isReviewDecisionType(value: unknown): value is ReviewDecisionType {
+  return typeof value === "string" && REVIEW_DECISION_TYPES.includes(value as ReviewDecisionType)
+}
+
+function isReviewer(value: unknown): value is Reviewer {
+  if (typeof value !== "object" || value === null) return false
+  const r = value as Record<string, unknown>
+  return typeof r.id === "string" && REVIEWER_KINDS.includes(r.kind as ReviewerKind)
 }
 
 /** Ensure a review-gate expedition record exists. */
@@ -213,28 +239,44 @@ export function engineOpenAcceptanceGate(
   policy: GatePolicy
 ): ReviewGateEngineResult {
   const reviewDecisionId = current.reviewDecisionId
-  if (!reviewDecisionId) throw new Error("No review decision to accept")
+  if (!reviewDecisionId) throw new ReviewGateError("No review decision to accept")
   const reviewGate = current.gates.find((g) => g.gateType === "review" && g.decisionId === reviewDecisionId)
+  if (!reviewGate) {
+    throw new ReviewGateError(`Review gate for decision ${reviewDecisionId} not found`)
+  }
 
-  if (reviewGate && !allConditionsFulfilled(reviewGate as unknown as import("./review-gates.js").Gate)) {
-    throw new Error(
+  if (!allConditionsFulfilled(reviewGate as unknown as import("./review-gates.js").Gate)) {
+    throw new ReviewGateError(
       `Cannot open acceptance gate: gate ${reviewGate.id} has unfulfilled conditions. ` +
       `Fulfill all conditions before opening acceptance gate.`
     )
   }
 
+  if (!isReviewDecisionType(reviewGate.decision)) {
+    throw new ReviewGateError(`Review gate ${reviewGate.id} has no valid decision`)
+  }
+  if (!isReviewer(reviewGate.reviewer)) {
+    throw new ReviewGateError(`Review gate ${reviewGate.id} has no valid reviewer`)
+  }
+  if (typeof reviewGate.decisionReason !== "string" || reviewGate.decisionReason.length === 0) {
+    throw new ReviewGateError(`Review gate ${reviewGate.id} has no recorded decision reason`)
+  }
+  if (typeof reviewGate.resolvedAt !== "number") {
+    throw new ReviewGateError(`Review gate ${reviewGate.id} has no resolved timestamp`)
+  }
+
   const reviewDecision = {
     id: reviewDecisionId,
-    gateId: reviewGate?.id ?? "",
+    gateId: reviewGate.id,
     gateType: "review" as const,
     expeditionId: current.expeditionId,
-    decision: (reviewGate?.decision as ReviewDecisionType) ?? "approve",
-    reason: reviewGate?.decisionReason ?? "",
-    affectedAssets: reviewGate?.decisionAffectedAssets ?? [],
-    evidence: reviewGate?.decisionEvidence ?? [],
-    reviewer: (reviewGate?.reviewer as Reviewer) ?? { kind: "human" as const, id: "operator" },
+    decision: reviewGate.decision,
+    reason: reviewGate.decisionReason,
+    affectedAssets: Array.isArray(reviewGate.decisionAffectedAssets) ? reviewGate.decisionAffectedAssets : [],
+    evidence: Array.isArray(reviewGate.decisionEvidence) ? reviewGate.decisionEvidence : [],
+    reviewer: reviewGate.reviewer,
     validity: "valid" as const,
-    timestamp: reviewGate?.resolvedAt ?? Date.now(),
+    timestamp: reviewGate.resolvedAt,
   }
   const { expedition, gate, acceptancePackage } = openAcceptanceGate(asEngineState(current), reviewDecision, policy)
   return {

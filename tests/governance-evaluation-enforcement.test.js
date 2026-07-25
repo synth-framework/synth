@@ -274,6 +274,68 @@ test("Rejected review prevents acceptance and closes expedition", async () => {
   assert.equal(derived.reviewGateExpeditions["E-ACCEPT-REJECT"].status, "rejected")
 })
 
+// ------------------------------------------------------------------
+// H2 regression: acceptance must never synthesize a missing review decision
+// ------------------------------------------------------------------
+
+test("Acceptance Gate cannot open without a resolved Review Gate decision", async () => {
+  const ctx = await makeCtx()
+  await approveMission(ctx, "M-ACCEPT-NO-REVIEW")
+  await createExecutingExpedition(ctx, "M-ACCEPT-NO-REVIEW", "E-ACCEPT-NO-REVIEW")
+  await approveRefinedIntent(ctx, "E-ACCEPT-NO-REVIEW", "M-ACCEPT-NO-REVIEW")
+
+  // Intentionally do NOT resolve the review gate.
+  const result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenAcceptanceGate",
+    payload: {
+      expeditionId: "E-ACCEPT-NO-REVIEW",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+
+  assert.equal(result.status, "error", "OpenAcceptanceGate should fail without a review decision")
+  assert.ok(
+    result.error.includes("No review decision to accept"),
+    `Expected ReviewGateError about missing review decision, got ${result.error}`
+  )
+
+  const allEvents = await ctx.infra.eventStore.loadAll()
+  const acceptanceEvents = allEvents.filter((e) => e.type.startsWith("ACCEPTANCE_GATE"))
+  assert.equal(acceptanceEvents.length, 0, "No acceptance gate events should be emitted without a review decision")
+})
+
+test("EvaluateAndResolveAcceptanceGate cannot synthesize acceptance without a review evaluation", async () => {
+  const ctx = await makeCtx()
+  await approveMission(ctx, "M-ACCEPT-NO-EVAL")
+  await createExecutingExpedition(ctx, "M-ACCEPT-NO-EVAL", "E-ACCEPT-NO-EVAL")
+  await approveRefinedIntent(ctx, "E-ACCEPT-NO-EVAL", "M-ACCEPT-NO-EVAL")
+
+  // Open a review gate manually but do not resolve it, leaving no evaluation.
+  let result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenReviewGate",
+    payload: {
+      expeditionId: "E-ACCEPT-NO-EVAL",
+      implementationReference: "manual.html",
+      policy: { reviewers: ["human"], quorum: "all" },
+    },
+  })
+  assert.equal(result.status, "ok", "OpenReviewGate should succeed")
+
+  // Attempting to auto-evaluate acceptance must fail because no review decision exists.
+  result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "EvaluateAndResolveAcceptanceGate",
+    payload: { expeditionId: "E-ACCEPT-NO-EVAL" },
+  })
+  assert.equal(result.status, "error", "EvaluateAndResolveAcceptanceGate should fail without a review evaluation")
+  assert.ok(
+    result.error.includes("ACCEPTANCE_EVALUATION_INVALID_STATE") || result.error.includes("No review decision"),
+    `Expected acceptance evaluation to fail due to missing review decision, got ${result.error}`
+  )
+})
+
 test("Acceptance Gate auto-fires after Review Gate approval", async () => {
   const ctx = await makeCtx()
   await approveMission(ctx, "M-ACCEPT-ACCEPT")
