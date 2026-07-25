@@ -70,7 +70,7 @@ export class RuntimeEngine {
 
   private initializePartitioned(): void {
     const count = this.config.partitionCount || 4
-    this.partitionStore = new PartitionStore(count)
+    this.partitionStore = PartitionStore.createAuthorized(count)
     this.partitionRouter = new PartitionRouter(count)
 
     if (this.partitionStore && this.partitionRouter) {

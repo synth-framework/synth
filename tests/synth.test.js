@@ -33,6 +33,8 @@ import {
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { rebuildState as replayRebuildState } from "../dist/runtime/replay.js"
+import { CheckpointStore } from "../dist/infra/checkpoint-store.js"
+import { PartitionStore } from "../dist/infra/event-store.js"
 
 // ---- Test harness ----
 const TESTS = []
@@ -732,6 +734,41 @@ test("P0: event store guard blocks direct writes after seal", async () => {
   } catch (err) {
     assert.ok(err.message.includes("ILLEGAL_EVENTSTORE_WRITE") || err.message.includes("ExecutionGate"), `Expected guard block, got: ${err.message}`)
   }
+})
+
+test("P0: checkpoint store blocks direct writes without authorization", async () => {
+  const tmpDir = path.join(process.cwd(), "data", "test-checkpoints-" + Date.now())
+  await fs.mkdir(tmpDir, { recursive: true })
+  const store = new CheckpointStore(path.join(tmpDir, "checkpoints.json"))
+  await store.initialize()
+  try {
+    await store.commit({ consumerGroup: "g1", partition: 0, lastCommittedOffset: 1, updatedAt: 1 })
+    assert.fail("Direct CheckpointStore commit should have been blocked")
+  } catch (err) {
+    assert.ok(err.message.includes("ILLEGAL_CHECKPOINTSTORE_WRITE"), `Expected checkpoint guard block, got: ${err.message}`)
+  }
+})
+
+test("P0: partition store blocks direct writes without authorization", async () => {
+  const tmpDir = path.join(process.cwd(), "data", "test-partitions-" + Date.now())
+  const store = new PartitionStore(1, tmpDir)
+  await store.initialize()
+  try {
+    await store.append(0, { key: "k", offset: 1, payload: {}, timestamp: 1 })
+    assert.fail("Direct PartitionStore append should have been blocked")
+  } catch (err) {
+    assert.ok(err.message.includes("ILLEGAL_PARTITIONSTORE_WRITE"), `Expected partition guard block, got: ${err.message}`)
+  }
+})
+
+test("P0: registry and policy contents are deeply frozen after seal", async () => {
+  const ctx = await getTestCtx()
+  if (!ctx.isSealed) ctx.seal()
+  const cap = ctx.capabilityRegistry.resolve("CreateWorkItem")
+  assert.ok(cap, "CreateWorkItem capability must exist")
+  assert.ok(Object.isFrozen(cap), "Capability must be frozen")
+  assert.ok(Object.isFrozen(cap.inputSchema), "Capability inputSchema must be deeply frozen")
+  assert.throws(() => { cap.inputSchema.required = [] }, /Cannot assign to read only property/)
 })
 
 // ============================================================

@@ -6,8 +6,15 @@ import { promises as fs } from "fs"
 import path from "path"
 import type { ConsumerCheckpoint } from "../types/index.js"
 import { dataDir } from "../sdk/paths/index.js"
+import { IllegalMutationError } from "../core/errors.js"
 
 const CHECKPOINT_FILE = path.join(dataDir(process.cwd()), "checkpoints.json")
+
+/** Module-private authorization token for CheckpointStore writes.
+ *  Only createInfra() can obtain it, ensuring checkpoint mutations flow
+ *  through the single mutation authority (ExecutionGate).
+ */
+const CHECKPOINT_STORE_WRITE_TOKEN = Symbol("CHECKPOINT_STORE_WRITE_TOKEN")
 
 export interface ICheckpointStore {
   initialize(): Promise<void>
@@ -22,9 +29,25 @@ export class CheckpointStore implements ICheckpointStore {
   private filePath: string
   private cache: Map<string, ConsumerCheckpoint> = new Map()
   private dirty = false
+  private authorized: boolean
 
-  constructor(filePath: string = CHECKPOINT_FILE) {
+  constructor(filePath: string = CHECKPOINT_FILE, authToken?: symbol) {
     this.filePath = filePath
+    this.authorized = authToken === CHECKPOINT_STORE_WRITE_TOKEN
+  }
+
+  /** Create an authorized CheckpointStore instance for the infrastructure layer. */
+  static createAuthorized(filePath?: string): CheckpointStore {
+    return new CheckpointStore(filePath, CHECKPOINT_STORE_WRITE_TOKEN)
+  }
+
+  protected ensureAuthorized(): void {
+    if (!this.authorized) {
+      throw new IllegalMutationError(
+        "ILLEGAL_CHECKPOINTSTORE_WRITE: CheckpointStore writes must pass through the ExecutionGate. " +
+          "Direct instantiation of CheckpointStore is not an authorized mutation path."
+      )
+    }
   }
 
   async initialize(): Promise<void> {
@@ -51,6 +74,7 @@ export class CheckpointStore implements ICheckpointStore {
   }
 
   async save(): Promise<void> {
+    this.ensureAuthorized()
     if (!this.dirty) return
     const data: Record<string, ConsumerCheckpoint> = {}
     for (const [key, value] of this.cache.entries()) {

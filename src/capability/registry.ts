@@ -17,6 +17,33 @@ import {
   createGeneratedWorkItem, completeGeneratedWorkItem,
 } from "../domain/index.js"
 
+/** Recursively freeze a value and all its nested objects/arrays/maps/sets. */
+function deepFreeze<T>(value: T): T {
+  if (value === null || typeof value !== "object") return value
+  if (Object.isFrozen(value)) return value
+
+  if (value instanceof Map) {
+    for (const [k, v] of value.entries()) {
+      deepFreeze(k)
+      deepFreeze(v)
+    }
+    return Object.freeze(value)
+  }
+
+  if (value instanceof Set) {
+    for (const v of value.values()) {
+      deepFreeze(v)
+    }
+    return Object.freeze(value)
+  }
+
+  Object.freeze(value)
+  for (const key of Reflect.ownKeys(value as Record<string | symbol, unknown>)) {
+    deepFreeze((value as Record<string | symbol, unknown>)[key])
+  }
+  return value
+}
+
 export class Registry {
   private capabilities = new Map<string, Capability>()
   private _frozen = false
@@ -61,7 +88,7 @@ export class Registry {
   freeze(): void {
     this._frozen = true
     for (const [, value] of this.capabilities) {
-      Object.freeze(value)
+      deepFreeze(value)
     }
     Object.freeze(this.capabilities)
   }

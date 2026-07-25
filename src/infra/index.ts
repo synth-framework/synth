@@ -58,7 +58,7 @@ export async function createInfra(config: InfraConfig = {}): Promise<Infra> {
     : new InMemoryStateStore()
 
   const checkpointStore: ICheckpointStore = isFile
-    ? new CheckpointStore(config.checkpointPath)
+    ? CheckpointStore.createAuthorized(config.checkpointPath)
     : new InMemoryCheckpointStore()
 
   const git = (isFile && gitEnabled)

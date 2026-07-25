@@ -25,25 +25,16 @@ export function createGuardedEventStore(store: EventStore): EventStore {
       // Guard append and appendBatch — the mutation methods
       if (prop === "append" || prop === "appendBatch") {
         return function (this: unknown, ...args: unknown[]) {
-          // Primary guard: require EVENT_STORE_WRITE_TOKEN as the last argument
+          // Single authoritative guard: require EVENT_STORE_WRITE_TOKEN as the
+          // last argument. The symbol is module-private and only ever reaches
+          // the guarded store through ExecutionGate.execute(), so this is
+          // sufficient and does not rely on fragile stack-trace strings that
+          // break under minification (EXP-SEC-001 M6).
           const authToken = args.length > 0 ? args[args.length - 1] : undefined
           if (authToken !== EVENT_STORE_WRITE_TOKEN) {
             throw new IllegalMutationError(
               `ILLEGAL_EVENTSTORE_WRITE: ${String(prop)}() must be called with EVENT_STORE_WRITE_TOKEN. ` +
               `Direct writes to EventStore are forbidden.`,
-            )
-          }
-
-          // Secondary guard (defense-in-depth): stack trace inspection
-          const stack = new Error().stack || ""
-          if (
-            !stack.includes("ExecutionGate") &&
-            !stack.includes("execution-gate")
-          ) {
-            throw new IllegalMutationError(
-              `ILLEGAL_EVENTSTORE_WRITE: ${String(prop)}() must be called through ExecutionGate. ` +
-              `Direct writes to EventStore are forbidden. ` +
-              `Stack: ${stack.split("\n").slice(2, 5).join(" -> ")}`,
             )
           }
 

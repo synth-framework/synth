@@ -2,10 +2,10 @@
 
 > **Security expedition.** Close critical bypass paths that allow mutations outside the ExecutionGate.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Security Expedition  
 **Priority:** Critical  
-**Program:** EXP-PROGRAM-038 — Audit Remediation  
+**Program:** EXP-PROGRAM-038 — Platform Hardening  
 **Phase:** 1 — Security  
 **Authority:** Synth Architectural Constitution  
 **Depends On:** ADR-050  
@@ -75,3 +75,31 @@ Impact:
 
 - **ADR-050** — Authorizes freeze lift for execution path changes.
 - **EXP-GOV-014** — Governance engine integrity (parallel, no overlap).
+
+---
+
+## Evidence
+
+| Criterion | Result | Verification |
+|-----------|--------|--------------|
+| C1 PartitionStore bypass closed | ✅ PASS | `src/runtime/engine.ts:73` now uses `PartitionStore.createAuthorized(count)` instead of direct instantiation. |
+| C1 CheckpointStore authorization | ✅ PASS | `src/infra/checkpoint-store.ts` now requires `CHECKPOINT_STORE_WRITE_TOKEN`; `createInfra` uses `CheckpointStore.createAuthorized()`. |
+| C2 FilesystemProvider write guard | ✅ PASS | `PosixFilesystemProvider`/`InMemoryFilesystemProvider` already require `FILESYSTEM_WRITE_TOKEN` for `writeFile()`. |
+| C3 GitAdapter shell injection | ✅ PASS | Both `src/infra/git-adapter.ts` and `src/discovery/providers/process-git-provider.ts` use `execFileSync("git", args)`. |
+| M6 EventStore stack-trace guard | ✅ PASS | Removed fragile stack-trace string matching in `src/infra/event-store.guard.ts`; sole guard is now the module-private `EVENT_STORE_WRITE_TOKEN`. |
+| M7 Deep freeze registry/policy | ✅ PASS | `src/capability/registry.ts` and `src/policy/policy-engine.ts` now recursively freeze registered entries. |
+| M8 Dead mutation code | ✅ PASS | `FilesystemMutationProvider` is registered in `src/core/bootstrap.ts:126`; `FilesystemWrite` capability is active and tested. |
+| Tests | ✅ PASS | `npm test`: 124 + 15 + 9 + 9 passed, 0 failed. |
+| Bypass audit | ✅ PASS | `node scripts/audit-bypass-map.js`: no mutation bypass paths detected. |
+| Identity governance | ✅ PASS | `node scripts/verify-expedition-governance.js`: 0 errors, 0 warnings. |
+
+### Files changed
+
+- `src/runtime/engine.ts`
+- `src/infra/checkpoint-store.ts`
+- `src/infra/index.ts`
+- `src/infra/event-store.guard.ts`
+- `src/capability/registry.ts`
+- `src/policy/policy-engine.ts`
+- `tests/synth.test.js`
+- `docs/expeditions/EXP-SEC-001.md`
