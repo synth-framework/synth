@@ -6,6 +6,7 @@ This directory contains the evidence and artifacts produced by **EXP-PROGRAM-042
 
 | Artifact | Path | Purpose |
 |---|---|---|
+| Platform Manifest | `synth-platform-v1-0-manifest.json` | Machine-readable birth certificate for SYNTH Platform v1.0 |
 | Certification Report | `synth-platform-v1-0-certification-report.md` | Narrative record of what v1.0 is, what was certified, and what was deferred |
 | Release Review Checklist | `release-review-checklist.md` | Structured checklist for the final release review |
 | Reproducibility Certificate | `../../proof/certifications/reproducibility-certificate.json` | Evidence that SYNTH builds and replays deterministically from a clean clone |

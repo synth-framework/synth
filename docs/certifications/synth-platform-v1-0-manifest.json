@@ -1,0 +1,112 @@
+{
+  "schema": "synth-platform-manifest-v1",
+  "name": "SYNTH Platform",
+  "version": "1.0.0",
+  "semanticVersion": "1.0.0",
+  "packageVersion": "2.3.0",
+  "gitTag": "v1.0.0",
+  "gitCommitSha": "a4ba7c02ec9c78ace05d52413cb027a08afabd8c",
+  "gitDescribe": "v2.3.0-199-ga4ba7c0",
+  "generatedAt": "2026-07-25T08:56:04.119Z",
+  "releaseDate": "2026-07-25T08:56:04.119Z",
+  "nodeEngine": ">=20.0.0",
+  "repositoryClean": false,
+  "repositoryModifications": [
+    "?? scripts/generate-platform-manifest.js"
+  ],
+  "governanceSchemaVersion": "2.1",
+  "eventModel": {
+    "version": "d07c0f07f1545d1554561e7366289e54fc8db2d568b079bc7235fb619c23383a",
+    "hash": "d07c0f07f1545d1554561e7366289e54fc8db2d568b079bc7235fb619c23383a",
+    "source": "src/types/event.ts"
+  },
+  "capabilityRegistry": {
+    "hash": "7cbe406f2901fb3707cc4d76c99e8d75b531915fa083e269414808b534eae12f",
+    "source": "src/capability/registry.ts"
+  },
+  "sdk": {
+    "version": "2.3.0",
+    "hash": "78d31c7c2ba784b2f0acffcef9b517efd66350e15a0a1dbd192ebd0da32f2393",
+    "files": 17,
+    "source": "src/sdk/"
+  },
+  "adrBaseline": {
+    "version": "1474fa825c6d8383ac6e804fc27f945b05d49689f27a9c258235b483e5e07375",
+    "hash": "1474fa825c6d8383ac6e804fc27f945b05d49689f27a9c258235b483e5e07375",
+    "files": 51,
+    "source": "docs/adr/"
+  },
+  "build": {
+    "hash": "c1a74a9d79652ec3364d4024109b93deea7aee9688dc42962a664a8d28e2910e",
+    "source": "dist/dist-manifest.json rootHash"
+  },
+  "replay": {
+    "hash": "424215380",
+    "source": "node scripts/verify-replay.js"
+  },
+  "tests": {
+    "core": {
+      "passed": 124,
+      "failed": 0
+    }
+  },
+  "certifications": [
+    {
+      "track": "A",
+      "title": "Reproducibility Certificate",
+      "script": "scripts/certify-reproducibility.js",
+      "artifact": "proof/certifications/reproducibility-certificate.json"
+    },
+    {
+      "track": "B",
+      "title": "Operator Experience Certificate",
+      "script": "scripts/certify-operator-experience.js",
+      "artifact": "proof/certifications/operator-experience-certificate.json"
+    },
+    {
+      "track": "C",
+      "title": "Governance Certificate",
+      "script": "scripts/certify-governance.js",
+      "artifact": "proof/certifications/governance-certificate.json"
+    },
+    {
+      "track": "D",
+      "title": "Architecture Baseline Certificate",
+      "script": "scripts/certify-architecture-baseline.js",
+      "artifact": "proof/certifications/architecture-baseline-certificate.json"
+    },
+    {
+      "track": "E",
+      "title": "Release Readiness Certificate",
+      "script": "scripts/certify-release-readiness.js",
+      "artifact": "proof/certifications/release-readiness-certificate.json"
+    }
+  ],
+  "frozenSurfaces": [
+    "src/core/",
+    "src/control/",
+    "src/runtime/",
+    "src/domain/",
+    "src/sdk/",
+    "src/types/event.ts",
+    "src/capability/registry.ts",
+    "governance lifecycle",
+    "replay engine",
+    "CLI contracts",
+    "derived state contract"
+  ],
+  "compatibilityGuarantees": [
+    "Replay hashes produced from the same event log are deterministic across clean clones.",
+    "The public SDK surface in src/sdk/ is frozen for the v1.0 lifetime; additions only via additive exports.",
+    "The event model in src/types/event.ts is frozen; new event types may be added but existing types are not modified.",
+    "Governance schema version 2.1 is the canonical baseline for v1.0 projects.",
+    "The capability registry contract is frozen; existing capability names and semantics are stable.",
+    "The CLI JSON output contract is stable and versioned for machine consumers.",
+    "The derived state contract is deterministic and reproducible from canonical events."
+  ],
+  "notes": [
+    "This manifest is the canonical machine-readable record of SYNTH Platform v1.0.",
+    "Regenerate with: node scripts/generate-platform-manifest.js",
+    "The gitCommitSha field records the source commit used to produce the captured hashes."
+  ]
+}
