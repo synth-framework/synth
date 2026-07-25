@@ -32,6 +32,16 @@ echo ""
 echo "[1/9] Cloning repository into a clean directory..."
 git clone "${REPO_URL}" "${CLONE_DIR}"
 cd "${CLONE_DIR}"
+
+if ! git rev-parse --verify --quiet "${REF}" >/dev/null; then
+  echo ""
+  echo "  ❌ Ref '${REF}' was not found in the cloned repository."
+  echo "     If you are validating before the v1.0.0 tag exists, run again with a"
+  echo "     branch or commit, for example: bash scripts/validate-clean-clone.sh origin/main"
+  echo ""
+  exit 1
+fi
+
 git checkout "${REF}"
 
 # --- Environment checks -------------------------------------------------------
