@@ -79,8 +79,10 @@ This guide is for contributors extending Synth.
 - **Add deterministic certification tests** — Add deterministic certification tests.
 - **Add deterministic certification tests with a** — Add deterministic certification tests with a mock forge.
 - **Add info subcommand to the adapter** — Add `info` subcommand to the adapter CLI.
+- **Add MCP server capability to docs** — Add MCP server capability to `docs/reference/capability-validation-map.json`.
 - **Add new source adapters deferred to** — Add new source adapters (deferred to EXP-DISCOVERY-003).
 - **Add tests for store versioning diff** — Add tests for store, versioning, diff, and reconstruction.
+- **Add tests mcp-server test js** — Add `tests/mcp-server.test.js`.
 - **Add tests proving bootstrap uses Discovery** — Add tests proving bootstrap uses Discovery output.
 - **Add the Brownfield Certification Test Suite** — Add the Brownfield Certification Test Suite.
 - **Added a Capability Layers section to** — Added a **Capability Layers** section to `docs/reference/capability-reference.md` distinguishing domain capabilities (mutate canonical state, frozen registry) from environment capabilities (describe the environment, never mutate state).
@@ -183,7 +185,6 @@ This guide is for contributors extending Synth.
 - **Candidate 1 builder adapters into planning** — **Candidate 1** (builder adapters into planning/mission-studio)
 - **Candidate 2 environment vs adapters** — **Candidate 2** (environment vs. adapters)
 - **Cannot directly invoke another capability** — Cannot directly invoke another capability
-- **Canonical AI Capability Model definition EXP-DIST-001** — Canonical AI Capability Model definition (EXP-DIST-001).
 - **Canonical state adapter both model repository** — **Canonical state + adapter both model repository state.**
 - **Capabilities can be understood and tested** — Capabilities can be understood and tested independently
 - **Capability** — 1.4 Capability
@@ -195,7 +196,6 @@ This guide is for contributors extending Synth.
 - **Capability cards use the entire card** — Capability cards use the entire card as a hit area with a visible focus ring.
 - **Capability Compatibility** — 9.3 Capability Compatibility
 - **Capability Composition** — 3. Capability Composition
-- **Capability contract** — 1.2 Capability contract
 - **Capability Dependencies** — Capability Dependencies
 - **Capability details** — Capability details
 - **Capability Discovery** — Capability Discovery
@@ -308,6 +308,7 @@ This guide is for contributors extending Synth.
 - **Contract tests compile and pass npm** — Contract tests compile and pass; `npm run build` succeeds.
 - **Contract tests proving that every agent** — Contract tests proving that every agent skill is derived from the canonical model and remains deterministic.
 - **Contract tests proving that identical model** — Contract tests proving that identical model inputs produce deterministic outputs.
+- **Contract tests verifying handshake tool advertisement** — Contract tests verifying handshake, tool advertisement, and read-only execution.
 - **Convention-based metadata in test and script** — Convention-based metadata in test and script files
 - **conversation adapter overlaps with First Contact** — `conversation` adapter overlaps with **First Contact** intent capture.
 - **ConversationAdapter with natural-language intent** — `ConversationAdapter` with natural-language intent
@@ -1181,6 +1182,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
+sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
 projection: synth-documentation-expedition-v1
 -->

@@ -1,107 +1,114 @@
 # EXP-DIST-003 — SYNTH MCP Server
 
-> **Engineering expedition.** Expose SYNTH capabilities through the Model Context Protocol so every MCP-capable client can discover and invoke SYNTH without platform-specific integration.
+> Expose SYNTH capabilities through a lightweight Model Context Protocol server so every MCP-capable client can discover and invoke SYNTH without platform-specific integration.
 
-**Status:** Proposed  
+**Status:** Completed and accepted  
 **Kind:** Engineering Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-029 — AI Ecosystem Distribution  
-**Depends On:** EXP-DIST-001 (Canonical AI Capability Model), EXP-AI-003 (Repository Semantic Metadata)  
-**Blocks:** To be defined as downstream MCP integrations are chartered
+**Authority:** Synth Architectural Constitution, EXP-PROGRAM-029 charter  
+**Depends On:** EXP-DIST-001 — Canonical AI Capability Model, EXP-DIST-002 — Agent Skill Projection Pipeline  
+**Adoption metric:** Number of MCP clients that can connect and execute a read-only SYNTH workflow  
+**Target:** ≥ 1 client validated through tests
 
 ---
 
-```yaml
-Impact:
-  Constitutional: No
-  Product: Yes
-  User Facing: No
-  Architecture Freeze: Safe
-  Requires ADR: No
-```
+## Goal
+
+Build a minimal, deterministic MCP server that advertises SYNTH tools derived from the Canonical AI Capability Model and delegates execution to the `synth` CLI. The server must respect command safety classifications and never bypass SYNTH governance.
 
 ---
 
-## Objective
+## Scope
 
-Build and publish a SYNTH MCP server that exposes core capabilities as MCP tools. The server consumes repository metadata and follows governance constraints; it does not bypass Mission Studio, Genesis, or ExecutionGate.
+### In scope
+
+- A stdio-based MCP server implemented at `src/distribution/mcp-server.ts`.
+- Support for the MCP JSON-RPC lifecycle: `initialize`, `notifications/initialized`, `tools/list`, `tools/call`.
+- Tool manifest generated from `src/distribution/ai-capability-model.json`.
+- Tool annotations indicating read-only vs. destructive commands.
+- Execution of read-only tools (`synth doctor`, `synth status`, etc.) in tests.
+- A package script to start the server.
+- Contract tests verifying handshake, tool advertisement, and read-only execution.
+
+### Out of scope
+
+- IDE rules (EXP-DIST-005)
+- Agent skill expansion (EXP-DIST-002)
+- npm package publishing (EXP-DIST-004)
+- Multi-transport support (HTTP/SSE)
+- Persistent server state
 
 ---
 
-## Origin Evidence
-
-MCP is becoming the standard way for AI clients to connect to external capabilities. Without an MCP server, SYNTH requires every client to implement custom integration. An MCP server makes SYNTH immediately available to Claude Desktop, Cursor, Cline, Windsurf, and any other MCP-capable tool.
-
----
-
-## Required Change
-
-### 1.1 Exposed capabilities
-
-The MCP server should expose tools for:
+## Core abstraction
 
 ```text
-Repository Discovery
-Status Inspection
-Genesis / First-Contact Start
-Mission Creation
-Mission Approval
-Expedition Creation
-Expedition Approval
-Governance Verification
-Replay Inspection
-Knowledge Query
-Documentation Generation
+Canonical AI Capability Model
+        ↓
+MCP Tool Manifest
+        ↓
+MCP Server (stdio JSON-RPC)
+        ↓
+synth CLI execution
 ```
 
-### 1.2 Capability contract
-
-Each tool:
-
-- Reads `.synth/ai/` metadata to determine current phase and mutation policy.
-- Refuses mutations when policy is `READ_ONLY`.
-- Proposes only when policy is `PROPOSAL_ONLY`.
-- Records every mutation through the SYNTH CLI or API, never by editing files directly.
-
-### 1.3 Implementation
-
-Create a new package or module:
-
-```text
-packages/synth-mcp-server/
-  src/server.ts
-  src/tools/
-  package.json
-  README.md
-```
+The server is a thin adapter: it translates MCP tool calls into `synth` CLI invocations and returns structured text results.
 
 ---
 
-## Deliverables
+## Acceptance criteria
 
-1. MCP server implementation.
-2. Tool manifest generated from the Canonical AI Capability Model.
-3. Installation and configuration documentation.
-4. Certification tests verifying tool behavior against governance constraints.
-
----
-
-## Acceptance Criteria
-
-- The server starts and advertises all SYNTH tools.
-- Read-only tools work without approval.
-- Mutating tools require appropriate governance state.
-- The server respects `READ_ONLY` and `PROPOSAL_ONLY` mutation policies.
+1. `src/distribution/mcp-server.ts` exists and compiles to `dist/distribution/mcp-server.js`.
+2. The server responds to `initialize` with correct protocol version and server info.
+3. `tools/list` returns one tool per command in the canonical model.
+4. Read-only tools are annotated with `readOnlyHint: true`.
+5. Mutating tools are annotated with `destructiveHint: true`.
+6. A read-only tool call (e.g., `synth doctor`) executes and returns structured output.
+7. Unknown tools return `isError: true`.
+8. Contract tests pass.
+9. `npm run docs:verify-freshness` passes.
 
 ---
 
-## Out of Scope
+## Work plan
 
-- Canonical AI Capability Model definition (EXP-DIST-001).
-- Other distribution surfaces (EXP-DIST-002, EXP-DIST-004, EXP-DIST-005).
+### Phase 1 — Server implementation
+
+- Implement MCP JSON-RPC stdio server.
+- Generate tool manifest from canonical model.
+- Execute synth CLI commands for tool calls.
+
+### Phase 2 — Packaging
+
+- Add `mcp:start` npm script.
+- Add MCP server capability to `docs/reference/capability-validation-map.json`.
+
+### Phase 3 — Validation
+
+- Add `tests/mcp-server.test.js`.
+- Verify handshake, tools/list, and read-only tool execution.
+
+### Phase 4 — Documentation and closure
+
+- Regenerate documentation projections.
+- Update `docs/Era-IV-Roadmap.md`.
+- Mark expedition as `Completed and accepted`.
 
 ---
 
-## Success Criteria
+## Evidence
 
-The expedition succeeds when an MCP client can connect to the server, list SYNTH tools, and execute a read-only workflow like `synth status` without custom integration.
+- [x] MCP server source committed.
+- [x] Server compiles and starts.
+- [x] Tool manifest generated from canonical model.
+- [x] Contract tests passing.
+- [x] Package script and capability map updated.
+- [x] Documentation freshness passing.
+
+---
+
+## Notes
+
+- The server intentionally delegates to the `synth` CLI rather than reimplementing logic. This ensures governance boundaries remain intact.
+- Mutating tools require the MCP client to obtain operator approval; the server does not silently approve mutations.

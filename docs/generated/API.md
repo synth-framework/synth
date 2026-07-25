@@ -11,6 +11,7 @@
 - **A governed capability invocation can create** — A governed capability invocation can create and merge a pull request on GitHub.
 - **A governed capability invocation can fork** — A governed capability invocation can fork a repository.
 - **Adapter Capability Model** — Adapter Capability Model
+- **Add MCP server capability to docs** — Add MCP server capability to `docs/reference/capability-validation-map.json`.
 - **Added a Capability Layers section to** — Added a **Capability Layers** section to `docs/reference/capability-reference.md` distinguishing domain capabilities (mutate canonical state, frozen registry) from environment capabilities (describe the environment, never mutate state).
 - **Added regression tests in tests environment-capability-graph** — Added regression tests in `tests/environment-capability-graph.test.js` covering:
 - **Added regression tests in tests environment-filesystem-capability** — Added regression tests in `tests/environment-filesystem-capability.test.js` covering:
@@ -52,7 +53,6 @@
 - **Build a capability graph from capability** — Build a capability graph from `capability` observations.
 - **buildCapabilityReport createCapabilityGraph src discovery projections** — `buildCapabilityReport` / `createCapabilityGraph` — `src/discovery/projections/`
 - **Cannot directly invoke another capability** — Cannot directly invoke another capability
-- **Canonical AI Capability Model definition EXP-DIST-001** — Canonical AI Capability Model definition (EXP-DIST-001).
 - **Capability** — 1.4 Capability
 - **Capability additions** — Capability additions.
 - **Capability Areas** — Capability Areas
@@ -62,7 +62,6 @@
 - **Capability cards use the entire card** — Capability cards use the entire card as a hit area with a visible focus ring.
 - **Capability Compatibility** — 9.3 Capability Compatibility
 - **Capability Composition** — 3. Capability Composition
-- **Capability contract** — 1.2 Capability contract
 - **Capability Dependencies** — Capability Dependencies
 - **Capability details** — Capability details
 - **Capability Discovery** — Capability Discovery
@@ -393,6 +392,6 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
+sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
 projection: synth-documentation-expedition-v1
 -->

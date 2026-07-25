@@ -609,7 +609,6 @@ This guide is for architects making structural decisions.
 - **module governance module this check belongs** — `module` — governance module this check belongs to.
 - **move-to-adapter belongs to implementation not governance** — **move-to-adapter** — belongs to implementation, not governance
 - **Must verify I1 single authority before** — Must verify I1 (single authority) before returning
-- **Mutating tools require appropriate governance state** — Mutating tools require appropriate governance state.
 - **Mutation authority** — Mutation authority.
 - **Mutation authority enforcement belongs in the** — Mutation authority enforcement belongs in the kernel.
 - **Mutation Authority Invariant** — Mutation Authority Invariant
@@ -911,6 +910,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
+sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
 projection: synth-documentation-expedition-v1
 -->

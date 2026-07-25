@@ -1148,6 +1148,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **the same aggregate confidence** — the same aggregate confidence,
 - **the same runtime verification report** — the same runtime verification report,
 - **The sealed policy engine prevents governance** — The sealed policy engine prevents governance tampering
+- **The server intentionally delegates to the** — The server intentionally delegates to the `synth` CLI rather than reimplementing logic. This ensures governance boundaries remain intact.
 - **The store requires an active guard** — The store requires an active guard token, so direct writes are structurally rejected
 - **The Translation Layer** — The Translation Layer
 - **The upstream-gate stop condition is enforced** — The upstream-gate stop condition is enforced by the execution engine.
@@ -1343,6 +1344,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
+sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
 projection: synth-documentation-expedition-v1
 -->

@@ -58,7 +58,7 @@ Synth is organized into three architectural strata:
 - **A committed specification from uncommitted drafts** — A committed specification from uncommitted drafts.
 - **A community feedback loop converts signals** — A community feedback loop converts signals into evidence and missions.
 - **a compatibility bridge between two contracts** — a compatibility bridge between two contracts,
-- *…and 15993 more concepts extracted from the knowledge base.*
+- *…and 16003 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,6 +70,6 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
+sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
 projection: synth-documentation-expedition-v1
 -->

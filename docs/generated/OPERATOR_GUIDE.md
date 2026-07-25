@@ -191,7 +191,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DISC-006 — Repository Identity](../expeditions/EXP-DISC-006.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
 - **[EXP-DISCOVERY-008 — Operational Discovery](../expeditions/EXP-DISCOVERY-008.md)** — Status: Completed, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-006 — Discovery Platform
 - **[EXP-DIST-002 — Agent Skill Projection Pipeline](../expeditions/EXP-DIST-002.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
-- **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
+- **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-005 — IDE Rules Projection](../expeditions/EXP-DIST-005.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DOC-002 — Deterministic Documentation Projections](../expeditions/EXP-DOC-002.md)** — Status: Completed, Kind: Release Candidate Expedition, Priority: High, Program: EXP-PROGRAM-038 — Release Candidate
@@ -1659,6 +1659,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: e672b2cf8be2daee9ea05d56f406c3924bacd90ede6a6d4c1ca95f14310b2e44
+sourceStateHash: 89f7f0f83cd0bb4306ca8433116d37869a52549a39878b9c9685dccf09cd15f9
 projection: synth-documentation-expedition-v1
 -->

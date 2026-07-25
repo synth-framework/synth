@@ -433,6 +433,22 @@
       "typecheckScope": [],
       "governanceClass": "documentation"
     },
+    "McpServer": {
+      "unitTests": [
+        "test:mcp-server"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [
+        "src/distribution/mcp-server.ts",
+        "tests/mcp-server.test.js"
+      ],
+      "typecheckScope": [
+        "src/distribution/mcp-server.ts"
+      ],
+      "governanceClass": "tests"
+    },
     "Domain": {
       "unitTests": [
         "test"
