@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ============================================================
-// AI Capability Projection Engine (EXP-DIST-001)
+// AI Capability Projection Engine (EXP-DIST-001, EXP-DIST-002)
 // ============================================================
 // Reads src/distribution/ai-capability-model.json and projects it into
 // platform-specific artifacts under distribution/.
@@ -8,6 +8,7 @@
 // Usage:
 //   node scripts/project-ai-capabilities.js
 //   node scripts/project-ai-capabilities.js --check
+//   node scripts/project-ai-capabilities.js --out-dir <dir>
 //
 // --check exits with code 0 if committed projections match regenerated
 // output, and code 1 if any projection is stale.
@@ -56,24 +57,67 @@ function hashString(input) {
   return crypto.createHash("sha256").update(input, "utf-8").digest("hex")
 }
 
-function generateClaudeSkill(model) {
-  const commands = model.commandSafety.commands
-    .filter((c) => c.safety === "READ_ONLY" || c.safety === "PROPOSAL_ONLY")
-    .map((c) => `- \`${c.command}\` — ${c.description}`)
-    .join("\n")
+function modelHash(model) {
+  return hashString(stableStringify(model))
+}
 
-  const mutating = model.commandSafety.commands
-    .filter((c) => c.safety === "MUTATING" || c.safety === "POTENTIALLY_MUTATING")
-    .map((c) => `- \`${c.command}\` — ${c.description} (${c.safety}${c.requiresApproval ? ", requires approval" : ""})`)
-    .join("\n")
+// ============================================================
+// Shared model views
+// ============================================================
 
+function readOnlyCommands(model) {
+  return model.commandSafety.commands.filter((c) => c.safety === "READ_ONLY")
+}
+
+function proposalCommands(model) {
+  return model.commandSafety.commands.filter((c) => c.safety === "PROPOSAL_ONLY")
+}
+
+function discoverySafeCommands(model) {
+  return model.commandSafety.commands.filter((c) => c.safety === "READ_ONLY" || c.safety === "PROPOSAL_ONLY")
+}
+
+function mutatingCommands(model) {
+  return model.commandSafety.commands.filter((c) => c.safety === "MUTATING")
+}
+
+function formatCommandList(commands, prefix = "") {
+  return commands.map((c) => `- ${prefix ? `${prefix} ` : ""}\`${c.command}\` — ${c.description}`).join("\n")
+}
+
+function formatVocabulary(model) {
+  return model.publicVocabulary.concepts.map((c) => `**${c.name}** — ${c.definition}\n> ${c.example}`).join("\n\n")
+}
+
+function formatProtectedAssets(model) {
+  return model.protectedAssets.assets.map((a) => `- **${a.name}** — ${a.description}`).join("\n")
+}
+
+function formatGovernanceLifecycle(model) {
+  return model.governanceLifecycle.phases.map((p) => `- **${p.name}** — ${p.description}`).join("\n")
+}
+
+function formatWorkflows(model) {
+  return model.workflows.map((w) => {
+    const body = w.steps
+      ? w.steps.map((s) => `- ${s}`).join("\n")
+      : `Commands: ${(w.commands || w.safeCommands || []).map((c) => `\`${c}\``).join(", ")}`
+    return `### ${w.name}\n\n${w.description}\n\n${body}\n\n> Invariant: ${w.invariant}`
+  }).join("\n\n")
+}
+
+// ============================================================
+// Platform templates
+// ============================================================
+
+function claudeSkill(model) {
   return `# ${model.platform.name} Skill
 
 > ${model.platform.tagline}
 
 ## Public vocabulary
 
-${model.publicVocabulary.concepts.map((c) => `**${c.name}** — ${c.definition}\n> ${c.example}`).join("\n\n")}
+${formatVocabulary(model)}
 
 ${model.publicVocabulary.rule}
 
@@ -81,52 +125,37 @@ ${model.publicVocabulary.rule}
 
 ### Discovery-safe commands
 
-${commands}
+${formatCommandList(discoverySafeCommands(model))}
 
 ### Mutating commands
 
-${mutating}
+${formatCommandList(
+    model.commandSafety.commands.filter((c) => c.safety === "MUTATING" || c.safety === "POTENTIALLY_MUTATING"),
+  )}
 
 ## Protected assets
 
-${model.protectedAssets.assets.map((a) => `- **${a.name}** — ${a.description}`).join("\n")}
+${formatProtectedAssets(model)}
 
 ${model.protectedAssets.rule}
 
 ## Governance lifecycle
 
-${model.governanceLifecycle.phases.map((p) => `- **${p.name}** — ${p.description}`).join("\n")}
+${formatGovernanceLifecycle(model)}
 
 ## Common workflows
 
-${model.workflows.map((w) => {
-        const body = w.steps
-          ? w.steps.map((s) => `- ${s}`).join("\n")
-          : `Commands: ${(w.commands || w.safeCommands || []).map((c) => `\`${c}\``).join(", ")}`
-        return `### ${w.name}\n\n${w.description}\n\n${body}\n\n> Invariant: ${w.invariant}`
-      }).join("\n\n")}
+${formatWorkflows(model)}
 
 ## Source
 
 - Canonical model: \`${MODEL_PATH}\`
 - Model version: \`${model.version}\`
-- Model hash: \`${hashString(stableStringify(model))}\`
+- Model hash: \`${modelHash(model)}\`
 `
 }
 
-function generateCodexInstructions(model) {
-  const readOnly = model.commandSafety.commands
-    .filter((c) => c.safety === "READ_ONLY")
-    .map((c) => c.command)
-
-  const proposal = model.commandSafety.commands
-    .filter((c) => c.safety === "PROPOSAL_ONLY")
-    .map((c) => c.command)
-
-  const mutating = model.commandSafety.commands
-    .filter((c) => c.safety === "MUTATING")
-    .map((c) => c.command)
-
+function codexInstructions(model) {
   return `# ${model.platform.name} Repository Instructions
 
 ## Identity
@@ -142,9 +171,9 @@ ${model.publicVocabulary.concepts.map((c) => `- ${c.name}: ${c.definition}`).joi
 
 ## Rules
 
-1. During discovery, use only these read-only commands: ${readOnly.map((c) => `\`${c}\``).join(", ")}
-2. Proposals are safe to generate: ${proposal.map((c) => `\`${c}\``).join(", ")}
-3. These commands require explicit approval before use: ${mutating.map((c) => `\`${c}\``).join(", ")}
+1. During discovery, use only these read-only commands: ${readOnlyCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+2. Proposals are safe to generate: ${proposalCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+3. These commands require explicit approval before use: ${mutatingCommands(model).map((c) => `\`${c.command}\``).join(", ")}
 4. Never modify protected assets without an Architecture Expedition and ADR.
 5. Prefer the seven public concepts when explaining SYNTH to operators.
 
@@ -162,7 +191,79 @@ Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function generateCursorRules(model) {
+function chatgptSkill(model) {
+  return `# ${model.platform.name} Custom GPT Instructions
+
+## Role
+
+You are a SYNTH-aware assistant operating inside a SYNTH-governed repository.
+
+> ${model.platform.tagline}
+
+## Public vocabulary
+
+Use exactly these seven concepts when explaining SYNTH:
+
+${model.publicVocabulary.concepts.map((c) => `- **${c.name}**: ${c.definition}`).join("\n")}
+
+## Command safety rules
+
+- Read-only commands are safe at any time: ${readOnlyCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+- Proposal commands generate drafts without mutating state: ${proposalCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+- Mutating commands require explicit operator approval: ${mutatingCommands(model).map((c) => `\`${c.command}\``).join(", ")}
+
+## Protected assets
+
+${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
+
+${model.protectedAssets.rule}
+
+## Governance lifecycle
+
+${model.governanceLifecycle.phases.map((p) => `- ${p.name}: ${p.description}`).join("\n")}
+
+## Source
+
+Canonical model: \`${MODEL_PATH}\` (version ${model.version}, hash ${modelHash(model)})
+`
+}
+
+function geminiSkill(model) {
+  return `# ${model.platform.name} Gem Instructions
+
+## Identity
+
+${model.platform.tagline}
+
+## Public vocabulary
+
+${model.publicVocabulary.concepts.map((c) => `- **${c.name}**: ${c.definition}\n  Example: ${c.example}`).join("\n")}
+
+## Command safety
+
+### Safe during discovery
+
+${formatCommandList(discoverySafeCommands(model), "synth")}
+
+### Require approval
+
+${formatCommandList(mutatingCommands(model), "synth")}
+
+## Protected assets
+
+${model.protectedAssets.assets.map((a) => `- ${a.name}: ${a.description}`).join("\n")}
+
+## Governance lifecycle
+
+${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
+
+## Source
+
+Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+`
+}
+
+function cursorRules(model) {
   const rules = [
     "Always explain SYNTH using the seven public concepts: Mission, Expedition, Evidence, Plan, Event, State, Replay.",
     "During repository discovery, use only READ_ONLY and PROPOSAL_ONLY synth commands.",
@@ -178,10 +279,7 @@ ${rules.map((r) => `- ${r}`).join("\n")}
 
 ## Discovery-safe commands
 
-${model.commandSafety.commands
-  .filter((c) => c.safety === "READ_ONLY" || c.safety === "PROPOSAL_ONLY")
-  .map((c) => `- \`synth ${c.command}\` — ${c.description}`)
-  .join("\n")}
+${formatCommandList(discoverySafeCommands(model), "synth")}
 
 ## Protected assets
 
@@ -193,12 +291,7 @@ Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function generateClineRules(model) {
-  const readOnly = model.commandSafety.commands
-    .filter((c) => c.safety === "READ_ONLY")
-    .map((c) => `- synth ${c.command}`)
-    .join("\n")
-
+function clineRules(model) {
   return `# ${model.platform.name} Rules for Cline
 
 ## Public vocabulary
@@ -209,7 +302,7 @@ ${model.publicVocabulary.concepts.map((c) => `- ${c.name}: ${c.definition}`).joi
 
 ## Read-only commands (safe anytime)
 
-${readOnly}
+${readOnlyCommands(model).map((c) => `- synth ${c.command}`).join("\n")}
 
 ## Governance rule
 
@@ -227,9 +320,9 @@ Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function generateMcpManifest(model) {
-  const readOnlyCommands = model.commandSafety.commands.filter((c) => c.safety === "READ_ONLY")
-  const proposalCommands = model.commandSafety.commands.filter((c) => c.safety === "PROPOSAL_ONLY")
+function mcpManifest(model) {
+  const readOnly = readOnlyCommands(model)
+  const proposals = proposalCommands(model)
 
   return {
     schema_version: "1.0",
@@ -240,13 +333,13 @@ function generateMcpManifest(model) {
     npm_package: model.platform.npmPackage,
     public_vocabulary: model.publicVocabulary.concepts.map((c) => c.name),
     tools: [
-      ...readOnlyCommands.map((c) => ({
+      ...readOnly.map((c) => ({
         name: c.command.replace(/\s+/g, "_"),
         description: c.description,
         safety: c.safety,
         command: `synth ${c.command}`,
       })),
-      ...proposalCommands.map((c) => ({
+      ...proposals.map((c) => ({
         name: c.command.replace(/\s+/g, "_"),
         description: c.description,
         safety: c.safety,
@@ -259,40 +352,49 @@ function generateMcpManifest(model) {
     source: {
       path: MODEL_PATH,
       version: model.version,
-      hash: hashString(stableStringify(model)),
+      hash: modelHash(model),
     },
   }
 }
 
-function getProjections(model) {
-  return [
-    {
-      target: "claude-skill",
-      path: "agent-skills/claude.md",
-      content: generateClaudeSkill(model),
-    },
-    {
-      target: "codex-instructions",
-      path: "agent-skills/codex.md",
-      content: generateCodexInstructions(model),
-    },
-    {
-      target: "cursor-rules",
-      path: "ide-rules/.cursor/rules.mdc",
-      content: generateCursorRules(model),
-    },
-    {
-      target: "cline-rules",
-      path: "ide-rules/.clinerules",
-      content: generateClineRules(model),
-    },
-    {
-      target: "mcp-manifest",
-      path: "mcp/manifest.json",
-      content: stableStringify(generateMcpManifest(model)),
-    },
-  ]
+// ============================================================
+// Projection registry
+// ============================================================
+
+const PROJECTION_REGISTRY = {
+  "claude-skill": { template: claudeSkill, path: "agent-skills/claude.md" },
+  "codex-instructions": { template: codexInstructions, path: "agent-skills/codex.md" },
+  "chatgpt-skill": { template: chatgptSkill, path: "agent-skills/chatgpt.md" },
+  "gemini-skill": { template: geminiSkill, path: "agent-skills/gemini.md" },
+  "cursor-rules": { template: cursorRules, path: "ide-rules/.cursor/rules.mdc" },
+  "cline-rules": { template: clineRules, path: "ide-rules/.clinerules" },
+  "mcp-manifest": {
+    template: (model) => stableStringify(mcpManifest(model)),
+    path: "mcp/manifest.json",
+  },
 }
+
+function getProjections(model) {
+  assert(Array.isArray(model.distributionTargets), "Canonical model must declare distributionTargets")
+
+  const projections = []
+  for (const target of model.distributionTargets) {
+    const entry = PROJECTION_REGISTRY[target.id]
+    if (!entry) {
+      throw new Error(`Unknown distribution target: ${target.id}`)
+    }
+    projections.push({
+      target: target.id,
+      path: entry.path,
+      content: entry.template(model),
+    })
+  }
+  return projections
+}
+
+// ============================================================
+// I/O helpers
+// ============================================================
 
 async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true })
@@ -356,6 +458,7 @@ async function main() {
 
   assert(model["$schema"] === "synth-ai-capability-model-v1", "Unsupported model schema")
   assert(typeof model.version === "string", "Model version must be a string")
+  assert(Array.isArray(model.distributionTargets), "Canonical model must declare distributionTargets")
 
   const projections = getProjections(model)
 
@@ -403,7 +506,7 @@ async function main() {
   for (const projection of projections) {
     console.log(`Generated ${projection.path}`)
   }
-  console.log(`\nCanonical model hash: ${hashString(stableStringify(model))}`)
+  console.log(`\nCanonical model hash: ${modelHash(model)}`)
 }
 
 main().catch((err) => {

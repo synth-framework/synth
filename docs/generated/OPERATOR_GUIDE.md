@@ -190,6 +190,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DISC-005 — Runtime Integrity](../expeditions/EXP-DISC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
 - **[EXP-DISC-006 — Repository Identity](../expeditions/EXP-DISC-006.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-012 — Runtime Self-Description
 - **[EXP-DISCOVERY-008 — Operational Discovery](../expeditions/EXP-DISCOVERY-008.md)** — Status: Completed, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-006 — Discovery Platform
+- **[EXP-DIST-002 — Agent Skill Projection Pipeline](../expeditions/EXP-DIST-002.md)** — Status: Executing, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-003 — SYNTH MCP Server](../expeditions/EXP-DIST-003.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-004 — npm Package Distribution](../expeditions/EXP-DIST-004.md)** — Status: Proposed, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
 - **[EXP-DIST-005 — IDE Rules Projection](../expeditions/EXP-DIST-005.md)** — Status: Proposed, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-029 — AI Ecosystem Distribution
@@ -1062,6 +1063,7 @@ This guide covers the operator journey from idea to done.
 - **Make Mission Studio the SYNTH homepage** — Make Mission Studio the SYNTH homepage.
 - **Managing Multiple Expeditions** — Managing Multiple Expeditions
 - **Map Discovery artifact to Mission** — 7.2 Map Discovery artifact to Mission
+- **Mark expedition as Completed and accepted** — Mark expedition as `Completed and accepted`.
 - **Materialized Mission** — Materialized Mission.
 - **Materialized Missions include a reference to** — Materialized Missions include a reference to the originating Discovery artifact.
 - **Materialized Missions trace back to an** — Materialized Missions trace back to an approved Discovery artifact.
@@ -1573,6 +1575,7 @@ This guide covers the operator journey from idea to done.
 - **The workflow shows Intent Discovery Mission** — The workflow shows Intent → Discovery → Mission → Execution → Replay.
 - **There is a flow Idea Mission** — There is a flow: Idea → Mission → Planning → Approval → Commit → Execution → Events → State → Replay.
 - **This expedition intentionally produces architecture not** — This expedition intentionally produces architecture, not a live service. Live distribution channels are owned by downstream EXP-DIST expeditions.
+- **This expedition intentionally stops at generated** — This expedition intentionally stops at generated text artifacts. Packaging and publishing skills to marketplaces or registries is future work.
 - **Time to first Expedition** — Time to first Expedition
 - **Time to first Mission** — Time to first Mission
 - **Timeline significant mission expedition objective work-item** — **Timeline** — significant mission/expedition/objective/work-item transitions are summarized in `whatHappened`, with adjacent duplicate suppression for repeated genesis runs.
@@ -1656,6 +1659,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 7f03141e20e5a32cf828e0d3970b0957dd631e000a03d8c9a706e8436326a259
+sourceStateHash: 51615cdb73061262e99b2bb0038cd9a11778b208af237da170d6ea9030f52364
 projection: synth-documentation-expedition-v1
 -->

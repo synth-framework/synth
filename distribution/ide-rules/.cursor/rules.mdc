@@ -9,30 +9,30 @@
 
 ## Discovery-safe commands
 
-- `synth --help` — Show generic help
-- `synth --version` — Print the installed Synth version
-- `synth discover` — Discover repository structure and produce a read-only analysis
-- `synth doctor` — Verify installation and project health
-- `synth status` — Report the current project state
-- `synth explain` — Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)
-- `synth validate` — Analyze changes and plan validations
-- `synth verify` — Verify governance invariants and projection consistency
-- `synth certify` — Run failure and recovery certification scenarios
-- `synth version` — Print the installed Synth version
-- `synth bootstrap --dry-run` — Generate a bootstrap proposal without mutating state
-- `synth mission create` — Create a Mission proposal
-- `synth expedition create` — Create an Expedition proposal
-- `synth first-contact start` — Extract intent and create a first-contact proposal draft
-- `synth first-contact clarify` — Show or apply clarification answers to the draft
-- `synth first-contact project` — Project architecture candidates from the draft
-- `synth first-contact verify` — Verify capability assumptions for the selected architecture
-- `synth first-contact status` — Report the current first-contact state
-- `synth first-contact materialize --dry-run` — Preview what materialization would create
-- `synth genesis start` — Alias for 'first-contact start'
-- `synth genesis project` — Alias for 'first-contact project'
-- `synth genesis verify` — Alias for 'first-contact verify'
-- `synth genesis status` — Alias for 'first-contact status'
-- `synth genesis materialize --dry-run` — Alias for 'first-contact materialize --dry-run'
+- synth `--help` — Show generic help
+- synth `--version` — Print the installed Synth version
+- synth `discover` — Discover repository structure and produce a read-only analysis
+- synth `doctor` — Verify installation and project health
+- synth `status` — Report the current project state
+- synth `explain` — Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)
+- synth `validate` — Analyze changes and plan validations
+- synth `verify` — Verify governance invariants and projection consistency
+- synth `certify` — Run failure and recovery certification scenarios
+- synth `version` — Print the installed Synth version
+- synth `bootstrap --dry-run` — Generate a bootstrap proposal without mutating state
+- synth `mission create` — Create a Mission proposal
+- synth `expedition create` — Create an Expedition proposal
+- synth `first-contact start` — Extract intent and create a first-contact proposal draft
+- synth `first-contact clarify` — Show or apply clarification answers to the draft
+- synth `first-contact project` — Project architecture candidates from the draft
+- synth `first-contact verify` — Verify capability assumptions for the selected architecture
+- synth `first-contact status` — Report the current first-contact state
+- synth `first-contact materialize --dry-run` — Preview what materialization would create
+- synth `genesis start` — Alias for 'first-contact start'
+- synth `genesis project` — Alias for 'first-contact project'
+- synth `genesis verify` — Alias for 'first-contact verify'
+- synth `genesis status` — Alias for 'first-contact status'
+- synth `genesis materialize --dry-run` — Alias for 'first-contact materialize --dry-run'
 
 ## Protected assets
 

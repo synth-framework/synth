@@ -221,6 +221,20 @@
       "outputPath": "distribution/agent-skills/codex.md"
     },
     {
+      "id": "chatgpt-skill",
+      "name": "ChatGPT Custom GPT / Knowledge Pack",
+      "format": "markdown",
+      "audience": "ChatGPT agents",
+      "outputPath": "distribution/agent-skills/chatgpt.md"
+    },
+    {
+      "id": "gemini-skill",
+      "name": "Gemini Gem / Instructions",
+      "format": "markdown",
+      "audience": "Gemini agents",
+      "outputPath": "distribution/agent-skills/gemini.md"
+    },
+    {
       "id": "cursor-rules",
       "name": "Cursor Rules",
       "format": "markdown",

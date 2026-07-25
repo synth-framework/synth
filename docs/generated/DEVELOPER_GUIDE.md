@@ -305,6 +305,7 @@ This guide is for contributors extending Synth.
 - **Confusing test failures that are artifacts** — Confusing test failures that are artifacts of the agent's own execution, not the code under change.
 - **Connect to CapabilityRegistry** — Connect to CapabilityRegistry
 - **Contract tests compile and pass npm** — Contract tests compile and pass; `npm run build` succeeds.
+- **Contract tests proving that every agent** — Contract tests proving that every agent skill is derived from the canonical model and remains deterministic.
 - **Contract tests proving that identical model** — Contract tests proving that identical model inputs produce deterministic outputs.
 - **Convention-based metadata in test and script** — Convention-based metadata in test and script files
 - **conversation adapter overlaps with First Contact** — `conversation` adapter overlaps with **First Contact** intent capture.
@@ -1120,6 +1121,7 @@ This guide is for contributors extending Synth.
 - **Unknown adapters fail with a clear** — Unknown adapters fail with a clear error.
 - **Update path constants in tests that** — Update path constants in tests that assert on default layout.
 - **Update tests and fixtures** — 4. Update tests and fixtures
+- **Update tests to assert the expanded** — Update tests to assert the expanded surface.
 - **Updated docs architecture 07-capability-model md with** — Updated `docs/architecture/07-capability-model.md` with a **Two Capability Layers** section, a **Capability Graph** section (node kinds, edge kinds, deterministic resolution), and ADR cross-links.
 - **Updated tests documentation-integrity test js for** — Updated `tests/documentation-integrity.test.js` for the new validation semantics.
 - **Updated tests documentation-integrity test js to** — Updated `tests/documentation-integrity.test.js` to assert the new script exists, is configured, and passes on the repository.
@@ -1177,6 +1179,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 7f03141e20e5a32cf828e0d3970b0957dd631e000a03d8c9a706e8436326a259
+sourceStateHash: 51615cdb73061262e99b2bb0038cd9a11778b208af237da170d6ea9030f52364
 projection: synth-documentation-expedition-v1
 -->

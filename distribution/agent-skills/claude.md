@@ -58,22 +58,22 @@ Use exactly these seven concepts in public-facing explanations. Everything else 
 
 ### Mutating commands
 
-- `bootstrap` — Transform a repository into a Synth project (mutating only with --approve) (POTENTIALLY_MUTATING)
-- `bootstrap --approve` — Apply bootstrap and initialize governance artifacts (MUTATING, requires approval)
-- `docs generate` — Generate documentation artifacts (MUTATING, requires approval)
-- `init` — Initialize the current directory as a Synth project (MUTATING, requires approval)
-- `mission approve` — Approve a Mission draft (MUTATING, requires approval)
-- `expedition approve` — Approve an Expedition draft (MUTATING, requires approval)
-- `expedition commit` — Commit approved Expedition intent to runtime (MUTATING, requires approval)
-- `expedition start` — Start executing a committed Expedition (MUTATING, requires approval)
-- `expedition complete` — Complete an executing Expedition (MUTATING, requires approval)
-- `validate --full` — Run the complete canonical governance pipeline (MUTATING, requires approval)
-- `govern` — Run the full governance pipeline (MUTATING, requires approval)
-- `repair replay --approve` — Apply repairs for runtime drift (MUTATING, requires approval)
-- `first-contact approve` — Approve the first-contact draft (MUTATING, requires approval)
-- `first-contact materialize --approve` — Materialize the approved artifact into a SYNTH project (MUTATING, requires approval)
-- `genesis approve` — Alias for 'first-contact approve' (MUTATING, requires approval)
-- `genesis materialize --approve` — Alias for 'first-contact materialize --approve' (MUTATING, requires approval)
+- `bootstrap` — Transform a repository into a Synth project (mutating only with --approve)
+- `bootstrap --approve` — Apply bootstrap and initialize governance artifacts
+- `docs generate` — Generate documentation artifacts
+- `init` — Initialize the current directory as a Synth project
+- `mission approve` — Approve a Mission draft
+- `expedition approve` — Approve an Expedition draft
+- `expedition commit` — Commit approved Expedition intent to runtime
+- `expedition start` — Start executing a committed Expedition
+- `expedition complete` — Complete an executing Expedition
+- `validate --full` — Run the complete canonical governance pipeline
+- `govern` — Run the full governance pipeline
+- `repair replay --approve` — Apply repairs for runtime drift
+- `first-contact approve` — Approve the first-contact draft
+- `first-contact materialize --approve` — Materialize the approved artifact into a SYNTH project
+- `genesis approve` — Alias for 'first-contact approve'
+- `genesis materialize --approve` — Alias for 'first-contact materialize --approve'
 
 ## Protected assets
 
@@ -161,4 +161,4 @@ Greenfield onboarding workflow for new projects.
 
 - Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json`
 - Model version: `1.0.0`
-- Model hash: `43c6ad8006789a0333949b0acad52983151d6b7155fb349f760ff61936d53431`
+- Model hash: `908b672129e90d7bb3658075ff0c5439435910981a0911e5dea6f07aa3dbb3ec`
