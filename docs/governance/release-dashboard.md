@@ -11,7 +11,7 @@
 
 ```text
 Release Candidate Completion
-████████████████████░░░░░░░░░░░░░░░░░░ 53%
+██████████████████████░░░░░░░░░░░░░░░░ 58%
 ```
 
 ---
@@ -24,9 +24,9 @@ Release Candidate Completion
 | **Governance** | `██████████ 100%` | ✅ Complete | Lifecycle certified, H2/H4 resolved, GOV-015 closed |
 | **Replay** | `██████████ 100%` | ✅ Complete | Deterministic replay certified, graph integrity clean |
 | **Security** | `██████████ 100%` | ✅ Complete | Bypass audit clean, condition/convergence enforcement in place |
-| **CLI** | `████████░░ 80%` | 🟡 In progress | EXP-CLI-001 — structured JSON, error unification, discovery safety |
+| **CLI** | `██████████ 100%` | ✅ Complete | EXP-CLI-001 — structured JSON, unified error model, discovery safety, contract tests |
 | **Documentation** | `███████░░░ 70%` | 🟡 In progress | EXP-DOC-002 — ADR/expedition metadata, freshness verification |
-| **Installer Experience** | `██████░░░░ 60%` | 🔴 Not started | EXP-INSTALLER-001 — first-run journey validation |
+| **Installer Experience** | `██████░░░░ 60%` | 🔴 Not started | EXP-INSTALL-012 — first-run journey validation |
 | **Release Certification** | `████░░░░░░ 40%` | 🟡 In progress | Program 042 active; certificates chartered, evidence collection begins |
 
 ---
@@ -35,7 +35,7 @@ Release Candidate Completion
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  EXP-CLI-001        CLI Consistency          [80%] 🟡       │
+│  EXP-CLI-001        CLI Consistency          [100%] ✅      │
 │  EXP-DOC-002        Documentation Sync       [70%] 🟡       │
 │  EXP-INSTALL-012    Installer Experience     [60%] 🔴       │
 └──────────────────┬──────────────────────────────────────────┘
@@ -58,9 +58,9 @@ Release Candidate Completion
 
 | Blocker | Expedition | Status |
 |---------|------------|--------|
-| CLI structured JSON output | EXP-CLI-001 | 🟡 |
-| Unified error model with `kind` | EXP-CLI-001 | 🟡 |
-| Discovery safety model complete | EXP-CLI-001 | 🟡 |
+| CLI structured JSON output | EXP-CLI-001 | ✅ |
+| Unified error model with `kind` | EXP-CLI-001 | ✅ |
+| Discovery safety model complete | EXP-CLI-001 | ✅ |
 | ADR/expedition metadata projections | EXP-DOC-002 | 🟡 |
 | Projection freshness verification | EXP-DOC-002 | 🟡 |
 | End-to-end first-run validation | EXP-INSTALL-012 | 🔴 |

@@ -98,7 +98,7 @@
     "test:installer-manifest": "node tests/installer-manifest.test.js",
     "test:installer-upgrade": "node tests/installer-upgrade.test.js",
     "test:installer-certification": "bash scripts/certify-installation.sh",
-    "test:synth-cli": "node tests/synth-cli.test.js",
+    "test:synth-cli": "node tests/synth-cli.test.js && node tests/cli-contract.test.js",
     "test:govern-recursion-guard": "node tests/govern-recursion-guard.test.js",
     "test:draft-integrity": "node tests/draft-integrity.test.js",
     "test:evidence-path": "node tests/evidence-path.test.js",

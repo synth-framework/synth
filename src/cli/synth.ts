@@ -193,13 +193,15 @@ async function gateDecision(action: AgentAction, state: import("../types/index.j
 }
 
 function printGateBlock(result: Extract<ReturnType<typeof validateAgentAction>, { decision: "BLOCK" }>): never {
-  printJson({
-    status: "error",
-    kind: "LifecycleBlocked",
-    reason: result.reason,
-    requiredAction: result.requiredAction,
-  })
-  process.exit(1)
+  printError(
+    result.reason,
+    {
+      code: "LifecycleBlocked",
+      category: "governance",
+      suggestion: result.requiredAction,
+      requiredAction: result.requiredAction,
+    },
+  )
 }
 
 async function getVersion(): Promise<string> {
@@ -573,11 +575,15 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
   try {
     map = JSON.parse(await fs.readFile(mapPath, "utf-8"))
   } catch {
-    printJson({
-      status: "error",
-      error: `Capability validation map not found at ${mapPath}. Run 'synth init' or verify the repository layout.`,
-    })
-    process.exit(1)
+    printError(
+      `Capability validation map not found at ${mapPath}. Run 'synth init' or verify the repository layout.`,
+      {
+        code: "CapabilityValidationMapMissing",
+        category: "configuration",
+        suggestion: "Run 'synth init' in a Synth repository or create docs/reference/capability-validation-map.json.",
+        documentation: "docs/reference/capability-validation-map.json",
+      },
+    )
   }
 
   const plan = buildValidationPlan(report, map, { availableScripts, profile })
@@ -2438,12 +2444,15 @@ async function cmdMissionSnapshot(args: string[], flags: Record<string, string |
     } catch (err) {
       // The snapshot store certifies on load: a throw means a stored
       // snapshot is tampered or malformed.
-      printJson({
-        status: "error",
-        kind: "MissionSnapshotList",
-        error: err instanceof Error ? err.message : String(err),
-      })
-      process.exit(1)
+      printError(
+        err instanceof Error ? err.message : String(err),
+        {
+          code: "MissionSnapshotListFailed",
+          category: "integrity",
+          suggestion: "Run 'synth explain snapshots' to inspect stored snapshots, or restore from a known-good backup.",
+          documentation: "docs/reference/snapshots.md",
+        },
+      )
     }
 
     if (listResult.status !== "ok") {
@@ -2477,14 +2486,17 @@ async function cmdMissionSnapshot(args: string[], flags: Record<string, string |
   } catch (err) {
     // The snapshot store certifies on load: a throw means the
     // snapshot failed signature or structural verification.
-    printJson({
-      status: "error",
-      kind: "MissionSnapshotInspection",
-      snapshotId,
-      signatureValid: false,
-      error: err instanceof Error ? err.message : String(err),
-    })
-    process.exit(1)
+    printError(
+      err instanceof Error ? err.message : String(err),
+      {
+        code: "MissionSnapshotInspectionFailed",
+        category: "integrity",
+        suggestion: "Run 'synth explain snapshots' to inspect the snapshot chain, or restore from a known-good backup.",
+        documentation: "docs/reference/snapshots.md",
+        snapshotId,
+        signatureValid: false,
+      },
+    )
   }
 
   if (getResult.status !== "ok" || !getResult.snapshot) {
@@ -3160,8 +3172,24 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "project") return "mission project"
     if (sub === "verify-charter") return "mission verify-charter"
   }
-  if (namespace === "validate" && sub === "dependencies") return "validate dependencies"
-  if (namespace === "validate" && sub === "artifact") return "validate artifact"
+  if (namespace === "validate") {
+    if (flags.full === true || flags.full === "true") return "validate --full"
+    if (sub === "dependencies") return "validate dependencies"
+    if (sub === "artifact") return "validate artifact"
+    return "validate"
+  }
+  if (namespace === "adapter") {
+    const adapterSub = sub || ""
+    const known = [
+      "list", "info", "enable", "disable", "configure", "status", "health", "init",
+      "create-branch", "checkout", "commit", "promote", "install-hooks",
+      "github-create-issue", "github-create-pr", "github-merge-pr",
+      "tdd-generate-test", "tdd-verify-failure", "tdd-verify-implementation", "tdd-evidence",
+      "bdd-create-feature", "bdd-create-scenario", "bdd-generate-tests", "bdd-verify", "bdd-evidence",
+    ]
+    if (known.includes(adapterSub)) return `adapter ${adapterSub}`
+    return "adapter"
+  }
   if (namespace === "intent") {
     if (sub === "create") return "intent create"
   }
@@ -3236,12 +3264,15 @@ async function cmdValidateArtifact(flags: Record<string, string | boolean>) {
   const artifactType = typeof flags.type === "string" ? flags.type : ""
 
   if (!artifactType) {
-    printJson({
-      status: "error",
-      kind: "ArtifactValidation",
-      error: "--type is required. Options: expedition, mission, refined-intent, alignment-contract",
-    })
-    return
+    printError(
+      "--type is required. Options: expedition, mission, refined-intent, alignment-contract",
+      {
+        code: "ArtifactTypeRequired",
+        category: "validation",
+        suggestion: "Provide --type expedition, --type mission, --type refined-intent, or --type alignment-contract.",
+        documentation: "docs/reference/artifact-types.md",
+      },
+    )
   }
 
   const ctx = await bootstrapWithCapabilities({
@@ -3281,12 +3312,15 @@ async function cmdValidateArtifact(flags: Record<string, string | boolean>) {
     }
 
     default:
-      printJson({
-        status: "error",
-        kind: "ArtifactValidation",
-        error: `Unknown artifact type: ${artifactType}. Supported: expedition, mission`,
-      })
-      return
+      printError(
+        `Unknown artifact type: ${artifactType}. Supported: expedition, mission`,
+        {
+          code: "ArtifactTypeUnknown",
+          category: "validation",
+          suggestion: "Use --type expedition or --type mission.",
+          documentation: "docs/reference/artifact-types.md",
+        },
+      )
   }
 
   const failed = checks.filter((c) => !c.passed)
@@ -3325,16 +3359,30 @@ async function loadEvidenceFromFile(evidenceFile: string): Promise<{ source: str
 async function cmdMissionVerifyCharter(flags: Record<string, string | boolean>) {
   const filePath = typeof flags.file === "string" ? flags.file : ""
   if (!filePath) {
-    printJson({ status: "error", kind: "CharterVerification", error: "--file is required" })
-    return
+    printError(
+      "--file is required",
+      {
+        code: "CharterFileRequired",
+        category: "validation",
+        suggestion: "Provide the path to an expedition charter with --file <path>.",
+        documentation: "docs/reference/charter-format.md",
+      },
+    )
   }
 
   let content: string
   try {
     content = await fs.readFile(path.resolve(filePath), "utf-8")
   } catch {
-    printJson({ status: "error", kind: "CharterVerification", error: `Cannot read file: ${filePath}` })
-    return
+    printError(
+      `Cannot read file: ${filePath}`,
+      {
+        code: "CharterFileUnreadable",
+        category: "io",
+        suggestion: "Verify the file path exists and is readable.",
+        documentation: "docs/reference/charter-format.md",
+      },
+    )
   }
 
   const checks: { name: string; passed: boolean; detail: string }[] = []
