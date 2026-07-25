@@ -45,6 +45,9 @@ temporary directory, build it, run the governance pipeline, regenerate the
 manifest, and verify all five certification tracks. `REF` defaults to
 `origin/main`; pass `v1.0.0` to validate the release tag.
 
+> Note: the full governance pipeline step can take 30+ minutes. Run in a
+> shell/CI session that will not time out.
+
 ## How to run the full governance pipeline
 
 ```bash

@@ -10,6 +10,9 @@
 #
 # REF defaults to the current HEAD of origin/main. Pass a tag such
 # as v1.0.0 to validate a specific release.
+#
+# Note: the full governance pipeline (step 8) can take 30+ minutes.
+# Run this in a shell/CI session that will not time out.
 # ============================================================
 
 set -euo pipefail
@@ -57,12 +60,11 @@ if [[ ! -f "${MANIFEST}" ]]; then
 fi
 
 MANIFEST_COMMIT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('${MANIFEST}', 'utf8')).gitCommitSha)")
-RELEASE_PARENT=$(git rev-parse HEAD^)
-if [[ "${MANIFEST_COMMIT}" != "${RELEASE_PARENT}" ]]; then
-  echo "  ⚠️  Manifest gitCommitSha (${MANIFEST_COMMIT}) does not match release parent (${RELEASE_PARENT})."
-  echo "     This is expected only if the release commit is not a pure metadata commit."
+if git merge-base --is-ancestor "${MANIFEST_COMMIT}" HEAD; then
+  echo "  ✅ Manifest source commit (${MANIFEST_COMMIT}) is an ancestor of the release commit."
 else
-  echo "  ✅ Manifest source commit matches release parent."
+  echo "  ❌ Manifest source commit (${MANIFEST_COMMIT}) is not an ancestor of the release commit."
+  exit 1
 fi
 
 # Save committed manifest for comparison
