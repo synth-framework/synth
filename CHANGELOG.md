@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] — 2026-07-25
+
+The SYNTH Platform v1.0 Release.
+
+This release marks the stabilization of the SYNTH platform for general adoption.
+All remaining v1.0 architecture (kernel, SDK, event model, governance lifecycle,
+and replay engine) is frozen and certified.
+
+### Platform v1.0 Certification
+
+- Added the SYNTH Platform v1.0 Manifest at
+  `docs/certifications/synth-platform-v1-0-manifest.json`.
+- Added `scripts/generate-platform-manifest.js` to regenerate the manifest from
+  the current source tree.
+- Added `scripts/validate-clean-clone.sh` to verify that the repository builds,
+  tests, governs, and certifies from a fresh clone.
+- Issued five certification tracks under EXP-PROGRAM-042: Reproducibility,
+  Operator Experience, Governance, Architecture Baseline, and Release Readiness.
+
+### Clean-Clone Hardening
+
+- Tracked `docs/generated/` as the committed documentation baseline so that
+  `docs:verify-freshness` passes on a clean checkout.
+- Removed the undefined `test:first-contact-projection` script from `test:all`.
+- Relaxed the `govern-profiler` percentage-sum tolerance for dry-run summaries.
+- Excluded volatile `versioning.pullRequest` observations from the discovery
+  evidence content hash, making discovery deterministic across clones.
+
 ## [2.3.0] — 2026-07-19
 
 The Operator Surface Stabilization Release.

@@ -133,6 +133,8 @@ function main() {
   const gitCommit = gitCommitOverride || exec("git rev-parse HEAD")
   const gitTag = exec("git describe --tags --always")
   const packageJson = JSON.parse(readText("package.json"))
+  const npmVersion = packageJson.version
+  const releaseTag = `v${npmVersion}`
   const status = repositoryStatus()
 
   const sdkHash = hashFiles(["src/sdk/**/*.ts"])
@@ -143,10 +145,11 @@ function main() {
   const manifest = {
     schema: "synth-platform-manifest-v1",
     name: "SYNTH Platform",
-    version: "1.0.0",
-    semanticVersion: "1.0.0",
-    packageVersion: packageJson.version,
-    gitTag: "v1.0.0",
+    version: npmVersion,
+    semanticVersion: npmVersion,
+    platformVersion: "1.0.0",
+    packageVersion: npmVersion,
+    gitTag: releaseTag,
     gitCommitSha: gitCommit,
     gitDescribe: gitTag,
     generatedAt: now,
