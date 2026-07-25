@@ -11,7 +11,7 @@
 
 ```text
 Release Candidate Completion
-████████████████████████████████████░░░░ 88%
+███████████████████████████████████████░ 95%
 ```
 
 ---
@@ -27,7 +27,7 @@ Release Candidate Completion
 | **CLI** | `██████████ 100%` | ✅ Complete | EXP-CLI-001 — structured JSON, unified error model, discovery safety, contract tests |
 | **Documentation** | `██████████ 100%` | ✅ Complete | EXP-DOC-002 — deterministic projections, sourceStateHash, freshness, metadata baselines |
 | **Installer Experience** | `██████████ 100%` | ✅ Complete | EXP-INSTALL-012 — first-run journey certification (70 tests pass) |
-| **Release Certification** | `██████░░░░ 60%` | 🟡 In progress | Program 042 active; collecting evidence from completed Release Candidate workstreams |
+| **Release Certification** | `████████░░ 80%` | 🟡 In progress | Program 042 — five certificates issued; awaiting Release Review and `npm run govern` from clean clone |
 
 ---
 

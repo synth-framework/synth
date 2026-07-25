@@ -19,9 +19,25 @@
 
 > **A platform is not released. A platform is certified, and then released.**
 
-Freeze is an outcome; certification is the work. This program runs in parallel with the final Release Candidate implementation (Program 038 / Workstream D) and produces the authoritative evidence that SYNTH v1.0 is complete, consistent, and reproducible.
+SYNTH Platform v1.0 is **feature complete**. Program 038 — Release Candidate has closed. The remaining work is exclusively the collection of evidence that proves the platform is ready to ship.
 
-This program does not implement features. It certifies the boundary between architecture and productization.
+Freeze is an outcome; certification is the work.
+
+---
+
+## Release Candidate Policy
+
+> **On the v1.0 branch, only the following changes are permitted:**
+>
+> 1. **Defect correction** — fixes for issues discovered during certification.
+> 2. **Certification evidence** — artifacts, measurements, and proofs required by this program.
+> 3. **Release artifacts** — changelogs, release notes, version tags, and packaging metadata.
+>
+> **No new capabilities. No architectural expansion. No "while we're here..." improvements.**
+>
+> Anything else belongs to vNext or a post-v1.0 program.
+
+This policy protects Release Candidate 1 (RC1) from feature creep while allowing the legitimate work required to finish the release.
 
 ---
 
@@ -40,52 +56,148 @@ Produce authoritative certification that:
 
 ---
 
-## Deliverables
+## Certification Tracks
 
-| Certificate | Description |
-|---|---|
-| **Kernel Certification** | `src/core/`, `src/control/`, `src/runtime/`, `src/domain/` are frozen and validated. |
-| **SDK Certification** | `src/sdk/` public surface is frozen and documented. |
-| **Event Model & Replay Certification** | `src/types/event.ts`, replay semantics, and derived-state contracts are frozen. |
-| **Capability Registry Certification** | Canonical capabilities are frozen and listed. |
-| **Governance Lifecycle Certification** | Mission/Expedition lifecycle semantics are frozen and deterministic. |
-| **Operator / CLI Certification** | CLI commands produce structured output and the discovery safety model is complete. |
-| **Documentation Certification** | Generated projections are fresh and include ADR/expedition metadata. |
-| **ADR Freeze List** | Final list of accepted ADRs; any new architectural ADR requires a v2 initiative. |
-| **Release Readiness Report** | Checklist covering install, build, govern, replay, security, documentation. |
-| **Clean Clone Certification** | Evidence that a fresh clone passes the full governance pipeline. |
-| **Reproducible Build Certification** | Evidence that builds are byte-for-byte reproducible or hash-stable. |
-| **Architecture Baseline v1.0** | Consolidated architecture document referencing all frozen artifacts. |
+Program 042 is organized into five certification tracks. Each track collects evidence and produces one certificate.
+
+### Track A — Reproducibility
+
+> **Question:** Can a fresh clone reproduce the validated state?
+
+Evidence required:
+
+- Clean clone of the repository
+- Successful `npm install`
+- Successful `npm run build`
+- Successful `npm run govern`
+- Deterministic replay hashes across runs
+- Deterministic state hashes across environments
+- Build hash stability (byte-for-byte or manifest-hash-stable)
+
+Deliverable:
+
+```text
+Reproducibility Certificate
+```
+
+---
+
+### Track B — Operator Experience
+
+> **Question:** Can a first-time operator adopt SYNTH without tribal knowledge?
+
+Evidence required:
+
+- First Operator Experience test passes (`tests/first-operator-experience.test.js`)
+- Installer contract tests pass
+- `synth doctor` JSON contract documented
+- Discovery safety validated
+- Onboarding guide published (`docs/getting-started/first-five-minutes.md`)
+
+Deliverable:
+
+```text
+Operator Experience Certificate
+```
+
+---
+
+### Track C — Governance
+
+> **Question:** Does the governance system enforce its own rules deterministically?
+
+Evidence required:
+
+- Governance lifecycle replay certification
+- Convergence certification
+- Bypass audit clean
+- Condition / acceptance enforcement validated
+- Identity governance validator clean (0 errors, 0 warnings)
+- Expedition governance validator clean
+
+Deliverable:
+
+```text
+Governance Certificate
+```
+
+---
+
+### Track D — Architecture
+
+> **Question:** Is the architecture frozen and documented?
+
+Evidence required:
+
+- Kernel boundary freeze
+- SDK public surface freeze
+- Event model freeze
+- Capability registry freeze
+- ADR freeze list
+- Architecture Baseline v1.0
+- Historical program/expedition/ADR index
+
+Deliverable:
+
+```text
+Architecture Baseline Certificate
+```
+
+---
+
+### Track E — Release Readiness
+
+> **Question:** Is the release package complete?
+
+Evidence required:
+
+- Changelog
+- Migration notes
+- Release notes
+- npm package validation
+- Version tag
+- SBOM / dependency audit
+- Signed release artifact or provenance record
+
+Deliverable:
+
+```text
+Release Readiness Certificate
+```
 
 ---
 
 ## Program Composition
 
-Certification expeditions will be chartered under this program as the Release Candidate dimensions stabilize. Each deliverable above maps to one or more certification expeditions that collect evidence, produce the certificate, and record it in the event log.
-
 ```text
 EXP-PROGRAM-042
 Release Certification
 │
-├── Kernel Certification
-├── SDK Certification
-├── Event Model & Replay Certification
-├── Capability Registry Certification
-├── Governance Lifecycle Certification
-├── Operator / CLI Certification
-├── Documentation Certification
-├── ADR Freeze & Architectural Baseline v1.0
-├── Clean Clone Certification
-├── Reproducible Build Certification
-└── Release Readiness Report
+├── Track A — Reproducibility
+│   └── Reproducibility Certificate
+│
+├── Track B — Operator Experience
+│   └── Operator Experience Certificate
+│
+├── Track C — Governance
+│   └── Governance Certificate
+│
+├── Track D — Architecture
+│   └── Architecture Baseline Certificate
+│
+├── Track E — Release Readiness
+│   └── Release Readiness Certificate
+│
+└── SYNTH Platform v1.0 Certification Report
+    (historical narrative record of the release)
 ```
 
 ---
 
 ## Success Criteria
 
-- All certificates are published in `docs/certifications/`.
-- The Architecture Baseline v1.0 is accepted.
+- All five certificates are published in `docs/certifications/`.
+- The SYNTH Platform v1.0 Certification Report is published.
 - Clean clone certification passes on a machine-independent environment.
 - Reproducible build certification passes.
 - No architectural changes are permitted without a new platform program or v2 initiative.
@@ -103,7 +215,7 @@ Bug fixes, security patches, performance improvements, and documentation updates
 
 ## Relationship to Other Work
 
-- **EXP-PROGRAM-038 — Release Candidate** runs in parallel; this program collects certification evidence as 038 stabilizes.
+- **EXP-PROGRAM-038 — Release Candidate** is now complete. This program inherits its validated state.
 - **EXP-PROGRAM-029, 032, 034, 037** are adoption-era programs that may begin only after this program closes.
 - **Platform Readiness Report 2026-07-25** defines the Release Candidate framing and the v1.0/v2 boundary.
 - **Repository Baseline Report 2026-07-25** defines the architectural settlement that precedes certification.
@@ -112,8 +224,12 @@ Bug fixes, security patches, performance improvements, and documentation updates
 
 ## Definition of Done
 
-- [ ] All certification expeditions are completed and accepted.
-- [ ] Certificates are published and cross-referenced.
-- [ ] Clean clone and reproducible build certifications pass.
-- [ ] The governance rule above is recorded in `docs/governance.md`.
-- [ ] `npm run govern` passes from a clean clone.
+- [x] Track A — Reproducibility Certificate published.
+- [x] Track B — Operator Experience Certificate published.
+- [x] Track C — Governance Certificate published.
+- [x] Track D — Architecture Baseline Certificate published.
+- [x] Track E — Release Readiness Certificate published.
+- [x] SYNTH Platform v1.0 Certification Report published.
+- [ ] The Release Candidate policy is recorded in `docs/governance.md`.
+- [ ] Release Review checklist is completed and signed off.
+- [ ] `npm run govern` passes from a clean clone (final operator validation).
