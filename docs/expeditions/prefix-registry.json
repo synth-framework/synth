@@ -186,6 +186,10 @@
       "name": "Event-Log Query",
       "description": "Governance event-log query and inspection expeditions."
     },
+    "EVIDENCE": {
+      "name": "Evidence Capture",
+      "description": "Automatic expedition evidence capture and attachment expeditions."
+    },
     "WEB": {
       "name": "Website Experience",
       "description": "Public website expeditions (homepage, scenario pages, design system, onboarding surfaces)."
