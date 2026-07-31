@@ -290,6 +290,7 @@
 - **OpenAPI files produce evidence and capability** — OpenAPI files produce evidence and capability observations.
 - **Optionally enables the Git observation capability** — Optionally enables the Git observation capability if `.git` is present.
 - **Outputs CapabilityVerificationReport** — 1.3 Outputs — `CapabilityVerificationReport`
+- **P3 Capability Boundary Scope enforcement exercises** — **P3 Capability Boundary:** Scope enforcement exercises the ExecutionGate mutation authority invariant.
 - **P3 Historical Strengthened the capability graph** — **P3 Historical:** Strengthened — the capability graph is preserved as replayable evidence.
 - **Package Capability Interface** — 2. Package Capability Interface
 - **Phase 4 Capability Verification** — Phase 4: Capability Verification
@@ -401,6 +402,6 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: 353e0966910c30c05d15d5a0fefcc583b711a9bef9a99890b032b0deb1308092
+sourceStateHash: 2a86f24d5b9c68b5b2fe13fd8b10ce4efa854e928fb9b202e8614232cb4015ed
 projection: synth-documentation-expedition-v1
 -->

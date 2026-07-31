@@ -261,6 +261,7 @@ This guide is for architects making structural decisions.
 - **Divergence Gate decision schema** — Divergence Gate decision schema
 - **Do not introduce new governance concepts** — Do not introduce new governance concepts; all guidance must derive from the frozen v1.0 model.
 - **Do not redesign governance** — Do **not** redesign governance.
+- **docs adr ADR-017-constitutional-compliance-core-boundary md** — `docs/adr/ADR-017-constitutional-compliance-core-boundary.md`
 - **docs adr ADR-045-governance-lifecycle-state-machine md** — `docs/adr/ADR-045-governance-lifecycle-state-machine.md`
 - **docs adr ADR-046-implementation-authority-ordering md** — `docs/adr/ADR-046-implementation-authority-ordering.md`
 - **docs adr ADR-047-intent-refinement-and-alignment-governance md** — `docs/adr/ADR-047-intent-refinement-and-alignment-governance.md`
@@ -669,6 +670,7 @@ This guide is for architects making structural decisions.
 - **P2 governance integration validation reports are** — P2 (governance integration): validation reports are deterministic artifacts produced from knowledge graphs.
 - **P2 Governance proofs Convergence Review outcomes** — **P2 — Governance proofs:** Convergence Review outcomes become evidence attached to Program lifecycle events.
 - **P2 Governance proofs Implementation eligibility decisions** — **P2 — Governance proofs:** Implementation eligibility decisions are recorded as evidence attached to execution attempts.
+- **P2 Governance Traceability OUT OF SCOPE** — **P2 Governance Traceability:** `OUT_OF_SCOPE_AUTHORIZED` events provide an audit trail for scope exceptions.
 - **P3 Constitutional compliance Core-alignment audit verifies** — **P3 — Constitutional compliance:** Core-alignment audit verifies protected assets and public vocabulary.
 - **P3 Governance Certification scenarios must verify** — **P3 (Governance):** Certification scenarios must verify approval gating and no-state-before-approval.
 - **P3 Governance JSON Schema validation and** — **P3 (Governance):** JSON Schema validation and example artifacts become part of the certification suite.
@@ -916,6 +918,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: 353e0966910c30c05d15d5a0fefcc583b711a9bef9a99890b032b0deb1308092
+sourceStateHash: 2a86f24d5b9c68b5b2fe13fd8b10ce4efa854e928fb9b202e8614232cb4015ed
 projection: synth-documentation-expedition-v1
 -->

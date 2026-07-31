@@ -24,6 +24,7 @@ import type {
   MutationRequest,
   MutationProvider,
 } from "../types/index.js"
+import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governance/derived-files.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import { sortKeys } from "../sdk/json/index.js"
@@ -180,6 +181,12 @@ export class ExecutionGate {
 
       // === PHASE 4b: EXECUTE AUTHORIZED MUTATIONS ===
       if (executionResult.mutations && executionResult.mutations.length > 0) {
+        // Propagate invocation context into each mutation request so that
+        // authorization overrides (e.g. out-of-scope writes) are visible to
+        // the mutation authority gate.
+        for (const mutation of executionResult.mutations) {
+          mutation.context = { ...invocation.context, ...mutation.context }
+        }
         const mutationPhase = await this.runMutationPhase(executionResult.mutations, invocation.actor)
         phases.push(mutationPhase)
         if (!mutationPhase.passed) {
@@ -200,6 +207,10 @@ export class ExecutionGate {
       if (executionResult.mutations && executionResult.mutations.length > 0) {
         const authorizedEvent = await this.createAuthorizedEvent(executionResult.mutations, invocation.actor)
         if (authorizedEvent) eventsToPersist.push(authorizedEvent)
+        for (const mutation of executionResult.mutations) {
+          const outOfScopeEvent = await this.createOutOfScopeAuthorizedEvent(mutation, invocation.actor)
+          if (outOfScopeEvent) eventsToPersist.push(outOfScopeEvent)
+        }
       }
       if (eventsToPersist.length > 0) {
         await this.eventStore.appendBatch(eventsToPersist, EVENT_STORE_WRITE_TOKEN)
@@ -380,6 +391,14 @@ export class ExecutionGate {
   async authorize(mutation: MutationRequest): Promise<MutationAuthorization> {
     const state = await this.runtime.getState()
 
+    // 0. Derived files are never writable through the public mutation boundary.
+    if (isDerivedPath(mutation.target)) {
+      return {
+        allowed: false,
+        reason: "This is derived state. Modify source events or evidence instead.",
+      }
+    }
+
     // 1. Authority must exist: at least one approved Mission.
     const approvedMissions = Object.values(state.missions).filter(
       (m) => m.status === "active"
@@ -403,10 +422,19 @@ export class ExecutionGate {
       (e) => Array.isArray(e.metadata?.scope) && e.metadata.scope.length > 0
     )
     if (scopedExpeditions.length > 0) {
+      const relativeTarget = toProjectRelativePath(mutation.target)
       const allowedByScope = scopedExpeditions.some((e) =>
-        (e.metadata.scope as string[]).some((scope) => mutation.target.startsWith(scope))
+        (e.metadata.scope as string[]).some((scope) => matchesScope(relativeTarget, scope))
       )
       if (!allowedByScope) {
+        const overrideReason = mutation.context?.authorizeOutOfScope
+        if (typeof overrideReason === "string" && overrideReason.length > 0) {
+          return {
+            allowed: true,
+            authority: scopedExpeditions[0].id,
+            reason: overrideReason,
+          }
+        }
         return {
           allowed: false,
           reason: "Mutation target is outside authorized expedition scope",
@@ -553,6 +581,43 @@ export class ExecutionGate {
         id: authorizedExpedition.id,
         mutationCount: mutations.length,
         targets: mutations.map((m) => m.target),
+      },
+      previousHash,
+      eventHash: "",
+    }
+    event.eventHash = computeEventHash(event)
+    return event
+  }
+
+  private async createOutOfScopeAuthorizedEvent(
+    mutation: MutationRequest,
+    actor: string,
+  ): Promise<SynthEvent | null> {
+    const reason = mutation.context?.authorizeOutOfScope
+    if (typeof reason !== "string" || reason.length === 0) return null
+
+    const state = await this.runtime.getState()
+    const authorizedExpedition = Object.values(state.expeditions).find(
+      (e) => e.status === "approved" || e.status === "committed" || e.status === "executing"
+    )
+    if (!authorizedExpedition) return null
+
+    const lastEvent = await this.eventStore.getLastEvent()
+    const previousHash = lastEvent?.eventHash ?? "genesis"
+    const timestamp = Date.now()
+    const sequence = await this.eventStore.count()
+
+    const event: SynthEvent = {
+      id: crypto.randomUUID(),
+      type: "OUT_OF_SCOPE_AUTHORIZED",
+      timestamp,
+      transactionId: `tx-out-of-scope-${sequence}`,
+      capability: "mutation-authority",
+      actor,
+      payload: {
+        expeditionId: authorizedExpedition.id,
+        target: mutation.target,
+        reason,
       },
       previousHash,
       eventHash: "",

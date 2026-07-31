@@ -151,15 +151,25 @@ function parseArgs(argv: string[]) {
   const positional: string[] = []
   const flags: Record<string, string | boolean> = {}
 
+  function appendFlagValue(name: string, value: string | boolean) {
+    // Repeated --scope flags are combined into a comma-separated list so
+    // command handlers can split them without changing the flags type.
+    if (name === "scope" && typeof value === "string" && typeof flags[name] === "string") {
+      flags[name] = `${flags[name]},${value}`
+    } else {
+      flags[name] = value
+    }
+  }
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
     if (arg.startsWith("--")) {
       const [key, value] = arg.split("=")
       const name = key.slice(2)
       if (value !== undefined) {
-        flags[name] = value
+        appendFlagValue(name, value)
       } else if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
-        flags[name] = args[i + 1]
+        appendFlagValue(name, args[i + 1])
         i++
       } else {
         flags[name] = true
@@ -1694,7 +1704,7 @@ async function cmdAlignmentPrepare() {
 
 async function cmdExpeditionHelp() {
   printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
-    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal>", description: "Create an Expedition proposal (Draft)" },
+    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
     { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
@@ -2821,6 +2831,11 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const missionSubject = typeof flags.mission === "string" ? flags.mission : ""
   const subject = typeof flags.subject === "string" ? flags.subject : ""
   const goal = typeof flags.goal === "string" ? flags.goal : ""
+  const rawScope = typeof flags.scope === "string" ? flags.scope : ""
+  const scope = rawScope
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
   if (!missionSubject || !subject) printError("--mission and --subject are required")
 
   // Resolve the project's actual governance state before allowing expedition
@@ -2871,7 +2886,13 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const createResult = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "CreateExpedition",
-    payload: { id: expeditionId, missionId: missionSubject, name: subject, goal },
+    payload: {
+      id: expeditionId,
+      missionId: missionSubject,
+      name: subject,
+      goal,
+      metadata: scope.length > 0 ? { scope } : {},
+    },
   })
 
   if (createResult.status !== "ok") {
@@ -3811,7 +3832,7 @@ async function main() {
       else if (sub === "list") await cmdExpeditionList(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }
