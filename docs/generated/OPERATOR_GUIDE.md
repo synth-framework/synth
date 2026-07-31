@@ -184,7 +184,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-CAPTRANS-001 — Capability Transparency CLI](../expeditions/EXP-CAPTRANS-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CERT-001 — Failure Certification Framework](../expeditions/EXP-CERT-001.md)** — Status: Completed, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
 - **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
-- **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CONT-002 — Interruption Benchmark](../expeditions/EXP-CONT-002.md)** — Status: Completed (pending program acceptance), Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-013 — Cognitive Continuity
 - **[EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage](../expeditions/EXP-CONVERGENCE-001.md)** — Status: Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning., Kind: Architectural Convergence, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-DET-001 — Deterministic Execution](../expeditions/EXP-DET-001.md)** — Status: Completed, Kind: unknown, Priority: High, Program: EXP-PROGRAM-018 — Foundation Architecture Program
@@ -1695,6 +1695,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 1e8a658418c76349b3925f1fba5974358a213fb645cff28dd27f85f2c4357968
+sourceStateHash: 84c124d253c85e35910133f26fbb720ddee2f7b5f4259e15ba136f2318fe5840
 projection: synth-documentation-expedition-v1
 -->
