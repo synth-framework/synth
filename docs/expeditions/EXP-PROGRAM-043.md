@@ -97,10 +97,10 @@ Objective: agents cannot accidentally edit derived or protected files; expeditio
 EXP-PROGRAM-043 / D
 ├── EXP-GUARD-001     Refuse direct edits to derived files (canonical-state, AGENTS.md, projections) [COMPLETED]
 ├── EXP-SCOPE-001     Sandboxed expedition file scope                                              [COMPLETED]
-└── EXP-GATE-001      Mandatory verification gates before expedition completion                   [DRAFT]
+└── EXP-GATE-014      Mandatory verification gates before expedition completion                   [DRAFT]
 ```
 
-_Note: GUARD-001 and SCOPE-001 were implemented before GATE-001 because refusing accidental writes is a lower-risk, higher-payoff first step than adding new mandatory completion gates._
+_Note: GUARD-001 and SCOPE-001 were implemented before the completion gate because refusing accidental writes is a lower-risk, higher-payoff first step. The completion gate is chartered as EXP-GATE-014 because EXP-GATE-001 already names the Program 035 review-lifecycle expedition._
 
 ### E — Evidence, Audit & Tooling
 
