@@ -2,7 +2,7 @@
 
 > Add a read-only `synth log` command so operators can query the governance event log without reading raw `.jsonl`.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -145,7 +145,7 @@ The implementation streams the log once. For logs larger than 10,000 events, `--
 
 ## Snapshot
 
-- Implemented `synth log` with `--expedition`, `--mission`, `--type`, `--since`, `--limit`, and `--format` filters.
+- PR #223 merged: `synth log` with `--expedition`, `--mission`, `--type`, `--since`, `--limit`, and `--format` filters.
 - Read-only: command never appends events or writes to canonical state.
 
 ## Related Documents

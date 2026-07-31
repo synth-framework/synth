@@ -212,7 +212,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-ENV-008 — Forge Capability](../expeditions/EXP-ENV-008.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-011 — AI Environment Planning](../expeditions/EXP-ENV-011.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-013 — Co-locate Runtime Data Under `.synth/`](../expeditions/EXP-ENV-013.md)** — Status: Completed and accepted, Kind: Environment Independence / Repository Layout, Priority: High, Program: EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program
-- **[EXP-EVENTLOG-001 — Event-Log Query CLI](../expeditions/EXP-EVENTLOG-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-EVENTLOG-001 — Event-Log Query CLI](../expeditions/EXP-EVENTLOG-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-EXEC-001 — Execution Intent Model](../expeditions/EXP-EXEC-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-002 — Work Item Runtime](../expeditions/EXP-EXEC-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-003 — Branch-per-Expedition Workflow](../expeditions/EXP-EXEC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
@@ -1703,8 +1703,8 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
-computedAt: 2026-07-31T09:22:14.829Z
+sourceStateHash: e11fd376d5babd3f9d218acc9f47ea20feed0b48097f336a770e2de62642f79f
+computedAt: 2026-07-31T09:47:36.875Z
 schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
