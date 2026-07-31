@@ -138,7 +138,7 @@ Era III produced the frozen v1.0 platform. Era IV extends that platform through 
 ## Where new contributors should start
 
 1. Read this document.
-2. Read the [Operator Guide](generated/OPERATOR_GUIDE.md) for day-to-day workflows.
+2. Read the [Operator Guide](operator/01-getting-started.md) for day-to-day workflows.
 3. Read [ADR-045](./adr/ADR-045-governance-lifecycle-state-machine.md) for the governance lifecycle.
 4. Read [Era III Retrospective](history/ERA-III-RETROSPECTIVE.md) for how v1.0 was reached.
 5. Run `synth doctor` in a checkout to verify the environment.
