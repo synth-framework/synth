@@ -3318,6 +3318,11 @@ async function cmdDocsGenerateHelp() {
       description: "Generate documentation projections from the knowledge base",
       args: "[--out-dir <dir>] [--knowledge-base <dir>] [--link-prefix <prefix>]",
     },
+    {
+      name: "synth docs generate --provenance",
+      description: "Explicitly regenerate projections with provenance metadata (default behavior)",
+      args: "--provenance",
+    },
   ], {
     note: [
       "Documentation capabilities are the kinds of documents SYNTH can produce (e.g. README, Architecture, API Reference).",
@@ -3331,6 +3336,7 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
   const outDir = typeof flags["out-dir"] === "string" ? flags["out-dir"] : "./docs/generated"
   const knowledgeBaseDir = typeof flags["knowledge-base"] === "string" ? flags["knowledge-base"] : "./docs"
   const linkPrefix = typeof flags["link-prefix"] === "string" ? flags["link-prefix"] : undefined
+  const provenance = flags.provenance === true
 
   const result = (await bootstrap({
     skipGenesis: true,
@@ -3355,6 +3361,7 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
   printJson({
     ...result,
     kind: "DocumentationGenerated",
+    provenance,
     capabilities: DOCUMENTATION_CAPABILITIES.map((cap) => ({
       id: cap.id,
       title: cap.title,

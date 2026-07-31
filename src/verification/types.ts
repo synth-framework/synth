@@ -18,6 +18,8 @@ export type VerificationViolation = {
   severity?: Severity
   nextStep?: string
   ids?: string[]
+  code?: string
+  fixCommand?: string
 }
 
 export type VerificationCheckResult = {

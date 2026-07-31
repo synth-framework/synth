@@ -15,6 +15,7 @@ import type {
   VerificationViolation,
   VerificationContext,
 } from "./types.js"
+import { formatWarningMessage } from "./warning-catalog.js"
 
 function v(
   message: string,
@@ -153,10 +154,13 @@ export const checkProjectionConsistency: VerificationCheck = async (ctx) => {
         content.includes("computedAt:") &&
         content.includes("schemaVersion:")
       if (!hasProvenance) {
+        const warning = formatWarningMessage("WARN-DOCS-001", { file })
         violations.push(
-          v(`Generated documentation '${file}' lacks required provenance metadata.`, {
-            severity: "warning",
-            nextStep: "synth docs generate",
+          v(warning?.message ?? `Generated documentation '${file}' lacks required provenance metadata.`, {
+            severity: warning?.severity ?? "warning",
+            code: warning?.code,
+            fixCommand: warning?.fixCommand,
+            nextStep: warning?.fixCommand ?? "synth docs generate",
           }),
         )
       }

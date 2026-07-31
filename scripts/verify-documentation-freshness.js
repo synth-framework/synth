@@ -79,6 +79,17 @@ function extractSourceStateHash(content) {
   return match ? match[1] : null
 }
 
+/**
+ * Normalize provenance metadata for comparison.
+ *
+ * `computedAt` is an ISO timestamp that changes on every regeneration, so
+ * masking it lets the freshness check verify that provenance is present
+ * without requiring identical timestamps.
+ */
+function normalizeForComparison(content) {
+  return content.replace(/computedAt:\s*[^\s]+/, "computedAt: <masked>")
+}
+
 async function main() {
   console.log("Verifying documentation freshness...")
 
@@ -113,7 +124,7 @@ async function main() {
         hasDiff = true
         continue
       }
-      if (regenerated[name] !== existing[name]) {
+      if (normalizeForComparison(regenerated[name]) !== normalizeForComparison(existing[name])) {
         console.log(`❌ Stale: ${name} content differs from regenerated output`)
         hasDiff = true
         continue

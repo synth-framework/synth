@@ -50,13 +50,15 @@ export function computeSourceStateHash(sources: MarkdownKnowledge[]): string {
 }
 
 /**
- * Embed a deterministic source-state fingerprint into a projection.
+ * Embed deterministic provenance metadata into a projection.
  */
-function embedSourceStateHash(content: string, sourceStateHash: string): string {
+function embedProvenance(content: string, sourceStateHash: string, computedAt: string): string {
   const footer = `
 
 <!--
 sourceStateHash: ${sourceStateHash}
+computedAt: ${computedAt}
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->`
   return content.trimEnd() + footer
@@ -117,10 +119,11 @@ export async function runDocumentationExpedition(
   const sourceStateHash = computeSourceStateHash(sources)
   const graph = normalizeGraph(buildKnowledgeGraph(sources))
   const projections = projectAll(graph, sourceStateHash)
+  const computedAt = new Date().toISOString()
 
   await fs.mkdir(outDir, { recursive: true })
   for (const projection of projections) {
-    const content = embedSourceStateHash(projection.content, projection.sourceStateHash)
+    const content = embedProvenance(projection.content, projection.sourceStateHash, computedAt)
     await fs.writeFile(path.join(outDir, projection.filename), content, "utf-8")
   }
 
