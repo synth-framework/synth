@@ -1711,6 +1711,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
     { name: "synth expedition complete --id <id> --evidence <path>", description: "Complete an executing Expedition (Executing → Completed)" },
+    { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
     { name: "synth expedition certify --id <id> --evaluation <path> [--evidence <path>]", description: "Certify convergence for an executing Expedition before completion" },
     { name: "synth expedition list", description: "List governance expeditions" },
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
@@ -3347,6 +3348,96 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const gitDiff = flags["git-diff"] === true || flags["git-diff"] === "true"
+  const testResultsPath = typeof flags["test-results"] === "string" ? flags["test-results"] : undefined
+  const rawAttach = typeof flags.attach === "string" ? flags.attach : ""
+  const attachPaths = rawAttach
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+  const note = typeof flags.note === "string" ? flags.note : undefined
+
+  const baseDir = path.join(process.cwd(), "proof", "expeditions", expeditionId)
+  await fs.mkdir(baseDir, { recursive: true })
+  const attachmentsDir = path.join(baseDir, "attachments")
+  await fs.mkdir(attachmentsDir, { recursive: true })
+
+  const captured: Array<{ kind: string; path: string; hash: string }> = []
+
+  async function captureFile(kind: string, sourcePath: string, destName: string) {
+    const resolvedSource = path.resolve(sourcePath)
+    const content = await fs.readFile(resolvedSource)
+    const destPath = path.join(kind === "attachment" ? attachmentsDir : baseDir, destName)
+    await fs.writeFile(destPath, content)
+    captured.push({ kind, path: path.relative(process.cwd(), destPath), hash: sha256(content) })
+  }
+
+  if (gitDiff) {
+    const diff = await new Promise<string>((resolve, reject) => {
+      const child = spawn("git", ["diff", "HEAD"], { cwd: process.cwd() })
+      let stdout = ""
+      let stderr = ""
+      child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
+      child.stderr.on("data", (data: Buffer) => { stderr += data.toString("utf-8") })
+      child.on("close", (code) => {
+        if (code !== 0) reject(new Error(stderr || `git diff exited with code ${code}`))
+        else resolve(stdout)
+      })
+      child.on("error", reject)
+    })
+    const destPath = path.join(baseDir, "git-diff.patch")
+    await fs.writeFile(destPath, diff)
+    captured.push({ kind: "git-diff", path: path.relative(process.cwd(), destPath), hash: sha256(diff) })
+  }
+
+  if (testResultsPath) {
+    await captureFile("test-results", testResultsPath, "test-results.txt")
+  }
+
+  for (const sourcePath of attachPaths) {
+    const destName = path.basename(sourcePath)
+    await captureFile("attachment", sourcePath, destName)
+  }
+
+  const manifestPath = path.join(baseDir, "manifest.json")
+  const manifest = {
+    expeditionId,
+    capturedAt: Date.now(),
+    note,
+    attachments: captured,
+  }
+  await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2))
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "AttachEvidence",
+    payload: { id: expeditionId, attachments: captured, note },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "EvidenceAttachFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "EvidenceAttached",
+    expeditionId,
+    attachments: captured,
+    note,
+    manifestPath: path.relative(process.cwd(), manifestPath),
+    result: result.result,
+  })
+}
+
 async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
   const expeditionId = resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
@@ -3729,6 +3820,7 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "commit") return "expedition commit"
     if (sub === "start") return "expedition start"
     if (sub === "complete") return "expedition complete"
+    if (sub === "evidence") return "expedition evidence"
     if (sub === "certify") return "expedition certify"
     if (sub === "list") return "expedition list"
   }
@@ -4108,11 +4200,12 @@ async function main() {
       else if (sub === "commit") await cmdExpeditionCommit(flags)
       else if (sub === "start") await cmdExpeditionStart(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
+      else if (sub === "evidence") await cmdExpeditionEvidence(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }
