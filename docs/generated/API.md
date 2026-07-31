@@ -402,6 +402,6 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: 2a86f24d5b9c68b5b2fe13fd8b10ce4efa854e928fb9b202e8614232cb4015ed
+sourceStateHash: 7d310b9ff4fd561f6a08060c7279185ea97fd77eba24c4c5b55fa49aafb39429
 projection: synth-documentation-expedition-v1
 -->
