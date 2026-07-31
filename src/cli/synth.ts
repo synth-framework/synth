@@ -67,6 +67,7 @@ import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
+import type { SynthEvent } from "../types/index.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -106,6 +107,7 @@ const COMMANDS = [
   { name: "ai", description: "AI agent interoperability (refresh)" },
   { name: "repo", description: "Repository and release governance operations" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
+  { name: "log", description: "Query the governance event log (read-only)" },
 ]
 
 const ADAPTER_NAMES = [
@@ -1759,6 +1761,159 @@ async function cmdCapabilitiesHelp() {
   ], {
     note: "Expected capabilities without a registered runtime capability or adapter are reported as unavailable.",
   }))
+}
+
+async function cmdLogHelp() {
+  printJson(namespaceHelp("log", "Query the governance event log (read-only)", [
+    { name: "synth log", description: "Show the last 50 events" },
+    { name: "synth log --expedition <id>", description: "Filter events by expedition id", args: "--expedition <id>" },
+    { name: "synth log --mission <id>", description: "Filter events by mission id", args: "--mission <id>" },
+    { name: "synth log --type <prefix>", description: "Filter events by type prefix", args: "--type <prefix>" },
+    { name: "synth log --since <iso>", description: "Events at or after ISO timestamp", args: "--since <iso>" },
+    { name: "synth log --limit <n>", description: "Cap result count (default 50, max 1000)", args: "--limit <n>" },
+    { name: "synth log --format table", description: "Human-readable table output", args: "--format table|json" },
+    { name: "synth log --format json", description: "One JSON object per line (default)", args: "--format table|json" },
+  ], {
+    note: "synth log is read-only and never appends events or modifies state.",
+  }))
+}
+
+async function cmdLog(flags: Record<string, string | boolean>) {
+  const logPath = sdk.paths.eventLogFile(process.cwd())
+  let raw = ""
+  try {
+    raw = await fs.readFile(logPath, "utf-8")
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code === "ENOENT") {
+      printError(
+        `No event log found at ${logPath}. Run 'synth init' or 'synth bootstrap' first.`,
+        { nextStep: "synth bootstrap . --approve" },
+      )
+      return
+    }
+    throw err
+  }
+
+  const expeditionId = typeof flags.expedition === "string" ? flags.expedition : undefined
+  const missionId = typeof flags.mission === "string" ? flags.mission : undefined
+  const typePrefix = typeof flags.type === "string" ? flags.type : undefined
+  const sinceIso = typeof flags.since === "string" ? flags.since : undefined
+  const limitRaw = typeof flags.limit === "string" ? parseInt(flags.limit, 10) : 50
+  const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 1000) : 50
+  const format = flags.format === "table" ? "table" : "json"
+
+  const sinceMs = sinceIso ? new Date(sinceIso).getTime() : undefined
+  if (sinceIso !== undefined && (sinceMs === undefined || Number.isNaN(sinceMs))) {
+    printError(`Invalid --since timestamp: ${sinceIso}`, { nextStep: "synth log --since 2026-07-31T00:00:00Z" })
+    return
+  }
+
+  const lines = raw.split("\n").filter(Boolean)
+  const events: Array<SynthEvent & { offset: number }> = []
+  for (let i = 0; i < lines.length; i++) {
+    try {
+      const event = JSON.parse(lines[i]) as SynthEvent
+      events.push({ ...event, offset: i + 1 })
+    } catch {
+      // Skip malformed lines; they cannot be attributed safely.
+    }
+  }
+
+  const filtered = events.filter((event) => {
+    if (expeditionId && !eventReferencesExpedition(event, expeditionId)) return false
+    if (missionId && !eventReferencesMission(event, missionId)) return false
+    if (typePrefix && !event.type.startsWith(typePrefix)) return false
+    if (sinceMs !== undefined && event.timestamp < sinceMs) return false
+    return true
+  })
+
+  const reversed = filtered.slice().reverse()
+  const page = reversed.slice(0, limit)
+
+  if (format === "table") {
+    if (page.length === 0) {
+      console.log("No events match the query.")
+      return
+    }
+    console.log("offset  timestamp                  type                aggregate    summary")
+    for (const event of page) {
+      const iso = new Date(event.timestamp).toISOString()
+      const aggregate = eventAggregateId(event) ?? "-"
+      const summary = eventSummary(event)
+      console.log(
+        `${String(event.offset).padEnd(7)} ${iso.padEnd(26)} ${event.type.padEnd(19)} ${aggregate.padEnd(12)} ${summary}`,
+      )
+    }
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "EventLogQuery",
+    total: events.length,
+    matched: filtered.length,
+    returned: page.length,
+    events: page,
+  })
+}
+
+function eventReferencesExpedition(event: SynthEvent, expeditionId: string): boolean {
+  const payload = (event.payload ?? {}) as Record<string, unknown>
+  if (payload.expeditionId === expeditionId) return true
+  if (payload.id === expeditionId) return true
+  if (event.partitionKey === expeditionId) return true
+  return deepContains(payload, expeditionId)
+}
+
+function eventReferencesMission(event: SynthEvent, missionId: string): boolean {
+  const payload = (event.payload ?? {}) as Record<string, unknown>
+  if (payload.missionId === missionId) return true
+  if (payload.id === missionId) return true
+  return deepContains(payload, missionId)
+}
+
+function eventAggregateId(event: SynthEvent): string | undefined {
+  const payload = (event.payload ?? {}) as Record<string, unknown>
+  const id =
+    payload.expeditionId ??
+    payload.missionId ??
+    payload.id ??
+    payload.workItemId ??
+    payload.planId ??
+    payload.projectId ??
+    payload.intentModelId ??
+    payload.contractId ??
+    payload.decisionId ??
+    payload.discoveryArtifactId ??
+    event.partitionKey
+  return typeof id === "string" ? id : undefined
+}
+
+function eventSummary(event: SynthEvent): string {
+  const payload = (event.payload ?? {}) as Record<string, unknown>
+  const name =
+    payload.subject ??
+    payload.name ??
+    payload.title ??
+    payload.reason ??
+    payload.decision ??
+    eventAggregateId(event)
+  return typeof name === "string" ? truncate(name, 48) : "-"
+}
+
+function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength - 3) + "..."
+}
+
+function deepContains(value: unknown, target: string): boolean {
+  if (typeof value === "string") return value === target
+  if (Array.isArray(value)) return value.some((item) => deepContains(item, target))
+  if (value && typeof value === "object") {
+    return Object.values(value).some((item) => deepContains(item, target))
+  }
+  return false
 }
 
 async function cmdAiHelp() {
@@ -3448,6 +3603,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdCertifyHelp }
     case "capabilities":
       return { namespace, handler: cmdCapabilitiesHelp }
+    case "log":
+      return { namespace, handler: cmdLogHelp }
     case "docs":
       return { namespace, handler: cmdDocsGenerateHelp }
     case "adapter":
@@ -3986,6 +4143,10 @@ async function main() {
 
     case "capabilities":
       await cmdCapabilities()
+      break
+
+    case "log":
+      await cmdLog(flags)
       break
 
     case "ai": {

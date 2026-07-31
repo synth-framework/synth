@@ -212,6 +212,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-ENV-008 — Forge Capability](../expeditions/EXP-ENV-008.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-011 — AI Environment Planning](../expeditions/EXP-ENV-011.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-013 — Co-locate Runtime Data Under `.synth/`](../expeditions/EXP-ENV-013.md)** — Status: Completed and accepted, Kind: Environment Independence / Repository Layout, Priority: High, Program: EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program
+- **[EXP-EVENTLOG-001 — Event-Log Query CLI](../expeditions/EXP-EVENTLOG-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-EXEC-001 — Execution Intent Model](../expeditions/EXP-EXEC-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-002 — Work Item Runtime](../expeditions/EXP-EXEC-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-003 — Branch-per-Expedition Workflow](../expeditions/EXP-EXEC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
@@ -627,6 +628,7 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-AI-001 md** — `docs/expeditions/EXP-AI-001.md`
 - **docs expeditions EXP-AI-003 md** — `docs/expeditions/EXP-AI-003.md`
 - **docs expeditions EXP-CAPABILITY-BOUNDARY-001 md** — `docs/expeditions/EXP-CAPABILITY-BOUNDARY-001.md`
+- **docs expeditions EXP-CAPTRANS-001 md** — `docs/expeditions/EXP-CAPTRANS-001.md`
 - **docs expeditions EXP-CERT-001 md** — `docs/expeditions/EXP-CERT-001.md`
 - **docs expeditions EXP-CLI-001 md** — `docs/expeditions/EXP-CLI-001.md`
 - **docs expeditions EXP-CLI-002 md** — `docs/expeditions/EXP-CLI-002.md`
@@ -1699,6 +1701,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: c37d671ef00c9dc63f768e2b0abd9e771d4bfc2e67cf7702947774363c897c98
+sourceStateHash: 6f3cf8ec490ffb1d1a7c5e73624cb5b8a6ccc4683665390bb61a9514e318e653
 projection: synth-documentation-expedition-v1
 -->
