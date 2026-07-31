@@ -203,7 +203,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DOCS-003 — Agent Planning Guide Update](../expeditions/EXP-DOCS-003.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-005 — Example Synchronization](../expeditions/EXP-DOCS-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-006 — Website Projection Verification](../expeditions/EXP-DOCS-006.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
-- **[EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands](../expeditions/EXP-DRYRUN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands](../expeditions/EXP-DRYRUN-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-ENV-003 — Workspace Capability](../expeditions/EXP-ENV-003.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-004 — Revision Capability](../expeditions/EXP-ENV-004.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-005 — Filesystem Capability](../expeditions/EXP-ENV-005.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
@@ -319,6 +319,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-VCS-002 — Git Versioning Adapter](../expeditions/EXP-VCS-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-015 — Repository Versioning Capability
 - **[EXP-VCS-003 — GitHub Forge Adapter](../expeditions/EXP-VCS-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-015 — Repository Versioning Capability
 - **[EXP-VCS-005 — Versioning Certification](../expeditions/EXP-VCS-005.md)** — Status: Completed and accepted, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-015 — Repository Versioning Capability
+- **[EXP-WARN-001 — Stable Warning IDs and Actionable Fixes](../expeditions/EXP-WARN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-WEB-001 — Homepage Hero: Intent to Deterministic Result](../expeditions/EXP-WEB-001.md)** — Status: Superseded, Kind: Design Expedition, Priority: High, Program: EXP-PROGRAM-020 — Website Experience
 - **[EXP-ADOPT-007 — Video Library](../expeditions/EXP-ADOPT-007.md)** — Status: Proposed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth
 - **[EXP-ADOPT-009 — Launch Campaign](../expeditions/EXP-ADOPT-009.md)** — Status: Proposed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth
@@ -632,6 +633,7 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-CLI-002 md** — `docs/expeditions/EXP-CLI-002.md`
 - **docs expeditions EXP-DISCOVERY-001 md** — `docs/expeditions/EXP-DISCOVERY-001.md`
 - **docs expeditions EXP-DOC-002 md** — `docs/expeditions/EXP-DOC-002.md`
+- **docs expeditions EXP-DOC-007 md** — `docs/expeditions/EXP-DOC-007.md`
 - **docs expeditions EXP-DOCS-001 md** — `docs/expeditions/EXP-DOCS-001.md`
 - **docs expeditions EXP-ENV-001 md** — `docs/expeditions/EXP-ENV-001.md`
 - **docs expeditions EXP-ENV-002 md** — `docs/expeditions/EXP-ENV-002.md`
@@ -1699,6 +1701,8 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 568dd160e9659be36773fecb6f4e9dd93659e1d38eff9a7b85757d324e405b31
+sourceStateHash: 2b13774ac5fb9f6d18b90c2055e7461da5d9373ce181cac30485ae65142367d9
+computedAt: 2026-07-31T07:20:32.371Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->

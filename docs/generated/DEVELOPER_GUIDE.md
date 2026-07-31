@@ -759,6 +759,7 @@ This guide is for contributors extending Synth.
 - **Policy conditions intent capability intent type** — Policy conditions: `intent.capability` → `intent.type`
 - **Policy evaluation is logged and attested** — Policy evaluation is logged and attested; capability execution is not
 - **Policy Tests 3 tests** — Policy Tests (3 tests)
+- **PR 222 merged implementation and tests** — PR #222 merged: implementation and tests landed on main.
 - **Preserve full adapter provenance in the** — Preserve full adapter provenance in the session.
 - **Prevent implementation before failing tests** — Prevent implementation before failing tests
 - **Principle 8 Capability Isolation** — Principle 8: Capability Isolation
@@ -1174,6 +1175,7 @@ This guide is for contributors extending Synth.
 - **VersioningCapability interface is defined and documented** — `VersioningCapability` interface is defined and documented.
 - **Visual regression tests** — 1.5 Visual regression tests
 - **Visual regression tests pass for homepage** — Visual regression tests pass for homepage, phases, sidebar, artifacts, components, breakpoints, and themes.
+- **WARN-CAP-001 required capability unavailable** — `WARN-CAP-001` — required capability unavailable.
 - **Website pages accurately reference the capability** — Website pages accurately reference the capability reference, Environment Layer reference, and updated guides.
 - **What enters Actor capability payload all** — **What enters:** Actor, capability, payload (all validated)
 - **What Is a Capability** — What Is a Capability?
@@ -1203,6 +1205,8 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 568dd160e9659be36773fecb6f4e9dd93659e1d38eff9a7b85757d324e405b31
+sourceStateHash: 2b13774ac5fb9f6d18b90c2055e7461da5d9373ce181cac30485ae65142367d9
+computedAt: 2026-07-31T07:20:32.371Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->

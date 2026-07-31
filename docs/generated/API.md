@@ -382,6 +382,7 @@
 - **Versioning Capability** — Versioning Capability
 - **VersioningCapability interface** — 1. `VersioningCapability` interface
 - **VersioningCapability interface is defined and documented** — `VersioningCapability` interface is defined and documented.
+- **WARN-CAP-001 required capability unavailable** — `WARN-CAP-001` — required capability unavailable.
 - **Website pages accurately reference the capability** — Website pages accurately reference the capability reference, Environment Layer reference, and updated guides.
 - **What enters Actor capability payload all** — **What enters:** Actor, capability, payload (all validated)
 - **What Is a Capability** — What Is a Capability?
@@ -402,6 +403,8 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: 568dd160e9659be36773fecb6f4e9dd93659e1d38eff9a7b85757d324e405b31
+sourceStateHash: 2b13774ac5fb9f6d18b90c2055e7461da5d9373ce181cac30485ae65142367d9
+computedAt: 2026-07-31T07:20:32.371Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
