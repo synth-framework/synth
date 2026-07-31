@@ -249,7 +249,18 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     }
     case "EXPEDITION_CREATED": {
       const expedition = payload.expedition as Expedition
-      if (expedition) state.expeditions[expedition.id] = expedition
+      if (expedition) {
+        state.expeditions[expedition.id] = expedition
+        const missionId = expedition.missionId
+        const mission = missionId ? state.missions[missionId] : undefined
+        if (mission && !mission.expeditions.includes(expedition.id)) {
+          state.missions[missionId] = {
+            ...mission,
+            expeditions: [...mission.expeditions, expedition.id],
+            updatedAt: event.timestamp,
+          }
+        }
+      }
       break
     }
     case "EXPEDITION_APPROVED": {

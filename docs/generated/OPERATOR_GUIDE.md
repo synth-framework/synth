@@ -65,6 +65,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-GOVERN-004 — Incremental Scheduler](../expeditions/EXP-GOVERN-004.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-021 — Incremental Governance
 - **[EXP-GOVERN-006 — Governance Completion](../expeditions/EXP-GOVERN-006.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-023 — Genesis
 - **[EXP-GOVERNANCE-ENFORCEMENT-001 — Implementation Authority Ordering Enforcement](../expeditions/EXP-GOVERNANCE-ENFORCEMENT-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-040 — Repository Simplification
+- **[EXP-GUARD-001 — Derived-State Protection & Expedition Scope](../expeditions/EXP-GUARD-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-HARDEN-001 — Mission Studio Integrity](../expeditions/EXP-HARDEN-001.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HARDEN-002 — Snapshot Integrity](../expeditions/EXP-HARDEN-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HARDEN-003 — Genesis Hardening](../expeditions/EXP-HARDEN-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
@@ -96,6 +97,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-KNOWLEDGE-001 — Canonical Knowledge Model](../expeditions/EXP-KNOWLEDGE-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-025 — Canonical Knowledge & Validation
 - **[EXP-KNOWLEDGE-002 — Prototype-First Validation](../expeditions/EXP-KNOWLEDGE-002.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: Critical, Program: EXP-PROGRAM-025 — Canonical Knowledge & Validation
 - **[EXP-MUTATION-LIFECYCLE-001 — Mutation Boundary Integration and Genesis Policy](../expeditions/EXP-MUTATION-LIFECYCLE-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-040 — Repository Simplification
+- **[EXP-ONBOARD-001 — Guided First-Contact Command](../expeditions/EXP-ONBOARD-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-PROD-001 — Mission Snapshot Lineage](../expeditions/EXP-PROD-001.md)** — Status: Completed, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-001 — SYNTH Productization Program
 - **[EXP-PROD-005 — Freeze Certification](../expeditions/EXP-PROD-005.md)** — Status: Completed, Kind: Certification Expedition, Priority: Critical, Program: EXP-PROGRAM-001 — SYNTH Productization Program
 - **[EXP-PROGRAM-001 — SYNTH Productization Program](../expeditions/EXP-PROGRAM-001.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
@@ -179,7 +181,10 @@ This guide covers the operator journey from idea to done.
 - **[EXP-AX-003 — README & Narrative Alignment](../expeditions/EXP-AX-003.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
 - **[EXP-AX-004 — Documentation Synchronization](../expeditions/EXP-AX-004.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
 - **[EXP-AX-005 — Public Release Polish](../expeditions/EXP-AX-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
+- **[EXP-CAPTRANS-001 — Capability Transparency CLI](../expeditions/EXP-CAPTRANS-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CERT-001 — Failure Certification Framework](../expeditions/EXP-CERT-001.md)** — Status: Completed, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
+- **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CONT-002 — Interruption Benchmark](../expeditions/EXP-CONT-002.md)** — Status: Completed (pending program acceptance), Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-013 — Cognitive Continuity
 - **[EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage](../expeditions/EXP-CONVERGENCE-001.md)** — Status: Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning., Kind: Architectural Convergence, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-DET-001 — Deterministic Execution](../expeditions/EXP-DET-001.md)** — Status: Completed, Kind: unknown, Priority: High, Program: EXP-PROGRAM-018 — Foundation Architecture Program
@@ -198,6 +203,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DOCS-003 — Agent Planning Guide Update](../expeditions/EXP-DOCS-003.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-005 — Example Synchronization](../expeditions/EXP-DOCS-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-006 — Website Projection Verification](../expeditions/EXP-DOCS-006.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
+- **[EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands](../expeditions/EXP-DRYRUN-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-ENV-003 — Workspace Capability](../expeditions/EXP-ENV-003.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-004 — Revision Capability](../expeditions/EXP-ENV-004.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-005 — Filesystem Capability](../expeditions/EXP-ENV-005.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
@@ -211,6 +217,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-EXEC-003 — Branch-per-Expedition Workflow](../expeditions/EXP-EXEC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-004 — Commit-as-Evidence](../expeditions/EXP-EXEC-004.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-005 — Pull Request Projection](../expeditions/EXP-EXEC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
+- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-FIRSTCONTACT-004 — Experience Projection System](../expeditions/EXP-FIRSTCONTACT-004.md)** — Status: Superseded, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-005 — Interactive Replay Experience](../expeditions/EXP-FIRSTCONTACT-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection](../expeditions/EXP-FIRSTCONTACT-007.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
@@ -236,6 +243,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-GOV-020 — Certification Profiles](../expeditions/EXP-GOV-020.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-030 — Intelligent Governance Orchestration
 - **[EXP-GOV-021 — Validation Explanation](../expeditions/EXP-GOV-021.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: High, Program: EXP-PROGRAM-030 — Intelligent Governance Orchestration
 - **[EXP-GOV-022 — Performance Benchmarking](../expeditions/EXP-GOV-022.md)** — Status: Completed and accepted, Kind: Engineering Expedition, Priority: High, Program: EXP-PROGRAM-030 — Intelligent Governance Orchestration
+- **[EXP-GOV-024 — v2 Brownfield Migration Blockers](../expeditions/EXP-GOV-024.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-038 — Audit Remediation
 - **[EXP-GOVERN-005 — Advanced Optimization](../expeditions/EXP-GOVERN-005.md)** — Status: Completed, Kind: Architecture Expedition, Priority: High, Program: EXP-PROGRAM-021 — Incremental Governance
 - **[EXP-GOVERNABILITY-001 — Governability Regression Certification](../expeditions/EXP-GOVERNABILITY-001-regression-certification.md)** — Status: Completed — Governability regression certification passed; closed as part of Release Candidate portfolio pruning., Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-GOVERNABILITY-002 — Proposal Evaluation Capability Design](../expeditions/EXP-GOVERNABILITY-002-proposal-evaluation-capability.md)** — Status: Completed — Proposal evaluation capability design is implemented; closed as part of Release Candidate portfolio pruning., Kind: Design Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
@@ -280,6 +288,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-PROGRAM-035 — Intent Refinement & Review Governance](../expeditions/EXP-PROGRAM-035.md)** — Status: Completed and accepted — Engine, integration, and certification complete. EXP-GATE-013 (dependency graph enforcement) is deferred as a future ADR-050 freeze-lift expedition., Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-036 — Intent Refinement & Alignment Governance](../expeditions/EXP-PROGRAM-036.md)** — Status: Completed and accepted — Intent pipeline, Convergence Certification, and full-lifecycle certification complete. EXP-REFINE-007, EXP-REFINE-009, EXP-REFINE-010, EXP-REFINE-014, EXP-REFINE-015, and EXP-REFINE-016 are deferred to future work., Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth](../expeditions/EXP-PROGRAM-037.md)** — Status: Proposed, Kind: Program, Priority: High, Program: unknown
+- **[EXP-PROGRAM-043 — Agent Onboarding & Operator Experience](../expeditions/EXP-PROGRAM-043.md)** — Status: Proposed, Kind: Program, Priority: High, Program: unknown
 - **[EXP-REFINE-001 — Refinement Layer Model](../expeditions/EXP-REFINE-001.md)** — Status: Completed, Kind: Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-002 — Alignment Contract](../expeditions/EXP-REFINE-002.md)** — Status: Completed, Kind: Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-003 — Divergence Gate](../expeditions/EXP-REFINE-003.md)** — Status: Completed, Kind: Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
@@ -344,6 +353,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-REFINE-005 — Reference Evidence Binding](../expeditions/EXP-REFINE-005.md)** — Status: Completed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-007 — Mission Studio Integration](../expeditions/EXP-REFINE-007.md)** — Status: Completed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-VCS-004 — Repository State Observations](../expeditions/EXP-VCS-004.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Medium, Program: EXP-PROGRAM-015 — Repository Versioning Capability
+- **[EXP-DOC-007 — Generated Documentation Provenance](../expeditions/EXP-DOC-007.md)** — Status: Draft, Kind: Documentation Remediation Expedition, Priority: Low, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-PROGRAM-018 — Foundation Architecture Program](../expeditions/EXP-PROGRAM-018.md)** — Status: Completed and accepted, Kind: Program, Priority: Low, Program: unknown
 - **[EXP-ADP-000 — Adapter Architecture Specification](../expeditions/EXP-ADP-000.md)** — Status: Completed — Adapter architecture specification is canonical; closed as part of Release Candidate portfolio pruning., Kind: Constitutional Specification, Priority: unknown, Program: EXP-PROGRAM-018 — Foundation Architecture Program
 - **[EXP-CAPABILITY-BOUNDARY-001 — Completion Evidence](../expeditions/EXP-CAPABILITY-BOUNDARY-001-completion.md)** — Status: Completed, Kind: unknown, Priority: unknown, Program: unknown
@@ -544,6 +554,7 @@ This guide covers the operator journey from idea to done.
 - **Complete Expedition** — Complete Expedition
 - **Completed Expeditions** — Completed Expeditions
 - **Completed The Expedition has produced evidence** — **Completed:** The Expedition has produced evidence and been accepted.
+- **completedExpeditions count** — `completedExpeditions` count
 - **Computed confidence MissionStudio approve recomputes confidence** — **Computed confidence** — `MissionStudio.approve()` recomputes confidence from the session's own observations/evidence/unknowns via the pure `computeConfidence` and returns the certified session on every path, so the API (`approveModel`) and CLI report computed values only. The stored field is never read for decisions or output. A side benefit: forging `overall` now fails *two* ways (fingerprint mismatch at the CLI, recomputation at the engine).
 - **Concurrent expedition creation attempts** — Concurrent expedition creation attempts
 - **Conditions do not send the expedition** — Conditions do not send the expedition back to implementation; they are gates on Acceptance.
@@ -617,8 +628,10 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-CAPABILITY-BOUNDARY-001 md** — `docs/expeditions/EXP-CAPABILITY-BOUNDARY-001.md`
 - **docs expeditions EXP-CERT-001 md** — `docs/expeditions/EXP-CERT-001.md`
 - **docs expeditions EXP-CLI-001 md** — `docs/expeditions/EXP-CLI-001.md`
+- **docs expeditions EXP-CLI-002 md** — `docs/expeditions/EXP-CLI-002.md`
 - **docs expeditions EXP-DISCOVERY-001 md** — `docs/expeditions/EXP-DISCOVERY-001.md`
 - **docs expeditions EXP-DOC-002 md** — `docs/expeditions/EXP-DOC-002.md`
+- **docs expeditions EXP-DOCS-001 md** — `docs/expeditions/EXP-DOCS-001.md`
 - **docs expeditions EXP-ENV-001 md** — `docs/expeditions/EXP-ENV-001.md`
 - **docs expeditions EXP-ENV-002 md** — `docs/expeditions/EXP-ENV-002.md`
 - **docs expeditions EXP-ENV-003 md** — `docs/expeditions/EXP-ENV-003.md`
@@ -654,6 +667,9 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-GATE-012 md** — `docs/expeditions/EXP-GATE-012.md`
 - **docs expeditions EXP-GATE-012 md Certification** — `docs/expeditions/EXP-GATE-012.md` — Certification
 - **docs expeditions EXP-GATE-013 md Gate State** — `docs/expeditions/EXP-GATE-013.md` — Gate State & Dependency Enforcement (implements this ADR)
+- **docs expeditions EXP-GOV-015 md** — `docs/expeditions/EXP-GOV-015.md`
+- **docs expeditions EXP-GOV-024 md** — `docs/expeditions/EXP-GOV-024.md`
+- **docs expeditions EXP-GOVERNABILITY-005 md** — `docs/expeditions/EXP-GOVERNABILITY-005.md`
 - **docs expeditions EXP-GOVERNANCE-ENFORCEMENT-001 md** — `docs/expeditions/EXP-GOVERNANCE-ENFORCEMENT-001.md`
 - **docs expeditions EXP-HOME-001 md** — `docs/expeditions/EXP-HOME-001.md`
 - **docs expeditions EXP-HOME-001 md through docs** — `docs/expeditions/EXP-HOME-001.md` through `docs/expeditions/EXP-HOME-014.md`
@@ -682,6 +698,7 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-PROGRAM-004 md** — `docs/expeditions/EXP-PROGRAM-004.md`
 - **docs expeditions EXP-PROGRAM-006 md** — `docs/expeditions/EXP-PROGRAM-006.md`
 - **docs expeditions EXP-PROGRAM-007 md** — `docs/expeditions/EXP-PROGRAM-007.md`
+- **docs expeditions EXP-PROGRAM-008 md** — `docs/expeditions/EXP-PROGRAM-008.md`
 - **docs expeditions EXP-PROGRAM-015 md** — `docs/expeditions/EXP-PROGRAM-015.md`
 - **docs expeditions EXP-PROGRAM-027 md** — `docs/expeditions/EXP-PROGRAM-027.md`
 - **docs expeditions EXP-PROGRAM-027 md Mission Studio** — `docs/expeditions/EXP-PROGRAM-027.md` — Mission Studio Homepage
@@ -692,6 +709,7 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-PROGRAM-035 md** — `docs/expeditions/EXP-PROGRAM-035.md`
 - **docs expeditions EXP-PROGRAM-035 md Intent Refinement** — `docs/expeditions/EXP-PROGRAM-035.md` — Intent Refinement & Review Governance (parent program)
 - **docs expeditions EXP-PROGRAM-036 md** — `docs/expeditions/EXP-PROGRAM-036.md`
+- **docs expeditions EXP-PROGRAM-043 md** — `docs/expeditions/EXP-PROGRAM-043.md`
 - **docs expeditions EXP-REFINE- md** — `docs/expeditions/EXP-REFINE-*.md`
 - **docs expeditions EXP-REVIEW-001 md First Program** — `docs/expeditions/EXP-REVIEW-001.md` — First Program Convergence Review.
 - **docs expeditions EXP-RUNTIME-001 md** — `docs/expeditions/EXP-RUNTIME-001.md`
@@ -747,6 +765,7 @@ This guide covers the operator journey from idea to done.
 - **Easier Marketing onboarding and operator docs** — **Easier:** Marketing, onboarding, and operator docs can be finalized.
 - **Easier Mission Studio persistence can run** — **Easier:** Mission Studio persistence can run on any `FilesystemProvider`, including in-memory providers for tests.
 - **Easier Operator feedback and real-world evidence** — **Easier:** Operator feedback and real-world evidence become the primary inputs to v3 planning.
+- **Editing programs or expeditions from the** — Editing programs or expeditions from the list command.
 - **Emit ApproveMission to transition the mission** — Emit `ApproveMission` to transition the mission to `active`.
 - **Emit CreateMission if no mission with** — Emit `CreateMission` if no mission with that id exists in runtime state.
 - **Emit EXPEDITION AUTHORIZED after successful authorized** — ✅ Emit `EXPEDITION_AUTHORIZED` after successful authorized mutation
@@ -810,6 +829,7 @@ This guide covers the operator journey from idea to done.
 - **EXP-GOVERNABILITY-001 This expedition designs the capability** — **EXP-GOVERNABILITY-001:** This expedition designs the capability that 001 identified as missing.
 - **EXP-GOVERNABILITY-001 This expedition enables its re-execution** — **EXP-GOVERNABILITY-001:** This expedition enables its re-execution.
 - **EXP-GOVERNABILITY-005 Convergence Certification this expedition closes** — **EXP-GOVERNABILITY-005** — Convergence Certification; this expedition closes the symmetric gap at the *creation* end of the lifecycle.
+- **EXP-GUARD-001 Derived-State Protection Expedition Scope** — EXP-GUARD-001 — Derived-State Protection & Expedition Scope
 - **EXP-HARDEN-001 Mission Studio Integrity** — EXP-HARDEN-001 — Mission Studio Integrity
 - **EXP-HOME-001 Mission Studio Design Language** — EXP-HOME-001 — Mission Studio Design Language
 - **EXP-HOME-001 Mission Studio Design Language v3** — EXP-HOME-001 — Mission Studio Design Language (v3)
@@ -853,6 +873,10 @@ This guide covers the operator journey from idea to done.
 - **EXP-PROGRAM-035 This expedition fixes gaps in** — **EXP-PROGRAM-035** — This expedition fixes gaps in that program's engine implementation.
 - **EXP-PROGRAM-042 Release Certification This expedition produces** — **EXP-PROGRAM-042 — Release Certification** — This expedition produces evidence for the Operator / CLI Certification and Release Readiness Report.
 - **EXP-PROGRAM-042 Release Certification This expedition provides** — **EXP-PROGRAM-042 — Release Certification** — This expedition provides evidence for the Operator / CLI Certification.
+- **EXP-PROGRAM-043 Agent Onboarding Operator Experience** — EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **EXP-PROGRAM-043 Agent Onboarding Operator Experience defines** — **EXP-PROGRAM-043 — Agent Onboarding & Operator Experience** defines the CLI-side capability transparency and first-contact flow that generated skills, MCP manifests, and website copy should project consistently.
+- **EXP-PROGRAM-043 Agent Onboarding Operator Experience was** — **EXP-PROGRAM-043 — Agent Onboarding & Operator Experience** was chartered because real-world TaskPRO onboarding feedback exposed operator-friction gaps (black-box bootstrap, missing capability transparency, vague errors, and derived-state edit risk) that no existing program owns.
+- **EXP-PROGRAM-043 must fix the operator-facing pain** — `EXP-PROGRAM-043` must fix the operator-facing pain before the orchestration engine underneath it is rewritten.
 - **EXP-REFINE-007 Mission Studio Integration** — EXP-REFINE-007 — Mission Studio Integration
 - **EXP-REFINE-009 Program 036 certification this expedition** — **EXP-REFINE-009** — Program 036 certification; this expedition ensures REFINE-009 is blocked if EXP-GOVERNABILITY-001 remains `partial_pass`.
 - **EXP-REFINE-013 Mission Projection Derivation** — EXP-REFINE-013 — Mission Projection & Derivation
@@ -909,6 +933,7 @@ This guide covers the operator journey from idea to done.
 - **Expedition governance validator clean** — Expedition governance validator clean
 - **Expedition Granularity** — Expedition Granularity
 - **Expedition granularity is off** — Expedition granularity is off.
+- **Expedition identity rules** — Expedition identity rules.
 - **Expedition implementation is complete awaiting acceptance** — Expedition implementation is complete; awaiting acceptance review before PR is opened.
 - **Expedition implementation is complete the document** — Expedition implementation is complete; the document may now be merged and subsequent expeditions may project from it.
 - **Expedition Kinds** — Expedition Kinds
@@ -927,6 +952,7 @@ This guide covers the operator journey from idea to done.
 - **Expedition proposals trace back to the** — Expedition proposals trace back to the same artifact.
 - **Expedition quality** — Expedition quality
 - **Expedition Review** — Expedition Review
+- **Expedition scope declaration** — 2. Expedition scope declaration
 - **Expedition similarity** — Expedition similarity
 - **Expedition start commit complete** — Expedition start/commit/complete.
 - **Expedition state machine and lifecycle vocabulary** — Expedition state machine and lifecycle vocabulary.
@@ -964,6 +990,7 @@ This guide covers the operator journey from idea to done.
 - **failed mission approval** — failed mission approval
 - **Failure stops the Expedition and records** — Failure stops the Expedition and records the reason.
 - **fake missions or expeditions during init** — fake missions or expeditions during init
+- **File-system-level enforcement kernel permissions** — File-system-level enforcement (kernel permissions).
 - **Finding 1 Mission Approval Can Leave** — Finding 1 — Mission Approval Can Leave Runtime Out of Sync
 - **Finding 3 Mission Studio and Runtime** — Finding 3 — Mission Studio and Runtime Are Disconnected
 - **First Expedition proposal** — First Expedition proposal
@@ -1029,6 +1056,7 @@ This guide covers the operator journey from idea to done.
 - **Implementation visually converges to accepted Mission** — Implementation visually converges to accepted Mission Studio design boards.
 - **Implementing new projections other expeditions own** — Implementing new projections (other expeditions own those).
 - **Implementing operator-specific optimizations see EXP-PROGRAM-032** — Implementing operator-specific optimizations (see EXP-PROGRAM-032).
+- **Importing legacy v1 expeditions as live** — Importing legacy v1 expeditions as live v2 records (keep archive-only).
 - **In-scope for this expedition** — In-scope for this expedition
 - **Include a mission expedition and replay** — Include a mission, expedition, and replay evidence.
 - **Infer semantic versioning from Missions Expeditions** — Infer semantic versioning from Missions, Expeditions, and Evidence.
@@ -1180,6 +1208,7 @@ This guide covers the operator journey from idea to done.
 - **Mission Studio Design System LDS-002 v3** — Mission Studio Design System (LDS-002 v3)
 - **Mission Studio displays Refinement as the** — Mission Studio displays Refinement as the first phase.
 - **Mission Studio full-viewport shell** — Mission Studio (full-viewport shell)
+- **Mission Studio Genesis Replay ExecutionGate Event** — Mission Studio, Genesis, Replay, ExecutionGate, Event Model, Capability Model, or Constitutional Baseline changes.
 - **Mission Studio Guide** — Mission Studio Guide
 - **Mission Studio Guide Chart and approve** — Mission Studio Guide — Chart and approve Missions
 - **Mission Studio has zero runtime mutation** — Mission Studio has zero runtime mutation paths.
@@ -1263,6 +1292,7 @@ This guide covers the operator journey from idea to done.
 - **No repository initialization before Mission approval** — No repository initialization before Mission approval.
 - **node scripts verify-expedition-governance js reports 0** — `node scripts/verify-expedition-governance.js` reports **0 errors, 0 warnings**.
 - **node scripts verify-expedition-governance js reports zero** — `node scripts/verify-expedition-governance.js` reports zero identity errors and zero warnings.
+- **node scripts verify-expedition-governance js validates identity** — `node scripts/verify-expedition-governance.js` — validates identity rules.
 - **Nodes are aggregates missions expeditions objectives** — **Nodes** are aggregates: missions, expeditions, objectives, and work
 - **Normalize evidence consumed by Mission Studio** — Normalize evidence consumed by Mission Studio and record its provenance.
 - **Not modified Mission Studio Genesis Replay** — **Not modified:** Mission Studio, Genesis, Replay, ExecutionGate, Event Model, Capability Model, Constitutional Baseline, Public Vocabulary.
@@ -1273,6 +1303,7 @@ This guide covers the operator journey from idea to done.
 - **Open design questions for implementation expedition** — Open design questions for implementation expedition
 - **Open Questions for Downstream Expeditions** — Open Questions for Downstream Expeditions
 - **Open questions for enforcement expedition** — 10. Open questions for enforcement expedition
+- **openExpeditions count** — `openExpeditions` count
 - **Operator adapter interface** — Operator adapter interface
 - **Operator and agent trials** — 10.2 Operator and agent trials
 - **Operator approval** — Operator approval
@@ -1506,6 +1537,7 @@ This guide covers the operator journey from idea to done.
 - **synth expedition complete** — `synth expedition complete`
 - **synth expedition create** — `synth expedition create`
 - **synth expedition create create an Expedition** — `synth_expedition_create` — create an Expedition.
+- **synth expedition list** — 2. `synth expedition list`
 - **synth expedition start** — `synth expedition start`
 - **SYNTH has a small vocabulary Mission** — SYNTH has a small vocabulary: Mission, Expedition, Evidence, Plan, Event, State, Replay.
 - **synth mission** — `synth mission *`
@@ -1535,6 +1567,7 @@ This guide covers the operator journey from idea to done.
 - **tests operator-journey test js automated synthetic** — `tests/operator-journey.test.js` — automated synthetic operator that executes the full journey and verifies each artifact.
 - **tests operator-journey test js automates a** — `tests/operator-journey.test.js` automates a synthetic operator through the full journey.
 - **tests public-vocabulary-audit test js scans operator** — `tests/public-vocabulary-audit.test.js` scans operator docs, introduction, and reference docs for forbidden implementation terms.
+- **tests replay-mission-expeditions test js proves mission** — `tests/replay-mission-expeditions.test.js` — proves mission.expeditions is populated.
 - **tests synth test js 943-953 Expedition** — `tests/synth.test.js:943-953` — "Expedition: replay reconstructs planning state correctly" asserts `replayVerifier.verify().consistent === true`, which is hard-coded.
 - **The AI operator note points to** — The AI operator note points to AGENTS.md (index.html).
 - **The boundary is visible unapproved Mission** — The boundary is visible: unapproved Mission blocks Expedition creation.
@@ -1662,6 +1695,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->

@@ -83,6 +83,7 @@ The following expeditions were unassigned before this canonicalization pass. Eac
 | EXP-PROGRAM-039 | Documentation Remediation Program | Completed and accepted |
 | EXP-PROGRAM-040 | Repository Simplification | Completed |
 | EXP-PROGRAM-041 | Platform Canonicalization | Completed |
+| EXP-PROGRAM-043 | Agent Onboarding & Operator Experience | Proposed |
 
 ---
 
@@ -116,3 +117,5 @@ Two new programs were chartered because the existing program inventory had no ow
 - **EXP-PROGRAM-041 — Platform Canonicalization** owns the internal SDK and infrastructure-ownership expeditions (canonical infrastructure audit, internal platform SDK, construction canonicalization, and utility extraction).
 
 These programs are not ad-hoc containers; each groups multiple completed and proposed expeditions around a single strategic objective from the roadmap.
+
+- **EXP-PROGRAM-043 — Agent Onboarding & Operator Experience** was chartered because real-world TaskPRO onboarding feedback exposed operator-friction gaps (black-box bootstrap, missing capability transparency, vague errors, and derived-state edit risk) that no existing program owns.

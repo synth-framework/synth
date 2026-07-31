@@ -260,7 +260,7 @@ export class ReplayVerifier {
 
     for (const [id, expedition] of Object.entries(state.expeditions)) {
       const e = expedition as Record<string, unknown>
-      if (!["draft", "approved", "executing", "completed", "cancelled"].includes(e.status as string)) {
+      if (!["draft", "approved", "committed", "executing", "completed", "cancelled"].includes(e.status as string)) {
         diffs.push({ key: `expedition.${id}.status`, live: e.status, replayed: "valid_status_required" })
       }
     }

@@ -190,3 +190,15 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 Every AI operator interacting with SYNTH receives a projection tailored to its constraints, while SYNTH retains a single canonical source of truth. Optimization becomes just another deterministic projection from canonical knowledge, consistent with every other SYNTH capability.
 
+---
+
+## Current Recommendation
+
+**Park.** This program has zero chartered expeditions and no direct evidence that operators are currently hitting context-window or session-continuity limits. It is architecturally sound, but it solves a problem that does not yet exist at scale.
+
+**Boundary with 043:** 043 owns **what the operator sees and understands** (status, explain, human output, dry-run). 032 owns **how the operator's input context is compressed/summarized** before it is consumed. Do not let 032 creep into CLI response formatting or status explanation.
+
+**Revisit condition:** reactivate 032 after `EXP-PROGRAM-043` has shipped and there is measurable evidence that operators or agents need context optimization (e.g., long missions exceeding model context windows, session resumption friction).
+
+**Why this ordering:** optimizing a broken onboarding flow is wasted effort. Make the flow work first, then optimize the context cost of running it.
+

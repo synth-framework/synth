@@ -10,7 +10,10 @@ Synth is organized into three architectural strata:
 ## Core Concepts
 
 - --approve: --approve
+- --approve and --dry-run flags: 2. `--approve` and `--dry-run` flags
 - --dry-run: --dry-run
+- --dry-run on lifecycle commands: 1. `--dry-run` on lifecycle commands
+- --human mode: 3. `--human` mode
 - --name: --name
 - 001 028 with noted supersessions historical: 001–028 (with noted supersessions) — historical, complete.
 - 027 035 036 039 040 041: 027, 035, 036, 039, 040, 041 — all complete and accepted.
@@ -18,9 +21,6 @@ Synth is organized into three architectural strata:
 - 17 derived artifacts: **17 derived artifacts**
 - 2 engineering managers: 2 engineering managers
 - 2 full session transcripts 184 222: 2 full session transcripts (184 + 222 steps), 7 background task logs, 3 agent-authored scratch scripts (`bootstrap_from_docs.js`, `chart_project_plan.js`, `print_state_details.js`), agent-written `project_initialization.md`
-- 2 students: 2 students
-- 202 tests passing: 202 tests passing.
-- 3 junior developers: 3 junior developers
 
 ## Working Rules
 
@@ -31,6 +31,6 @@ Synth is organized into three architectural strata:
 - The event log is the single source of truth.
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->

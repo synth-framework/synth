@@ -31,6 +31,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "expedition commit", safety: "MUTATING", description: "Commit approved Expedition intent to runtime", requiresApproval: true },
   { command: "expedition start", safety: "MUTATING", description: "Start executing a committed Expedition", requiresApproval: true },
   { command: "expedition complete", safety: "MUTATING", description: "Complete an executing Expedition", requiresApproval: true },
+  { command: "expedition certify", safety: "MUTATING", description: "Certify convergence for an executing Expedition", requiresApproval: true },
   { command: "doctor", safety: "READ_ONLY", description: "Verify installation and project health" },
   { command: "status", safety: "READ_ONLY", description: "Report the current project state" },
   { command: "explain", safety: "READ_ONLY", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
@@ -74,6 +75,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "version", safety: "READ_ONLY", description: "Print the installed Synth version" },
   { command: "verify", safety: "READ_ONLY", description: "Verify governance invariants and projection consistency" },
   { command: "certify", safety: "READ_ONLY", description: "Run failure and recovery certification scenarios" },
+  { command: "capabilities", safety: "READ_ONLY", description: "List installed and missing CLI capabilities" },
   { command: "ai refresh", safety: "MUTATING", description: "Regenerate .synth/ai/ metadata from canonical state", requiresApproval: true },
   // Adapter management delegated through `synth adapter <subcommand>`
   { command: "adapter list", safety: "READ_ONLY", description: "List registered adapters" },

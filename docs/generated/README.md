@@ -9,7 +9,10 @@ Synth is organized into three architectural strata:
 ## Key Concepts
 
 - **--approve** — --approve
+- **--approve and --dry-run flags** — 2. `--approve` and `--dry-run` flags
 - **--dry-run** — --dry-run
+- **--dry-run on lifecycle commands** — 1. `--dry-run` on lifecycle commands
+- **--human mode** — 3. `--human` mode
 - **--name** — --name
 - **001 028 with noted supersessions historical** — 001–028 (with noted supersessions) — historical, complete.
 - **027 035 036 039 040 041** — 027, 035, 036, 039, 040, 041 — all complete and accepted.
@@ -55,10 +58,7 @@ Synth is organized into three architectural strata:
 - **A clear goal** — A clear goal
 - **A CLI that exposes the entire** — **A CLI** that exposes the entire platform as a stable, machine-readable interface.
 - **A cold run with no cache** — A **cold run** with no cache produces the same results as today's full `npm run govern`.
-- **A committed specification from uncommitted drafts** — A committed specification from uncommitted drafts.
-- **A community feedback loop converts signals** — A community feedback loop converts signals into evidence and missions.
-- **a compatibility bridge between two contracts** — a compatibility bridge between two contracts,
-- *…and 16011 more concepts extracted from the knowledge base.*
+- *…and 16169 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,6 +70,6 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->

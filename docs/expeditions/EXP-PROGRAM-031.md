@@ -160,6 +160,24 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 ---
 
+## Current Recommendation
+
+**Activate narrowly as a gating function.** The ADR is already accepted; the program itself is still Proposed. Do not try to build the full portfolio dashboard, supersession detector, or automated drift monitor yet.
+
+**First milestone:**
+
+1. Run a convergence review of `EXP-PROGRAM-043` before it begins implementation.
+2. Run a design review of `EXP-PROGRAM-034` before it leaves the design phase.
+3. Define the shared dependency-graph primitive that both 034 and 031 will use.
+
+**Deferred:** full supersession detection, acceptance-drift dashboard, and automated portfolio health until after 034 and 043 are moving.
+
+**Caveat:** do not let 034 and 031 build independent graph engines. 034 needs a task dependency graph; 031 needs a program/expedition dependency graph. They should share a generic graph primitive owned by this program or by a joint 031/034 expedition.
+
+**Why this ordering:** architecture oversight is needed most when the next two programs (043 and 034) are about to touch the CLI surface and the build pipeline. A lightweight 031 gate now prevents duplicate work and divergence later.
+
+---
+
 ## Relationship to Other Work
 
 - **ADR-039 — Architectural Convergence Review** provides the constitutional rule this program implements.

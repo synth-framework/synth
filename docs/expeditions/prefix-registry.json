@@ -42,6 +42,26 @@
       "name": "Command Line Interface",
       "description": "CLI user experience, diagnostics, help, and operator-facing surface expeditions."
     },
+    "ONBOARD": {
+      "name": "Agent Onboarding",
+      "description": "Guided first-contact and onboarding expeditions for greenfield and brownfield projects."
+    },
+    "EXPLAIN": {
+      "name": "Status Explanation",
+      "description": "Actionable status explanation and diagnostic message expeditions."
+    },
+    "DRYRUN": {
+      "name": "Lifecycle Dry-Run",
+      "description": "Pre-flight dry-run support for governance lifecycle commands."
+    },
+    "GUARD": {
+      "name": "Derived-State Guardrails",
+      "description": "Protection of derived state and expedition scope enforcement expeditions."
+    },
+    "CAPTRANS": {
+      "name": "Capability Transparency",
+      "description": "Capability discovery, transparency, and graceful degradation expeditions."
+    },
     "AX": {
       "name": "Agent Experience",
       "description": "Adoption-era expeditions focused on AI-first distribution and first-contact experience."
