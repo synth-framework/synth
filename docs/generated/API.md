@@ -52,6 +52,7 @@
 - **Branch creation and checkout through VersioningCapability** — Branch creation and checkout through VersioningCapability.
 - **Build a capability graph from capability** — Build a capability graph from `capability` observations.
 - **buildCapabilityReport createCapabilityGraph src discovery projections** — `buildCapabilityReport` / `createCapabilityGraph` — `src/discovery/projections/`
+- **C Capability Transparency Graceful Degradation** — C — Capability Transparency & Graceful Degradation
 - **Cannot directly invoke another capability** — Cannot directly invoke another capability
 - **Capability** — 1.4 Capability
 - **Capability additions** — Capability additions.
@@ -60,6 +61,7 @@
 - **capability capability name** — `capability`: capability name
 - **Capability Capability Registry** — Capability / Capability Registry
 - **Capability cards use the entire card** — Capability cards use the entire card as a hit area with a visible focus ring.
+- **Capability checks in status** — 2. Capability checks in status
 - **Capability Compatibility** — 9.3 Capability Compatibility
 - **Capability Composition** — 3. Capability Composition
 - **Capability Dependencies** — Capability Dependencies
@@ -137,11 +139,14 @@
 - **CapabilityRegistry** — CapabilityRegistry
 - **capabilityRegistry intentRegistry** — `capabilityRegistry` → `intentRegistry`
 - **Changes to the capability model or** — Changes to the capability model or constitutional baseline.
+- **Changing the capability registry model** — Changing the capability registry model.
+- **Changing the Convergence Certification capability model** — Changing the Convergence Certification capability model or evaluation dimensions.
 - **Changing the environment capability model** — Changing the environment capability model.
 - **CLI synth doctor capability reporting** — CLI `synth doctor` / capability reporting
 - **Code generation quality beyond capability verification** — Code generation quality beyond capability verification.
 - **Collision H Environment Capability Contexts** — Collision H — Environment Capability Contexts
 - **command executable command or capability invocation** — `command` — executable command or capability invocation
+- **Commands that depend on each capability** — Commands that depend on each capability.
 - **Comparison Ticket WorkItem vs Capability Intent** — Comparison: Ticket → WorkItem vs Capability → Intent
 - **Compatibility suite for legacy capability field** — Compatibility suite for legacy `capability` field
 - **confidence coverage of the capability map** — `confidence`: coverage of the capability map.
@@ -202,6 +207,7 @@
 - **EXP-CAPABILITY-BOUNDARY-001 created the MutationRequest boundary but** — `EXP-CAPABILITY-BOUNDARY-001` created the `MutationRequest` boundary, but adoption is incomplete.
 - **EXP-CAPABILITY-BOUNDARY-001 Pre-Change Evidence** — EXP-CAPABILITY-BOUNDARY-001 — Pre-Change Evidence
 - **EXP-CAPABILITY-BOUNDARY-001 Single Mutation Execution Boundary** — EXP-CAPABILITY-BOUNDARY-001 — Single Mutation Execution Boundary
+- **EXP-CAPTRANS-001 Capability Transparency CLI** — EXP-CAPTRANS-001 — Capability Transparency CLI
 - **EXP-DISCOVERY-004 Projection Capability Mechanism** — EXP-DISCOVERY-004 — Projection Capability Mechanism
 - **EXP-DIST-001 Canonical AI Capability Model** — EXP-DIST-001 — Canonical AI Capability Model
 - **EXP-DOCS-002 Capability Model Documentation** — EXP-DOCS-002 — Capability Model Documentation
@@ -271,6 +277,7 @@
 - **Merge capability provider taxonomy into src** — Merge capability/provider taxonomy into `src/discovery/types.ts`.
 - **MINOR New capability within the existing** — **MINOR** — New capability within the existing public contract.
 - **Missing capability** — Missing capability
+- **missing-capability a required CLI feature is** — `missing-capability`: a required CLI feature is not implemented.
 - **Mission Projection specification and capability remain** — Mission Projection specification and capability remain correct.
 - **Model B src environment DiscoveryOrchestrator CapabilityProvider** — Model B — `src/environment/` (DiscoveryOrchestrator + CapabilityProvider)
 - **Move buildCapabilityReport to discovery projections** — Move `buildCapabilityReport` to discovery projections.
@@ -394,6 +401,6 @@ The system event log is the source of truth for all state changes.
 - Replay the event log
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->

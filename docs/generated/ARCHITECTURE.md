@@ -121,6 +121,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Avoid introducing new lifecycle concepts kernel** — Avoid introducing new lifecycle concepts, kernel mutations, or governance gates.
 - **Backend extraction projection or verification engines** — Backend extraction, projection, or verification engines (built in previous expeditions).
 - **baseline Constitution kernel language and proof** — `baseline` — Constitution, kernel, language, and proof schema versions
+- **blocked a gate blocks progress** — `blocked`: a gate blocks progress.
 - **Blocked by runtime Replay integration The** — **Blocked by runtime Replay integration.** The homepage replay must use the canonical SYNTH replay engine or a documented, deterministic subset approved for the homepage. Until EXP-PROGRAM-022 / runtime replay exposes a callable interface for the homepage, this expedition cannot be fully implemented.
 - **Bootstrap and API layers assuming the** — Bootstrap and API layers assuming the current working directory is the project root.
 - **Bootstrap Layer** — Bootstrap Layer
@@ -380,6 +381,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **ExecutionGate** — ExecutionGate
 - **ExecutionGate API** — `ExecutionGate` API
 - **ExecutionGate API May be modified only** — **ExecutionGate API** — May be modified only by EXP-SEC-001, through the ADR-050 freeze lift already authorized.
+- **ExecutionGate as sole mutation authority** — ExecutionGate as sole mutation authority.
 - **ExecutionGate as the single mutation authority** — ExecutionGate as the single mutation authority
 - **ExecutionGate CommandBus** — ExecutionGate (CommandBus)
 - **ExecutionGate docs kernel-freeze md 23-32** — ExecutionGate (`docs/kernel-freeze.md:23-32`)
@@ -480,6 +482,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **EXP-PROGRAM-031 and EXP-GATE-013 should be explicitly** — **EXP-PROGRAM-031** and **EXP-GATE-013** should be explicitly justified before activation. They are architecture-facing and could expand conceptual surface area.
 - **EXP-PROGRAM-034 Task Orchestration Engine** — EXP-PROGRAM-034 — Task Orchestration Engine
 - **EXP-PROGRAM-034 Task Orchestration Engine will consume** — **EXP-PROGRAM-034 — Task Orchestration Engine** will consume the canonical task model and SDK paths.
+- **EXP-PROGRAM-038 Audit Remediation Hardened the kernel** — **EXP-PROGRAM-038 — Audit Remediation** — Hardened the kernel; this program hardens the operator/agent surface.
 - **EXP-REFINE-001 Refinement Layer Model** — EXP-REFINE-001 — Refinement Layer Model
 - **EXP-REFINE-003 Divergence Gate** — EXP-REFINE-003 — Divergence Gate
 - **EXP-REFINE-004 Refinement Questions Engine** — EXP-REFINE-004 — Refinement Questions Engine
@@ -497,6 +500,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **External dependency requiring layer boundary change** — External dependency requiring layer boundary change
 - **External integration layer** — External integration layer
 - **Feeds EXP-GOV-017 Incremental Validator Engine** — Feeds `EXP-GOV-017 Incremental Validator Engine`.
+- **File-system-level enforcement kernel permissions** — File-system-level enforcement (kernel permissions).
 - **FileSystemSnapshotStore default durable store at data** — `FileSystemSnapshotStore` — default durable store at `./data/snapshots`
 - **Finding 1 Review Gate could not** — Finding 1 — Review Gate could not be re-opened after RequestRevision
 - **Finding 3 Mission Studio and Runtime** — Finding 3 — Mission Studio and Runtime Are Disconnected
@@ -690,6 +694,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Mission creation is gated on Genesis** — Mission creation is gated on Genesis approval.
 - **Mission Expedition lifecycle has explicit runtime** — Mission/Expedition lifecycle has explicit runtime transitions.
 - **Mission Review Gate implementation** — Mission Review Gate implementation.
+- **Mission Studio Genesis Replay ExecutionGate Event** — Mission Studio, Genesis, Replay, ExecutionGate, Event Model, Capability Model, or Constitutional Baseline changes.
 - **Mission Studio has zero runtime mutation** — Mission Studio has zero runtime mutation paths.
 - **Mission Studio proposals and ExecutionGate runtime** — Mission Studio proposals and ExecutionGate runtime entities were disconnected.
 - **Mission Studio Runtime Self-Description and Cognitive** — 1.7 Mission Studio, Runtime Self-Description, and Cognitive Continuity were chartered as programs
@@ -862,9 +867,11 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Rename Capability Intent at architectural layer** — Rename (Capability → Intent at architectural layer)
 - **Rename events to engineering-evolution style** — Rename events to engineering-evolution style
 - **Replay engine** — Replay engine
+- **Replay Engine Output changes only replay** — **Replay Engine** — Output changes only; replay logic is untouched.
 - **Replay engine src core replay-verifier js** — **Replay engine:** `src/core/replay-verifier.js` and related replay infrastructure
 - **Replay handlers in src runtime replay** — Replay handlers in `src/runtime/replay.ts`.
 - **Replay logic from src runtime replay** — Replay logic from `src/runtime/replay.ts`.
+- **Replay semantics in src runtime replay** — Replay semantics in `src/runtime/replay.ts` and `src/core/replay-verifier.ts`. The planned changes are bug fixes that restore navigation consistency and correct a status enum; they do not alter event payloads, event types, or replay semantics.
 - **Replay semantics src runtime replay ts** — Replay semantics (`src/runtime/replay.ts`)
 - **Replayability replay reconstructs identical runtime state** — **Replayability:** replay reconstructs identical runtime state from the event log.
 - **Repo-root runtime data directory** — 3.2 Repo-root runtime data directory
@@ -1082,6 +1089,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Subsystems previously mistaken for kernel** — Subsystems previously mistaken for kernel
 - **Swapping the runtime implementation requires no** — Swapping the runtime implementation requires no React component changes.
 - **synth adapter args delegates to adapter** — `synth adapter <args...>` — delegates to adapter CLI.
+- **synth explain identity returns aggregate counts** — `synth explain identity` — returns aggregate counts.
 - **SYNTH gains a clean three-layer architecture** — SYNTH gains a clean three-layer architecture: Genesis, Synthesis, Governance.
 - **synth runtime-sdk package boundary** — `@synth/runtime-sdk` package boundary
 - **SYNTH s Three Layers** — SYNTH's Three Layers
@@ -1164,6 +1172,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **Under EXP-PROGRAM-035 all 13 EXP-GATE-001 through** — Under **EXP-PROGRAM-035**: all 13 `EXP-GATE-001` through `EXP-GATE-013` expeditions are Proposed.
 - **Unforgeable Without the gate key permits** — **Unforgeable:** Without the gate key, permits cannot be forged
 - **Update bootstrap sequence so ExecutionGate exists** — Update bootstrap sequence so `ExecutionGate` exists before Genesis runs.
+- **Update the documentation projection engine** — 2. Update the documentation projection engine
 - **Updated src infra event-store guard ts** — Updated `src/infra/event-store.guard.ts` to allow only `ExecutionGate` in the stack trace.
 - **Upstream-gate stop condition** — Upstream-gate stop condition
 - **Upstream-gate stop condition dependent expedition blocking** — Upstream-gate stop condition (dependent expedition blocking)
@@ -1343,6 +1352,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->

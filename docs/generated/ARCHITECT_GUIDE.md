@@ -125,6 +125,8 @@ This guide is for architects making structural decisions.
 - **Changes to single mutation authority model** — Changes to single mutation authority model
 - **Changes to SYNTH Replay or governance** — Changes to SYNTH Replay or governance implementation.
 - **Changes to SYNTH runtime or governance** — Changes to SYNTH runtime or governance.
+- **Changes to the constitutional baseline** — Changes to the constitutional baseline.
+- **Changes to the governance lifecycle** — Changes to the governance lifecycle.
 - **Changing governance semantics** — Changing governance semantics.
 - **Changing the governance kernel** — Changing the governance kernel.
 - **Changing what governance validates** — Changing what governance validates.
@@ -169,6 +171,7 @@ This guide is for architects making structural decisions.
 - **Constitutional Baseline** — Constitutional Baseline
 - **Constitutional Baseline Impact** — Constitutional Baseline Impact
 - **Constitutional Baseline No changes required** — **Constitutional Baseline** — No changes required.
+- **Constitutional Baseline No new constitutional rules** — **Constitutional Baseline** — No new constitutional rules; guardrails are enforcement layers.
 - **Constitutional compliance the freeze held throughout** — **Constitutional compliance:** the freeze held throughout. No event types added, Replay engine untouched, `synth-proof-v1` object unchanged. One Protected Asset modification (`FileSystemSnapshotStore`) performed under the approved EXP-ENV-012 Architecture Expedition per ADR-004, behavior verified unchanged.
 - **Constitutional Does the expedition change the** — `Constitutional` — Does the expedition change the Architectural Constitution or constitutional baselines?
 - **Constitutional Hierarchy** — Constitutional Hierarchy
@@ -319,6 +322,7 @@ This guide is for architects making structural decisions.
 - **Execute governance** — Execute governance
 - **execution authority** — execution authority
 - **ExecutionCoordinator has authority to validate permits** — ExecutionCoordinator has authority to validate permits
+- **ExecutionGate as sole mutation authority** — ExecutionGate as sole mutation authority.
 - **ExecutionGate as the single mutation authority** — ExecutionGate as the single mutation authority
 - **ExecutionGate execute permits mutations when authority** — `ExecutionGate.execute()` permits mutations when authority state is complete.
 - **ExecutionGate execute rejects mutations when authority** — `ExecutionGate.execute()` rejects mutations when authority state is incomplete.
@@ -326,6 +330,7 @@ This guide is for architects making structural decisions.
 - **Exit codes Business decisions approval rejected** — **Exit codes:** Business decisions (approval rejected) exit with code `0`; operational failures exit with code `1`.
 - **EXP-ADP-000 is frozen as the constitutional** — EXP-ADP-000 is frozen as the constitutional adapter specification.
 - **EXP-AIFC-009 Replay and Governance Integration** — EXP-AIFC-009 — Replay and Governance Integration
+- **EXP-CLI-003 Governance Inventory List Commands** — EXP-CLI-003 — Governance Inventory List Commands
 - **EXP-ENV-012 Constitutional Compliance Migration** — EXP-ENV-012 — Constitutional Compliance & Migration
 - **EXP-GATE-004 Decision Model** — EXP-GATE-004 — Decision Model
 - **EXP-GATE-004 Decision Model for the decision** — **EXP-GATE-004 — Decision Model** for the decision vocabulary.
@@ -515,6 +520,7 @@ This guide is for architects making structural decisions.
 - **Governance Rule After Closure** — Governance Rule After Closure
 - **Governance Rules** — Governance Rules
 - **Governance rules cannot be tampered with** — Governance rules cannot be tampered with at runtime
+- **Governance semantic changes** — Governance semantic changes.
 - **Governance semantics deferred by design** — Governance semantics deferred by design
 - **Governance shall precede execution** — Governance shall precede execution
 - **Governance Specification operational proof lifecycle and** — Governance Specification — operational proof lifecycle and enforcement.
@@ -614,6 +620,7 @@ This guide is for architects making structural decisions.
 - **Mutation authority is singular the ExecutionGate** — Mutation authority is singular: the `ExecutionGate`.
 - **N9 Decision amnesia** — N9 — Decision amnesia
 - **N9 Decision events not persisted I** — **N9 — Decision events not persisted (I).** Approval rejection exists only in CLI output; the event log records state transitions, not decisions about artifacts.
+- **New constitutional rules** — New constitutional rules.
 - **New governance concepts beyond the four** — New governance concepts beyond the four evaluation dimensions.
 - **No changes to AGENTS md governance** — No changes to `AGENTS.md`, governance rules, or constitutional baseline.
 - **No changes to the Mutation Authority** — No changes to the Mutation Authority Invariant.
@@ -633,6 +640,7 @@ This guide is for architects making structural decisions.
 - **No runtime CLI or governance engine** — No runtime, CLI, or governance engine behavior changes.
 - **node scripts verify-expedition-governance js reports 0** — `node scripts/verify-expedition-governance.js` reports **0 errors, 0 warnings**.
 - **node scripts verify-expedition-governance js reports zero** — `node scripts/verify-expedition-governance.js` reports zero identity errors and zero warnings.
+- **node scripts verify-expedition-governance js validates identity** — `node scripts/verify-expedition-governance.js` — validates identity rules.
 - **Not cache approval decisions across turns** — Not cache approval decisions across turns.
 - **Note on Rich Review Decisions** — Note on Rich Review Decisions
 - **npm run govern emits a GovernanceDependencyGraph** — `npm run govern` emits a `GovernanceDependencyGraph` artifact.
@@ -908,6 +916,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->

@@ -36,6 +36,7 @@ This guide is for contributors extending Synth.
 - **Adapter contract EXP-ADP-000** — Adapter contract (EXP-ADP-000)
 - **Adapter determinism classification** — Adapter determinism classification
 - **Adapter determinism is not systematically classified** — Adapter determinism is not systematically classified.
+- **Adapter discovery in onboarding** — 3. Adapter discovery in onboarding
 - **Adapter generates tests or documentation** — Adapter generates tests or documentation.
 - **Adapter health is observable** — Adapter health is observable.
 - **Adapter implementation** — Adapter implementation
@@ -68,6 +69,7 @@ This guide is for contributors extending Synth.
 - **Adapters are surfaced as a first-class** — Adapters are surfaced as a first-class capability with a clear link to adapter documentation.
 - **Adapters declare interaction capabilities** — Adapters declare interaction capabilities.
 - **Adapters emit only canonical Observations** — Adapters emit only canonical Observations.
+- **Adapters registered in the current project** — Adapters registered in the current project.
 - **Adapters repository git github tdd bdd** — Adapters: repository/git, github, tdd, bdd, conversation, document, filesystem, specification, knowledge-extraction, confidence, dependency, architecture, mission-builder, expedition-builder, objective-builder, wizard
 - **adapters with id version determinism** — `adapters` with id, version, determinism
 - **Add a migration test a project** — Add a migration test: a project with legacy `data/` is opened, the CLI migrates it, and replay produces the same canonical state as before.
@@ -81,6 +83,7 @@ This guide is for contributors extending Synth.
 - **Add info subcommand to the adapter** — Add `info` subcommand to the adapter CLI.
 - **Add MCP server capability to docs** — Add MCP server capability to `docs/reference/capability-validation-map.json`.
 - **Add new source adapters deferred to** — Add new source adapters (deferred to EXP-DISCOVERY-003).
+- **Add or update a verification test** — Add or update a verification test that asserts generated markdown files contain the three required markers.
 - **Add tests agent-sdk test js covering** — Add `tests/agent-sdk.test.js` covering protocol and metadata exports.
 - **Add tests for store versioning diff** — Add tests for store, versioning, diff, and reconstruction.
 - **Add tests for synth-framework agent-sdk exports** — Add tests for `@synth-framework/agent-sdk` exports.
@@ -183,6 +186,7 @@ This guide is for contributors extending Synth.
 - **Build and full test suite remain** — Build and full test suite remain green.
 - **Build test npm run build and** — **Build/test:** `npm run build` and `npm test` pass (121 passed, 0 failed).
 - **buildCapabilityReport createCapabilityGraph src discovery projections** — `buildCapabilityReport` / `createCapabilityGraph` — `src/discovery/projections/`
+- **C Capability Transparency Graceful Degradation** — C — Capability Transparency & Graceful Degradation
 - **C GitHub adapter naming collision KEEP** — C. GitHub adapter naming collision — KEEP SEPARATE, RENAME
 - **Candidate 1 builder adapters into planning** — **Candidate 1** (builder adapters into planning/mission-studio)
 - **Candidate 2 environment vs adapters** — **Candidate 2** (environment vs. adapters)
@@ -196,6 +200,7 @@ This guide is for contributors extending Synth.
 - **capability capability name** — `capability`: capability name
 - **Capability Capability Registry** — Capability / Capability Registry
 - **Capability cards use the entire card** — Capability cards use the entire card as a hit area with a visible focus ring.
+- **Capability checks in status** — 2. Capability checks in status
 - **Capability Compatibility** — 9.3 Capability Compatibility
 - **Capability Composition** — 3. Capability Composition
 - **Capability Dependencies** — Capability Dependencies
@@ -279,6 +284,8 @@ This guide is for contributors extending Synth.
 - **Changes to the capability model or** — Changes to the capability model or constitutional baseline.
 - **Changes to the kernel EventStore StateStore** — Changes to the kernel, EventStore, StateStore, Replay, or ExecutionGate.
 - **Changing adapter interfaces or implementations** — Changing adapter interfaces or implementations.
+- **Changing the capability registry model** — Changing the capability registry model.
+- **Changing the Convergence Certification capability model** — Changing the Convergence Certification capability model or evaluation dimensions.
 - **Changing the environment capability model** — Changing the environment capability model.
 - **ChatGPT Gemini Claude and Cursor adapter** — ChatGPT, Gemini, Claude, and Cursor adapter charters
 - **Check battery green first-contact tests 6** — Check battery green: first-contact tests 6/6, documentation integrity tests pass, `docs:check-links` (847 internal links resolve), `docs:verify-projection`, `docs:verify-website-sync`.
@@ -295,6 +302,7 @@ This guide is for contributors extending Synth.
 - **Collision L Adapter Document Filesystem Specification** — Collision L — Adapter Document/Filesystem/Specification Fixture Cleanup
 - **command executable command or capability invocation** — `command` — executable command or capability invocation
 - **Commands adapter agent-artifacts ai-interaction-manifest ai-metadata bootstrap-analyzer** — Commands: `adapter`, `agent-artifacts`, `ai-interaction-manifest`, `ai-metadata`, `bootstrap-analyzer`, `bootstrap-apply`, `bootstrap-context`, `certification-runner`, `command-safety`, `explain-governance`, `explain-observability`, `first-contact`, `govern-delegation`, `repo`, `repository-identity`, `resume-briefing`, `status-briefing`, `synth`, `verify`.
+- **Commands that depend on each capability** — Commands that depend on each capability.
 - **Comparison Ticket WorkItem vs Capability Intent** — Comparison: Ticket → WorkItem vs Capability → Intent
 - **Compatibility suite for legacy capability field** — Compatibility suite for legacy `capability` field
 - **Compatibility Tests** — Compatibility Tests
@@ -465,6 +473,7 @@ This guide is for contributors extending Synth.
 - **EXP-CAPABILITY-BOUNDARY-001 created the MutationRequest boundary but** — `EXP-CAPABILITY-BOUNDARY-001` created the `MutationRequest` boundary, but adoption is incomplete.
 - **EXP-CAPABILITY-BOUNDARY-001 Pre-Change Evidence** — EXP-CAPABILITY-BOUNDARY-001 — Pre-Change Evidence
 - **EXP-CAPABILITY-BOUNDARY-001 Single Mutation Execution Boundary** — EXP-CAPABILITY-BOUNDARY-001 — Single Mutation Execution Boundary
+- **EXP-CAPTRANS-001 Capability Transparency CLI** — EXP-CAPTRANS-001 — Capability Transparency CLI
 - **EXP-DISC-003 Adapter Introspection** — EXP-DISC-003 — Adapter Introspection
 - **EXP-DISC-003 Adapter introspection synth adapter info** — EXP-DISC-003 — Adapter introspection (`synth adapter info <name>`). *(N5)*
 - **EXP-DISC-003 synth adapter info name exposes** — **EXP-DISC-003** — `synth adapter info <name>` exposes adapter metadata, state, and health.
@@ -626,6 +635,7 @@ This guide is for contributors extending Synth.
 - **Migrate execSync spawn usages in adapters** — Migrate `execSync`/`spawn` usages in adapters and CLI.
 - **MINOR New capability within the existing** — **MINOR** — New capability within the existing public contract.
 - **Missing capability** — Missing capability
+- **missing-capability a required CLI feature is** — `missing-capability`: a required CLI feature is not implemented.
 - **Mission Projection specification and capability remain** — Mission Projection specification and capability remain correct.
 - **Mission Studio Adapter Ecosystem** — Mission Studio Adapter Ecosystem
 - **Mission Studio mission-studio-adapter-collector mission-studio-adapter-mapper** — Mission Studio (`mission-studio-adapter-collector`, `mission-studio-adapter-mapper`)
@@ -929,6 +939,7 @@ This guide is for contributors extending Synth.
 - **Test artifact and validation report templates** — Test artifact and validation report templates.
 - **Test artifacts** — Test artifacts
 - **Test Categories** — Test Categories
+- **Test changes** — Test changes
 - **Test counts per subsystem** — Test counts per subsystem
 - **Test coverage** — Test coverage
 - **Test coverage Added tests continuous-publication test** — **Test coverage** — Added `tests/continuous-publication.test.js` and wired it into `npm run test:all`.
@@ -992,6 +1003,7 @@ This guide is for contributors extending Synth.
 - **tests cli-contract test js** — `tests/cli-contract.test.js`
 - **tests continuous-publication test js** — `tests/continuous-publication.test.js`.
 - **tests convergence-certification test js** — `tests/convergence-certification.test.js`
+- **tests convergence-certification-cli test js proves the** — `tests/convergence-certification-cli.test.js` — proves the certify command unblocks expedition completion.
 - **Tests cover all five supported architectural** — Tests cover all five supported architectural styles and lifecycle.
 - **Tests cover all five supported specification** — Tests cover all five supported specification formats plus lifecycle.
 - **Tests cover all three graph types** — Tests cover all three graph types and lifecycle.
@@ -1047,6 +1059,7 @@ This guide is for contributors extending Synth.
 - **tests public-vocabulary-audit test js scans operator** — `tests/public-vocabulary-audit.test.js` scans operator docs, introduction, and reference docs for forbidden implementation terms.
 - **tests README md** — `tests/README.md`
 - **Tests reference missing functionality** — Tests reference missing functionality.
+- **tests replay-mission-expeditions test js proves mission** — `tests/replay-mission-expeditions.test.js` — proves mission.expeditions is populated.
 - **tests repository-governance test js exercises classifyBranch** — `tests/repository-governance.test.js` exercises `classifyBranch`, `validateBranchName`, and `generateBranchName`.
 - **tests repository-governance test js validates inferVersionBump** — `tests/repository-governance.test.js` validates `inferVersionBump` and `nextSemanticVersion`.
 - **tests repository-governance test js validates PR** — `tests/repository-governance.test.js` validates PR replay semantics.
@@ -1128,10 +1141,13 @@ This guide is for contributors extending Synth.
 - **Update docs reference capability-validation-map json with** — Update `docs/reference/capability-validation-map.json` with a PackageDistribution capability.
 - **Update path constants in tests that** — Update path constants in tests that assert on default layout.
 - **Update tests and fixtures** — 4. Update tests and fixtures
+- **Update tests documentation-projections test js or** — Update `tests/documentation-projections.test.js` or create `tests/docs-provenance.test.js` to guard against regression.
 - **Update tests to assert the expanded** — Update tests to assert the expanded surface.
 - **Updated docs architecture 07-capability-model md with** — Updated `docs/architecture/07-capability-model.md` with a **Two Capability Layers** section, a **Capability Graph** section (node kinds, edge kinds, deterministic resolution), and ADR cross-links.
 - **Updated tests documentation-integrity test js for** — Updated `tests/documentation-integrity.test.js` for the new validation semantics.
 - **Updated tests documentation-integrity test js to** — Updated `tests/documentation-integrity.test.js` to assert the new script exists, is configured, and passes on the repository.
+- **Updated tests replay-graph-integrity test js proves** — Updated `tests/replay-graph-integrity.test.js` — proves `committed` status is accepted.
+- **Updated tests synth-bootstrap test js proves** — Updated `tests/synth-bootstrap.test.js` — proves the validation map is created.
 - **Updated tests synth-cli test js to** — Updated `tests/synth-cli.test.js` to assert `ValidationPlan` output and the new flags.
 - **Upgrade path test no breaking changes** — Upgrade path test: no breaking changes incompatible with the rc.3 baseline.
 - **Use a private capability token passed** — Use a private capability token passed only by the gate, or encapsulate the store so `append` is not reachable outside the gate module.
@@ -1186,6 +1202,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: c81f49c94cd51c4057ae2bf878e1603001e132101bb69661a8197e18011e4b0b
+sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
 projection: synth-documentation-expedition-v1
 -->
