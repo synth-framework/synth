@@ -1206,7 +1206,7 @@ This guide is for contributors extending Synth.
 
 <!--
 sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
-computedAt: 2026-07-31T09:14:52.333Z
+computedAt: 2026-07-31T09:22:14.829Z
 schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
