@@ -759,6 +759,7 @@ This guide is for contributors extending Synth.
 - **Policy conditions intent capability intent type** — Policy conditions: `intent.capability` → `intent.type`
 - **Policy evaluation is logged and attested** — Policy evaluation is logged and attested; capability execution is not
 - **Policy Tests 3 tests** — Policy Tests (3 tests)
+- **PR 222 merged implementation and tests** — PR #222 merged: implementation and tests landed on main.
 - **Preserve full adapter provenance in the** — Preserve full adapter provenance in the session.
 - **Prevent implementation before failing tests** — Prevent implementation before failing tests
 - **Principle 8 Capability Isolation** — Principle 8: Capability Isolation
@@ -1203,6 +1204,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 568dd160e9659be36773fecb6f4e9dd93659e1d38eff9a7b85757d324e405b31
+sourceStateHash: c37d671ef00c9dc63f768e2b0abd9e771d4bfc2e67cf7702947774363c897c98
 projection: synth-documentation-expedition-v1
 -->
