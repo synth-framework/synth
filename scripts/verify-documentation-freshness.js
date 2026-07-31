@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 // ============================================================
-// Documentation Freshness Verifier (EXP-DOC-002, M9)
+// Documentation Freshness Verifier (EXP-DOC-002, EXP-GUARD-002)
 // ============================================================
-// Regenerates all projections to a temp directory and compares
-// against the committed docs/generated/ files. Exits with code 0
-// if all files match, code 1 if any file is stale.
+// Regenerates all projections twice and compares the two runs.
+// Exits with code 0 if generation succeeds and the output is
+// deterministic, code 1 if any projection is missing or differs.
+//
+// Generated documentation is a derived artifact and is no longer
+// tracked in version control (see EXP-GUARD-002). Freshness is
+// therefore verified by reproducibility, not by comparison with
+// committed blobs.
 //
 // Usage: node scripts/verify-documentation-freshness.js
 // ============================================================
@@ -14,7 +19,6 @@ import path from "path"
 import os from "os"
 
 const KNOWLEDGE_BASE_DIR = path.join(process.cwd(), "docs")
-const GENERATED_DIR = path.join(process.cwd(), "docs", "generated")
 const CLI_PATH = path.join(process.cwd(), "dist", "cli", "synth.js")
 
 const REQUIRED_PROJECTIONS = [
@@ -55,9 +59,9 @@ async function readDirFiles(dir) {
 
 async function runProjection(outputDir) {
   const { spawnSync } = await import("child_process")
-  // The committed projections live in docs/generated, so their source links use
-  // the prefix ".." (one level up from docs/generated to docs). Regenerate with
-  // the same prefix so content comparisons are not polluted by path differences.
+  // Source links in docs/generated use the prefix ".." (one level up from
+  // docs/generated to docs). Regenerate with the same prefix so content
+  // comparisons are not polluted by path differences.
   const linkPrefix = ".."
   const result = spawnSync(
     "node",
@@ -93,17 +97,20 @@ function normalizeForComparison(content) {
 async function main() {
   console.log("Verifying documentation freshness...")
 
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-freshness-"))
+  const tmpDirA = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-freshness-a-"))
+  const tmpDirB = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-freshness-b-"))
 
   try {
-    await runProjection(tmpDir)
-    const regenerated = await readDirFiles(tmpDir)
-    const existing = await readDirFiles(GENERATED_DIR)
+    await runProjection(tmpDirA)
+    await runProjection(tmpDirB)
 
-    const regenNames = Object.keys(regenerated).sort()
-    const existingNames = Object.keys(existing).sort()
+    const runA = await readDirFiles(tmpDirA)
+    const runB = await readDirFiles(tmpDirB)
 
-    const missing = REQUIRED_PROJECTIONS.filter((name) => !(name in regenerated))
+    const namesA = Object.keys(runA).sort()
+    const namesB = Object.keys(runB).sort()
+
+    const missing = REQUIRED_PROJECTIONS.filter((name) => !(name in runA) || !(name in runB))
     if (missing.length > 0) {
       console.log("❌ Required projections could not be regenerated:")
       for (const name of missing) console.log(`    - ${name}`)
@@ -111,41 +118,42 @@ async function main() {
     }
 
     let hasDiff = false
-    const allNames = new Set([...regenNames, ...existingNames])
+    const allNames = new Set([...namesA, ...namesB])
 
     for (const name of allNames) {
-      if (!(name in regenerated)) {
-        console.log(`❌ Stale: ${name} was removed from generated output but still exists in ${GENERATED_DIR}`)
+      if (!(name in runA)) {
+        console.log(`❌ Non-deterministic: ${name} present in second run but missing in first`)
         hasDiff = true
         continue
       }
-      if (!(name in existing)) {
-        console.log(`❌ Stale: ${name} is newly generated but missing from ${GENERATED_DIR}`)
+      if (!(name in runB)) {
+        console.log(`❌ Non-deterministic: ${name} present in first run but missing in second`)
         hasDiff = true
         continue
       }
-      if (normalizeForComparison(regenerated[name]) !== normalizeForComparison(existing[name])) {
-        console.log(`❌ Stale: ${name} content differs from regenerated output`)
+      if (normalizeForComparison(runA[name]) !== normalizeForComparison(runB[name])) {
+        console.log(`❌ Non-deterministic: ${name} content differs between two runs from the same source`)
         hasDiff = true
         continue
       }
-      const regenHash = extractSourceStateHash(regenerated[name])
-      const existingHash = extractSourceStateHash(existing[name])
-      if (regenHash && existingHash && regenHash !== existingHash) {
-        console.log(`❌ Stale: ${name} sourceStateHash differs from regenerated output`)
+      const hashA = extractSourceStateHash(runA[name])
+      const hashB = extractSourceStateHash(runB[name])
+      if (hashA && hashB && hashA !== hashB) {
+        console.log(`❌ Non-deterministic: ${name} sourceStateHash differs between two runs`)
         hasDiff = true
       }
     }
 
     if (hasDiff) {
-      console.log("\n📝 Run `npm run docs:generate` to regenerate all documentation.")
+      console.log("\n📝 Documentation generation is not deterministic. Investigate source ordering or non-idempotent content.")
       process.exit(1)
     }
 
-    console.log(`✅ Documentation is fresh (${regenNames.length} projection(s) match committed output).`)
+    console.log(`✅ Documentation is fresh (${namesA.length} projection(s), deterministic across two runs).`)
     process.exit(0)
   } finally {
-    await fs.rm(tmpDir, { recursive: true, force: true })
+    await fs.rm(tmpDirA, { recursive: true, force: true })
+    await fs.rm(tmpDirB, { recursive: true, force: true })
   }
 }
 
