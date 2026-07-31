@@ -33,6 +33,7 @@ import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
+import { generateAgentsContract } from "./agents-contract.js"
 import {
   namespaceHelp as cmdRepoHelp,
   cmdRepoInit,
@@ -1724,6 +1725,44 @@ async function cmdDoctorHelp() {
   printJson(namespaceHelp("doctor", "Verify installation and project health", [
     { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
   ]))
+}
+
+async function cmdProjectHelp() {
+  printJson(namespaceHelp("project", "Project-level derived artifacts", [
+    { name: "synth project AGENTS.md", description: "Regenerate the AI operator contract from baseline and fragments" },
+    { name: "synth project AGENTS.md --check", description: "Exit non-zero if AGENTS.md is stale" },
+  ], {
+    note: "AGENTS.md is a derived file. Edit source fragments or the framework baseline, not the root contract.",
+  }))
+}
+
+async function cmdProjectAgentsMd(flags: Record<string, string | boolean>) {
+  const check = flags.check === true || flags.check === "true"
+  const result = await generateAgentsContract({
+    rootDir: process.cwd(),
+    check,
+  })
+
+  if (check) {
+    printJson({
+      status: result.stale ? "stale" : "ok",
+      stale: result.stale,
+      fragmentCount: result.fragmentCount,
+      nextStep: result.stale ? "Run `synth project AGENTS.md` to regenerate." : undefined,
+    })
+    if (result.stale) {
+      process.exitCode = 1
+    }
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "AgentsContractGenerated",
+    wrote: result.wrote,
+    fragmentCount: result.fragmentCount,
+    path: "AGENTS.md",
+  })
 }
 
 async function cmdCertifyHelp() {
@@ -3827,6 +3866,10 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   if (namespace === "capabilities") {
     return "capabilities"
   }
+  if (namespace === "project") {
+    if (sub === "AGENTS.md") return "project AGENTS.md"
+    return "project"
+  }
 
   return namespace
 }
@@ -4244,6 +4287,16 @@ async function main() {
     case "capabilities":
       await cmdCapabilities()
       break
+
+    case "project": {
+      const sub = positional[1]
+      if (sub === "AGENTS.md") await cmdProjectAgentsMd(flags)
+      else
+        printError(
+          "Usage: synth project AGENTS.md [--check]",
+        )
+      break
+    }
 
     case "log":
       await cmdLog(flags)
