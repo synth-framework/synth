@@ -66,7 +66,7 @@ Objective: every CLI response must tell the operator what just happened and what
 ```text
 EXP-PROGRAM-043 / B
 ├── EXP-CLI-002       Human-readable output mode (`--human`)                                      [DRAFT]
-├── EXP-CLI-003       `synth expedition list` and `synth program list` commands                   [DRAFT]
+├── EXP-CLI-003       `synth expedition list` and `synth program list` commands                   [COMPLETED]
 ├── EXP-EXPLAIN-001   Actionable `synth explain status`                                           [DRAFT]
 ├── EXP-DRYRUN-001    Pre-flight dry-run for state-changing commands                              [DRAFT]
 └── EXP-OUTPUT-001    Separate structured stdout from diagnostic logs                             [DRAFT]

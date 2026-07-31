@@ -76,6 +76,8 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "mission snapshot", safety: "READ_ONLY", description: "Inspect or list Mission snapshots" },
   { command: "mission project", safety: "READ_ONLY", description: "Project a Mission from an approved Alignment Contract" },
   { command: "mission verify-charter", safety: "READ_ONLY", description: "Verify expedition charter integrity" },
+  { command: "program list", safety: "READ_ONLY", description: "List governance programs" },
+  { command: "expedition list", safety: "READ_ONLY", description: "List governance expeditions" },
   { command: "validate dependencies", safety: "READ_ONLY", description: "Verify expedition charter dependency resolution" },
   { command: "validate artifact", safety: "READ_ONLY", description: "Validate governance artifacts" },
   { command: "version", safety: "READ_ONLY", description: "Print the installed Synth version" },

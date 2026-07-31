@@ -70,6 +70,6 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: 1e8a658418c76349b3925f1fba5974358a213fb645cff28dd27f85f2c4357968
+sourceStateHash: 84c124d253c85e35910133f26fbb720ddee2f7b5f4259e15ba136f2318fe5840
 projection: synth-documentation-expedition-v1
 -->

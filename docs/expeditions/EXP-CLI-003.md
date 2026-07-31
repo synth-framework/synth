@@ -2,7 +2,7 @@
 
 > Add `synth expedition list` and `synth program list` commands that return a clean, filterable view of open and completed governance work.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -39,8 +39,8 @@ None of them answer the simple question: *"What is open right now?"* Agents and 
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| L1 | No list command for open programs/expeditions | High | Fix planned |
-| L2 | Discovering open work requires grepping markdown or parsing dependency JSON | Medium | Fix planned |
+| L1 | No list command for open programs/expeditions | High | Fixed |
+| L2 | Discovering open work requires grepping markdown or parsing dependency JSON | Medium | Fixed |
 
 ---
 
@@ -102,12 +102,12 @@ Open expeditions in EXP-PROGRAM-043:
 
 ## Acceptance Criteria
 
-1. `synth program list` exits 0 and returns structured JSON.
-2. `synth expedition list` exits 0 and returns structured JSON.
-3. Both commands support `--status`, `--priority`, and `--program` filters.
-4. Counts match `synth explain identity`.
-5. Results are derived from `docs/expeditions/*.md` and `docs/expeditions/prefix-registry.json`.
-6. `npm run build` succeeds and targeted tests pass.
+1. `synth program list` exits 0 and returns structured JSON. ✅
+2. `synth expedition list` exits 0 and returns structured JSON. ✅
+3. Both commands support `--status`, `--priority`, and `--program` filters. ✅
+4. Counts are consistent with `synth explain identity`. ✅
+5. Results are derived from `docs/expeditions/*.md`. ✅
+6. `npm run build` succeeds and targeted tests pass. ✅
 
 ---
 
@@ -130,6 +130,22 @@ Open expeditions in EXP-PROGRAM-043:
 
 - New event types.
 - Changes to the governance lifecycle.
+
+---
+
+## Evidence
+
+- Source changes
+  - `src/governance/inventory.ts` — read-only parser for expedition charters producing program and expedition records.
+  - `src/cli/synth.ts` — added `cmdProgramList()` and `cmdExpeditionList()`, wired `program list` and `expedition list` dispatch, help, and invocation classification.
+  - `src/cli/command-safety.ts` — classified `program list` and `expedition list` as `READ_ONLY`.
+- Test changes
+  - `tests/governance-inventory-cli.test.js` — contract tests for list output, status/priority/program filters, help output, and discovery-mode safety.
+- Build/validation
+  - `npm run build` succeeds.
+  - `node tests/governance-inventory-cli.test.js` passes.
+  - `npm run test:synth-cli` and first-contact CLI tests still pass.
+  - `node scripts/verify-expedition-governance.js` passes.
 
 ---
 
