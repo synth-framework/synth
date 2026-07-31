@@ -15,7 +15,6 @@
 // ============================================================
 
 import crypto from "crypto"
-import path from "node:path"
 import type {
   CapabilityInvocation,
   CanonicalState,
@@ -25,8 +24,7 @@ import type {
   MutationRequest,
   MutationProvider,
 } from "../types/index.js"
-import { isDerivedPath, matchesScope } from "../governance/derived-files.js"
-import { root } from "../sdk/workspace/index.js"
+import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governance/derived-files.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import { sortKeys } from "../sdk/json/index.js"
@@ -424,7 +422,7 @@ export class ExecutionGate {
       (e) => Array.isArray(e.metadata?.scope) && e.metadata.scope.length > 0
     )
     if (scopedExpeditions.length > 0) {
-      const relativeTarget = path.relative(root(), path.resolve(root(), mutation.target)).split(path.sep).join("/")
+      const relativeTarget = toProjectRelativePath(mutation.target)
       const allowedByScope = scopedExpeditions.some((e) =>
         (e.metadata.scope as string[]).some((scope) => matchesScope(relativeTarget, scope))
       )

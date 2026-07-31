@@ -58,7 +58,7 @@ function globToRegex(glob: string): RegExp {
 }
 
 /** Return a POSIX-style path relative to the project root. */
-function toProjectRelative(filePath: string): string {
+export function toProjectRelativePath(filePath: string): string {
   const absolute = path.resolve(filePath)
   const projectRoot = root()
   let relative = path.relative(projectRoot, absolute)
@@ -80,12 +80,12 @@ export function matchesScope(relativePath: string, pattern: string): boolean {
 /** True if the given file path is a derived file that must not be
  *  written directly through the public SDK. */
 export function isDerivedPath(filePath: string): boolean {
-  const relative = toProjectRelative(filePath)
+  const relative = toProjectRelativePath(filePath)
   return DERIVED_PATH_PATTERNS.some((pattern) => matchesScope(relative, pattern))
 }
 
 /** Return the list of patterns that matched the path, for diagnostics. */
 export function matchingDerivedPatterns(filePath: string): string[] {
-  const relative = toProjectRelative(filePath)
+  const relative = toProjectRelativePath(filePath)
   return DERIVED_PATH_PATTERNS.filter((pattern) => matchesScope(relative, pattern))
 }
