@@ -175,3 +175,16 @@ Everything else is implementation detail.
 - [Public Vocabulary](docs/reference/public-vocabulary.md)
 - [Governance](docs/governance.md)
 - [Architecture Constitution](docs/architecture/constitution.md)
+<!-- AGENTS.md generated content start -->
+---
+
+## Contract Provenance
+
+- **Project:** @synth-framework/synth
+- **Governance version:** unknown
+- **Generated:** 2026-07-25T22:55:48.271Z
+- **Command:** `synth project AGENTS.md`
+
+This file is derived. Do not edit it directly. Update source fragments or the framework baseline instead.
+
+<!-- AGENTS.md generated content end -->
