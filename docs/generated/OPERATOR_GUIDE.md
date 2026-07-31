@@ -203,7 +203,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-DOCS-003 — Agent Planning Guide Update](../expeditions/EXP-DOCS-003.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-005 — Example Synchronization](../expeditions/EXP-DOCS-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
 - **[EXP-DOCS-006 — Website Projection Verification](../expeditions/EXP-DOCS-006.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-008 — Documentation & Projections
-- **[EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands](../expeditions/EXP-DRYRUN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands](../expeditions/EXP-DRYRUN-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-ENV-003 — Workspace Capability](../expeditions/EXP-ENV-003.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-004 — Revision Capability](../expeditions/EXP-ENV-004.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
 - **[EXP-ENV-005 — Filesystem Capability](../expeditions/EXP-ENV-005.md)** — Status: Completed, Kind: Constitutional Expedition, Priority: High, Program: EXP-PROGRAM-007 — Environment Independence Program
@@ -1701,6 +1701,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: d4feea3043908a723ceff8138894a61fc8fb74adad389a2fd88a1c05ff2e836a
+sourceStateHash: 6f3cf8ec490ffb1d1a7c5e73624cb5b8a6ccc4683665390bb61a9514e318e653
 projection: synth-documentation-expedition-v1
 -->

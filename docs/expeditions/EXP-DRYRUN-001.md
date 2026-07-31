@@ -2,7 +2,7 @@
 
 > Add `--dry-run` support to state-changing lifecycle commands so operators can preview the event that will be appended.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -131,7 +131,7 @@ The dry-run verification is scoped to the draft or expedition under review. It r
 
 ## Snapshot
 
-- PR #222 opened with implementation and tests.
+- PR #222 merged: implementation and tests landed on main.
 - Deferred: `synth mission approve --dry-run` (Mission Studio / runtime materialization scope).
 
 ## Related Documents
