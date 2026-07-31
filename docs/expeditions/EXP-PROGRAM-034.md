@@ -207,6 +207,28 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 | Operator muscle memory | Document the new commands and provide alias guidance. |
 | CI breakage | Update workflows incrementally; validate against the legacy pipeline. |
 | Circular task dependencies | Enforce DAG validation in the registry and `synth task doctor`. |
+| Duplicate graph engine with EXP-PROGRAM-031 | Share the dependency-graph primitive defined by 031/034 joint design. |
+
+---
+
+## Current Recommendation
+
+**Stay in design phase for now.** This program has the highest blast radius: it wants to replace `package.json` scripts, change CI invocation, and introduce a canonical task model. That is the right long-term direction, but it is not the right immediate fix.
+
+**Why wait:**
+
+- The immediate `npm run govern` slowness can be mitigated today with `--max-concurrency` and better proof caching.
+- `EXP-PROGRAM-031` should define the shared dependency-graph primitive first; otherwise 034 and 031 risk building two graph engines.
+- `EXP-PROGRAM-043` must fix the operator-facing pain before the orchestration engine underneath it is rewritten.
+
+**Design-phase goals:**
+
+1. Produce a task schema and registry design.
+2. Align with 031 on the shared dependency-graph primitive.
+3. Produce an ADR or joint review record.
+4. Do **not** implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
+
+**Sequencing:** 034 moves to implementation only after 031 approves its design and 043 has shipped its first set of charters. At that point, 043's first-contact flow should migrate to the 034 task engine.
 
 ---
 

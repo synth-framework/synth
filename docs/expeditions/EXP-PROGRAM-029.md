@@ -263,3 +263,17 @@ A user or agent should be able to discover SYNTH through at least three independ
 - **EXP-PROGRAM-026 — AI Agent Interoperability** provides the Genesis Protocol, Skill Catalog, SDK, and repository metadata that this program distributes.
 - **EXP-PROGRAM-028 — Repository & Release Governance** governs how distributed artifacts are promoted, released, and published through forge adapters.
 - **ADR-037 — Shell-Safe Command Construction** governs how SYNTH emits distribution and forge commands.
+- **EXP-PROGRAM-043 — Agent Onboarding & Operator Experience** defines the CLI-side capability transparency and first-contact flow that generated skills, MCP manifests, and website copy should project consistently.
+
+---
+
+## Current Recommendation
+
+**Keep active.** All five core expeditions are completed and accepted. The remaining work is maintenance and continuous projection updates as the underlying capability model and CLI surface evolve.
+
+**Key coordination with 043:**
+
+- Generated skills, IDE rules, and MCP server manifests should consume `synth capabilities` output (from `EXP-CAPTRANS-001`) so they accurately advertise what the installed CLI can and cannot do.
+- The website's interactive Genesis onboarding and the CLI's guided first-contact flow must tell the same story; avoid divergent onboarding narratives.
+
+**Why this ordering:** distribution is valuable only if the thing being distributed actually works for agents and operators. 043 fixes the product experience; 029 projects that fixed experience outward.

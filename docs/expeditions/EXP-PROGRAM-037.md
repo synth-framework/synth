@@ -214,3 +214,19 @@ Program 037 is complete only when:
 ## Long-Term Vision
 
 SYNTH becomes a self-sustaining ecosystem: developers discover it through trusted channels, install it without friction, learn it through examples and articles, contribute with confidence, extend it through skills and integrations, and recommend it because the evidence supports the claim. AI agents participate naturally, treating SYNTH as a deterministic execution primitive. Growth is a byproduct of engineering integrity, and every adoption signal is replayable.
+
+---
+
+## Current Recommendation
+
+**Hold.** This program is premature while `EXP-PROGRAM-043` is still fixing the CLI onboarding experience. Public launch campaigns, examples libraries, and community content will underperform if the first-contact flow is still rough.
+
+**Consolidation plan:**
+
+- Merge the onboarding-relevant ADOPT charters into 043/029:
+  - `EXP-ADOPT-005` Installation Experience → consumed by `EXP-ONBOARD-001`
+  - `EXP-ADOPT-003` Documentation Hub and `EXP-ADOPT-006` Examples Library → aligned with 043's first-contact narrative and 029's distribution projections
+  - `EXP-ADOPT-016` AI Discoverability and `EXP-ADOPT-017` Skill Ecosystem → consumed by 029's skill/MCP projection pipeline
+- Defer the remaining ADOPT charters (brand, social media, conferences, outreach) until 043 and 029 are converged.
+
+**Why this ordering:** growth follows trust, and trust follows product quality. A C+ onboarding experience produces a C- public reception. Fix the product first, then scale the story.
