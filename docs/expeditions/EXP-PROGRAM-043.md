@@ -54,7 +54,7 @@ Objective: replace the `synth bootstrap . --approve` black box with an explicit,
 
 ```text
 EXP-PROGRAM-043 / A
-├── EXP-ONBOARD-001   Guided first-contact command (`synth first-contact` / `synth init --guided`)   [DRAFT]
+├── EXP-ONBOARD-001   Guided first-contact command (`synth first-contact` / `synth init --guided`)   [COMPLETED]
 ├── EXP-MIGRATE-001   Detect legacy Synth state and offer archive-vs-import                       [DRAFT]
 └── EXP-BOOTSTRAP-001 Explain bootstrap stages and emit clean JSON output                          [DRAFT]
 ```
@@ -168,7 +168,7 @@ F (Agent Identity & Trust) — depends on D
 
 ## Definition of Done
 
-- [ ] Workstream A deliverable: guided first-contact flow passes first-operator-experience test.
+- [x] Workstream A deliverable: guided first-contact flow passes first-operator-experience test.
 - [ ] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
 - [x] Workstream C deliverable: `synth capabilities` passes contract tests.
 - [ ] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.

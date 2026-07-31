@@ -2,7 +2,7 @@
 
 > Replace the `synth bootstrap . --approve` black box with an explicit, step-by-step guided flow for greenfield and brownfield projects.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -38,9 +38,9 @@ Real-world onboarding showed that agents cannot tell whether to run `synth boots
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| O1 | Bootstrap is a black box | Critical | Fix planned |
-| O2 | No clear first-command guidance | High | Fix planned |
-| O3 | Legacy Synth state detection is manual | Medium | Fix planned |
+| O1 | Bootstrap is a black box | Critical | Fixed |
+| O2 | No clear first-command guidance | High | Fixed |
+| O3 | Legacy Synth state detection is manual | Medium | Fixed |
 
 ---
 
@@ -69,12 +69,13 @@ A new top-level command that walks through:
 
 ## Acceptance Criteria
 
-1. `synth first-contact --dry-run` returns a plan with no mutations.
-2. `synth first-contact --approve` succeeds on an empty repo and produces a valid `.synth/` tree.
-3. In a repo with an existing `.synth/`, the command detects legacy state and offers archive.
-4. Each stage explains itself in the returned JSON (`stage`, `description`, `nextStep`).
-5. `tests/first-operator-experience.test.js` passes with the new command.
-6. `npm run build` succeeds and targeted tests pass.
+1. `synth first-contact --dry-run` returns a plan with no mutations. ✅
+2. `synth first-contact --approve` succeeds on an empty repo and produces a valid `.synth/` tree. ✅
+3. In a repo with an existing `.synth/`, the command detects legacy state and offers archive. ✅
+4. Each stage explains itself in the returned JSON (`stage`, `description`, `nextStep`). ✅
+5. `tests/first-contact-onboard.test.js` passes. ✅
+6. Existing first-contact and operator-experience tests still pass. ✅
+7. `npm run build` succeeds and targeted tests pass. ✅
 
 ---
 
@@ -97,6 +98,21 @@ A new top-level command that walks through:
 
 - New runtime concepts.
 - Changes to the constitutional baseline.
+
+---
+
+## Evidence
+
+- Source changes
+  - `src/cli/first-contact.ts` — added `detectOnboardState()`, `buildOnboardPlan()`, `initializeEmptyProject()`, and `cmdFirstContactOnboard()`.
+  - `src/cli/synth.ts` — wired bare `synth first-contact` and `synth genesis` to the onboard handler; updated help text and error message.
+  - `src/cli/command-safety.ts` — classified bare `first-contact` as `PROPOSAL_ONLY` and `first-contact --approve` as `MUTATING`.
+- Test changes
+  - `tests/first-contact-onboard.test.js` — covers dry-run, brownfield plan, v2 already-initialized, empty-repo approve, legacy archive/bootstrap, discovery-mode safety, and genesis alias.
+- Build/validation
+  - `npm run build` succeeds.
+  - `node tests/first-contact-onboard.test.js` passes.
+  - Existing `first-contact-cli.test.js`, `first-operator-experience.test.js`, and `cli-contract.test.js` still pass.
 
 ---
 

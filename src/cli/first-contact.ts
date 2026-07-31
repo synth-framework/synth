@@ -7,8 +7,10 @@
 // until approval / materialization.
 // ============================================================
 
+import fs from "fs/promises"
 import path from "path"
 import * as sdk from "../sdk/index.js"
+import { runBootstrap } from "./bootstrap-apply.js"
 import { extractIntent } from "../first-contact/extract/index.js"
 import type { IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
 import { clarify, DefaultClarificationStrategy } from "../first-contact/clarify/index.js"
@@ -123,9 +125,12 @@ export async function cmdFirstContactHelp(): Promise<void> {
     status: "ok",
     name: "synth",
     namespace: "first-contact",
-    description: "Greenfield onboarding workflow: turn an idea into an approved Mission before materializing a project (also available as 'synth genesis')",
-    usage: "synth first-contact <subcommand> [options]",
+    description: "Guided onboarding entry point for greenfield, brownfield, and legacy projects, plus the greenfield idea-to-project workflow (also available as 'synth genesis')",
+    usage: "synth first-contact [--dry-run | --approve] | synth first-contact <subcommand> [options]",
     subcommands: [
+      { name: "synth first-contact", description: "Detect repository state and preview the guided onboarding plan" },
+      { name: "synth first-contact --dry-run", description: "Print the onboarding plan without mutating state", args: "--dry-run" },
+      { name: "synth first-contact --approve", description: "Apply the guided onboarding plan", args: "--approve [--name <project-name>]" },
       { name: "synth first-contact start \"<intent>\"", description: "Extract intent and create a first-contact draft", args: "<intent> [--name <project-name>]" },
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
@@ -136,7 +141,7 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact into a SYNTH project", args: "--approve [--name <project-name>]" },
       { name: "synth first-contact status", description: "Report the current first-contact state" },
     ],
-    note: "start, clarify, project, verify, and status are read-only or proposal-only. approve and materialize --approve mutate project state.",
+    note: "The bare command, --dry-run, start, clarify, project, verify, and status are read-only or proposal-only. --approve, approve, and materialize --approve mutate project state.",
   })
 }
 
@@ -398,5 +403,331 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
       : strategy?.canApprove
         ? "synth first-contact project"
         : "synth first-contact clarify",
+  })
+}
+
+// ============================================================
+// EXP-ONBOARD-001: Guided first-contact onboard flow
+// ============================================================
+// Bare `synth first-contact` detects repository state and guides the
+// operator through the appropriate initialization path.
+// ============================================================
+
+type OnboardState =
+  | { kind: "empty"; reason: string }
+  | { kind: "initialized-v2"; manifestPath: string }
+  | { kind: "legacy"; manifestPath?: string; legacyDir: string }
+  | { kind: "brownfield"; hasPackageJson: boolean }
+
+interface OnboardStage {
+  stage: string
+  description: string
+  nextStep?: string
+}
+
+interface OnboardPlan {
+  detected: OnboardState["kind"]
+  projectName: string
+  targetDir: string
+  stages: OnboardStage[]
+  wouldArchive?: string
+  wouldCreate: string[]
+  wouldRun: string[]
+  nextStep: string
+}
+
+async function detectOnboardState(targetDir: string): Promise<OnboardState> {
+  const synthDir = sdk.paths.synthDir(targetDir)
+  const manifestPath = sdk.paths.manifestPath(targetDir)
+
+  try {
+    const synthStat = await fs.stat(synthDir)
+    if (synthStat.isDirectory()) {
+      try {
+        const manifest = await sdk.json.readJson<Record<string, unknown>>(manifestPath)
+        if (manifest.schema === "synth-bootstrap-manifest-v1") {
+          return { kind: "initialized-v2", manifestPath }
+        }
+        return { kind: "legacy", manifestPath, legacyDir: synthDir }
+      } catch {
+        return { kind: "legacy", legacyDir: synthDir }
+      }
+    }
+  } catch {
+    // .synth does not exist
+  }
+
+  const entries = await fs.readdir(targetDir)
+  const nonIgnorable = entries.filter((e) => e !== ".git" && e !== ".DS_Store")
+  if (nonIgnorable.length === 0) {
+    return { kind: "empty", reason: "No files in target directory" }
+  }
+
+  const packageJsonPath = path.join(targetDir, "package.json")
+  let hasPackageJson = false
+  try {
+    await fs.access(packageJsonPath)
+    hasPackageJson = true
+  } catch {
+    hasPackageJson = false
+  }
+  return { kind: "brownfield", hasPackageJson }
+}
+
+function buildOnboardPlan(state: OnboardState, targetDir: string, projectName: string): OnboardPlan {
+  const base: OnboardPlan = {
+    detected: state.kind,
+    projectName,
+    targetDir,
+    stages: [],
+    wouldCreate: [],
+    wouldRun: [],
+    nextStep: "",
+  }
+
+  switch (state.kind) {
+    case "empty": {
+      base.stages = [
+        { stage: "detect", description: "Detected an empty directory", nextStep: "initialize project" },
+        { stage: "init", description: `Initialize Synth project as ${projectName}`, nextStep: "create baseline mission" },
+        { stage: "mission", description: "Create and approve a baseline mission", nextStep: "run npm run govern" },
+      ]
+      base.wouldCreate = [
+        ".synth/manifest.json",
+        ".synth/data/event-log.jsonl",
+        ".synth/data/canonical-state.json",
+      ]
+      base.wouldRun = ["synth init", "synth mission create", "synth mission approve"]
+      base.nextStep = "synth first-contact --approve"
+      break
+    }
+    case "brownfield": {
+      base.stages = [
+        { stage: "detect", description: "Detected an existing project without Synth governance", nextStep: "analyze repository" },
+        { stage: "analyze", description: "Run repository analysis and generate proposals", nextStep: "apply bootstrap" },
+        { stage: "apply", description: "Apply Synth governance manifest and event log", nextStep: "run npm run govern" },
+      ]
+      base.wouldCreate = [
+        ".synth/manifest.json",
+        ".synth/data/event-log.jsonl",
+        ".synth/data/canonical-state.json",
+        "docs/reference/capability-validation-map.json",
+      ]
+      base.wouldRun = ["synth bootstrap --approve"]
+      base.nextStep = "synth first-contact --approve"
+      break
+    }
+    case "legacy": {
+      const archiveDir = `${state.legacyDir}_bk_${Date.now()}`
+      base.wouldArchive = archiveDir
+      base.stages = [
+        { stage: "detect", description: "Detected legacy Synth state", nextStep: "archive legacy state" },
+        { stage: "archive", description: `Move ${state.legacyDir} to ${archiveDir}`, nextStep: "bootstrap fresh" },
+        { stage: "apply", description: "Apply Synth v2 governance", nextStep: "run npm run govern" },
+      ]
+      base.wouldCreate = [
+        ".synth/manifest.json",
+        ".synth/data/event-log.jsonl",
+        ".synth/data/canonical-state.json",
+      ]
+      base.wouldRun = ["mv .synth .synth_bk_<timestamp>", "synth bootstrap --approve"]
+      base.nextStep = "synth first-contact --approve"
+      break
+    }
+    case "initialized-v2": {
+      base.stages = [
+        { stage: "detect", description: "Detected an existing Synth v2 project", nextStep: "report status" },
+      ]
+      base.nextStep = "synth status"
+      break
+    }
+  }
+
+  return base
+}
+
+async function initializeEmptyProject(targetDir: string, projectName: string) {
+  const governanceVersion = "2.1"
+  const projectId = sdk.identity.uuid()
+
+  await sdk.files.ensureDirectory(sdk.paths.synthDir(targetDir))
+  await sdk.files.ensureDirectory(sdk.paths.dataDir(targetDir))
+
+  const manifest = {
+    schema: "synth-bootstrap-manifest-v1",
+    version: "2.4.1",
+    governanceVersion,
+    projectName,
+    root: targetDir,
+    generatedAt: new Date().toISOString(),
+    bootstrapped: false,
+    source: "first-contact",
+    commands: [
+      { name: "version", description: "Print the installed Synth version" },
+      { name: "init", description: "Initialize the current directory as a Synth project" },
+      { name: "first-contact", description: "Guided onboarding entry point" },
+      { name: "govern", description: "Run the full governance pipeline" },
+      { name: "status", description: "Report the current project state" },
+      { name: "mission", description: "Mission Studio operations" },
+      { name: "expedition", description: "Planning operations" },
+      { name: "capabilities", description: "List installed and missing CLI capabilities" },
+    ],
+    capabilities: [
+      "repository", "github", "tdd", "bdd", "conversation", "document",
+      "filesystem", "specification", "knowledge-extraction", "confidence",
+      "dependency", "architecture", "mission-builder", "expedition-builder",
+      "objective-builder", "wizard",
+    ],
+    layout: {
+      docs: "docs/",
+      generatedDocs: "docs/generated/",
+      examples: "examples/",
+      data: ".synth/data/",
+      proof: "proof/",
+      src: "src/",
+      tests: "tests/",
+      scripts: "scripts/",
+      website: "website/",
+    },
+    publicVocabulary: ["Mission", "Expedition", "Evidence", "Plan", "Event", "State", "Replay"],
+    govern: "npm run govern",
+    quickStart: "synth first-contact --approve && npm run govern",
+  }
+
+  await sdk.json.writeJson(sdk.paths.manifestPath(targetDir), manifest)
+
+  const { bootstrap } = await import("../core/bootstrap.js")
+  const ctx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      persistence: "file",
+      eventLogPath: sdk.paths.eventLogFile(targetDir),
+      statePath: sdk.paths.stateFile(targetDir),
+      checkpointPath: sdk.paths.checkpointsFile(targetDir),
+    },
+  })
+
+  for (const name of ctx.capabilityRegistry.list()) {
+    const cap = ctx.capabilityRegistry.resolve(name)
+    if (cap) ctx.runtime.registerCapability(cap)
+  }
+
+  const currentState = await ctx.runtime.getState()
+  if (currentState.lifecycle !== "initialized") {
+    const initResult = await ctx.api.handleIntent({
+      actor: "synth-first-contact",
+      capability: "InitializeProject",
+      payload: { projectId, name: projectName, governanceVersion },
+    })
+    if (initResult.status !== "ok") {
+      throw new Error(`Project initialization failed: ${initResult.error || JSON.stringify(initResult)}`)
+    }
+  }
+
+  const missionSubject = "Establish governance baseline"
+  const missionPurpose = "Capture the initial state of the project and create a governed baseline for future expeditions."
+  const missionResult = await ctx.api.handleIntent({
+    actor: "synth-first-contact",
+    capability: "CreateMission",
+    payload: {
+      id: sdk.identity.uuid(),
+      name: missionSubject,
+      purpose: missionPurpose,
+      alignmentContractId: undefined,
+      metadata: { createdBy: "first-contact-onboard" },
+    },
+  })
+  if (missionResult.status !== "ok") {
+    throw new Error(`Mission creation failed: ${missionResult.error || JSON.stringify(missionResult)}`)
+  }
+
+  const missionId = (missionResult.result as Record<string, unknown>)?.id as string
+
+  return { manifest, missionId, projectId }
+}
+
+export async function cmdFirstContactOnboard(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
+
+  const state = await detectOnboardState(targetDir)
+  const plan = buildOnboardPlan(state, targetDir, projectName)
+
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const approve = flags.approve === true || flags.approve === "true"
+
+  if (dryRun || !approve) {
+    printJson({
+      status: "pending-approval",
+      kind: "FirstContactOnboardPlan",
+      ...plan,
+      note: dryRun
+        ? "Dry-run: no files were written."
+        : "Review the plan and run 'synth first-contact --approve' to apply.",
+    })
+    return
+  }
+
+  if (state.kind === "initialized-v2") {
+    printJson({
+      status: "ok",
+      kind: "FirstContactOnboardAlreadyInitialized",
+      detected: state.kind,
+      manifestPath: state.manifestPath,
+      nextStep: "synth status",
+    })
+    return
+  }
+
+  const stages: OnboardStage[] = []
+
+  if (state.kind === "legacy") {
+    const archiveDir = plan.wouldArchive!
+    await fs.rename(state.legacyDir, archiveDir)
+    stages.push({ stage: "archive", description: `Archived legacy state to ${archiveDir}`, nextStep: "bootstrap" })
+  }
+
+  if (state.kind === "empty") {
+    const result = await initializeEmptyProject(targetDir, projectName)
+    stages.push({ stage: "init", description: `Initialized Synth project as ${projectName}`, nextStep: "create baseline mission" })
+    stages.push({ stage: "mission", description: `Created baseline mission ${result.missionId}`, nextStep: "run npm run govern" })
+    printJson({
+      status: "ok",
+      kind: "FirstContactOnboardCompleted",
+      detected: state.kind,
+      projectName,
+      targetDir,
+      stages,
+      missionId: result.missionId,
+      nextStep: "synth mission approve --draft-id <mission-id>",
+    })
+    return
+  }
+
+  // brownfield or post-archive legacy
+  const bootstrapResult = await runBootstrap(targetDir, {
+    approve: true,
+    dryRun: false,
+    withWebsite: false,
+    withExample: false,
+    projectName,
+  })
+
+  if (bootstrapResult.status === "error") {
+    printError(`Bootstrap failed: ${JSON.stringify(bootstrapResult)}`)
+  }
+
+  stages.push({ stage: "analyze", description: "Analyzed repository and generated proposals", nextStep: "apply bootstrap" })
+  stages.push({ stage: "apply", description: "Applied Synth governance manifest and event log", nextStep: "run npm run govern" })
+
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardCompleted",
+    detected: state.kind,
+    projectName,
+    targetDir,
+    stages,
+    bootstrapStatus: bootstrapResult.status,
+    nextStep: "synth mission approve --draft-id <draft-id>",
   })
 }
