@@ -78,6 +78,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **After EXP-GATE-013** — After EXP-GATE-013
 - **Agents must not bypass approval gates** — Agents must not bypass approval gates.
 - **Aggregate** — 4.3 Aggregate
+- **aggregate affected aggregate id** — `aggregate` — affected aggregate id.
 - **Aggregate lineage visualization** — Aggregate lineage visualization
 - **Aggregate navigation that cannot be trusted** — Aggregate navigation that cannot be trusted because parent references may be invalid.
 - **Aggregate navigation validation** — Aggregate navigation validation.
@@ -1355,8 +1356,8 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 2b13774ac5fb9f6d18b90c2055e7461da5d9373ce181cac30485ae65142367d9
-computedAt: 2026-07-31T07:32:54.286Z
+sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
+computedAt: 2026-07-31T08:55:09.835Z
 schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->

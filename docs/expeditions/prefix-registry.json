@@ -182,6 +182,10 @@
       "name": "Warning IDs & Operator Guidance",
       "description": "Stable warning codes and actionable operator guidance expeditions."
     },
+    "EVENTLOG": {
+      "name": "Event-Log Query",
+      "description": "Governance event-log query and inspection expeditions."
+    },
     "WEB": {
       "name": "Website Experience",
       "description": "Public website expeditions (homepage, scenario pages, design system, onboarding surfaces)."

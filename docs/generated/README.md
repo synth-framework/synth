@@ -58,7 +58,7 @@ Synth is organized into three architectural strata:
 - **A class of actions should be** — A class of actions should be restricted
 - **A clear goal** — A clear goal
 - **A CLI that exposes the entire** — **A CLI** that exposes the entire platform as a stable, machine-readable interface.
-- *…and 16229 more concepts extracted from the knowledge base.*
+- *…and 16251 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,8 +70,8 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: 2b13774ac5fb9f6d18b90c2055e7461da5d9373ce181cac30485ae65142367d9
-computedAt: 2026-07-31T07:32:54.286Z
+sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
+computedAt: 2026-07-31T08:55:09.835Z
 schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
