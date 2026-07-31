@@ -2,7 +2,7 @@
 
 > Prevent expeditions from getting stuck silently when a required capability is unavailable, and provide a safe archive fallback.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -43,9 +43,9 @@ This expedition makes missing capabilities transparent and provides a safe fallb
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| C1 | Expedition gets stuck silently when a required capability is missing | Critical | Proposed |
-| C2 | No safe fallback to archive a blocked expedition | High | Proposed |
-| C3 | `synth status` does not list missing capabilities as blockers | Medium | Proposed |
+| C1 | Expedition gets stuck silently when a required capability is missing | Critical | Completed |
+| C2 | No safe fallback to archive a blocked expedition | High | Completed |
+| C3 | `synth status` does not list missing capabilities as blockers | Medium | Completed |
 
 ## Deliverables
 

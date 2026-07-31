@@ -83,7 +83,7 @@ Objective: the CLI must advertise what it can and cannot do, and offer safe fall
 ```text
 EXP-PROGRAM-043 / C
 ├── EXP-CAPTRANS-001  `synth capabilities` command                                                [COMPLETED]
-├── EXP-CAPTRANS-002  Graceful handling of missing capabilities (e.g. archive fallback)           [DRAFT]
+├── EXP-CAPTRANS-002  Graceful handling of missing capabilities (e.g. archive fallback)           [COMPLETED]
 └── EXP-ADAPTER-001   Surface repository adapter during onboarding                                [DRAFT]
 ```
 
@@ -110,7 +110,7 @@ Objective: make it easy to attach proof, query history, and keep derived documen
 EXP-PROGRAM-043 / E
 ├── EXP-EVIDENCE-001  Automatic expedition evidence capture                                       [DRAFT]
 ├── EXP-EVENTLOG-001  Event-log query CLI (`synth log`)                                           [DRAFT]
-└── EXP-AGENTS-001    AGENTS.md synchronization command                                             [DRAFT]
+└── EXP-AGENTS-001    AGENTS.md synchronization command                                             [COMPLETED]
 ```
 
 _Note: Workstream E runs in parallel with D because evidence tooling is read-only or append-only and does not change the event model._

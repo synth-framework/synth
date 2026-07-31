@@ -2,7 +2,7 @@
 
 > Provide a deterministic CLI command to regenerate the repository's AI operator contract (`AGENTS.md`) from its canonical source fragments.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
