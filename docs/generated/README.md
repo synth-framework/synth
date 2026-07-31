@@ -71,5 +71,7 @@ Synth is organized into three architectural strata:
 
 <!--
 sourceStateHash: 23582d0918dfe2e11e7bb62411fa76de5592dc46170ccb3153a3c9272b205eeb
+computedAt: 2026-07-31T07:39:41.691Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
