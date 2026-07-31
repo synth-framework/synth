@@ -24,6 +24,16 @@ import {
   mkdirSync as nodeMkdirSync,
 } from "node:fs"
 import path from "node:path"
+import { isDerivedPath } from "../../governance/derived-files.js"
+import { IllegalMutationError } from "../../core/errors.js"
+
+const DERIVED_STATE_ERROR = "This is derived state. Modify source events or evidence instead."
+
+function guardDerivedPath(filePath: string): void {
+  if (isDerivedPath(filePath)) {
+    throw new IllegalMutationError(DERIVED_STATE_ERROR)
+  }
+}
 
 // ---- Async primitives ------------------------------------------------
 
@@ -40,11 +50,13 @@ export async function readFileMaybe(filePath: string): Promise<string | undefine
 }
 
 export async function writeFile(filePath: string, content: string): Promise<void> {
+  guardDerivedPath(filePath)
   await nodeMkdir(path.dirname(filePath), { recursive: true })
   await nodeWriteFile(filePath, content, "utf-8")
 }
 
 export async function appendFile(filePath: string, content: string): Promise<void> {
+  guardDerivedPath(filePath)
   await nodeMkdir(path.dirname(filePath), { recursive: true })
   await nodeAppendFile(filePath, content, "utf-8")
 }

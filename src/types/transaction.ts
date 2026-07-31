@@ -48,6 +48,8 @@ export type MutationRequest = {
   target: string
   payload: unknown
   actor?: string
+  /** Authorization context propagated from the originating invocation. */
+  context?: Record<string, unknown>
 }
 
 /** Mutation result — outcome of applying a mutation request */
