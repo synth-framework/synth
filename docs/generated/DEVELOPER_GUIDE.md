@@ -725,6 +725,7 @@ This guide is for contributors extending Synth.
 - **P1 Structural Verified by test audit** — **P1 Structural:** Verified by `test:audit` and proof generation.
 - **P2 Behavioral Verified by test replay** — **P2 Behavioral:** Verified by `test:replay` and `test:determinism`.
 - **P2 Hardening Tests 5 tests** — P2 Hardening Tests (5 tests)
+- **P3 Capability Boundary Scope enforcement exercises** — **P3 Capability Boundary:** Scope enforcement exercises the ExecutionGate mutation authority invariant.
 - **P3 Historical Strengthened the capability graph** — **P3 Historical:** Strengthened — the capability graph is preserved as replayable evidence.
 - **P4 Adversarial Verified by test adversarial** — **P4 Adversarial:** Verified by `test:adversarial`.
 - **Package Capability Interface** — 2. Package Capability Interface
@@ -1202,6 +1203,6 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 1e8a658418c76349b3925f1fba5974358a213fb645cff28dd27f85f2c4357968
+sourceStateHash: 3d510a8ad31f1becf674bdcb33cbd971b5267192bde2dd1449c6135ab42e069c
 projection: synth-documentation-expedition-v1
 -->

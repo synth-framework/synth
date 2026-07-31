@@ -65,7 +65,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-GOVERN-004 — Incremental Scheduler](../expeditions/EXP-GOVERN-004.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-021 — Incremental Governance
 - **[EXP-GOVERN-006 — Governance Completion](../expeditions/EXP-GOVERN-006.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-023 — Genesis
 - **[EXP-GOVERNANCE-ENFORCEMENT-001 — Implementation Authority Ordering Enforcement](../expeditions/EXP-GOVERNANCE-ENFORCEMENT-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-040 — Repository Simplification
-- **[EXP-GUARD-001 — Derived-State Protection & Expedition Scope](../expeditions/EXP-GUARD-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-GUARD-001 — Derived-State Protection & Expedition Scope](../expeditions/EXP-GUARD-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-HARDEN-001 — Mission Studio Integrity](../expeditions/EXP-HARDEN-001.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HARDEN-002 — Snapshot Integrity](../expeditions/EXP-HARDEN-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HARDEN-003 — Genesis Hardening](../expeditions/EXP-HARDEN-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
@@ -423,6 +423,7 @@ This guide covers the operator journey from idea to done.
 - **Added regression guards in tests operator-briefing** — Added regression guards in `tests/operator-briefing.test.js` covering:
 - **ADR-029 Genesis Validation Mission Materialization Semantics** — ADR-029 — Genesis Validation & Mission Materialization Semantics
 - **ADR-045 explicitly records Mission Projection as** — ADR-045 explicitly records Mission Projection as the constitutional boundary between Genesis and Synthesis.
+- **ADR-051 Derived-State Protection and Expedition Scope** — ADR-051 — Derived-State Protection and Expedition Scope Enforcement
 - **After expedition approve EXPEDITION APPROVED event** — After `expedition approve`: `EXPEDITION_APPROVED` event exists.
 - **After expedition complete EXPEDITION COMPLETED event** — After `expedition complete`: `EXPEDITION_COMPLETED` event exists.
 - **After expedition create EXPEDITION CREATED event** — After `expedition create`: `EXPEDITION_CREATED` event exists and references an active mission.
@@ -671,6 +672,7 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-GOV-024 md** — `docs/expeditions/EXP-GOV-024.md`
 - **docs expeditions EXP-GOVERNABILITY-005 md** — `docs/expeditions/EXP-GOVERNABILITY-005.md`
 - **docs expeditions EXP-GOVERNANCE-ENFORCEMENT-001 md** — `docs/expeditions/EXP-GOVERNANCE-ENFORCEMENT-001.md`
+- **docs expeditions EXP-GUARD-001 md** — `docs/expeditions/EXP-GUARD-001.md`
 - **docs expeditions EXP-HOME-001 md** — `docs/expeditions/EXP-HOME-001.md`
 - **docs expeditions EXP-HOME-001 md through docs** — `docs/expeditions/EXP-HOME-001.md` through `docs/expeditions/EXP-HOME-014.md`
 - **docs expeditions EXP-HOME-002 md** — `docs/expeditions/EXP-HOME-002.md`
@@ -1695,6 +1697,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 1e8a658418c76349b3925f1fba5974358a213fb645cff28dd27f85f2c4357968
+sourceStateHash: 3d510a8ad31f1becf674bdcb33cbd971b5267192bde2dd1449c6135ab42e069c
 projection: synth-documentation-expedition-v1
 -->

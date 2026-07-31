@@ -320,6 +320,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **End-to-end certification of the full three-gate** — End-to-end certification of the full three-gate model (handled by EXP-GATE-012).
 - **Enforce immutability at the store boundary** — Enforce immutability at the store boundary.
 - **Enforce the upstream-gate stop condition for** — Enforce the upstream-gate stop condition for dependent expeditions while an upstream expedition is in an unresolved revision loop.
+- **Enforcement layers** — Enforcement layers
 - **Engine enforcement implementation EXP-GATE-008** — Engine enforcement implementation (EXP-GATE-008).
 - **Engineering as Exploration** — Engineering as Exploration
 - **Engineering as Knowledge** — Engineering as Knowledge
@@ -1132,6 +1133,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **The kernel mutation boundary blocks unauthorized** — The kernel mutation boundary blocks unauthorized mutations.
 - **The kernel mutation boundary is enforced** — The kernel mutation boundary is enforced.
 - **The kernel safety gap that produced** — The kernel safety gap that produced `EXP-HOME-029` remains open.
+- **The kernel stores retain their existing** — The kernel stores retain their existing write tokens; no new runtime path is created for derived-file writes.
 - **The kernel test** — The kernel test
 - **The Missing Layer Execution Plan** — The Missing Layer: Execution Plan
 - **The most important finding the kernel** — The most important finding: the kernel boundary
@@ -1286,6 +1288,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - **[ADR-046 — Implementation Authority Ordering](../adr/ADR-046-implementation-authority-ordering.md)** — Status: Accepted, Date: 2026-07-24, Deciders: Architecture Owner, Program Stewards
 - **[Program Ownership Matrix](../governance/program-ownership-matrix.md)** — Status: Completed, Date: 2026-07-24, Deciders: unknown
 - **[Repository Baseline Report](../audits/repository-baseline-report-2026-07-25.md)** — Status: ✅ Baseline Certified, Date: 2026-07-25, Deciders: unknown
+- **[ADR-051 — Derived-State Protection and Expedition Scope Enforcement](../adr/ADR-051-derived-state-protection-and-expedition-scope.md)** — Status: Accepted, Date: 2026-07-31, Deciders: EXP-PROGRAM-043 / EXP-GUARD-001
 - **[ADR-NNN — Title](../adr/ADR-TEMPLATE.md)** — Status: Proposed / Accepted / Rejected / Superseded, Date: YYYY-MM-DD, Deciders: ---
 
 ## Knowledge Sources
@@ -1352,6 +1355,6 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 - Adapters are isolated from the kernel.
 
 <!--
-sourceStateHash: 1e8a658418c76349b3925f1fba5974358a213fb645cff28dd27f85f2c4357968
+sourceStateHash: 3d510a8ad31f1becf674bdcb33cbd971b5267192bde2dd1449c6135ab42e069c
 projection: synth-documentation-expedition-v1
 -->
