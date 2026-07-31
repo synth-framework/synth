@@ -178,6 +178,10 @@
       "name": "Validation",
       "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."
     },
+    "WARN": {
+      "name": "Warning IDs & Operator Guidance",
+      "description": "Stable warning codes and actionable operator guidance expeditions."
+    },
     "WEB": {
       "name": "Website Experience",
       "description": "Public website expeditions (homepage, scenario pages, design system, onboarding surfaces)."
