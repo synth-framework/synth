@@ -85,6 +85,7 @@ export type Expedition = {
   decisions: string[]
   dependsOn: string[]
   metadata: Record<string, unknown>
+  attachments?: Array<{ path: string; hash: string; kind: string; note?: string }>
   createdAt: number
   updatedAt: number
 }
