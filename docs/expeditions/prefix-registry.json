@@ -190,6 +190,10 @@
       "name": "Evidence Capture",
       "description": "Automatic expedition evidence capture and attachment expeditions."
     },
+    "AGENTS": {
+      "name": "AI Operator Contract Sync",
+      "description": "AGENTS.md synchronization and AI operator contract maintenance expeditions."
+    },
     "WEB": {
       "name": "Website Experience",
       "description": "Public website expeditions (homepage, scenario pages, design system, onboarding surfaces)."
