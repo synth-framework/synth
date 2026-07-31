@@ -108,8 +108,8 @@ Objective: make it easy to attach proof, query history, and keep derived documen
 
 ```text
 EXP-PROGRAM-043 / E
-├── EXP-EVIDENCE-001  Automatic expedition evidence capture                                       [DRAFT]
-├── EXP-EVENTLOG-001  Event-log query CLI (`synth log`)                                           [DRAFT]
+├── EXP-EVIDENCE-001  Automatic expedition evidence capture                                       [COMPLETED]
+├── EXP-EVENTLOG-001  Event-log query CLI (`synth log`)                                           [COMPLETED]
 └── EXP-AGENTS-001    AGENTS.md synchronization command                                             [COMPLETED]
 ```
 

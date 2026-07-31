@@ -2,7 +2,7 @@
 
 > Bundle proof with an expedition automatically so completion is backed by verifiable artifacts instead of manually maintained files.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -36,9 +36,9 @@ In the TaskPRO migration, agents created proof files by hand (`proof/legacy-expe
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| E1 | Proof files created manually and not reliably attached | High | Proposed |
-| E2 | No CLI command to bundle evidence with an expedition | High | Proposed |
-| E3 | `synth expedition complete` cannot verify evidence exists | Medium | Proposed |
+| E1 | Proof files created manually and not reliably attached | High | Completed |
+| E2 | No CLI command to bundle evidence with an expedition | High | Completed |
+| E3 | `synth expedition complete` cannot verify evidence exists | Medium | Completed |
 
 ## Deliverables
 
