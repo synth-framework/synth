@@ -33,8 +33,8 @@ Agents currently mutate state without a preview. A `--dry-run` flag on lifecycle
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| D1 | No preview before state-changing commands | High | In progress |
-| D2 | Agent edited canonical-state.json directly | Critical | Mitigation in progress |
+| D1 | No preview before state-changing commands | High | Fixed |
+| D2 | Agent edited canonical-state.json directly | Critical | Mitigated by dry-run preview |
 
 ---
 
@@ -128,6 +128,11 @@ The dry-run verification is scoped to the draft or expedition under review. It r
 - New event types.
 
 ---
+
+## Snapshot
+
+- PR #222 opened with implementation and tests.
+- Deferred: `synth mission approve --dry-run` (Mission Studio / runtime materialization scope).
 
 ## Related Documents
 
