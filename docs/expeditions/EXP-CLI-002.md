@@ -2,13 +2,13 @@
 
 > Add a `--human` output mode and clean structured output so operators and mixed human-agent sessions can read CLI responses without parsing JSON.
 
-**Status:** Draft  
+**Status:** Executing  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
 **Authority:** Synth Architectural Constitution, TaskPRO onboarding retrospective  
 **Depends On:** EXP-CLI-001 (CLI consistency & AI portability)  
-**Blocks:** EXP-EXPLAIN-001
+**Blocks:** None
 
 ---
 
@@ -37,9 +37,9 @@ JSON-by-default is correct for agents, but humans and mixed sessions need prose.
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| H1 | Mixed log/JSON streams break parsing | High | Fix planned |
-| H2 | No human-readable output mode | High | Fix planned |
-| H3 | Error messages list state but not recovery action | Medium | Fix planned |
+| H1 | Mixed log/JSON streams break parsing | High | In progress |
+| H2 | No human-readable output mode | High | In progress |
+| H3 | Error messages list state but not recovery action | Medium | In progress |
 
 ---
 
@@ -75,6 +75,28 @@ Every error JSON includes:
 
 - `message`: what went wrong
 - `nextStep`: suggested command or recovery action
+
+---
+
+## Design Notes
+
+### Global `--human` flag
+
+`src/cli/synth.ts` `parseArgs()` recognizes `--human` anywhere on the command line and stores it in `flags.human`. The flag is threaded through to command handlers and the shared print helpers.
+
+### Output contract
+
+- **Machine mode (default):** exactly one JSON object per command on stdout.
+- **Human mode (`--human`):** prose summary on stdout; structured JSON is suppressed.
+- **Logs:** bootstrap and other diagnostic `INFO` logs are written to stderr in both modes so stdout stays clean for machines.
+
+### Human formatter
+
+`src/cli/print.ts` owns `printHuman()` and helpers for common shapes (status, error, list, plan). Each command that supports `--human` provides a `toHuman()` renderer or uses shared defaults.
+
+### Error messages
+
+`printError()` always emits `nextStep`/`suggestion` when provided, both in JSON and human modes. In human mode the suggestion is rendered as an actionable sentence.
 
 ---
 

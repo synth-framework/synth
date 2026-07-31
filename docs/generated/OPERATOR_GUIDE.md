@@ -65,7 +65,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-GOVERN-004 — Incremental Scheduler](../expeditions/EXP-GOVERN-004.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-021 — Incremental Governance
 - **[EXP-GOVERN-006 — Governance Completion](../expeditions/EXP-GOVERN-006.md)** — Status: Completed, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-023 — Genesis
 - **[EXP-GOVERNANCE-ENFORCEMENT-001 — Implementation Authority Ordering Enforcement](../expeditions/EXP-GOVERNANCE-ENFORCEMENT-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-040 — Repository Simplification
-- **[EXP-GUARD-001 — Derived-State Protection & Expedition Scope](../expeditions/EXP-GUARD-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-GUARD-001 — Derived-State Protection & Expedition Scope](../expeditions/EXP-GUARD-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-HARDEN-001 — Mission Studio Integrity](../expeditions/EXP-HARDEN-001.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HARDEN-002 — Snapshot Integrity](../expeditions/EXP-HARDEN-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
 - **[EXP-HARDEN-003 — Genesis Hardening](../expeditions/EXP-HARDEN-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-010 — Constitutional Hardening Program
@@ -183,7 +183,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-AX-005 — Public Release Polish](../expeditions/EXP-AX-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
 - **[EXP-CAPTRANS-001 — Capability Transparency CLI](../expeditions/EXP-CAPTRANS-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CERT-001 — Failure Certification Framework](../expeditions/EXP-CERT-001.md)** — Status: Completed, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
-- **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CONT-002 — Interruption Benchmark](../expeditions/EXP-CONT-002.md)** — Status: Completed (pending program acceptance), Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-013 — Cognitive Continuity
 - **[EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage](../expeditions/EXP-CONVERGENCE-001.md)** — Status: Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning., Kind: Architectural Convergence, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
@@ -1298,6 +1298,7 @@ This guide covers the operator journey from idea to done.
 - **Nodes are aggregates missions expeditions objectives** — **Nodes** are aggregates: missions, expeditions, objectives, and work
 - **Normalize evidence consumed by Mission Studio** — Normalize evidence consumed by Mission Studio and record its provenance.
 - **Not modified Mission Studio Genesis Replay** — **Not modified:** Mission Studio, Genesis, Replay, ExecutionGate, Event Model, Capability Model, Constitutional Baseline, Public Vocabulary.
+- **Note on CLI completion synth expedition** — **Note on CLI completion:** `synth expedition complete` could not be used because this repository's SYNTH project state is not initialized with an event-log expedition record (`EXP-GUARD-001 does not exist`). The charter was closed manually and the change is carried forward with the next work item.
 - **Nothing disappears Everything transforms Mission Studio** — **Nothing disappears. Everything transforms.** Mission Studio compresses into a sticky bar rather than vanishing.
 - **Objective 7 Complete the Expedition** — Objective 7: Complete the Expedition
 - **one active Mission** — one active Mission
@@ -1698,6 +1699,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 2a86f24d5b9c68b5b2fe13fd8b10ce4efa854e928fb9b202e8614232cb4015ed
+sourceStateHash: 7d310b9ff4fd561f6a08060c7279185ea97fd77eba24c4c5b55fa49aafb39429
 projection: synth-documentation-expedition-v1
 -->
