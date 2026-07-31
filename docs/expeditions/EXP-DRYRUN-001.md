@@ -2,7 +2,7 @@
 
 > Add `--dry-run` support to state-changing lifecycle commands so operators can preview the event that will be appended.
 
-**Status:** Draft  
+**Status:** Executing  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -33,8 +33,8 @@ Agents currently mutate state without a preview. A `--dry-run` flag on lifecycle
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| D1 | No preview before state-changing commands | High | Fix planned |
-| D2 | Agent edited canonical-state.json directly | Critical | Mitigation planned |
+| D1 | No preview before state-changing commands | High | In progress |
+| D2 | Agent edited canonical-state.json directly | Critical | Mitigation in progress |
 
 ---
 
@@ -72,6 +72,30 @@ Example:
   "stateDelta": "expedition 13ab9c7 status: draft → approved"
 }
 ```
+
+---
+
+## Design Notes
+
+### Execution strategy
+
+Each lifecycle command handler checks `flags["dry-run"]` after validating inputs and gate decisions. In dry-run mode the handler:
+
+1. Builds the same capability invocation it would execute.
+2. Computes the event that would be appended by inspecting the command's intended transition.
+3. Runs `synth verify --scope=draft` via the existing verification engine.
+4. Computes a textual `stateDelta` from the current canonical state.
+5. Prints a `LifecycleDryRun` result and exits 0 without calling `ExecutionGate.execute()`.
+
+No event is appended and no filesystem mutation occurs in dry-run mode.
+
+### Scope of verification
+
+The dry-run verification is scoped to the draft or expedition under review. It reuses the existing `cmdVerify` / `runVerification` path so the checks are identical to the real command's preconditions.
+
+### State delta
+
+`stateDelta` is a human-readable sentence describing the single field that would change (e.g., `expedition 13ab9c7 status: draft → approved`). It is intended for operator review, not machine diffing.
 
 ---
 
