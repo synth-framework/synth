@@ -7,6 +7,7 @@
 // ============================================================
 
 import type { SynthEvent, CanonicalState } from "../types/index.js"
+import type { CapabilityEntry } from "../cli/capabilities-data.js"
 import type { DecisionLogRead } from "../mission-studio/decision-log.js"
 import type { StoredSnapshot } from "../mission-studio/types.js"
 
@@ -81,6 +82,7 @@ export type ResolvedGovernanceContext = {
     latestDraft: DraftSummary | null
     divergences: StateDivergence[]
     graphViolations: import("./replay.js").AggregateGraphViolation[]
+    capabilities: CapabilityEntry[]
   }
 }
 

@@ -829,7 +829,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, repository governance, convergence certification, and filesystem mutation capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 38, `Registry must have 38 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  assert.equal(ctx.capabilityRegistry.size(), 39, `Registry must have 39 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("FilesystemWrite"), "Registry must have FilesystemWrite")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
@@ -839,6 +839,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   assert.ok(ctx.capabilityRegistry.has("CommitExpedition"), "Registry must have CommitExpedition")
   assert.ok(ctx.capabilityRegistry.has("StartExpedition"), "Registry must have StartExpedition")
   assert.ok(ctx.capabilityRegistry.has("CompleteExpedition"), "Registry must have CompleteExpedition")
+  assert.ok(ctx.capabilityRegistry.has("ArchiveExpedition"), "Registry must have ArchiveExpedition")
   assert.ok(ctx.capabilityRegistry.has("FulfillCondition"), "Registry must have FulfillCondition")
   assert.ok(ctx.capabilityRegistry.has("AddObjective"), "Registry must have AddObjective")
   assert.ok(ctx.capabilityRegistry.has("CompleteObjective"), "Registry must have CompleteObjective")

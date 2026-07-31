@@ -26,6 +26,7 @@ export type AgentAction =
   | { kind: "expedition.commit"; expeditionId: string }
   | { kind: "expedition.start"; expeditionId: string }
   | { kind: "expedition.complete"; expeditionId: string }
+  | { kind: "expedition.archive"; expeditionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
 
 export type IntakeResult =
@@ -253,6 +254,25 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
         }
       }
 
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.archive": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
+        }
+      }
+      if (expedition.status === "completed" || expedition.status === "cancelled") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is already ${expedition.status}.`,
+          requiredAction: "Only active expeditions can be archived.",
+        }
+      }
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 
