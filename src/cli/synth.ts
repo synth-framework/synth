@@ -1711,7 +1711,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
-    { name: "synth expedition complete --id <id> --evidence <path>", description: "Complete an executing Expedition (Executing → Completed)" },
+    { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
     { name: "synth expedition certify --id <id> --evaluation <path> [--evidence <path>]", description: "Certify convergence for an executing Expedition before completion" },
@@ -3339,6 +3339,11 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   if (!expeditionId) printError("--id is required")
 
   const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+  const force = flags.force === true || flags.force === "true"
+  const forceReason = typeof flags.reason === "string" ? flags.reason : undefined
+  if (force && !forceReason) {
+    printError("--force requires --reason to record why the verification gates were bypassed")
+  }
 
   if (flags["dry-run"] === true || flags["dry-run"] === "true") {
     const ctx = await bootstrapWithCapabilities({
@@ -3347,7 +3352,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     })
     const dryRun = await runLifecycleDryRun(ctx, {
       capability: "CompleteExpedition",
-      payload: { id: expeditionId, evidencePath },
+      payload: { id: expeditionId, evidencePath, force, forceReason },
       eventType: "EXPEDITION_COMPLETED",
       expeditionId,
       targetStatus: "completed",
@@ -3376,25 +3381,54 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   }
 
   const state = await ctx.runtime.getState()
+  const expedition = state.expeditions[expeditionId]
+
+  // Hard lifecycle gate first: Convergence Certification must be present
+  // before we even consider evidence or verification. This keeps the error
+  // surfaced by `expedition.complete` stable and lets `--force` act only on
+  // operational gates, not on architectural convergence.
   const intake = await gateDecision({ kind: "expedition.complete", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
-    if (!hasConvergenceCapability && intake.reason.toLowerCase().includes("convergence certification")) {
-      printError(
-        `Expedition ${expeditionId} cannot be completed because Convergence Certification is not available in this installation.`,
-        {
-          code: "MissingCapabilityBlocksCompletion",
-          category: "capability",
-          suggestion: `Archive the expedition as a safe fallback: synth expedition archive --id ${expeditionId} --reason "convergence CLI unavailable"`,
-        },
-      )
-    }
     printGateBlock(intake)
+  }
+
+  // EXP-GATE-014: mandatory evidence gate.
+  const hasEvidence = expedition && Array.isArray(expedition.attachments) && expedition.attachments.length > 0
+  if (!hasEvidence && !force) {
+    printError(
+      `Expedition ${expeditionId} cannot be completed because no evidence has been attached.`,
+      {
+        code: "MissingEvidenceBlocksCompletion",
+        category: "governance",
+        suggestion: `Capture evidence first: synth expedition evidence --id ${expeditionId} --git-diff`,
+      },
+    )
+  }
+
+  // EXP-GATE-014: mandatory verification gate.
+  const verifyReport = await runVerification(process.cwd())
+  if (verifyReport.status !== "ok" && !force) {
+    printError(
+      `Expedition ${expeditionId} cannot be completed because verification failed (${verifyReport.summary.pass}/${verifyReport.summary.total} passed, ${verifyReport.summary.fail} failed).`,
+      {
+        code: "VerificationFailedBlocksCompletion",
+        category: "verification",
+        suggestion: verifyReport.nextStep || "Run `synth verify` and resolve the failing checks before completing the expedition.",
+        verifySummary: verifyReport.summary,
+      },
+    )
+  }
+
+  const completePayload: Record<string, unknown> = { id: expeditionId, evidencePath }
+  if (force) {
+    completePayload.force = true
+    completePayload.forceReason = forceReason
   }
 
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "CompleteExpedition",
-    payload: { id: expeditionId, evidencePath },
+    payload: completePayload,
   })
 
   if (result.status !== "ok") {
@@ -3406,6 +3440,8 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     kind: "ExpeditionCompleted",
     expeditionId,
     evidencePath,
+    force,
+    forceReason,
     result: result.result,
   })
 }
@@ -4327,7 +4363,7 @@ async function main() {
       else if (sub === "list") await cmdExpeditionList(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }

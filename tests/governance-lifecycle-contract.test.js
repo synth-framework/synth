@@ -197,7 +197,10 @@ async function testExpeditionLifecycleEmitsRequiredEvents(projectDir) {
 
   const evidencePath = path.join(projectDir, "evidence.txt")
   await fs.writeFile(evidencePath, "contract evidence", "utf-8")
-  const completeResult = runSynth(["expedition", "complete", "--id", draftId, "--evidence", evidencePath], projectDir)
+  const evidenceResult = runSynth(["expedition", "evidence", "--id", draftId, "--attach", evidencePath], projectDir)
+  assert(evidenceResult.status === 0, `expedition evidence must exit 0:\n${evidenceResult.stderr}`)
+
+  const completeResult = runSynth(["expedition", "complete", "--id", draftId], projectDir)
   assert(completeResult.status === 0, `expedition complete must exit 0:\n${completeResult.stderr}`)
 
   const events = await readEventLog(projectDir)

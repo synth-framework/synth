@@ -33,7 +33,9 @@ function convergedEvaluation() {
 }
 
 async function setupGovernedProject(tmpDir) {
-  await writeManifest(tmpDir, "CLI Test Project")
+  await writeManifest(tmpDir, "CLI Test Project", {
+    publicVocabulary: ["Mission", "Expedition", "Evidence", "Plan", "Event", "State", "Replay"],
+  })
   const contractId = "contract-1"
   await writeEventLog(tmpDir, [
     {
@@ -142,6 +144,18 @@ async function testCertifyCommandEmitsEvent() {
   })
 }
 
+async function attachEvidence(tmpDir, expeditionId) {
+  const evidenceFile = path.join(tmpDir, "evidence.txt")
+  await fs.writeFile(evidenceFile, "convergence certification evidence", "utf-8")
+  const result = runSynth(
+    ["expedition", "evidence", "--id", expeditionId, "--attach", evidenceFile, "--note", "Certification evidence"],
+    tmpDir,
+  )
+  assert(result.status === 0, `expedition evidence should succeed: ${result.stdout}`)
+  const output = parseJson(result.stdout)
+  assert(output.status === "ok", `evidence attach status should be ok, got ${output.status}`)
+}
+
 async function testCertifyUnblocksComplete() {
   await withTempDir("synth-certify-complete-", async (tmpDir) => {
     await setupGovernedProject(tmpDir)
@@ -150,6 +164,8 @@ async function testCertifyUnblocksComplete() {
 
     let result = runSynth(["expedition", "certify", "--id", "expedition-1", "--evaluation", evalPath], tmpDir)
     assert(result.status === 0, `certify should succeed: ${result.stdout}`)
+
+    await attachEvidence(tmpDir, "expedition-1")
 
     result = runSynth(["expedition", "complete", "--id", "expedition-1"], tmpDir)
     assert(result.status === 0, `complete should succeed after certification: ${result.stdout}`)
