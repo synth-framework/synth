@@ -112,14 +112,24 @@ export async function extractDirectoryKnowledge(dir: string): Promise<{ sources:
  * @param outDir Directory to write generated documentation.
  * @returns The generated projections.
  */
+export type RunDocumentationExpeditionOptions = {
+  /**
+   * Optional ISO timestamp to embed as `computedAt` provenance. When omitted,
+   * the current time is used. Supply a fixed value when deterministic output
+   * is required (e.g., tests or reproducible builds).
+   */
+  computedAt?: string
+}
+
 export async function runDocumentationExpedition(
   sources: MarkdownKnowledge[],
   outDir: string,
+  options: RunDocumentationExpeditionOptions = {},
 ): Promise<Projection[]> {
   const sourceStateHash = computeSourceStateHash(sources)
   const graph = normalizeGraph(buildKnowledgeGraph(sources))
   const projections = projectAll(graph, sourceStateHash)
-  const computedAt = new Date().toISOString()
+  const computedAt = options.computedAt ?? new Date().toISOString()
 
   await fs.mkdir(outDir, { recursive: true })
   for (const projection of projections) {

@@ -177,8 +177,9 @@ test("Documentation Expedition output is deterministic", async () => {
   const outDir2 = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-2-"))
   const sources = [extractMarkdownKnowledge("intro.md", "# Synth\n\nSynth is deterministic.")]
 
-  await runDocumentationExpedition(sources, outDir1)
-  await runDocumentationExpedition(sources, outDir2)
+  const deterministicOptions = { computedAt: "2026-01-01T00:00:00.000Z" }
+  await runDocumentationExpedition(sources, outDir1, deterministicOptions)
+  await runDocumentationExpedition(sources, outDir2, deterministicOptions)
 
   const files = ["README.md", "ARCHITECTURE.md", "API.md", "OPERATOR_GUIDE.md", "DEVELOPER_GUIDE.md", "ARCHITECT_GUIDE.md", "AI_CONTEXT.md"]
   for (const file of files) {
