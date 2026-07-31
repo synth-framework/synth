@@ -1356,7 +1356,7 @@ Synth is organized as a deterministic execution kernel with clear trust boundari
 
 <!--
 sourceStateHash: 2b13774ac5fb9f6d18b90c2055e7461da5d9373ce181cac30485ae65142367d9
-computedAt: 2026-07-31T07:20:32.371Z
+computedAt: 2026-07-31T07:32:54.286Z
 schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
