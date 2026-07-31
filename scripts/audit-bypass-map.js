@@ -50,6 +50,7 @@ const EXEMPT_FILES = [
   "governance-engine.ts", "governance-engine.js", // Proposal system (no event writes)
   "type-checker.ts", "type-checker.js",           // Static analysis only
   "mutation/filesystem-provider.ts", "mutation/filesystem-provider.js", // ExecutionGate-authorized mutation provider (registered in bootstrap)
+  "distribution/mcp-server.ts", "distribution/mcp-server.js", // MCP transport: JSON-RPC writes to stdout, not event-store mutation
 ]
 
 function isExempt(filePath) {

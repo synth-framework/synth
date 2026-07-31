@@ -103,7 +103,17 @@ async function testBootstrapEmptyApprove() {
     const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
     assert(manifest.schema === "synth-bootstrap-manifest-v1", "manifest schema should be v1")
     assert(manifest.projectName === "Empty Test", "manifest projectName should match")
-    console.log("[PASS] bootstrap --approve on empty directory creates manifest")
+
+    const mapPath = path.join(tmpDir, "docs", "reference", "capability-validation-map.json")
+    const map = JSON.parse(await fs.readFile(mapPath, "utf-8"))
+    assert(map.schema === "synth-capability-validation-map-v1", "capability validation map schema should be v1")
+
+    const validateResult = runSynth(["validate", "--dry-run"], tmpDir)
+    assert(validateResult.status === 0, `validate --dry-run should exit 0 on fresh bootstrap: ${validateResult.stdout}`)
+    const validateOutput = parseJson(validateResult.stdout)
+    assert(validateOutput.status === "ok", `validate --dry-run should return ok, got ${validateOutput.status}`)
+
+    console.log("[PASS] bootstrap --approve on empty directory creates manifest and capability validation map")
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true })
   }

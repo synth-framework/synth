@@ -45,6 +45,7 @@ import {
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
+import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { runCertification, printCertificationReport, writeMatrix } from "./certification-runner.js"
 import {
   cmdFirstContactHelp,
@@ -95,6 +96,7 @@ const COMMANDS = [
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
   { name: "certify", description: "Run failure and recovery certification scenarios" },
+  { name: "capabilities", description: "List installed and missing CLI capabilities" },
   { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
   { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
   { name: "ai", description: "AI agent interoperability (refresh)" },
@@ -1685,6 +1687,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
     { name: "synth expedition complete --id <id> --evidence <path>", description: "Complete an executing Expedition (Executing → Completed)" },
+    { name: "synth expedition certify --id <id> --evaluation <path> [--evidence <path>]", description: "Certify convergence for an executing Expedition before completion" },
   ]))
 }
 
@@ -1702,6 +1705,121 @@ async function cmdCertifyHelp() {
     { name: "synth certify --output-dir <dir>", description: "Write structured evidence reports to <dir>" },
     { name: "synth certify --matrix <path>", description: "Write the certification matrix to <path>" },
   ]))
+}
+
+// EXP-CAPTRANS-001: curated expected capabilities used to surface gaps
+// between what the CLI advertises and what is actually installed.
+interface ExpectedCapability {
+  id: string
+  name: string
+  requiredRuntimeCapability?: string
+  requiredAdapter?: string
+  commands: string[]
+}
+
+const EXPECTED_CAPABILITIES: ExpectedCapability[] = [
+  {
+    id: "convergence-certification",
+    name: "Convergence Certification",
+    requiredRuntimeCapability: "CertifyConvergence",
+    commands: ["synth expedition certify", "synth expedition complete"],
+  },
+  {
+    id: "mission-management",
+    name: "Mission Management",
+    requiredRuntimeCapability: "CreateMission",
+    commands: ["synth mission create", "synth mission approve"],
+  },
+  {
+    id: "expedition-lifecycle",
+    name: "Expedition Lifecycle",
+    requiredRuntimeCapability: "CreateExpedition",
+    commands: [
+      "synth expedition create",
+      "synth expedition approve",
+      "synth expedition commit",
+      "synth expedition start",
+      "synth expedition complete",
+    ],
+  },
+  {
+    id: "repository-adapter",
+    name: "Repository Adapter",
+    requiredAdapter: "repository",
+    commands: ["synth adapter list", "synth adapter commit", "synth adapter create-branch"],
+  },
+  {
+    id: "documentation-generation",
+    name: "Documentation Generation",
+    commands: ["synth docs generate"],
+  },
+  {
+    id: "event-log-query",
+    name: "Event Log Query",
+    commands: ["synth log --expedition <id>"],
+  },
+]
+
+async function cmdCapabilities() {
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "memory" },
+  })
+  const installedCapabilities = new Set(ctx.capabilityRegistry.list())
+  const adapterRegistry = createAdapterRegistry()
+  const installedAdapters = new Set(adapterRegistry.list())
+
+  const capabilities = EXPECTED_CAPABILITIES.map((expected) => {
+    const entry: Record<string, unknown> = {
+      id: expected.id,
+      name: expected.name,
+      status: "available",
+      commands: expected.commands,
+    }
+
+    if (expected.requiredRuntimeCapability) {
+      if (!installedCapabilities.has(expected.requiredRuntimeCapability)) {
+        entry.status = "unavailable"
+        entry.reason = `Runtime capability ${expected.requiredRuntimeCapability} is not registered`
+      } else {
+        entry.runtimeCapability = expected.requiredRuntimeCapability
+      }
+    }
+
+    if (expected.requiredAdapter) {
+      if (!installedAdapters.has(expected.requiredAdapter)) {
+        entry.status = "unavailable"
+        entry.reason = `Adapter ${expected.requiredAdapter} is not registered`
+      } else {
+        entry.provider = expected.requiredAdapter
+      }
+    }
+
+    if (!expected.requiredRuntimeCapability && !expected.requiredAdapter) {
+      // Capabilities that exist only as a planned command surface and have no
+      // runtime backing are reported as unavailable until implemented.
+      entry.status = "unavailable"
+      entry.reason = "No CLI handler registered"
+    }
+
+    return entry
+  })
+
+  printJson({
+    status: "ok",
+    kind: "CapabilityReport",
+    capabilities,
+    adapters: Array.from(installedAdapters).sort(),
+  })
+}
+
+async function cmdCapabilitiesHelp() {
+  printJson(namespaceHelp("capabilities", "Expose what the installed CLI can and cannot do", [
+    { name: "synth capabilities", description: "List installed and missing CLI capabilities" },
+    { name: "synth capabilities --json", description: "Emit structured capability report (default)" },
+  ], {
+    note: "Expected capabilities without a registered runtime capability or adapter are reported as unavailable.",
+  }))
 }
 
 async function cmdAiHelp() {
@@ -2972,6 +3090,125 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const expedition = state.expeditions[expeditionId]
+  if (!expedition) {
+    printError(`Expedition ${expeditionId} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+  }
+  if (expedition.status !== "executing") {
+    printError(
+      `Expedition ${expeditionId} is ${expedition.status}; only executing expeditions can be certified.`,
+      { code: "ExpeditionNotExecuting", category: "lifecycle" },
+    )
+  }
+
+  const mission = state.missions[expedition.missionId]
+  if (!mission) {
+    printError(`Mission ${expedition.missionId} not found.`, { code: "MissionNotFound", category: "validation" })
+  }
+
+  const alignmentContractId = mission.alignmentContractId
+  if (!alignmentContractId) {
+    printError(
+      `Mission ${mission.id} has no alignment contract. Approve the mission with --alignment-contract-id first.`,
+      { code: "AlignmentContractMissing", category: "validation" },
+    )
+  }
+
+  const evaluationPath = typeof flags.evaluation === "string" ? flags.evaluation : undefined
+  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+
+  if (!evaluationPath) {
+    printError(
+      "--evaluation <path> is required. Provide a JSON file containing a Convergence EvaluationResult.",
+      { code: "CertificationInputRequired", category: "validation" },
+    )
+  }
+
+  let evaluation: import("../governance/proposal-evaluation/types.js").EvaluationResult | undefined
+  try {
+    const raw = await fs.readFile(path.resolve(evaluationPath), "utf-8")
+    evaluation = JSON.parse(raw) as import("../governance/proposal-evaluation/types.js").EvaluationResult
+  } catch (err) {
+    printError(`Failed to read evaluation file: ${err instanceof Error ? err.message : String(err)}`, {
+      code: "EvaluationFileReadFailed",
+      category: "io",
+    })
+  }
+
+  const artifactPath = evidencePath ?? evaluationPath
+  const artifacts: import("../governance/convergence-certification/types.js").ImplementedArtifact[] = artifactPath
+    ? [{ kind: "artifact", id: "evidence", path: artifactPath, description: "Certification evidence supplied by operator" }]
+    : []
+
+  const runtimeEvidence: import("../governance/convergence-certification/types.js").ObservedRuntimeEvidence[] = [
+    {
+      kind: "runtime",
+      id: "cli-certification",
+      source: "synth-cli",
+      observation: `Convergence certification invoked for expedition ${expeditionId}`,
+      timestamp: Date.now(),
+    },
+  ]
+
+  const executionEvidence: import("../governance/convergence-certification/types.js").ExecutionEvidence[] = [
+    {
+      kind: "execution",
+      id: "expedition-lifecycle",
+      eventIds: [],
+      summary: `Execution evidence drawn from expedition ${expeditionId} lifecycle`,
+    },
+  ]
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CertifyConvergence",
+    payload: {
+      missionId: mission.id,
+      expeditionId,
+      alignmentContractId,
+      evaluation,
+      artifacts,
+      runtimeEvidence,
+      executionEvidence,
+    },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ConvergenceCertificationFailed")
+  }
+
+  const certificationEvent = await ctx.infra.eventStore.loadAll().then((events) =>
+    events.reverse().find((e) =>
+      (e.type === "CONVERGENCE_CERTIFIED" || e.type === "CONVERGENCE_DIVERGED") &&
+      (e.payload as Record<string, unknown>).expeditionId === expeditionId
+    )
+  )
+
+  const decision = (result.result as Record<string, unknown>)?.decision as string
+  printJson({
+    status: decision === "converged" ? "ok" : "error",
+    kind: decision === "converged" ? "ConvergenceCertified" : "ConvergenceDiverged",
+    expeditionId,
+    missionId: mission.id,
+    alignmentContractId,
+    decision,
+    confidence: (result.result as Record<string, unknown>)?.confidence,
+    certificationId: (certificationEvent?.payload as Record<string, unknown>)?.certificationId,
+    result: result.result,
+    nextStep: decision === "converged" ? `synth expedition complete --id ${expeditionId}` : undefined,
+  })
+}
+
 async function cmdDocsGenerateHelp() {
   printJson(namespaceHelp("docs", "Documentation operations", [
     {
@@ -3105,6 +3342,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDoctorHelp }
     case "certify":
       return { namespace, handler: cmdCertifyHelp }
+    case "capabilities":
+      return { namespace, handler: cmdCapabilitiesHelp }
     case "docs":
       return { namespace, handler: cmdDocsGenerateHelp }
     case "adapter":
@@ -3214,6 +3453,10 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "commit") return "expedition commit"
     if (sub === "start") return "expedition start"
     if (sub === "complete") return "expedition complete"
+    if (sub === "certify") return "expedition certify"
+  }
+  if (namespace === "capabilities") {
+    return "capabilities"
   }
 
   return namespace
@@ -3573,9 +3816,10 @@ async function main() {
       else if (sub === "commit") await cmdExpeditionCommit(flags)
       else if (sub === "start") await cmdExpeditionStart(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
+      else if (sub === "certify") await cmdExpeditionCertify(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition certify --id <id> --evaluation <path>",
         )
       break
     }
@@ -3609,6 +3853,10 @@ async function main() {
 
     case "certify":
       await cmdCertify(flags)
+      break
+
+    case "capabilities":
+      await cmdCapabilities()
       break
 
     case "ai": {
