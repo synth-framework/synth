@@ -184,7 +184,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-CAPTRANS-001 — Capability Transparency CLI](../expeditions/EXP-CAPTRANS-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CERT-001 — Failure Certification Framework](../expeditions/EXP-CERT-001.md)** — Status: Completed, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
 - **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
-- **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CONT-002 — Interruption Benchmark](../expeditions/EXP-CONT-002.md)** — Status: Completed (pending program acceptance), Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-013 — Cognitive Continuity
 - **[EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage](../expeditions/EXP-CONVERGENCE-001.md)** — Status: Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning., Kind: Architectural Convergence, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
 - **[EXP-DET-001 — Deterministic Execution](../expeditions/EXP-DET-001.md)** — Status: Completed, Kind: unknown, Priority: High, Program: EXP-PROGRAM-018 — Foundation Architecture Program
@@ -217,7 +217,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-EXEC-003 — Branch-per-Expedition Workflow](../expeditions/EXP-EXEC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-004 — Commit-as-Evidence](../expeditions/EXP-EXEC-004.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-005 — Pull Request Projection](../expeditions/EXP-EXEC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
-- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-FIRSTCONTACT-004 — Experience Projection System](../expeditions/EXP-FIRSTCONTACT-004.md)** — Status: Superseded, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-005 — Interactive Replay Experience](../expeditions/EXP-FIRSTCONTACT-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection](../expeditions/EXP-FIRSTCONTACT-007.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
@@ -1495,6 +1495,7 @@ This guide covers the operator journey from idea to done.
 - **src adapters expedition-builder types ts defines** — `src/adapters/expedition-builder/types.ts` defines the contract.
 - **src adapters mission-builder adapter ts implements** — `src/adapters/mission-builder/adapter.ts` implements the mission derivation logic.
 - **src adapters mission-builder types ts defines** — `src/adapters/mission-builder/types.ts` defines the contract.
+- **src cli status-briefing ts OperatorBriefing provides** — `src/cli/status-briefing.ts` → `OperatorBriefing` provides `phase`, `blockers`, `warnings`, and `nextActions`.
 - **src cli synth ts AI-native operator** — `src/cli/synth.ts` — AI-native operator CLI with structured JSON output.
 - **src cli synth ts synth mission** — `src/cli/synth.ts` — `synth mission evidence add` (successor-draft semantics), `synth mission decisions`, rejection sweep naming executable remediations.
 - **src documentation documentation-expedition ts** — `src/documentation/documentation-expedition.ts`
@@ -1697,6 +1698,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 3d510a8ad31f1becf674bdcb33cbd971b5267192bde2dd1449c6135ab42e069c
+sourceStateHash: 2a86f24d5b9c68b5b2fe13fd8b10ce4efa854e928fb9b202e8614232cb4015ed
 projection: synth-documentation-expedition-v1
 -->

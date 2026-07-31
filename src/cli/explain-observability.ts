@@ -40,7 +40,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { bootstrap } from "../core/bootstrap.js"
-import { createReplayVerifier } from "../core/replay-verifier.js"
+import { createReplayVerifier, type ReplayCheckResult } from "../core/replay-verifier.js"
 import { validateGraphIntegrity } from "../core/graph-integrity.js"
 import { attributeReplay } from "../core/replay-attribution.js"
 import { rebuildState } from "../runtime/replay.js"
@@ -61,6 +61,10 @@ import {
 } from "../sdk/paths/index.js"
 import { root } from "../sdk/workspace/index.js"
 import { printJson, printError } from "./print.js"
+import { buildOperatorBriefing, type OperatorBriefing } from "./status-briefing.js"
+import { EXPECTED_CAPABILITIES, isCapabilityAvailable } from "./capabilities-data.js"
+import { createCapabilityRegistry } from "../capability/index.js"
+import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 
 export const EXPLAIN_OBSERVABILITY_VERSION = 1
 
@@ -744,6 +748,223 @@ function renderDiagnostics(report: any, summary: boolean): string {
 }
 
 // ============================================================
+// Status explanation (EXP-EXPLAIN-001)
+// ============================================================
+
+type StatusSituation =
+  | "missing-capability"
+  | "replay-divergence"
+  | "pending-approval"
+  | "blocked"
+  | "healthy"
+
+type StatusExplanation = {
+  situation: StatusSituation
+  summary: string
+  nextCommand: string
+  reason: string
+  evidence: string[]
+  blockers: string[]
+}
+
+const DIVERGENCE_KINDS = new Set([
+  "replayed-state-mismatch",
+  "missing-events",
+  "state-lags-events",
+  "decision-chain-broken",
+  "aggregate-graph-violation",
+])
+
+function isReplayDivergence(briefing: OperatorBriefing, replay: ReplayCheckResult): boolean {
+  if (!replay.consistent || !replay.chainValid) return true
+  if (briefing.status === "error") return true
+  const allIssues = [...briefing.blockers, ...briefing.warnings]
+  return allIssues.some((b) => DIVERGENCE_KINDS.has(b.kind))
+}
+
+function describeReplayDivergence(
+  briefing: OperatorBriefing,
+  replay: ReplayCheckResult,
+): { summary: string; reason: string; nextCommand: string } {
+  if (!replay.chainValid) {
+    return {
+      summary: "The event-log hash chain is broken.",
+      reason: "One or more events fail cryptographic chain verification; the log may have been altered.",
+      nextCommand: "synth explain diagnostics",
+    }
+  }
+
+  const allIssues = briefing.status === "error" ? [] : [...briefing.blockers, ...briefing.warnings]
+  const missingEvents =
+    allIssues.some((b) => b.kind === "missing-events" || b.kind === "state-lags-events") ||
+    (briefing.status === "error" &&
+      briefing.conflicts.some((c) => /references event|event log ends at|missing events/i.test(c.issue)))
+  if (missingEvents) {
+    return {
+      summary: "Canonical state and event log are out of sync.",
+      reason: "The persisted state references events that are missing or the event log is incomplete.",
+      nextCommand: "synth explain diagnostics",
+    }
+  }
+
+  const stateMismatch =
+    briefing.status === "error"
+      ? briefing.conflicts.some((c) => /state hash|replayed state hash/i.test(c.issue))
+      : allIssues.some((b) => b.kind === "replayed-state-mismatch")
+  if (stateMismatch) {
+    return {
+      summary: "Canonical state was edited outside the event log.",
+      reason: "Persisted state no longer matches the replayed state at the same event offset; it was likely hand-edited.",
+      nextCommand: "synth repair replay",
+    }
+  }
+
+  return {
+    summary: "Live state differs from the authoritative event-log replay.",
+    reason: "Replay consistency check failed; inspect the reported divergences for details.",
+    nextCommand: "synth explain diagnostics",
+  }
+}
+
+function isBlocked(briefing: OperatorBriefing): boolean {
+  if (briefing.status === "error") return false
+  if (briefing.phase === "blocked") return true
+  return briefing.blockers.some((b) => b.kind === "blocked-work-item")
+}
+
+function activeExecutingExpedition(briefing: OperatorBriefing): { id: string; name: string } | undefined {
+  if (briefing.status === "error") return undefined
+  return briefing.activeExpeditions.find((e) => e.status === "executing")
+}
+
+async function findEvidencePaths(expeditionId?: string): Promise<string[]> {
+  if (!expeditionId) return []
+  const proofRoot = path.join(process.cwd(), "proof", "expeditions")
+  const candidates: string[] = []
+  try {
+    const entries = await fs.readdir(proofRoot)
+    for (const entry of entries) {
+      const full = path.join(proofRoot, entry)
+      if (entry.includes(expeditionId) && entry.endsWith(".md")) {
+        candidates.push(path.relative(process.cwd(), full))
+      }
+      const stat = await fs.stat(full).catch(() => undefined)
+      if (stat?.isDirectory() && entry.includes(expeditionId)) {
+        const subEntries = await fs.readdir(full)
+        for (const sub of subEntries) {
+          if (sub.endsWith(".md")) {
+            candidates.push(path.relative(process.cwd(), path.join(full, sub)))
+          }
+        }
+      }
+    }
+  } catch {
+    // proof/expeditions may not exist; ignore.
+  }
+  return candidates.sort()
+}
+
+function hasConvergenceCertification(events: SynthEvent[], expeditionId: string): boolean {
+  return events.some((e) => {
+    if (e.type !== "CONVERGENCE_CERTIFIED") return false
+    const payload = e.payload as Record<string, unknown> | undefined
+    return payload?.expeditionId === expeditionId && payload?.decision === "converged"
+  })
+}
+
+async function buildStatusExplanation(
+  briefing: OperatorBriefing,
+  replay: ReplayCheckResult,
+  unavailableCapabilities: string[],
+  events: SynthEvent[],
+): Promise<StatusExplanation> {
+  const blockers: string[] =
+    briefing.status === "error"
+      ? [briefing.diagnostic, ...briefing.conflicts.map((c) => `${c.artifact}: ${c.issue}`)]
+      : briefing.blockers.map((b) => b.description)
+
+  // 1. Replay divergence
+  if (isReplayDivergence(briefing, replay)) {
+    const divergence = describeReplayDivergence(briefing, replay)
+    return {
+      situation: "replay-divergence",
+      summary: divergence.summary,
+      nextCommand: divergence.nextCommand,
+      reason: divergence.reason,
+      evidence: [],
+      blockers,
+    }
+  }
+
+  // 2. Blocked
+  if (isBlocked(briefing)) {
+    const workItemBlocker = briefing.status === "ok" && briefing.blockers.find((b) => b.kind === "blocked-work-item")
+    return {
+      situation: "blocked",
+      summary: "Execution is blocked by a work item or gate.",
+      nextCommand: "synth explain diagnostics",
+      reason: workItemBlocker ? workItemBlocker.description : "A blocker prevents the active expedition from proceeding.",
+      evidence: [],
+      blockers,
+    }
+  }
+
+  // 3. Missing capability
+  const executingExpedition = activeExecutingExpedition(briefing)
+  if (executingExpedition && !hasConvergenceCertification(events, executingExpedition.id)) {
+    const evidence = await findEvidencePaths(executingExpedition.id)
+    const convergenceAvailable = !unavailableCapabilities.includes("convergence-certification")
+    if (convergenceAvailable) {
+      return {
+        situation: "missing-capability",
+        summary: `Expedition ${executingExpedition.id} is executing but has not been convergence-certified.`,
+        nextCommand: `synth expedition certify --id ${executingExpedition.id} --evaluation <path>`,
+        reason: "Convergence certification is required before completing the expedition; run synth expedition certify with an evaluation artifact.",
+        evidence,
+        blockers: [
+          ...blockers,
+          `Expedition ${executingExpedition.id} has no CONVERGENCE_CERTIFIED event with decision "converged".`,
+        ],
+      }
+    }
+    return {
+      situation: "missing-capability",
+      summary: `Expedition ${executingExpedition.id} is executing but cannot complete because Convergence Certification is not exposed in the CLI.`,
+      nextCommand: `synth expedition snapshot --id ${executingExpedition.id}`,
+      reason: "The convergence-certification capability is unavailable; use expedition snapshot as a safe fallback until synth expedition certify is implemented.",
+      evidence,
+      blockers: [
+        ...blockers,
+        "Convergence Certification CLI is not available; expedition completion is blocked.",
+      ],
+    }
+  }
+
+  // 4. Pending approval
+  if (briefing.status === "ok" && briefing.phase === "planning" && briefing.nextActions.length > 0) {
+    const next = briefing.nextActions[0]
+    return {
+      situation: "pending-approval",
+      summary: "A mission draft is awaiting approval or additional evidence.",
+      nextCommand: next.command,
+      reason: next.reason,
+      evidence: [],
+      blockers,
+    }
+  }
+
+  // 5. Healthy
+  return {
+    situation: "healthy",
+    summary: "Project state is consistent and no blockers are detected.",
+    nextCommand: "synth status",
+    reason: "No replay divergence, blockers, or missing capabilities were found.",
+    evidence: [],
+    blockers,
+  }
+}
+
+// ============================================================
 // 7. Validation dashboard
 // ============================================================
 
@@ -773,6 +994,14 @@ async function buildStatusReport(ec: ExplainContext): Promise<Record<string, unk
         ? "warn"
         : "pass"
 
+  const briefing = await buildOperatorBriefing(root())
+  const installedCapabilities = new Set(createCapabilityRegistry().list())
+  const installedAdapters = new Set(createAdapterRegistry().list())
+  const unavailableCapabilities = EXPECTED_CAPABILITIES
+    .filter((c) => !isCapabilityAvailable(c, installedCapabilities, installedAdapters))
+    .map((c) => c.id)
+  const explanation = await buildStatusExplanation(briefing, replay, unavailableCapabilities, ec.events)
+
   return {
     status: "ok",
     kind: "ExplainStatus",
@@ -794,6 +1023,12 @@ async function buildStatusReport(ec: ExplainContext): Promise<Record<string, unk
     },
     snapshots: snapshotSection,
     verdict,
+    situation: explanation.situation,
+    summary: explanation.summary,
+    nextCommand: explanation.nextCommand,
+    reason: explanation.reason,
+    evidence: explanation.evidence,
+    blockers: explanation.blockers,
   }
 }
 
@@ -813,13 +1048,27 @@ function renderStatus(report: any, summary: boolean): string {
     : snapshots.certified
       ? `${snapshots.snapshotCount} snapshot(s), all certified ✓`
       : `❌ certification failed: ${snapshots.error}`
-  return [
+  const lines = [
     `Validation status — ${report.log}`,
     `  Replay:          ${replayText} (${chainText}) — ${replay.eventCount} events`,
     `  Graph integrity: ${graphText}; invariants: ${graph.invariants.pass} pass / ${graph.invariants.fail} fail / ${graph.invariants.notEventProvable} not-event-provable`,
     `  Snapshots:       ${snapshotText}`,
     `  Verdict:         ${String(report.verdict).toUpperCase()}`,
-  ].join("\n")
+    `  Situation:       ${report.situation ?? "unknown"}`,
+    `  Summary:         ${report.summary ?? ""}`,
+    `  Next command:    ${report.nextCommand ?? "none"}`,
+    `  Reason:          ${report.reason ?? ""}`,
+  ]
+  if (report.evidence?.length > 0) {
+    lines.push(`  Evidence:        ${report.evidence.join(", ")}`)
+  }
+  if (report.blockers?.length > 0) {
+    lines.push(`  Blockers:`)
+    for (const blocker of report.blockers as string[]) {
+      lines.push(`    • ${blocker}`)
+    }
+  }
+  return lines.join("\n")
 }
 
 // ============================================================

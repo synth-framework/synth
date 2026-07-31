@@ -27,6 +27,7 @@ import { setAgentTelemetry, printJson, printError } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
+import { EXPECTED_CAPABILITIES, buildCapabilityEntries } from "./capabilities-data.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
@@ -61,6 +62,7 @@ import {
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
+import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
@@ -90,9 +92,10 @@ const COMMANDS = [
   { name: "verify", description: "Verify governance invariants and projection consistency" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
+  { name: "program", description: "Governance program inventory (list)" },
   { name: "intent", description: "Intent model operations (create)" },
   { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
-  { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete)" },
+  { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, list)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
@@ -990,6 +993,14 @@ async function cmdMissionHelp() {
   ]))
 }
 
+async function cmdProgramHelp() {
+  printJson(namespaceHelp("program", "Governance program inventory", [
+    { name: "synth program list", description: "List all governance programs" },
+    { name: "synth program list --status <status>", description: "Filter programs by status", args: "--status Proposed | Active | Completed" },
+    { name: "synth program list --priority <priority>", description: "Filter programs by priority", args: "--priority Critical | High | Medium | Low" },
+  ], { note: "Program list is read-only and derived from docs/expeditions/*.md." }))
+}
+
 async function cmdValidateHelp() {
   printJson(namespaceHelp("validate", "Analyze changes, plan validations, and execute them", [
     { name: "synth validate", description: "Run the adaptive validator on the current working tree" },
@@ -1692,14 +1703,18 @@ async function cmdAlignmentPrepare() {
 }
 
 async function cmdExpeditionHelp() {
-  printJson(namespaceHelp("expedition", "Expedition lifecycle operations", [
+  printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
     { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
     { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
     { name: "synth expedition complete --id <id> --evidence <path>", description: "Complete an executing Expedition (Executing → Completed)" },
     { name: "synth expedition certify --id <id> --evaluation <path> [--evidence <path>]", description: "Certify convergence for an executing Expedition before completion" },
-  ]))
+    { name: "synth expedition list", description: "List governance expeditions" },
+    { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
+    { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
+    { name: "synth expedition list --program <program-id>", description: "Filter expeditions by program", args: "--program EXP-PROGRAM-043" },
+  ], { note: "expedition list is read-only and derived from docs/expeditions/*.md." }))
 }
 
 async function cmdDoctorHelp() {
@@ -1718,59 +1733,6 @@ async function cmdCertifyHelp() {
   ]))
 }
 
-// EXP-CAPTRANS-001: curated expected capabilities used to surface gaps
-// between what the CLI advertises and what is actually installed.
-interface ExpectedCapability {
-  id: string
-  name: string
-  requiredRuntimeCapability?: string
-  requiredAdapter?: string
-  commands: string[]
-}
-
-const EXPECTED_CAPABILITIES: ExpectedCapability[] = [
-  {
-    id: "convergence-certification",
-    name: "Convergence Certification",
-    requiredRuntimeCapability: "CertifyConvergence",
-    commands: ["synth expedition certify", "synth expedition complete"],
-  },
-  {
-    id: "mission-management",
-    name: "Mission Management",
-    requiredRuntimeCapability: "CreateMission",
-    commands: ["synth mission create", "synth mission approve"],
-  },
-  {
-    id: "expedition-lifecycle",
-    name: "Expedition Lifecycle",
-    requiredRuntimeCapability: "CreateExpedition",
-    commands: [
-      "synth expedition create",
-      "synth expedition approve",
-      "synth expedition commit",
-      "synth expedition start",
-      "synth expedition complete",
-    ],
-  },
-  {
-    id: "repository-adapter",
-    name: "Repository Adapter",
-    requiredAdapter: "repository",
-    commands: ["synth adapter list", "synth adapter commit", "synth adapter create-branch"],
-  },
-  {
-    id: "documentation-generation",
-    name: "Documentation Generation",
-    commands: ["synth docs generate"],
-  },
-  {
-    id: "event-log-query",
-    name: "Event Log Query",
-    commands: ["synth log --expedition <id>"],
-  },
-]
-
 async function cmdCapabilities() {
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
@@ -1780,41 +1742,7 @@ async function cmdCapabilities() {
   const adapterRegistry = createAdapterRegistry()
   const installedAdapters = new Set(adapterRegistry.list())
 
-  const capabilities = EXPECTED_CAPABILITIES.map((expected) => {
-    const entry: Record<string, unknown> = {
-      id: expected.id,
-      name: expected.name,
-      status: "available",
-      commands: expected.commands,
-    }
-
-    if (expected.requiredRuntimeCapability) {
-      if (!installedCapabilities.has(expected.requiredRuntimeCapability)) {
-        entry.status = "unavailable"
-        entry.reason = `Runtime capability ${expected.requiredRuntimeCapability} is not registered`
-      } else {
-        entry.runtimeCapability = expected.requiredRuntimeCapability
-      }
-    }
-
-    if (expected.requiredAdapter) {
-      if (!installedAdapters.has(expected.requiredAdapter)) {
-        entry.status = "unavailable"
-        entry.reason = `Adapter ${expected.requiredAdapter} is not registered`
-      } else {
-        entry.provider = expected.requiredAdapter
-      }
-    }
-
-    if (!expected.requiredRuntimeCapability && !expected.requiredAdapter) {
-      // Capabilities that exist only as a planned command surface and have no
-      // runtime backing are reported as unavailable until implemented.
-      entry.status = "unavailable"
-      entry.reason = "No CLI handler registered"
-    }
-
-    return entry
-  })
+  const capabilities = buildCapabilityEntries(installedCapabilities, installedAdapters)
 
   printJson({
     status: "ok",
@@ -2554,6 +2482,47 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     unknowns: session.unknowns,
     questions: session.questions,
     nextStep: `synth mission approve --draft-id ${session.id}`,
+  })
+}
+
+// ============================================================
+// EXP-CLI-003: Governance inventory list commands
+// ============================================================
+async function cmdProgramList(flags: Record<string, string | boolean>) {
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const inventory = await loadGovernanceInventory(charterDir)
+
+  let programs = inventory.programs
+  programs = filterByValues(programs, (p) => p.status, typeof flags.status === "string" ? flags.status : undefined)
+  programs = filterByValues(programs, (p) => p.priority, typeof flags.priority === "string" ? flags.priority : undefined)
+
+  printJson({
+    status: "ok",
+    kind: "ProgramList",
+    count: programs.length,
+    programs,
+  })
+}
+
+async function cmdExpeditionList(flags: Record<string, string | boolean>) {
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const inventory = await loadGovernanceInventory(charterDir)
+
+  let expeditions = inventory.expeditions
+  expeditions = filterByValues(expeditions, (e) => e.status, typeof flags.status === "string" ? flags.status : undefined)
+  expeditions = filterByValues(expeditions, (e) => e.priority, typeof flags.priority === "string" ? flags.priority : undefined)
+
+  const programFilter = typeof flags.program === "string" ? flags.program : undefined
+  if (programFilter && programFilter.trim() !== "") {
+    const allowed = new Set(programFilter.split(",").map((s) => s.trim()).filter(Boolean))
+    expeditions = expeditions.filter((e) => allowed.has(e.program))
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionList",
+    count: expeditions.length,
+    expeditions,
   })
 }
 
@@ -3354,6 +3323,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDiscoverHelp }
     case "mission":
       return { namespace, handler: cmdMissionHelp }
+    case "program":
+      return { namespace, handler: cmdProgramHelp }
     case "intent":
       return { namespace, handler: cmdIntentHelp }
     case "alignment":
@@ -3441,6 +3412,9 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "project") return "mission project"
     if (sub === "verify-charter") return "mission verify-charter"
   }
+  if (namespace === "program") {
+    if (sub === "list") return "program list"
+  }
   if (namespace === "validate") {
     if (flags.full === true || flags.full === "true") return "validate --full"
     if (sub === "dependencies") return "validate dependencies"
@@ -3481,6 +3455,7 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "start") return "expedition start"
     if (sub === "complete") return "expedition complete"
     if (sub === "certify") return "expedition certify"
+    if (sub === "list") return "expedition list"
   }
   if (namespace === "capabilities") {
     return "capabilities"
@@ -3814,6 +3789,16 @@ async function main() {
       break
     }
 
+    case "program": {
+      const sub = positional[1]
+      if (sub === "list") await cmdProgramList(flags)
+      else
+        printError(
+          "Usage: synth program list [--status <status>] [--priority <priority>]",
+        )
+      break
+    }
+
     case "intent": {
       const sub = positional[1]
       if (sub === "create") await cmdIntentCreate(flags)
@@ -3844,9 +3829,10 @@ async function main() {
       else if (sub === "start") await cmdExpeditionStart(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
+      else if (sub === "list") await cmdExpeditionList(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition certify --id <id> --evaluation <path>",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }

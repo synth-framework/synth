@@ -58,7 +58,7 @@ Synth is organized into three architectural strata:
 - **A clear goal** — A clear goal
 - **A CLI that exposes the entire** — **A CLI** that exposes the entire platform as a stable, machine-readable interface.
 - **A cold run with no cache** — A **cold run** with no cache produces the same results as today's full `npm run govern`.
-- *…and 16187 more concepts extracted from the knowledge base.*
+- *…and 16190 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,6 +70,6 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: 3d510a8ad31f1becf674bdcb33cbd971b5267192bde2dd1449c6135ab42e069c
+sourceStateHash: 2a86f24d5b9c68b5b2fe13fd8b10ce4efa854e928fb9b202e8614232cb4015ed
 projection: synth-documentation-expedition-v1
 -->
