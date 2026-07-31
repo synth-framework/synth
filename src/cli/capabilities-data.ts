@@ -95,6 +95,21 @@ export function isCapabilityAvailable(
  * Build the capability report entries consumed by `synth capabilities` and
  * by diagnostic commands such as `synth explain status`.
  */
+function formatCommandList(commands: string[]): string {
+  return commands.length === 1 ? commands[0] : commands.join(", ")
+}
+
+function buildMissingCapabilityReason(expected: ExpectedCapability): string {
+  const commands = formatCommandList(expected.commands)
+  if (expected.requiredRuntimeCapability) {
+    return `The "${expected.name}" runtime capability (${expected.requiredRuntimeCapability}) is not installed. Affected commands: ${commands}.`
+  }
+  if (expected.requiredAdapter) {
+    return `The "${expected.requiredAdapter}" adapter required by "${expected.name}" is not installed. Affected commands: ${commands}.`
+  }
+  return `The "${expected.name}" command surface is not yet implemented in this CLI version. Affected commands: ${commands}.`
+}
+
 export function buildCapabilityEntries(
   installedCapabilities: Set<string>,
   installedAdapters: Set<string>,
@@ -110,7 +125,7 @@ export function buildCapabilityEntries(
     if (expected.requiredRuntimeCapability) {
       if (!installedCapabilities.has(expected.requiredRuntimeCapability)) {
         entry.status = "unavailable"
-        entry.reason = `Runtime capability ${expected.requiredRuntimeCapability} is not registered`
+        entry.reason = buildMissingCapabilityReason(expected)
       } else {
         entry.runtimeCapability = expected.requiredRuntimeCapability
       }
@@ -119,7 +134,7 @@ export function buildCapabilityEntries(
     if (expected.requiredAdapter) {
       if (!installedAdapters.has(expected.requiredAdapter)) {
         entry.status = "unavailable"
-        entry.reason = `Adapter ${expected.requiredAdapter} is not registered`
+        entry.reason = buildMissingCapabilityReason(expected)
       } else {
         entry.provider = expected.requiredAdapter
       }
@@ -127,7 +142,7 @@ export function buildCapabilityEntries(
 
     if (!expected.requiredRuntimeCapability && !expected.requiredAdapter) {
       entry.status = "unavailable"
-      entry.reason = "No CLI handler registered"
+      entry.reason = buildMissingCapabilityReason(expected)
     }
 
     return entry

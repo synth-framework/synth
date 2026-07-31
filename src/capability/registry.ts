@@ -10,7 +10,7 @@ import {
   createMilestone, startMilestone, completeMilestone,
   createProject,
   createMission, approveMission, completeMission, archiveMission,
-  createExpedition, approveExpedition, commitExpedition, startExpedition, completeExpedition,
+  createExpedition, approveExpedition, commitExpedition, startExpedition, completeExpedition, cancelExpedition,
   createObjective, completeObjective,
   createDiscovery,
   createDecision, acceptDecision, rejectDecision,
@@ -699,6 +699,44 @@ export function createDefaultCapabilities(): Capability[] {
         if (!existing) return { events: [{ type: "EXPEDITION_COMPLETED", payload: { id, status: "completed" } }] }
         const updated = completeExpedition(existing, executionCtx)
         return { events: [{ type: "EXPEDITION_COMPLETED", payload: { id: updated.id, status: updated.status } }], result: updated }
+      },
+    },
+    {
+      name: "ArchiveExpedition",
+      description: "Archive an expedition as a safe fallback when a required capability is unavailable",
+      inputSchema: { required: ["id"], types: { id: "string", reason: "string" } },
+      outputSchema: { events: ["EXPEDITION_ARCHIVED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+        {
+          name: "expedition_not_terminal",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return status !== "completed" && status !== "cancelled"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const existing = state.expeditions[id]
+        if (!existing) return { events: [{ type: "EXPEDITION_ARCHIVED", payload: { expeditionId: id, status: "cancelled", reason } }] }
+        const updated = cancelExpedition(existing, executionCtx)
+        return {
+          events: [{
+            type: "EXPEDITION_ARCHIVED",
+            payload: { expeditionId: id, id: updated.id, status: updated.status, reason, archivedAt: executionCtx.timestamp },
+          }],
+          result: updated,
+        }
       },
     },
     {

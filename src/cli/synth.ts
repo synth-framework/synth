@@ -96,7 +96,7 @@ const COMMANDS = [
   { name: "program", description: "Governance program inventory (list)" },
   { name: "intent", description: "Intent model operations (create)" },
   { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
-  { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, list)" },
+  { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, archive, list)" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
@@ -1711,6 +1711,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
     { name: "synth expedition complete --id <id> --evidence <path>", description: "Complete an executing Expedition (Executing → Completed)" },
+    { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
     { name: "synth expedition certify --id <id> --evaluation <path> [--evidence <path>]", description: "Certify convergence for an executing Expedition before completion" },
     { name: "synth expedition list", description: "List governance expeditions" },
@@ -3323,9 +3324,31 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
 
+  const hasConvergenceCapability = ctx.capabilityRegistry.has("CertifyConvergence")
+  if (!hasConvergenceCapability) {
+    printError(
+      `Expedition ${expeditionId} cannot be completed because Convergence Certification is not available in this installation.`,
+      {
+        code: "MissingCapabilityBlocksCompletion",
+        category: "capability",
+        suggestion: `Archive the expedition as a safe fallback: synth expedition archive --id ${expeditionId} --reason "convergence CLI unavailable"`,
+      },
+    )
+  }
+
   const state = await ctx.runtime.getState()
   const intake = await gateDecision({ kind: "expedition.complete", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
+    if (!hasConvergenceCapability && intake.reason.toLowerCase().includes("convergence certification")) {
+      printError(
+        `Expedition ${expeditionId} cannot be completed because Convergence Certification is not available in this installation.`,
+        {
+          code: "MissingCapabilityBlocksCompletion",
+          category: "capability",
+          suggestion: `Archive the expedition as a safe fallback: synth expedition archive --id ${expeditionId} --reason "convergence CLI unavailable"`,
+        },
+      )
+    }
     printGateBlock(intake)
   }
 
@@ -3345,6 +3368,60 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     expeditionId,
     evidencePath,
     result: result.result,
+  })
+}
+
+async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const reason = typeof flags.reason === "string" ? flags.reason : ""
+  if (!reason) printError("--reason is required")
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "ArchiveExpedition",
+      payload: { id: expeditionId, reason },
+      eventType: "EXPEDITION_ARCHIVED",
+      expeditionId,
+      targetStatus: "cancelled",
+    })
+    printJson(dryRun)
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "expedition.archive", expeditionId }, state, ctx.runtime)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "ArchiveExpedition",
+    payload: { id: expeditionId, reason },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ExpeditionArchiveFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionArchived",
+    expeditionId,
+    reason,
+    result: result.result,
+    nextStep: "synth status",
   })
 }
 
@@ -3820,6 +3897,7 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "commit") return "expedition commit"
     if (sub === "start") return "expedition start"
     if (sub === "complete") return "expedition complete"
+    if (sub === "archive") return "expedition archive"
     if (sub === "evidence") return "expedition evidence"
     if (sub === "certify") return "expedition certify"
     if (sub === "list") return "expedition list"
@@ -4200,12 +4278,13 @@ async function main() {
       else if (sub === "commit") await cmdExpeditionCommit(flags)
       else if (sub === "start") await cmdExpeditionStart(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
+      else if (sub === "archive") await cmdExpeditionArchive(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }

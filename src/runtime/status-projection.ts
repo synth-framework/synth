@@ -48,14 +48,25 @@ function findDraftId(ctx: ResolvedGovernanceContext): string | undefined {
   )
 }
 
+function deriveCapabilityWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
+  return (ctx.derived.capabilities || [])
+    .filter((c) => c.status === "unavailable")
+    .map((c) => ({
+      kind: "missing-capability",
+      description: `${c.name} is not available: ${c.reason}`,
+      remediation: "Install or enable the missing provider, or run `synth capabilities` for details.",
+    }))
+}
+
 function deriveWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
-  return ctx.derived.divergences
+  const divergences = ctx.derived.divergences
     .filter((d) => d.severity === "warning")
     .map((d) => ({
       kind: d.kind,
       description: d.description,
       remediation: `Inspect ${d.artifact || "governance artifacts"} and follow the recovery guidance.`,
     }))
+  return [...divergences, ...deriveCapabilityWarnings(ctx)]
 }
 
 function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {
@@ -99,6 +110,18 @@ function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {
         remediation: `synth explain diagnostics --work-item ${workItem.id}`,
       })
     }
+  }
+
+  const convergenceCapability = ctx.derived.capabilities?.find(
+    (c) => c.id === "convergence-certification"
+  )
+  const executingExpedition = deriveActiveExpeditions(ctx).find((e) => e.status === "executing")
+  if (convergenceCapability?.status === "unavailable" && executingExpedition) {
+    blockers.push({
+      kind: "missing-convergence-certification",
+      description: `Convergence Certification is not available, so executing expedition ${executingExpedition.id} cannot complete.`,
+      remediation: `Leave the expedition executing or archive it: synth expedition archive --id ${executingExpedition.id} --reason "convergence CLI unavailable"`,
+    })
   }
 
   return blockers

@@ -67,6 +67,7 @@ export type StateEvent =
   | { type: "EXPEDITION_COMMITTED"; expeditionId: string }
   | { type: "EXPEDITION_STARTED"; expeditionId: string }
   | { type: "EXPEDITION_COMPLETED"; expeditionId: string }
+  | { type: "EXPEDITION_ARCHIVED"; expeditionId: string; reason?: string }
   | { type: "EVIDENCE_ATTACHED"; expeditionId: string; attachments: unknown[]; note?: string }
   // Review gate lifecycle (EXP-PROGRAM-035)
   | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
