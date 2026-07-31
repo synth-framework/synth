@@ -56,6 +56,7 @@ import {
   cmdFirstContactApprove,
   cmdFirstContactMaterialize,
   cmdFirstContactStatus,
+  cmdFirstContactOnboard,
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import * as sdk from "../sdk/index.js"
@@ -97,7 +98,7 @@ const COMMANDS = [
   { name: "repair", description: "Repair operations (replay)" },
   { name: "certify", description: "Run failure and recovery certification scenarios" },
   { name: "capabilities", description: "List installed and missing CLI capabilities" },
-  { name: "first-contact", description: "Greenfield onboarding workflow (start, clarify, project, verify, approve, materialize, status)" },
+  { name: "first-contact", description: "Guided onboarding entry point (greenfield, brownfield, legacy) and greenfield workflow (start, clarify, project, verify, approve, materialize, status)" },
   { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
   { name: "ai", description: "AI agent interoperability (refresh)" },
   { name: "repo", description: "Repository and release governance operations" },
@@ -3384,6 +3385,11 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   }
   if (namespace === "first-contact" || namespace === "genesis") {
     const prefix = namespace
+    if (!sub) {
+      if (flags.approve === true || flags.approve === "true") return `${prefix} --approve`
+      if (flags["dry-run"] === true) return `${prefix} --dry-run`
+      return prefix
+    }
     if (sub === "start") return `${prefix} start`
     if (sub === "clarify") return `${prefix} clarify`
     if (sub === "project") return `${prefix} project`
@@ -3889,7 +3895,8 @@ async function main() {
     case "first-contact":
     case "genesis": {
       const sub = positional[1]
-      if (sub === "start") await cmdFirstContactStart(positional.slice(2), flags)
+      if (!sub) await cmdFirstContactOnboard(positional.slice(1), flags)
+      else if (sub === "start") await cmdFirstContactStart(positional.slice(2), flags)
       else if (sub === "clarify") await cmdFirstContactClarify(positional.slice(2), flags)
       else if (sub === "project") await cmdFirstContactProject(positional.slice(2), flags)
       else if (sub === "verify") await cmdFirstContactVerify(positional.slice(2), flags)
@@ -3898,7 +3905,7 @@ async function main() {
       else if (sub === "status") await cmdFirstContactStatus(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status",
+          "Usage: synth first-contact [--dry-run | --approve] | synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status",
         )
       break
     }

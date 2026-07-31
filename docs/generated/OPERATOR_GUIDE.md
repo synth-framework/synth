@@ -97,7 +97,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-KNOWLEDGE-001 — Canonical Knowledge Model](../expeditions/EXP-KNOWLEDGE-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-025 — Canonical Knowledge & Validation
 - **[EXP-KNOWLEDGE-002 — Prototype-First Validation](../expeditions/EXP-KNOWLEDGE-002.md)** — Status: Completed and accepted, Kind: Product Expedition, Priority: Critical, Program: EXP-PROGRAM-025 — Canonical Knowledge & Validation
 - **[EXP-MUTATION-LIFECYCLE-001 — Mutation Boundary Integration and Genesis Policy](../expeditions/EXP-MUTATION-LIFECYCLE-001.md)** — Status: Completed and accepted, Kind: Architecture Expedition, Priority: Critical, Program: EXP-PROGRAM-040 — Repository Simplification
-- **[EXP-ONBOARD-001 — Guided First-Contact Command](../expeditions/EXP-ONBOARD-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-ONBOARD-001 — Guided First-Contact Command](../expeditions/EXP-ONBOARD-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: Critical, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-PROD-001 — Mission Snapshot Lineage](../expeditions/EXP-PROD-001.md)** — Status: Completed, Kind: Implementation Expedition, Priority: Critical, Program: EXP-PROGRAM-001 — SYNTH Productization Program
 - **[EXP-PROD-005 — Freeze Certification](../expeditions/EXP-PROD-005.md)** — Status: Completed, Kind: Certification Expedition, Priority: Critical, Program: EXP-PROGRAM-001 — SYNTH Productization Program
 - **[EXP-PROGRAM-001 — SYNTH Productization Program](../expeditions/EXP-PROGRAM-001.md)** — Status: Completed, Kind: Program, Priority: Critical, Program: unknown
@@ -1695,6 +1695,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 663dddc4302eb15e7a83fa5d70f4908fe8edeaa290d2f0573c745b66a8656129
+sourceStateHash: 1e8a658418c76349b3925f1fba5974358a213fb645cff28dd27f85f2c4357968
 projection: synth-documentation-expedition-v1
 -->
