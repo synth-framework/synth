@@ -2,7 +2,7 @@
 
 > Make `synth explain status` return concrete next actions instead of raw state differences.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -33,8 +33,8 @@ When an agent sees "Replay inconsistent: expedition.5f607c37d314268a.status", it
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| E1 | Error messages are machine-correct but operator-vague | High | Fix planned |
-| E2 | `synth explain status` does not suggest next command | Medium | Fix planned |
+| E1 | Error messages are machine-correct but operator-vague | High | Fixed |
+| E2 | `synth explain status` does not suggest next command | Medium | Fixed |
 
 ---
 
@@ -127,6 +127,11 @@ All legacy `ExplainStatus` fields (`verdict`, `replay`, `graphIntegrity`, `snaps
 - New state fields.
 
 ---
+
+## Snapshot
+
+- Implemented in prior workstream: `synth explain status` now returns `situation`, `summary`, `nextCommand`, and `blockers`.
+- Divergence diagnosis distinguishes hash-chain breaks, missing events, hand-edited canonical state, and missing capabilities.
 
 ## Related Documents
 
