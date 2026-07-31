@@ -2923,6 +2923,24 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
+  // EXP-DRYRUN-001: preview mode short-circuits before gate decisions or draft
+  // file access so operators can see what event would be appended.
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "ApproveExpedition",
+      payload: { id: draftId },
+      eventType: "EXPEDITION_APPROVED",
+      expeditionId: draftId,
+      targetStatus: "approved",
+    })
+    printJson(dryRun)
+    return
+  }
+
   const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -2977,6 +2995,22 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   const proposalId = typeof flags["proposal-id"] === "string" ? flags["proposal-id"] : ""
   if (!proposalId) printError("--proposal-id is required")
 
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "CommitExpedition",
+      payload: { id: proposalId },
+      eventType: "EXPEDITION_COMMITTED",
+      expeditionId: proposalId,
+      targetStatus: "committed",
+    })
+    printJson(dryRun)
+    return
+  }
+
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -3013,9 +3047,64 @@ function resolveExpeditionId(flags: Record<string, string | boolean>): string {
   return ""
 }
 
+interface LifecycleDryRunInput {
+  capability: string
+  payload: Record<string, unknown>
+  eventType: string
+  expeditionId: string
+  targetStatus: string
+}
+
+async function runLifecycleDryRun(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  input: LifecycleDryRunInput,
+): Promise<{
+  status: "ok"
+  kind: "LifecycleDryRun"
+  wouldAppend: { type: string; payload: Record<string, unknown> }
+  verifyResult: { pass: number; fail: number; warn: number }
+  stateDelta: string
+}> {
+  const state = await ctx.runtime.getState()
+  const expedition = state.expeditions[input.expeditionId]
+  const beforeStatus = expedition?.status ?? "unknown"
+  const verifyReport = await runVerification(process.cwd())
+  const checks = Array.isArray(verifyReport.checks) ? verifyReport.checks : []
+  const pass = checks.filter((c: any) => c.status === "ok" || c.status === "pass").length
+  const fail = checks.filter((c: any) => c.status === "error" || c.status === "fail").length
+  const warn = checks.filter((c: any) => c.status === "warning" || c.status === "warn").length
+
+  return {
+    status: "ok",
+    kind: "LifecycleDryRun",
+    wouldAppend: {
+      type: input.eventType,
+      payload: input.payload,
+    },
+    verifyResult: { pass, fail, warn },
+    stateDelta: `expedition ${input.expeditionId} status: ${beforeStatus} → ${input.targetStatus}`,
+  }
+}
+
 async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   const expeditionId = resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "StartExpedition",
+      payload: { id: expeditionId },
+      eventType: "EXPEDITION_STARTED",
+      expeditionId,
+      targetStatus: "executing",
+    })
+    printJson(dryRun)
+    return
+  }
 
   // Use the project's actual event log so the StartExpedition event is
   // persisted and replayable.
@@ -3053,6 +3142,24 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   const expeditionId = resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
+  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "CompleteExpedition",
+      payload: { id: expeditionId, evidencePath },
+      eventType: "EXPEDITION_COMPLETED",
+      expeditionId,
+      targetStatus: "completed",
+    })
+    printJson(dryRun)
+    return
+  }
+
   // Use the project's actual event log so the CompleteExpedition event is
   // persisted and replayable.
   const ctx = await bootstrapWithCapabilities({
@@ -3065,8 +3172,6 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
-
-  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
 
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
