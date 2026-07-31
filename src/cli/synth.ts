@@ -23,7 +23,7 @@ import { createInitializationEvidenceStore } from "../initialization/evidence-st
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
-import { setAgentTelemetry, printJson, printError } from "./print.js"
+import { setAgentTelemetry, printJson, printError, setHumanMode } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
@@ -2028,7 +2028,13 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
   const subject = typeof flags.subject === "string" ? flags.subject : ""
   const purpose = typeof flags.purpose === "string" ? flags.purpose : ""
   const evidenceFile = typeof flags["evidence-file"] === "string" ? flags["evidence-file"] : ""
-  if (!subject) printError("--subject is required")
+  if (!subject) {
+    printError("--subject is required", {
+      code: "MissingSubject",
+      category: "validation",
+      suggestion: "Provide --subject \"<mission subject>\" when creating a mission.",
+    })
+  }
 
   // Resolve the project's actual governance state before allowing intent
   // capture. The resolver is the single authority for lifecycle phase.
@@ -3719,6 +3725,11 @@ async function main() {
   // experiment, merge telemetry (agent session and reasoning state) into
   // every JSON response so the CLI acts as an experimental sensor.
   setAgentTelemetryFromFlags(flags)
+
+  // EXP-CLI-002: global --human flag switches CLI output to prose summaries.
+  if (flags.human === true) {
+    setHumanMode(true)
+  }
 
   const command = positional[0]
 

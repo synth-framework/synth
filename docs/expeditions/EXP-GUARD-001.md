@@ -2,7 +2,7 @@
 
 > Prevent agents from editing derived files directly and enforce a sandboxed file scope per expedition.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -93,13 +93,25 @@ When a mutation carries `context.authorizeOutOfScope`, the ExecutionGate still r
 
 ---
 
+## Completion
+
+- **Completed:** 2026-07-31
+- **Evidence:**
+  - `docs/adr/ADR-051-derived-state-protection-and-expedition-scope.md`
+  - `tests/derived-state-guard.test.js` (10/10 passing)
+  - PR #220: https://github.com/synth-framework/synth/pull/220
+- **Outcome:** All acceptance criteria met. The SDK and ExecutionGate now reject direct writes to derived files, and expedition scope is enforced with an auditable override path.
+- **Note on CLI completion:** `synth expedition complete` could not be used because this repository's SYNTH project state is not initialized with an event-log expedition record (`EXP-GUARD-001 does not exist`). The charter was closed manually and the change is carried forward with the next work item.
+
+---
+
 ## Acceptance Criteria
 
-1. Writing `canonical-state.json` directly via the SDK returns a structured error.
-2. Writing `AGENTS.md` directly via the SDK returns a structured error.
-3. An expedition scoped to `apps/mobile/**` blocks a write to `.synth/data/canonical-state.json`.
-4. `--authorize-out-of-scope` appends an `OUT_OF_SCOPE_AUTHORIZED` event with the reason.
-5. `npm run build` succeeds and targeted tests pass.
+1. ✅ Writing `canonical-state.json` directly via the SDK returns a structured error.
+2. ✅ Writing `AGENTS.md` directly via the SDK returns a structured error.
+3. ✅ An expedition scoped to `apps/mobile/**` blocks a write to `.synth/data/canonical-state.json`.
+4. ✅ `--authorize-out-of-scope` appends an `OUT_OF_SCOPE_AUTHORIZED` event with the reason.
+5. ✅ `npm run build` succeeds and targeted tests pass.
 
 ---
 
