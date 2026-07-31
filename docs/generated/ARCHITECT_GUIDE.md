@@ -918,6 +918,6 @@ This guide is for architects making structural decisions.
 4. Verify through `npm run govern`.
 
 <!--
-sourceStateHash: f41b3e326fd0d2a4df606f5b0c06288eaf829c95041c306c6917ec8a80ab4d24
+sourceStateHash: 568dd160e9659be36773fecb6f4e9dd93659e1d38eff9a7b85757d324e405b31
 projection: synth-documentation-expedition-v1
 -->

@@ -183,7 +183,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-AX-005 — Public Release Polish](../expeditions/EXP-AX-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
 - **[EXP-CAPTRANS-001 — Capability Transparency CLI](../expeditions/EXP-CAPTRANS-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CERT-001 — Failure Certification Framework](../expeditions/EXP-CERT-001.md)** — Status: Completed, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-004 — First Contact Program
-- **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-CLI-002 — Human-Readable CLI Output Mode](../expeditions/EXP-CLI-002.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CLI-003 — Governance Inventory List Commands](../expeditions/EXP-CLI-003.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-CONT-002 — Interruption Benchmark](../expeditions/EXP-CONT-002.md)** — Status: Completed (pending program acceptance), Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-013 — Cognitive Continuity
 - **[EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage](../expeditions/EXP-CONVERGENCE-001.md)** — Status: Completed — Program 020 convergence into Program 027 is finalized; closed as part of Release Candidate portfolio pruning., Kind: Architectural Convergence, Priority: High, Program: EXP-PROGRAM-027 — Mission Studio Homepage
@@ -217,7 +217,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-EXEC-003 — Branch-per-Expedition Workflow](../expeditions/EXP-EXEC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-004 — Commit-as-Evidence](../expeditions/EXP-EXEC-004.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-005 — Pull Request Projection](../expeditions/EXP-EXEC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
-- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Completed, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-FIRSTCONTACT-004 — Experience Projection System](../expeditions/EXP-FIRSTCONTACT-004.md)** — Status: Superseded, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-005 — Interactive Replay Experience](../expeditions/EXP-FIRSTCONTACT-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection](../expeditions/EXP-FIRSTCONTACT-007.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
@@ -288,7 +288,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-PROGRAM-035 — Intent Refinement & Review Governance](../expeditions/EXP-PROGRAM-035.md)** — Status: Completed and accepted — Engine, integration, and certification complete. EXP-GATE-013 (dependency graph enforcement) is deferred as a future ADR-050 freeze-lift expedition., Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-036 — Intent Refinement & Alignment Governance](../expeditions/EXP-PROGRAM-036.md)** — Status: Completed and accepted — Intent pipeline, Convergence Certification, and full-lifecycle certification complete. EXP-REFINE-007, EXP-REFINE-009, EXP-REFINE-010, EXP-REFINE-014, EXP-REFINE-015, and EXP-REFINE-016 are deferred to future work., Kind: Program, Priority: High, Program: unknown
 - **[EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth](../expeditions/EXP-PROGRAM-037.md)** — Status: Proposed, Kind: Program, Priority: High, Program: unknown
-- **[EXP-PROGRAM-043 — Agent Onboarding & Operator Experience](../expeditions/EXP-PROGRAM-043.md)** — Status: Proposed, Kind: Program, Priority: High, Program: unknown
+- **[EXP-PROGRAM-043 — Agent Onboarding & Operator Experience](../expeditions/EXP-PROGRAM-043.md)** — Status: Active, Kind: Program, Priority: High, Program: unknown
 - **[EXP-REFINE-001 — Refinement Layer Model](../expeditions/EXP-REFINE-001.md)** — Status: Completed, Kind: Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-002 — Alignment Contract](../expeditions/EXP-REFINE-002.md)** — Status: Completed, Kind: Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
 - **[EXP-REFINE-003 — Divergence Gate](../expeditions/EXP-REFINE-003.md)** — Status: Completed, Kind: Expedition, Priority: High, Program: EXP-PROGRAM-036 — Intent Refinement & Alignment Governance
@@ -1699,6 +1699,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: f41b3e326fd0d2a4df606f5b0c06288eaf829c95041c306c6917ec8a80ab4d24
+sourceStateHash: 568dd160e9659be36773fecb6f4e9dd93659e1d38eff9a7b85757d324e405b31
 projection: synth-documentation-expedition-v1
 -->
