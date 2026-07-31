@@ -2,7 +2,7 @@
 
 > Make `synth explain status` return concrete next actions instead of raw state differences.
 
-**Status:** Draft  
+**Status:** Executing  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -71,6 +71,30 @@ Example:
   "blockers": ["Convergence Certification CLI not available"]
 }
 ```
+
+---
+
+## Design Notes
+
+The classifier reuses the existing runtime projections instead of inventing a second diagnosis engine:
+
+- `src/cli/status-briefing.ts` → `OperatorBriefing` provides `phase`, `blockers`, `warnings`, and `nextActions`.
+- `src/core/replay-verifier.ts` → `ReplayCheckResult` provides cryptographic chain validity and state-hash divergence.
+- `src/cli/capabilities-data.ts` → shared `EXPECTED_CAPABILITIES` catalog so `synth explain status` and `synth capabilities` agree on what is installed.
+
+Divergence diagnosis priority:
+
+1. Hash-chain break → event-log corruption.
+2. Missing events / state lags events → incomplete event log.
+3. State hash mismatch at the same offset → hand-edited `canonical-state.json`.
+4. Other divergence → generic replay divergence.
+
+For an executing expedition without a `CONVERGENCE_CERTIFIED` event, the situation is `missing-capability`:
+
+- If `convergence-certification` is installed, the next command is `synth expedition certify --id <id> --evaluation <path>`.
+- If the capability is unavailable, the safe fallback is `synth expedition snapshot --id <id>`.
+
+All legacy `ExplainStatus` fields (`verdict`, `replay`, `graphIntegrity`, `snapshots`) are preserved, and `--summary` keeps its original single-line format.
 
 ---
 
