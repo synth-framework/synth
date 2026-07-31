@@ -2,7 +2,7 @@
 
 > Add a `--human` output mode and clean structured output so operators and mixed human-agent sessions can read CLI responses without parsing JSON.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -37,9 +37,9 @@ JSON-by-default is correct for agents, but humans and mixed sessions need prose.
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| H1 | Mixed log/JSON streams break parsing | High | In progress |
-| H2 | No human-readable output mode | High | In progress |
-| H3 | Error messages list state but not recovery action | Medium | In progress |
+| H1 | Mixed log/JSON streams break parsing | High | Fixed |
+| H2 | No human-readable output mode | High | Fixed |
+| H3 | Error messages list state but not recovery action | Medium | Fixed |
 
 ---
 
@@ -130,6 +130,11 @@ Every error JSON includes:
 - Changes to command semantics.
 
 ---
+
+## Snapshot
+
+- Implemented in prior workstream: global `--human` flag, stderr log routing, and `nextStep` in error output.
+- Contract tests pass for `synth status --human`, `synth bootstrap . --approve --human`, and error suggestion rendering.
 
 ## Related Documents
 

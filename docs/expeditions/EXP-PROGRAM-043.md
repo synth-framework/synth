@@ -2,7 +2,7 @@
 
 > Close the gap between SYNTH's sound governance kernel and the rough, tribal onboarding experience that agents and operators hit in production.
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** TaskPRO real-world onboarding retrospective, EXP-GOV-024 brownfield migration findings, EXP-CLI-001 operator feedback  
@@ -59,18 +59,22 @@ EXP-PROGRAM-043 / A
 └── EXP-BOOTSTRAP-001 Explain bootstrap stages and emit clean JSON output                          [DRAFT]
 ```
 
+_Note: ONBOARD-001 shipped first because it bounds the brownfield "archive vs. import" decision before any state mutates._
+
 ### B — Actionable CLI Output
 
 Objective: every CLI response must tell the operator what just happened and what to do next.
 
 ```text
 EXP-PROGRAM-043 / B
-├── EXP-CLI-002       Human-readable output mode (`--human`)                                      [DRAFT]
+├── EXP-CLI-002       Human-readable output mode (`--human`)                                      [COMPLETED]
 ├── EXP-CLI-003       `synth expedition list` and `synth program list` commands                   [COMPLETED]
-├── EXP-EXPLAIN-001   Actionable `synth explain status`                                           [DRAFT]
-├── EXP-DRYRUN-001    Pre-flight dry-run for state-changing commands                              [DRAFT]
-└── EXP-OUTPUT-001    Separate structured stdout from diagnostic logs                             [DRAFT]
+├── EXP-EXPLAIN-001   Actionable `synth explain status`                                           [COMPLETED]
+├── EXP-DRYRUN-001    Pre-flight dry-run for state-changing commands                              [COMPLETED]
+└── EXP-OUTPUT-001    Separate structured stdout from diagnostic logs                             [COMPLETED]
 ```
+
+_Note: B was prioritized because every state-changing command needs both human-readable output and a safe preview. DRYRUN-001 prevents the `canonical-state.json` hand-edit class of mistakes._
 
 ### C — Capability Transparency & Graceful Degradation
 
@@ -83,16 +87,20 @@ EXP-PROGRAM-043 / C
 └── EXP-ADAPTER-001   Surface repository adapter during onboarding                                [DRAFT]
 ```
 
+_Note: CAPTRANS-001 ships before CAPTRANS-002 because transparency about missing capabilities is required before a fallback can be chosen safely._
+
 ### D — Derived-State Protection & Guardrails
 
 Objective: agents cannot accidentally edit derived or protected files; expeditions are sandboxed to their declared scope.
 
 ```text
 EXP-PROGRAM-043 / D
-├── EXP-GUARD-001     Refuse direct edits to derived files (canonical-state, AGENTS.md, projections) [DRAFT]
-├── EXP-SCOPE-001     Sandboxed expedition file scope                                              [DRAFT]
+├── EXP-GUARD-001     Refuse direct edits to derived files (canonical-state, AGENTS.md, projections) [COMPLETED]
+├── EXP-SCOPE-001     Sandboxed expedition file scope                                              [COMPLETED]
 └── EXP-GATE-001      Mandatory verification gates before expedition completion                   [DRAFT]
 ```
+
+_Note: GUARD-001 and SCOPE-001 were implemented before GATE-001 because refusing accidental writes is a lower-risk, higher-payoff first step than adding new mandatory completion gates._
 
 ### E — Evidence, Audit & Tooling
 
@@ -105,6 +113,8 @@ EXP-PROGRAM-043 / E
 └── EXP-AGENTS-001    AGENTS.md synchronization command                                             [DRAFT]
 ```
 
+_Note: Workstream E runs in parallel with D because evidence tooling is read-only or append-only and does not change the event model._
+
 ### F — Agent Identity & Trust
 
 Objective: every governance event is attributable, verifiable, and reversible only with explicit authorization.
@@ -116,6 +126,8 @@ EXP-PROGRAM-043 / F
 ├── EXP-APPROVAL-001  Two-party approval for destructive operations                               [DRAFT]
 └── EXP-GIT-001       Git integration for governance state snapshots                               [DRAFT]
 ```
+
+_Note: Workstream F is deferred until guardrails (D) are proven. Identity and trust layers require the boundaries they enforce._
 
 ---
 
@@ -169,9 +181,9 @@ F (Agent Identity & Trust) — depends on D
 ## Definition of Done
 
 - [x] Workstream A deliverable: guided first-contact flow passes first-operator-experience test.
-- [ ] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
+- [x] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
 - [x] Workstream C deliverable: `synth capabilities` passes contract tests.
-- [ ] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
+- [x] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
 - [ ] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
 - [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
 - [ ] `npm run govern` passes from a clean clone.
@@ -186,13 +198,19 @@ F (Agent Identity & Trust) — depends on D
 
 **Sequencing:**
 
-- Phase 1 (now): implement the high-impact, low-risk charters:
+- Phase 1 (completed): implement the high-impact, low-risk charters:
   - `EXP-ONBOARD-001` — guided first-contact
   - `EXP-CLI-002` / `EXP-CLI-003` — human output and list commands
   - `EXP-EXPLAIN-001` — actionable status explanation
   - `EXP-GUARD-001` — derived-state protection
+  - `EXP-SCOPE-001` — expedition scope enforcement
   - `EXP-CAPTRANS-001` — capability transparency
-- Phase 2: after `EXP-PROGRAM-034` lands, migrate the first-contact flow to use the canonical task engine.
-- Phase 3: after guardrails are proven, implement Workstream F (agent identity and trust).
+  - `EXP-DRYRUN-001` — pre-flight dry-run for lifecycle commands
+- Phase 2 (next): implement Workstream E evidence tooling while 031 reviews 034's design:
+  - `EXP-EVENTLOG-001` — event-log query CLI
+  - `EXP-EVIDENCE-001` — automatic evidence capture
+  - `EXP-AGENTS-001` — AGENTS.md synchronization
+- Phase 3: after `EXP-PROGRAM-034` lands, migrate the first-contact flow to use the canonical task engine.
+- Phase 4: after guardrails are proven, implement Workstream F (agent identity and trust).
 
-**Why this ordering:** fixing onboarding and clarity first prevents users from hitting the walls that make `npm run govern` feel slow and scary. The engine upgrade comes after the pain is understood and bounded.
+**Why this ordering:** fixing onboarding and clarity first prevents users from hitting the walls that make `npm run govern` feel slow and scary. The engine upgrade comes after the pain is understood and bounded. Workstream E is safe to run in parallel because it is read-only or append-only and does not mutate the event model.
