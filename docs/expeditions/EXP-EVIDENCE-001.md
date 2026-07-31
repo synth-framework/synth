@@ -91,10 +91,10 @@ Appends an event to `.synth/data/event-log.jsonl`:
 }
 ```
 
-### 4. Evidence-aware status and completion
+### 4. Evidence-aware status
 
 - `synth explain status` reports whether the active expedition has attached evidence and lists the artifact paths.
-- `synth expedition complete --id <id>` checks for at least one `EVIDENCE_ATTACHED` event and a non-empty evidence directory. If missing, it returns a structured error with the exact capture command to run.
+- Evidence is stored on the replay-derived expedition state as `attachments` so future gates (e.g., `EXP-GATE-001`) can enforce mandatory evidence before completion.
 
 ### 5. Tests
 
@@ -112,8 +112,11 @@ Appends an event to `.synth/data/event-log.jsonl`:
 2. Multiple `--attach` flags are supported and recorded in the manifest.
 3. The command is idempotent across repeated invocations.
 4. `synth explain status` surfaces evidence presence and artifact paths.
-5. `synth expedition complete` rejects completion when no evidence exists and provides the capture command as a next step.
-6. `npm run build` succeeds and targeted tests pass.
+5. `npm run build` succeeds and targeted tests pass.
+
+## Notes
+
+- Mandatory evidence verification before `synth expedition complete` is intentionally left to `EXP-GATE-001` so it can be coordinated with the existing Convergence Certification requirement rather than creating overlapping or conflicting gates.
 
 ## Out of Scope
 
