@@ -27,6 +27,7 @@ import { setAgentTelemetry, printJson, printError } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
+import { EXPECTED_CAPABILITIES, buildCapabilityEntries } from "./capabilities-data.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
@@ -1722,59 +1723,6 @@ async function cmdCertifyHelp() {
   ]))
 }
 
-// EXP-CAPTRANS-001: curated expected capabilities used to surface gaps
-// between what the CLI advertises and what is actually installed.
-interface ExpectedCapability {
-  id: string
-  name: string
-  requiredRuntimeCapability?: string
-  requiredAdapter?: string
-  commands: string[]
-}
-
-const EXPECTED_CAPABILITIES: ExpectedCapability[] = [
-  {
-    id: "convergence-certification",
-    name: "Convergence Certification",
-    requiredRuntimeCapability: "CertifyConvergence",
-    commands: ["synth expedition certify", "synth expedition complete"],
-  },
-  {
-    id: "mission-management",
-    name: "Mission Management",
-    requiredRuntimeCapability: "CreateMission",
-    commands: ["synth mission create", "synth mission approve"],
-  },
-  {
-    id: "expedition-lifecycle",
-    name: "Expedition Lifecycle",
-    requiredRuntimeCapability: "CreateExpedition",
-    commands: [
-      "synth expedition create",
-      "synth expedition approve",
-      "synth expedition commit",
-      "synth expedition start",
-      "synth expedition complete",
-    ],
-  },
-  {
-    id: "repository-adapter",
-    name: "Repository Adapter",
-    requiredAdapter: "repository",
-    commands: ["synth adapter list", "synth adapter commit", "synth adapter create-branch"],
-  },
-  {
-    id: "documentation-generation",
-    name: "Documentation Generation",
-    commands: ["synth docs generate"],
-  },
-  {
-    id: "event-log-query",
-    name: "Event Log Query",
-    commands: ["synth log --expedition <id>"],
-  },
-]
-
 async function cmdCapabilities() {
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
@@ -1784,41 +1732,7 @@ async function cmdCapabilities() {
   const adapterRegistry = createAdapterRegistry()
   const installedAdapters = new Set(adapterRegistry.list())
 
-  const capabilities = EXPECTED_CAPABILITIES.map((expected) => {
-    const entry: Record<string, unknown> = {
-      id: expected.id,
-      name: expected.name,
-      status: "available",
-      commands: expected.commands,
-    }
-
-    if (expected.requiredRuntimeCapability) {
-      if (!installedCapabilities.has(expected.requiredRuntimeCapability)) {
-        entry.status = "unavailable"
-        entry.reason = `Runtime capability ${expected.requiredRuntimeCapability} is not registered`
-      } else {
-        entry.runtimeCapability = expected.requiredRuntimeCapability
-      }
-    }
-
-    if (expected.requiredAdapter) {
-      if (!installedAdapters.has(expected.requiredAdapter)) {
-        entry.status = "unavailable"
-        entry.reason = `Adapter ${expected.requiredAdapter} is not registered`
-      } else {
-        entry.provider = expected.requiredAdapter
-      }
-    }
-
-    if (!expected.requiredRuntimeCapability && !expected.requiredAdapter) {
-      // Capabilities that exist only as a planned command surface and have no
-      // runtime backing are reported as unavailable until implemented.
-      entry.status = "unavailable"
-      entry.reason = "No CLI handler registered"
-    }
-
-    return entry
-  })
+  const capabilities = buildCapabilityEntries(installedCapabilities, installedAdapters)
 
   printJson({
     status: "ok",

@@ -217,7 +217,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-EXEC-003 — Branch-per-Expedition Workflow](../expeditions/EXP-EXEC-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-004 — Commit-as-Evidence](../expeditions/EXP-EXEC-004.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
 - **[EXP-EXEC-005 — Pull Request Projection](../expeditions/EXP-EXEC-005.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-016 — Governed Expedition Execution
-- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Draft, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
+- **[EXP-EXPLAIN-001 — Actionable `synth explain status`](../expeditions/EXP-EXPLAIN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-FIRSTCONTACT-004 — Experience Projection System](../expeditions/EXP-FIRSTCONTACT-004.md)** — Status: Superseded, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-005 — Interactive Replay Experience](../expeditions/EXP-FIRSTCONTACT-005.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
 - **[EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection](../expeditions/EXP-FIRSTCONTACT-007.md)** — Status: Completed, Kind: Adoption Expedition, Priority: High, Program: EXP-PROGRAM-009 — Canonical First Contact Experience
@@ -1493,6 +1493,7 @@ This guide covers the operator journey from idea to done.
 - **src adapters expedition-builder types ts defines** — `src/adapters/expedition-builder/types.ts` defines the contract.
 - **src adapters mission-builder adapter ts implements** — `src/adapters/mission-builder/adapter.ts` implements the mission derivation logic.
 - **src adapters mission-builder types ts defines** — `src/adapters/mission-builder/types.ts` defines the contract.
+- **src cli status-briefing ts OperatorBriefing provides** — `src/cli/status-briefing.ts` → `OperatorBriefing` provides `phase`, `blockers`, `warnings`, and `nextActions`.
 - **src cli synth ts AI-native operator** — `src/cli/synth.ts` — AI-native operator CLI with structured JSON output.
 - **src cli synth ts synth mission** — `src/cli/synth.ts` — `synth mission evidence add` (successor-draft semantics), `synth mission decisions`, rejection sweep naming executable remediations.
 - **src documentation documentation-expedition ts** — `src/documentation/documentation-expedition.ts`
@@ -1695,6 +1696,6 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 84c124d253c85e35910133f26fbb720ddee2f7b5f4259e15ba136f2318fe5840
+sourceStateHash: 353e0966910c30c05d15d5a0fefcc583b711a9bef9a99890b032b0deb1308092
 projection: synth-documentation-expedition-v1
 -->
