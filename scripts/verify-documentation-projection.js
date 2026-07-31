@@ -58,6 +58,17 @@ async function readDirFiles(dir) {
   return files
 }
 
+/**
+ * Normalize provenance metadata for comparison.
+ *
+ * `computedAt` is an ISO timestamp that changes on every regeneration, so
+ * masking it lets determinism checks verify that provenance is present
+ * without requiring identical timestamps.
+ */
+function normalizeForComparison(content) {
+  return content.replace(/computedAt:\s*[^\s]+/, "computedAt: <masked>")
+}
+
 async function runProjection(outputDir) {
   // Use the same link prefix as the committed docs/generated output so that
   // projection validation exercises the same content shape that freshness
@@ -125,7 +136,7 @@ async function main() {
         console.log(`❌ Projection output is non-deterministic: ${name} missing in second run.`)
         process.exit(1)
       }
-      if (firstOutputs[name] !== secondOutputs[name]) {
+      if (normalizeForComparison(firstOutputs[name]) !== normalizeForComparison(secondOutputs[name])) {
         console.log(`❌ Projection output is non-deterministic: ${name} differs between runs.`)
         process.exit(1)
       }

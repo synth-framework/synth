@@ -1175,6 +1175,7 @@ This guide is for contributors extending Synth.
 - **VersioningCapability interface is defined and documented** — `VersioningCapability` interface is defined and documented.
 - **Visual regression tests** — 1.5 Visual regression tests
 - **Visual regression tests pass for homepage** — Visual regression tests pass for homepage, phases, sidebar, artifacts, components, breakpoints, and themes.
+- **WARN-CAP-001 required capability unavailable** — `WARN-CAP-001` — required capability unavailable.
 - **Website pages accurately reference the capability** — Website pages accurately reference the capability reference, Environment Layer reference, and updated guides.
 - **What enters Actor capability payload all** — **What enters:** Actor, capability, payload (all validated)
 - **What Is a Capability** — What Is a Capability?
@@ -1204,6 +1205,8 @@ This guide is for contributors extending Synth.
 - Write tests before implementation.
 
 <!--
-sourceStateHash: 6f3cf8ec490ffb1d1a7c5e73624cb5b8a6ccc4683665390bb61a9514e318e653
+sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
+computedAt: 2026-07-31T09:22:14.829Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->

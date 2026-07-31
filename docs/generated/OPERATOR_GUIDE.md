@@ -320,6 +320,7 @@ This guide covers the operator journey from idea to done.
 - **[EXP-VCS-002 — Git Versioning Adapter](../expeditions/EXP-VCS-002.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-015 — Repository Versioning Capability
 - **[EXP-VCS-003 — GitHub Forge Adapter](../expeditions/EXP-VCS-003.md)** — Status: Completed and accepted, Kind: Implementation Expedition, Priority: High, Program: EXP-PROGRAM-015 — Repository Versioning Capability
 - **[EXP-VCS-005 — Versioning Certification](../expeditions/EXP-VCS-005.md)** — Status: Completed and accepted, Kind: Certification Expedition, Priority: High, Program: EXP-PROGRAM-015 — Repository Versioning Capability
+- **[EXP-WARN-001 — Stable Warning IDs and Actionable Fixes](../expeditions/EXP-WARN-001.md)** — Status: Executing, Kind: Governance Expedition, Priority: High, Program: EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 - **[EXP-WEB-001 — Homepage Hero: Intent to Deterministic Result](../expeditions/EXP-WEB-001.md)** — Status: Superseded, Kind: Design Expedition, Priority: High, Program: EXP-PROGRAM-020 — Website Experience
 - **[EXP-ADOPT-007 — Video Library](../expeditions/EXP-ADOPT-007.md)** — Status: Proposed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth
 - **[EXP-ADOPT-009 — Launch Campaign](../expeditions/EXP-ADOPT-009.md)** — Status: Proposed, Kind: Expedition, Priority: Medium, Program: EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth
@@ -634,6 +635,7 @@ This guide covers the operator journey from idea to done.
 - **docs expeditions EXP-CLI-002 md** — `docs/expeditions/EXP-CLI-002.md`
 - **docs expeditions EXP-DISCOVERY-001 md** — `docs/expeditions/EXP-DISCOVERY-001.md`
 - **docs expeditions EXP-DOC-002 md** — `docs/expeditions/EXP-DOC-002.md`
+- **docs expeditions EXP-DOC-007 md** — `docs/expeditions/EXP-DOC-007.md`
 - **docs expeditions EXP-DOCS-001 md** — `docs/expeditions/EXP-DOCS-001.md`
 - **docs expeditions EXP-ENV-001 md** — `docs/expeditions/EXP-ENV-001.md`
 - **docs expeditions EXP-ENV-002 md** — `docs/expeditions/EXP-ENV-002.md`
@@ -1701,6 +1703,8 @@ This guide covers the operator journey from idea to done.
 6. Regenerate documentation.
 
 <!--
-sourceStateHash: 6f3cf8ec490ffb1d1a7c5e73624cb5b8a6ccc4683665390bb61a9514e318e653
+sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
+computedAt: 2026-07-31T09:22:14.829Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->

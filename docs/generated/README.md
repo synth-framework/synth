@@ -14,6 +14,7 @@ Synth is organized into three architectural strata:
 - **--dry-run on lifecycle commands** — 1. `--dry-run` on lifecycle commands
 - **--human mode** — 3. `--human` mode
 - **--name** — --name
+- **--provenance flag** — `--provenance` flag
 - **001 028 with noted supersessions historical** — 001–028 (with noted supersessions) — historical, complete.
 - **027 035 036 039 040 041** — 027, 035, 036, 039, 040, 041 — all complete and accepted.
 - **14 named artifacts between intent and** — 14 named artifacts between intent and closed.
@@ -57,8 +58,7 @@ Synth is organized into three architectural strata:
 - **A class of actions should be** — A class of actions should be restricted
 - **A clear goal** — A clear goal
 - **A CLI that exposes the entire** — **A CLI** that exposes the entire platform as a stable, machine-readable interface.
-- **A cold run with no cache** — A **cold run** with no cache produces the same results as today's full `npm run govern`.
-- *…and 16227 more concepts extracted from the knowledge base.*
+- *…and 16251 more concepts extracted from the knowledge base.*
 
 ## Documentation Set
 
@@ -70,6 +70,8 @@ Synth is organized into three architectural strata:
 - [AI Context](AI_CONTEXT.md)
 
 <!--
-sourceStateHash: 6f3cf8ec490ffb1d1a7c5e73624cb5b8a6ccc4683665390bb61a9514e318e653
+sourceStateHash: 378f99cf0f985ffefeed997ab55c214f10b0baa9e2437ab8af9a34cf22ef5e7b
+computedAt: 2026-07-31T09:22:14.829Z
+schemaVersion: synth-documentation-expedition-v1
 projection: synth-documentation-expedition-v1
 -->
