@@ -301,6 +301,19 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EVIDENCE_ATTACHED": {
+      const expeditionId = String(payload.expeditionId)
+      const incoming = Array.isArray(payload.attachments) ? payload.attachments : []
+      if (state.expeditions[expeditionId]) {
+        const existing = state.expeditions[expeditionId].attachments || []
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          attachments: [...existing, ...incoming],
+          updatedAt: event.timestamp,
+        }
+      }
+      break
+    }
 
 
 

@@ -702,6 +702,31 @@ export function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "AttachEvidence",
+      description: "Attach evidence artifacts to an expedition",
+      inputSchema: { required: ["id", "attachments"], types: { id: "string", attachments: "array", note: "string" } },
+      outputSchema: { events: ["EVIDENCE_ATTACHED"], resultType: "EvidenceAttachment" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: true,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const id = String(intent.payload.id)
+        const attachments = Array.isArray(intent.payload.attachments) ? intent.payload.attachments : []
+        const note = typeof intent.payload.note === "string" ? intent.payload.note : undefined
+        return {
+          events: [{ type: "EVIDENCE_ATTACHED", payload: { expeditionId: id, attachments, note } }],
+          result: { expeditionId: id, attachments, note },
+        }
+      },
+    },
+    {
       name: "AddObjective",
       description: "Add an objective to an expedition",
       inputSchema: { required: ["id", "expeditionId", "title"], types: { id: "string", expeditionId: "string", title: "string", purpose: "string" } },
