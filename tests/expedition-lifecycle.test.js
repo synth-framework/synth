@@ -174,7 +174,12 @@ async function testLifecycleTransitions(projectDir, missionId, gateCtx, contract
 
   await certifyConvergence(gateCtx, missionId, draftId, contractId)
 
-  const completeResult = runSynth(["expedition", "complete", "--id", draftId, "--evidence", "/tmp/evidence.txt"], projectDir)
+  const evidenceFile = path.join(projectDir, "evidence.txt")
+  await fs.writeFile(evidenceFile, "test evidence", "utf-8")
+  const evidenceResult = runSynth(["expedition", "evidence", "--id", draftId, "--attach", evidenceFile], projectDir)
+  assert(evidenceResult.status === 0, `expedition evidence must exit 0:\n${evidenceResult.stderr}`)
+
+  const completeResult = runSynth(["expedition", "complete", "--id", draftId], projectDir)
   assert(completeResult.status === 0, `expedition complete must exit 0:\n${completeResult.stderr}`)
   const completeOutput = parseJson(completeResult.stdout)
   assert(completeOutput.kind === "ExpeditionCompleted", `expedition complete should return ExpeditionCompleted, got ${completeOutput.kind}`)
@@ -225,6 +230,11 @@ async function testInvalidTransitions(projectDir, missionId, gateCtx, contractId
   // Start and complete, then try to start again.
   runSynth(["expedition", "start", "--id", draftId], projectDir)
   await certifyConvergence(gateCtx, missionId, draftId, contractId)
+
+  const evidenceFile2 = path.join(projectDir, "evidence.txt")
+  await fs.writeFile(evidenceFile2, "test evidence", "utf-8")
+  runSynth(["expedition", "evidence", "--id", draftId, "--attach", evidenceFile2], projectDir)
+
   runSynth(["expedition", "complete", "--id", draftId], projectDir)
 
   const restartResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
