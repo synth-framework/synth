@@ -178,6 +178,10 @@
       "name": "Validation",
       "description": "Validation program expeditions (agent onboarding, bootstrap, publication, integrity, benchmark)."
     },
+    "WARN": {
+      "name": "Warning IDs & Operator Guidance",
+      "description": "Stable warning codes and actionable operator guidance expeditions."
+    },
     "EVENTLOG": {
       "name": "Event-Log Query",
       "description": "Governance event-log query and inspection expeditions."
