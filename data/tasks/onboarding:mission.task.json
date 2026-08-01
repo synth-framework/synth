@@ -1,0 +1,11 @@
+{
+  "id": "onboarding:mission",
+  "description": "Create and approve the baseline mission for a newly initialized project",
+  "command": "synth first-contact onboard:mission",
+  "group": "onboarding",
+  "dependsOn": ["onboarding:init"],
+  "tags": ["onboarding", "mission"],
+  "estimatedDurationMs": 2000,
+  "capabilities": ["NodeJS"],
+  "lifecycle": "accepted"
+}

@@ -51,6 +51,12 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "first-contact materialize --dry-run", safety: "PROPOSAL_ONLY", description: "Preview what materialization would create" },
   { command: "first-contact approve", safety: "MUTATING", description: "Approve the first-contact draft", requiresApproval: true },
   { command: "first-contact materialize --approve", safety: "MUTATING", description: "Materialize the approved artifact into a SYNTH project", requiresApproval: true },
+  { command: "first-contact onboard:detect", safety: "READ_ONLY", description: "Detect repository state for onboarding" },
+  { command: "first-contact onboard:archive", safety: "MUTATING", description: "Archive legacy Synth state", requiresApproval: true },
+  { command: "first-contact onboard:init", safety: "MUTATING", description: "Initialize an empty directory as a Synth project", requiresApproval: true },
+  { command: "first-contact onboard:bootstrap", safety: "MUTATING", description: "Apply Synth governance to a brownfield project", requiresApproval: true },
+  { command: "first-contact onboard:mission", safety: "MUTATING", description: "Create the baseline mission", requiresApproval: true },
+  { command: "first-contact onboard:govern", safety: "MUTATING", description: "Run the governance pipeline after onboarding", requiresApproval: true },
   // `genesis` is an alias for the first-contact greenfield onboarding namespace.
   { command: "genesis", safety: "PROPOSAL_ONLY", description: "Alias for 'first-contact' preview" },
   { command: "genesis --dry-run", safety: "PROPOSAL_ONLY", description: "Alias for 'first-contact --dry-run'" },

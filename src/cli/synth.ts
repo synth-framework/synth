@@ -60,6 +60,12 @@ import {
   cmdFirstContactMaterialize,
   cmdFirstContactStatus,
   cmdFirstContactOnboard,
+  cmdFirstContactOnboardDetect,
+  cmdFirstContactOnboardArchive,
+  cmdFirstContactOnboardInit,
+  cmdFirstContactOnboardBootstrap,
+  cmdFirstContactOnboardMission,
+  cmdFirstContactOnboardGovern,
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import * as sdk from "../sdk/index.js"
@@ -4470,9 +4476,15 @@ async function main() {
       else if (sub === "approve") await cmdFirstContactApprove(positional.slice(2), flags)
       else if (sub === "materialize") await cmdFirstContactMaterialize(positional.slice(2), flags)
       else if (sub === "status") await cmdFirstContactStatus(positional.slice(2), flags)
+      else if (sub === "onboard:detect") await cmdFirstContactOnboardDetect(positional.slice(2), flags)
+      else if (sub === "onboard:archive") await cmdFirstContactOnboardArchive(positional.slice(2), flags)
+      else if (sub === "onboard:init") await cmdFirstContactOnboardInit(positional.slice(2), flags)
+      else if (sub === "onboard:bootstrap") await cmdFirstContactOnboardBootstrap(positional.slice(2), flags)
+      else if (sub === "onboard:mission") await cmdFirstContactOnboardMission(positional.slice(2), flags)
+      else if (sub === "onboard:govern") await cmdFirstContactOnboardGovern(positional.slice(2), flags)
       else
         printError(
-          "Usage: synth first-contact [--dry-run | --approve] | synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status",
+          "Usage: synth first-contact [--dry-run | --approve] | synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status | synth first-contact onboard:<detect|archive|init|bootstrap|mission|govern>",
         )
       break
     }

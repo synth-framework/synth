@@ -1,0 +1,11 @@
+{
+  "id": "onboarding:bootstrap",
+  "description": "Apply Synth governance to an existing brownfield project",
+  "command": "synth first-contact onboard:bootstrap",
+  "group": "onboarding",
+  "dependsOn": ["onboarding:detect"],
+  "tags": ["onboarding", "bootstrap"],
+  "estimatedDurationMs": 5000,
+  "capabilities": ["NodeJS"],
+  "lifecycle": "accepted"
+}

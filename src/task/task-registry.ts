@@ -7,6 +7,7 @@
 
 import fs from "fs/promises"
 import path from "path"
+import { fileURLToPath } from "url"
 import { assertTask, type Task } from "./task-schema.js"
 
 export type TaskRegistry = {
@@ -18,14 +19,27 @@ export type TaskRegistry = {
 
 export type RegistryLoadOptions = {
   dirs?: string[]
+  frameworkDirs?: string[]
+}
+
+function defaultFrameworkTasksDir(): string {
+  // Resolve dist/tasks/ relative to the compiled registry module.
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
+  return path.resolve(__dirname, "..", "tasks")
 }
 
 /**
  * Load and validate task definitions from JSON files in the given directories.
  * Files must match `*.task.json`. Duplicate ids and unknown dependencies throw.
+ *
+ * Framework-owned tasks are discovered from the installation directory (dist/tasks/)
+ * in addition to project-level tasks (data/tasks/ and .synth/tasks/). Project-level
+ * tasks take precedence over framework tasks if ids collide.
  */
 export async function loadTaskRegistry(options: RegistryLoadOptions = {}): Promise<TaskRegistry> {
-  const dirs = options.dirs ?? ["data/tasks", ".synth/tasks"]
+  const projectDirs = options.dirs ?? ["data/tasks", ".synth/tasks"]
+  const frameworkDirs = options.frameworkDirs ?? [defaultFrameworkTasksDir()]
+  const dirs = [...frameworkDirs, ...projectDirs]
   const tasks = new Map<string, Task>()
   const groups = new Map<string, string[]>()
   const tags = new Map<string, string[]>()
@@ -51,10 +65,8 @@ export async function loadTaskRegistry(options: RegistryLoadOptions = {}): Promi
 
       const task = assertTask(parsed)
 
-      if (tasks.has(task.id)) {
-        throw new Error(`Duplicate task id "${task.id}" in ${filePath}`)
-      }
-
+      // Later directories override earlier ones. This lets project-level tasks
+      // (data/tasks/, .synth/tasks/) replace framework-owned defaults.
       tasks.set(task.id, task)
     }
   }
