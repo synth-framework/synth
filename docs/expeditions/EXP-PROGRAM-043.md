@@ -180,13 +180,13 @@ F (Agent Identity & Trust) — depends on D
 
 ## Definition of Done
 
-- [x] Workstream A charters completed and accepted (`EXP-ONBOARD-001`, `EXP-MIGRATE-001` drafted, `EXP-BOOTSTRAP-001` drafted).
-- [x] Workstream B charters completed and accepted (`EXP-CLI-002`, `EXP-CLI-003`, `EXP-EXPLAIN-001`, `EXP-DRYRUN-001`, `EXP-OUTPUT-001`).
-- [x] Workstream C charters completed and accepted (`EXP-CAPTRANS-001`, `EXP-CAPTRANS-002`, `EXP-ADP-001`).
-- [x] Workstream D charters completed and accepted (`EXP-GUARD-001`, `EXP-SCOPE-001`, `EXP-GATE-014`).
-- [x] Workstream E charters completed and accepted (`EXP-EVIDENCE-001`, `EXP-EVENTLOG-001`, `EXP-AGENTS-001`).
-- [ ] Workstream F charters completed and accepted (`EXP-IDENTITY-001`, `EXP-SIGN-001`, `EXP-APPROVAL-001`, `EXP-GIT-001`).
-- [ ] `npm run govern` passes.
+- [x] Workstream A deliverable: guided first-contact flow passes first-operator-experience test.
+- [x] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
+- [x] Workstream C deliverable: `synth capabilities` passes contract tests and the repository adapter is surfaced during onboarding.
+- [x] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
+- [ ] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
+- [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
+- [ ] `npm run govern` passes from a clean clone.
 
 ---
 
