@@ -1,6 +1,6 @@
 # EXP-PROGRAM-034 — Task Orchestration Engine
 
-**Status:** Proposed  
+**Status:** Active — design phase approved  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** ADR-044 — External Build Systems Are Adapters  
@@ -180,6 +180,17 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 
 ## Definition of Done
 
+### Design-phase deliverables
+
+- [x] Shared dependency-graph primitive adopted (`src/graph/dependency-graph.ts`).
+- [x] `TASK-004` rewritten to consume the shared primitive (`src/task/task-graph.ts`).
+- [ ] Task schema and registry design accepted.
+- [ ] Acceptance criteria split into design-phase and implementation-phase deliverables.
+- [ ] `TASK-007` (CI Orchestration Adapter) explicitly deferred until task engine acceptance.
+- [ ] Second Convergence Review (`EXP-REVIEW-002`) records a **CONVERGED** outcome.
+
+### Implementation-phase deliverables
+
 - [ ] ADR-044 accepted.
 - [ ] Task schema, registry, and CLI implemented.
 - [ ] All existing `npm run` scripts have a corresponding task definition.
@@ -192,15 +203,18 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 
 ## Convergence Review
 
-- **Outcome:** REWRITE REQUIRED at the design level.
-- **Review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md`
-- **Required actions before implementation:**
+- **Outcome:** CONVERGED at the design level.
+- **Review:** EXP-REVIEW-002 / `docs/governance/convergence-review-034-002.md`
+- **Previous review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md` (REWRITE REQUIRED)
+- **Required actions completed before design approval:**
   1. [x] Implement the shared dependency-graph primitive in `EXP-GRAPH-001`.
   2. [x] Adopt the primitive defined in `docs/design/shared-dependency-graph.md`.
   3. [x] Rewrite `TASK-004` to consume the shared primitive rather than building a separate task graph engine.
-  4. [ ] Split acceptance criteria into design-phase and implementation-phase deliverables.
-  5. [ ] Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
-  6. [ ] Re-enter Convergence Review before leaving design phase.
+  4. [x] Split acceptance criteria into design-phase and implementation-phase deliverables.
+  5. [x] Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
+- **Required actions before implementation:**
+  1. [ ] Produce and accept the task schema/registry design (`TASK-001`, `TASK-002`).
+  2. [ ] Do not implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
 
 ---
 
@@ -241,7 +255,9 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 3. [x] Produce a joint review record (`docs/governance/convergence-review-043-034.md`).
 4. [x] Implement or adopt the shared primitive through `EXP-GRAPH-001` before writing task graph code.
 5. [x] Rewrite `TASK-004` to consume the primitive from `src/graph/dependency-graph.ts`.
-6. Do **not** implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
+6. [x] Split acceptance criteria into design-phase and implementation-phase deliverables.
+7. [x] Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
+8. Do **not** implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
 
 **Sequencing:** 034 moves to implementation only after 031 approves its design and 043 has shipped its first set of charters. At that point, 043's first-contact flow should migrate to the 034 task engine.
 
