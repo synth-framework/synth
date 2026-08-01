@@ -20,6 +20,7 @@ import type { ArchitectureCandidate } from "../first-contact/project/types.js"
 import { verifyCapabilities } from "../first-contact/verify/index.js"
 import { materialize } from "../first-contact/materialize/index.js"
 import { hashArtifact } from "../first-contact/artifact/canonical.js"
+import { createGitRepositoryAdapter } from "../adapters/repository/git.js"
 
 const DRAFT_STATUS = "draft" as const
 const APPROVED_STATUS = "approved" as const
@@ -128,8 +129,8 @@ export async function cmdFirstContactHelp(): Promise<void> {
     description: "Guided onboarding entry point for greenfield, brownfield, and legacy projects, plus the greenfield idea-to-project workflow (also available as 'synth genesis')",
     usage: "synth first-contact [--dry-run | --approve] | synth first-contact <subcommand> [options]",
     subcommands: [
-      { name: "synth first-contact", description: "Detect repository state and preview the guided onboarding plan" },
-      { name: "synth first-contact --dry-run", description: "Print the onboarding plan without mutating state", args: "--dry-run" },
+      { name: "synth first-contact", description: "Detect repository state and preview the guided onboarding plan (includes repository adapter snapshot)" },
+      { name: "synth first-contact --dry-run", description: "Print the onboarding plan and repository adapter snapshot without mutating state", args: "--dry-run" },
       { name: "synth first-contact --approve", description: "Apply the guided onboarding plan", args: "--approve [--name <project-name>]" },
       { name: "synth first-contact start \"<intent>\"", description: "Extract intent and create a first-contact draft", args: "<intent> [--name <project-name>]" },
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
@@ -425,6 +426,17 @@ interface OnboardStage {
   nextStep?: string
 }
 
+interface RepositoryAdapterSnapshot {
+  detected: "git" | "external" | "none"
+  initialized: boolean
+  branch?: string
+  remoteConfigured: boolean
+  uncommittedChanges: boolean
+  hooksInstalled: boolean
+  health: "healthy" | "unhealthy" | "unknown"
+  nextStep: string
+}
+
 interface OnboardPlan {
   detected: OnboardState["kind"]
   projectName: string
@@ -434,6 +446,82 @@ interface OnboardPlan {
   wouldCreate: string[]
   wouldRun: string[]
   nextStep: string
+  repositoryAdapter: RepositoryAdapterSnapshot
+}
+
+async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAdapterSnapshot> {
+  const adapter = createGitRepositoryAdapter()
+  await adapter.configure({
+    path: targetDir,
+    remote: "origin",
+    defaultBranch: "main",
+    promotionMode: "direct",
+  })
+
+  let hasLocalGit = false
+  try {
+    await fs.access(path.join(targetDir, ".git"))
+    hasLocalGit = true
+  } catch {
+    hasLocalGit = false
+  }
+
+  let hasExternalGit = false
+  let current = targetDir
+  for (let depth = 0; depth < 3; depth++) {
+    const parent = path.dirname(current)
+    if (parent === current) break
+    try {
+      await fs.access(path.join(parent, ".git"))
+      hasExternalGit = true
+      break
+    } catch {
+      // continue searching upward
+    }
+    current = parent
+  }
+
+  const detected: RepositoryAdapterSnapshot["detected"] = hasLocalGit
+    ? "git"
+    : hasExternalGit
+      ? "external"
+      : "none"
+
+  if (detected === "none") {
+    return {
+      detected: "none",
+      initialized: false,
+      remoteConfigured: false,
+      uncommittedChanges: false,
+      hooksInstalled: false,
+      health: "unknown",
+      nextStep: "Initialize a git repository: synth adapter init",
+    }
+  }
+
+  await adapter.healthCheck()
+  const status = await adapter.status()
+  const healthState = adapter.health.state
+  const health: RepositoryAdapterSnapshot["health"] =
+    healthState === "healthy" ? "healthy" : healthState === "unhealthy" ? "unhealthy" : "unknown"
+
+  let nextStep = "synth repo status"
+  if (!status.hooksInstalled) {
+    nextStep = "Install governance hooks: synth adapter install-hooks"
+  } else if (!status.remoteConfigured) {
+    nextStep = "Configure a remote: synth adapter configure remote=<remote-url>"
+  }
+
+  return {
+    detected,
+    initialized: status.initialized,
+    branch: status.branch,
+    remoteConfigured: status.remoteConfigured,
+    uncommittedChanges: status.uncommittedChanges,
+    hooksInstalled: status.hooksInstalled,
+    health,
+    nextStep,
+  }
 }
 
 async function detectOnboardState(targetDir: string): Promise<OnboardState> {
@@ -474,7 +562,12 @@ async function detectOnboardState(targetDir: string): Promise<OnboardState> {
   return { kind: "brownfield", hasPackageJson }
 }
 
-function buildOnboardPlan(state: OnboardState, targetDir: string, projectName: string): OnboardPlan {
+function buildOnboardPlan(
+  state: OnboardState,
+  targetDir: string,
+  projectName: string,
+  repositoryAdapter: RepositoryAdapterSnapshot,
+): OnboardPlan {
   const base: OnboardPlan = {
     detected: state.kind,
     projectName,
@@ -483,6 +576,7 @@ function buildOnboardPlan(state: OnboardState, targetDir: string, projectName: s
     wouldCreate: [],
     wouldRun: [],
     nextStep: "",
+    repositoryAdapter,
   }
 
   switch (state.kind) {
@@ -651,7 +745,8 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
   const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
 
   const state = await detectOnboardState(targetDir)
-  const plan = buildOnboardPlan(state, targetDir, projectName)
+  const repositoryAdapter = await detectRepositoryAdapter(targetDir)
+  const plan = buildOnboardPlan(state, targetDir, projectName, repositoryAdapter)
 
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
   const approve = flags.approve === true || flags.approve === "true"
@@ -674,6 +769,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
       kind: "FirstContactOnboardAlreadyInitialized",
       detected: state.kind,
       manifestPath: state.manifestPath,
+      repositoryAdapter,
       nextStep: "synth status",
     })
     return
@@ -699,6 +795,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
       targetDir,
       stages,
       missionId: result.missionId,
+      repositoryAdapter: await detectRepositoryAdapter(targetDir),
       nextStep: "synth mission approve --draft-id <mission-id>",
     })
     return
@@ -728,6 +825,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
     targetDir,
     stages,
     bootstrapStatus: bootstrapResult.status,
+    repositoryAdapter: await detectRepositoryAdapter(targetDir),
     nextStep: "synth mission approve --draft-id <draft-id>",
   })
 }

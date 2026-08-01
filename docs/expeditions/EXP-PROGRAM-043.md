@@ -84,10 +84,10 @@ Objective: the CLI must advertise what it can and cannot do, and offer safe fall
 EXP-PROGRAM-043 / C
 ├── EXP-CAPTRANS-001  `synth capabilities` command                                                [COMPLETED]
 ├── EXP-CAPTRANS-002  Graceful handling of missing capabilities (e.g. archive fallback)           [COMPLETED]
-└── EXP-ADAPTER-001   Surface repository adapter during onboarding                                [DRAFT]
+└── EXP-ADP-001   Surface repository adapter during onboarding                                [COMPLETED]
 ```
 
-_Note: CAPTRANS-001 ships before CAPTRANS-002 because transparency about missing capabilities is required before a fallback can be chosen safely._
+_Note: CAPTRANS-001 ships before CAPTRANS-002 because transparency about missing capabilities is required before a fallback can be chosen safely. EXP-ADP-001 builds on that transparency by showing whether the installed repository adapter is actually connected to a git repo during onboarding._
 
 ### D — Derived-State Protection & Guardrails
 
@@ -182,7 +182,7 @@ F (Agent Identity & Trust) — depends on D
 
 - [x] Workstream A deliverable: guided first-contact flow passes first-operator-experience test.
 - [x] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
-- [x] Workstream C deliverable: `synth capabilities` passes contract tests.
+- [x] Workstream C deliverable: `synth capabilities` passes contract tests and the repository adapter is surfaced during onboarding.
 - [x] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
 - [ ] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
 - [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
