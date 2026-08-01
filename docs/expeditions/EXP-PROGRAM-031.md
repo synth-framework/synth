@@ -52,6 +52,10 @@ Architectural Convergence
 │       Review Expedition
 │       Execute ADR-039 review, record outcomes, define shared dependency-graph primitive.
 │
+├── EXP-GRAPH-001        Shared Dependency-Graph Primitive
+│       Architecture Expedition
+│       Implement the generic DAG primitive consumed by 031 and 034.
+│
 ├── EXP-CONVERGENCE-001  Program Review Engine
 │       Architecture Expedition
 │       Define how Programs are evaluated against the current architectural baseline.
@@ -168,14 +172,22 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 **Activate narrowly as a gating function.** The ADR is already accepted; the program itself is still Proposed. Do not try to build the full portfolio dashboard, supersession detector, or automated drift monitor yet.
 
-**First milestone:**
+**First milestone (completed):**
 
 1. [x] Run a convergence review of `EXP-PROGRAM-043` before it begins implementation.
 2. [x] Run a design review of `EXP-PROGRAM-034` before it leaves the design phase.
 3. [x] Define the shared dependency-graph primitive that both 034 and 031 will use.
 
+**Second milestone (next):**
+
+1. [ ] Implement the shared dependency-graph primitive in `EXP-GRAPH-001`.
+2. [ ] Refactor `src/domain/graph.ts` to consume the primitive where possible.
+3. [ ] Update `EXP-PROGRAM-034/TASK-004` to use the primitive rather than building a separate engine.
+4. [ ] Re-enter Convergence Review for `EXP-PROGRAM-034` before it leaves design phase.
+
 **Review record:** `docs/governance/convergence-review-043-034.md`  
-**Shared primitive contract:** `docs/design/shared-dependency-graph.md`
+**Shared primitive contract:** `docs/design/shared-dependency-graph.md`  
+**Implementation charter:** `docs/expeditions/EXP-GRAPH-001.md`
 
 **Deferred:** full supersession detection, acceptance-drift dashboard, and automated portfolio health until after 034 and 043 are moving.
 
