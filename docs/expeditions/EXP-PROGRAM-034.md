@@ -143,7 +143,16 @@ Reduced `package.json` scripts to thin adapters that delegate to `synth task run
 
 ### TASK-007 — CI Orchestration Adapter
 
+> Implemented in `EXP-TASK-006`.
+
 Update CI workflows to invoke `synth task govern`, `synth task verify`, or `synth task test <group>` instead of raw npm scripts. The CI becomes a trigger, not a scheduler.
+
+Implemented changes:
+
+- `.github/workflows/proof.yml` now runs `node dist/cli/synth.js task run govern` after `npm run build`.
+- `.github/workflows/publish.yml` now runs documentation tasks via `node dist/cli/synth.js task run <id>` after `npm run build`.
+- `.github/workflows/release.yml` now runs `node dist/cli/synth.js task run govern` after `npm run build`.
+- `tests/task-ci-adapter.test.js` verifies that workflows invoke the task engine directly and that every CI-invoked task exists in the registry.
 
 ### TASK-008 — Task Groups
 
@@ -210,7 +219,7 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 - [ ] Watch mode for `synth task run` (deferred).
 - [x] All existing `npm run` scripts have a corresponding task definition (`EXP-TASK-004`).
 - [x] `package.json` reduced to the adapter layer (`EXP-TASK-005`).
-- [ ] CI updated to invoke `synth task`.
+- [x] CI updated to invoke `synth task` (`EXP-TASK-006`).
 - [ ] Program 030 planner consumes the task graph.
 - [ ] `synth task doctor` reports zero critical issues on the canonical task set.
 - [ ] Documentation (`docs/reference/tasks.md`) and operator guide updated.

@@ -48,10 +48,10 @@ function assert(condition, message) {
 async function testDocsGenerateScriptExists() {
   const packageJson = JSON.parse(await fs.readFile(PACKAGE_PATH, "utf-8"))
   assert(typeof packageJson.scripts["docs:generate"] === "string", "docs:generate npm script must exist")
-  assert(
-    packageJson.scripts["docs:generate"].includes("docs generate"),
-    "docs:generate script must invoke synth docs generate",
-  )
+  const script = packageJson.scripts["docs:generate"]
+  const invokesDocsGenerate =
+    script.includes("docs generate") || script.includes("task-adapter-shim.js docs:generate")
+  assert(invokesDocsGenerate, "docs:generate script must invoke synth docs generate directly or via the task engine")
 }
 
 async function testDocsGenerateProducesProjections() {
@@ -103,7 +103,10 @@ async function testWorkflowFilesExist() {
   }
 
   const publishContent = await fs.readFile(publishYml, "utf-8")
-  assert(publishContent.includes("npm run docs:generate"), "publish.yml must run docs:generate")
+  const invokesDocsGenerate =
+    publishContent.includes("npm run docs:generate") ||
+    publishContent.includes("node dist/cli/synth.js task run docs:generate")
+  assert(invokesDocsGenerate, "publish.yml must run docs:generate")
   assert(publishContent.includes("actions/deploy-pages"), "publish.yml must deploy to GitHub Pages")
   assert(publishContent.includes("[skip ci]"), "publish.yml must skip ci on doc commits to avoid loops")
 }

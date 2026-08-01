@@ -49,20 +49,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build project
+      - name: Build CLI
         run: npm run build
 
       - name: Generate projections
-        run: npm run docs:generate
+        run: node dist/cli/synth.js task run docs:generate
 
       - name: Validate projection graph
-        run: npm run docs:validate-projections
+        run: node dist/cli/synth.js task run docs:validate-projections
 
       - name: Check internal links
-        run: npm run docs:check-links
+        run: node dist/cli/synth.js task run docs:check-links
 
       - name: Verify website synchronization
-        run: npm run docs:verify-website-sync
+        run: node dist/cli/synth.js task run docs:verify-website-sync
 
       - name: Copy installer to website
         run: cp scripts/install.sh website/install.sh
