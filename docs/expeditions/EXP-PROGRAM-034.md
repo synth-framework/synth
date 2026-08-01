@@ -126,24 +126,20 @@ Given a diff, determine which tasks are affected and schedule only those. Integr
 
 ### TASK-006 — npm Adapter
 
-Reduce `package.json` scripts to a thin adapter layer:
+> Implemented in `EXP-TASK-005`.
+
+Reduced `package.json` scripts to thin adapters that delegate to `synth task run <id>`. Every script except `build` (which bootstraps the TypeScript compiler) now uses the task engine. Legacy scripts remain as shims; deprecation is deferred to the acceptance gate.
 
 ```json
 {
   "scripts": {
-    "build": "synth task build",
-    "test": "synth task test",
-    "govern": "synth task govern",
-    "verify": "synth task verify",
-    "docs": "synth task docs",
-    "proof": "synth task proof",
-    "release": "synth task release",
-    "task": "node dist/cli/synth.js task"
+    "build": "tsc && node scripts/generate-dist-manifest.js",
+    "test": "node dist/cli/synth.js task run test",
+    "govern": "node dist/cli/synth.js task run govern",
+    "...": "node dist/cli/synth.js task run <id>"
   }
 }
 ```
-
-Keep legacy scripts as shims during the transition, but mark them deprecated.
 
 ### TASK-007 — CI Orchestration Adapter
 
@@ -213,7 +209,7 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 - [x] Task execution CLI implemented (`EXP-TASK-003`): `run`, `affected`, `generate`.
 - [ ] Watch mode for `synth task run` (deferred).
 - [x] All existing `npm run` scripts have a corresponding task definition (`EXP-TASK-004`).
-- [ ] `package.json` reduced to the adapter layer (`TASK-006`).
+- [x] `package.json` reduced to the adapter layer (`EXP-TASK-005`).
 - [ ] CI updated to invoke `synth task`.
 - [ ] Program 030 planner consumes the task graph.
 - [ ] `synth task doctor` reports zero critical issues on the canonical task set.
