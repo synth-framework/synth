@@ -3,9 +3,19 @@
 // ============================================================
 // The project graph is a typed, persistent, directed multigraph.
 // G = (V, E, T) where V = Objects, E = Relationships, T = Types.
+//
+// This module now delegates generic DAG operations to the shared
+// dependency-graph primitive in src/graph/dependency-graph.ts.
 // ============================================================
 
 import type { CanonicalState, WorkItem, Plan, Milestone, Project } from "../types/index.js"
+import {
+  detectCycles as genericDetectCycles,
+  isAcyclic as genericIsAcyclic,
+  reachableFrom as genericReachableFrom,
+  type Graph as GenericGraph,
+  type GraphNode as GenericGraphNode,
+} from "../graph/dependency-graph.js"
 
 /** Graph node types */
 export type GraphNodeType = "workItem" | "plan" | "milestone" | "project" | "execution"
@@ -75,26 +85,28 @@ export function buildGraph(state: CanonicalState): ProjectGraph {
   return { nodes, edges }
 }
 
+function toGenericGraph(graph: ProjectGraph): GenericGraph<GraphNode> {
+  const genericNodes = new Map<string, GenericGraphNode<GraphNode>>()
+  for (const [id, node] of graph.nodes) {
+    genericNodes.set(id, { id, payload: node })
+  }
+  return { nodes: genericNodes, edges: graph.edges }
+}
+
 /** Find all reachable nodes from a starting node via BFS */
 export function findReachable(graph: ProjectGraph, startId: string): Set<string> {
-  const visited = new Set<string>()
-  const queue = [startId]
+  return genericReachableFrom(toGenericGraph(graph), startId)
+}
 
-  while (queue.length > 0) {
-    const current = queue.shift()!
-    if (visited.has(current)) continue
-    visited.add(current)
+/** Detect cycles in the dependency graph */
+export function detectCycles(graph: ProjectGraph): string[][] {
+  return genericDetectCycles(toGenericGraph(graph))
+}
 
-    // Find all outgoing edges
-    const outgoing = graph.edges.filter((e) => e.from === current)
-    for (const edge of outgoing) {
-      if (!visited.has(edge.to)) {
-        queue.push(edge.to)
-      }
-    }
-  }
-
-  return visited
+/** Check if graph contains any cycles */
+export function isGraphAcyclic(state: CanonicalState): boolean {
+  const graph = buildGraph(state)
+  return genericIsAcyclic(toGenericGraph(graph))
 }
 
 /** Check if all objects in state are reachable from their project */
@@ -122,47 +134,4 @@ export function validateGraphConnectivity(state: CanonicalState): string[] {
   }
 
   return violations
-}
-
-/** Detect cycles in the dependency graph */
-export function detectCycles(graph: ProjectGraph): string[][] {
-  const cycles: string[][] = []
-  const visited = new Set<string>()
-  const recursionStack = new Set<string>()
-  const path: string[] = []
-
-  function dfs(nodeId: string): void {
-    visited.add(nodeId)
-    recursionStack.add(nodeId)
-    path.push(nodeId)
-
-    const outgoing = graph.edges.filter((e) => e.from === nodeId && e.type === "depends_on")
-    for (const edge of outgoing) {
-      if (!visited.has(edge.to)) {
-        dfs(edge.to)
-      } else if (recursionStack.has(edge.to)) {
-        // Found a cycle
-        const cycleStart = path.indexOf(edge.to)
-        cycles.push(path.slice(cycleStart))
-      }
-    }
-
-    path.pop()
-    recursionStack.delete(nodeId)
-  }
-
-  for (const nodeId of graph.nodes.keys()) {
-    if (!visited.has(nodeId)) {
-      dfs(nodeId)
-    }
-  }
-
-  return cycles
-}
-
-/** Check if graph contains any cycles */
-export function isGraphAcyclic(state: CanonicalState): boolean {
-  const graph = buildGraph(state)
-  const cycles = detectCycles(graph)
-  return cycles.length === 0
 }

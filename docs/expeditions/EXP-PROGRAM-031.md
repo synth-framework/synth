@@ -53,7 +53,7 @@ Architectural Convergence
 │       Execute ADR-039 review, record outcomes, define shared dependency-graph primitive.
 │
 ├── EXP-GRAPH-001        Shared Dependency-Graph Primitive
-│       Architecture Expedition
+│       Architecture Expedition — Executing
 │       Implement the generic DAG primitive consumed by 031 and 034.
 │
 ├── EXP-CONVERGENCE-001  Program Review Engine
@@ -178,10 +178,10 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 2. [x] Run a design review of `EXP-PROGRAM-034` before it leaves the design phase.
 3. [x] Define the shared dependency-graph primitive that both 034 and 031 will use.
 
-**Second milestone (next):**
+**Second milestone (in progress):**
 
-1. [ ] Implement the shared dependency-graph primitive in `EXP-GRAPH-001`.
-2. [ ] Refactor `src/domain/graph.ts` to consume the primitive where possible.
+1. [x] Implement the shared dependency-graph primitive in `EXP-GRAPH-001`.
+2. [x] Refactor `src/domain/graph.ts` to consume the primitive where possible.
 3. [ ] Update `EXP-PROGRAM-034/TASK-004` to use the primitive rather than building a separate engine.
 4. [ ] Re-enter Convergence Review for `EXP-PROGRAM-034` before it leaves design phase.
 
