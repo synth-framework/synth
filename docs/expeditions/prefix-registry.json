@@ -122,6 +122,10 @@
       "name": "Dependency Graph Primitive",
       "description": "Generic dependency-graph primitive expeditions consumed by multiple programs for DAG operations, cycle detection, and topological ordering."
     },
+    "TASK": {
+      "name": "Task Orchestration",
+      "description": "Task model, registry, CLI, and execution expeditions for the canonical SYNTH task engine."
+    },
     "HARDEN": {
       "name": "Constitutional Hardening",
       "description": "Constitutional hardening expeditions (Mission Studio, Snapshot, Genesis, Replay, Graph Integrity, Validation, Observability)."

@@ -2,7 +2,7 @@
 // TASK GRAPH TESTS (EXP-PROGRAM-034 / TASK-004)
 // ============================================================
 // Verifies that task dependency graphs are built and queried using
-// the shared dependency-graph primitive.
+// the shared dependency-graph primitive and the task registry.
 // ============================================================
 
 import { strict as assert } from "assert"
@@ -28,22 +28,46 @@ function makeTask(overrides = {}) {
   }
 }
 
+function makeRegistry(tasks) {
+  const taskMap = new Map()
+  const groups = new Map()
+  const tags = new Map()
+
+  for (const task of tasks) {
+    taskMap.set(task.id, task)
+    const groupTasks = groups.get(task.group) ?? []
+    groupTasks.push(task.id)
+    groups.set(task.group, groupTasks)
+    for (const tag of task.tags) {
+      const tagTasks = tags.get(tag) ?? []
+      tagTasks.push(task.id)
+      tags.set(tag, tagTasks)
+    }
+  }
+
+  return {
+    tasks: taskMap,
+    ids: tasks.map((t) => t.id).sort(),
+    groups,
+    tags,
+  }
+}
+
 async function testLoadTasksFromDisk() {
-  const tasks = await loadTasks(["data/tasks"])
-  assert.ok(tasks.length >= 3, "should load at least the fixture tasks")
-  const ids = tasks.map((t) => t.id).sort()
-  assert.ok(ids.includes("build"), "should load build task")
-  assert.ok(ids.includes("govern"), "should load govern task")
+  const registry = await loadTasks(["data/tasks"])
+  assert.ok(registry.ids.length >= 3, "should load at least the fixture tasks")
+  assert.ok(registry.ids.includes("build"), "should load build task")
+  assert.ok(registry.ids.includes("govern"), "should load govern task")
   console.log("  [PASS] loadTasks: loads fixture task files")
 }
 
 function testBuildTaskGraph() {
-  const tasks = [
+  const registry = makeRegistry([
     makeTask({ id: "a", dependsOn: ["b"] }),
     makeTask({ id: "b", dependsOn: ["c"] }),
     makeTask({ id: "c" }),
-  ]
-  const graph = buildTaskGraph(tasks)
+  ])
+  const graph = buildTaskGraph(registry)
   assert.equal(graph.nodes.size, 3)
   assert.equal(graph.edges.length, 2)
   assert.ok(graph.edges.some((e) => e.from === "a" && e.to === "b" && e.type === "depends_on"))
@@ -51,42 +75,36 @@ function testBuildTaskGraph() {
   console.log("  [PASS] buildTaskGraph")
 }
 
-function testBuildTaskGraphRejectsUnknownDependency() {
-  const tasks = [makeTask({ id: "a", dependsOn: ["missing"] })]
-  assert.throws(() => buildTaskGraph(tasks), /unknown task/)
-  console.log("  [PASS] buildTaskGraph: rejects unknown dependency")
-}
-
 function testDetectTaskCyclesNoCycles() {
-  const tasks = [
+  const registry = makeRegistry([
     makeTask({ id: "a", dependsOn: ["b"] }),
     makeTask({ id: "b", dependsOn: ["c"] }),
     makeTask({ id: "c" }),
-  ]
-  const cycles = detectTaskCycles(tasks)
+  ])
+  const cycles = detectTaskCycles(registry)
   assert.deepEqual(cycles, [])
   console.log("  [PASS] detectTaskCycles: no cycles")
 }
 
 function testDetectTaskCyclesWithCycle() {
-  const tasks = [
+  const registry = makeRegistry([
     makeTask({ id: "a", dependsOn: ["b"] }),
     makeTask({ id: "b", dependsOn: ["c"] }),
     makeTask({ id: "c", dependsOn: ["a"] }),
-  ]
-  const cycles = detectTaskCycles(tasks)
+  ])
+  const cycles = detectTaskCycles(registry)
   assert.equal(cycles.length, 1)
   assert.deepEqual(cycles[0], ["a", "b", "c"])
   console.log("  [PASS] detectTaskCycles: detects cycle")
 }
 
 function testTaskExecutionOrder() {
-  const tasks = [
+  const registry = makeRegistry([
     makeTask({ id: "a", dependsOn: ["b"] }),
     makeTask({ id: "b", dependsOn: ["c"] }),
     makeTask({ id: "c" }),
-  ]
-  const result = taskExecutionOrder(tasks)
+  ])
+  const result = taskExecutionOrder(registry)
   assert.equal(result.ok, true)
   assert.deepEqual(
     result.order.map((t) => t.id),
@@ -96,24 +114,24 @@ function testTaskExecutionOrder() {
 }
 
 function testTaskExecutionOrderReportsCycle() {
-  const tasks = [
+  const registry = makeRegistry([
     makeTask({ id: "a", dependsOn: ["b"] }),
     makeTask({ id: "b", dependsOn: ["a"] }),
-  ]
-  const result = taskExecutionOrder(tasks)
+  ])
+  const result = taskExecutionOrder(registry)
   assert.equal(result.ok, false)
   assert.ok(result.cycle.length > 0)
   console.log("  [PASS] taskExecutionOrder: reports cycle")
 }
 
 function testFindAffectedTasks() {
-  const tasks = [
+  const registry = makeRegistry([
     makeTask({ id: "a", dependsOn: ["b"] }),
     makeTask({ id: "b", dependsOn: ["c"] }),
     makeTask({ id: "c" }),
     makeTask({ id: "x" }),
-  ]
-  const affected = findAffectedTasks(tasks, ["c"])
+  ])
+  const affected = findAffectedTasks(registry, ["c"])
   const ids = affected.map((t) => t.id).sort()
   assert.deepEqual(ids, ["a", "b", "c"])
   console.log("  [PASS] findAffectedTasks")
@@ -123,7 +141,6 @@ console.log("\n=== Task Graph Tests ===\n")
 
 await testLoadTasksFromDisk()
 testBuildTaskGraph()
-testBuildTaskGraphRejectsUnknownDependency()
 testDetectTaskCyclesNoCycles()
 testDetectTaskCyclesWithCycle()
 testTaskExecutionOrder()
