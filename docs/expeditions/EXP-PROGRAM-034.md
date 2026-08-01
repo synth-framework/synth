@@ -197,7 +197,7 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 - **Required actions before implementation:**
   1. [x] Implement the shared dependency-graph primitive in `EXP-GRAPH-001`.
   2. [x] Adopt the primitive defined in `docs/design/shared-dependency-graph.md`.
-  3. [ ] Rewrite `TASK-004` to consume the shared primitive rather than building a separate task graph engine.
+  3. [x] Rewrite `TASK-004` to consume the shared primitive rather than building a separate task graph engine.
   4. [ ] Split acceptance criteria into design-phase and implementation-phase deliverables.
   5. [ ] Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
   6. [ ] Re-enter Convergence Review before leaving design phase.
@@ -240,7 +240,7 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 2. [x] Align with 031 on the shared dependency-graph primitive (`docs/design/shared-dependency-graph.md`).
 3. [x] Produce a joint review record (`docs/governance/convergence-review-043-034.md`).
 4. [x] Implement or adopt the shared primitive through `EXP-GRAPH-001` before writing task graph code.
-5. [ ] Rewrite `TASK-004` to consume the primitive from `src/graph/dependency-graph.ts`.
+5. [x] Rewrite `TASK-004` to consume the primitive from `src/graph/dependency-graph.ts`.
 6. Do **not** implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
 
 **Sequencing:** 034 moves to implementation only after 031 approves its design and 043 has shipped its first set of charters. At that point, 043's first-contact flow should migrate to the 034 task engine.
