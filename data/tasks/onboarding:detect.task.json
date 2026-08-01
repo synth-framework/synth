@@ -1,0 +1,11 @@
+{
+  "id": "onboarding:detect",
+  "description": "Detect repository state for first-contact onboarding (empty, brownfield, legacy, or initialized-v2)",
+  "command": "synth first-contact onboard:detect",
+  "group": "onboarding",
+  "dependsOn": [],
+  "tags": ["onboarding", "discovery"],
+  "estimatedDurationMs": 1000,
+  "capabilities": ["NodeJS"],
+  "lifecycle": "accepted"
+}

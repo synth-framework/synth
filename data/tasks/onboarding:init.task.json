@@ -1,0 +1,11 @@
+{
+  "id": "onboarding:init",
+  "description": "Initialize an empty directory as a Synth project",
+  "command": "synth first-contact onboard:init",
+  "group": "onboarding",
+  "dependsOn": ["onboarding:detect"],
+  "tags": ["onboarding", "bootstrap"],
+  "estimatedDurationMs": 3000,
+  "capabilities": ["NodeJS"],
+  "lifecycle": "accepted"
+}

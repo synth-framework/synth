@@ -1,0 +1,11 @@
+{
+  "id": "onboarding:archive",
+  "description": "Archive legacy Synth state before re-bootstrapping",
+  "command": "synth first-contact onboard:archive",
+  "group": "onboarding",
+  "dependsOn": ["onboarding:detect"],
+  "tags": ["onboarding", "migration"],
+  "estimatedDurationMs": 1000,
+  "capabilities": ["NodeJS"],
+  "lifecycle": "accepted"
+}

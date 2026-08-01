@@ -1,0 +1,11 @@
+{
+  "id": "onboarding:govern",
+  "description": "Run the canonical governance pipeline after onboarding",
+  "command": "synth task run govern",
+  "group": "onboarding",
+  "dependsOn": [],
+  "tags": ["onboarding", "governance"],
+  "estimatedDurationMs": 300000,
+  "capabilities": ["Governance", "Proof"],
+  "lifecycle": "accepted"
+}
