@@ -7,8 +7,6 @@
 // ordering, and impact analysis.
 // ============================================================
 
-import fs from "fs/promises"
-import path from "path"
 import {
   detectCycles,
   topologicalSort,
@@ -17,70 +15,27 @@ import {
   type GraphNode,
   type GraphEdge,
 } from "../graph/dependency-graph.js"
+import { loadTaskRegistry, type TaskRegistry } from "./task-registry.js"
+import type { Task } from "./task-schema.js"
 
-export type Task = {
-  id: string
-  description: string
-  command: string
-  group: string
-  dependsOn: string[]
-  tags: string[]
-  estimatedDurationMs: number
-  capabilities: string[]
-}
-
+export type { Task } from "./task-schema.js"
 export type TaskGraph = Graph<Task>
 
 /**
- * Load task definitions from JSON files in the given directories.
- * Files must match `*.task.json`. Duplicate ids throw.
- */
-export async function loadTasks(dirs: string[]): Promise<Task[]> {
-  const tasks: Task[] = []
-  const seen = new Set<string>()
-
-  for (const dir of dirs) {
-    let entries: string[]
-    try {
-      entries = await fs.readdir(dir)
-    } catch {
-      continue
-    }
-
-    for (const entry of entries) {
-      if (!entry.endsWith(".task.json")) continue
-      const filePath = path.join(dir, entry)
-      const raw = await fs.readFile(filePath, "utf-8")
-      const task = JSON.parse(raw) as Task
-
-      if (seen.has(task.id)) {
-        throw new Error(`Duplicate task id: ${task.id}`)
-      }
-      seen.add(task.id)
-      tasks.push(task)
-    }
-  }
-
-  return tasks
-}
-
-/**
- * Build a task dependency graph from task definitions.
+ * Build a task dependency graph from a task registry.
  * Edges are `depends_on` from task to upstream task.
  */
-export function buildTaskGraph(tasks: Task[]): TaskGraph {
+export function buildTaskGraph(registry: TaskRegistry): TaskGraph {
   const nodes = new Map<string, GraphNode<Task>>()
   const edges: GraphEdge[] = []
 
-  for (const task of tasks) {
+  for (const task of registry.tasks.values()) {
     nodes.set(task.id, { id: task.id, payload: task })
   }
 
-  for (const task of tasks) {
+  for (const task of registry.tasks.values()) {
     for (const depId of task.dependsOn) {
-      if (!nodes.has(depId)) {
-        throw new Error(`Task ${task.id} depends on unknown task ${depId}`)
-      }
+      // Registry already validated that depId exists.
       edges.push({ from: task.id, to: depId, type: "depends_on" })
     }
   }
@@ -89,20 +44,20 @@ export function buildTaskGraph(tasks: Task[]): TaskGraph {
 }
 
 /**
- * Detect dependency cycles among tasks.
+ * Detect dependency cycles among tasks in the registry.
  */
-export function detectTaskCycles(tasks: Task[]): string[][] {
-  const graph = buildTaskGraph(tasks)
+export function detectTaskCycles(registry: TaskRegistry): string[][] {
+  const graph = buildTaskGraph(registry)
   return detectCycles(graph)
 }
 
 /**
- * Return a topologically sorted list of task ids, or the first cycle found.
+ * Return a topologically sorted list of tasks, or the first cycle found.
  */
 export function taskExecutionOrder(
-  tasks: Task[],
+  registry: TaskRegistry,
 ): { ok: true; order: Task[] } | { ok: false; cycle: string[] } {
-  const graph = buildTaskGraph(tasks)
+  const graph = buildTaskGraph(registry)
   const result = topologicalSort(graph)
 
   if (!result.ok) {
@@ -130,12 +85,12 @@ export function taskExecutionOrder(
  * dependency edges (i.e. downstream impact).
  */
 export function findAffectedTasks(
-  tasks: Task[],
+  registry: TaskRegistry,
   changedTaskIds: string[],
 ): Task[] {
+  const graph = buildTaskGraph(registry)
   // Downstream impact requires following edges in the reverse direction:
   // tasks that transitively depend on the changed tasks.
-  const graph = buildTaskGraph(tasks)
   const reverseEdges: GraphEdge[] = graph.edges.map((e) => ({
     from: e.to,
     to: e.from,
@@ -156,4 +111,12 @@ export function findAffectedTasks(
     .sort()
     .map((id) => graph.nodes.get(id)!)
     .map((node) => node.payload)
+}
+
+/**
+ * Legacy compatibility: load tasks directly from directories and build a registry.
+ * Prefer `loadTaskRegistry` for new code.
+ */
+export async function loadTasks(dirs: string[]): Promise<TaskRegistry> {
+  return loadTaskRegistry({ dirs })
 }

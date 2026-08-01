@@ -59,6 +59,8 @@ Tasks are immutable artifacts. They may be defined as JSON files, derived from c
 
 ### TASK-001 — Task Model
 
+> Implemented in `src/task/task-schema.ts` as part of `EXP-TASK-001`.
+
 Define the canonical task schema and lifecycle states:
 
 - `proposed`
@@ -79,12 +81,14 @@ Tasks carry:
 
 ### TASK-002 — Task Registry
 
+> Implemented in `src/task/task-registry.ts` as part of `EXP-TASK-001`.
+
 Implement discovery from:
 
 - `.synth/tasks/*.task.json`
 - `data/tasks/*.task.json`
-- Test and script metadata exports
-- Capability registrations
+- Test and script metadata exports (future extension)
+- Capability registrations (future extension)
 
 Enforce uniqueness, validate dependency references, and detect duplicates.
 
@@ -103,6 +107,8 @@ synth task generate <id> [--group <group>]
 ```
 
 ### TASK-004 — Dependency Graph
+
+> Implemented in `src/task/task-graph.ts`; consumes `src/task/task-registry.ts`.
 
 Build and materialize a task dependency graph. Expose it to Program 030's planner and the proof cache. Support cycle detection and topological scheduling.
 
@@ -184,10 +190,10 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 
 - [x] Shared dependency-graph primitive adopted (`src/graph/dependency-graph.ts`).
 - [x] `TASK-004` rewritten to consume the shared primitive (`src/task/task-graph.ts`).
-- [ ] Task schema and registry design accepted.
-- [ ] Acceptance criteria split into design-phase and implementation-phase deliverables.
-- [ ] `TASK-007` (CI Orchestration Adapter) explicitly deferred until task engine acceptance.
-- [ ] Second Convergence Review (`EXP-REVIEW-002`) records a **CONVERGED** outcome.
+- [x] Task schema and registry design accepted (`src/task/task-schema.ts`, `src/task/task-registry.ts`, `EXP-TASK-001`).
+- [x] Acceptance criteria split into design-phase and implementation-phase deliverables.
+- [x] `TASK-007` (CI Orchestration Adapter) explicitly deferred until task engine acceptance.
+- [x] Second Convergence Review (`EXP-REVIEW-002`) records a **CONVERGED** outcome.
 
 ### Implementation-phase deliverables
 
@@ -250,7 +256,7 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 
 **Design-phase goals:**
 
-1. [ ] Produce a task schema and registry design.
+1. [x] Produce a task schema and registry design (`src/task/task-schema.ts`, `src/task/task-registry.ts`).
 2. [x] Align with 031 on the shared dependency-graph primitive (`docs/design/shared-dependency-graph.md`).
 3. [x] Produce a joint review record (`docs/governance/convergence-review-043-034.md`).
 4. [x] Implement or adopt the shared primitive through `EXP-GRAPH-001` before writing task graph code.
