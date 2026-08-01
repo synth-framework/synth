@@ -94,7 +94,7 @@ Enforce uniqueness, validate dependency references, and detect duplicates.
 
 ### TASK-003 — Task CLI
 
-> Read-only and diagnostic surface implemented in `EXP-TASK-002`.
+> Implemented in `EXP-TASK-002` and `EXP-TASK-003`.
 
 Implemented:
 
@@ -103,14 +103,15 @@ synth task list [--group <group>] [--tag <tag>]
 synth task explain <id>
 synth task graph [--format dot|json|mermaid]
 synth task doctor
+synth task run <id|group> [--dry-run]
+synth task affected [--task <id>]...
+synth task generate <id> --group <group> [--command <cmd>]
 ```
 
-Deferred until execution charter (`EXP-TASK-005` and later):
+Deferred:
 
 ```bash
-synth task run <id|group> [--dry-run] [--watch]
-synth task affected
-synth task generate <id> [--group <group>]
+synth task run <id|group> --watch
 ```
 
 ### TASK-004 — Dependency Graph
@@ -207,7 +208,8 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 - [ ] ADR-044 accepted.
 - [x] Task schema and registry implemented (`EXP-TASK-001`).
 - [x] Read-only/diagnostic task CLI implemented (`EXP-TASK-002`): `list`, `explain`, `graph`, `doctor`.
-- [ ] Task execution CLI implemented (`EXP-TASK-005+`): `run`, `affected`, `generate`.
+- [x] Task execution CLI implemented (`EXP-TASK-003`): `run`, `affected`, `generate`.
+- [ ] Watch mode for `synth task run` (deferred).
 - [ ] All existing `npm run` scripts have a corresponding task definition.
 - [ ] `package.json` reduced to the adapter layer.
 - [ ] CI updated to invoke `synth task`.

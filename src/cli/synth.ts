@@ -157,9 +157,9 @@ function parseArgs(argv: string[]) {
   const flags: Record<string, string | boolean> = {}
 
   function appendFlagValue(name: string, value: string | boolean) {
-    // Repeated --scope flags are combined into a comma-separated list so
-    // command handlers can split them without changing the flags type.
-    if (name === "scope" && typeof value === "string" && typeof flags[name] === "string") {
+    // Repeated --scope and --task flags are combined into a comma-separated
+    // list so command handlers can split them without changing the flags type.
+    if ((name === "scope" || name === "task") && typeof value === "string" && typeof flags[name] === "string") {
       flags[name] = `${flags[name]},${value}`
     } else {
       flags[name] = value

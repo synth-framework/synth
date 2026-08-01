@@ -1,17 +1,13 @@
-// ============================================================
-// TASK CLI (EXP-PROGRAM-034 / TASK-003)
-// ============================================================
-// Read-only and diagnostic surface for the canonical SYNTH task
-// engine. Does not execute tasks; see EXP-TASK-005+ for execution.
-// ============================================================
-
+import fs from "fs/promises"
 import path from "path"
 import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
 import {
   buildTaskGraph,
   detectTaskCycles,
+  findAffectedTasks,
   type TaskGraph,
 } from "../task/task-graph.js"
+import { runTasks, runTaskGroup } from "../task/task-runner.js"
 import type { Task } from "../task/task-schema.js"
 import { printError, printJson } from "./print.js"
 
@@ -20,7 +16,7 @@ export function namespaceHelp() {
     status: "ok" as const,
     name: "synth",
     namespace: "task",
-    description: "Canonical task orchestration (read-only and diagnostic)",
+    description: "Canonical task orchestration",
     usage: "synth task <subcommand> [options]",
     subcommands: [
       { name: "synth task list", description: "List all discovered tasks" },
@@ -31,8 +27,11 @@ export function namespaceHelp() {
       { name: "synth task graph --format dot", description: "Emit task dependency graph in Graphviz DOT format", args: "--format dot" },
       { name: "synth task graph --format mermaid", description: "Emit task dependency graph as a Mermaid flowchart", args: "--format mermaid" },
       { name: "synth task doctor", description: "Diagnose task registry health (cycles, orphans, deprecated)" },
+      { name: "synth task run <id|group>", description: "Run a task or group and its dependencies", args: "<id|group> [--dry-run]" },
+      { name: "synth task affected", description: "List tasks affected by changes to named tasks", args: "[--task <id>]..." },
+      { name: "synth task generate <id>", description: "Generate a new task file from a template", args: "<id> --group <group> [--command <cmd>]" },
     ],
-    note: "Task execution is not implemented here; use npm scripts or wait for EXP-TASK-005.",
+    note: "Watch mode is a future extension; task execution is sequential in this charter.",
   }
 }
 
@@ -289,6 +288,144 @@ export async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
   }
 }
 
+export async function cmdTaskRun(args: string[], flags: Record<string, string | boolean>) {
+  const target = args[0] || ""
+  if (!target) {
+    printError("Usage: synth task run <id|group> [--dry-run]", {
+      code: "TaskTargetRequired",
+      category: "validation",
+      suggestion: "Provide a task id or group name.",
+    })
+  }
+
+  const registry = await loadRegistry()
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+
+  const isTask = registry.tasks.has(target)
+  const isGroup = !isTask && Array.from(registry.groups.keys()).includes(target)
+
+  try {
+    const report = isGroup
+      ? await runTaskGroup(registry, target, { dryRun })
+      : await runTasks(registry, [target], { dryRun })
+
+    printJson({
+      status: report.status,
+      kind: "TaskRunReport",
+      dryRun: report.dryRun,
+      target,
+      isGroup,
+      results: report.results.map((r) => ({
+        taskId: r.taskId,
+        status: r.status,
+        durationMs: r.durationMs,
+      })),
+      failedTaskId: report.failedTaskId,
+      totalDurationMs: report.totalDurationMs,
+    })
+
+    if (report.status === "error") {
+      process.exit(1)
+    }
+  } catch (err) {
+    printError(err instanceof Error ? err.message : String(err), {
+      code: "TaskRunFailed",
+      category: "runtime",
+    })
+  }
+}
+
+function collectTaskFlags(flags: Record<string, string | boolean>): string[] {
+  const tasks: string[] = []
+  const raw = flags.task
+  if (typeof raw === "string") {
+    tasks.push(...raw.split(",").map((s) => s.trim()).filter(Boolean))
+  } else if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (typeof item === "string") tasks.push(...item.split(",").map((s) => s.trim()).filter(Boolean))
+    }
+  }
+  return tasks
+}
+
+export async function cmdTaskAffected(args: string[], flags: Record<string, string | boolean>) {
+  const changedTaskIds = collectTaskFlags(flags)
+  if (changedTaskIds.length === 0) {
+    printError("Usage: synth task affected --task <id> [--task <id>]...", {
+      code: "TaskChangedRequired",
+      category: "validation",
+      suggestion: "Provide at least one changed task with --task <id>.",
+    })
+  }
+
+  const registry = await loadRegistry()
+  const affected = findAffectedTasks(registry, changedTaskIds)
+
+  printJson({
+    status: "ok",
+    kind: "TaskAffectedList",
+    changed: changedTaskIds,
+    count: affected.length,
+    tasks: affected.map(taskSummary),
+  })
+}
+
+export async function cmdTaskGenerate(args: string[], flags: Record<string, string | boolean>) {
+  const id = args[0] || ""
+  if (!id) {
+    printError("Usage: synth task generate <id> --group <group> [--command <cmd>]", {
+      code: "TaskIdRequired",
+      category: "validation",
+    })
+  }
+
+  const group = typeof flags.group === "string" ? flags.group : ""
+  if (!group) {
+    printError("--group is required", {
+      code: "TaskGroupRequired",
+      category: "validation",
+      suggestion: "Use --group <group> to assign the new task to a group.",
+    })
+  }
+
+  const registry = await loadRegistry()
+  if (registry.tasks.has(id)) {
+    const force = flags.force === true || flags.force === "true"
+    if (!force) {
+      printError(`Task "${id}" already exists. Use --force to overwrite.`, {
+        code: "TaskAlreadyExists",
+        category: "validation",
+      })
+    }
+  }
+
+  const command = typeof flags.command === "string" ? flags.command : "echo 'task not yet implemented'"
+  const taskFile = {
+    id,
+    description: `Task ${id}`,
+    command,
+    group,
+    dependsOn: [],
+    tags: [group],
+    estimatedDurationMs: 1000,
+    capabilities: [],
+    lifecycle: "proposed",
+  }
+
+  const tasksDir = path.resolve(process.cwd(), "data", "tasks")
+  await fs.mkdir(tasksDir, { recursive: true })
+  const filePath = path.join(tasksDir, `${id}.task.json`)
+  await fs.writeFile(filePath, JSON.stringify(taskFile, null, 2) + "\n", "utf-8")
+
+  printJson({
+    status: "ok",
+    kind: "TaskGenerated",
+    id,
+    filePath: path.relative(process.cwd(), filePath),
+    task: taskFile,
+  })
+}
+
 export async function cmdTask(args: string[], flags: Record<string, string | boolean>) {
   const sub = args[0]
   switch (sub) {
@@ -304,6 +441,15 @@ export async function cmdTask(args: string[], flags: Record<string, string | boo
     case "doctor":
       await cmdTaskDoctor(flags)
       break
+    case "run":
+      await cmdTaskRun(args.slice(1), flags)
+      break
+    case "affected":
+      await cmdTaskAffected(args.slice(1), flags)
+      break
+    case "generate":
+      await cmdTaskGenerate(args.slice(1), flags)
+      break
     case "--help":
     case "-h":
     case undefined:
@@ -311,7 +457,7 @@ export async function cmdTask(args: string[], flags: Record<string, string | boo
       break
     default:
       printError(
-        `Unknown subcommand: ${sub}. Usage: synth task list [--group <group>] [--tag <tag>] | synth task explain <id> | synth task graph [--format json|dot|mermaid] | synth task doctor`,
+        `Unknown subcommand: ${sub}. Usage: synth task list [--group <group>] [--tag <tag>] | synth task explain <id> | synth task graph [--format json|dot|mermaid] | synth task doctor | synth task run <id|group> [--dry-run] | synth task affected --task <id>... | synth task generate <id> --group <group> [--command <cmd>]`,
         { code: "TaskSubcommandUnknown", category: "validation" },
       )
   }
