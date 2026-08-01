@@ -55,11 +55,12 @@ Objective: replace the `synth bootstrap . --approve` black box with an explicit,
 ```text
 EXP-PROGRAM-043 / A
 ├── EXP-ONBOARD-001   Guided first-contact command (`synth first-contact` / `synth init --guided`)   [COMPLETED]
+├── EXP-ONBOARD-002   Migrate first-contact onboarding to the EXP-PROGRAM-034 task engine            [DRAFT]
 ├── EXP-MIGRATE-001   Detect legacy Synth state and offer archive-vs-import                       [DRAFT]
 └── EXP-BOOTSTRAP-001 Explain bootstrap stages and emit clean JSON output                          [DRAFT]
 ```
 
-_Note: ONBOARD-001 shipped first because it bounds the brownfield "archive vs. import" decision before any state mutates._
+_Note: ONBOARD-001 shipped first because it bounds the brownfield "archive vs. import" decision before any state mutates. ONBOARD-002 is chartered under EXP-REVIEW-003 to consume the now-operational task engine rather than duplicating orchestration logic._
 
 ### B — Actionable CLI Output
 
@@ -187,7 +188,7 @@ F (Agent Identity & Trust) — depends on D
 - [x] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
 - [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
 - [ ] `npm run govern` passes from a clean clone.
-- [ ] Phase 3 deliverable: first-contact flow consumes the EXP-PROGRAM-034 task engine.
+- [ ] Phase 3 deliverable: `EXP-ONBOARD-002` merged — first-contact onboarding flow consumes the EXP-PROGRAM-034 task engine.
 
 ---
 
@@ -221,7 +222,7 @@ F (Agent Identity & Trust) — depends on D
   - `EXP-EVENTLOG-001` — event-log query CLI
   - `EXP-EVIDENCE-001` — automatic evidence capture
   - `EXP-AGENTS-001` — AGENTS.md synchronization
-- Phase 3 (next): charter the migration of the first-contact flow to the EXP-PROGRAM-034 task engine.
+- Phase 3 (next): implement `EXP-ONBOARD-002` to migrate the first-contact onboarding flow to the EXP-PROGRAM-034 task engine.
 - Phase 4: after guardrails are proven, implement Workstream F (agent identity and trust).
 
 **Why this ordering:** fixing onboarding and clarity first prevents users from hitting the walls that make `npm run govern` feel slow and scary. The engine upgrade comes after the pain is understood and bounded. Workstream E is safe to run in parallel because it is read-only or append-only and does not mutate the event model.
