@@ -94,15 +94,22 @@ Enforce uniqueness, validate dependency references, and detect duplicates.
 
 ### TASK-003 — Task CLI
 
-Implement:
+> Read-only and diagnostic surface implemented in `EXP-TASK-002`.
+
+Implemented:
 
 ```bash
 synth task list [--group <group>] [--tag <tag>]
 synth task explain <id>
-synth task run <id|group> [--dry-run] [--watch]
-synth task affected
 synth task graph [--format dot|json|mermaid]
 synth task doctor
+```
+
+Deferred until execution charter (`EXP-TASK-005` and later):
+
+```bash
+synth task run <id|group> [--dry-run] [--watch]
+synth task affected
 synth task generate <id> [--group <group>]
 ```
 
@@ -198,12 +205,14 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 ### Implementation-phase deliverables
 
 - [ ] ADR-044 accepted.
-- [ ] Task schema, registry, and CLI implemented.
+- [x] Task schema and registry implemented (`EXP-TASK-001`).
+- [x] Read-only/diagnostic task CLI implemented (`EXP-TASK-002`): `list`, `explain`, `graph`, `doctor`.
+- [ ] Task execution CLI implemented (`EXP-TASK-005+`): `run`, `affected`, `generate`.
 - [ ] All existing `npm run` scripts have a corresponding task definition.
 - [ ] `package.json` reduced to the adapter layer.
 - [ ] CI updated to invoke `synth task`.
 - [ ] Program 030 planner consumes the task graph.
-- [ ] `synth task doctor` reports zero critical issues.
+- [ ] `synth task doctor` reports zero critical issues on the canonical task set.
 - [ ] Documentation (`docs/reference/tasks.md`) and operator guide updated.
 - [ ] Acceptance test: `synth task govern` produces the same proof artifact as the legacy `npm run govern`.
 
@@ -219,8 +228,8 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
   4. [x] Split acceptance criteria into design-phase and implementation-phase deliverables.
   5. [x] Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
 - **Required actions before implementation:**
-  1. [ ] Produce and accept the task schema/registry design (`TASK-001`, `TASK-002`).
-  2. [ ] Do not implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
+  1. [x] Produce and accept the task schema/registry design (`TASK-001`, `TASK-002`).
+  2. [x] Do not implement `synth task run`, CI adapters, or npm-script migration until the design is accepted; read-only diagnostic CLI (`EXP-TASK-002`) is permitted.
 
 ---
 
