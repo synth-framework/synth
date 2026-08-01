@@ -7,6 +7,7 @@
 // until approval / materialization.
 // ============================================================
 
+import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import * as sdk from "../sdk/index.js"
@@ -141,8 +142,14 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact materialize --dry-run", description: "Preview what materialization would create", args: "--dry-run" },
       { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact into a SYNTH project", args: "--approve [--name <project-name>]" },
       { name: "synth first-contact status", description: "Report the current first-contact state" },
+      { name: "synth first-contact onboard:detect", description: "Detect repository state for the task-engine onboarding flow" },
+      { name: "synth first-contact onboard:archive", description: "Archive legacy Synth state" },
+      { name: "synth first-contact onboard:init", description: "Initialize an empty directory as a Synth project" },
+      { name: "synth first-contact onboard:bootstrap", description: "Apply Synth governance to a brownfield project" },
+      { name: "synth first-contact onboard:mission", description: "Create the baseline mission after init" },
+      { name: "synth first-contact onboard:govern", description: "Run the governance pipeline after onboarding" },
     ],
-    note: "The bare command, --dry-run, start, clarify, project, verify, and status are read-only or proposal-only. --approve, approve, and materialize --approve mutate project state.",
+    note: "The bare command, --dry-run, start, clarify, project, verify, status, and onboard:detect are read-only or proposal-only. --approve, approve, materialize --approve, and all onboard:<archive|init|bootstrap|mission|govern> mutate project state.",
   })
 }
 
@@ -449,7 +456,7 @@ interface OnboardPlan {
   repositoryAdapter: RepositoryAdapterSnapshot
 }
 
-async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAdapterSnapshot> {
+export async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAdapterSnapshot> {
   const adapter = createGitRepositoryAdapter()
   await adapter.configure({
     path: targetDir,
@@ -524,7 +531,7 @@ async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAda
   }
 }
 
-async function detectOnboardState(targetDir: string): Promise<OnboardState> {
+export async function detectOnboardState(targetDir: string): Promise<OnboardState> {
   const synthDir = sdk.paths.synthDir(targetDir)
   const manifestPath = sdk.paths.manifestPath(targetDir)
 
@@ -562,7 +569,7 @@ async function detectOnboardState(targetDir: string): Promise<OnboardState> {
   return { kind: "brownfield", hasPackageJson }
 }
 
-function buildOnboardPlan(
+export function buildOnboardPlan(
   state: OnboardState,
   targetDir: string,
   projectName: string,
@@ -640,7 +647,7 @@ function buildOnboardPlan(
   return base
 }
 
-async function initializeEmptyProject(targetDir: string, projectName: string) {
+export async function initializeEmptyProject(targetDir: string, projectName: string) {
   const governanceVersion = "2.1"
   const projectId = sdk.identity.uuid()
 
@@ -718,6 +725,33 @@ async function initializeEmptyProject(targetDir: string, projectName: string) {
     }
   }
 
+  return { manifest, projectId }
+}
+
+async function createBaselineMission(targetDir: string): Promise<string> {
+  const { bootstrap } = await import("../core/bootstrap.js")
+  const ctx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      persistence: "file",
+      eventLogPath: sdk.paths.eventLogFile(targetDir),
+      statePath: sdk.paths.stateFile(targetDir),
+      checkpointPath: sdk.paths.checkpointsFile(targetDir),
+    },
+  })
+
+  for (const name of ctx.capabilityRegistry.list()) {
+    const cap = ctx.capabilityRegistry.resolve(name)
+    if (cap) ctx.runtime.registerCapability(cap)
+  }
+
+  const currentState = await ctx.runtime.getState()
+  const missions = Object.values(currentState.missions || {})
+  const existingBaseline = missions.find((m: Record<string, unknown>) => m.name === "Establish governance baseline")
+  if (existingBaseline) {
+    return existingBaseline.id as string
+  }
+
   const missionSubject = "Establish governance baseline"
   const missionPurpose = "Capture the initial state of the project and create a governed baseline for future expeditions."
   const missionResult = await ctx.api.handleIntent({
@@ -735,9 +769,37 @@ async function initializeEmptyProject(targetDir: string, projectName: string) {
     throw new Error(`Mission creation failed: ${missionResult.error || JSON.stringify(missionResult)}`)
   }
 
-  const missionId = (missionResult.result as Record<string, unknown>)?.id as string
+  return (missionResult.result as Record<string, unknown>)?.id as string
+}
 
-  return { manifest, missionId, projectId }
+async function findBaselineMissionId(targetDir: string): Promise<string | undefined> {
+  const { bootstrap } = await import("../core/bootstrap.js")
+  const ctx = await bootstrap({
+    skipGenesis: true,
+    infra: {
+      persistence: "file",
+      eventLogPath: sdk.paths.eventLogFile(targetDir),
+      statePath: sdk.paths.stateFile(targetDir),
+      checkpointPath: sdk.paths.checkpointsFile(targetDir),
+    },
+  })
+  const currentState = await ctx.runtime.getState()
+  const missions = Object.values(currentState.missions || {})
+  const baselineMission = missions.find((m: Record<string, unknown>) => m.name === "Establish governance baseline")
+  return baselineMission?.id as string | undefined
+}
+
+function buildTaskPlan(state: OnboardState["kind"]): string[] {
+  switch (state) {
+    case "empty":
+      return ["onboarding:init", "onboarding:mission"]
+    case "brownfield":
+      return ["onboarding:bootstrap"]
+    case "legacy":
+      return ["onboarding:archive", "onboarding:bootstrap"]
+    case "initialized-v2":
+      return []
+  }
 }
 
 export async function cmdFirstContactOnboard(args: string[], flags: Record<string, string | boolean>): Promise<void> {
@@ -747,6 +809,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
   const state = await detectOnboardState(targetDir)
   const repositoryAdapter = await detectRepositoryAdapter(targetDir)
   const plan = buildOnboardPlan(state, targetDir, projectName, repositoryAdapter)
+  const taskPlan = buildTaskPlan(state.kind)
 
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
   const approve = flags.approve === true || flags.approve === "true"
@@ -756,6 +819,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
       status: "pending-approval",
       kind: "FirstContactOnboardPlan",
       ...plan,
+      taskPlan,
       note: dryRun
         ? "Dry-run: no files were written."
         : "Review the plan and run 'synth first-contact --approve' to apply.",
@@ -775,33 +839,171 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
     return
   }
 
-  const stages: OnboardStage[] = []
-
-  if (state.kind === "legacy") {
-    const archiveDir = plan.wouldArchive!
-    await fs.rename(state.legacyDir, archiveDir)
-    stages.push({ stage: "archive", description: `Archived legacy state to ${archiveDir}`, nextStep: "bootstrap" })
+  // Execute the onboarding task graph through the canonical task engine.
+  // Propagate the operator-supplied project name so each stage uses the same
+  // name even when the task runner re-invokes synth as a subprocess.
+  for (const taskId of taskPlan) {
+    const code = await runTask(taskId, targetDir, { SYNTH_PROJECT_NAME: projectName })
+    if (code !== 0) {
+      printError(`Onboarding task ${taskId} failed with exit code ${code}`)
+    }
   }
 
-  if (state.kind === "empty") {
-    const result = await initializeEmptyProject(targetDir, projectName)
-    stages.push({ stage: "init", description: `Initialized Synth project as ${projectName}`, nextStep: "create baseline mission" })
-    stages.push({ stage: "mission", description: `Created baseline mission ${result.missionId}`, nextStep: "run npm run govern" })
+  const missionId = await findBaselineMissionId(targetDir)
+
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardCompleted",
+    detected: state.kind,
+    projectName,
+    targetDir,
+    taskPlan,
+    missionId,
+    repositoryAdapter: await detectRepositoryAdapter(targetDir),
+    nextStep: "synth first-contact onboard:govern",
+  })
+}
+
+
+// ============================================================
+// EXP-ONBOARD-002: Onboarding task-engine integration
+// ============================================================
+// The following functions expose each onboarding stage as a
+// first-contact subcommand so that the onboarding task graph can
+// invoke them through `synth task run`. The main `cmdFirstContactOnboard`
+// retains state-based dispatch and delegates execution to the task engine.
+// ============================================================
+
+function resolveSynthCli(): string {
+  // Use the currently running synth CLI entry point if available; otherwise fall
+  // back to the local dist path. This lets first-contact dispatch to the same
+  // binary in both development and installed contexts.
+  if (process.argv[1] && process.argv[1].endsWith("synth.js")) {
+    return path.resolve(process.argv[1])
+  }
+  return path.resolve(process.cwd(), "dist", "cli", "synth.js")
+}
+
+function runTask(taskId: string, targetDir: string, envOverrides: Record<string, string> = {}): Promise<number> {
+  return new Promise((resolve) => {
+    let stdout = ""
+    let stderr = ""
+    const child = spawn(process.execPath, [resolveSynthCli(), "task", "run", taskId], {
+      cwd: targetDir,
+      stdio: ["ignore", "pipe", "pipe"],
+      shell: false,
+      env: { ...process.env, ...envOverrides },
+    })
+    child.stdout.on("data", (data) => {
+      stdout += data
+    })
+    child.stderr.on("data", (data) => {
+      stderr += data
+    })
+    child.on("close", (code) => {
+      // Forward task stderr for diagnostics, but keep stdout private so the
+      // final first-contact JSON output remains the only stdout payload.
+      if (stderr) {
+        console.error(stderr)
+      }
+      resolve(code ?? 1)
+    })
+  })
+}
+
+async function readOnboardContext(targetDir: string): Promise<{
+  state: OnboardState
+  projectName: string
+  targetDir: string
+  repositoryAdapter: RepositoryAdapterSnapshot
+}> {
+  const state = await detectOnboardState(targetDir)
+  const projectName = path.basename(targetDir)
+  const repositoryAdapter = await detectRepositoryAdapter(targetDir)
+  return { state, projectName, targetDir, repositoryAdapter }
+}
+
+export async function cmdFirstContactOnboardDetect(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const projectName = typeof flags.name === "string" ? flags.name : path.basename(targetDir)
+  const state = await detectOnboardState(targetDir)
+  const repositoryAdapter = await detectRepositoryAdapter(targetDir)
+
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardDetect",
+    detected: state.kind,
+    projectName,
+    targetDir,
+    repositoryAdapter,
+    nextStep: state.kind === "initialized-v2" ? "synth status" : "synth first-contact --approve",
+  })
+}
+
+export async function cmdFirstContactOnboardArchive(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const state = await detectOnboardState(targetDir)
+  if (state.kind !== "legacy") {
+    printError(`Archive is only valid for legacy state, detected: ${state.kind}`)
+  }
+
+  const archiveDir = `${state.legacyDir}_bk_${Date.now()}`
+  await fs.rename(state.legacyDir, archiveDir)
+
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardArchive",
+    archiveDir,
+    nextStep: "onboarding:bootstrap",
+  })
+}
+
+export async function cmdFirstContactOnboardInit(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const projectName = typeof flags.name === "string"
+    ? flags.name
+    : process.env.SYNTH_PROJECT_NAME || path.basename(targetDir)
+  const state = await detectOnboardState(targetDir)
+
+  if (state.kind === "initialized-v2") {
     printJson({
       status: "ok",
-      kind: "FirstContactOnboardCompleted",
+      kind: "FirstContactOnboardInitAlreadyDone",
       detected: state.kind,
+      manifestPath: state.manifestPath,
       projectName,
       targetDir,
-      stages,
-      missionId: result.missionId,
-      repositoryAdapter: await detectRepositoryAdapter(targetDir),
-      nextStep: "synth mission approve --draft-id <mission-id>",
+      nextStep: "onboarding:mission",
     })
     return
   }
 
-  // brownfield or post-archive legacy
+  if (state.kind !== "empty") {
+    printError(`Init is only valid for empty directories, detected: ${state.kind}`)
+  }
+
+  await initializeEmptyProject(targetDir, projectName)
+
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardInit",
+    projectName,
+    targetDir,
+    nextStep: "onboarding:mission",
+  })
+}
+
+export async function cmdFirstContactOnboardBootstrap(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const projectName = typeof flags.name === "string"
+    ? flags.name
+    : process.env.SYNTH_PROJECT_NAME || path.basename(targetDir)
+  const state = await detectOnboardState(targetDir)
+  if (state.kind !== "brownfield" && state.kind !== "legacy") {
+    // Legacy state is valid after archive has run.
+    printError(`Bootstrap is only valid for brownfield or post-archive legacy state, detected: ${state.kind}`)
+  }
+
   const bootstrapResult = await runBootstrap(targetDir, {
     approve: true,
     dryRun: false,
@@ -814,18 +1016,51 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
     printError(`Bootstrap failed: ${JSON.stringify(bootstrapResult)}`)
   }
 
-  stages.push({ stage: "analyze", description: "Analyzed repository and generated proposals", nextStep: "apply bootstrap" })
-  stages.push({ stage: "apply", description: "Applied Synth governance manifest and event log", nextStep: "run npm run govern" })
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardBootstrap",
+    projectName,
+    targetDir,
+    bootstrapStatus: bootstrapResult.status,
+    nextStep: "onboarding:govern",
+  })
+}
+
+export async function cmdFirstContactOnboardMission(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const projectName = typeof flags.name === "string"
+    ? flags.name
+    : process.env.SYNTH_PROJECT_NAME || path.basename(targetDir)
+  const state = await detectOnboardState(targetDir)
+
+  if (state.kind !== "empty" && state.kind !== "initialized-v2") {
+    printError(`Mission creation is only valid after empty-project init, detected: ${state.kind}`)
+  }
+
+  // Idempotent: if a baseline mission already exists, return it; otherwise create one.
+  const missionId = await createBaselineMission(targetDir)
 
   printJson({
     status: "ok",
-    kind: "FirstContactOnboardCompleted",
-    detected: state.kind,
+    kind: "FirstContactOnboardMission",
+    missionId,
     projectName,
     targetDir,
-    stages,
-    bootstrapStatus: bootstrapResult.status,
-    repositoryAdapter: await detectRepositoryAdapter(targetDir),
-    nextStep: "synth mission approve --draft-id <draft-id>",
+    nextStep: "onboarding:govern",
+  })
+}
+
+export async function cmdFirstContactOnboardGovern(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
+  const code = await runTask("govern", targetDir)
+  if (code !== 0) {
+    printError(`Govern pipeline failed with exit code ${code}`)
+  }
+
+  printJson({
+    status: "ok",
+    kind: "FirstContactOnboardGovern",
+    targetDir,
+    nextStep: "synth status",
   })
 }

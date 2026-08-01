@@ -24,6 +24,9 @@ async function testDryRunOnEmptyDirectory() {
     assert(Array.isArray(output.stages), "stages should be an array")
     assert(output.stages.some((s) => s.stage === "init"), "plan should include init stage")
     assert(output.stages.some((s) => s.stage === "mission"), "plan should include mission stage")
+    assert(Array.isArray(output.taskPlan), "taskPlan should be an array")
+    assert(output.taskPlan.includes("onboarding:init"), "taskPlan should include onboarding:init")
+    assert(output.taskPlan.includes("onboarding:mission"), "taskPlan should include onboarding:mission")
     assert(Array.isArray(output.wouldCreate), "wouldCreate should be an array")
     assert(output.wouldCreate.includes(".synth/manifest.json"), "wouldCreate should include manifest")
 
@@ -43,6 +46,8 @@ async function testPlanOnBrownfieldDirectory() {
     assert(output.kind === "FirstContactOnboardPlan", `kind should be FirstContactOnboardPlan, got ${output.kind}`)
     assert(output.detected === "brownfield", `detected should be brownfield, got ${output.detected}`)
     assert(output.stages.some((s) => s.stage === "analyze"), "plan should include analyze stage")
+    assert(Array.isArray(output.taskPlan), "taskPlan should be an array")
+    assert(output.taskPlan.includes("onboarding:bootstrap"), "taskPlan should include onboarding:bootstrap")
     assert(output.wouldRun.includes("synth bootstrap --approve"), "plan should include bootstrap")
   })
   console.log("[PASS] synth first-contact on brownfield directory returns bootstrap plan")

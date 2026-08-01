@@ -8,6 +8,7 @@
 // ============================================================
 
 import { spawn } from "child_process"
+import path from "path"
 import type { TaskRegistry } from "./task-registry.js"
 import type { Task } from "./task-schema.js"
 import { taskExecutionOrder } from "./task-graph.js"
@@ -34,6 +35,26 @@ export type TaskRunReport = {
   totalDurationMs: number
 }
 
+function resolveSynthCli(): string {
+  // Use the currently running synth CLI entry point if available; otherwise fall
+  // back to the local dist path. This lets tasks dispatch to the same binary in
+  // both development and installed contexts without relying on PATH.
+  if (process.argv[1] && process.argv[1].endsWith("synth.js")) {
+    return path.resolve(process.argv[1])
+  }
+  return path.resolve(process.cwd(), "dist", "cli", "synth.js")
+}
+
+function resolveTaskCommand(command: string): string {
+  // Framework tasks use `synth <subcommand>` so they work from PATH in normal
+  // operator usage. In tests or when synth is not on PATH, rewrite the command
+  // to use the current binary explicitly.
+  if (command.startsWith("synth ")) {
+    return `node ${resolveSynthCli()} ${command.slice("synth ".length)}`
+  }
+  return command
+}
+
 /**
  * Run a shell command and capture stdout/stderr.
  */
@@ -41,7 +62,8 @@ function runCommand(command: string, cwd: string): Promise<{ status: number; std
   return new Promise((resolve) => {
     let stdout = ""
     let stderr = ""
-    const child = spawn(command, [], {
+    const resolvedCommand = resolveTaskCommand(command)
+    const child = spawn(resolvedCommand, [], {
       cwd,
       shell: true,
       stdio: ["ignore", "pipe", "pipe"],
