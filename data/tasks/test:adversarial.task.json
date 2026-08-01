@@ -1,0 +1,14 @@
+{
+  "id": "test:adversarial",
+  "description": "npm script migration: test:adversarial",
+  "command": "node scripts/audit-adversarial.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

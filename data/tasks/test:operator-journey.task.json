@@ -1,0 +1,14 @@
+{
+  "id": "test:operator-journey",
+  "description": "npm script migration: test:operator-journey",
+  "command": "node tests/operator-journey.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

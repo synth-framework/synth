@@ -1,0 +1,14 @@
+{
+  "id": "test:installer-certification",
+  "description": "npm script migration: test:installer-certification",
+  "command": "bash scripts/certify-installation.sh",
+  "group": "installer",
+  "dependsOn": [],
+  "tags": [
+    "installer",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:ai-capability-projection",
+  "description": "npm script migration: test:ai-capability-projection",
+  "command": "node tests/ai-capability-projection.test.js",
+  "group": "ai",
+  "dependsOn": [],
+  "tags": [
+    "ai",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

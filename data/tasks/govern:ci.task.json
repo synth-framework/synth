@@ -1,0 +1,14 @@
+{
+  "id": "govern:ci",
+  "description": "npm script migration: govern:ci",
+  "command": "npm ci && npm run govern",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "governance"
+  ],
+  "estimatedDurationMs": 300000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

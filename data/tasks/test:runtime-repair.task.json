@@ -1,0 +1,14 @@
+{
+  "id": "test:runtime-repair",
+  "description": "npm script migration: test:runtime-repair",
+  "command": "node tests/runtime-repair.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

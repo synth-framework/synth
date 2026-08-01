@@ -1,0 +1,14 @@
+{
+  "id": "test:execution-branch",
+  "description": "npm script migration: test:execution-branch",
+  "command": "node tests/execution-branch.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

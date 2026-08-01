@@ -1,0 +1,16 @@
+{
+  "id": "govern:watch",
+  "description": "npm script migration: govern:watch",
+  "command": "node scripts/govern-profiler.js --watch",
+  "group": "governance",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "governance",
+    "governance"
+  ],
+  "estimatedDurationMs": 300000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

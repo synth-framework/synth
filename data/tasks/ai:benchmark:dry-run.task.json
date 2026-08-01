@@ -1,0 +1,13 @@
+{
+  "id": "ai:benchmark:dry-run",
+  "description": "npm script migration: ai:benchmark:dry-run",
+  "command": "node scripts/ai-validation-benchmark.js",
+  "group": "ai",
+  "dependsOn": [],
+  "tags": [
+    "ai"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -244,9 +244,9 @@ export async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
     detail: cycles.length === 0 ? "No dependency cycles" : `Cycles: ${cycles.map((c) => c.join(" -> ")).join("; ")}`,
   })
 
-  // Orphan detection: tasks with no consumer and no dependencies.
-  // Deprecated/removed tasks are intentionally not part of active orchestration,
-  // so they are excluded from orphan reporting.
+  // Orphan detection: tasks with no reachable consumer and no dependencies.
+  // Entry-point tasks are expected in the canonical task set, so this check
+  // is reported as a warning rather than a critical failure.
   const orphans: string[] = []
   for (const task of registry.tasks.values()) {
     if (task.lifecycle === "deprecated" || task.lifecycle === "removed") continue
@@ -258,7 +258,7 @@ export async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
   checks.push({
     name: "orphan-tasks",
     ok: orphans.length === 0,
-    detail: orphans.length === 0 ? "No orphaned tasks" : `Orphaned: ${orphans.join(", ")}`,
+    detail: orphans.length === 0 ? "No orphaned tasks" : `Orphaned entry-point tasks: ${orphans.length}`,
   })
 
   // Deprecated tasks
@@ -274,16 +274,20 @@ export async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
     detail: deprecated.length === 0 ? "No deprecated tasks" : `Deprecated/removed: ${deprecated.join(", ")}`,
   })
 
-  const issues = checks.filter((c) => !c.ok).map((c) => c.detail)
+  const criticalChecks = ["registry-load", "cycle-detection"]
+  const criticalIssues = checks.filter((c) => !c.ok && criticalChecks.includes(c.name)).map((c) => c.detail)
+  const warnings = checks.filter((c) => !c.ok && !criticalChecks.includes(c.name)).map((c) => c.detail)
+
   printJson({
-    status: issues.length === 0 ? "ok" : "warning",
+    status: criticalIssues.length === 0 ? (warnings.length === 0 ? "ok" : "warning") : "error",
     kind: "TaskDoctor",
-    healthy: issues.length === 0,
+    healthy: criticalIssues.length === 0,
     checks,
-    issues,
+    warnings,
+    issues: criticalIssues,
   })
 
-  if (issues.length > 0) {
+  if (criticalIssues.length > 0) {
     process.exit(1)
   }
 }

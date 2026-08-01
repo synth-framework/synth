@@ -1,0 +1,14 @@
+{
+  "id": "test:govern-recursion-guard",
+  "description": "npm script migration: test:govern-recursion-guard",
+  "command": "node tests/govern-recursion-guard.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

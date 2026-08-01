@@ -1,0 +1,14 @@
+{
+  "id": "test:expedition-governance",
+  "description": "npm script migration: test:expedition-governance",
+  "command": "node scripts/verify-expedition-governance.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:impact-analyzer",
+  "description": "npm script migration: test:impact-analyzer",
+  "command": "node tests/impact-analyzer.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

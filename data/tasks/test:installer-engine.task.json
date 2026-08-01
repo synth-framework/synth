@@ -1,0 +1,14 @@
+{
+  "id": "test:installer-engine",
+  "description": "npm script migration: test:installer-engine",
+  "command": "node tests/installer-engine.test.js",
+  "group": "installer",
+  "dependsOn": [],
+  "tags": [
+    "installer",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

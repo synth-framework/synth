@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-studio-proposal-graph",
+  "description": "npm script migration: test:mission-studio-proposal-graph",
+  "command": "node tests/mission-studio-proposal-graph.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

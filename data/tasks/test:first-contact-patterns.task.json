@@ -1,0 +1,14 @@
+{
+  "id": "test:first-contact-patterns",
+  "description": "npm script migration: test:first-contact-patterns",
+  "command": "node tests/first-contact-patterns.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

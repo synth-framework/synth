@@ -1,0 +1,14 @@
+{
+  "id": "test:proposal-evaluation",
+  "description": "npm script migration: test:proposal-evaluation",
+  "command": "node tests/proposal-evaluation.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

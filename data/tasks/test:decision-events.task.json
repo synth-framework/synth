@@ -1,0 +1,14 @@
+{
+  "id": "test:decision-events",
+  "description": "npm script migration: test:decision-events",
+  "command": "node tests/decision-events.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

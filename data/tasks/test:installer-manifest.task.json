@@ -1,0 +1,14 @@
+{
+  "id": "test:installer-manifest",
+  "description": "npm script migration: test:installer-manifest",
+  "command": "node tests/installer-manifest.test.js",
+  "group": "installer",
+  "dependsOn": [],
+  "tags": [
+    "installer",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:environment-discovery-evidence",
+  "description": "npm script migration: test:environment-discovery-evidence",
+  "command": "node tests/environment-discovery-evidence.test.js",
+  "group": "environment",
+  "dependsOn": [],
+  "tags": [
+    "environment",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

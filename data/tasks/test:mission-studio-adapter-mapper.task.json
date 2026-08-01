@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-studio-adapter-mapper",
+  "description": "npm script migration: test:mission-studio-adapter-mapper",
+  "command": "node tests/mission-studio-adapter-mapper.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

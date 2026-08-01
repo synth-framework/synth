@@ -1,0 +1,14 @@
+{
+  "id": "test:runtime-integrity",
+  "description": "npm script migration: test:runtime-integrity",
+  "command": "node tests/runtime-integrity.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

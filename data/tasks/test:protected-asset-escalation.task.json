@@ -1,0 +1,14 @@
+{
+  "id": "test:protected-asset-escalation",
+  "description": "npm script migration: test:protected-asset-escalation",
+  "command": "node tests/protected-asset-escalation.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

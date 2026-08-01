@@ -1,0 +1,14 @@
+{
+  "id": "test:first-contact-archive-a",
+  "description": "npm script migration: test:first-contact-archive-a",
+  "command": "node scripts/verify-first-contact-archive-a.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "adapter",
+  "description": "npm script migration: adapter",
+  "command": "node dist/cli/adapter.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

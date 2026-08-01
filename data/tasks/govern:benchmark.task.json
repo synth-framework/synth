@@ -1,0 +1,16 @@
+{
+  "id": "govern:benchmark",
+  "description": "npm script migration: govern:benchmark",
+  "command": "node scripts/govern-benchmark.js --tag $(git branch --show-current)",
+  "group": "governance",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "governance",
+    "governance"
+  ],
+  "estimatedDurationMs": 300000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

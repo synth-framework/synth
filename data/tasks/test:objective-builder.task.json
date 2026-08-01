@@ -1,0 +1,14 @@
+{
+  "id": "test:objective-builder",
+  "description": "npm script migration: test:objective-builder",
+  "command": "node tests/adapter-objective-builder.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:filesystem",
+  "description": "npm script migration: test:filesystem",
+  "command": "node tests/adapter-filesystem.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

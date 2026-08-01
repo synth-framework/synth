@@ -1,0 +1,14 @@
+{
+  "id": "test:documentation-expedition",
+  "description": "npm script migration: test:documentation-expedition",
+  "command": "node tests/documentation-expedition.test.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

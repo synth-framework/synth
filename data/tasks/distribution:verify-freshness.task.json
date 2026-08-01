@@ -1,0 +1,13 @@
+{
+  "id": "distribution:verify-freshness",
+  "description": "npm script migration: distribution:verify-freshness",
+  "command": "node scripts/project-ai-capabilities.js --check",
+  "group": "distribution",
+  "dependsOn": [],
+  "tags": [
+    "distribution"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

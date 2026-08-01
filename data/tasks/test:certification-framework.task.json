@@ -1,0 +1,14 @@
+{
+  "id": "test:certification-framework",
+  "description": "npm script migration: test:certification-framework",
+  "command": "node tests/certification-framework.test.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

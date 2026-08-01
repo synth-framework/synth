@@ -1,0 +1,14 @@
+{
+  "id": "test:synth-cli-govern-explain",
+  "description": "npm script migration: test:synth-cli-govern-explain",
+  "command": "node tests/synth-cli-govern-explain.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

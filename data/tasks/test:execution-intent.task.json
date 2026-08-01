@@ -1,0 +1,14 @@
+{
+  "id": "test:execution-intent",
+  "description": "npm script migration: test:execution-intent",
+  "command": "node tests/execution-intent.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

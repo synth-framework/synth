@@ -1,0 +1,14 @@
+{
+  "id": "test:adapter",
+  "description": "npm script migration: test:adapter",
+  "command": "node tests/adapter.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

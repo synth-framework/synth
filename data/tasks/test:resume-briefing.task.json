@@ -1,0 +1,14 @@
+{
+  "id": "test:resume-briefing",
+  "description": "npm script migration: test:resume-briefing",
+  "command": "node tests/resume-briefing.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

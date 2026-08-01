@@ -1,0 +1,14 @@
+{
+  "id": "test:brownfield",
+  "description": "npm script migration: test:brownfield",
+  "command": "node tests/brownfield-validation.test.js && node tests/brownfield-certification.test.js && node tests/command-safety.test.js && node tests/expedition-lifecycle.test.js && node tests/governance-lifecycle-contract.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

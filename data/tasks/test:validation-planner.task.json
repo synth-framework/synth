@@ -1,0 +1,14 @@
+{
+  "id": "test:validation-planner",
+  "description": "npm script migration: test:validation-planner",
+  "command": "node tests/validation-planner.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

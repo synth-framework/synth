@@ -1,0 +1,13 @@
+{
+  "id": "typecheck",
+  "description": "npm script migration: typecheck",
+  "command": "tsc --noEmit",
+  "group": "build",
+  "dependsOn": [],
+  "tags": [
+    "build"
+  ],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

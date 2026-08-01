@@ -1,0 +1,14 @@
+{
+  "id": "test:validation-expansion",
+  "description": "npm script migration: test:validation-expansion",
+  "command": "node tests/validation-expansion.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

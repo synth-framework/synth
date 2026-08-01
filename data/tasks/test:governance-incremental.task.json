@@ -1,0 +1,14 @@
+{
+  "id": "test:governance-incremental",
+  "description": "npm script migration: test:governance-incremental",
+  "command": "node tests/governance-incremental.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

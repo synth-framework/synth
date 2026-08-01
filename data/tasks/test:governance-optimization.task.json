@@ -1,0 +1,14 @@
+{
+  "id": "test:governance-optimization",
+  "description": "npm script migration: test:governance-optimization",
+  "command": "node tests/governance-optimization.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:installer-distribution",
+  "description": "npm script migration: test:installer-distribution",
+  "command": "node tests/installer-distribution.test.js",
+  "group": "installer",
+  "dependsOn": [],
+  "tags": [
+    "installer",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

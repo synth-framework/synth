@@ -1,0 +1,15 @@
+{
+  "id": "mcp:start",
+  "description": "npm script migration: mcp:start",
+  "command": "node dist/distribution/mcp-server.js",
+  "group": "runtime",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

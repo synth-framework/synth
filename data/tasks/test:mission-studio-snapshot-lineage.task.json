@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-studio-snapshot-lineage",
+  "description": "npm script migration: test:mission-studio-snapshot-lineage",
+  "command": "node tests/mission-studio-snapshot-lineage.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:documentation-projections",
+  "description": "npm script migration: test:documentation-projections",
+  "command": "npm run docs:validate-projections && npm run docs:verify-freshness && npm run docs:verify-metadata",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

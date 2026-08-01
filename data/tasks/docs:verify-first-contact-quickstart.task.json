@@ -1,0 +1,14 @@
+{
+  "id": "docs:verify-first-contact-quickstart",
+  "description": "npm script migration: docs:verify-first-contact-quickstart",
+  "command": "node scripts/generate-first-contact-quickstart.js --check",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

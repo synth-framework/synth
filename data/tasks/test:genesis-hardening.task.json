@@ -1,0 +1,14 @@
+{
+  "id": "test:genesis-hardening",
+  "description": "npm script migration: test:genesis-hardening",
+  "command": "node tests/genesis-hardening.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

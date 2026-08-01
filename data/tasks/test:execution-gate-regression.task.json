@@ -1,0 +1,14 @@
+{
+  "id": "test:execution-gate-regression",
+  "description": "npm script migration: test:execution-gate-regression",
+  "command": "node tests/governance/execution-gate-regression.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

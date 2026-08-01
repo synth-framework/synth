@@ -1,0 +1,14 @@
+{
+  "id": "test:core-boundary",
+  "description": "npm script migration: test:core-boundary",
+  "command": "node tests/core-boundary.test.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

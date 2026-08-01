@@ -1,0 +1,14 @@
+{
+  "id": "test:freeze-certification",
+  "description": "npm script migration: test:freeze-certification",
+  "command": "node tests/freeze-certification.test.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

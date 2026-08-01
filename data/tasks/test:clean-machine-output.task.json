@@ -1,0 +1,14 @@
+{
+  "id": "test:clean-machine-output",
+  "description": "npm script migration: test:clean-machine-output",
+  "command": "node tests/clean-machine-output.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

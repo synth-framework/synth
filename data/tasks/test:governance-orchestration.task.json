@@ -1,0 +1,14 @@
+{
+  "id": "test:governance-orchestration",
+  "description": "npm script migration: test:governance-orchestration",
+  "command": "node tests/governance-orchestration.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
