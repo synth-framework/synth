@@ -190,11 +190,17 @@ F (Agent Identity & Trust) — depends on D
 
 ---
 
+## Convergence Review
+
+- **Outcome:** CONVERGED.
+- **Review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md`
+- **Caveat:** Workstream F (agent identity, event signing, two-party approval, git integration) is approved to proceed under the existing program charter, but each charter must still pass its own Convergence Review if it touches Protected Assets or the event model.
+
+---
+
 ## Current Recommendation
 
 **Start now.** This is the only program among 031/034/043 backed by direct, recent evidence from a real project (TaskPRO). The charters are small, user-facing, and do not require kernel changes.
-
-**Caveat:** because ADR-039 is already accepted, 043 must pass a lightweight **EXP-PROGRAM-031 convergence review** before implementation begins. The review should focus on whether the charters fit the current architecture and public vocabulary, not on building a full portfolio dashboard.
 
 **Sequencing:**
 
