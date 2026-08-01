@@ -33,6 +33,7 @@ import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
+import { cmdTask, cmdTaskHelp } from "./task.js"
 import { generateAgentsContract } from "./agents-contract.js"
 import {
   namespaceHelp as cmdRepoHelp,
@@ -109,6 +110,7 @@ const COMMANDS = [
   { name: "repo", description: "Repository and release governance operations" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
   { name: "log", description: "Query the governance event log (read-only)" },
+  { name: "task", description: "Canonical task orchestration (list, explain, graph, doctor)" },
 ]
 
 const ADAPTER_NAMES = [
@@ -3866,6 +3868,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdFirstContactHelp }
     case "validate":
       return { namespace, handler: cmdValidateHelp }
+    case "task":
+      return { namespace, handler: cmdTaskHelp }
     case "explain":
       return { namespace, handler: cmdExplainHelp }
     case "ai":
@@ -3938,6 +3942,13 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "dependencies") return "validate dependencies"
     if (sub === "artifact") return "validate artifact"
     return "validate"
+  }
+  if (namespace === "task") {
+    if (sub === "list") return "task list"
+    if (sub === "explain") return "task explain"
+    if (sub === "graph") return "task graph"
+    if (sub === "doctor") return "task doctor"
+    return "task"
   }
   if (namespace === "adapter") {
     const adapterSub = sub || ""
@@ -4293,6 +4304,10 @@ async function main() {
       else await cmdValidate(flags)
       break
     }
+
+    case "task":
+      await cmdTask(positional.slice(1), flags)
+      break
 
     case "verify":
       await cmdVerify()
