@@ -190,12 +190,24 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 - [ ] Documentation (`docs/reference/tasks.md`) and operator guide updated.
 - [ ] Acceptance test: `synth task govern` produces the same proof artifact as the legacy `npm run govern`.
 
+## Convergence Review
+
+- **Outcome:** REWRITE REQUIRED at the design level.
+- **Review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md`
+- **Required actions before implementation:**
+  1. Adopt the shared dependency-graph primitive defined in `docs/design/shared-dependency-graph.md`.
+  2. Rewrite `TASK-004` to consume the shared primitive rather than building a separate task graph engine.
+  3. Split acceptance criteria into design-phase and implementation-phase deliverables.
+  4. Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
+  5. Re-enter Convergence Review before leaving design phase.
+
 ---
 
 ## Dependencies
 
 - EXP-PROGRAM-030 — Intelligent Governance Orchestration (planner, fingerprints, proof cache)
 - ADR-044 — External Build Systems Are Adapters
+- EXP-PROGRAM-031 — Shared dependency-graph primitive contract
 
 ---
 
@@ -207,7 +219,7 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 | Operator muscle memory | Document the new commands and provide alias guidance. |
 | CI breakage | Update workflows incrementally; validate against the legacy pipeline. |
 | Circular task dependencies | Enforce DAG validation in the registry and `synth task doctor`. |
-| Duplicate graph engine with EXP-PROGRAM-031 | Share the dependency-graph primitive defined by 031/034 joint design. |
+| Duplicate graph engine with EXP-PROGRAM-031 | Contract defined in `docs/design/shared-dependency-graph.md`; implementation to follow in a joint 031/034 expedition. |
 
 ---
 
@@ -223,9 +235,9 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 
 **Design-phase goals:**
 
-1. Produce a task schema and registry design.
-2. Align with 031 on the shared dependency-graph primitive.
-3. Produce an ADR or joint review record.
+1. [ ] Produce a task schema and registry design.
+2. [x] Align with 031 on the shared dependency-graph primitive (`docs/design/shared-dependency-graph.md`).
+3. [x] Produce a joint review record (`docs/governance/convergence-review-043-034.md`).
 4. Do **not** implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
 
 **Sequencing:** 034 moves to implementation only after 031 approves its design and 043 has shipped its first set of charters. At that point, 043's first-contact flow should migrate to the 034 task engine.

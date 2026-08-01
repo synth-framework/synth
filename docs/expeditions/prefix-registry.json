@@ -70,6 +70,10 @@
       "name": "Architectural Convergence",
       "description": "Program and expedition convergence-review expeditions that enforce architectural alignment before implementation."
     },
+    "REVIEW": {
+      "name": "Convergence Review Execution",
+      "description": "Executed convergence and design review expeditions that produce a recorded outcome under ADR-039."
+    },
     "CONT": {
       "name": "Cognitive Continuity",
       "description": "Continuity-of-intent expeditions (resume briefing, interruption benchmark, regression journey)."

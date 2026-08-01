@@ -1,6 +1,6 @@
 # EXP-PROGRAM-031 — Architectural Convergence
 
-**Status:** Proposed  
+**Status:** Active  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  
@@ -47,6 +47,10 @@ Make architectural alignment a measurable, replayable, and enforceable property 
 ```text
 EXP-PROGRAM-031
 Architectural Convergence
+│
+├── EXP-REVIEW-001       First Convergence Review of Program 043 and Program 034
+│       Review Expedition
+│       Execute ADR-039 review, record outcomes, define shared dependency-graph primitive.
 │
 ├── EXP-CONVERGENCE-001  Program Review Engine
 │       Architecture Expedition
@@ -166,9 +170,12 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 **First milestone:**
 
-1. Run a convergence review of `EXP-PROGRAM-043` before it begins implementation.
-2. Run a design review of `EXP-PROGRAM-034` before it leaves the design phase.
-3. Define the shared dependency-graph primitive that both 034 and 031 will use.
+1. [x] Run a convergence review of `EXP-PROGRAM-043` before it begins implementation.
+2. [x] Run a design review of `EXP-PROGRAM-034` before it leaves the design phase.
+3. [x] Define the shared dependency-graph primitive that both 034 and 031 will use.
+
+**Review record:** `docs/governance/convergence-review-043-034.md`  
+**Shared primitive contract:** `docs/design/shared-dependency-graph.md`
 
 **Deferred:** full supersession detection, acceptance-drift dashboard, and automated portfolio health until after 034 and 043 are moving.
 
@@ -181,8 +188,8 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 ## Relationship to Other Work
 
 - **ADR-039 — Architectural Convergence Review** provides the constitutional rule this program implements.
-- **EXP-REVIEW-001 — Program Convergence Review** is the first execution of this capability.
-- **EXP-PROGRAM-022–024, 026–030** are the first programs to be reviewed under this gate.
+- **EXP-REVIEW-001 — First Convergence Review of Program 043 and Program 034** is the first execution of this capability.
+- **EXP-PROGRAM-043** and **EXP-PROGRAM-034** are the first programs reviewed under this gate.
 
 ---
 

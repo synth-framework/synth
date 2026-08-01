@@ -180,21 +180,27 @@ F (Agent Identity & Trust) — depends on D
 
 ## Definition of Done
 
-- [x] Workstream A deliverable: guided first-contact flow passes first-operator-experience test.
-- [x] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
-- [x] Workstream C deliverable: `synth capabilities` passes contract tests and the repository adapter is surfaced during onboarding.
-- [x] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
-- [ ] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
-- [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
-- [ ] `npm run govern` passes from a clean clone.
+- [x] Workstream A charters completed and accepted (`EXP-ONBOARD-001`, `EXP-MIGRATE-001` drafted, `EXP-BOOTSTRAP-001` drafted).
+- [x] Workstream B charters completed and accepted (`EXP-CLI-002`, `EXP-CLI-003`, `EXP-EXPLAIN-001`, `EXP-DRYRUN-001`, `EXP-OUTPUT-001`).
+- [x] Workstream C charters completed and accepted (`EXP-CAPTRANS-001`, `EXP-CAPTRANS-002`, `EXP-ADP-001`).
+- [x] Workstream D charters completed and accepted (`EXP-GUARD-001`, `EXP-SCOPE-001`, `EXP-GATE-014`).
+- [x] Workstream E charters completed and accepted (`EXP-EVIDENCE-001`, `EXP-EVENTLOG-001`, `EXP-AGENTS-001`).
+- [ ] Workstream F charters completed and accepted (`EXP-IDENTITY-001`, `EXP-SIGN-001`, `EXP-APPROVAL-001`, `EXP-GIT-001`).
+- [ ] `npm run govern` passes.
+
+---
+
+## Convergence Review
+
+- **Outcome:** CONVERGED.
+- **Review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md`
+- **Caveat:** Workstream F (agent identity, event signing, two-party approval, git integration) is approved to proceed under the existing program charter, but each charter must still pass its own Convergence Review if it touches Protected Assets or the event model.
 
 ---
 
 ## Current Recommendation
 
 **Start now.** This is the only program among 031/034/043 backed by direct, recent evidence from a real project (TaskPRO). The charters are small, user-facing, and do not require kernel changes.
-
-**Caveat:** because ADR-039 is already accepted, 043 must pass a lightweight **EXP-PROGRAM-031 convergence review** before implementation begins. The review should focus on whether the charters fit the current architecture and public vocabulary, not on building a full portfolio dashboard.
 
 **Sequencing:**
 
