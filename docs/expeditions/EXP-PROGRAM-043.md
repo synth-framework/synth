@@ -184,17 +184,22 @@ F (Agent Identity & Trust) — depends on D
 - [x] Workstream B deliverable: every state-changing command has `--dry-run` and `--human` output.
 - [x] Workstream C deliverable: `synth capabilities` passes contract tests and the repository adapter is surfaced during onboarding.
 - [x] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
-- [ ] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
+- [x] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
 - [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
 - [ ] `npm run govern` passes from a clean clone.
+- [ ] Phase 3 deliverable: first-contact flow consumes the EXP-PROGRAM-034 task engine.
 
 ---
 
 ## Convergence Review
 
 - **Outcome:** CONVERGED.
-- **Review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md`
-- **Caveat:** Workstream F (agent identity, event signing, two-party approval, git integration) is approved to proceed under the existing program charter, but each charter must still pass its own Convergence Review if it touches Protected Assets or the event model.
+- **Reviews:**
+  - EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md` — initial review; Workstream F deferred.
+  - EXP-REVIEW-003 / `docs/governance/convergence-review-043-003.md` — post-implementation review after Workstreams A–E and 034 task-engine implementation.
+- **Caveats:**
+  - Workstream F (agent identity, event signing, two-party approval, git integration) is approved to proceed under the existing program charter, but each charter must still pass its own Convergence Review if it touches Protected Assets or the event model.
+  - Phase 3 must be chartered as a new expedition that migrates first-contact to the 034 task engine; 043 must not introduce duplicate task-scheduling or graph-engine code.
 
 ---
 
@@ -212,11 +217,11 @@ F (Agent Identity & Trust) — depends on D
   - `EXP-SCOPE-001` — expedition scope enforcement
   - `EXP-CAPTRANS-001` — capability transparency
   - `EXP-DRYRUN-001` — pre-flight dry-run for lifecycle commands
-- Phase 2 (next): implement Workstream E evidence tooling while 031 reviews 034's design:
+- Phase 2 (completed): implement Workstream E evidence tooling:
   - `EXP-EVENTLOG-001` — event-log query CLI
   - `EXP-EVIDENCE-001` — automatic evidence capture
   - `EXP-AGENTS-001` — AGENTS.md synchronization
-- Phase 3: after `EXP-PROGRAM-034` lands, migrate the first-contact flow to use the canonical task engine.
+- Phase 3 (next): charter the migration of the first-contact flow to the EXP-PROGRAM-034 task engine.
 - Phase 4: after guardrails are proven, implement Workstream F (agent identity and trust).
 
 **Why this ordering:** fixing onboarding and clarity first prevents users from hitting the walls that make `npm run govern` feel slow and scary. The engine upgrade comes after the pain is understood and bounded. Workstream E is safe to run in parallel because it is read-only or append-only and does not mutate the event model.

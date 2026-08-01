@@ -60,6 +60,10 @@ Architectural Convergence
 │       Review Expedition
 │       Re-evaluate Program 034 after TASK-004 rewrite and design-phase cleanup.
 │
+├── EXP-REVIEW-003       Third Convergence Review of Program 043
+│       Review Expedition
+│       Re-evaluate Program 043 after Workstreams A–E merge and 034 task-engine implementation.
+│
 ├── EXP-CONVERGENCE-001  Program Review Engine
 │       Architecture Expedition
 │       Define how Programs are evaluated against the current architectural baseline.
@@ -189,13 +193,17 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 3. [x] Update `EXP-PROGRAM-034/TASK-004` to use the primitive rather than building a separate engine.
 4. [x] Re-enter Convergence Review for `EXP-PROGRAM-034` before it leaves design phase (`EXP-REVIEW-002`).
 
-**Third milestone (next):**
+**Third milestone (in progress):**
 
-1. [ ] Implement the Program 030 planner's consumption of the task graph.
-2. [ ] Implement `synth task` CLI surface behind design-phase acceptance.
-3. [ ] Build portfolio dependency graph for Program 031 (`EXP-CONVERGENCE-003`).
+1. [x] Re-enter Convergence Review for `EXP-PROGRAM-043` after Workstreams A–E merge and 034 task-engine implementation (`EXP-REVIEW-003`).
+2. [ ] Implement the Program 030 planner's consumption of the task graph.
+3. [ ] Implement `synth task` CLI surface behind design-phase acceptance.
+4. [ ] Build portfolio dependency graph for Program 031 (`EXP-CONVERGENCE-003`).
 
-**Review record:** `docs/governance/convergence-review-043-034.md`  
+**Review records:**
+- `docs/governance/convergence-review-043-034.md` — EXP-REVIEW-001
+- `docs/governance/convergence-review-034-002.md` — EXP-REVIEW-002
+- `docs/governance/convergence-review-043-003.md` — EXP-REVIEW-003
 **Shared primitive contract:** `docs/design/shared-dependency-graph.md`  
 **Implementation charter:** `docs/expeditions/EXP-GRAPH-001.md`
 
