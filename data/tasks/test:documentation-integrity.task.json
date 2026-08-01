@@ -1,0 +1,14 @@
+{
+  "id": "test:documentation-integrity",
+  "description": "npm script migration: test:documentation-integrity",
+  "command": "node tests/documentation-integrity.test.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

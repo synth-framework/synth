@@ -1,0 +1,14 @@
+{
+  "id": "docs:verify-first-contact-projection",
+  "description": "npm script migration: docs:verify-first-contact-projection",
+  "command": "node scripts/generate-first-contact-projection.js --check",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

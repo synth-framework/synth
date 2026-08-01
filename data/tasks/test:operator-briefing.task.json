@@ -1,0 +1,14 @@
+{
+  "id": "test:operator-briefing",
+  "description": "npm script migration: test:operator-briefing",
+  "command": "node tests/operator-briefing.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

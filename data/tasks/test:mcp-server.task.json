@@ -1,0 +1,14 @@
+{
+  "id": "test:mcp-server",
+  "description": "npm script migration: test:mcp-server",
+  "command": "node tests/mcp-server.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

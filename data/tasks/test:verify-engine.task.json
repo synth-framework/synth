@@ -1,0 +1,14 @@
+{
+  "id": "test:verify-engine",
+  "description": "npm script migration: test:verify-engine",
+  "command": "node tests/verify-engine.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

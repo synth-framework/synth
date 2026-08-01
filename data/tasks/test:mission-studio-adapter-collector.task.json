@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-studio-adapter-collector",
+  "description": "npm script migration: test:mission-studio-adapter-collector",
+  "command": "node tests/mission-studio-adapter-collector.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

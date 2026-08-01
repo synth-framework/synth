@@ -1,0 +1,14 @@
+{
+  "id": "test:first-contact-quickstart",
+  "description": "npm script migration: test:first-contact-quickstart",
+  "command": "node tests/first-contact-quickstart.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

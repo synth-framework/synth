@@ -1,0 +1,14 @@
+{
+  "id": "test:skr",
+  "description": "npm script migration: test:skr",
+  "command": "for f in tests/skr/*.js; do node \"$f\"; done",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

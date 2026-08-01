@@ -1,0 +1,13 @@
+{
+  "id": "start",
+  "description": "npm script migration: start",
+  "command": "node dist/main.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

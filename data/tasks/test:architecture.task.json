@@ -1,0 +1,14 @@
+{
+  "id": "test:architecture",
+  "description": "npm script migration: test:architecture",
+  "command": "node tests/adapter-architecture.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

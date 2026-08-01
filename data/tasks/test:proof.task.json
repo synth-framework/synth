@@ -1,0 +1,14 @@
+{
+  "id": "test:proof",
+  "description": "npm script migration: test:proof",
+  "command": "node scripts/generate-proof.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

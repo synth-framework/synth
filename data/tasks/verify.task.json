@@ -1,0 +1,13 @@
+{
+  "id": "verify",
+  "description": "npm script migration: verify",
+  "command": "node scripts/audit-bypass-map.js && node scripts/verify-replay.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

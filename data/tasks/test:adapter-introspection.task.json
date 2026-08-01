@@ -1,0 +1,14 @@
+{
+  "id": "test:adapter-introspection",
+  "description": "npm script migration: test:adapter-introspection",
+  "command": "node tests/adapter-introspection.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "docs:generate",
+  "description": "npm script migration: docs:generate",
+  "command": "node dist/cli/synth.js docs generate",
+  "group": "documentation",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

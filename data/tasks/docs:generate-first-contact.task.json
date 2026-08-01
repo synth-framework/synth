@@ -1,0 +1,14 @@
+{
+  "id": "docs:generate-first-contact",
+  "description": "npm script migration: docs:generate-first-contact",
+  "command": "node scripts/generate-first-contact-projection.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

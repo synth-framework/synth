@@ -1,0 +1,14 @@
+{
+  "id": "test:synth-cli",
+  "description": "npm script migration: test:synth-cli",
+  "command": "node tests/synth-cli.test.js && node tests/cli-contract.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

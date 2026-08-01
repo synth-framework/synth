@@ -1,0 +1,14 @@
+{
+  "id": "test:public-vocabulary-audit",
+  "description": "npm script migration: test:public-vocabulary-audit",
+  "command": "node tests/public-vocabulary-audit.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

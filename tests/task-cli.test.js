@@ -276,14 +276,16 @@ async function testTaskDoctorDetectsOrphan() {
   })
   try {
     const { code, stdout } = await run(["task", "doctor"], tmpDir)
-    assert.notEqual(code, 0)
+    // Orphans are warnings, not critical failures.
+    assert.equal(code, 0)
     const output = JSON.parse(stdout)
     assert.equal(output.kind, "TaskDoctor")
-    assert.equal(output.healthy, false)
+    assert.equal(output.healthy, true)
+    assert.ok(Array.isArray(output.warnings))
     const orphanCheck = output.checks.find((c) => c.name === "orphan-tasks")
     assert.ok(orphanCheck && !orphanCheck.ok)
-    assert.ok(orphanCheck.detail.includes("orphan"))
-    console.log("  [PASS] task doctor: detects orphaned tasks")
+    assert.ok(orphanCheck.detail.includes("orphan") || orphanCheck.detail.includes("Orphaned"))
+    console.log("  [PASS] task doctor: reports orphaned tasks as warnings")
   } finally {
     await teardown(tmpDir)
   }

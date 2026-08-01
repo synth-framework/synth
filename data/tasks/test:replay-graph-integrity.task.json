@@ -1,0 +1,14 @@
+{
+  "id": "test:replay-graph-integrity",
+  "description": "npm script migration: test:replay-graph-integrity",
+  "command": "node tests/replay-graph-integrity.test.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

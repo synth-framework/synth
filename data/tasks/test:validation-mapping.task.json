@@ -1,0 +1,14 @@
+{
+  "id": "test:validation-mapping",
+  "description": "npm script migration: test:validation-mapping",
+  "command": "node tests/validation-mapping.test.js && node scripts/verify-capability-validation-map.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

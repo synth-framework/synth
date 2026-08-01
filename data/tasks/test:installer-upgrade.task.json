@@ -1,0 +1,14 @@
+{
+  "id": "test:installer-upgrade",
+  "description": "npm script migration: test:installer-upgrade",
+  "command": "node tests/installer-upgrade.test.js",
+  "group": "installer",
+  "dependsOn": [],
+  "tags": [
+    "installer",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

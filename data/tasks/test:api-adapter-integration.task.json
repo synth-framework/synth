@@ -1,0 +1,14 @@
+{
+  "id": "test:api-adapter-integration",
+  "description": "npm script migration: test:api-adapter-integration",
+  "command": "node tests/api-adapter-integration.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

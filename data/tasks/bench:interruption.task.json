@@ -1,0 +1,13 @@
+{
+  "id": "bench:interruption",
+  "description": "npm script migration: bench:interruption",
+  "command": "node scripts/interruption-benchmark.js --out docs/reference/repository-authority-index-baseline.json",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -188,7 +188,9 @@ Detect:
 
 ### TASK-011 — Migration from npm Scripts
 
-Inventory all existing npm scripts. Map each to a task, group, and dependencies. Create the corresponding `.synth/tasks/*.task.json` files. Deprecate legacy npm scripts without removing them until the program is accepted.
+> Implemented in `EXP-TASK-004`.
+
+Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, group, and dependencies. Created the corresponding `data/tasks/*.task.json` files. Legacy npm scripts remain in place; deprecation happens after the adapter migration (`TASK-006`).
 
 ---
 
@@ -210,8 +212,8 @@ Inventory all existing npm scripts. Map each to a task, group, and dependencies.
 - [x] Read-only/diagnostic task CLI implemented (`EXP-TASK-002`): `list`, `explain`, `graph`, `doctor`.
 - [x] Task execution CLI implemented (`EXP-TASK-003`): `run`, `affected`, `generate`.
 - [ ] Watch mode for `synth task run` (deferred).
-- [ ] All existing `npm run` scripts have a corresponding task definition.
-- [ ] `package.json` reduced to the adapter layer.
+- [x] All existing `npm run` scripts have a corresponding task definition (`EXP-TASK-004`).
+- [ ] `package.json` reduced to the adapter layer (`TASK-006`).
 - [ ] CI updated to invoke `synth task`.
 - [ ] Program 030 planner consumes the task graph.
 - [ ] `synth task doctor` reports zero critical issues on the canonical task set.

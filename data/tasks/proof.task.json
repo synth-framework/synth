@@ -1,0 +1,15 @@
+{
+  "id": "proof",
+  "description": "npm script migration: proof",
+  "command": "node scripts/verify-discovery-evidence.js && node scripts/generate-proof.js",
+  "group": "proof",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "proof"
+  ],
+  "estimatedDurationMs": 120000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

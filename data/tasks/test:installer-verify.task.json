@@ -1,0 +1,14 @@
+{
+  "id": "test:installer-verify",
+  "description": "npm script migration: test:installer-verify",
+  "command": "node tests/installer-verify.test.js",
+  "group": "installer",
+  "dependsOn": [],
+  "tags": [
+    "installer",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

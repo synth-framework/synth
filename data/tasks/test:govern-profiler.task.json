@@ -1,0 +1,14 @@
+{
+  "id": "test:govern-profiler",
+  "description": "npm script migration: test:govern-profiler",
+  "command": "node tests/govern-profiler.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "mcp:bin",
+  "description": "npm script migration: mcp:bin",
+  "command": "synth-mcp",
+  "group": "runtime",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

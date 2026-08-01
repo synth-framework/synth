@@ -1,0 +1,14 @@
+{
+  "id": "test:github",
+  "description": "npm script migration: test:github",
+  "command": "node tests/github-adapter.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

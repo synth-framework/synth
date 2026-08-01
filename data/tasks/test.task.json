@@ -1,0 +1,13 @@
+{
+  "id": "test",
+  "description": "npm script migration: test",
+  "command": "node tests/synth.test.js && node tests/proposal-evaluation.test.js && node tests/governance-evaluation-enforcement.test.js && node tests/convergence-certification.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

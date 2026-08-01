@@ -1,0 +1,14 @@
+{
+  "id": "test:determinism",
+  "description": "npm script migration: test:determinism",
+  "command": "node scripts/verify-determinism.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

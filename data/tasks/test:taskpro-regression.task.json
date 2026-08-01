@@ -1,0 +1,14 @@
+{
+  "id": "test:taskpro-regression",
+  "description": "npm script migration: test:taskpro-regression",
+  "command": "node scripts/taskpro-regression.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

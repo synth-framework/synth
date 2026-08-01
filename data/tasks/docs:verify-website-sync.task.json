@@ -1,0 +1,14 @@
+{
+  "id": "docs:verify-website-sync",
+  "description": "npm script migration: docs:verify-website-sync",
+  "command": "node scripts/verify-website-sync.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:execution-projection",
+  "description": "npm script migration: test:execution-projection",
+  "command": "node tests/execution-projection.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

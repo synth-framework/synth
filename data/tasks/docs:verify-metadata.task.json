@@ -1,0 +1,14 @@
+{
+  "id": "docs:verify-metadata",
+  "description": "npm script migration: docs:verify-metadata",
+  "command": "node scripts/verify-documentation-metadata.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

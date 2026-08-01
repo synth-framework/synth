@@ -1,0 +1,13 @@
+{
+  "id": "distribution:project",
+  "description": "npm script migration: distribution:project",
+  "command": "node scripts/project-ai-capabilities.js",
+  "group": "distribution",
+  "dependsOn": [],
+  "tags": [
+    "distribution"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

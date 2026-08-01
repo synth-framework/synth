@@ -1,0 +1,14 @@
+{
+  "id": "test:environment-filesystem",
+  "description": "npm script migration: test:environment-filesystem",
+  "command": "node tests/environment-filesystem-capability.test.js",
+  "group": "environment",
+  "dependsOn": [],
+  "tags": [
+    "environment",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

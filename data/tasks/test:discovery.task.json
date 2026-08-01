@@ -1,0 +1,14 @@
+{
+  "id": "test:discovery",
+  "description": "npm script migration: test:discovery",
+  "command": "node tests/discovery-capability-contract.test.js && node tests/discovery-adapter-contract.test.js && node tests/discovery-observation-capability.test.js && node tests/discovery-git-adapter.test.js && node tests/discovery-operational-artifact-adapter.test.js && node tests/discovery-normalize.test.js && node tests/discovery-correlate.test.js && node tests/discovery-projection-capability.test.js && node tests/discovery-project-model-rules.test.js && node tests/discovery-findings.test.js && node tests/discovery-project-model.test.js && node tests/discovery-replay.test.js && node tests/discovery-replay-contract.test.js && node tests/discovery-consumers.test.js && node tests/discovery-consumer-integration.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

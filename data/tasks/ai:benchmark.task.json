@@ -1,0 +1,13 @@
+{
+  "id": "ai:benchmark",
+  "description": "npm script migration: ai:benchmark",
+  "command": "node scripts/ai-benchmark.js",
+  "group": "ai",
+  "dependsOn": [],
+  "tags": [
+    "ai"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-builder",
+  "description": "npm script migration: test:mission-builder",
+  "command": "node tests/adapter-mission-builder.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

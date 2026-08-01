@@ -1,0 +1,14 @@
+{
+  "id": "docs:verify-freshness",
+  "description": "npm script migration: docs:verify-freshness",
+  "command": "node scripts/verify-documentation-freshness.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

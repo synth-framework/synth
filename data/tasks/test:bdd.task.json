@@ -1,0 +1,14 @@
+{
+  "id": "test:bdd",
+  "description": "npm script migration: test:bdd",
+  "command": "node tests/adapter-bdd.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

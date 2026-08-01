@@ -1,0 +1,14 @@
+{
+  "id": "test:governance-evaluation-enforcement",
+  "description": "npm script migration: test:governance-evaluation-enforcement",
+  "command": "node tests/governance-evaluation-enforcement.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

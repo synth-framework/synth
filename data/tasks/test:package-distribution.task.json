@@ -1,0 +1,14 @@
+{
+  "id": "test:package-distribution",
+  "description": "npm script migration: test:package-distribution",
+  "command": "node tests/package-distribution.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

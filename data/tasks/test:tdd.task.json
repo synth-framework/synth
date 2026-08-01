@@ -1,0 +1,14 @@
+{
+  "id": "test:tdd",
+  "description": "npm script migration: test:tdd",
+  "command": "node tests/adapter-tdd.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "version:verify",
+  "description": "npm script migration: version:verify",
+  "command": "node scripts/verify-version-sync.js",
+  "group": "release",
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "release"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

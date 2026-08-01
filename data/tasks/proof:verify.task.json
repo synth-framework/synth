@@ -1,0 +1,15 @@
+{
+  "id": "proof:verify",
+  "description": "npm script migration: proof:verify",
+  "command": "node scripts/verify-proof.js",
+  "group": "proof",
+  "dependsOn": [
+    "proof"
+  ],
+  "tags": [
+    "proof"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

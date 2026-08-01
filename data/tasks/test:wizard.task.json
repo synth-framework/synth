@@ -1,0 +1,14 @@
+{
+  "id": "test:wizard",
+  "description": "npm script migration: test:wizard",
+  "command": "node tests/adapter-wizard.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

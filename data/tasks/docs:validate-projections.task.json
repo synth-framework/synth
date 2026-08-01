@@ -1,0 +1,14 @@
+{
+  "id": "docs:validate-projections",
+  "description": "npm script migration: docs:validate-projections",
+  "command": "node scripts/verify-documentation-projection.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

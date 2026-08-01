@@ -1,0 +1,13 @@
+{
+  "id": "audit:repository",
+  "description": "npm script migration: audit:repository",
+  "command": "node scripts/repository-health-audit.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

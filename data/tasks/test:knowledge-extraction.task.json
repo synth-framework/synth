@@ -1,0 +1,14 @@
+{
+  "id": "test:knowledge-extraction",
+  "description": "npm script migration: test:knowledge-extraction",
+  "command": "node tests/adapter-knowledge-extraction.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

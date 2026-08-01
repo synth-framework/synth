@@ -1,0 +1,14 @@
+{
+  "id": "test:adoption-validation",
+  "description": "npm script migration: test:adoption-validation",
+  "command": "node tests/adoption-validation.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

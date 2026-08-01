@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-studio-snapshot-integrity",
+  "description": "npm script migration: test:mission-studio-snapshot-integrity",
+  "command": "node tests/mission-studio-snapshot-integrity.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

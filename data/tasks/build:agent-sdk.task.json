@@ -1,0 +1,13 @@
+{
+  "id": "build:agent-sdk",
+  "description": "npm script migration: build:agent-sdk",
+  "command": "cd packages/synth-agent-sdk && npm run build",
+  "group": "build",
+  "dependsOn": [],
+  "tags": [
+    "build"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

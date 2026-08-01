@@ -1,0 +1,14 @@
+{
+  "id": "docs:check-links",
+  "description": "npm script migration: docs:check-links",
+  "command": "node scripts/check-links.js",
+  "group": "documentation",
+  "dependsOn": [],
+  "tags": [
+    "documentation",
+    "docs"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

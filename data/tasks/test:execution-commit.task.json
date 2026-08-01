@@ -1,0 +1,14 @@
+{
+  "id": "test:execution-commit",
+  "description": "npm script migration: test:execution-commit",
+  "command": "node tests/execution-commit.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:repository-identity",
+  "description": "npm script migration: test:repository-identity",
+  "command": "node tests/repository-identity.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

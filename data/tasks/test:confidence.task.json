@@ -1,0 +1,14 @@
+{
+  "id": "test:confidence",
+  "description": "npm script migration: test:confidence",
+  "command": "node tests/adapter-confidence.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "test:graph-integrity",
+  "description": "npm script migration: test:graph-integrity",
+  "command": "node tests/graph-integrity.test.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

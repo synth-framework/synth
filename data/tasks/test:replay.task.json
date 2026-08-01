@@ -1,0 +1,14 @@
+{
+  "id": "test:replay",
+  "description": "npm script migration: test:replay",
+  "command": "node scripts/verify-replay.js",
+  "group": "certification",
+  "dependsOn": [],
+  "tags": [
+    "certification",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
