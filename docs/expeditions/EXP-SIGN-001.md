@@ -2,7 +2,7 @@
 
 > Cryptographically sign the governance event log and publish a Merkle root so replay can prove log integrity without trusting the storage layer alone.
 
-**Status:** In Review — pending ADR-039 Convergence Review outcome  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -176,7 +176,7 @@ Per `EXP-REVIEW-003` required action 3, this charter **must** pass an ADR-039 Co
 
 - **Review ID:** EXP-REVIEW-005
 - **Record:** [convergence-review-sign-001.md](../governance/convergence-review-sign-001.md)
-- **Status:** **PENDING REVIEW**
+- **Outcome:** **CONVERGED** — optional envelope fields and operator-owned Ed25519 keys accepted.
 - **Date:** 2026-08-02
 
 ---

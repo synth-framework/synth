@@ -2,7 +2,7 @@
 
 > Require two independent authorizations before destructive governance operations can mutate state, and record the authorization evidence in the event log.
 
-**Status:** Draft — pending ADR-039 Convergence Review  
+**Status:** In Review — pending ADR-039 Convergence Review outcome  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -234,6 +234,13 @@ Per `EXP-REVIEW-003` required action 3, this charter **must** pass an ADR-039 Co
 4. Whether the CLI surface duplicates any existing lifecycle commands.
 
 **Review outcome is a prerequisite.** If the review returns **REWRITE REQUIRED** or **SUPERSEDED**, this charter is updated before any code is written.
+
+### Review record
+
+- **Review ID:** EXP-REVIEW-006
+- **Record:** [convergence-review-approval-001.md](../governance/convergence-review-approval-001.md)
+- **Status:** **PENDING REVIEW**
+- **Date:** 2026-08-02
 
 ---
 
