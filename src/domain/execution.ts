@@ -4,6 +4,7 @@
 
 import type { CanonicalState, DerivedState, CapabilityInvocation, CapabilityResult, Discovery, DomainContext, ExecutionContext, IntentModelState } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
+import { identityPayloadMetadata } from "../identity/index.js"
 import * as workItemLogic from "./workitem.js"
 import * as planLogic from "./plan.js"
 import * as milestoneLogic from "./milestone.js"
@@ -161,17 +162,23 @@ export function applyDomain(
       const name = String(intent.payload.name)
       const goal = String(intent.payload.goal)
       const project = projectLogic.createProject(id, name, goal, ctx, intent.payload as Record<string, unknown>)
-      return { events: [{ type: "PROJECT_CREATED", payload: { project } }] }
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const payload: Record<string, unknown> = { project }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "PROJECT_CREATED", payload }] }
     }
 
     case "InitializeProject": {
       const projectId = String(intent.payload.projectId)
       const name = String(intent.payload.name)
       const governanceVersion = String(intent.payload.governanceVersion)
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const payload: Record<string, unknown> = { projectId, name, governanceVersion }
+      if (metadata) payload.metadata = metadata
       return {
         events: [{
           type: "PROJECT_INITIALIZED",
-          payload: { projectId, name, governanceVersion },
+          payload,
         }],
       }
     }
@@ -184,14 +191,20 @@ export function applyDomain(
       const name = String(intent.payload.name)
       const purpose = String(intent.payload.purpose || "")
       const mission = planningLogic.createMission(id, name, purpose, ctx, intent.payload as Record<string, unknown>)
-      return { events: [{ type: "MISSION_CREATED", payload: { mission } }] }
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const payload: Record<string, unknown> = { mission }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "MISSION_CREATED", payload }] }
     }
 
     case "ApproveMission": {
       const id = String(intent.payload.id)
       const existing = state.missions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "MISSION_APPROVED", payload: { id, status: "active" } }] }
+        const payload: Record<string, unknown> = { id, status: "active" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "MISSION_APPROVED", payload }] }
       }
       const alignmentContractId = String(intent.payload.alignmentContractId || existing.alignmentContractId || "")
       if (!alignmentContractId || alignmentContractId === "undefined") {
@@ -208,32 +221,41 @@ export function applyDomain(
         throw new Error(`DIVERGENCE_GATE_NOT_ALIGNED: Mission cannot be approved without an aligned divergence gate for contract ${alignmentContractId}`)
       }
       const updated = planningLogic.approveMission(existing, ctx)
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status, alignmentContractId }
+      if (metadata) payload.metadata = metadata
       return {
-        events: [{
-          type: "MISSION_APPROVED",
-          payload: { id: updated.id, status: updated.status, alignmentContractId },
-        }],
+        events: [{ type: "MISSION_APPROVED", payload }],
       }
     }
 
     case "CompleteMission": {
       const id = String(intent.payload.id)
       const existing = state.missions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "MISSION_COMPLETED", payload: { id, status: "completed" } }] }
+        const payload: Record<string, unknown> = { id, status: "completed" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "MISSION_COMPLETED", payload }] }
       }
       const updated = planningLogic.completeMission(existing, ctx)
-      return { events: [{ type: "MISSION_COMPLETED", payload: { id: updated.id, status: updated.status } }] }
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "MISSION_COMPLETED", payload }] }
     }
 
     case "ArchiveMission": {
       const id = String(intent.payload.id)
       const existing = state.missions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "MISSION_ARCHIVED", payload: { id, status: "archived" } }] }
+        const payload: Record<string, unknown> = { id, status: "archived" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "MISSION_ARCHIVED", payload }] }
       }
       const updated = planningLogic.archiveMission(existing, ctx)
-      return { events: [{ type: "MISSION_ARCHIVED", payload: { id: updated.id, status: updated.status } }] }
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "MISSION_ARCHIVED", payload }] }
     }
 
     case "CreateExpedition": {
@@ -248,27 +270,40 @@ export function applyDomain(
         ...(intent.payload as Record<string, unknown>),
         dependsOn,
       })
-      return { events: [{ type: "EXPEDITION_CREATED", payload: { expedition } }] }
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const payload: Record<string, unknown> = { expedition }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_CREATED", payload }] }
     }
 
     case "ApproveExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "EXPEDITION_APPROVED", payload: { id, status: "approved" } }] }
+        const payload: Record<string, unknown> = { id, status: "approved" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_APPROVED", payload }] }
       }
       const updated = planningLogic.approveExpedition(existing, ctx)
-      return { events: [{ type: "EXPEDITION_APPROVED", payload: { id: updated.id, status: updated.status } }] }
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_APPROVED", payload }] }
     }
 
     case "CommitExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "EXPEDITION_COMMITTED", payload: { id, status: "committed" } }] }
+        const payload: Record<string, unknown> = { id, status: "committed" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_COMMITTED", payload }] }
       }
       const updated = planningLogic.commitExpedition(existing, ctx)
-      return { events: [{ type: "EXPEDITION_COMMITTED", payload: { id: updated.id, status: updated.status } }] }
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_COMMITTED", payload }] }
     }
 
     case "StartExpedition": {
@@ -277,21 +312,31 @@ export function applyDomain(
         throw new Error(`UPSTREAM_GATE_BLOCKED: Expedition ${id} cannot start while an upstream gate is unresolved`)
       }
       const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "EXPEDITION_STARTED", payload: { id, status: "executing" } }] }
+        const payload: Record<string, unknown> = { id, status: "executing" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_STARTED", payload }] }
       }
       const updated = planningLogic.startExpedition(existing, ctx)
-      return { events: [{ type: "EXPEDITION_STARTED", payload: { id: updated.id, status: updated.status } }] }
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_STARTED", payload }] }
     }
 
     case "CompleteExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
       if (!existing) {
-        return { events: [{ type: "EXPEDITION_COMPLETED", payload: { id, status: "completed" } }] }
+        const payload: Record<string, unknown> = { id, status: "completed" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_COMPLETED", payload }] }
       }
       const updated = planningLogic.completeExpedition(existing, ctx)
-      return { events: [{ type: "EXPEDITION_COMPLETED", payload: { id: updated.id, status: updated.status } }] }
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_COMPLETED", payload }] }
     }
 
     // Intent refinement capabilities (EXP-PROGRAM-036)

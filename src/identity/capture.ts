@@ -49,6 +49,27 @@ export function captureIdentity(): AgentIdentity {
 }
 
 /**
+ * Build a deterministic metadata fragment carrying agent identity for an
+ * event payload. The identity's issuedAt is overridden with the command's
+ * deterministic timestamp so replay remains stable.
+ *
+ * Returns undefined when no identity is present so callers can conditionally
+ * attach metadata without requiring identity to function.
+ */
+export function identityPayloadMetadata(
+  identity: AgentIdentity | undefined,
+  timestamp: number,
+): Record<string, unknown> | undefined {
+  if (!identity) return undefined
+  return {
+    identity: {
+      ...identity,
+      issuedAt: timestamp,
+    },
+  }
+}
+
+/**
  * Return the names of all environment variables that carry identity state.
  */
 export function identityEnvVars(identity: AgentIdentity): Record<string, string> {
