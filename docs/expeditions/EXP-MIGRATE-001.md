@@ -2,7 +2,7 @@
 
 > Detect an existing Synth installation from an older or unstable governance version, assess whether it can be safely imported, and offer the operator a clear choice: archive the old state and bootstrap fresh, or import validated legacy events under two-party approval.
 
-**Status:** Draft — pending ADR-039 Convergence Review  
+**Status:** Approved — ready for implementation (EXP-REVIEW-007 CONVERGED)  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -226,7 +226,7 @@ Per ADR-039, this charter **must** pass a Convergence Review before implementati
 
 - **Review ID:** EXP-REVIEW-007
 - **Record:** [convergence-review-migrate-001.md](../governance/convergence-review-migrate-001.md)
-- **Status:** **PENDING REVIEW**
+- **Status:** **CONVERGED**
 - **Date:** 2026-08-02
 
 ---
