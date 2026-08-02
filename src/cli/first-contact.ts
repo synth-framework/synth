@@ -12,6 +12,7 @@ import fs from "fs/promises"
 import path from "path"
 import * as sdk from "../sdk/index.js"
 import { runBootstrap } from "./bootstrap-apply.js"
+import { injectIdentityContext, identityEnvVars, getCliIdentity } from "./identity-context.js"
 import { extractIntent } from "../first-contact/extract/index.js"
 import type { IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
 import { clarify, DefaultClarificationStrategy } from "../first-contact/clarify/index.js"
@@ -712,6 +713,8 @@ export async function initializeEmptyProject(targetDir: string, projectName: str
     const cap = ctx.capabilityRegistry.resolve(name)
     if (cap) ctx.runtime.registerCapability(cap)
   }
+  // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
+  injectIdentityContext(ctx.api)
 
   const currentState = await ctx.runtime.getState()
   if (currentState.lifecycle !== "initialized") {
@@ -744,6 +747,8 @@ async function createBaselineMission(targetDir: string): Promise<string> {
     const cap = ctx.capabilityRegistry.resolve(name)
     if (cap) ctx.runtime.registerCapability(cap)
   }
+  // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
+  injectIdentityContext(ctx.api)
 
   const currentState = await ctx.runtime.getState()
   const missions = Object.values(currentState.missions || {})
@@ -888,11 +893,13 @@ function runTask(taskId: string, targetDir: string, envOverrides: Record<string,
   return new Promise((resolve) => {
     let stdout = ""
     let stderr = ""
+    // EXP-IDENTITY-001: propagate the current identity to subprocess tasks.
+    const identityOverrides = identityEnvVars(getCliIdentity())
     const child = spawn(process.execPath, [resolveSynthCli(), "task", "run", taskId], {
       cwd: targetDir,
       stdio: ["ignore", "pipe", "pipe"],
       shell: false,
-      env: { ...process.env, ...envOverrides },
+      env: { ...process.env, ...identityOverrides, ...envOverrides },
     })
     child.stdout.on("data", (data) => {
       stdout += data

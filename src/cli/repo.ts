@@ -13,6 +13,7 @@ import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
 import { bootstrap } from "../core/bootstrap.js"
+import { injectIdentityContext } from "./identity-context.js"
 import {
   generateBranchName,
   validateBranchName,
@@ -39,6 +40,8 @@ async function bootstrapWithCapabilities() {
       ctx.runtime.registerCapability(cap)
     }
   }
+  // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
+  injectIdentityContext(ctx.api)
   return ctx
 }
 

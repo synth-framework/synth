@@ -13,3 +13,6 @@ export * from "./adapter.js"
 export * from "./observation.js"
 export * from "./execution-intent.js"
 export * from "./derived-state.js"
+
+// EXP-IDENTITY-001: re-export transport-layer identity type.
+export type { AgentIdentity } from "../identity/types.js"

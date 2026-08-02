@@ -34,6 +34,7 @@ import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
 import { cmdTask, cmdTaskHelp } from "./task.js"
+import { initCliIdentity, injectIdentityContext } from "./identity-context.js"
 import { generateAgentsContract } from "./agents-contract.js"
 import {
   namespaceHelp as cmdRepoHelp,
@@ -207,6 +208,8 @@ async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]
       ctx.runtime.registerCapability(cap)
     }
   }
+  // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
+  injectIdentityContext(ctx.api)
   return ctx
 }
 
@@ -4265,6 +4268,14 @@ async function main() {
   if (flags.human === true) {
     setHumanMode(true)
   }
+
+  // EXP-IDENTITY-001: capture agent identity once at process startup.
+  // Commands invoked with --approve are treated as human-approved.
+  const identityOverride: Partial<import("../identity/types.js").AgentIdentity> = {}
+  if (flags.approve === true || flags.approve === "true") {
+    identityOverride.approvalMode = "human-approved"
+  }
+  initCliIdentity(identityOverride)
 
   const command = positional[0]
 

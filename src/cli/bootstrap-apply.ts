@@ -8,6 +8,7 @@
 import path from "path"
 import * as sdk from "../sdk/index.js"
 import { bootstrap } from "../core/bootstrap.js"
+import { injectIdentityContext } from "./identity-context.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
@@ -181,6 +182,8 @@ async function initSynthProject(
     const cap = ctx.capabilityRegistry.resolve(name)
     if (cap) ctx.runtime.registerCapability(cap)
   }
+  // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
+  injectIdentityContext(ctx.api)
 
   const currentState = await ctx.runtime.getState()
   if (currentState.lifecycle !== "initialized") {
