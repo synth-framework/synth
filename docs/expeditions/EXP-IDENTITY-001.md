@@ -2,12 +2,12 @@
 
 > Make every governance event attributable to an agent, session, and approval mode without changing the core event model.
 
-**Status:** Draft  
+**Status:** Draft — pending ADR-039 Convergence Review  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
-**Authority:** EXP-PROGRAM-043 Workstream F, TaskPRO agent-action retrospective  
-**Depends On:** EXP-ONBOARD-002, EXP-EVENTLOG-001, EXP-GUARD-001  
+**Authority:** EXP-PROGRAM-043 Workstream F, EXP-REVIEW-003 required actions, TaskPRO agent-action retrospective  
+**Depends On:** EXP-ONBOARD-002, EXP-EVENTLOG-001, EXP-GUARD-001, ADR-039 Convergence Review outcome  
 **Blocks:** EXP-SIGN-001, EXP-APPROVAL-001, EXP-GIT-001
 
 ---
@@ -32,7 +32,7 @@ Today every event carries `actor: string` (e.g. `synth-first-contact`, `synth-bo
 - Was the action autonomous or explicitly human-approved?
 - Which expedition or mission was the agent working on?
 
-This expedition adds an optional, structured identity layer that flows through `IntentRequest.context` and is preserved in event payloads and mutation context. It intentionally does **not** change the `SynthEvent` schema or replay semantics, both of which are Protected Assets.
+This expedition adds an optional, structured identity layer that flows through `IntentRequest.context` and is preserved in event **payloads** and mutation context. It intentionally does **not** change the `SynthEvent` envelope schema or replay semantics, both of which are Protected Assets. Identity appears inside `payload.metadata.identity` (or an equivalent payload field), never as a new top-level event field.
 
 ---
 
@@ -44,9 +44,10 @@ This expedition adds an optional, structured identity layer that flows through `
 2. Capture identity at CLI entry points:
    - Environment variables (`SYNTH_AGENT_ID`, `SYNTH_SESSION_ID`, `SYNTH_PARENT_EXPEDITION_ID`, `SYNTH_APPROVAL_MODE`).
    - Generated defaults when variables are absent.
-3. Thread identity through `IntentRequest.context` → `CapabilityInvocation.context` → mutation context → event payload metadata.
+3. Thread identity through `IntentRequest.context` → `CapabilityInvocation.context` → mutation context → event **payload** metadata.
 4. Update `synth log` to filter by `agentId`, `sessionId`, `parentExpeditionId`, and `approvalMode`.
 5. Add contract and end-to-end tests proving identity survives the ExecutionGate.
+6. Obtain an ADR-039 Convergence Review outcome before writing implementation code.
 
 ### Out of scope
 
@@ -84,9 +85,9 @@ Identity travels inside `IntentRequest.context.identity` and `CapabilityInvocati
 
 ## Design Decisions
 
-### Keep `actor` unchanged
+### Keep `actor` unchanged and identity payload-only
 
-The existing `actor: string` remains the human-readable capability caller. Identity metadata is additive context. This preserves event-schema compatibility and keeps replay untouched.
+The existing `actor: string` remains the human-readable capability caller. Identity metadata is additive context stored inside event payloads. This preserves the `SynthEvent` envelope, keeps replay untouched, and avoids a Protected Asset change. If a future review decides identity belongs in the envelope, that becomes a separate Architecture Expedition with an event-model ADR.
 
 ### Capture at the CLI boundary
 
@@ -146,15 +147,27 @@ Capabilities that emit state events include identity in `payload.metadata.identi
 
 ## Acceptance Criteria
 
-1. `AgentIdentity` type is defined and exported from the SDK.
-2. CLI commands set `context.identity` on every `handleIntent` invocation.
-3. Setting `SYNTH_AGENT_ID=test-agent` causes events from that process to include the identity.
-4. `synth first-contact --approve` propagates identity to `onboarding:init` and `onboarding:mission` subprocesses.
-5. `synth log --agent-id <id>` filters the event log correctly.
-6. Existing tests pass without changes to event hashes or replay behavior.
-7. `npm run govern` passes.
+1. ADR-039 Convergence Review is completed with a **CONVERGED** outcome before implementation merges.
+2. `AgentIdentity` type is defined and exported from the SDK.
+3. CLI commands set `context.identity` on every `handleIntent` invocation.
+4. Setting `SYNTH_AGENT_ID=test-agent` causes events from that process to include the identity inside payloads.
+5. `synth first-contact --approve` propagates identity to `onboarding:init` and `onboarding:mission` subprocesses.
+6. `synth log --agent-id <id>` filters the event log correctly.
+7. Existing tests pass without changes to event hashes or replay behavior.
+8. `npm run govern` passes.
+9. No `SynthEvent` envelope field is added, removed, or renamed.
 
 ---
+
+## Convergence Review
+
+Per `EXP-REVIEW-003` required action 3, this charter **must** pass an ADR-039 Convergence Review before implementation begins. The review must decide:
+
+1. Whether adding identity to event payloads constitutes a change to the Protected Event Model.
+2. Whether the proposed `AgentIdentity` schema is consistent with the architectural baseline.
+3. Whether the charter should remain an Architecture Expedition or be split into a payload-convention expedition and a separate event-model evolution expedition.
+
+**Review outcome is a prerequisite.** If the review returns **REWRITE REQUIRED** or **SUPERSEDED**, this charter is updated before any code is written.
 
 ## Governance
 
@@ -178,8 +191,9 @@ Capabilities that emit state events include identity in `payload.metadata.identi
 |---|---|
 | Identity context is dropped by a capability | Add end-to-end tests and document the convention; patch capabilities that ignore context. |
 | Operator privacy concerns | Identity is scoped to agent/session; no PII required. |
-| Event hashes change unexpectedly | Keep identity out of `SynthEvent` top-level fields; only add to payloads. |
+| Event hashes change unexpectedly | Keep identity out of `SynthEvent` envelope fields; only add to payloads. |
 | CLI sprawl from env variables | Provide sensible defaults and one helper function; do not require operators to set variables. |
+| Review decides payload identity touches the Event Model | Charter explicitly scopes identity to payloads; if the review disagrees, split the work into a safe payload-convention expedition and a separate event-model Architecture Expedition. |
 
 ---
 
