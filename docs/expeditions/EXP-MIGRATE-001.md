@@ -224,8 +224,10 @@ Per ADR-039, this charter **must** pass a Convergence Review before implementati
 
 ### Review record
 
-- **Review ID:** *TBD — to be created after charter approval*
-- **Status:** **PENDING**
+- **Review ID:** EXP-REVIEW-007
+- **Record:** [convergence-review-migrate-001.md](../governance/convergence-review-migrate-001.md)
+- **Status:** **PENDING REVIEW**
+- **Date:** 2026-08-02
 
 ---
 
