@@ -42,6 +42,13 @@ import {
   cmdApprovalShow,
 } from "./approval.js"
 import { cmdTask, cmdTaskHelp } from "./task.js"
+import {
+  namespaceHelp as cmdMigrateHelp,
+  cmdMigrateDetect,
+  cmdMigratePlan,
+  cmdMigrateArchive,
+  cmdMigrateImport,
+} from "./migrate.js"
 import { initCliIdentity, injectIdentityContext } from "./identity-context.js"
 import { generateAgentsContract } from "./agents-contract.js"
 import {
@@ -127,6 +134,7 @@ const COMMANDS = [
   { name: "adapter", description: "Delegate to the adapter management CLI" },
   { name: "log", description: "Query the governance event log (read-only)" },
   { name: "task", description: "Canonical task orchestration (list, explain, graph, doctor)" },
+  { name: "migrate", description: "Detect, plan, archive, and import legacy Synth state (detect, plan, archive, import)" },
 ]
 
 const ADAPTER_NAMES = [
@@ -3939,6 +3947,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdAiHelp }
     case "repo":
       return { namespace, handler: async () => printJson(cmdRepoHelp()) }
+    case "migrate":
+      return { namespace, handler: async () => printJson(cmdMigrateHelp()) }
     default:
       return undefined
   }
@@ -4543,6 +4553,19 @@ async function main() {
     case "adapter":
       await cmdAdapter(positional.slice(1))
       break
+
+    case "migrate": {
+      const sub = positional[1]
+      if (sub === "detect") await cmdMigrateDetect(positional.slice(2))
+      else if (sub === "plan") await cmdMigratePlan(positional.slice(2), flags)
+      else if (sub === "archive") await cmdMigrateArchive(positional.slice(2), flags)
+      else if (sub === "import") await cmdMigrateImport(positional.slice(2), flags)
+      else
+        printError(
+          "Usage: synth migrate detect [path] | synth migrate plan [path] [--path archive|import] | synth migrate archive [path] [--approve] | synth migrate import [path] [--source <path>] [--approve]",
+        )
+      break
+    }
 
     case "first-contact":
     case "genesis": {

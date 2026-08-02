@@ -135,6 +135,9 @@ export type StateEvent =
   // Convergence Certification lifecycle (EXP-GOVERNABILITY-005)
   | { type: "CONVERGENCE_CERTIFIED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
   | { type: "CONVERGENCE_DIVERGED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
+  // Legacy state migration lifecycle (EXP-MIGRATE-001)
+  | { type: "ARCHIVE_CREATED"; archiveId: string; sourcePath: string; archivePath: string; reason?: string }
+  | { type: "MIGRATION_IMPORTED"; importId: string; sourcePath: string; importedEventCount: number; mappings: unknown }
   // Two-party approval lifecycle (EXP-APPROVAL-001)
   | { type: "APPROVAL_REQUESTED"; requestId: string; operation: string; operationFingerprint: string; requestedBy: unknown; requestedAt: string; reason: string; expiresAt: string }
   | { type: "APPROVAL_GRANTED"; requestId: string; grantedBy: unknown; grantedAt: string; reason: string }

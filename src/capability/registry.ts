@@ -2,10 +2,12 @@
 // CAPABILITY: Registry System
 // ============================================================
 
+import path from "node:path"
 import type { Capability, CapabilityInvocation, CapabilityResult, CanonicalState, DerivedState, DomainContext } from "../types/index.js"
 import type { AgentIdentity } from "../identity/types.js"
 import { applyDomain } from "../domain/execution.js"
 import { identityPayloadMetadata } from "../identity/index.js"
+import * as sdk from "../sdk/index.js"
 import {
   createWorkItem, startWorkItem, completeWorkItem, blockWorkItem,
   createPlan, activatePlan, completePlan,
@@ -1269,6 +1271,155 @@ export function createDefaultCapabilities(): Capability[] {
             },
           ],
           result: { target },
+        }
+      },
+    },
+
+    // Legacy state migration capabilities (EXP-MIGRATE-001)
+    {
+      name: "MigrateArchive",
+      description: "Record that legacy Synth state was archived",
+      inputSchema: {
+        required: ["archiveId", "sourcePath", "archivePath"],
+        types: {
+          archiveId: "string",
+          sourcePath: "string",
+          archivePath: "string",
+          reason: "string",
+        },
+      },
+      outputSchema: { events: ["ARCHIVE_CREATED"], resultType: "ArchiveRecord" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, executionCtx }) => {
+        const archiveId = String(intent.payload.archiveId)
+        const sourcePath = String(intent.payload.sourcePath)
+        const archivePath = String(intent.payload.archivePath)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { archiveId, sourcePath, archivePath }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        return {
+          events: [{ type: "ARCHIVE_CREATED", payload }],
+          result: { archiveId, sourcePath, archivePath, reason },
+        }
+      },
+    },
+    {
+      name: "MigrateImport",
+      description: "Import a legacy Synth event log and re-chain it to the current log",
+      inputSchema: {
+        required: ["importId", "sourcePath"],
+        types: {
+          importId: "string",
+          sourcePath: "string",
+          sourceKind: "string",
+        },
+      },
+      outputSchema: { events: ["MIGRATION_IMPORTED"], resultType: "MigrationImportResult" },
+      preconditions: [
+        {
+          name: "source_path_provided",
+          evaluate: (intent) => typeof intent.payload.sourcePath === "string" && intent.payload.sourcePath.length > 0,
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: ["event_chain_integrity"],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, executionCtx }) => {
+        const importId = String(intent.payload.importId)
+        const sourcePath = String(intent.payload.sourcePath)
+        const sourceKind = String(intent.payload.sourceKind || "auto")
+
+        const eventLogPath = sourceKind === "ungoverned-event-log"
+          ? sourcePath
+          : path.join(sourcePath, "data", "event-log.jsonl")
+
+        let raw: string
+        try {
+          raw = sdk.files.readFileSync(eventLogPath)
+        } catch (err) {
+          throw new Error(`MIGRATION_SOURCE_UNREADABLE: ${eventLogPath} — ${err instanceof Error ? err.message : String(err)}`)
+        }
+
+        const lines = raw.split("\n").filter((line) => line.trim().length > 0)
+        const imported: Array<{ type: string; payload: Record<string, unknown> }> = []
+        const mappings: Array<{ originalType: string; canonicalType: string }> = []
+        const errors: string[] = []
+
+        for (let i = 0; i < lines.length; i++) {
+          let event: Record<string, unknown>
+          try {
+            event = JSON.parse(lines[i]) as Record<string, unknown>
+          } catch {
+            errors.push(`Line ${i + 1}: invalid JSON`)
+            continue
+          }
+
+          const required = ["id", "type", "timestamp", "transactionId", "capability", "actor", "payload", "eventHash", "previousHash"]
+          let lineHasError = false
+          for (const key of required) {
+            if (!(key in event)) {
+              errors.push(`Line ${i + 1}: missing ${key}`)
+              lineHasError = true
+            }
+          }
+          if (lineHasError) continue
+
+          const originalType = String(event.type)
+          const payload = (event.payload ?? {}) as Record<string, unknown>
+          let canonicalType = originalType
+          let canonicalPayload: Record<string, unknown> = { ...payload }
+
+          // Map legacy event types and payloads to canonical equivalents.
+          const legacyToCanonical: Record<string, string> = {
+            TICKET_CREATED: "WORK_ITEM_CREATED",
+            TICKET_STARTED: "WORK_ITEM_STARTED",
+            TICKET_COMPLETED: "WORK_ITEM_COMPLETED",
+            TICKET_BLOCKED: "WORK_ITEM_BLOCKED",
+          }
+          if (legacyToCanonical[originalType]) {
+            canonicalType = legacyToCanonical[originalType]
+            mappings.push({ originalType, canonicalType })
+            if (originalType === "TICKET_CREATED" && payload.ticket) {
+              canonicalPayload = { workItem: payload.ticket }
+            } else if (originalType === "TICKET_STARTED" && payload.ticketId) {
+              canonicalPayload = { id: payload.ticketId }
+            } else if (originalType === "TICKET_COMPLETED" && payload.ticketId) {
+              canonicalPayload = { id: payload.ticketId }
+            } else if (originalType === "TICKET_BLOCKED" && payload.ticketId) {
+              canonicalPayload = { id: payload.ticketId, reason: payload.reason }
+            }
+          }
+
+          imported.push({ type: canonicalType, payload: canonicalPayload })
+        }
+
+        if (errors.length > 0) {
+          throw new Error(`MIGRATION_VALIDATION_FAILED: ${errors.slice(0, 10).join("; ")}${errors.length > 10 ? ` (and ${errors.length - 10} more)` : ""}`)
+        }
+
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const importedPayload: Record<string, unknown> = {
+          importId,
+          sourcePath,
+          sourceKind,
+          importedEventCount: imported.length,
+          mappings,
+        }
+        if (metadata) importedPayload.metadata = metadata
+
+        return {
+          events: [
+            ...imported,
+            { type: "MIGRATION_IMPORTED", payload: importedPayload },
+          ],
+          result: { importId, sourcePath, importedEventCount: imported.length, mappings },
         }
       },
     },
