@@ -123,9 +123,9 @@ Objective: every governance event is attributable, verifiable, and reversible on
 
 ```text
 EXP-PROGRAM-043 / F
-├── EXP-IDENTITY-001  Agent/session identity in events                                            [DRAFT]
-├── EXP-SIGN-001      Event-log signing / Merkle root                                              [DRAFT]  (depends on EXP-IDENTITY-001; requires ADR-039 review — touches Event Model)
-├── EXP-APPROVAL-001  Two-party approval for destructive operations                               [DRAFT]  (depends on EXP-IDENTITY-001; requires ADR-039 review)
+├── EXP-IDENTITY-001  Agent/session identity in events                                            [COMPLETED]
+├── EXP-SIGN-001      Event-log signing / Merkle root                                              [IN REVIEW]  (depends on EXP-IDENTITY-001; requires ADR-039 review — touches Event Model)
+├── EXP-APPROVAL-001  Two-party approval for destructive operations                               [DRAFT]  (depends on EXP-IDENTITY-001, EXP-SIGN-001; requires ADR-039 review)
 └── EXP-GIT-001       Git integration for governance state snapshots                               [DRAFT]  (depends on EXP-IDENTITY-001, EXP-SIGN-001; requires ADR-039 review)
 ```
 
@@ -187,10 +187,11 @@ F (Agent Identity & Trust) — depends on D
 - [x] Workstream C deliverable: `synth capabilities` passes contract tests and the repository adapter is surfaced during onboarding.
 - [x] Workstream D deliverable: derived-file edits are rejected and expedition scope is enforced.
 - [x] Workstream E deliverable: evidence capture, event-log query, and AGENTS.md sync are operational.
-- [ ] Workstream F deliverable: events include identity metadata and destructive ops require two-party approval.
+- [x] Workstream F deliverable (part 1): events include agent/session identity metadata.
+- [ ] Workstream F deliverable (part 2): destructive ops require two-party approval and event-log signatures are verifiable.
 - [x] `npm run govern` passes from a clean clone.
 - [x] Phase 3 deliverable: `EXP-ONBOARD-002` merged — first-contact onboarding flow consumes the EXP-PROGRAM-034 task engine.
-- [ ] Phase 4 deliverable: Workstream F (agent identity, event signing, two-party approval, git integration) chartered and implemented.
+- [ ] Phase 4 deliverable: Workstream F chartered and implemented (`IDENTITY-001` complete; `SIGN-001` in ADR-039 review; `APPROVAL-001` and `GIT-001` drafted).
 
 ---
 
@@ -225,6 +226,10 @@ F (Agent Identity & Trust) — depends on D
   - `EXP-EVIDENCE-001` — automatic evidence capture
   - `EXP-AGENTS-001` — AGENTS.md synchronization
 - Phase 3 (completed): implement `EXP-ONBOARD-002` to migrate the first-contact onboarding flow to the EXP-PROGRAM-034 task engine.
-- Phase 4 (next): charter and implement Workstream F (agent identity and trust), starting with `EXP-IDENTITY-001`.
+- Phase 4 (in progress): implement Workstream F (agent identity and trust).
+  - `EXP-IDENTITY-001` — agent/session identity in events: **completed**.
+  - `EXP-SIGN-001` — event-log signing / Merkle root: **in ADR-039 Convergence Review**.
+  - `EXP-APPROVAL-001` — two-party approval for destructive operations: drafted, blocked on `SIGN-001`.
+  - `EXP-GIT-001` — git integration for governance state snapshots: drafted, blocked on `SIGN-001`.
 
 **Why this ordering:** fixing onboarding and clarity first prevents users from hitting the walls that make `npm run govern` feel slow and scary. The engine upgrade comes after the pain is understood and bounded. Workstream E is safe to run in parallel because it is read-only or append-only and does not mutate the event model.
