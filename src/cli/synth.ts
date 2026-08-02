@@ -1819,7 +1819,11 @@ async function cmdLogHelp() {
   printJson(namespaceHelp("log", "Query the governance event log (read-only)", [
     { name: "synth log", description: "Show the last 50 events" },
     { name: "synth log --expedition <id>", description: "Filter events by expedition id", args: "--expedition <id>" },
+    { name: "synth log --expedition-id <id>", description: "Alias for --expedition", args: "--expedition-id <id>" },
     { name: "synth log --mission <id>", description: "Filter events by mission id", args: "--mission <id>" },
+    { name: "synth log --agent-id <id>", description: "Filter events by agent identity", args: "--agent-id <id>" },
+    { name: "synth log --session-id <id>", description: "Filter events by session identity", args: "--session-id <id>" },
+    { name: "synth log --approval-mode <mode>", description: "Filter events by approval mode", args: "--approval-mode <mode>" },
     { name: "synth log --type <prefix>", description: "Filter events by type prefix", args: "--type <prefix>" },
     { name: "synth log --since <iso>", description: "Events at or after ISO timestamp", args: "--since <iso>" },
     { name: "synth log --limit <n>", description: "Cap result count (default 50, max 1000)", args: "--limit <n>" },
@@ -1847,8 +1851,11 @@ async function cmdLog(flags: Record<string, string | boolean>) {
     throw err
   }
 
-  const expeditionId = typeof flags.expedition === "string" ? flags.expedition : undefined
+  const expeditionId = typeof flags.expedition === "string" ? flags.expedition : typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : undefined
   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
+  const agentId = typeof flags["agent-id"] === "string" ? flags["agent-id"] : undefined
+  const sessionId = typeof flags["session-id"] === "string" ? flags["session-id"] : undefined
+  const approvalMode = typeof flags["approval-mode"] === "string" ? flags["approval-mode"] : undefined
   const typePrefix = typeof flags.type === "string" ? flags.type : undefined
   const sinceIso = typeof flags.since === "string" ? flags.since : undefined
   const limitRaw = typeof flags.limit === "string" ? parseInt(flags.limit, 10) : 50
@@ -1873,8 +1880,11 @@ async function cmdLog(flags: Record<string, string | boolean>) {
   }
 
   const filtered = events.filter((event) => {
-    if (expeditionId && !eventReferencesExpedition(event, expeditionId)) return false
+    if (expeditionId && !eventReferencesExpeditionId(event, expeditionId)) return false
     if (missionId && !eventReferencesMission(event, missionId)) return false
+    if (agentId && !eventMatchesIdentity(event, "agentId", agentId)) return false
+    if (sessionId && !eventMatchesIdentity(event, "sessionId", sessionId)) return false
+    if (approvalMode && !eventMatchesIdentity(event, "approvalMode", approvalMode)) return false
     if (typePrefix && !event.type.startsWith(typePrefix)) return false
     if (sinceMs !== undefined && event.timestamp < sinceMs) return false
     return true
@@ -1916,6 +1926,19 @@ function eventReferencesExpedition(event: SynthEvent, expeditionId: string): boo
   if (payload.id === expeditionId) return true
   if (event.partitionKey === expeditionId) return true
   return deepContains(payload, expeditionId)
+}
+
+function eventReferencesExpeditionId(event: SynthEvent, expeditionId: string): boolean {
+  const payload = (event.payload ?? {}) as Record<string, unknown>
+  if (payload.expeditionId === expeditionId) return true
+  if (payload.parentExpeditionId === expeditionId) return true
+  return false
+}
+
+function eventMatchesIdentity(event: SynthEvent, field: "agentId" | "sessionId" | "approvalMode", value: string): boolean {
+  const payload = (event.payload ?? {}) as Record<string, unknown>
+  const identity = (payload.metadata as Record<string, unknown> | undefined)?.identity as Record<string, unknown> | undefined
+  return identity?.[field] === value
 }
 
 function eventReferencesMission(event: SynthEvent, missionId: string): boolean {
