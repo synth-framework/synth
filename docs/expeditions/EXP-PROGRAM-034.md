@@ -153,6 +153,7 @@ Implemented changes:
 - `.github/workflows/publish.yml` now runs documentation tasks via `node dist/cli/synth.js task run <id>` after `npm run build`.
 - `.github/workflows/release.yml` now runs `node dist/cli/synth.js task run govern` after `npm run build`.
 - `tests/task-ci-adapter.test.js` verifies that workflows invoke the task engine directly and that every CI-invoked task exists in the registry.
+- `EXP-ONBOARD-002` migrated Program 043's first-contact onboarding to `synth task run` invocations, confirming the adapter boundary in production.
 
 ### TASK-008 — Task Groups
 
@@ -221,9 +222,13 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 - [x] `package.json` reduced to the adapter layer (`EXP-TASK-005`).
 - [x] CI updated to invoke `synth task` (`EXP-TASK-006`).
 - [ ] Program 030 planner consumes the task graph.
+  - Next: align with Program 031/043 on the shared dependency-graph contract and the task graph export surface.
 - [ ] `synth task doctor` reports zero critical issues on the canonical task set.
+  - Next: run `synth task doctor` against the canonical task set and fix any critical findings before Program 030 integration.
 - [ ] Documentation (`docs/reference/tasks.md`) and operator guide updated.
+  - Next: draft `docs/reference/tasks.md` and update the operator guide with the new `synth task` commands.
 - [ ] Acceptance test: `synth task govern` produces the same proof artifact as the legacy `npm run govern`.
+  - This is the final acceptance gate; it depends on all preceding implementation-phase deliverables and validates that the task engine does not change governance output.
 
 ## Convergence Review
 
@@ -247,6 +252,7 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 - EXP-PROGRAM-030 — Intelligent Governance Orchestration (planner, fingerprints, proof cache)
 - ADR-044 — External Build Systems Are Adapters
 - EXP-PROGRAM-031 — Shared dependency-graph primitive contract
+- EXP-PROGRAM-043 — consumes the task engine via `EXP-ONBOARD-002` (first-contact onboarding migrated to `synth task run`); validates the adapter boundary
 
 ---
 
@@ -264,7 +270,7 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 
 ## Current Recommendation
 
-**Stay in design phase for now.** This program has the highest blast radius: it wants to replace `package.json` scripts, change CI invocation, and introduce a canonical task model. That is the right long-term direction, but it is not the right immediate fix.
+**Implementation is in progress; complete the remaining deliverables in the sequence above.** This program has a high blast radius because it replaces `package.json` scripts, changes CI invocation, and introduces a canonical task model. The design is accepted and the adapter boundary is validated; now finish the implementation-phase acceptance gates.
 
 **Why wait:**
 
@@ -283,7 +289,13 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 7. [x] Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
 8. Do **not** implement `synth task run`, CI adapters, or npm-script migration until the design is accepted.
 
-**Sequencing:** 034 moves to implementation only after 031 approves its design and 043 has shipped its first set of charters. At that point, 043's first-contact flow should migrate to the 034 task engine.
+**Sequencing:** 034 is in implementation phase. Remaining deliverables should close in this order:
+1. Resolve any critical issues reported by `synth task doctor` on the canonical task set.
+2. Draft `docs/reference/tasks.md` and update the operator guide with the new `synth task` commands.
+3. Integrate the task graph with Program 030's planner under Program 031's convergence gate.
+4. Run the acceptance test comparing `synth task govern` output to the legacy `npm run govern` proof artifact.
+
+Program 043 already consumes the task engine via `EXP-ONBOARD-002`; that migration validated the adapter boundary and is not duplicate work.
 
 ---
 
