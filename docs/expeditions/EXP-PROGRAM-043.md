@@ -57,7 +57,7 @@ EXP-PROGRAM-043 / A
 ├── EXP-ONBOARD-001   Guided first-contact command (`synth first-contact` / `synth init --guided`)   [COMPLETED]
 ├── EXP-ONBOARD-002   Migrate first-contact onboarding to the EXP-PROGRAM-034 task engine            [COMPLETED]
 ├── EXP-AIFC-011      Detected-stack adapter & workflow recommendation                             [DRAFT]
-├── EXP-MIGRATE-001   Detect legacy Synth state and offer archive-vs-import                       [DRAFT]
+├── EXP-MIGRATE-001   Detect legacy Synth state and offer archive-vs-import                       [IN REVIEW]  (charter created; requires ADR-039 review)
 └── EXP-BOOTSTRAP-001 Explain bootstrap stages and emit clean JSON output                          [DRAFT]
 ```
 
