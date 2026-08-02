@@ -6,7 +6,7 @@
 **Reviewer:** Synth architectural baseline + Program 031 gating function  
 **Expedition reviewed:** [EXP-MIGRATE-001 — Legacy Synth State Detection & Archive-or-Import](../expeditions/EXP-MIGRATE-001.md)  
 **Owning program:** [EXP-PROGRAM-043 — Agent Onboarding & Operator Experience](../expeditions/EXP-PROGRAM-043.md)  
-**Outcome:** **PENDING REVIEW** — import path appends mapped legacy events to the event log; requires explicit ADR-039 decision
+**Outcome:** **CONVERGED** — import path approved as an append-only, approval-gapped event-log mutation; archive path is the default.
 
 ---
 
@@ -91,7 +91,7 @@ No new public vocabulary terms are introduced. "Archive" and "import" are ordina
 
 | Expedition | Outcome | Rationale | Required actions |
 |---|---|---|---|
-| `EXP-MIGRATE-001` | **PENDING REVIEW** | Charter is valid but the import path appends mapped legacy events to the event log, which requires an explicit ADR-039 decision. | 1. This review must approve the import path and event-mapping strategy.<br>2. Update `EXP-MIGRATE-001.md` with the review outcome.<br>3. If **CONVERGED**, begin implementation.<br>4. Run `synth validate` before merging implementation. |
+| `EXP-MIGRATE-001` | **CONVERGED** | The import path preserves append-only semantics, routes through `ExecutionGate`, and requires two-party approval; the archive path is safe and requires no Protected Asset changes. | 1. ✅ Import path and event-mapping strategy approved.<br>2. ✅ `EXP-MIGRATE-001.md` updated with the review outcome.<br>3. ✅ Implementation may begin.<br>4. Run `synth validate` before merging implementation. |
 
 ---
 
@@ -132,7 +132,7 @@ If the reviewer disagrees with appending legacy events, the fallback outcome is 
 
 ## Next steps
 
-1. Obtain an explicit **CONVERGED** or **REWRITE REQUIRED** outcome for this review.
-2. Update `EXP-MIGRATE-001.md` status and scope based on the outcome.
-3. If **CONVERGED**, begin implementation of detection, planning, archive, and import executors.
+1. ✅ Operator approved **CONVERGED**.
+2. ✅ `EXP-MIGRATE-001.md` status updated to **Approved — ready for implementation**.
+3. Implement detection, planning, archive, and import executors.
 4. Run `synth validate` after implementation changes and attach validation output as expedition evidence.
