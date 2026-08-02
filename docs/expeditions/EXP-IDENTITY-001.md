@@ -2,7 +2,7 @@
 
 > Make every governance event attributable to an agent, session, and approval mode without changing the core event model.
 
-**Status:** Draft — pending ADR-039 Convergence Review  
+**Status:** Draft — ADR-039 Converged  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -168,6 +168,13 @@ Per `EXP-REVIEW-003` required action 3, this charter **must** pass an ADR-039 Co
 3. Whether the charter should remain an Architecture Expedition or be split into a payload-convention expedition and a separate event-model evolution expedition.
 
 **Review outcome is a prerequisite.** If the review returns **REWRITE REQUIRED** or **SUPERSEDED**, this charter is updated before any code is written.
+
+### Outcome
+
+- **Review ID:** EXP-REVIEW-004
+- **Record:** [convergence-review-identity-001.md](../governance/convergence-review-identity-001.md)
+- **Outcome:** **CONVERGED** — identity stays payload-only and does not modify the `SynthEvent` envelope or replay semantics.
+- **Date:** 2026-08-02
 
 ## Governance
 
