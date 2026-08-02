@@ -56,6 +56,7 @@ Objective: replace the `synth bootstrap . --approve` black box with an explicit,
 EXP-PROGRAM-043 / A
 ├── EXP-ONBOARD-001   Guided first-contact command (`synth first-contact` / `synth init --guided`)   [COMPLETED]
 ├── EXP-ONBOARD-002   Migrate first-contact onboarding to the EXP-PROGRAM-034 task engine            [COMPLETED]
+├── EXP-AIFC-011      Detected-stack adapter & workflow recommendation                             [DRAFT]
 ├── EXP-MIGRATE-001   Detect legacy Synth state and offer archive-vs-import                       [DRAFT]
 └── EXP-BOOTSTRAP-001 Explain bootstrap stages and emit clean JSON output                          [DRAFT]
 ```
@@ -123,12 +124,12 @@ Objective: every governance event is attributable, verifiable, and reversible on
 ```text
 EXP-PROGRAM-043 / F
 ├── EXP-IDENTITY-001  Agent/session identity in events                                            [DRAFT]
-├── EXP-SIGN-001      Event-log signing / Merkle root                                              [DRAFT]
-├── EXP-APPROVAL-001  Two-party approval for destructive operations                               [DRAFT]
-└── EXP-GIT-001       Git integration for governance state snapshots                               [DRAFT]
+├── EXP-SIGN-001      Event-log signing / Merkle root                                              [DRAFT]  (depends on EXP-IDENTITY-001; requires ADR-039 review — touches Event Model)
+├── EXP-APPROVAL-001  Two-party approval for destructive operations                               [DRAFT]  (depends on EXP-IDENTITY-001; requires ADR-039 review)
+└── EXP-GIT-001       Git integration for governance state snapshots                               [DRAFT]  (depends on EXP-IDENTITY-001, EXP-SIGN-001; requires ADR-039 review)
 ```
 
-_Note: Workstream F is deferred until guardrails (D) are proven. Identity and trust layers require the boundaries they enforce._
+_Note: Workstream F is deferred until guardrails (D) are proven. Identity and trust layers require the boundaries they enforce. All four charters are draft and must pass an ADR-039 Convergence Review before implementation; `EXP-SIGN-001` in particular touches the Protected Event Model and is chartered as an Architecture Expedition._
 
 ---
 
