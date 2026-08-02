@@ -196,9 +196,12 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 **Third milestone (in progress):**
 
 1. [x] Re-enter Convergence Review for `EXP-PROGRAM-043` after Workstreams A–E merge and 034 task-engine implementation (`EXP-REVIEW-003`).
-2. [ ] Implement the Program 030 planner's consumption of the task graph.
-3. [ ] Implement `synth task` CLI surface behind design-phase acceptance.
-4. [ ] Build portfolio dependency graph for Program 031 (`EXP-CONVERGENCE-003`).
+2. [ ] Implement the Program 030 planner's consumption of the task graph — depends on `EXP-PROGRAM-034/TASK-004` and the shared dependency-graph primitive.
+3. [ ] Align with `EXP-PROGRAM-034` on the `synth task` CLI surface and acceptance gate before Program 030 integration.
+4. [ ] Build portfolio dependency graph for Program 031 (`EXP-CONVERGENCE-003`) on top of the shared primitive.
+5. [ ] Review Program 043 Phase 4 (Workstream F — agent identity and trust) under ADR-039 before it begins implementation; Phase 4 is downstream of this milestone.
+
+> **Sequencing note:** `EXP-ONBOARD-002` has merged, so Program 043 already consumes the 034 task engine. Program 031's next step is to ensure Program 030 can consume the same task graph without duplicating graph infrastructure, then to evaluate 043 Phase 4 when its charters are ready.
 
 **Review records:**
 - `docs/governance/convergence-review-043-034.md` — EXP-REVIEW-001
@@ -209,7 +212,7 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 **Deferred:** full supersession detection, acceptance-drift dashboard, and automated portfolio health until after 034 and 043 are moving.
 
-**Caveat:** do not let 034 and 031 build independent graph engines. 034 needs a task dependency graph; 031 needs a program/expedition dependency graph. They should share a generic graph primitive owned by this program or by a joint 031/034 expedition.
+**Caveat:** do not let 034 and 031 build independent graph engines. 034 needs a task dependency graph; 031 needs a program/expedition dependency graph. They share the generic graph primitive defined in `docs/design/shared-dependency-graph.md` and implemented in `EXP-GRAPH-001` (`src/graph/dependency-graph.ts`). Any extension to the primitive must be jointly reviewed to avoid divergence.
 
 **Why this ordering:** architecture oversight is needed most when the next two programs (043 and 034) are about to touch the CLI surface and the build pipeline. A lightweight 031 gate now prevents duplicate work and divergence later.
 
@@ -219,7 +222,10 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 - **ADR-039 — Architectural Convergence Review** provides the constitutional rule this program implements.
 - **EXP-REVIEW-001 — First Convergence Review of Program 043 and Program 034** is the first execution of this capability.
+- **EXP-REVIEW-003 — Third Convergence Review of Program 043** records the post-implementation convergence outcome and the Phase 4 (Workstream F) gate.
 - **EXP-PROGRAM-043** and **EXP-PROGRAM-034** are the first programs reviewed under this gate.
+- **EXP-ONBOARD-002** has merged; Program 043 now consumes the `EXP-PROGRAM-034` task engine for first-contact onboarding.
+- **EXP-PROGRAM-034** shares the dependency-graph primitive contract with this program; both consume `docs/design/shared-dependency-graph.md` and `EXP-GRAPH-001` rather than building separate graph engines.
 
 ---
 
