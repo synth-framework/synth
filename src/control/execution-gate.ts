@@ -127,6 +127,7 @@ export class ExecutionGate {
       capability: invocation.capability,
       sequence,
       previousHash,
+      identity: invocation.context?.identity as import("../types/index.js").AgentIdentity | undefined,
     }
 
     try {

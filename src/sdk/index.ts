@@ -9,3 +9,6 @@ export * as temp from "./temp/index.js"
 export * as process from "./process/index.js"
 export * as events from "./events/index.js"
 export * as state from "./state/index.js"
+
+// EXP-IDENTITY-001: transport-layer identity.
+export { captureIdentity, type AgentIdentity } from "./identity/index.js"

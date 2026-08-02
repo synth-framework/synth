@@ -16,3 +16,6 @@ export function uuid(): string {
 export function shortId(): string {
   return shortHash(randomUUID(), 8)
 }
+
+// EXP-IDENTITY-001: transport-layer identity capture.
+export { captureIdentity, identityEnvVars, type AgentIdentity } from "../../identity/index.js"

@@ -49,16 +49,19 @@ export async function execute(
 
   const derivedState: DerivedState = buildDerivedState(ctx.events)
 
+  const domainContext = {
+    timestamp: ctx.timestamp,
+    commandId: ctx.commandId,
+    identity: ctx.identity,
+  }
+
   if (ctx.capabilityRegistry && ctx.capabilityRegistry.has(invocation.capability)) {
     const cap = ctx.capabilityRegistry.get(invocation.capability)!
     domainResult = cap.handler({
       intent: invocation,
       state: ctx.currentState,
       derivedState,
-      executionCtx: {
-        timestamp: ctx.timestamp,
-        commandId: ctx.commandId,
-      },
+      executionCtx: domainContext,
     })
   } else {
     // Pure domain execution: applyDomain resolves by name

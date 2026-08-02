@@ -9,6 +9,7 @@
 
 import { spawn } from "child_process"
 import path from "path"
+import { captureIdentity, identityEnvVars } from "../identity/index.js"
 import type { TaskRegistry } from "./task-registry.js"
 import type { Task } from "./task-schema.js"
 import { taskExecutionOrder } from "./task-graph.js"
@@ -63,11 +64,13 @@ function runCommand(command: string, cwd: string): Promise<{ status: number; std
     let stdout = ""
     let stderr = ""
     const resolvedCommand = resolveTaskCommand(command)
+    // EXP-IDENTITY-001: ensure task subprocesses inherit the current identity.
+    const identityEnv = identityEnvVars(captureIdentity())
     const child = spawn(resolvedCommand, [], {
       cwd,
       shell: true,
       stdio: ["ignore", "pipe", "pipe"],
-      env: process.env,
+      env: { ...process.env, ...identityEnv },
     })
     child.stdout.on("data", (data) => {
       stdout += data

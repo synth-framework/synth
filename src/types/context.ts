@@ -5,6 +5,8 @@
 // Replaces global time and randomness in domain logic.
 // ============================================================
 
+import type { AgentIdentity } from "../identity/types.js"
+
 /** Deterministic execution context for a single command. */
 export type ExecutionContext = {
   /** Logical timestamp for the command (monotonic sequence number). */
@@ -27,7 +29,10 @@ export type ExecutionContext = {
 
   /** Hash of the previous event in the log; used for chain continuity. */
   previousHash: string
+
+  /** Optional agent identity propagated from the caller. */
+  identity?: AgentIdentity
 }
 
 /** Subset of context exposed to pure domain functions. */
-export type DomainContext = Pick<ExecutionContext, "timestamp" | "commandId">
+export type DomainContext = Pick<ExecutionContext, "timestamp" | "commandId" | "identity">
