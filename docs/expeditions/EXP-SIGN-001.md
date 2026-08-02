@@ -2,7 +2,7 @@
 
 > Cryptographically sign the governance event log and publish a Merkle root so replay can prove log integrity without trusting the storage layer alone.
 
-**Status:** Completed  
+**Status:** Completed
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
