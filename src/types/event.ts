@@ -20,6 +20,10 @@ export type SynthEvent = {
   eventHash: string
   /** SHA-256 hash of the previous event in the log; "genesis" for the first event */
   previousHash: string
+  /** Optional Ed25519 signature over { eventHash, identity, timestamp } */
+  signature?: string
+  /** Fingerprint of the signing key used for signature; present iff signature is present */
+  signingKeyFingerprint?: string
 }
 
 /** Event type for partitioned event store */
