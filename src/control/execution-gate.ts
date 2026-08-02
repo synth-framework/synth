@@ -28,6 +28,7 @@ import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governanc
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import { signEventBatch } from "../signing/index.js"
+import { isApprovalSatisfied } from "../approval/index.js"
 import { sortKeys } from "../sdk/json/index.js"
 import { loadAdrRegistry, type AdrRegistry } from "../governance/adr-registry.js"
 import { resolveImplementationEligibility } from "../governance/implementation-eligibility.js"
@@ -147,9 +148,24 @@ export class ExecutionGate {
       phases.push(validation)
 
       // === PHASE 2: POLICY CHECK ===
+      let approvalRequestId: string | undefined
       const policyCheck = this.runPhase("POLICY_CHECK", () => {
         const result = this.policyEngine.isAllowed(invocation, currentState)
         if (!result.allowed) {
+          // EXP-APPROVAL-001: if the policy requires verification (two-party
+          // approval), check whether a valid approval exists in state before
+          // denying the mutation.
+          if (result.reason?.startsWith("Verification required")) {
+            const approvalCheck = isApprovalSatisfied(invocation, currentState)
+            if (approvalCheck.required && approvalCheck.satisfied) {
+              approvalRequestId = approvalCheck.requestId
+              return { ...result, allowed: true, approvalRequestId }
+            }
+            throw new Error(
+              `APPROVAL_REQUIRED: Operation requires two-party approval. ` +
+                `Run: synth approval request --operation <op> --reason "..."`,
+            )
+          }
           throw new Error(`POLICY_DENIED: ${result.reason || "Execution blocked by policy"}`)
         }
         return result
@@ -206,6 +222,10 @@ export class ExecutionGate {
 
       // === PHASE 6: PERSIST EVENTS (single write path) ===
       const eventsToPersist = [...executionResult.events]
+      if (approvalRequestId) {
+        const approvalExecutedEvent = await this.createApprovalExecutedEvent(approvalRequestId, invocation)
+        if (approvalExecutedEvent) eventsToPersist.push(approvalExecutedEvent)
+      }
       if (executionResult.mutations && executionResult.mutations.length > 0) {
         const authorizedEvent = await this.createAuthorizedEvent(executionResult.mutations, invocation.actor)
         if (authorizedEvent) eventsToPersist.push(authorizedEvent)
@@ -624,6 +644,39 @@ export class ExecutionGate {
         expeditionId: authorizedExpedition.id,
         target: mutation.target,
         reason,
+      },
+      previousHash,
+      eventHash: "",
+    }
+    event.eventHash = computeEventHash(event)
+    return event
+  }
+
+  private async createApprovalExecutedEvent(
+    requestId: string,
+    invocation: CapabilityInvocation,
+  ): Promise<SynthEvent | null> {
+    const state = await this.runtime.getState()
+    const approval = state.approvals?.[requestId] as Record<string, unknown> | undefined
+    if (!approval) return null
+
+    const lastEvent = await this.eventStore.getLastEvent()
+    const previousHash = lastEvent?.eventHash ?? "genesis"
+    const timestamp = Date.now()
+    const sequence = await this.eventStore.count()
+
+    const event: SynthEvent = {
+      id: crypto.randomUUID(),
+      type: "APPROVAL_EXECUTED",
+      timestamp,
+      transactionId: `tx-approval-executed-${sequence}`,
+      capability: invocation.capability,
+      actor: invocation.actor,
+      payload: {
+        requestId,
+        executedAt: new Date(timestamp).toISOString(),
+        operation: approval.operation,
+        operationFingerprint: approval.operationFingerprint,
       },
       previousHash,
       eventHash: "",

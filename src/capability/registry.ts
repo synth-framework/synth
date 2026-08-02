@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { Capability, CapabilityInvocation, CapabilityResult, CanonicalState, DerivedState, DomainContext } from "../types/index.js"
+import type { AgentIdentity } from "../identity/types.js"
 import { applyDomain } from "../domain/execution.js"
 import { identityPayloadMetadata } from "../identity/index.js"
 import {
@@ -1268,6 +1269,107 @@ export function createDefaultCapabilities(): Capability[] {
             },
           ],
           result: { target },
+        }
+      },
+    },
+
+    // Two-party approval capability (EXP-APPROVAL-001)
+    {
+      name: "Approval",
+      description: "Request, grant, deny, list, and show two-party approvals",
+      inputSchema: {
+        required: ["operation"],
+        types: {
+          operation: "string",
+          approvalOperation: "string",
+          filterOperation: "string",
+          requestId: "string",
+          status: "string",
+        },
+      },
+      outputSchema: { events: ["APPROVAL_REQUESTED", "APPROVAL_GRANTED", "APPROVAL_DENIED"], resultType: "ApprovalResult" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const op = String(intent.payload.operation)
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const basePayload = metadata ? { metadata } : {}
+
+        switch (op) {
+          case "request": {
+            const approvalOperation = String(intent.payload.approvalOperation)
+            if (!approvalOperation) {
+              throw new Error("APPROVAL_OPERATION_REQUIRED: payload.approvalOperation is required")
+            }
+            const payload: Record<string, unknown> = {
+              ...basePayload,
+              requestId: intent.payload.requestId,
+              operation: approvalOperation,
+              operationFingerprint: intent.payload.operationFingerprint,
+              requestedBy: intent.payload.requestedBy,
+              requestedAt: intent.payload.requestedAt,
+              reason: intent.payload.reason,
+              expiresAt: intent.payload.expiresAt,
+            }
+            return { events: [{ type: "APPROVAL_REQUESTED", payload }] }
+          }
+          case "grant": {
+            const requestId = String(intent.payload.requestId)
+            const existing = state.approvals?.[requestId] as Record<string, unknown> | undefined
+            if (!existing) throw new Error(`APPROVAL_REQUEST_NOT_FOUND: ${requestId}`)
+            const requestedBy = existing.requestedBy as AgentIdentity | undefined
+            const grantedBy = intent.payload.grantedBy as AgentIdentity | undefined
+            if (requestedBy?.agentId && grantedBy?.agentId && requestedBy.agentId === grantedBy.agentId) {
+              throw new Error("APPROVAL_SELF_GRANT: requester cannot grant their own request")
+            }
+            if (existing.status !== "pending" && existing.status !== "granted") {
+              throw new Error(`APPROVAL_NOT_PENDING: current status is ${existing.status}`)
+            }
+            if (new Date(String(existing.expiresAt)).getTime() < Date.now()) {
+              throw new Error("APPROVAL_EXPIRED: request has expired")
+            }
+            const payload: Record<string, unknown> = {
+              ...basePayload,
+              requestId: intent.payload.requestId,
+              grantedBy: intent.payload.grantedBy,
+              grantedAt: intent.payload.grantedAt,
+              reason: intent.payload.reason,
+            }
+            return { events: [{ type: "APPROVAL_GRANTED", payload }] }
+          }
+          case "deny": {
+            const payload: Record<string, unknown> = {
+              ...basePayload,
+              requestId: intent.payload.requestId,
+              deniedBy: intent.payload.deniedBy,
+              deniedAt: intent.payload.deniedAt,
+              reason: intent.payload.reason,
+            }
+            return { events: [{ type: "APPROVAL_DENIED", payload }] }
+          }
+          case "list": {
+            const requests = Object.values(state.approvals ?? {})
+            const filterOperation = intent.payload.filterOperation
+            const status = intent.payload.status
+            const filtered = requests.filter((r) => {
+              const req = r as Record<string, unknown>
+              if (filterOperation && req.operation !== filterOperation) return false
+              if (status && req.status !== status) return false
+              return true
+            })
+            return { events: [], result: { requests: filtered } }
+          }
+          case "show": {
+            const requestId = String(intent.payload.requestId)
+            const request = state.approvals?.[requestId]
+            if (!request) throw new Error(`APPROVAL_REQUEST_NOT_FOUND: ${requestId}`)
+            return { events: [], result: { request } }
+          }
+          default:
+            throw new Error(`UNKNOWN_APPROVAL_OPERATION: ${op}`)
         }
       },
     },
