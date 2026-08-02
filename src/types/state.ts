@@ -437,6 +437,7 @@ export type CanonicalState = {
   decisions: Record<string, Decision>
   referenceEvidence: Record<string, ReferenceEvidenceState>
   repository?: Repository
+  approvals?: Record<string, unknown>
   lastEventOffset: number
 }
 

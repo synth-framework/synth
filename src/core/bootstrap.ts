@@ -16,6 +16,7 @@
 
 import { createInfra } from "../infra/index.js"
 import { createPolicyEngine } from "../policy/index.js"
+import { createTwoPartyApprovalPolicy } from "../approval/index.js"
 import { validateInvocation } from "../validation/validator.js"
 import { RuntimeEngine } from "../runtime/engine.js"
 import { createAPI } from "../api/index.js"
@@ -96,6 +97,7 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
   // === STEP 3: POLICY ENGINE ===
   logger.info("[3/13] Initializing policy engine...")
   const policyEngine = createPolicyEngine()
+  policyEngine.register(createTwoPartyApprovalPolicy())
 
   // === STEP 4: VALIDATION (pure) ===
   logger.info("[4/13] Validation layer ready")

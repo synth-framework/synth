@@ -135,6 +135,12 @@ export type StateEvent =
   // Convergence Certification lifecycle (EXP-GOVERNABILITY-005)
   | { type: "CONVERGENCE_CERTIFIED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
   | { type: "CONVERGENCE_DIVERGED"; certificationId: string; missionId: string; expeditionId: string; result: unknown }
+  // Two-party approval lifecycle (EXP-APPROVAL-001)
+  | { type: "APPROVAL_REQUESTED"; requestId: string; operation: string; operationFingerprint: string; requestedBy: unknown; requestedAt: string; reason: string; expiresAt: string }
+  | { type: "APPROVAL_GRANTED"; requestId: string; grantedBy: unknown; grantedAt: string; reason: string }
+  | { type: "APPROVAL_DENIED"; requestId: string; deniedBy: unknown; deniedAt: string; reason: string }
+  | { type: "APPROVAL_EXPIRED"; requestId: string; expiredAt: string; reason: string }
+  | { type: "APPROVAL_EXECUTED"; requestId: string; executedAt: string; operation: string; operationFingerprint: string }
 
 /** Execution events — represent transaction lifecycle */
 export type ExecutionEvent =
