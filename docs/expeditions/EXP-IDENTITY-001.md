@@ -2,7 +2,7 @@
 
 > Make every governance event attributable to an agent, session, and approval mode without changing the core event model.
 
-**Status:** Draft — ADR-039 Converged  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
