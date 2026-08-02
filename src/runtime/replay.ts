@@ -429,6 +429,18 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       break
     }
 
+    // Legacy state migration lifecycle (EXP-MIGRATE-001)
+    case "ARCHIVE_CREATED": {
+      // Audit-only event: records that legacy state was archived. The archive
+      // itself is a filesystem artifact, not canonical state.
+      break
+    }
+    case "MIGRATION_IMPORTED": {
+      // Audit-only event: records that legacy events were imported. The
+      // imported events themselves carry the state changes.
+      break
+    }
+
     // First Contact greenfield onboarding lifecycle (EXP-AIFC-009)
     case "FIRST_CONTACT_STARTED": {
       const discoveryId = String(payload.discoveryArtifactId)
