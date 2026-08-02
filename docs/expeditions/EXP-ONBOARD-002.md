@@ -2,7 +2,7 @@
 
 > Replace the hardcoded stage logic in `synth first-contact` with deterministic, explainable tasks executed by the EXP-PROGRAM-034 task engine.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -194,3 +194,19 @@ Refactor `src/cli/first-contact.ts`:
 - [EXP-TASK-006 — CI Orchestration Adapter](EXP-TASK-006.md)
 - [EXP-REVIEW-003 — Third Convergence Review of Program 043](../governance/convergence-review-043-003.md)
 - [ADR-039 — Architectural Convergence Review](../adr/ADR-039-architectural-convergence-review.md)
+
+---
+
+## Completion Notes
+
+Completed in PR #245.
+
+- Six framework-owned onboarding tasks added under `data/tasks/onboarding:*.task.json`.
+- Task registry extended to discover framework tasks from `dist/tasks/`; project-level tasks override framework defaults.
+- `synth first-contact` refactored to dispatch onboarding stages through `synth task run`.
+- Added `synth first-contact onboard:<detect|archive|init|bootstrap|mission|govern>` subcommands.
+- `onboarding:init` and `onboarding:mission` made idempotent so the dependency graph can re-run safely.
+- `--name` propagated through `SYNTH_PROJECT_NAME` so project naming works across task subprocesses.
+- Task runner resolves `synth ...` commands against the current binary, removing PATH dependency in tests.
+- Added `tests/task-onboarding.test.js` and extended `tests/first-contact-onboard.test.js`.
+- `npm run govern` passes from a clean checkout.
