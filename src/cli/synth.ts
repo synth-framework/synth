@@ -34,6 +34,13 @@ import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
 import { cmdVerifySignatures } from "./signatures.js"
+import {
+  cmdApprovalRequest,
+  cmdApprovalGrant,
+  cmdApprovalDeny,
+  cmdApprovalList,
+  cmdApprovalShow,
+} from "./approval.js"
 import { cmdTask, cmdTaskHelp } from "./task.js"
 import { initCliIdentity, injectIdentityContext } from "./identity-context.js"
 import { generateAgentsContract } from "./agents-contract.js"
@@ -101,6 +108,7 @@ const COMMANDS = [
   { name: "govern", description: "Run the full governance pipeline" },
   { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
   { name: "verify", description: "Verify governance invariants, projection consistency, and event-log signatures" },
+  { name: "approval", description: "Two-party approval operations (request, grant, deny, list, show)" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "program", description: "Governance program inventory (list)" },
@@ -1031,6 +1039,16 @@ async function cmdVerifyHelp() {
     { name: "synth verify", description: "Run the full governance invariant verification suite" },
     { name: "synth verify signatures", description: "Verify Ed25519 signatures and Merkle roots in the event log" },
     { name: "synth verify signatures --public-key <path>", description: "Verify against a specific public key", args: "--public-key <path>" },
+  ]))
+}
+
+async function cmdApprovalHelp() {
+  printJson(namespaceHelp("approval", "Two-party approval operations for destructive governance actions", [
+    { name: "synth approval request --operation <op> --reason \"...\"", description: "Request approval for a destructive operation", args: "--operation <op> --reason <reason>" },
+    { name: "synth approval grant --request-id <id> --reason \"...\"", description: "Grant a pending approval request", args: "--request-id <id> --reason <reason>" },
+    { name: "synth approval deny --request-id <id> --reason \"...\"", description: "Deny a pending approval request", args: "--request-id <id> --reason <reason>" },
+    { name: "synth approval list [--operation <op>] [--status <status>]", description: "List approval requests" },
+    { name: "synth approval show --request-id <id>", description: "Show a single approval request", args: "--request-id <id>" },
   ]))
 }
 
@@ -3911,6 +3929,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdValidateHelp }
     case "verify":
       return { namespace, handler: cmdVerifyHelp }
+    case "approval":
+      return { namespace, handler: cmdApprovalHelp }
     case "task":
       return { namespace, handler: cmdTaskHelp }
     case "explain":
@@ -4364,6 +4384,17 @@ async function main() {
       const sub = positional[1]
       if (sub === "signatures") await cmdVerifySignatures()
       else await cmdVerify()
+      break
+    }
+
+    case "approval": {
+      const sub = positional[1]
+      if (sub === "request") await cmdApprovalRequest(flags)
+      else if (sub === "grant") await cmdApprovalGrant(flags)
+      else if (sub === "deny") await cmdApprovalDeny(flags)
+      else if (sub === "list") await cmdApprovalList(flags)
+      else if (sub === "show") await cmdApprovalShow(flags)
+      else await cmdApprovalHelp()
       break
     }
 

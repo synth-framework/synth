@@ -510,6 +510,42 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
 
 
 
+    // Two-party approval lifecycle (EXP-APPROVAL-001)
+    case "APPROVAL_REQUESTED":
+    case "APPROVAL_GRANTED":
+    case "APPROVAL_DENIED":
+    case "APPROVAL_EXPIRED":
+    case "APPROVAL_EXECUTED": {
+      const requestId = String(payload.requestId)
+      if (!state.approvals) state.approvals = {}
+      const existing = (state.approvals[requestId] as Record<string, unknown> | undefined) ?? {}
+      let status = existing.status
+      switch (event.type) {
+        case "APPROVAL_REQUESTED":
+          status = "pending"
+          break
+        case "APPROVAL_GRANTED":
+          status = "granted"
+          break
+        case "APPROVAL_DENIED":
+          status = "denied"
+          break
+        case "APPROVAL_EXPIRED":
+          status = "expired"
+          break
+        case "APPROVAL_EXECUTED":
+          status = "executed"
+          break
+      }
+      state.approvals[requestId] = {
+        ...existing,
+        ...payload,
+        status,
+        updatedAt: event.timestamp,
+      }
+      break
+    }
+
     case "SYSTEM_GENESIS": {
       state.version = 1
       break
@@ -672,6 +708,10 @@ export function computeStateHash(state: CanonicalState): string {
   // Backward-compatible hash: only include repository when populated.
   if (state.repository) {
     data.repository = Object.keys(state.repository.branches).sort()
+  }
+  // Backward-compatible hash: only include approvals when populated.
+  if (state.approvals && Object.keys(state.approvals).length > 0) {
+    data.approvals = Object.keys(state.approvals).sort()
   }
   const str = JSON.stringify(data)
   let hash = 0

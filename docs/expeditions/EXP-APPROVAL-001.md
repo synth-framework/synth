@@ -2,13 +2,13 @@
 
 > Require two independent authorizations before destructive governance operations can mutate state, and record the authorization evidence in the event log.
 
-**Status:** In Review — pending ADR-039 Convergence Review outcome  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
 **Authority:** EXP-PROGRAM-043 Workstream F, EXP-REVIEW-003 required actions, TaskPRO agent-action retrospective  
 **Depends On:** EXP-IDENTITY-001, EXP-SIGN-001, ADR-039 Convergence Review outcome  
-**Blocks:** None
+**Blocks:** EXP-GIT-001
 
 ---
 
@@ -239,7 +239,7 @@ Per `EXP-REVIEW-003` required action 3, this charter **must** pass an ADR-039 Co
 
 - **Review ID:** EXP-REVIEW-006
 - **Record:** [convergence-review-approval-001.md](../governance/convergence-review-approval-001.md)
-- **Status:** **PENDING REVIEW**
+- **Status:** **CONVERGED** (merged in PR #256)
 - **Date:** 2026-08-02
 
 ---

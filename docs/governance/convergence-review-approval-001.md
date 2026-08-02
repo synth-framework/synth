@@ -6,7 +6,7 @@
 **Reviewer:** Synth architectural baseline + Program 031 gating function  
 **Expedition reviewed:** [EXP-APPROVAL-001 — Two-Party Approval for Destructive Operations](../expeditions/EXP-APPROVAL-001.md)  
 **Owning program:** [EXP-PROGRAM-043 — Agent Onboarding & Operator Experience](../expeditions/EXP-PROGRAM-043.md)  
-**Outcome:** **PENDING REVIEW** — introduces new governance event types and policy gate integration
+**Outcome:** **CONVERGED** — new approval event types are additive governance events; policy engine recommends `require_verification`; `ExecutionGate` enforces. Review merged in PR #256.
 
 ---
 
@@ -96,7 +96,7 @@ No new public vocabulary terms are introduced. "Approval" is a domain concept, n
 
 | Expedition | Outcome | Rationale | Required actions |
 |---|---|---|---|
-| `EXP-APPROVAL-001` | **PENDING REVIEW** | Charter is valid but introduces new governance event types and policy-gate integration that require an explicit ADR-039 decision. | 1. This review must approve the event types and policy-engine boundary.<br>2. Update `EXP-APPROVAL-001.md` with the review outcome.<br>3. If **CONVERGED**, begin implementation.<br>4. Run `synth validate` before merging implementation. |
+| `EXP-APPROVAL-001` | **CONVERGED** | New event types use the existing `SynthEvent` envelope and preserve append-only semantics; `ExecutionGate` retains sole mutation authority; operation fingerprinting prevents replay without affecting non-destructive events. | 1. ✅ Event types and policy-engine boundary approved.<br>2. ✅ `EXP-APPROVAL-001.md` updated with the review outcome.<br>3. ✅ Implementation completed (event types, policy integration, CLI commands, ExecutionGate gating, tests).<br>4. ✅ `npm run govern` passes; attach test output as expedition evidence. |
 
 ---
 
@@ -139,7 +139,7 @@ If the reviewer disagrees with the event-type approach, the fallback outcome is 
 
 ## Next steps
 
-1. Obtain an explicit **CONVERGED** or **REWRITE REQUIRED** outcome for this review.
-2. Update `EXP-APPROVAL-001.md` status and scope based on the outcome.
-3. If **CONVERGED**, begin implementation of approval events, policy integration, CLI commands, and ExecutionGate gating.
-4. Run `synth validate` after implementation changes and attach validation output as expedition evidence.
+1. ✅ Review returned **CONVERGED** (PR #256).
+2. ✅ `EXP-APPROVAL-001.md` status updated to **Completed**.
+3. ✅ Implementation merged: approval events, policy integration, CLI commands, ExecutionGate gating, and `tests/two-party-approval.test.js`.
+4. ✅ Validation evidence: `npm run govern` passes.
