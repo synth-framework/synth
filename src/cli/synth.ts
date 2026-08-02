@@ -33,6 +33,7 @@ import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdVerify } from "./verify.js"
+import { cmdVerifySignatures } from "./signatures.js"
 import { cmdTask, cmdTaskHelp } from "./task.js"
 import { initCliIdentity, injectIdentityContext } from "./identity-context.js"
 import { generateAgentsContract } from "./agents-contract.js"
@@ -99,7 +100,7 @@ const COMMANDS = [
   { name: "discover", description: "Produce a read-only analysis of a repository" },
   { name: "govern", description: "Run the full governance pipeline" },
   { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
-  { name: "verify", description: "Verify governance invariants and projection consistency" },
+  { name: "verify", description: "Verify governance invariants, projection consistency, and event-log signatures" },
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "program", description: "Governance program inventory (list)" },
@@ -1022,6 +1023,14 @@ async function cmdValidateHelp() {
     { name: "synth validate --full", description: "Run the complete canonical governance pipeline" },
     { name: "synth validate dependencies", description: "Verify expedition charter dependency resolution" },
     { name: "synth validate artifact --type <type>", description: "Validate governance artifacts (expedition, mission)" },
+  ]))
+}
+
+async function cmdVerifyHelp() {
+  printJson(namespaceHelp("verify", "Verify governance invariants, projection consistency, and event-log signatures", [
+    { name: "synth verify", description: "Run the full governance invariant verification suite" },
+    { name: "synth verify signatures", description: "Verify Ed25519 signatures and Merkle roots in the event log" },
+    { name: "synth verify signatures --public-key <path>", description: "Verify against a specific public key", args: "--public-key <path>" },
   ]))
 }
 
@@ -3900,6 +3909,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdFirstContactHelp }
     case "validate":
       return { namespace, handler: cmdValidateHelp }
+    case "verify":
+      return { namespace, handler: cmdVerifyHelp }
     case "task":
       return { namespace, handler: cmdTaskHelp }
     case "explain":
@@ -4349,9 +4360,12 @@ async function main() {
       await cmdTask(positional.slice(1), flags)
       break
 
-    case "verify":
-      await cmdVerify()
+    case "verify": {
+      const sub = positional[1]
+      if (sub === "signatures") await cmdVerifySignatures()
+      else await cmdVerify()
       break
+    }
 
     case "status":
       await cmdStatus()

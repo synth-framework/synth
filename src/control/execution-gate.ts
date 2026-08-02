@@ -27,6 +27,7 @@ import type {
 import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governance/derived-files.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
+import { signEventBatch } from "../signing/index.js"
 import { sortKeys } from "../sdk/json/index.js"
 import { loadAdrRegistry, type AdrRegistry } from "../governance/adr-registry.js"
 import { resolveImplementationEligibility } from "../governance/implementation-eligibility.js"
@@ -214,7 +215,10 @@ export class ExecutionGate {
         }
       }
       if (eventsToPersist.length > 0) {
-        await this.eventStore.appendBatch(eventsToPersist, EVENT_STORE_WRITE_TOKEN)
+        // Sign events if an operator signing key is configured. Signing is
+        // opt-in; unsigned events are still valid and replayable.
+        const signedEvents = await signEventBatch(eventsToPersist)
+        await this.eventStore.appendBatch(signedEvents, EVENT_STORE_WRITE_TOKEN)
       }
       phases.push({
         phase: "PERSIST_EVENTS",
@@ -372,7 +376,8 @@ export class ExecutionGate {
     }
 
     // Single batch commit through the guarded store
-    await this.eventStore.appendBatch(events, EVENT_STORE_WRITE_TOKEN)
+    const signedEvents = await signEventBatch(events)
+    await this.eventStore.appendBatch(signedEvents, EVENT_STORE_WRITE_TOKEN)
 
     // Rebuild state from the committed events
     const finalState = await this.runtime.getState()
