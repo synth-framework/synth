@@ -68,6 +68,8 @@ To run the full governance pipeline and generate a proof:
 
 ```bash
 npm run govern
+# or
+synth task run govern
 ```
 
 To verify that the current State is consistent with its Event history:
@@ -84,6 +86,8 @@ To inspect them locally:
 
 ```bash
 npm run docs:generate
+# or
+synth task run docs:generate
 ```
 
 ## Key Concepts for Operators
@@ -146,6 +150,8 @@ synth validate
 
 ```bash
 npm run govern
+# or
+synth task run govern
 ```
 
 ## What Happens When Things Go Wrong

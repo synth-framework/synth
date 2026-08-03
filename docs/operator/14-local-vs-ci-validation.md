@@ -96,6 +96,24 @@ An optional informational workflow may run `synth validate --dry-run` to display
 
 ---
 
+## Running tasks through the task engine
+
+Synth also exposes a canonical task engine. The same validations are available as tasks:
+
+```bash
+synth task run validate
+synth task run govern
+synth task run docs:generate
+```
+
+Use `synth task list` to discover available tasks and `synth task explain <id>` to inspect what a task does before running it. CI invokes tasks directly:
+
+```bash
+node dist/cli/synth.js task run govern
+```
+
+This keeps `package.json` as a thin adapter layer and makes the task model the single source of truth for how work is executed.
+
 ## Best practice
 
 Never use `synth validate` alone as justification to skip `npm run govern` before merging. The adaptive planner may only run a subset of tests; the full pipeline is the constitutional guarantee.
