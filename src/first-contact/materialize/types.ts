@@ -25,6 +25,33 @@ export interface ExpeditionProposal {
   goal: string
 }
 
+export type AdapterKind = "integration" | "methodology" | "runtime"
+
+export interface RecommendedAdapter {
+  adapterId: string
+  kind: AdapterKind
+  confidence: number
+  reason: string
+  required: boolean
+  capabilities: string[]
+}
+
+export interface WorkflowPhase {
+  id: string
+  title: string
+  description: string
+  expeditionSubject: string
+  requiredAdapters: string[]
+  nextPhase: string | null
+}
+
+export interface WorkflowTemplate {
+  id: string
+  name: string
+  architectureTypes: string[]
+  phases: WorkflowPhase[]
+}
+
 export interface MaterializationResult {
   projectRoot: string
   manifestPath: string
@@ -36,6 +63,8 @@ export interface MaterializationResult {
   expeditionProposalsPath: string
   mission: MissionProposal
   expeditions: ExpeditionProposal[]
+  recommendedAdapters: RecommendedAdapter[]
+  workflowTemplate: WorkflowTemplate
 }
 
 export interface MaterializationOptions {

@@ -7,6 +7,7 @@
 
 import path from "path"
 import crypto from "crypto"
+import { promises as fs } from "fs"
 import * as sdk from "../../sdk/index.js"
 import type {
   MaterializationOptions,
@@ -14,6 +15,7 @@ import type {
   MissionProposal,
   ExpeditionProposal,
 } from "./types.js"
+import { recommendAdapters, selectWorkflowTemplate, getAdapterVersion } from "./recommend.js"
 import { hashArtifact } from "../artifact/canonical.js"
 import { computeEventHash } from "../../core/hash.js"
 import { createEmptyState, applyEvent, computeStateHash } from "../../runtime/replay.js"
@@ -101,6 +103,9 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
   await sdk.files.ensureDirectory(sdk.paths.proposalsDir(root))
 
   const artifactId = approvedArtifact.id ?? `artifact-${uuid()}`
+  const recommendedAdapters = recommendAdapters(options)
+  const workflowTemplate = selectWorkflowTemplate(options)
+
   const enrichedArtifact = {
     ...approvedArtifact,
     id: artifactId,
@@ -113,6 +118,10 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
       status: verificationReport.status,
       blockers: verificationReport.blockers,
       reportHash: verificationReport.reportHash,
+    },
+    recommendations: {
+      adapters: recommendedAdapters,
+      workflowTemplate,
     },
     artifactHash: "",
   }
@@ -143,6 +152,11 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
       firstContact: ".synth/first-contact/",
     },
     publicVocabulary: ["Mission", "Expedition", "Evidence", "Plan", "Event", "State", "Replay"],
+    recommendedAdapters: recommendedAdapters.map((adapter) => ({
+      adapterId: adapter.adapterId,
+      version: getAdapterVersion(adapter.adapterId),
+      required: adapter.required,
+    })),
   }
 
   const mission = buildMission(artifactId, selectedArchitecture, approvedArtifact.intent)
@@ -172,7 +186,12 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
   events.push(
     createEvent(
       "MISSION_MATERIALIZED",
-      { missionId: mission.id, subject: mission.subject },
+      {
+        missionId: mission.id,
+        subject: mission.subject,
+        recommendedAdapters,
+        workflowTemplate,
+      },
       previousHash,
     ),
   )
@@ -200,11 +219,11 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
   const expeditionProposalsPath = path.join(sdk.paths.proposalsDir(root), "expedition-proposals.json")
 
   await sdk.json.writeJsonNewline(manifestPath, manifest)
-  await sdk.files.writeFile(
+  await fs.writeFile(
     eventLogPath,
     events.map((e) => JSON.stringify(e)).join("\n") + "\n",
   )
-  await sdk.json.writeJsonNewline(statePath, state)
+  await fs.writeFile(statePath, JSON.stringify(state, null, 2) + "\n")
   await sdk.json.writeJsonNewline(artifactPath, enrichedArtifact)
   await sdk.files.writeFile(
     transcriptPath,
@@ -224,5 +243,7 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
     expeditionProposalsPath,
     mission,
     expeditions,
+    recommendedAdapters,
+    workflowTemplate,
   }
 }
