@@ -25,7 +25,12 @@ import type {
   RepositoryStatus,
   PromotionResult,
   MergeResult,
+  SnapshotOptions,
+  SnapshotResult,
+  SnapshotEntry,
+  VerifyResult,
 } from "./types.js"
+import { GitSnapshotAdapter, loadSnapshotConfig } from "../../adapter/git-snapshot.js"
 
 function git(cwd: string, args: string[]): string {
   try {
@@ -56,6 +61,7 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   private _state: AdapterState = "discovered"
   private _config?: RepositoryConfig
   private _health: AdapterHealth = { state: "unknown", message: "Adapter not yet health-checked" }
+  private _snapshotAdapter = new GitSnapshotAdapter()
 
   get state(): AdapterState {
     return this._state
@@ -136,7 +142,15 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   }
 
   async configure(config: Record<string, unknown>): Promise<AdapterState> {
-    this._config = config as RepositoryConfig
+    const fileConfig = loadSnapshotConfig(this._config?.path || process.cwd())
+    this._config = {
+      snapshotPolicy: fileConfig.snapshotPolicy,
+      autoTagOnComplete: fileConfig.autoTagOnComplete,
+      autoCommitOnStateChange: fileConfig.autoCommitOnStateChange,
+      autoTagMerkleRoot: fileConfig.autoTagMerkleRoot,
+      includeProofs: fileConfig.includeProofs,
+      ...(config as RepositoryConfig),
+    }
     this.setHealth("unknown", "Adapter configured, awaiting validation")
     return this.transition("configure", true, "configured", "Adapter configured", { path: this._config.path })
   }
@@ -252,6 +266,21 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
     git(cwd, ["add", "-A"])
     git(cwd, ["commit", "-m", message])
     return this.setState(this._state)
+  }
+
+  async createSnapshot(options: SnapshotOptions): Promise<SnapshotResult> {
+    const cwd = this.repoPath()
+    return this._snapshotAdapter.createSnapshot({ cwd, ...options })
+  }
+
+  async listSnapshots(limit?: number): Promise<SnapshotEntry[]> {
+    const cwd = this.repoPath()
+    return this._snapshotAdapter.listSnapshots(cwd, limit)
+  }
+
+  async verifySnapshot(tagName: string): Promise<VerifyResult> {
+    const cwd = this.repoPath()
+    return this._snapshotAdapter.verifySnapshot(cwd, tagName)
   }
 
   async promote(branch: string): Promise<PromotionResult> {
@@ -381,13 +410,40 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
       fs.mkdirSync(hooksDir, { recursive: true })
     }
 
-    const preCommitPath = path.join(hooksDir, "pre-commit")
-    const hook = `#!/bin/sh
-# Synth pre-commit governance hook (installed by Repository Adapter)
-set -e
-npm run govern
-`
-    fs.writeFileSync(preCommitPath, hook, { mode: 0o755 })
+    const synthExec = process.platform === "win32" ? "synth.cmd" : "synth"
+
+    function writeHook(name: string, body: string): void {
+      const hookPath = path.join(hooksDir, name)
+      if (fs.existsSync(hookPath)) {
+        const backupPath = `${hookPath}.backup-${Date.now()}`
+        fs.copyFileSync(hookPath, backupPath)
+      }
+      const content = `#!/bin/sh\n# Synth ${name} governance hook (installed by Repository Adapter)\n${body}\n`
+      fs.writeFileSync(hookPath, content, { mode: 0o755 })
+    }
+
+    writeHook(
+      "pre-commit",
+      `set -e
+# Warn if .synth/data/ contains uncommitted governance state.
+if [ -n "$(git status --porcelain -- .synth/data/ 2>/dev/null)" ]; then
+  echo "[synth] warning: .synth/data/ contains uncommitted governance state."
+  echo "[synth]          Run '${synthExec} snapshot create' to anchor it before committing source."
+fi`,
+    )
+
+    writeHook(
+      "post-commit",
+      `# Optionally anchor governance state after a source commit.
+# The .synth/config.yaml git.autoCommitOnStateChange key controls this.
+${synthExec} snapshot create --trigger post-commit >/dev/null 2>&1 || true`,
+    )
+
+    writeHook(
+      "post-merge",
+      `# Verify that merged governance state replays consistently.
+${synthExec} explain replay >/dev/null 2>&1 || true`,
+    )
 
     return this.setState(this._state)
   }

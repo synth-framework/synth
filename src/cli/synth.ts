@@ -84,6 +84,7 @@ import {
   cmdFirstContactOnboardGovern,
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
+import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
@@ -131,6 +132,7 @@ const COMMANDS = [
   { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
   { name: "ai", description: "AI agent interoperability (refresh)" },
   { name: "repo", description: "Repository and release governance operations" },
+  { name: "snapshot", description: "Create, list, show, and verify git-anchored governance snapshots" },
   { name: "adapter", description: "Delegate to the adapter management CLI" },
   { name: "log", description: "Query the governance event log (read-only)" },
   { name: "task", description: "Canonical task orchestration (list, explain, graph, doctor)" },
@@ -2043,7 +2045,105 @@ async function cmdAiRefresh() {
 async function cmdAdapterHelp() {
   printJson(namespaceHelp("adapter", "Delegate to the adapter management CLI", [
     { name: "synth adapter <adapter> [args...]", description: "Run an adapter-specific command" },
+    { name: "synth adapter install-hooks", description: "Install governance git hooks (backs up existing hooks)" },
   ]))
+}
+
+async function cmdSnapshotHelp() {
+  printJson(namespaceHelp("snapshot", "Git-anchored governance state snapshots", [
+    { name: "synth snapshot create [--message ...] [--tag <name>] [--include-proofs]", description: "Commit and tag governance files" },
+    { name: "synth snapshot list [--limit <n>]", description: "List synth-* governance tags" },
+    { name: "synth snapshot show --tag <tag-name>", description: "Show snapshot metadata for a tag" },
+    { name: "synth snapshot verify --tag <tag-name>", description: "Check out tag and verify replay consistency" },
+  ]))
+}
+
+async function cmdSnapshotCreate(flags: Record<string, string | boolean>) {
+  const adapter = new GitSnapshotAdapter()
+  const message = typeof flags.message === "string" ? flags.message : undefined
+  const tagName = typeof flags.tag === "string" ? flags.tag : undefined
+  const includeProofs = flags["include-proofs"] === true || flags["include-proofs"] === "true"
+  const trigger = typeof flags.trigger === "string" ? (flags.trigger as any) : "SNAPSHOT_REQUESTED"
+
+  const result = adapter.createSnapshot({
+    cwd: process.cwd(),
+    trigger,
+    message,
+    tagName,
+    includeProofs,
+    actor: "synth-cli",
+  })
+
+  if (!result.ok) {
+    printError(result.reason || "Snapshot failed", {
+      code: "SnapshotFailed",
+      category: "governance",
+      snapshotId: result.snapshotId,
+      reason: result.reason,
+    })
+  }
+
+  printJson({
+    status: "ok",
+    kind: "GovernanceSnapshotCreated",
+    snapshotId: result.snapshotId,
+    commitHash: result.commitHash,
+    tagName: result.tagName,
+    eventOffset: result.eventOffset,
+    stateHash: result.stateHash,
+    trigger: result.trigger,
+  })
+}
+
+async function cmdSnapshotList(flags: Record<string, string | boolean>) {
+  const adapter = new GitSnapshotAdapter()
+  const limitRaw = typeof flags.limit === "string" ? parseInt(flags.limit, 10) : 50
+  const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 1000) : 50
+  const entries = adapter.listSnapshots(process.cwd(), limit)
+  printJson({
+    status: "ok",
+    kind: "GovernanceSnapshotList",
+    count: entries.length,
+    entries,
+  })
+}
+
+async function cmdSnapshotShow(flags: Record<string, string | boolean>) {
+  const tagName = typeof flags.tag === "string" ? flags.tag : ""
+  if (!tagName) {
+    printError("Usage: synth snapshot show --tag <tag-name>")
+    return
+  }
+  const adapter = new GitSnapshotAdapter()
+  const entries = adapter.listSnapshots(process.cwd(), 1000)
+  const entry = entries.find((e) => e.tagName === tagName)
+  if (!entry) {
+    printError(`Snapshot not found: ${tagName}`)
+    return
+  }
+  printJson({
+    status: "ok",
+    kind: "GovernanceSnapshot",
+    ...entry,
+  })
+}
+
+async function cmdSnapshotVerify(flags: Record<string, string | boolean>) {
+  const tagName = typeof flags.tag === "string" ? flags.tag : ""
+  if (!tagName) {
+    printError("Usage: synth snapshot verify --tag <tag-name>")
+    return
+  }
+  const adapter = new GitSnapshotAdapter()
+  const result = adapter.verifySnapshot(process.cwd(), tagName)
+  printJson({
+    status: result.ok && result.consistent ? "ok" : "error",
+    kind: "GovernanceSnapshotVerification",
+    ...result,
+  })
+  if (!result.ok || !result.consistent) {
+    process.exit(1)
+  }
 }
 
 async function cmdInit(args: string[], flags: Record<string, string | boolean>) {
@@ -3952,6 +4052,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdDocsGenerateHelp }
     case "adapter":
       return { namespace, handler: cmdAdapterHelp }
+    case "snapshot":
+      return { namespace, handler: cmdSnapshotHelp }
     case "repair":
       return { namespace, handler: cmdRepairHelp }
     case "first-contact":
@@ -4046,6 +4148,13 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "graph") return "task graph"
     if (sub === "doctor") return "task doctor"
     return "task"
+  }
+  if (namespace === "snapshot") {
+    if (sub === "create") return "snapshot create"
+    if (sub === "list") return "snapshot list"
+    if (sub === "show") return "snapshot show"
+    if (sub === "verify") return "snapshot verify"
+    return "snapshot"
   }
   if (namespace === "adapter") {
     const adapterSub = sub || ""
@@ -4577,6 +4686,16 @@ async function main() {
     case "adapter":
       await cmdAdapter(positional.slice(1))
       break
+
+    case "snapshot": {
+      const sub = positional[1]
+      if (sub === "create") await cmdSnapshotCreate(flags)
+      else if (sub === "list") await cmdSnapshotList(flags)
+      else if (sub === "show") await cmdSnapshotShow(flags)
+      else if (sub === "verify") await cmdSnapshotVerify(flags)
+      else await cmdSnapshotHelp()
+      break
+    }
 
     case "migrate": {
       const sub = positional[1]

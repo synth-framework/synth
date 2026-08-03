@@ -144,6 +144,26 @@ export type StateEvent =
   | { type: "APPROVAL_DENIED"; requestId: string; deniedBy: unknown; deniedAt: string; reason: string }
   | { type: "APPROVAL_EXPIRED"; requestId: string; expiredAt: string; reason: string }
   | { type: "APPROVAL_EXECUTED"; requestId: string; executedAt: string; operation: string; operationFingerprint: string }
+  // Git governance snapshot lifecycle (EXP-GIT-001)
+  | {
+      type: "GOVERNANCE_SNAPSHOT_CREATED"
+      snapshotId: string
+      trigger: string
+      commitHash?: string
+      tagName?: string
+      eventOffset: number
+      stateHash: string
+      expeditionId?: string
+    }
+  | {
+      type: "GOVERNANCE_SNAPSHOT_FAILED"
+      snapshotId: string
+      trigger: string
+      eventOffset: number
+      stateHash: string
+      reason: string
+      expeditionId?: string
+    }
 
 /** Execution events — represent transaction lifecycle */
 export type ExecutionEvent =

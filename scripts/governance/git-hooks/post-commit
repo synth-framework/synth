@@ -1,0 +1,7 @@
+#!/bin/sh
+# Synth post-commit governance hook (installed by Repository Adapter)
+# Delegates to synth so hook behavior stays current with CLI changes.
+
+# Optionally anchor governance state after a source commit.
+# The .synth/config.yaml git.autoCommitOnStateChange key controls this.
+synth snapshot create --trigger post-commit >/dev/null 2>&1 || true

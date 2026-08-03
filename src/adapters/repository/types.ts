@@ -6,6 +6,8 @@ import type { AdapterState, ObservationBatch } from "../../types/index.js"
 
 export type PromotionMode = "direct" | "staged"
 
+export type SnapshotPolicy = "disabled" | "tag-only" | "commit-and-tag"
+
 export type RepositoryConfig = {
   path: string
   remote: string
@@ -15,6 +17,11 @@ export type RepositoryConfig = {
   username?: string
   email?: string
   signingKey?: string
+  snapshotPolicy?: SnapshotPolicy
+  autoTagOnComplete?: boolean
+  autoCommitOnStateChange?: boolean
+  autoTagMerkleRoot?: boolean
+  includeProofs?: boolean
 }
 
 export type RepositoryStatus = {
@@ -60,6 +67,49 @@ export type MergeResult = {
   message: string
 }
 
+export type SnapshotOptions = {
+  trigger: "EXPEDITION_COMPLETED" | "SNAPSHOT_REQUESTED" | "GOVERNANCE_STATE_CHANGED" | "MERKLE_ROOT_PUBLISHED" | "post-commit"
+  expeditionId?: string
+  message?: string
+  tagName?: string
+  includeProofs?: boolean
+  actor?: string
+  sessionId?: string
+  stateHash?: string
+  eventOffset?: number
+}
+
+export type SnapshotResult = {
+  ok: boolean
+  snapshotId: string
+  commitHash?: string
+  tagName?: string
+  eventOffset: number
+  stateHash: string
+  trigger: string
+  reason?: string
+}
+
+export type SnapshotEntry = {
+  tagName: string
+  commitHash: string
+  snapshotId?: string
+  trigger?: string
+  eventOffset?: number
+  stateHash?: string
+  createdAt?: string
+}
+
+export type VerifyResult = {
+  ok: boolean
+  tagName: string
+  commitHash: string
+  consistent: boolean
+  eventCount: number
+  replayHash: string
+  reason?: string
+}
+
 export interface RepositoryAdapter {
   readonly metadata: {
     name: string
@@ -79,6 +129,10 @@ export interface RepositoryAdapter {
   createBranch(name: string): Promise<AdapterState>
   checkout(name: string): Promise<AdapterState>
   commit(message: string): Promise<AdapterState>
+
+  createSnapshot(options: SnapshotOptions): Promise<SnapshotResult>
+  listSnapshots(limit?: number): Promise<SnapshotEntry[]>
+  verifySnapshot(tagName: string): Promise<VerifyResult>
 
   promote(branch: string): Promise<PromotionResult>
   merge(source: string, target: string): Promise<MergeResult>
