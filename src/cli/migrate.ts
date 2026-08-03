@@ -13,7 +13,7 @@ import { injectIdentityContext } from "./identity-context.js"
 import { printJson, printError } from "./print.js"
 import { captureIdentity } from "../identity/index.js"
 import { detectLegacyState } from "../migration/detect.js"
-import { buildMigrationPlan } from "../migration/plan.js"
+import { buildMigrationPlan, resolveLegacyEventLogPath } from "../migration/plan.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import * as sdk from "../sdk/index.js"
 
@@ -111,7 +111,7 @@ export async function cmdMigrateArchive(args: string[], flags: Record<string, st
     return
   }
 
-  const sourcePath = plan.sourcePath ?? path.join(targetDir, ".synth")
+  const sourcePath = plan.sourcePath ?? sdk.paths.synthDir(targetDir)
   const archivePath = plan.archiveTarget ?? path.join(targetDir, `.synth_archive_${new Date().toISOString().replace(/[:.]/g, "-")}`)
 
   // Filesystem mutation: move the legacy directory out of the way.
@@ -205,15 +205,15 @@ export async function cmdMigrateImport(args: string[], flags: Record<string, str
     : "synth-dir"
 
   if (!flags.approve) {
-    const eventLogPath = sourceKind === "ungoverned-event-log"
-      ? sourcePath
-      : path.join(sourcePath, "data", "event-log.jsonl")
+    const eventLogPath = resolveLegacyEventLogPath(sourcePath, sourceKind)
     let importEventCount: number | undefined
-    try {
-      const text = await fs.readFile(eventLogPath, "utf-8")
-      importEventCount = text.split("\n").filter((line) => line.trim().length > 0).length
-    } catch {
-      importEventCount = undefined
+    if (eventLogPath) {
+      try {
+        const text = await fs.readFile(eventLogPath, "utf-8")
+        importEventCount = text.split("\n").filter((line) => line.trim().length > 0).length
+      } catch {
+        importEventCount = undefined
+      }
     }
 
     printJson({

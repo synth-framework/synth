@@ -8,10 +8,17 @@ import path from "node:path"
 import * as sdk from "../sdk/index.js"
 import type { MigrationDetectionResult, MigrationPlan } from "./types.js"
 
-function estimateImportEventCount(sourcePath: string | undefined): number | undefined {
+export function resolveLegacyEventLogPath(sourcePath: string | undefined, sourceKind: string): string | undefined {
   if (!sourcePath) return undefined
+  if (sourceKind === "ungoverned-event-log") return sourcePath
+  return path.join(sourcePath, "data", "event-log.jsonl")
+}
+
+function estimateImportEventCount(sourcePath: string | undefined, sourceKind: string): number | undefined {
+  const eventLogPath = resolveLegacyEventLogPath(sourcePath, sourceKind)
+  if (!eventLogPath) return undefined
   try {
-    const text = sdk.files.readFileSync(sourcePath)
+    const text = sdk.files.readFileSync(eventLogPath)
     return text.split("\n").filter((line) => line.trim().length > 0).length
   } catch {
     return undefined
@@ -53,9 +60,8 @@ export function buildMigrationPlan(
       detection.artifacts.find((a) => a.kind === "ungoverned-event-log")
 
     const sourcePath = sourceArtifact?.path
-    const importEventCount = estimateImportEventCount(
-      sourceArtifact?.kind === "ungoverned-event-log" ? sourcePath : sourcePath ? path.join(sourcePath, "data", "event-log.jsonl") : undefined,
-    )
+    const sourceKind = sourceArtifact?.kind === "ungoverned-event-log" ? "ungoverned-event-log" : "synth-dir"
+    const importEventCount = estimateImportEventCount(sourcePath, sourceKind)
 
     return {
       ...base,

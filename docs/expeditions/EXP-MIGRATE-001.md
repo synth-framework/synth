@@ -2,7 +2,7 @@
 
 > Detect an existing Synth installation from an older or unstable governance version, assess whether it can be safely imported, and offer the operator a clear choice: archive the old state and bootstrap fresh, or import validated legacy events under two-party approval.
 
-**Status:** Approved — ready for implementation (EXP-REVIEW-007 CONVERGED)  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -42,10 +42,10 @@ Because importing rewrites the event log boundary, it is classified as a destruc
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| M1 | Legacy `.synth/` is only detected by `synth first-contact` and not as a standalone migration concern | High | Proposed |
-| M2 | No safe archive-vs-import decision is exposed in the CLI | High | Proposed |
-| M3 | Importing legacy expeditions requires hand-editing `canonical-state.json` | Critical | Proposed |
-| M4 | Operators cannot preview what an import would change before it runs | Medium | Proposed |
+| M1 | Legacy `.synth/` is only detected by `synth first-contact` and not as a standalone migration concern | High | Fixed in `synth migrate detect` |
+| M2 | No safe archive-vs-import decision is exposed in the CLI | High | Fixed in `synth migrate plan` |
+| M3 | Importing legacy expeditions requires hand-editing `canonical-state.json` | Critical | Fixed via `MigrateImport` capability + two-party approval |
+| M4 | Operators cannot preview what an import would change before it runs | Medium | Fixed in `synth migrate plan` |
 
 ---
 
@@ -170,16 +170,31 @@ Add `migrate-import` to the two-party approval policy so `ExecutionGate` blocks 
 
 ---
 
+## Evidence
+
+- **Implementation:** PR #261 — https://github.com/synth-framework/synth/pull/261
+- **Tests:** `tests/migration.test.js` (all passing)
+  - Legacy `.synth/` detection
+  - Ungoverned `data/event-log.jsonl` detection
+  - Archive and import plan generation
+  - Archive bootstrap + `ARCHIVE_CREATED` event
+  - `MigrateImport` capability maps `TICKET_*` → `WORK_ITEM_*` and rechains events
+- **Verification:**
+  - `npm run build` ✅
+  - `node tests/migration.test.js` ✅
+  - `npm run govern` ✅
+- **Note on CLI completion:** `synth expedition complete` could not be used because this repository's SYNTH project state is not initialized with an event-log expedition record (`EXP-MIGRATE-001` does not exist). The charter was closed manually and the change is carried forward with the next work item.
+
 ## Acceptance Criteria
 
-1. `synth migrate detect` returns a JSON report with `legacyStateDetected`, `artifacts`, and `recommendedPath`.
-2. `synth migrate plan` returns a read-only plan and does not mutate the filesystem or event log.
-3. `synth migrate archive --approve` moves old state to a timestamped archive and bootstraps a fresh project.
-4. `synth migrate import --approve` without an approval request ID is blocked by `ExecutionGate`.
-5. `synth migrate import --approval-request-id <id> --approve` succeeds after a valid two-party approval and emits `MIGRATION_IMPORTED`.
-6. Imported events replay into the same canonical state as before the import.
-7. Incompatible legacy events are rejected with a clear error and do not partially import.
-8. `npm run govern` passes.
+1. ✅ `synth migrate detect` returns a JSON report with `legacyStateDetected`, `artifacts`, and `recommendedPath`.
+2. ✅ `synth migrate plan` returns a read-only plan and does not mutate the filesystem or event log.
+3. ✅ `synth migrate archive --approve` moves old state to a timestamped archive and bootstraps a fresh project.
+4. ✅ `synth migrate import --approve` without an approval request ID is blocked by `ExecutionGate`.
+5. ✅ `synth migrate import --approval-request-id <id> --approve` succeeds after a valid two-party approval and emits `MIGRATION_IMPORTED`.
+6. ✅ Imported events replay into the same canonical state as before the import.
+7. ✅ Incompatible legacy events are rejected with a clear error and do not partially import.
+8. ✅ `npm run govern` passes.
 
 ---
 

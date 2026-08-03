@@ -14,12 +14,56 @@ import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./go
 import { writeAgentArtifacts } from "./agent-artifacts.js"
 import { generateAgentContext } from "./bootstrap-context.js"
 
+export type BootstrapStage = {
+  stage: string
+  status: "pending" | "running" | "completed" | "failed" | "skipped"
+  description: string
+  durationMs?: number
+}
+
 export type BootstrapOptions = {
   approve: boolean
   dryRun: boolean
   withWebsite: boolean
   withExample: boolean
   projectName?: string
+  streamStages?: boolean
+}
+
+type StageRunner = {
+  stages: BootstrapStage[]
+  run: <T>(name: string, description: string, fn: () => Promise<T>) => Promise<T>
+}
+
+function createStageRunner(streamStages?: boolean): StageRunner {
+  const stages: BootstrapStage[] = []
+
+  async function run<T>(name: string, description: string, fn: () => Promise<T>): Promise<T> {
+    const stage: BootstrapStage = { stage: name, status: "running", description }
+    stages.push(stage)
+    const start = Date.now()
+    if (streamStages) {
+      console.error(JSON.stringify({ kind: "BootstrapStage", ...stage }))
+    }
+    try {
+      const result = await fn()
+      stage.status = "completed"
+      stage.durationMs = Date.now() - start
+      if (streamStages) {
+        console.error(JSON.stringify({ kind: "BootstrapStage", ...stage }))
+      }
+      return result
+    } catch (err) {
+      stage.status = "failed"
+      stage.durationMs = Date.now() - start
+      if (streamStages) {
+        console.error(JSON.stringify({ kind: "BootstrapStage", ...stage, error: String(err) }))
+      }
+      throw err
+    }
+  }
+
+  return { stages, run }
 }
 
 function makeObservation(type: string, subject: string, timestamp: number, overrides: Record<string, unknown> = {}) {
@@ -326,13 +370,20 @@ async function runGovern(targetDir: string): Promise<{ success: boolean; output:
 export async function runBootstrap(targetDir: string, options: BootstrapOptions) {
   const resolvedDir = path.resolve(targetDir)
   const projectName = options.projectName || path.basename(resolvedDir)
+  const { stages, run } = createStageRunner(options.streamStages)
 
-  const analysis = await analyzeRepository(resolvedDir)
-  const proposals = await generateProposals(analysis)
+  const analysis = await run("analyze", "Inspect repository structure and history", () =>
+    analyzeRepository(resolvedDir)
+  )
+
+  const proposals = await run("propose", "Generate mission and expedition proposals", () =>
+    generateProposals(analysis)
+  )
 
   if (options.dryRun || !options.approve) {
     return {
       status: "pending-approval",
+      kind: "BootstrapPlan",
       targetDir: resolvedDir,
       projectName,
       repositoryType: analysis.repositoryType,
@@ -346,25 +397,34 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
       },
       proposals,
       agentContext: analysis.agentContext,
+      stages,
       nextSteps: ["Review the proposals", "Run 'synth bootstrap --approve' to apply"],
     }
   }
 
   // Apply phase
-  await initSynthProject(resolvedDir, projectName, analysis.agentContext)
+  await run("init", "Create .synth/ manifest and data directory", () =>
+    initSynthProject(resolvedDir, projectName, analysis.agentContext)
+  )
 
   // Generate docs only if docs directory exists; otherwise this is a fresh project.
   const docsDir = path.join(resolvedDir, "docs")
   if (await sdk.files.exists(docsDir)) {
-    await generateDocs(resolvedDir)
+    await run("docs", "Generate initial documentation", () => generateDocs(resolvedDir))
+  } else {
+    stages.push({ stage: "docs", status: "skipped", description: "No docs/ directory present" })
   }
 
   if (options.withWebsite) {
-    await scaffoldWebsite(resolvedDir, projectName)
+    await run("website", "Scaffold static website", () => scaffoldWebsite(resolvedDir, projectName))
+  } else {
+    stages.push({ stage: "website", status: "skipped", description: "--with-website not requested" })
   }
 
   if (options.withExample) {
-    await scaffoldExample(resolvedDir, projectName)
+    await run("example", "Scaffold example directory", () => scaffoldExample(resolvedDir, projectName))
+  } else {
+    stages.push({ stage: "example", status: "skipped", description: "--with-example not requested" })
   }
 
   // Only run govern if the project already has package.json with govern script.
@@ -376,27 +436,37 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
   if (await sdk.files.exists(packageJsonPath)) {
     const packageJson = await sdk.json.readJson<Record<string, any>>(packageJsonPath)
     if (packageJson.scripts?.govern) {
-      governResult = await runGovern(resolvedDir)
+      governResult = await run("govern", "Run full governance pipeline", () => runGovern(resolvedDir))
     } else {
+      stages.push({ stage: "govern", status: "skipped", description: "No govern script in package.json" })
       governResult = {
         success: true,
         output: governDelegationMessage("missing-govern-script"),
       }
     }
+  } else {
+    stages.push({ stage: "govern", status: "skipped", description: "No package.json present" })
   }
+
+  const nextSteps = governResult.success
+    ? ["synth status", "synth mission create --subject '...' --purpose '...'"]
+    : ["Review the govern output above", "Fix the reported issue", "Run 'synth bootstrap --approve' again"]
 
   return {
     status: governResult.success ? "ok" : "error",
+    kind: "BootstrapResult",
     targetDir: resolvedDir,
     projectName,
     repositoryType: analysis.repositoryType,
     applied: {
       manifest: true,
-      docs: true,
+      docs: await sdk.files.exists(docsDir),
       website: options.withWebsite,
       example: options.withExample,
       govern: governResult.success,
     },
     governOutput: governResult.output,
+    stages,
+    nextSteps,
   }
 }
