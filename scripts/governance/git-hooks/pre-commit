@@ -1,0 +1,11 @@
+#!/bin/sh
+# Synth pre-commit governance hook (installed by Repository Adapter)
+# Delegates to synth so hook behavior stays current with CLI changes.
+
+set -e
+
+# Warn if .synth/data/ contains uncommitted governance state.
+if [ -n "$(git status --porcelain -- .synth/data/ 2>/dev/null)" ]; then
+  echo "[synth] warning: .synth/data/ contains uncommitted governance state."
+  echo "[synth]          Run 'synth snapshot create' to anchor it before committing source."
+fi

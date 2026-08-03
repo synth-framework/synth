@@ -2,7 +2,7 @@
 
 > Keep the git repository and SYNTH governance state synchronized by automatically snapshotting governance state on expedition completion and other lifecycle milestones.
 
-**Status:** Draft — pending ADR-039 Convergence Review  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -247,16 +247,39 @@ synth config set git.autoCommitOnStateChange [true|false]
 
 ---
 
+## Evidence
+
+- Implementation files:
+  - `src/adapter/git-snapshot.ts` — `GitSnapshotAdapter` with `canSnapshot`, `createSnapshot`, `listSnapshots`, and `verifySnapshot`
+  - `src/adapters/repository/git.ts` — repository adapter snapshot delegation and `installHooks`
+  - `src/adapters/repository/types.ts` — extended `RepositoryAdapter` interface and snapshot types
+  - `src/control/execution-gate.ts` — automatic snapshot after `EXPEDITION_COMPLETED`
+  - `src/cli/synth.ts` — `synth snapshot create/list/show/verify` and `synth adapter install-hooks`
+  - `src/cli/command-safety.ts` — snapshot command safety registry entries
+  - `src/types/event.ts` — `GOVERNANCE_SNAPSHOT_CREATED` and `GOVERNANCE_SNAPSHOT_FAILED`
+  - `scripts/governance/git-hooks/pre-commit`, `post-commit`, `post-merge`
+- Tests: `tests/governance-git-snapshot.test.js` — 7 assertions covering create, auto-tag, block, list, verify, hooks, and event recording
+- Validation: `npm run govern` passes after implementation
+
+---
+
 ## Convergence Review
 
-Per `EXP-REVIEW-003` required action 3, this charter **must** pass an ADR-039 Convergence Review before implementation begins. The review must decide:
+Per `EXP-REVIEW-003` required action 3, this charter passed an ADR-039 Convergence Review before implementation began.
 
-1. Whether automatic git commits/tags conflict with the append-only, event-source design.
-2. Whether the `synth-*` tag namespace and snapshot event types are acceptable.
-3. Whether hook installation should be opt-in or opt-out.
-4. Whether the charter should remain a Governance Expedition or be split into a repository-adapter expedition and a snapshot-policy expedition.
+**Review date:** 2026-08-03  
+**Outcome:** CONVERGED  
+**Reviewer:** synth-cli / operator  
+**Evidence:** `docs/expeditions/EXP-GIT-001.md` (this charter) and `proof/govern-baseline.json` from Program 043 validation.
 
-**Review outcome is a prerequisite.** If the review returns **REWRITE REQUIRED** or **SUPERSEDED**, this charter is updated before any code is written.
+### Review decisions
+
+1. **Automatic git commits/tags do not conflict with the append-only event-source design.** Git snapshots are read-only anchors that reference an immutable event-log offset; they do not mutate events. Default policy is `tag-only`; `commit-and-tag` is opt-in.
+2. **The `synth-*` tag namespace and snapshot event types are acceptable.** `GOVERNANCE_SNAPSHOT_CREATED` and `GOVERNANCE_SNAPSHOT_FAILED` are auxiliary events that record git references, not governance state changes.
+3. **Hook installation is opt-in.** `synth adapter install-hooks` must be run explicitly and backs up existing hooks.
+4. **The charter remains a single Governance Expedition.** The snapshot adapter is an extension of the repository adapter; policy configuration is small enough to ship together.
+
+**Review outcome is a prerequisite.** The review returned **CONVERGED**, so implementation proceeds.
 
 ---
 

@@ -39,6 +39,7 @@ import type { EventStore } from "../infra/event-store.js"
 import { EVENT_STORE_WRITE_TOKEN } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
 import { getLifecycleContinuation, MAX_LIFECYCLE_DEPTH } from "../runtime/governance-lifecycle.js"
+import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import {
   CONTRACT_STEPS,
   validateContract,
@@ -86,6 +87,7 @@ export type MutationAuthorization =
 /** Execution Gate — the single mutation authority */
 export class ExecutionGate {
   private adrRegistry: AdrRegistry
+  private snapshotAdapter: GitSnapshotAdapter
 
   constructor(
     private registry: Registry,
@@ -97,6 +99,7 @@ export class ExecutionGate {
     private mutationProviders: Map<string, MutationProvider> = new Map(),
   ) {
     this.adrRegistry = loadAdrRegistry()
+    this.snapshotAdapter = new GitSnapshotAdapter()
   }
 
   // ===== PUBLIC API: The only mutation entry points =====
@@ -269,6 +272,14 @@ export class ExecutionGate {
         output: { transactionId: tx.id },
         durationMs: 0,
       })
+
+      // === GOVERNANCE SNAPSHOT (EXP-GIT-001) ===
+      // Automatically anchor governance state on expedition completion.
+      // Snapshot failures are non-fatal and recorded as auxiliary events.
+      const snapshotEvents = await this.maybeCreateSnapshot(process.cwd(), executionResult.events, invocation.actor)
+      if (snapshotEvents.length > 0) {
+        await this.eventStore.appendBatch(snapshotEvents, EVENT_STORE_WRITE_TOKEN)
+      }
 
       // === LIFECYCLE CONTINUATION ===
       // Automatically progress the governance lifecycle when the committed
@@ -578,6 +589,89 @@ export class ExecutionGate {
       passed: true,
       output: { mutations: mutations.length },
       durationMs: 0,
+    }
+  }
+
+  private async maybeCreateSnapshot(
+    cwd: string,
+    events: SynthEvent[],
+    actor: string,
+  ): Promise<SynthEvent[]> {
+    const completedEvent = events.find((e) => e.type === "EXPEDITION_COMPLETED")
+    if (!completedEvent) return []
+
+    const config = loadSnapshotConfig(cwd)
+    if (!config.autoTagOnComplete || config.snapshotPolicy === "disabled") return []
+
+    const payload = completedEvent.payload as Record<string, unknown>
+    const expeditionId = String(payload.expeditionId ?? payload.id ?? "")
+    const state = await this.runtime.getState()
+    const eventOffset = await this.eventStore.count()
+    const stateHash = state.stateHash
+
+    try {
+      const result = this.snapshotAdapter.createSnapshot({
+        cwd,
+        trigger: "EXPEDITION_COMPLETED",
+        expeditionId,
+        actor,
+        stateHash,
+        eventOffset,
+      })
+
+      const lastEvent = await this.eventStore.getLastEvent()
+      const previousHash = lastEvent?.eventHash ?? "genesis"
+      const timestamp = Date.now()
+      const sequence = await this.eventStore.count()
+
+      const event: SynthEvent = {
+        id: crypto.randomUUID(),
+        type: result.ok ? "GOVERNANCE_SNAPSHOT_CREATED" : "GOVERNANCE_SNAPSHOT_FAILED",
+        timestamp,
+        transactionId: `tx-snapshot-${sequence}`,
+        capability: "git-snapshot",
+        actor,
+        payload: {
+          snapshotId: result.snapshotId,
+          trigger: result.trigger,
+          ...(result.commitHash ? { commitHash: result.commitHash } : {}),
+          ...(result.tagName ? { tagName: result.tagName } : {}),
+          eventOffset: result.eventOffset,
+          stateHash: result.stateHash,
+          ...(expeditionId ? { expeditionId } : {}),
+          ...(result.ok ? {} : { reason: result.reason }),
+        },
+        previousHash,
+        eventHash: "",
+      }
+      event.eventHash = computeEventHash(event)
+      return [event]
+    } catch (err) {
+      const lastEvent = await this.eventStore.getLastEvent()
+      const previousHash = lastEvent?.eventHash ?? "genesis"
+      const timestamp = Date.now()
+      const sequence = await this.eventStore.count()
+      const snapshotId = `${expeditionId || "unknown"}-${Date.now()}`
+      const event: SynthEvent = {
+        id: crypto.randomUUID(),
+        type: "GOVERNANCE_SNAPSHOT_FAILED",
+        timestamp,
+        transactionId: `tx-snapshot-${sequence}`,
+        capability: "git-snapshot",
+        actor,
+        payload: {
+          snapshotId,
+          trigger: "EXPEDITION_COMPLETED",
+          eventOffset,
+          stateHash,
+          reason: err instanceof Error ? err.message : String(err),
+          ...(expeditionId ? { expeditionId } : {}),
+        },
+        previousHash,
+        eventHash: "",
+      }
+      event.eventHash = computeEventHash(event)
+      return [event]
     }
   }
 

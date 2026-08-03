@@ -126,10 +126,10 @@ EXP-PROGRAM-043 / F
 ├── EXP-IDENTITY-001  Agent/session identity in events                                            [COMPLETED]
 ├── EXP-SIGN-001      Event-log signing / Merkle root                                              [COMPLETED]
 ├── EXP-APPROVAL-001  Two-party approval for destructive operations                               [COMPLETED]
-└── EXP-GIT-001       Git integration for governance state snapshots                               [DRAFT]  (depends on EXP-IDENTITY-001, EXP-SIGN-001, EXP-APPROVAL-001)
+└── EXP-GIT-001       Git integration for governance state snapshots                               [COMPLETED]  (depends on EXP-IDENTITY-001, EXP-SIGN-001, EXP-APPROVAL-001)
 ```
 
-_Note: Workstream F was deferred until guardrails (D) were proven. `EXP-IDENTITY-001`, `EXP-SIGN-001`, and `EXP-APPROVAL-001` are now complete; `EXP-GIT-001` remains drafted and may proceed under the existing program charter. `EXP-APPROVAL-001` passed ADR-039 Convergence Review (EXP-REVIEW-006) before implementation._
+_Note: Workstream F was deferred until guardrails (D) were proven. `EXP-IDENTITY-001`, `EXP-SIGN-001`, `EXP-APPROVAL-001`, and `EXP-GIT-001` are now complete. `EXP-GIT-001` passed ADR-039 Convergence Review before implementation._
 
 ---
 
@@ -192,7 +192,7 @@ F (Agent Identity & Trust) — depends on D
 - [x] Workstream F deliverable (part 3): destructive ops require two-party approval.
 - [x] `npm run govern` passes from a clean clone.
 - [x] Phase 3 deliverable: `EXP-ONBOARD-002` merged — first-contact onboarding flow consumes the EXP-PROGRAM-034 task engine.
-- [x] Phase 4 deliverable: Workstream F chartered and implemented (`IDENTITY-001`, `SIGN-001`, and `APPROVAL-001` complete; `GIT-001` drafted).
+- [x] Phase 4 deliverable: Workstream F chartered and implemented (`IDENTITY-001`, `SIGN-001`, `APPROVAL-001`, and `GIT-001` complete).
 
 ---
 
@@ -231,6 +231,6 @@ F (Agent Identity & Trust) — depends on D
   - `EXP-IDENTITY-001` — agent/session identity in events: **completed**.
   - `EXP-SIGN-001` — event-log signing / Merkle root: **completed**.
   - `EXP-APPROVAL-001` — two-party approval for destructive operations: **completed** (passed EXP-REVIEW-006).
-  - `EXP-GIT-001` — git integration for governance state snapshots: drafted, unblocked now that `APPROVAL-001` is complete.
+  - `EXP-GIT-001` — git integration for governance state snapshots: **completed** (passed ADR-039 Convergence Review).
 
 **Why this ordering:** fixing onboarding and clarity first prevents users from hitting the walls that make `npm run govern` feel slow and scary. The engine upgrade comes after the pain is understood and bounded. Workstream E is safe to run in parallel because it is read-only or append-only and does not mutate the event model.

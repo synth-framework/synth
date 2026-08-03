@@ -1,0 +1,6 @@
+#!/bin/sh
+# Synth post-merge governance hook (installed by Repository Adapter)
+# Delegates to synth so hook behavior stays current with CLI changes.
+
+# Verify that merged governance state replays consistently.
+synth explain replay >/dev/null 2>&1 || true

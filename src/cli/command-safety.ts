@@ -125,6 +125,12 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "alignment submit", safety: "MUTATING", description: "Submit an Alignment Contract for approval", requiresApproval: true },
   { command: "alignment approve", safety: "MUTATING", description: "Approve an Alignment Contract", requiresApproval: true },
   { command: "alignment prepare", safety: "MUTATING", description: "Prepare alignment from refined Intent Models", requiresApproval: true },
+  // Git governance snapshots (EXP-GIT-001)
+  { command: "snapshot create", safety: "MUTATING", description: "Create a git-anchored governance snapshot", requiresApproval: true },
+  { command: "snapshot list", safety: "READ_ONLY", description: "List governance snapshot tags" },
+  { command: "snapshot show", safety: "READ_ONLY", description: "Show governance snapshot metadata" },
+  { command: "snapshot verify", safety: "READ_ONLY", description: "Verify snapshot replay consistency" },
+  { command: "snapshot", safety: "READ_ONLY", description: "Show snapshot help" },
 ]
 
 function normalizeCommand(command: string): string {
