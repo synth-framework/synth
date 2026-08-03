@@ -7,6 +7,8 @@
 // ============================================================
 
 import type { ImpactReport, RiskLevel } from "../governance/impact-analyzer.js"
+import type { TaskRegistry } from "../task/task-registry.js"
+import { taskExecutionOrder } from "../task/task-graph.js"
 
 export type GovernanceClass = "documentation" | "knowledge" | "runtime" | "kernel" | "compiler" | "release" | "design" | "tests"
 
@@ -42,8 +44,10 @@ export interface ValidationPlan {
 }
 
 export interface PlannerOptions {
-  /** All npm scripts available in the project. */
-  availableScripts: string[]
+  /** All npm scripts available in the project. Legacy; used when taskRegistry is absent. */
+  availableScripts?: string[]
+  /** Canonical task registry. When provided, the planner discovers and orders tasks from the task graph. */
+  taskRegistry?: TaskRegistry
   /** Name of the full governance script. */
   fullGovernScript?: string
   /** Script name for lint. */
@@ -52,6 +56,13 @@ export interface PlannerOptions {
   typecheckScript?: string
   /** Certification profile. */
   profile?: string
+}
+
+function getAvailableItems(options: PlannerOptions): { items: string[]; kind: "tasks" | "scripts" } {
+  if (options.taskRegistry) {
+    return { items: options.taskRegistry.ids, kind: "tasks" }
+  }
+  return { items: options.availableScripts ?? [], kind: "scripts" }
 }
 
 const SCRIPT_ORDER = [
@@ -164,6 +175,8 @@ function hasScope(capabilities: string[], map: CapabilityValidationMap, scopeFie
 function orderScripts(scripts: string[], options: PlannerOptions): string[] {
   const { lintScript = "lint", typecheckScript = "typecheck" } = options
   const input = new Set(scripts)
+  const { items: availableItems } = getAvailableItems(options)
+  const available = new Set(availableItems)
 
   const ordered: string[] = []
   const seen = new Set<string>()
@@ -171,7 +184,7 @@ function orderScripts(scripts: string[], options: PlannerOptions): string[] {
   const add = (script: string) => {
     if (!script || seen.has(script)) return
     if (!input.has(script)) return
-    if (!options.availableScripts.includes(script)) return
+    if (!available.has(script)) return
     ordered.push(script)
     seen.add(script)
   }
@@ -223,6 +236,21 @@ function orderScripts(scripts: string[], options: PlannerOptions): string[] {
   return ordered
 }
 
+/**
+ * Order selected task ids according to the task graph's topological sort.
+ * Dependencies execute before the tasks that depend on them.
+ */
+function orderTasks(taskIds: string[], options: PlannerOptions): string[] {
+  const registry = options.taskRegistry!
+  const selected = new Set(taskIds)
+  const orderResult = taskExecutionOrder(registry)
+  if (!orderResult.ok) {
+    // Fall back to input order if the graph has a cycle (should not happen for a valid registry).
+    return taskIds
+  }
+  return orderResult.order.filter((task) => selected.has(task.id)).map((task) => task.id)
+}
+
 function computeConfidence(
   affectedCapabilities: string[],
   mappedCapabilities: string[],
@@ -240,13 +268,14 @@ function computeConfidence(
 }
 
 function getFullGovernPlan(options: PlannerOptions, touchedAssets?: string[]): ValidationPlan {
-  const { availableScripts, fullGovernScript = "govern" } = options
+  const { fullGovernScript = "govern" } = options
+  const { items: availableItems } = getAvailableItems(options)
 
-  const run = availableScripts.includes(fullGovernScript)
+  const run = availableItems.includes(fullGovernScript)
     ? [fullGovernScript]
     : ["npm run test:all", "npm run proof"]
 
-  const skip = availableScripts.filter((s) => !run.includes(s))
+  const skip = availableItems.filter((s) => !run.includes(s))
 
   const assetText =
     touchedAssets && touchedAssets.length > 0
@@ -281,7 +310,9 @@ export function buildValidationPlan(
   map: CapabilityValidationMap,
   options: PlannerOptions,
 ): ValidationPlan {
-  const { availableScripts, lintScript = "lint", typecheckScript = "typecheck" } = options
+  const { lintScript = "lint", typecheckScript = "typecheck" } = options
+  const { items: availableItems } = getAvailableItems(options)
+  const usesTaskRegistry = !!options.taskRegistry
 
   // Protected Asset escalation: full govern plan.
   if (report.protectedAssets.length > 0) {
@@ -290,8 +321,8 @@ export function buildValidationPlan(
 
   // If no capabilities were detected, run a minimal sanity check.
   if (report.affectedCapabilities.length === 0) {
-    const run = ["test"].filter((s) => availableScripts.includes(s))
-    const skip = availableScripts.filter((s) => !run.includes(s))
+    const run = ["test"].filter((s) => availableItems.includes(s))
+    const skip = availableItems.filter((s) => !run.includes(s))
     const explanations: Record<string, string> = {}
     for (const script of run) {
       explanations[script] = "No affected capabilities detected; running minimal sanity check."
@@ -314,11 +345,11 @@ export function buildValidationPlan(
 
   const scripts = new Set<string>()
 
-  if (hasScope(report.affectedCapabilities, map, "lintScope") && availableScripts.includes(lintScript)) {
+  if (hasScope(report.affectedCapabilities, map, "lintScope") && availableItems.includes(lintScript)) {
     scripts.add(lintScript)
   }
 
-  if (hasScope(report.affectedCapabilities, map, "typecheckScope") && availableScripts.includes(typecheckScript)) {
+  if (hasScope(report.affectedCapabilities, map, "typecheckScope") && availableItems.includes(typecheckScript)) {
     scripts.add(typecheckScript)
   }
 
@@ -329,8 +360,9 @@ export function buildValidationPlan(
   }
 
   const affectedClasses = getAffectedGovernanceClasses(report, map)
-  const orderedRun = orderScripts(Array.from(scripts), options)
-  const skip = availableScripts.filter((s) => !orderedRun.includes(s))
+  const selected = Array.from(scripts)
+  const orderedRun = usesTaskRegistry ? orderTasks(selected, options) : orderScripts(selected, options)
+  const skip = availableItems.filter((s) => !orderedRun.includes(s))
 
   const mappedCapabilities = report.affectedCapabilities.filter((c) => c in map.capabilities)
   const confidence = computeConfidence(report.affectedCapabilities, mappedCapabilities, false)

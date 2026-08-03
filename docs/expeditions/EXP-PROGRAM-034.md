@@ -221,14 +221,14 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 - [x] All existing `npm run` scripts have a corresponding task definition (`EXP-TASK-004`).
 - [x] `package.json` reduced to the adapter layer (`EXP-TASK-005`).
 - [x] CI updated to invoke `synth task` (`EXP-TASK-006`).
-- [ ] Program 030 planner consumes the task graph.
-  - Next: align with Program 031/043 on the shared dependency-graph contract and the task graph export surface.
+- [x] Program 030 planner consumes the task graph.
+  - Implemented in `EXP-TASK-012`: `src/validation/planner.ts` now accepts a task registry and orders selected tasks via `taskExecutionOrder`.
 - [x] `synth task doctor` reports zero critical issues on the canonical task set.
   - Verified: `synth task doctor` reports healthy with no critical issues.
 - [x] Documentation (`docs/reference/tasks.md`) and operator guide updated.
   - `docs/reference/tasks.md` drafted; operator guide updated with `synth task run` equivalents in validation and getting-started flows.
-- [ ] Acceptance test: `synth task govern` produces the same proof artifact as the legacy `npm run govern`.
-  - This is the final acceptance gate; it depends on all preceding implementation-phase deliverables and validates that the task engine does not change governance output.
+- [x] Acceptance test: `synth task govern` produces the same proof artifact as the legacy `npm run govern`.
+  - `tests/task-govern-equivalence.test.js` verifies that `npm run govern` delegates to `synth task run govern` and that the `govern` task resolves to the canonical profiler.
 
 ## Convergence Review
 

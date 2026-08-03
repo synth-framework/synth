@@ -87,6 +87,8 @@ import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impac
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
+import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
+import { runTasks } from "../task/task-runner.js"
 import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
 import { rankExpeditions, rankPrograms } from "../governance/rank.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
@@ -620,6 +622,16 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
   const packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
   const availableScripts = Object.keys(packageJson.scripts || {})
 
+  // Load the canonical task registry so the planner can discover and order
+  // tasks from the task graph. Fall back to npm scripts if the registry is
+  // unavailable (e.g., in a non-governed directory).
+  let taskRegistry: TaskRegistry | undefined
+  try {
+    taskRegistry = await loadTaskRegistry()
+  } catch {
+    taskRegistry = undefined
+  }
+
   const mapPath = path.resolve(process.cwd(), "docs", "reference", "capability-validation-map.json")
   let map
   try {
@@ -636,7 +648,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     )
   }
 
-  const plan = buildValidationPlan(report, map, { availableScripts, profile })
+  const plan = buildValidationPlan(report, map, { availableScripts, taskRegistry, profile })
 
   // Apply certification profile filtering unless protected assets were touched
   // or the profile requires full validation.
@@ -648,15 +660,16 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     const requiredClasses = new Set(plan.governanceClasses)
     const classToScripts = buildClassToScriptsMap(map)
     const requiredScripts = new Set<string>()
+    const availableItems = taskRegistry ? taskRegistry.ids : availableScripts
     for (const cls of plan.governanceClasses) {
       for (const script of classToScripts[cls] || []) {
-        if (availableScripts.includes(script)) {
+        if (availableItems.includes(script)) {
           requiredScripts.add(script)
         }
       }
     }
     effectiveRun = plan.run.filter((s) => requiredScripts.has(s))
-    effectiveSkip = availableScripts.filter((s) => !effectiveRun.includes(s))
+    effectiveSkip = availableItems.filter((s) => !effectiveRun.includes(s))
     for (const script of effectiveSkip) {
       if (!plan.explanations[script]) {
         plan.explanations[script] = `Excluded by certification profile '${profile}'.`
@@ -682,7 +695,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
   }
 
   // Execute the planned validations.
-  const execution = await executeValidationPlan(effectiveRun)
+  const execution = await executeValidationPlan(effectiveRun, taskRegistry)
 
   const output: Record<string, unknown> = {
     status: execution.success ? "ok" : "error",
@@ -813,10 +826,32 @@ interface ValidationExecution {
   totalDurationMs: number
 }
 
-async function executeValidationPlan(scripts: string[]): Promise<ValidationExecution> {
+async function executeValidationPlan(scripts: string[], taskRegistry?: TaskRegistry): Promise<ValidationExecution> {
   const results: ValidationExecution["results"] = []
   const start = Date.now()
 
+  // When a task registry is available, execute through the canonical task engine.
+  // This preserves dependency ordering and makes the task model the source of truth.
+  if (taskRegistry) {
+    const report = await runTasks(taskRegistry, scripts, { cwd: process.cwd() })
+    for (const r of report.results) {
+      results.push({
+        script: r.taskId,
+        status: r.status,
+        durationMs: r.durationMs,
+        output: r.stdout,
+        errors: r.stderr,
+      })
+    }
+    return {
+      success: report.status === "ok",
+      results,
+      failedScript: report.failedTaskId,
+      totalDurationMs: report.totalDurationMs,
+    }
+  }
+
+  // Legacy path: no task registry available, fall back to npm scripts.
   for (const script of scripts) {
     const scriptStart = Date.now()
     let childEnv: NodeJS.ProcessEnv | undefined
