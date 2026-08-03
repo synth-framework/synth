@@ -198,12 +198,12 @@ F (Agent Identity & Trust) — depends on D
 
 ## Convergence Review
 
-- **Outcome:** CONVERGED.
+- **Outcome:** CONVERGED (all workstreams complete).
 - **Reviews:**
-  - EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md` — initial review; Workstream F deferred.
-  - EXP-REVIEW-003 / `docs/governance/convergence-review-043-003.md` — post-implementation review after Workstreams A–E and 034 task-engine implementation.
+  - EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md` — initial review; Workstreams A–F align with the current architecture and have passing tests/evidence.
+  - EXP-REVIEW-003 / `docs/governance/convergence-review-043-003.md` — post-implementation review after Workstreams A–F and 034 task-engine implementation.
 - **Caveats:**
-  - Workstream F (agent identity, event signing, two-party approval, git integration) is approved to proceed under the existing program charter, but each charter must still pass its own Convergence Review if it touches Protected Assets or the event model.
+  - Any new operator-experience work beyond the current charter must pass ADR-039 review before implementation.
   - Phase 3 must be chartered as a new expedition that migrates first-contact to the 034 task engine; 043 must not introduce duplicate task-scheduling or graph-engine code.
 
 ---
