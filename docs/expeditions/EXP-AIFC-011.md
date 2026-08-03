@@ -2,7 +2,7 @@
 
 > **Architecture/Product expedition.** Consume an approved Discovery artifact and selected ArchitectureCandidate, then recommend SYNTH adapters and a default workflow template for the materialization context.
 
-**Status:** COMPLETED  
+**Status:** Completed  
 **Kind:** Architecture/Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
