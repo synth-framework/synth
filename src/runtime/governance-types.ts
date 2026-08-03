@@ -61,6 +61,7 @@ export type StateDivergence = {
 export type GovernanceConflict = {
   artifact: string
   issue: string
+  kind?: string
   expected?: string
   actual?: string
 }
