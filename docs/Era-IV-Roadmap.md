@@ -1,7 +1,7 @@
 # Era IV — Post-v1.0 Portfolio Rebaseline
 
 > **Status:** Active  
-> **Last updated:** 2026-07-25  
+> **Last updated:** 2026-08-03  
 > **Authority:** SYNTH Platform v1.0 Release (`@synth-framework/synth@2.4.1`)
 
 ---
@@ -136,11 +136,51 @@ Small, non-architectural work that keeps v1.0 healthy. These do not need program
 
 These are the candidate initiatives for Era IV. They are no longer "pending v1.0"; they are the next major evolution of the platform.
 
+### Critical path out of the current state
+
+Program 043 closed the immediate operator-experience gaps. The remaining critical risk is **uncontrolled architectural divergence**: Program 034 (task engine) and Program 031 (convergence review) both need a shared dependency-graph primitive, and 034 must not implement its own graph engine while 031 is also building one.
+
+```text
+Phase 1 — Gate (031)
+  └─ Activate Architectural Convergence as a real gating function
+     └─ Conduct EXP-REVIEW-001 convergence review of Program 034 design
+     └─ Charter / accept EXP-GRAPH-001 shared dependency-graph primitive
+
+Phase 2 — Engine (034)
+  └─ Implement Task Orchestration Engine on the shared primitive
+     └─ Replace npm-script orchestration for synth's own governance pipeline
+     └─ Prove impact-aware, dependency-aware task execution
+
+Phase 3 — Distribution (029)
+  └─ Project the new engine and onboarding experience into agent skills, IDE rules, MCP, and packages
+     └─ Consume 043's improved UX and 034's canonical task model in generated artifacts
+
+Phase 4 — Stabilize
+  └─ Run full convergence review across 029, 034, and 043 successors
+     └─ Archive or supersede 032 and 037 items that are no longer relevant
+```
+
+**Decision gates:**
+
+| Gate | Question | Blocks if answer is no |
+|---|---|---|
+| G1 | Does Program 034 design pass ADR-039 convergence review? | Phase 2 implementation |
+| G2 | Is the shared graph primitive accepted and tested? | Phase 2 implementation |
+| G3 | Does the task engine pass `npm run govern` with no npm-script dependency? | Phase 3 distribution |
+| G4 | Are distribution artifacts generated from a single canonical model? | Phase 4 stabilization |
+
+**What is NOT on the critical path:**
+
+- Program 032 — Operator Optimization Pipeline: parked; 043 solved the acute operator friction.
+- Program 037 — Ecosystem Adoption & Community Growth: hold; consolidate ADOPT-003/005/006/016/017 into 2–3 charters tied to 043/029, defer the rest.
+- EXP-HOME-003 through EXP-HOME-024 — Mission Studio v2 UI: research/incubation until the engine and distribution layers are stable.
+
 ### Distribution & ecosystem
 
 | Item | Theme | Status |
 | --- | --- | --- |
 | EXP-PROGRAM-029 — AI Ecosystem Distribution | AI Ecosystem | **Active** |
+| EXP-PROGRAM-043 — Agent Onboarding & Operator Experience | Operator Experience | **Completed** |
 | EXP-DIST-001 — Canonical AI Capability Model | AI Ecosystem | Completed and accepted |
 | EXP-DIST-002 — Agent Skill Projection Pipeline | AI Ecosystem | Completed and accepted |
 | EXP-DIST-003 — SYNTH MCP Server | AI Ecosystem | Completed and accepted |
