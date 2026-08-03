@@ -1,6 +1,6 @@
 # EXP-PROGRAM-029 — AI Ecosystem Distribution
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -198,15 +198,14 @@ AI Ecosystem Distribution
 │       Transform the homepage into an interactive Genesis experience.
 │
 └── EXP-DIST-008  Consume Program 043 Capability List in AI Projections
-        Product Expedition — Active
+        Product Expedition — Completed and accepted
         Read docs/reference/capability-list.json and inject its capabilities
         into generated agent skills, IDE rules, and the MCP manifest.
 ```
 
-_Note: EXP-DIST-006 and EXP-DIST-007 are deferred. The five core distribution
-layers (capability model, skills, MCP, npm, IDE rules) are completed and
-operational. EXP-DIST-008 is active and makes those surfaces advertise the
-same capability set as `synth capabilities`._
+_Note: EXP-DIST-006 and EXP-DIST-007 are deferred. All active distribution
+expeditions (capability model, skills, MCP, npm, IDE rules, and the Program 043
+capability-list consumption) are completed and accepted._
 
 ---
 
@@ -279,11 +278,11 @@ A user or agent should be able to discover SYNTH through at least three independ
 
 ## Current Recommendation
 
-**Keep active.** All five core expeditions are completed and accepted. **EXP-DIST-008 is now active** to ensure generated skills, IDE rules, and the MCP manifest consume `docs/reference/capability-list.json` from Program 043. The remaining deferred work (EXP-DIST-006 and EXP-DIST-007) and continuous projection updates remain on the roadmap as the underlying capability model and CLI surface evolve.
+**Complete.** All active expeditions are finished and accepted. The program met its success criteria: SYNTH capabilities are discoverable through the canonical AI Capability Model and projected consistently into agent skills, IDE rules, and the MCP manifest. EXP-DIST-006 and EXP-DIST-007 remain deferred for future roadmaps.
 
 **Key coordination with 043:**
 
-- EXP-DIST-008 now implements the consumption of `docs/reference/capability-list.json` so generated skills, IDE rules, and MCP server manifests accurately advertise what the installed CLI can and cannot do.
-- The website's interactive Genesis onboarding and the CLI's guided first-contact flow must tell the same story; avoid divergent onboarding narratives.
+- EXP-DIST-008 consumes `docs/reference/capability-list.json` so generated skills, IDE rules, and MCP server manifests accurately advertise what the installed CLI can and cannot do.
+- The website's interactive Genesis onboarding and the CLI's guided first-contact flow must continue to tell the same story; avoid divergent onboarding narratives.
 
-**Why this ordering:** distribution is valuable only if the thing being distributed actually works for agents and operators. 043 fixes the product experience; 029 projects that fixed experience outward.
+**Why this ordering:** distribution is valuable only if the thing being distributed actually works for agents and operators. 043 fixes the product experience; 029 projected that fixed experience outward.
