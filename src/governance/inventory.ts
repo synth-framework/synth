@@ -169,3 +169,36 @@ export function filterByValues<T>(values: T[], field: (item: T) => string, filte
   const allowed = new Set(filterValue.split(",").map((s) => s.trim()).filter(Boolean))
   return values.filter((item) => allowed.has(field(item)))
 }
+
+export async function findProgramById(charterDir: string, id: string): Promise<ProgramRecord | undefined> {
+  const inventory = await loadGovernanceInventory(charterDir)
+  return inventory.programs.find((p) => p.id === id)
+}
+
+export async function findExpeditionById(charterDir: string, id: string): Promise<ExpeditionRecord | undefined> {
+  const inventory = await loadGovernanceInventory(charterDir)
+  return inventory.expeditions.find((e) => e.id === id)
+}
+
+export async function findProgramExpeditions(charterDir: string, programId: string): Promise<ExpeditionRecord[]> {
+  const inventory = await loadGovernanceInventory(charterDir)
+  return inventory.expeditions.filter((e) => e.program === programId)
+}
+
+export async function findUpstreamExpeditions(
+  charterDir: string,
+  expedition: ExpeditionRecord,
+): Promise<ExpeditionRecord[]> {
+  if (!expedition.dependsOn || expedition.dependsOn.length === 0) return []
+  const inventory = await loadGovernanceInventory(charterDir)
+  return inventory.expeditions.filter((e) => expedition.dependsOn.includes(e.id))
+}
+
+export async function findDownstreamExpeditions(
+  charterDir: string,
+  expedition: ExpeditionRecord,
+): Promise<ExpeditionRecord[]> {
+  if (!expedition.blocks || expedition.blocks.length === 0) return []
+  const inventory = await loadGovernanceInventory(charterDir)
+  return inventory.expeditions.filter((e) => expedition.blocks.includes(e.id))
+}

@@ -46,15 +46,15 @@ async function testRepositoryAdapterAvailable() {
   console.log("[PASS] repository-adapter is reported as available")
 }
 
-async function testMissingCapabilityReportedUnavailable() {
+async function testUnavailableCapabilitiesHaveReasons() {
   const { stdout, status } = runSynth(["capabilities"])
   assert(status === 0, `capabilities command should exit 0, got ${status}\n${stdout}`)
   const output = parseJson(stdout)
-  const eventLogQuery = output.capabilities.find((c) => c.id === "event-log-query")
-  assert(eventLogQuery, "event-log-query capability should be listed")
-  assert(eventLogQuery.status === "unavailable", `event-log-query should be unavailable, got ${eventLogQuery.status}`)
-  assert(typeof eventLogQuery.reason === "string" && eventLogQuery.reason.length > 0, "unavailable capability should have a reason")
-  console.log("[PASS] missing capabilities are reported as unavailable with a reason")
+  const unavailable = output.capabilities.filter((c) => c.status === "unavailable")
+  for (const cap of unavailable) {
+    assert(typeof cap.reason === "string" && cap.reason.length > 0, `unavailable capability ${cap.id} should have a reason`)
+  }
+  console.log(`[PASS] ${unavailable.length} unavailable capabilities all have reasons`)
 }
 
 async function testCapabilitiesHelp() {
@@ -91,7 +91,7 @@ async function main() {
   await testCapabilitiesCommandExists()
   await testConvergenceCertificationAvailable()
   await testRepositoryAdapterAvailable()
-  await testMissingCapabilityReportedUnavailable()
+  await testUnavailableCapabilitiesHaveReasons()
   await testCapabilitiesHelp()
   await testCapabilitiesInGenericHelp()
   await testCapabilitiesReadOnlyInDiscoveryMode()

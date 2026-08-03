@@ -12,6 +12,9 @@ import {
 } from "../runtime/governance-resolver.js"
 import { deriveValidTransition } from "../runtime/transition-engine.js"
 import { toOperatorBriefing } from "../runtime/status-projection.js"
+import { createCapabilityRegistry } from "../capability/registry.js"
+import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
+import { buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 
 export type MissionBrief = {
   id: string
@@ -80,6 +83,19 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
       conflicts: result.conflicts,
     }
   }
+
+  // EXP-CAPTRANS-003: the runtime resolver intentionally does not depend on
+  // CLI command-surface wiring. Re-project capability availability here using
+  // the same command-surface detection used by `synth capabilities` so status
+  // warnings match the installed CLI.
+  const installedCapabilities = new Set(createCapabilityRegistry().list())
+  const installedAdapters = new Set(createAdapterRegistry().list())
+  const implementedCommands = buildImplementedCommandSet()
+  result.derived.capabilities = buildCapabilityEntries(
+    installedCapabilities,
+    installedAdapters,
+    implementedCommands,
+  )
 
   const transition = deriveValidTransition(result)
   return toOperatorBriefing(result, transition)
