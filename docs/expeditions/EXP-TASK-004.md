@@ -2,7 +2,7 @@
 
 > Inventory every `npm run` script in `package.json` and produce a corresponding canonical task definition in `data/tasks/*.task.json`, so the task engine can replace npm as the source of truth for execution.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-034 — Task Orchestration Engine  
@@ -60,6 +60,13 @@ Impact:
 - `synth task list` includes every npm script.
 - A test asserts 1:1 coverage between npm scripts and task definitions.
 - Legacy npm scripts are marked `lifecycle: deprecated` only after the adapter migration; for now they remain `accepted`.
+
+---
+
+## Completion Evidence
+
+- Canonical task definitions in `data/tasks/*.task.json` cover every npm script in `package.json`.
+- `tests/task-npm-migration.test.js` asserts 1:1 coverage between npm scripts and task definitions.
 
 ---
 

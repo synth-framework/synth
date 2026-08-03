@@ -2,7 +2,7 @@
 
 > Make the repository adapter visible to operators and agents as soon as they enter the guided onboarding flow.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -93,6 +93,11 @@ The snapshot's `nextStep` should change based on detection:
 4. The snapshot's `nextStep` is actionable and varies with state.
 5. Existing first-contact onboard tests continue to pass.
 6. `npm run build` succeeds and targeted tests pass.
+
+## Completion Evidence
+
+- `synth first-contact` plan and completion output include a `repositoryAdapter` snapshot produced by `src/cli/first-contact.ts`.
+- `tests/first-contact-adapter-surface.test.js` covers git repo detection, non-git brownfield detection, empty directory detection, and the snapshot carried through `--approve` completion output.
 
 ## Out of Scope
 

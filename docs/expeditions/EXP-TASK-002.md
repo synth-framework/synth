@@ -2,7 +2,7 @@
 
 > Implement the read-only and diagnostic `synth task` subcommands that make the canonical task registry discoverable and explainable for operators and agents.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-034 — Task Orchestration Engine  
@@ -56,6 +56,14 @@ This is intentionally **read-only / diagnostic only**. Task execution (`synth ta
 - `synth task doctor` detects and reports: duplicate ids (registry load fails fast, so reported as load error), missing dependencies, circular dependencies, orphaned tasks, and deprecated tasks.
 - Unknown task ids produce clear `TaskNotFound` errors.
 - Tests cover list filtering, explain output, graph formats, and doctor diagnostics.
+
+---
+
+## Completion Evidence
+
+- `synth task list|explain|graph|doctor` are wired through `src/cli/synth.ts`.
+- Command implementations live in `src/cli/task.js`.
+- `tests/task-cli.test.js` covers list filtering, explain output, graph formats, and doctor diagnostics.
 
 ---
 

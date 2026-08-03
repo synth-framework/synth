@@ -2,7 +2,7 @@
 
 > Update GitHub Actions workflows to invoke the SYNTH task engine directly, removing the npm-script middleman from CI.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-034 — Task Orchestration Engine  
@@ -46,6 +46,13 @@ Impact:
 - `npm run govern` and `node dist/cli/synth.js task run govern` produce the same proof artifact in CI.
 - A test verifies that a sample of CI-equivalent commands exit successfully via `synth task`.
 - `synth validate` passes.
+
+---
+
+## Completion Evidence
+
+- GitHub Actions workflows in `.github/workflows/*.yml` invoke `node dist/cli/synth.js task run ...` directly.
+- `tests/task-ci-adapter.test.js` verifies that representative CI-equivalent commands exit successfully via `synth task`.
 
 ---
 

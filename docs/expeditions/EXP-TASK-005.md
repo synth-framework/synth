@@ -2,7 +2,7 @@
 
 > Reduce `package.json` scripts to a thin adapter layer that delegates every command to the canonical SYNTH task engine.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-034 — Task Orchestration Engine  
@@ -46,6 +46,13 @@ Impact:
 - A test verifies that a sample of npm scripts delegate to the task engine.
 - `synth task doctor` remains healthy.
 - `synth validate` passes.
+
+---
+
+## Completion Evidence
+
+- `package.json` scripts are reduced to `node dist/cli/synth.js task run <id>` shims.
+- `tests/task-npm-adapter.test.js` verifies that representative npm scripts delegate to the task engine and remain equivalent to direct task execution.
 
 ---
 

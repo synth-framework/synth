@@ -2,7 +2,7 @@
 
 > Formalize the SYNTH task schema and implement a discoverable, validated task registry that feeds the task graph and the future `synth task` CLI.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-034 — Task Orchestration Engine  
@@ -52,6 +52,15 @@ Impact:
 - Unknown task dependencies are rejected at registry load time.
 - The registry integrates cleanly with `src/task/task-graph.ts`.
 - Tests cover valid tasks, invalid tasks, duplicates, and missing dependencies.
+
+---
+
+## Completion Evidence
+
+- `src/task/task-schema.ts` exports the `Task` type and `validateTask` runtime validator.
+- `src/task/task-registry.ts` exports `TaskRegistry` and `loadTaskRegistry(dirs)`.
+- `src/task/task-graph.ts` consumes the registry as the input to `buildTaskGraph`.
+- `tests/task-schema-registry.test.js` covers valid tasks, invalid tasks, duplicate ids, and missing dependencies.
 
 ---
 
