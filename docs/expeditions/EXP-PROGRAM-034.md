@@ -222,13 +222,13 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 - [x] `package.json` reduced to the adapter layer (`EXP-TASK-005`).
 - [x] CI updated to invoke `synth task` (`EXP-TASK-006`).
 - [ ] Program 030 planner consumes the task graph.
-  - Next: align with Program 031/043 on the shared dependency-graph contract and the task graph export surface.
+  - Chartered as `EXP-TASK-012`. Next: implement planner integration and acceptance test.
 - [x] `synth task doctor` reports zero critical issues on the canonical task set.
   - Verified: `synth task doctor` reports healthy with no critical issues.
 - [x] Documentation (`docs/reference/tasks.md`) and operator guide updated.
   - `docs/reference/tasks.md` drafted; operator guide updated with `synth task run` equivalents in validation and getting-started flows.
 - [ ] Acceptance test: `synth task govern` produces the same proof artifact as the legacy `npm run govern`.
-  - This is the final acceptance gate; it depends on all preceding implementation-phase deliverables and validates that the task engine does not change governance output.
+  - Owned by `EXP-TASK-012`. This is the final acceptance gate; it validates that the task engine does not change governance output.
 
 ## Convergence Review
 
