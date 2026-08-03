@@ -1,6 +1,6 @@
 # ADR-044 — External Build Systems Are Adapters
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Date:** 2026-07-20  
 **Author:** SYNTH Architecture  
 **Deciders:** Architecture Owner  
