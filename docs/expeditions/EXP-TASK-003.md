@@ -2,7 +2,7 @@
 
 > Implement the execution surface of the SYNTH task engine: run tasks with dependency resolution, discover affected tasks from changes, and generate new task files from templates.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-034 — Task Orchestration Engine  
@@ -51,6 +51,13 @@ Impact:
 - `synth task generate <id> --group <group>` writes a valid `.task.json` file to `data/tasks/`.
 - Generate refuses to overwrite an existing task file unless `--force` is passed.
 - Tests cover successful execution, dry-run, failure handling, affected-task discovery, and generate.
+
+---
+
+## Completion Evidence
+
+- `synth task run|affected|generate` are implemented in `src/task/task-runner.ts` and `src/cli/task.js`.
+- `tests/task-execution.test.js` covers successful execution, dry-run, failure handling, affected-task discovery, and task generation.
 
 ---
 
