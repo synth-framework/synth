@@ -2,7 +2,7 @@
 
 > Prevent expeditions from completing while verification is failing, evidence is missing, or required certifications are absent.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -37,9 +37,9 @@ Without these gates, agents can declare victory while tests are red or proof is 
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| G1 | `synth expedition complete` does not verify checks pass | Critical | Proposed |
-| G2 | `synth expedition complete` does not require attached evidence | High | Proposed |
-| G3 | Missing Convergence Certification silently blocks completion | High | Proposed |
+| G1 | `synth expedition complete` does not verify checks pass | Critical | Completed |
+| G2 | `synth expedition complete` does not require attached evidence | High | Completed |
+| G3 | Missing Convergence Certification silently blocks completion | High | Completed |
 
 ## Deliverables
 
@@ -106,6 +106,14 @@ This is intentionally strict: `--force` requires both `--reason` and human actor
 4. Each blocker returns a structured error with a distinct `code` and a `nextStep`.
 5. `--force --reason <text>` allows an operator to complete despite verification/evidence blockers.
 6. `npm run build` succeeds and targeted tests pass.
+
+## Completion Evidence
+
+- `synth expedition complete --id <id>` in `src/cli/synth.ts` runs `synth verify` and blocks with code `VerificationFailedBlocksCompletion` on failure.
+- The same command blocks with code `MissingEvidenceBlocksCompletion` when the expedition has no attached evidence.
+- Convergence Certification is checked before completion; missing or unavailable certification emits the structured error from EXP-CAPTRANS-002.
+- `--force --reason <text>` records `force` and `forceReason` in the `EXPEDITION_COMPLETED` event payload and bypasses verification/evidence gates.
+- `tests/expedition-completion-gates.test.js` covers verification failure, missing evidence, missing certification, successful completion, and the `--force` override path.
 
 ## Out of Scope
 
