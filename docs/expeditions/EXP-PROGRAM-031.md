@@ -1,6 +1,6 @@
 # EXP-PROGRAM-031 — Architectural Convergence
 
-**Status:** Active  
+**Status:** Completed and accepted — Architectural convergence gate operational; initial reviews of Programs 043 and 034 completed. Future convergence reviews will be chartered ad hoc under ADR-039.  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** Synth Architectural Constitution  

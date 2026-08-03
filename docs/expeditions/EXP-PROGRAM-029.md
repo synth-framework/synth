@@ -190,13 +190,18 @@ AI Ecosystem Distribution
 │       Generate Cursor, Cline, Windsurf, Roo, Aider, and Continue.dev rules.
 │
 ├── EXP-DIST-006  GitHub Templates and Actions
-│       Product Expedition
+│       Product Expedition — Deferred
 │       Publish repository templates, issue/PR templates, and Actions.
 │
 └── EXP-DIST-007  Website as Discovery Surface
-        Product Expedition
+        Product Expedition — Deferred
         Transform the homepage into an interactive Genesis experience.
 ```
+
+_Note: EXP-DIST-006 and EXP-DIST-007 are deferred. The five core distribution
+layers (capability model, skills, MCP, npm, IDE rules) are completed and
+operational; forge templates and the interactive website remain on the
+roadmap._
 
 ---
 
@@ -273,7 +278,7 @@ A user or agent should be able to discover SYNTH through at least three independ
 
 **Key coordination with 043:**
 
-- Generated skills, IDE rules, and MCP server manifests should consume `synth capabilities` output (from `EXP-CAPTRANS-001`) so they accurately advertise what the installed CLI can and cannot do.
+- Generated skills, IDE rules, and MCP server manifests should consume `synth capabilities` output (from `EXP-CAPTRANS-001`) and the canonical `docs/reference/capability-list.json` produced by Program 043 so they accurately advertise what the installed CLI can and cannot do.
 - The website's interactive Genesis onboarding and the CLI's guided first-contact flow must tell the same story; avoid divergent onboarding narratives.
 
 **Why this ordering:** distribution is valuable only if the thing being distributed actually works for agents and operators. 043 fixes the product experience; 029 projects that fixed experience outward.
