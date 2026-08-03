@@ -96,8 +96,9 @@ async function testWorkflowFilesExist() {
   const proofYml = path.join(workflowsDir, "proof.yml")
   const publishYml = path.join(workflowsDir, "publish.yml")
   const releaseYml = path.join(workflowsDir, "release.yml")
+  const docsYml = path.join(workflowsDir, "docs.yml")
 
-  for (const file of [proofYml, publishYml, releaseYml]) {
+  for (const file of [proofYml, publishYml, releaseYml, docsYml]) {
     const stats = await fs.stat(file).catch(() => null)
     assert(stats && stats.isFile(), `Expected workflow file ${path.basename(file)}`)
   }
@@ -109,6 +110,12 @@ async function testWorkflowFilesExist() {
   assert(invokesDocsGenerate, "publish.yml must run docs:generate")
   assert(publishContent.includes("actions/deploy-pages"), "publish.yml must deploy to GitHub Pages")
   assert(publishContent.includes("[skip ci]"), "publish.yml must skip ci on doc commits to avoid loops")
+
+  const docsContent = await fs.readFile(docsYml, "utf-8")
+  assert(docsContent.includes("node dist/cli/synth.js task run docs:generate"), "docs.yml must run docs:generate")
+  assert(docsContent.includes("actions/upload-artifact"), "docs.yml must upload generated projections as artifacts")
+  assert(docsContent.includes("pull_request:"), "docs.yml must run on pull requests")
+  assert(docsContent.includes("[skip ci]"), "docs.yml must skip ci on bot commits to avoid loops")
 }
 
 async function main() {
