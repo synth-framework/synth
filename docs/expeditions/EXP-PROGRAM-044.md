@@ -71,7 +71,7 @@ Operational Readiness & Self-Hosting
 ├── EXP-CLI-005       Governance Entity Show Commands
 │       Add `synth program show <id>` and `synth expedition show <id>`.
 │
-├── EXP-DOC-008       Generated Documentation Provenance
+├── EXP-DOC-008       Generated Documentation Provenance (Completed)
 │       Ensure `synth docs generate` emits provenance metadata that
 │       satisfies `synth verify` (continues EXP-DOC-007).
 │
