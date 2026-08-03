@@ -915,6 +915,8 @@ async function cmdBootstrapHelp() {
     { name: "synth bootstrap [path]", description: "Analyze repository and produce a bootstrap proposal" },
     { name: "synth bootstrap [path] --dry-run", description: "Generate proposal without mutating state", args: "--dry-run" },
     { name: "synth bootstrap [path] --approve", description: "Apply bootstrap and initialize governance artifacts", args: "--approve" },
+    { name: "synth bootstrap [path] --approve --human", description: "Apply bootstrap and print human-readable progress", args: "--approve --human" },
+    { name: "synth bootstrap [path] --approve --stream-stages", description: "Stream structured stage events to stderr", args: "--approve --stream-stages" },
     { name: "synth bootstrap [path] --name <name>", description: "Override the project name", args: "--name <name>" },
     { name: "synth bootstrap [path] --with-website", description: "Scaffold a static website", args: "--with-website" },
     { name: "synth bootstrap [path] --with-example", description: "Scaffold an example directory", args: "--with-example" },
@@ -2177,10 +2179,32 @@ async function cmdBootstrap(args: string[], flags: Record<string, string | boole
     withWebsite: flags["with-website"] === true || flags["with-website"] === "true",
     withExample: flags["with-example"] === true || flags["with-example"] === "true",
     projectName: typeof flags.name === "string" ? flags.name : undefined,
+    streamStages: flags["stream-stages"] === true || flags["stream-stages"] === "true",
   }
 
   const result = await runBootstrap(targetDir, options)
-  printJson(result)
+
+  if (flags.human === true || flags.human === "true") {
+    console.log(`Bootstrapping ${result.projectName} at ${result.targetDir}`)
+    console.log("")
+    if (Array.isArray(result.stages)) {
+      for (const stage of result.stages) {
+        const duration = stage.durationMs ? ` (${stage.durationMs}ms)` : ""
+        console.log(`${stage.description}... ${stage.status}${duration}`)
+      }
+    }
+    console.log("")
+    console.log(`Status: ${result.status}`)
+    if (Array.isArray(result.nextSteps) && result.nextSteps.length > 0) {
+      console.log("")
+      console.log("Next steps:")
+      for (const step of result.nextSteps) {
+        console.log(`  ${step}`)
+      }
+    }
+  } else {
+    printJson(result)
+  }
 
   if (result.status === "error") {
     process.exit(1)
