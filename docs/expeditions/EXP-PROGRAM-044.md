@@ -1,6 +1,6 @@
 # EXP-PROGRAM-044 — Operational Readiness & Self-Hosting
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** Synth Architectural Constitution  
@@ -78,7 +78,7 @@ Operational Readiness & Self-Hosting
 ├── EXP-BOOTSTRAP-002 Framework Self-Hosting (Completed)
 │       Initialize the synth-v2 repository as a SYNTH project.
 │
-└── EXP-GOV-025       Safe State Repair & Divergence Recovery
+└── EXP-GOV-025       Safe State Repair & Divergence Recovery (Completed)
         Provide a governed, replay-safe path to recover from
         canonical-state divergences without hand-editing JSON.
 ```
@@ -146,7 +146,7 @@ Program 044 is complete when:
 
 ## Current Recommendation
 
-**Start now.** The first two expeditions (CAPTRANS-003 and CLI-005) are read-only, low-blast-radius, and immediately improve operator trust. They can ship in a single PR. After that, proceed through DOC-008, BOOTSTRAP-002, and GOV-025 in order.
+**Complete.** All five charters (CAPTRANS-003, CLI-005, DOC-008, BOOTSTRAP-002, GOV-025) are finished. The program met its success criteria: `synth capabilities`, `synth program show`, `synth expedition show`, `synth docs generate`, `synth doctor`, `synth status`, and `synth repair state` all behave correctly on the self-hosted synth-v2 repository.
 
 ---
 
