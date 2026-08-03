@@ -2,7 +2,7 @@
 
 > Close the gap between SYNTH's sound governance kernel and the rough, tribal onboarding experience that agents and operators hit in production.
 
-**Status:** Active  
+**Status:** Completed  
 **Kind:** Program  
 **Priority:** High  
 **Authority:** TaskPRO real-world onboarding retrospective, EXP-GOV-024 brownfield migration findings, EXP-CLI-001 operator feedback  
