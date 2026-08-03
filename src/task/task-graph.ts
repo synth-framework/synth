@@ -11,6 +11,7 @@ import {
   detectCycles,
   topologicalSort,
   reachableFrom,
+  type EdgeType,
   type Graph,
   type GraphNode,
   type GraphEdge,
@@ -46,9 +47,11 @@ export function buildTaskGraph(registry: TaskRegistry): TaskGraph {
 /**
  * Detect dependency cycles among tasks in the registry.
  */
+const DEPENDS_ON: EdgeType[] = ["depends_on"]
+
 export function detectTaskCycles(registry: TaskRegistry): string[][] {
   const graph = buildTaskGraph(registry)
-  return detectCycles(graph)
+  return detectCycles(graph, DEPENDS_ON)
 }
 
 /**
@@ -58,7 +61,7 @@ export function taskExecutionOrder(
   registry: TaskRegistry,
 ): { ok: true; order: Task[] } | { ok: false; cycle: string[] } {
   const graph = buildTaskGraph(registry)
-  const result = topologicalSort(graph)
+  const result = topologicalSort(graph, DEPENDS_ON)
 
   if (!result.ok) {
     return result
@@ -102,7 +105,7 @@ export function findAffectedTasks(
 
   for (const id of changedTaskIds) {
     if (!reverseGraph.nodes.has(id)) continue
-    for (const reachableId of reachableFrom(reverseGraph, id)) {
+    for (const reachableId of reachableFrom(reverseGraph, id, DEPENDS_ON)) {
       affectedIds.add(reachableId)
     }
   }
