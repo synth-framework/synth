@@ -262,6 +262,34 @@
       "name": "Simplification Assessment",
       "description": "Simplification assessment and reporting expeditions."
     },
+    "APPROVAL": {
+      "name": "Approval Workflow",
+      "description": "Two-party approval request, grant, deny, and audit expeditions."
+    },
+    "BOOTSTRAP": {
+      "name": "Bootstrap Experience",
+      "description": "Project initialization, bootstrap stages, and onboarding materialization expeditions."
+    },
+    "GIT": {
+      "name": "Git Governance Snapshots",
+      "description": "Git-anchored governance snapshot creation, verification, and lineage expeditions."
+    },
+    "IDENTITY": {
+      "name": "Agent Identity",
+      "description": "Agent identity, session binding, and telemetry context expeditions."
+    },
+    "MIGRATE": {
+      "name": "Legacy Migration",
+      "description": "Legacy Synth state detection, planning, archival, and import expeditions."
+    },
+    "OUTPUT": {
+      "name": "CLI Output Contract",
+      "description": "Structured stdout, stderr separation, and machine/human output contract expeditions."
+    },
+    "SIGN": {
+      "name": "Event Signing",
+      "description": "Event-log signing, signature verification, and integrity proof expeditions."
+    },
     "PROGRAM": {
       "name": "Program",
       "description": "Program-level containers that group related expeditions.",
