@@ -2,7 +2,7 @@
 
 > **Operational readiness expedition.** Provide a governed, replay-safe CLI path to recover from canonical-state divergences without hand-editing JSON.
 
-**Status:** Active  
+**Status:** Completed and accepted  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-044 — Operational Readiness & Self-Hosting  
