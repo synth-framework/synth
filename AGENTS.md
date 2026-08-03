@@ -6,6 +6,18 @@ SYNTH is a deterministic execution system for engineering work. Humans explore, 
 
 ---
 
+## Pre-flight checkpoint
+
+Run this checkpoint at the start of every agent session and before every implementation action:
+
+1. `synth status` — confirm `status` is `ok`.
+2. `synth explain replay` — confirm `consistent` is `true`.
+3. `synth checkpoint` — confirm an expedition is at `executing` status.
+4. Confirm the intended file changes are within the scope of that executing expedition.
+5. Only then write code or state.
+
+If any step fails, stop and ask the operator for the next step.
+
 ## Your responsibilities
 
 - Capture human intent as a **Mission**.
@@ -29,6 +41,8 @@ When in doubt, ask the operator: "Should I create an expedition for this, or is 
 - **Never bypass Genesis.** Execution state mutates only through the ExecutionGate.
 - **Never modify replay history.** Events are immutable.
 - **Never violate Protected Assets.** Mission Studio, Genesis, Replay, ExecutionGate, the Event Model, the Capability Model, and the Constitutional Baseline are frozen.
+- **Never write to `data/` or runtime state without an executing expedition and operator approval.** Writes to `.synth/data/`, `data/`, `event-log.jsonl`, or `canonical-state.json` require an expedition at `executing` status and explicit `--approve` (or `SYNTH_APPROVAL_MODE=human-approved`).
+- **Never call SDK domain functions directly for state mutations.** All state mutations go through `synth <subcommand>` CLI commands; the SDK `events` and `state` modules are read-only.
 - **Never commit without the operator running `npm run govern`.** AI agents do not run the full governance pipeline locally (ADR-043).
 
 ## Derived artifacts

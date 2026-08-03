@@ -1,6 +1,6 @@
 # EXP-GOV-023 — Agent Governance Adherence
 
-**Status:** Draft  
+**Status:** Completed and accepted  
 **Kind:** Governance Expedition  
 **Program:** EXP-PROGRAM-030 — Intelligent Governance Orchestration  
 **Priority:** Critical  
@@ -53,3 +53,12 @@ Update `AGENTS.md` to replace the "you should follow the rules" language with a 
 - Attempting to write to `data/` without an active `executing` expedition is recognized and blocked by the operator
 - The SDK domain functions are documented as internal-only (not for agent use)
 - AGENTS.md contains the hard pre-flight procedure as the first actionable section
+
+## Evidence
+
+- [x] `ExecutionGate.authorize` enforces the bright-line rule: runtime data paths require an executing expedition and human-approved identity.
+- [x] `synth checkpoint` command runs the pre-flight status/replay/executing-expedition checks.
+- [x] `AGENTS.md` baseline includes the hard pre-flight procedure and the runtime-data mutation constraint.
+- [x] `src/sdk/events/index.ts` and `src/sdk/state/index.ts` are explicitly read-only and documented as not for agent mutations.
+- [x] Regression tests cover blocked and allowed runtime data mutations.
+- [x] Program 030 composition records EXP-GOV-023.
