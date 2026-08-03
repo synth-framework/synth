@@ -33,6 +33,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "expedition complete", safety: "MUTATING", description: "Complete an executing Expedition", requiresApproval: true },
   { command: "expedition certify", safety: "MUTATING", description: "Certify convergence for an executing Expedition", requiresApproval: true },
   { command: "doctor", safety: "READ_ONLY", description: "Verify installation and project health" },
+  { command: "checkpoint", safety: "READ_ONLY", description: "Run pre-flight checkpoint before implementation work" },
   { command: "status", safety: "READ_ONLY", description: "Report the current project state" },
   { command: "explain", safety: "READ_ONLY", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { command: "validate", safety: "READ_ONLY", description: "Analyze changes and plan validations" },

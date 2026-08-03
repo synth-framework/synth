@@ -113,6 +113,7 @@ const PUBLIC_VOCABULARY = [
 const COMMANDS = [
   { name: "version", description: "Print the installed Synth version" },
   { name: "doctor", description: "Verify installation and project health" },
+  { name: "checkpoint", description: "Run pre-flight checkpoint before implementation work" },
   { name: "init", description: "Initialize the current directory as a Synth project" },
   { name: "bootstrap", description: "Transform a repository into a Synth project" },
   { name: "discover", description: "Produce a read-only analysis of a repository" },
@@ -513,6 +514,69 @@ async function cmdDoctor() {
     checks,
     nextSteps,
   })
+}
+
+async function cmdCheckpoint() {
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+
+  // Step 1: synth status projection.
+  const briefing = await buildOperatorBriefing(process.cwd())
+  const statusOk = briefing.status === "ok"
+
+  // Step 2: replay consistency.
+  const replay = await verifyReplayHealth()
+
+  // Step 3: active executing expedition.
+  const executingExpeditions =
+    briefing.status === "ok"
+      ? briefing.activeExpeditions.filter((e) => e.status === "executing")
+      : []
+  const hasExecutingExpedition = executingExpeditions.length > 0
+
+  const steps = {
+    status: {
+      ok: statusOk,
+      detail: statusOk ? "Governance context resolved" : "Failed to resolve governance context",
+      ...(statusOk ? {} : { nextStep: "Run 'synth status' to diagnose the governance context." }),
+    },
+    replay: {
+      ok: replay.ok,
+      detail: replay.detail,
+      ...(replay.ok ? {} : { nextStep: replay.nextStep }),
+    },
+    executingExpedition: {
+      ok: hasExecutingExpedition,
+      detail: hasExecutingExpedition
+        ? executingExpeditions.map((e) => `${e.id} (${e.name})`).join(", ")
+        : "No expedition is at executing status",
+      ...(hasExecutingExpedition
+        ? {}
+        : { nextStep: "Run 'synth expedition start --id <id>' to authorize implementation work." }),
+    },
+  }
+
+  const allOk = statusOk && replay.ok && hasExecutingExpedition
+  const nextSteps: string[] = []
+  for (const step of Object.values(steps)) {
+    if (!step.ok && step.nextStep) {
+      nextSteps.push(step.nextStep)
+    }
+  }
+  if (allOk) {
+    nextSteps.push("You may begin implementation work covered by the executing expedition.")
+  }
+
+  printJson({
+    status: allOk ? "ok" : "blocked",
+    kind: "AgentCheckpoint",
+    steps,
+    executingExpeditionIds: executingExpeditions.map((e) => e.id),
+    nextSteps,
+  })
+
+  if (!allOk) {
+    process.exit(1)
+  }
 }
 
 async function cmdCertify(flags: Record<string, string | boolean>) {
@@ -1818,6 +1882,12 @@ async function cmdExpeditionHelp() {
 async function cmdDoctorHelp() {
   printJson(namespaceHelp("doctor", "Verify installation and project health", [
     { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
+  ]))
+}
+
+async function cmdCheckpointHelp() {
+  printJson(namespaceHelp("checkpoint", "Run pre-flight checkpoint before implementation work", [
+    { name: "synth checkpoint", description: "Confirm status, replay consistency, and an executing expedition before work" },
   ]))
 }
 
@@ -4143,6 +4213,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdExpeditionHelp }
     case "doctor":
       return { namespace, handler: cmdDoctorHelp }
+    case "checkpoint":
+      return { namespace, handler: cmdCheckpointHelp }
     case "certify":
       return { namespace, handler: cmdCertifyHelp }
     case "capabilities":
@@ -4596,6 +4668,10 @@ async function main() {
 
     case "doctor":
       await cmdDoctor()
+      break
+
+    case "checkpoint":
+      await cmdCheckpoint()
       break
 
     case "init":

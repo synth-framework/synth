@@ -83,6 +83,19 @@ async function testDoctor() {
   console.log("[PASS] synth doctor reports Runtime Health and Project Health")
 }
 
+async function testCheckpoint() {
+  const { stdout, status } = runSynth(["checkpoint"])
+  // The checkpoint may be blocked if no expedition is executing; either way it
+  // must emit a single structured AgentCheckpoint result.
+  const output = parseJson(stdout)
+  assert(output.kind === "AgentCheckpoint", "checkpoint should return AgentCheckpoint")
+  assert(output.steps && output.steps.status, "checkpoint should include status step")
+  assert(output.steps && output.steps.replay, "checkpoint should include replay step")
+  assert(output.steps && output.steps.executingExpedition, "checkpoint should include executingExpedition step")
+  assert(Array.isArray(output.nextSteps), "checkpoint should provide nextSteps")
+  console.log(`[PASS] synth checkpoint returns AgentCheckpoint (status=${output.status})`)
+}
+
 async function testValidateDryRun() {
   const { stdout, status } = runSynth(["validate", "--dry-run"])
   assert(status === 0, "validate --dry-run should exit 0")
@@ -223,6 +236,7 @@ async function testSingleChannelStdout() {
     ["--version"],
     ["--help"],
     ["doctor"],
+    ["checkpoint"],
     ["validate", "--dry-run"],
     ["validate", "--full", "--dry-run"],
   ]
@@ -324,6 +338,7 @@ async function main() {
   await testVersion()
   await testHelp()
   await testDoctor()
+  await testCheckpoint()
   await testValidateDryRun()
   await testValidateNoChanges()
   await testValidateFullDryRun()

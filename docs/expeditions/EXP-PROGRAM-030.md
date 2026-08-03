@@ -159,10 +159,15 @@ Intelligent Governance Orchestration
 │       Deterministic reasons for skipped validators via CLI and
 │       structured output.
 │
-└── EXP-GOV-022  Performance Benchmarking
-        Engineering Expedition
-        Capture timing, compare against targets, and produce baseline
-        artifacts.
+├── EXP-GOV-022  Performance Benchmarking
+│       Engineering Expedition
+│       Capture timing, compare against targets, and produce baseline
+│       artifacts.
+│
+└── EXP-GOV-023  Agent Governance Adherence
+        Governance Expedition
+        Bright-line mutation rule, pre-flight checkpoint, and
+        AGENTS.md hardening to prevent agent bypass of the governance lifecycle.
 ```
 
 ---

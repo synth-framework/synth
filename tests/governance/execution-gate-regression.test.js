@@ -85,6 +85,38 @@ function baseExpedition(id, missionId, scope) {
   }
 }
 
+function humanApprovedIdentity() {
+  return {
+    agentId: "test-agent",
+    sessionId: "test-session",
+    approvalMode: "human-approved",
+    issuedAt: new Date().toISOString(),
+  }
+}
+
+function autonomousIdentity() {
+  return {
+    agentId: "test-agent",
+    sessionId: "test-session",
+    approvalMode: "autonomous",
+    issuedAt: new Date().toISOString(),
+  }
+}
+
+async function seedExecutingAuthority(ctx, computeEventHash, { missionId, expeditionId, scope }) {
+  const result = await seedAuthority(ctx, computeEventHash, { missionId, expeditionId, scope })
+
+  const startResult = await ctx.gate.execute({
+    actor: "test",
+    capability: "StartExpedition",
+    payload: { id: expeditionId },
+    context: { identity: humanApprovedIdentity() },
+  })
+  assert.strictEqual(startResult.contract.finalState, "COMMITTED", "StartExpedition must commit")
+
+  return result
+}
+
 async function seedAuthority(ctx, computeEventHash, { missionId, expeditionId, scope }) {
   let previousHash = await ctx.gate.getLastEventHash()
   const events = []
@@ -250,10 +282,11 @@ async function testScopeBoundary() {
   const scopeRoot = path.join(tempRoot, "website", "hero") + path.sep
   await fs.mkdir(scopeRoot, { recursive: true })
 
+  const relativeScope = path.relative(process.cwd(), scopeRoot).split(path.sep).join("/") + "/**"
   await seedAuthority(ctx, computeEventHash, {
     missionId,
     expeditionId,
-    scope: [scopeRoot],
+    scope: [relativeScope],
   })
 
   // In-scope mutation should succeed.
@@ -348,6 +381,69 @@ async function testStateStoreGuard() {
   console.log("[PASS] StateStore write guard blocks unauthorized mutations")
 }
 
+async function testRuntimeDataBoundary() {
+  const { bootstrap, computeEventHash, ExecutionGateError } = await loadModules()
+  const ctx = await bootstrap({ infra: { persistence: "memory" }, skipGenesis: true })
+  await registerRuntimeCapabilities(ctx)
+
+  const missionId = "mission-runtime-data"
+  const expeditionId = "exp-runtime-data-001"
+  const runtimeTarget = path.resolve("data", "runtime-data-test.json")
+
+  // With only a committed expedition and autonomous identity, runtime data writes are blocked.
+  await seedAuthority(ctx, computeEventHash, { missionId, expeditionId })
+
+  try {
+    await ctx.gate.execute({
+      actor: "agent",
+      capability: "FilesystemWrite",
+      payload: { path: runtimeTarget, content: "should not write" },
+      context: { identity: autonomousIdentity() },
+    })
+    assert.fail("runtime data mutation without executing expedition must be blocked")
+  } catch (err) {
+    assert.ok(err instanceof ExecutionGateError, `expected ExecutionGateError, got ${err}`)
+    assert.strictEqual(err.phase, "MUTATE_EXTERNAL", "failure must occur in mutation phase")
+    assert.ok(err.message.includes("executing status"), `reason should cite executing status: ${err.message}`)
+  }
+
+  // Start the expedition, but keep identity autonomous — still blocked.
+  const startResult = await ctx.gate.execute({
+    actor: "test",
+    capability: "StartExpedition",
+    payload: { id: expeditionId },
+    context: { identity: humanApprovedIdentity() },
+  })
+  assert.strictEqual(startResult.contract.finalState, "COMMITTED", "StartExpedition must commit")
+
+  try {
+    await ctx.gate.execute({
+      actor: "agent",
+      capability: "FilesystemWrite",
+      payload: { path: runtimeTarget, content: "should not write" },
+      context: { identity: autonomousIdentity() },
+    })
+    assert.fail("runtime data mutation without operator approval must be blocked")
+  } catch (err) {
+    assert.ok(err instanceof ExecutionGateError, `expected ExecutionGateError, got ${err}`)
+    assert.ok(err.message.includes("operator approval"), `reason should cite operator approval: ${err.message}`)
+  }
+
+  // With executing expedition and human-approved identity, the runtime data write succeeds.
+  const { result, contract } = await ctx.gate.execute({
+    actor: "agent",
+    capability: "FilesystemWrite",
+    payload: { path: runtimeTarget, content: "runtime data write ok" },
+    context: { identity: humanApprovedIdentity() },
+  })
+  assert.strictEqual(contract.finalState, "COMMITTED", "authorized runtime data mutation must commit")
+  assert.ok(result.success, "execution result must report success")
+  assert.strictEqual(await fs.readFile(runtimeTarget, "utf-8"), "runtime data write ok", "runtime data file must be written")
+
+  await fs.rm(runtimeTarget, { force: true })
+  console.log("[PASS] Runtime data mutation boundary enforced")
+}
+
 async function main() {
   for (const file of [BOOTSTRAP_PATH, HASH_PATH, GATE_PATH, STATE_STORE_PATH, ERRORS_PATH]) {
     try {
@@ -363,6 +459,7 @@ async function main() {
   await testAllowedWithAuthority()
   await testScopeBoundary()
   await testStateStoreGuard()
+  await testRuntimeDataBoundary()
 
   console.log("\n[EXECUTION GATE REGRESSION] All tests passed")
 }

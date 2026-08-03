@@ -15,6 +15,7 @@
 // ============================================================
 
 import crypto from "crypto"
+import path from "path"
 import type {
   CapabilityInvocation,
   CanonicalState,
@@ -25,6 +26,7 @@ import type {
   MutationProvider,
 } from "../types/index.js"
 import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governance/derived-files.js"
+import { dataDir, eventLogFile, stateFile } from "../sdk/paths/index.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import { signEventBatch } from "../signing/index.js"
@@ -35,6 +37,7 @@ import { resolveImplementationEligibility } from "../governance/implementation-e
 import type { Registry } from "../capability/registry.js"
 import type { PolicyEngine } from "../policy/policy-engine.js"
 import type { RuntimeEngine } from "../runtime/engine.js"
+import type { AgentIdentity } from "../identity/types.js"
 import type { EventStore } from "../infra/event-store.js"
 import { EVENT_STORE_WRITE_TOKEN } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
@@ -66,6 +69,24 @@ function deterministicCommandId(
     priorStateHash,
   })
   return crypto.createHash("sha256").update(data).digest("hex")
+}
+
+/**
+ * Determine whether a filesystem target is a runtime data path.
+ * Writes to these paths are the bright-line mutation boundary: they require
+ * an expedition at executing status and explicit operator approval.
+ */
+function isRuntimeDataPath(target: string): boolean {
+  const absolute = path.resolve(target)
+  const runtimeDir = path.resolve(dataDir(process.cwd()))
+  const eventLogPath = path.resolve(eventLogFile(process.cwd()))
+  const stateFilePath = path.resolve(stateFile(process.cwd()))
+
+  if (absolute === eventLogPath || absolute === stateFilePath) {
+    return true
+  }
+  const withSep = runtimeDir.endsWith(path.sep) ? runtimeDir : `${runtimeDir}${path.sep}`
+  return absolute.startsWith(withSep)
 }
 
 /** Internal error indicating a specific execution phase failed */
@@ -444,12 +465,41 @@ export class ExecutionGate {
       return { allowed: false, reason: "No approved Mission exists" }
     }
 
-    // 2. Lifecycle must permit execution: at least one approved Expedition.
-    const authorizedExpeditions = Object.values(state.expeditions).filter(
-      (e) => e.status === "approved" || e.status === "committed" || e.status === "executing"
-    )
-    if (authorizedExpeditions.length === 0) {
-      return { allowed: false, reason: "No authorized Expedition exists" }
+    // Bright-line rule for runtime data paths (EXP-GOV-023):
+    // writes to data/ or canonical state require an expedition at executing
+    // status AND explicit operator approval.
+    const targetIsRuntimeData = isRuntimeDataPath(mutation.target)
+    let authorizedExpeditions
+    if (targetIsRuntimeData) {
+      const executingExpeditions = Object.values(state.expeditions).filter(
+        (e) => e.status === "executing"
+      )
+      if (executingExpeditions.length === 0) {
+        return {
+          allowed: false,
+          reason:
+            "Runtime data mutations require an expedition at executing status. " +
+            "Run 'synth expedition start --id <id>' before modifying data/ or runtime state.",
+        }
+      }
+      const identity = mutation.context?.identity as AgentIdentity | undefined
+      if (identity?.approvalMode !== "human-approved") {
+        return {
+          allowed: false,
+          reason:
+            "Runtime data mutations require operator approval. " +
+            "Run the command with --approve or set SYNTH_APPROVAL_MODE=human-approved.",
+        }
+      }
+      authorizedExpeditions = executingExpeditions
+    } else {
+      // 2. Lifecycle must permit execution: at least one approved Expedition.
+      authorizedExpeditions = Object.values(state.expeditions).filter(
+        (e) => e.status === "approved" || e.status === "committed" || e.status === "executing"
+      )
+      if (authorizedExpeditions.length === 0) {
+        return { allowed: false, reason: "No authorized Expedition exists" }
+      }
     }
 
     // 3. Scope must be contained within the approved expedition scope, if scope
