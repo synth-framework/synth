@@ -12,11 +12,13 @@ import os from "os"
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const PACKAGE_PATH = path.resolve(process.cwd(), "package.json")
 
-function runSynth(args, cwd = process.cwd()) {
+function runSynth(args, cwd = process.cwd(), options = {}) {
   const result = spawnSync("node", [CLI_PATH, ...args], {
     cwd,
     encoding: "utf-8",
     timeout: 30000,
+    ...options,
+    env: options.env ? { ...process.env, ...options.env } : process.env,
   })
   return {
     stdout: result.stdout || "",
@@ -319,7 +321,12 @@ async function testNoShellDeprecationWarning() {
       JSON.stringify({ name: "test", version: "1.0.0", scripts: { govern: "node -e 'console.log(\"ok\")'" } }),
       "utf-8",
     )
-    const { stderr, status } = runSynth(["govern"], tmpDir)
+    // EXP-CAPTRANS-003 / EXP-CLI-005: isolate the child from any
+    // SYNTH_GOVERN_DEPTH marker set by the test runner so the delegation
+    // guard does not block a legitimate project govern script.
+    const cleanEnv = { ...process.env }
+    delete cleanEnv.SYNTH_GOVERN_DEPTH
+    const { stderr, status } = runSynth(["govern"], tmpDir, { env: cleanEnv })
     assert(status === 0, "govern should exit 0 for a valid script")
     assert(!stderr.includes("shell"), `stderr should not contain shell deprecation warning: ${stderr}`)
     assert(!stderr.includes("deprecat"), `stderr should not contain deprecation warning: ${stderr}`)

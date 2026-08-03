@@ -84,8 +84,10 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "mission project", safety: "READ_ONLY", description: "Project a Mission from an approved Alignment Contract" },
   { command: "mission verify-charter", safety: "READ_ONLY", description: "Verify expedition charter integrity" },
   { command: "program list", safety: "READ_ONLY", description: "List governance programs" },
+  { command: "program show", safety: "READ_ONLY", description: "Show a single governance program" },
   { command: "program rank", safety: "READ_ONLY", description: "Rank active programs by weighted open work" },
   { command: "expedition list", safety: "READ_ONLY", description: "List governance expeditions" },
+  { command: "expedition show", safety: "READ_ONLY", description: "Show a single governance expedition" },
   { command: "expedition rank", safety: "READ_ONLY", description: "Rank open expeditions by priority, status, and downstream impact" },
   { command: "validate dependencies", safety: "READ_ONLY", description: "Verify expedition charter dependency resolution" },
   { command: "validate artifact", safety: "READ_ONLY", description: "Validate governance artifacts" },
@@ -200,4 +202,142 @@ export function assertSafeForDiscovery(command: string): void {
     `${command} is a ${meta.safety} command and cannot run during Discovery. ` +
       `Run 'synth bootstrap --approve' or complete Discovery before ${suggestionForCommand(command)}.`,
   )
+}
+
+/**
+ * Classify a parsed argv invocation into the canonical command string used
+ * by the command-safety registry and capability-detection logic.
+ *
+ * Exported here (rather than in synth.ts) so capabilities-data.ts can detect
+ * whether a command-surface capability is actually wired in the dispatcher
+ * without creating a circular dependency with the CLI entry point.
+ */
+export function classifyInvocation(
+  rawArgs: string[],
+  positional: string[],
+  flags: Record<string, string | boolean>,
+): string {
+  if (rawArgs.length === 0 || rawArgs.includes("--help") || rawArgs.includes("-h")) return "--help"
+  if (rawArgs.includes("--version") || rawArgs.includes("-v")) return "--version"
+
+  const namespace = positional[0] || ""
+  const sub = positional[1]
+
+  if (namespace === "bootstrap") {
+    if (flags.approve === true) return "bootstrap --approve"
+    if (flags["dry-run"] === true) return "bootstrap --dry-run"
+    return "bootstrap"
+  }
+  if (namespace === "docs" && sub === "generate") return "docs generate"
+  if (namespace === "repair" && sub === "replay") {
+    return flags.approve === true || flags.approve === "true" ? "repair replay --approve" : "repair replay"
+  }
+  if (namespace === "first-contact" || namespace === "genesis") {
+    const prefix = namespace
+    if (!sub) {
+      if (flags.approve === true || flags.approve === "true") return `${prefix} --approve`
+      if (flags["dry-run"] === true) return `${prefix} --dry-run`
+      return prefix
+    }
+    if (sub === "start") return `${prefix} start`
+    if (sub === "clarify") return `${prefix} clarify`
+    if (sub === "project") return `${prefix} project`
+    if (sub === "verify") return `${prefix} verify`
+    if (sub === "approve") return `${prefix} approve`
+    if (sub === "status") return `${prefix} status`
+    if (sub === "materialize") {
+      if (flags["dry-run"] === true) return `${prefix} materialize --dry-run`
+      if (flags.approve === true || flags.approve === "true") return `${prefix} materialize --approve`
+      return `${prefix} materialize`
+    }
+  }
+  if (namespace === "repo") {
+    if (sub === "init") return "repo init"
+    if (sub === "branch" && positional[2] === "create") return "repo branch create"
+    if (sub === "pr" && positional[2] === "open") return "repo pr open"
+    if (sub === "pr" && positional[2] === "approve") return "repo pr approve"
+    if (sub === "pr" && positional[2] === "merge") return "repo pr merge"
+    if (sub === "release" && positional[2] === "create") return "repo release create"
+    if (sub === "status") return "repo status"
+  }
+  if (namespace === "mission") {
+    if (sub === "create") return "mission create"
+    if (sub === "approve") return "mission approve"
+    if (sub === "decisions") return "mission decisions"
+    if (sub === "evidence" && positional[2] === "add") return "mission evidence add"
+    if (sub === "snapshot") return "mission snapshot"
+    if (sub === "project") return "mission project"
+    if (sub === "verify-charter") return "mission verify-charter"
+  }
+  if (namespace === "program") {
+    if (sub === "list") return "program list"
+    if (sub === "show") return "program show"
+    if (sub === "rank") return "program rank"
+  }
+  if (namespace === "validate") {
+    if (flags.full === true || flags.full === "true") return "validate --full"
+    if (sub === "dependencies") return "validate dependencies"
+    if (sub === "artifact") return "validate artifact"
+    return "validate"
+  }
+  if (namespace === "task") {
+    if (sub === "list") return "task list"
+    if (sub === "explain") return "task explain"
+    if (sub === "graph") return "task graph"
+    if (sub === "doctor") return "task doctor"
+    return "task"
+  }
+  if (namespace === "snapshot") {
+    if (sub === "create") return "snapshot create"
+    if (sub === "list") return "snapshot list"
+    if (sub === "show") return "snapshot show"
+    if (sub === "verify") return "snapshot verify"
+    return "snapshot"
+  }
+  if (namespace === "adapter") {
+    const adapterSub = sub || ""
+    const known = [
+      "list", "info", "enable", "disable", "configure", "status", "health", "init",
+      "create-branch", "checkout", "commit", "promote", "install-hooks",
+      "github-create-issue", "github-create-pr", "github-merge-pr",
+      "tdd-generate-test", "tdd-verify-failure", "tdd-verify-implementation", "tdd-evidence",
+      "bdd-create-feature", "bdd-create-scenario", "bdd-generate-tests", "bdd-verify", "bdd-evidence",
+    ]
+    if (known.includes(adapterSub)) return `adapter ${adapterSub}`
+    return "adapter"
+  }
+  if (namespace === "intent") {
+    if (sub === "create") return "intent create"
+    if (sub === "refine") return "intent refine"
+    if (sub === "submit") return "intent submit"
+    if (sub === "approve") return "intent approve"
+  }
+  if (namespace === "alignment") {
+    if (sub === "create") return "alignment create"
+    if (sub === "submit") return "alignment submit"
+    if (sub === "approve") return "alignment approve"
+    if (sub === "prepare") return "alignment prepare"
+  }
+  if (namespace === "expedition") {
+    if (sub === "create") return "expedition create"
+    if (sub === "approve") return "expedition approve"
+    if (sub === "commit") return "expedition commit"
+    if (sub === "start") return "expedition start"
+    if (sub === "complete") return "expedition complete"
+    if (sub === "archive") return "expedition archive"
+    if (sub === "evidence") return "expedition evidence"
+    if (sub === "certify") return "expedition certify"
+    if (sub === "list") return "expedition list"
+    if (sub === "show") return "expedition show"
+    if (sub === "rank") return "expedition rank"
+  }
+  if (namespace === "capabilities") {
+    return "capabilities"
+  }
+  if (namespace === "project") {
+    if (sub === "AGENTS.md") return "project AGENTS.md"
+    return "project"
+  }
+
+  return namespace
 }

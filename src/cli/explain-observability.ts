@@ -62,7 +62,11 @@ import {
 import { root } from "../sdk/workspace/index.js"
 import { printJson, printError } from "./print.js"
 import { buildOperatorBriefing, type OperatorBriefing } from "./status-briefing.js"
-import { EXPECTED_CAPABILITIES, isCapabilityAvailable } from "./capabilities-data.js"
+import {
+  EXPECTED_CAPABILITIES,
+  isCapabilityAvailable,
+  buildImplementedCommandSet,
+} from "./capabilities-data.js"
 import { createCapabilityRegistry } from "../capability/index.js"
 import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 
@@ -997,8 +1001,9 @@ async function buildStatusReport(ec: ExplainContext): Promise<Record<string, unk
   const briefing = await buildOperatorBriefing(root())
   const installedCapabilities = new Set(createCapabilityRegistry().list())
   const installedAdapters = new Set(createAdapterRegistry().list())
+  const implementedCommands = buildImplementedCommandSet()
   const unavailableCapabilities = EXPECTED_CAPABILITIES
-    .filter((c) => !isCapabilityAvailable(c, installedCapabilities, installedAdapters))
+    .filter((c) => !isCapabilityAvailable(c, installedCapabilities, installedAdapters, implementedCommands))
     .map((c) => c.id)
   const explanation = await buildStatusExplanation(briefing, replay, unavailableCapabilities, ec.events)
 

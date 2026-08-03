@@ -27,7 +27,7 @@ import { setAgentTelemetry, printJson, printError, setHumanMode } from "./print.
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
-import { EXPECTED_CAPABILITIES, buildCapabilityEntries } from "./capabilities-data.js"
+import { EXPECTED_CAPABILITIES, buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
@@ -63,7 +63,7 @@ import {
 } from "./repo.js"
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
-import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "./command-safety.js"
+import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery, classifyInvocation } from "./command-safety.js"
 import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { runCertification, printCertificationReport, writeMatrix } from "./certification-runner.js"
 import {
@@ -89,7 +89,15 @@ import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
 import { runTasks } from "../task/task-runner.js"
-import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
+import {
+  loadGovernanceInventory,
+  filterByValues,
+  findProgramById,
+  findExpeditionById,
+  findProgramExpeditions,
+  findUpstreamExpeditions,
+  findDownstreamExpeditions,
+} from "../governance/inventory.js"
 import { rankExpeditions, rankPrograms } from "../governance/rank.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { buildDerivedState } from "../state/derived/index.js"
@@ -1133,10 +1141,11 @@ async function cmdProgramHelp() {
     { name: "synth program list", description: "List all governance programs" },
     { name: "synth program list --status <status>", description: "Filter programs by status", args: "--status Proposed | Active | Completed" },
     { name: "synth program list --priority <priority>", description: "Filter programs by priority", args: "--priority Critical | High | Medium | Low" },
+    { name: "synth program show --id <program-id>", description: "Show a single program and its expeditions", args: "--id EXP-PROGRAM-044" },
     { name: "synth program rank", description: "Rank active programs by weighted open work" },
     { name: "synth program rank --next", description: "Return the single highest-priority active program" },
     { name: "synth program rank --status <status>", description: "Rank programs by status", args: "--status Proposed | Active | Completed" },
-  ], { note: "Program list and rank are read-only and derived from docs/expeditions/*.md." }))
+  ], { note: "Program list, show, and rank are read-only and derived from docs/expeditions/*.md." }))
 }
 
 async function cmdValidateHelp() {
@@ -1872,6 +1881,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
     { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
     { name: "synth expedition list --program <program-id>", description: "Filter expeditions by program", args: "--program EXP-PROGRAM-043" },
+    { name: "synth expedition show --id <expedition-id>", description: "Show a single expedition with upstream/downstream context", args: "--id EXP-CLI-005" },
     { name: "synth expedition rank", description: "Rank open expeditions by priority, status, and downstream impact" },
     { name: "synth expedition rank --next", description: "Return the single highest-priority open expedition" },
     { name: "synth expedition rank --status <status>", description: "Rank expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
@@ -1947,8 +1957,9 @@ async function cmdCapabilities() {
   const installedCapabilities = new Set(ctx.capabilityRegistry.list())
   const adapterRegistry = createAdapterRegistry()
   const installedAdapters = new Set(adapterRegistry.list())
+  const implementedCommands = buildImplementedCommandSet()
 
-  const capabilities = buildCapabilityEntries(installedCapabilities, installedAdapters)
+  const capabilities = buildCapabilityEntries(installedCapabilities, installedAdapters, implementedCommands)
 
   printJson({
     status: "ok",
@@ -3090,6 +3101,118 @@ async function cmdExpeditionRank(flags: Record<string, string | boolean>) {
   }
 
   printJson(result)
+}
+
+// ============================================================
+// EXP-CLI-005: Governance entity show commands
+// ============================================================
+async function cmdProgramShow(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth program show --id <program-id>", {
+      code: "MissingProgramId",
+      category: "validation",
+      suggestion: "Run 'synth program list' to see available programs.",
+    })
+    return
+  }
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const program = await findProgramById(charterDir, id)
+  if (!program) {
+    printError(`Program ${id} not found.`, {
+      code: "ProgramNotFound",
+      category: "validation",
+      suggestion: "Run 'synth program list' to see available programs.",
+    })
+    return
+  }
+
+  const expeditions = await findProgramExpeditions(charterDir, id)
+  const human = flags.human === true || flags.human === "true"
+
+  if (human) {
+    const expeditionLines = expeditions.length === 0
+      ? "  No expeditions chartered."
+      : expeditions.map((e) => `  ${e.id}  ${e.status}  ${e.name}`).join("\n")
+    console.log(
+      `Program: ${program.id} — ${program.name}\n` +
+      `Status: ${program.status} | Priority: ${program.priority}\n` +
+      `Open expeditions: ${program.openExpeditions} | Completed: ${program.completedExpeditions}\n\n` +
+      `Expeditions:\n${expeditionLines}`,
+    )
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ProgramShow",
+    program,
+    expeditions,
+  })
+}
+
+async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth expedition show --id <expedition-id>", {
+      code: "MissingExpeditionId",
+      category: "validation",
+      suggestion: "Run 'synth expedition list' to see available expeditions.",
+    })
+    return
+  }
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const expedition = await findExpeditionById(charterDir, id)
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, {
+      code: "ExpeditionNotFound",
+      category: "validation",
+      suggestion: "Run 'synth expedition list' to see available expeditions.",
+    })
+    return
+  }
+
+  const [programRecord, upstream, downstream] = await Promise.all([
+    findProgramById(charterDir, expedition.program),
+    findUpstreamExpeditions(charterDir, expedition),
+    findDownstreamExpeditions(charterDir, expedition),
+  ])
+
+  const program = programRecord
+    ? { id: programRecord.id, name: programRecord.name }
+    : { id: expedition.program, name: expedition.program }
+
+  const human = flags.human === true || flags.human === "true"
+
+  if (human) {
+    const upstreamText = upstream.length === 0
+      ? "None"
+      : upstream.map((e) => `${e.id} (${e.status})`).join(", ")
+    const downstreamText = downstream.length === 0
+      ? "None"
+      : downstream.map((e) => `${e.id} (${e.status})`).join(", ")
+    console.log(
+      `Expedition: ${expedition.id} — ${expedition.name}\n` +
+      `Status: ${expedition.status} | Priority: ${expedition.priority}\n` +
+      `Program: ${program.id} — ${program.name}\n` +
+      `Depends on: ${expedition.dependsOn.length === 0 ? "None" : expedition.dependsOn.join(", ")}\n` +
+      `Blocks: ${expedition.blocks.length === 0 ? "None" : expedition.blocks.join(", ")}\n` +
+      `Upstream: ${upstreamText}\n` +
+      `Downstream: ${downstreamText}`,
+    )
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionShow",
+    expedition,
+    program,
+    upstream,
+    downstream,
+  })
 }
 
 async function cmdMissionSnapshot(args: string[], flags: Record<string, string | boolean>) {
@@ -4253,133 +4376,6 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
   }
 }
 
-function classifyInvocation(rawArgs: string[], positional: string[], flags: Record<string, string | boolean>): string {
-  if (rawArgs.length === 0 || rawArgs.includes("--help") || rawArgs.includes("-h")) return "--help"
-  if (rawArgs.includes("--version") || rawArgs.includes("-v")) return "--version"
-
-  const namespace = positional[0] || ""
-  const sub = positional[1]
-
-  if (namespace === "bootstrap") {
-    if (flags.approve === true) return "bootstrap --approve"
-    if (flags["dry-run"] === true) return "bootstrap --dry-run"
-    return "bootstrap"
-  }
-  if (namespace === "docs" && sub === "generate") return "docs generate"
-  if (namespace === "repair" && sub === "replay") {
-    return flags.approve === true || flags.approve === "true" ? "repair replay --approve" : "repair replay"
-  }
-  if (namespace === "first-contact" || namespace === "genesis") {
-    const prefix = namespace
-    if (!sub) {
-      if (flags.approve === true || flags.approve === "true") return `${prefix} --approve`
-      if (flags["dry-run"] === true) return `${prefix} --dry-run`
-      return prefix
-    }
-    if (sub === "start") return `${prefix} start`
-    if (sub === "clarify") return `${prefix} clarify`
-    if (sub === "project") return `${prefix} project`
-    if (sub === "verify") return `${prefix} verify`
-    if (sub === "approve") return `${prefix} approve`
-    if (sub === "status") return `${prefix} status`
-    if (sub === "materialize") {
-      if (flags["dry-run"] === true) return `${prefix} materialize --dry-run`
-      if (flags.approve === true || flags.approve === "true") return `${prefix} materialize --approve`
-      return `${prefix} materialize`
-    }
-  }
-  if (namespace === "repo") {
-    if (sub === "init") return "repo init"
-    if (sub === "branch" && positional[2] === "create") return "repo branch create"
-    if (sub === "pr" && positional[2] === "open") return "repo pr open"
-    if (sub === "pr" && positional[2] === "approve") return "repo pr approve"
-    if (sub === "pr" && positional[2] === "merge") return "repo pr merge"
-    if (sub === "release" && positional[2] === "create") return "repo release create"
-    if (sub === "status") return "repo status"
-  }
-  if (namespace === "mission") {
-    if (sub === "create") return "mission create"
-    if (sub === "approve") return "mission approve"
-    if (sub === "decisions") return "mission decisions"
-    if (sub === "evidence" && positional[2] === "add") return "mission evidence add"
-    if (sub === "snapshot") return "mission snapshot"
-    if (sub === "project") return "mission project"
-    if (sub === "verify-charter") return "mission verify-charter"
-  }
-  if (namespace === "program") {
-    if (sub === "list") return "program list"
-    if (sub === "rank") return "program rank"
-  }
-  if (namespace === "validate") {
-    if (flags.full === true || flags.full === "true") return "validate --full"
-    if (sub === "dependencies") return "validate dependencies"
-    if (sub === "artifact") return "validate artifact"
-    return "validate"
-  }
-  if (namespace === "task") {
-    if (sub === "list") return "task list"
-    if (sub === "explain") return "task explain"
-    if (sub === "graph") return "task graph"
-    if (sub === "doctor") return "task doctor"
-    return "task"
-  }
-  if (namespace === "snapshot") {
-    if (sub === "create") return "snapshot create"
-    if (sub === "list") return "snapshot list"
-    if (sub === "show") return "snapshot show"
-    if (sub === "verify") return "snapshot verify"
-    return "snapshot"
-  }
-  if (namespace === "adapter") {
-    const adapterSub = sub || ""
-    const known = [
-      "list", "info", "enable", "disable", "configure", "status", "health", "init",
-      "create-branch", "checkout", "commit", "promote", "install-hooks",
-      "github-create-issue", "github-create-pr", "github-merge-pr",
-      "tdd-generate-test", "tdd-verify-failure", "tdd-verify-implementation", "tdd-evidence",
-      "bdd-create-feature", "bdd-create-scenario", "bdd-generate-tests", "bdd-verify", "bdd-evidence",
-    ]
-    if (known.includes(adapterSub)) return `adapter ${adapterSub}`
-    return "adapter"
-  }
-  if (namespace === "intent") {
-    if (sub === "create") return "intent create"
-  }
-  if (namespace === "intent") {
-    if (sub === "create") return "intent create"
-    if (sub === "refine") return "intent refine"
-    if (sub === "submit") return "intent submit"
-    if (sub === "approve") return "intent approve"
-  }
-  if (namespace === "alignment") {
-    if (sub === "create") return "alignment create"
-    if (sub === "submit") return "alignment submit"
-    if (sub === "approve") return "alignment approve"
-    if (sub === "prepare") return "alignment prepare"
-  }
-  if (namespace === "expedition") {
-    if (sub === "create") return "expedition create"
-    if (sub === "approve") return "expedition approve"
-    if (sub === "commit") return "expedition commit"
-    if (sub === "start") return "expedition start"
-    if (sub === "complete") return "expedition complete"
-    if (sub === "archive") return "expedition archive"
-    if (sub === "evidence") return "expedition evidence"
-    if (sub === "certify") return "expedition certify"
-    if (sub === "list") return "expedition list"
-    if (sub === "rank") return "expedition rank"
-  }
-  if (namespace === "capabilities") {
-    return "capabilities"
-  }
-  if (namespace === "project") {
-    if (sub === "AGENTS.md") return "project AGENTS.md"
-    return "project"
-  }
-
-  return namespace
-}
-
 // ============================================================
 // EXP-GATE-013: Dependency validation command
 // ============================================================
@@ -4743,10 +4739,11 @@ async function main() {
     case "program": {
       const sub = positional[1]
       if (sub === "list") await cmdProgramList(flags)
+      else if (sub === "show") await cmdProgramShow(flags)
       else if (sub === "rank") await cmdProgramRank(flags)
       else
         printError(
-          "Usage: synth program list [--status <status>] [--priority <priority>] | synth program rank [--next] [--status <status>] [--priority <priority>]",
+          "Usage: synth program list [--status <status>] [--priority <priority>] | synth program show --id <program-id> | synth program rank [--next] [--status <status>] [--priority <priority>]",
         )
       break
     }
@@ -4784,10 +4781,11 @@ async function main() {
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
+      else if (sub === "show") await cmdExpeditionShow(flags)
       else if (sub === "rank") await cmdExpeditionRank(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }

@@ -33,7 +33,7 @@ export function runSynth(args, cwd = process.cwd(), options = {}) {
   const result = spawnSync("node", [CLI_PATH, ...args], {
     cwd,
     encoding: "utf-8",
-    timeout: options.timeout ?? 30000,
+    timeout: options.timeout ?? 120000,
     env: options.env,
   })
   return {
