@@ -146,6 +146,46 @@ async function testLoadProgramCompositionStatus() {
   console.log("  [PASS] loadProgramCompositionStatus parses completion markers")
 }
 
+async function testDeferredNotCompleted() {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-rank-deferred-"))
+  try {
+    await fs.writeFile(
+      path.join(dir, "EXP-PROGRAM-002.md"),
+      `# EXP-PROGRAM-002 — Deferred Test Program
+
+**Status:** Completed and accepted — EXP-TASK-003 is deferred to future work.
+**Kind:** Program
+**Priority:** High
+`,
+      "utf-8",
+    )
+
+    await fs.writeFile(
+      path.join(dir, "EXP-TASK-003.md"),
+      `# EXP-TASK-003 — Deferred Task
+
+**Status:** Proposed
+**Kind:** Architecture Expedition
+**Priority:** High
+**Program:** EXP-PROGRAM-002
+`,
+      "utf-8",
+    )
+
+    const composition = await loadProgramCompositionStatus(dir)
+    const programCompleted = composition.get("EXP-PROGRAM-002")
+    assert.ok(programCompleted, "composition status must include EXP-PROGRAM-002")
+    assert.ok(!programCompleted.has("EXP-TASK-003"), "deferred expedition must not be treated as completed")
+
+    const rankResult = await rankExpeditions(dir, {})
+    const warning = rankResult.warnings.find((w) => w.expeditionId === "EXP-TASK-003")
+    assert.ok(!warning, "deferred expedition should not produce a hygiene warning")
+  } finally {
+    await teardown(dir)
+  }
+  console.log("  [PASS] deferred expedients are not treated as completed")
+}
+
 console.log("\n=== Governance Ranking Tests ===\n")
 
 await testRankExpeditions()
@@ -153,5 +193,6 @@ await testRankExpeditionsNext()
 await testRankPrograms()
 await testHygieneWarning()
 await testLoadProgramCompositionStatus()
+await testDeferredNotCompleted()
 
 console.log("\n=== All governance ranking tests passed ===\n")

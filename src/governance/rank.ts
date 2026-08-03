@@ -102,7 +102,7 @@ export async function loadProgramCompositionStatus(
       const lower = line.toLowerCase()
       const hasCompleted = /\bcompleted\b/.test(lower)
       const hasActiveStatus =
-        /\b(proposed|draft|executing|active)\b/.test(lower)
+        /\b(proposed|draft|executing|active|deferred)\b/.test(lower)
       if (hasCompleted && !hasActiveStatus) {
         for (const id of ids) {
           if (!id.startsWith("EXP-PROGRAM-")) {
