@@ -15,6 +15,7 @@ import crypto from "crypto"
 const PROJECT_ROOT = process.cwd()
 const PROJECTION_SCRIPT = path.resolve(PROJECT_ROOT, "scripts", "project-ai-capabilities.js")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
+const CAPABILITY_LIST_PATH = path.resolve(PROJECT_ROOT, "docs", "reference", "capability-list.json")
 const DISTRIBUTION_DIR = path.resolve(PROJECT_ROOT, "distribution")
 
 function assert(condition, message) {
@@ -166,6 +167,14 @@ async function testCommittedProjectionsAreFresh() {
   }
 }
 
+async function readCapabilityList() {
+  const content = await fs.readFile(CAPABILITY_LIST_PATH, "utf-8")
+  const list = JSON.parse(content)
+  assert(list.schema === "synth-capability-list-v1", "Capability list must use expected schema")
+  assert(Array.isArray(list.capabilities), "Capability list must declare capabilities array")
+  return list.capabilities
+}
+
 async function testCheckModeDetectsDrift() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-drift-"))
   try {
@@ -186,6 +195,34 @@ async function testCheckModeDetectsDrift() {
   }
 }
 
+async function testCapabilitiesProjected() {
+  const capabilities = await readCapabilityList()
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-cap-"))
+  try {
+    const result = runProjection(tmpDir)
+    assert(result.status === 0, `Projection engine must succeed:\n${result.stdout}\n${result.stderr}`)
+
+    const generatedDir = path.join(tmpDir, "distribution")
+    const files = await readDirFiles(generatedDir)
+
+    const mcp = JSON.parse(files["mcp/manifest.json"])
+    assert(Array.isArray(mcp.capabilities), "MCP manifest must expose capabilities array")
+    assert(mcp.capabilities.length === capabilities.length, `MCP manifest must expose ${capabilities.length} capabilities, got ${mcp.capabilities.length}`)
+
+    const claudeSkill = files["agent-skills/claude.md"]
+    assert(claudeSkill.includes("## Capabilities"), "Claude skill must include a capabilities section")
+
+    for (const capability of capabilities) {
+      assert(mcp.capabilities.includes(capability.name), `MCP manifest must include capability ${capability.name}`)
+      assert(claudeSkill.includes(capability.name), `Claude skill must mention capability ${capability.name}`)
+    }
+
+    console.log(`[PASS] Projections include all ${capabilities.length} capabilities from capability-list.json`)
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+}
+
 async function main() {
   console.log("Running AI capability projection tests...")
   await testCanonicalModelExists()
@@ -193,6 +230,7 @@ async function main() {
   await testProjectionsAreDeterministic()
   await testCommittedProjectionsAreFresh()
   await testCheckModeDetectsDrift()
+  await testCapabilitiesProjected()
   console.log("\nAll AI capability projection tests passed.")
 }
 

@@ -40,6 +40,45 @@ CLI: `synth`
 
 draft → approved → committed → executing → completed
 
+## Capabilities
+
+- **AcceptDecision** — Accept a proposed decision
+- **ActivatePlan** — Activate a plan
+- **AddObjective** — Add an objective to an expedition
+- **ApproveExpedition** — Approve an expedition
+- **ApproveMission** — Approve a mission
+- **ApprovePromotion** — Approve a proposed promotion
+- **ArchiveMission** — Archive a mission
+- **BlockWorkItem** — Block a work item
+- **CertifyConvergence** — Certify that a mission outcome remains converged with approved intent
+- **CommitExpedition** — Commit an approved expedition to runtime
+- **CompleteExpedition** — Complete an expedition
+- **CompleteMilestone** — Complete a milestone
+- **CompleteMission** — Complete a mission
+- **CompleteObjective** — Complete an objective
+- **CompletePlan** — Complete a plan
+- **CompleteWorkItem** — Complete a work item
+- **CreateBranch** — Create a governed branch
+- **CreateExpedition** — Create a new expedition
+- **CreateMilestone** — Create a new milestone
+- **CreateMission** — Create a new mission
+- **CreatePlan** — Create a new plan
+- **CreateProject** — Create a new project
+- **CreateRelease** — Create a governed release
+- **CreateWorkItem** — Create a new work item
+- **FilesystemWrite** — Write a file through the ExecutionGate mutation boundary
+- **InitializeProject** — Initialize the current directory as a SYNTH project
+- **InitializeRepository** — Initialize repository governance state
+- **MergePullRequest** — Merge an approved pull request
+- **OpenPullRequest** — Open a pull request as a promotion proposal
+- **RecordDecision** — Record and accept a new architectural decision
+- **RecordDiscovery** — Record a discovery
+- **RecordRepair** — Record that a replay repair was accepted and applied
+- **RejectDecision** — Reject a decision
+- **StartExpedition** — Start an expedition
+- **StartMilestone** — Start a milestone
+- **StartWorkItem** — Start work on a work item
+
 ## Source
 
 Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json` (version 1.0.0)
