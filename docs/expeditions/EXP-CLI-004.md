@@ -2,13 +2,14 @@
 
 > Add deterministic scoring and ranking to `synth program list` and `synth expedition list` so operators and agents can answer: *"What should I work on next?"*
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
 **Authority:** Synth Architectural Constitution, TaskPRO onboarding retrospective, EXP-PROGRAM-031 portfolio-health findings  
 **Depends On:** EXP-CLI-003 (Governance Inventory List Commands), EXP-GRAPH-001 (Shared Dependency-Graph Primitive)  
 **Blocks:** None
+**Completed:** 2026-08-03
 
 ---
 
@@ -120,12 +121,12 @@ Next recommended expedition: EXP-GUARD-002 (score 92)
 
 ## Acceptance Criteria
 
-1. `synth expedition rank` returns a deterministic ordered list with scores and rationales.
-2. `synth expedition rank --next` returns exactly one recommended expedition plus its rationale.
-3. `synth program rank` returns active programs ordered by weighted open expeditions and convergence health.
-4. Status-hygiene warnings are emitted for charters whose status disagrees with their program tracker.
-5. Scoring re-runs produce identical output for an unchanged charter set.
-6. `npm run build` succeeds and targeted tests pass.
+1. ✅ `synth expedition rank` returns a deterministic ordered list with scores and rationales.
+2. ✅ `synth expedition rank --next` returns exactly one recommended expedition plus its rationale.
+3. ✅ `synth program rank` returns active programs ordered by weighted open expeditions and program priority.
+4. ✅ Status-hygiene warnings are emitted for charters whose status disagrees with their program tracker.
+5. ✅ Scoring re-runs produce identical output for an unchanged charter set.
+6. ✅ `npm run build` succeeds and targeted tests pass.
 
 ---
 
@@ -153,18 +154,19 @@ Next recommended expedition: EXP-GUARD-002 (score 92)
 
 ---
 
-## Evidence (to be produced)
+## Evidence
 
 - Source changes
-  - `src/governance/rank.ts` — scoring and ranking logic.
-  - `src/governance/inventory.ts` — hygiene comparison between charters and program trackers.
-  - `src/cli/synth.ts` — `cmdProgramRank()` and `cmdExpeditionRank()`, wired as read-only commands.
+  - `src/governance/rank.ts` — deterministic scoring, downstream-impact analysis via `src/graph/dependency-graph.js`, and status-hygiene warnings.
+  - `src/cli/synth.ts` — `cmdProgramRank()` and `cmdExpeditionRank()` wired as read-only commands; help and dispatch updated.
+  - `src/cli/command-safety.ts` — `program rank` and `expedition rank` classified as `READ_ONLY`.
 - Test changes
-  - `tests/governance-rank.test.js` — deterministic scoring, --next selection, hygiene warnings.
+  - `tests/governance-rank.test.js` — scoring, `--next` selection, program ranking, hygiene warnings, and composition parsing.
 - Build/validation
   - `npm run build` succeeds.
   - `node tests/governance-rank.test.js` passes.
-  - Existing `governance-inventory-cli.test.js` still passes.
+  - `synth validate` passes.
+  - `synth program rank --status Active` and `synth expedition rank --next --program EXP-PROGRAM-043` produce expected structured output.
 
 ---
 
