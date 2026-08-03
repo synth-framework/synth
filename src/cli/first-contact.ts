@@ -20,7 +20,7 @@ import type { ClarificationAnswer, ClarificationQuestion } from "../first-contac
 import { projectArchitecture } from "../first-contact/project/index.js"
 import type { ArchitectureCandidate } from "../first-contact/project/types.js"
 import { verifyCapabilities } from "../first-contact/verify/index.js"
-import { materialize } from "../first-contact/materialize/index.js"
+import { materialize, recommendAdapters, selectWorkflowTemplate } from "../first-contact/materialize/index.js"
 import { hashArtifact } from "../first-contact/artifact/canonical.js"
 import { createGitRepositoryAdapter } from "../adapters/repository/git.js"
 
@@ -140,8 +140,8 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact project", description: "Project architecture candidates from the draft" },
       { name: "synth first-contact verify", description: "Verify capability assumptions for the recommended architecture" },
       { name: "synth first-contact approve", description: "Approve the draft once it is unambiguous and verifiable" },
-      { name: "synth first-contact materialize --dry-run", description: "Preview what materialization would create", args: "--dry-run" },
-      { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact into a SYNTH project", args: "--approve [--name <project-name>]" },
+      { name: "synth first-contact materialize --dry-run", description: "Preview materialization, including recommended adapters (pending approval) and workflow template", args: "--dry-run" },
+      { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact and persist recommended adapters to .synth/manifest.json", args: "--approve [--name <project-name>]" },
       { name: "synth first-contact status", description: "Report the current first-contact state" },
       { name: "synth first-contact onboard:detect", description: "Detect repository state for the task-engine onboarding flow" },
       { name: "synth first-contact onboard:archive", description: "Archive legacy Synth state" },
@@ -330,6 +330,19 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
   const projectName = typeof flags.name === "string" ? flags.name : approved.artifact.intent.description.slice(0, 40)
 
   if (dryRun) {
+    const recommendationOptions = {
+      projectRoot: process.cwd(),
+      projectName,
+      approvedArtifact: approved.artifact,
+      selectedArchitecture: approved.selectedArchitecture,
+      verificationReport: approved.verificationReport,
+    }
+    const recommendedAdapters = recommendAdapters(recommendationOptions).map((adapter) => ({
+      ...adapter,
+      status: "pending approval" as const,
+    }))
+    const workflowTemplate = selectWorkflowTemplate(recommendationOptions)
+
     printJson({
       status: "ok",
       kind: "FirstContactMaterializationPreview",
@@ -344,7 +357,9 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
       ],
       projectName,
       selectedArchitecture: approved.selectedArchitecture,
-      note: "Dry-run: no files were written. Run 'synth first-contact materialize --approve' to materialize.",
+      recommendedAdapters,
+      workflowTemplate,
+      note: "Dry-run: no files were written. Adapters are pending approval. Run 'synth first-contact materialize --approve' to materialize.",
     })
     return
   }
@@ -373,6 +388,8 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
     expeditionProposalsPath: result.expeditionProposalsPath,
     mission: result.mission,
     expeditions: result.expeditions,
+    recommendedAdapters: result.recommendedAdapters,
+    workflowTemplate: result.workflowTemplate,
     nextStep: "synth explain replay",
   })
 }

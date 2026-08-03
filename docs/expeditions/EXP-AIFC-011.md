@@ -2,7 +2,7 @@
 
 > **Architecture/Product expedition.** Consume an approved Discovery artifact and selected ArchitectureCandidate, then recommend SYNTH adapters and a default workflow template for the materialization context.
 
-**Status:** Draft  
+**Status:** COMPLETED  
 **Kind:** Architecture/Product Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -229,6 +229,18 @@ These fields are also added to `MaterializationResult` and to the persisted Disc
 | Manifest bloat from many low-confidence adapters | Drop scores below 0.25 and require `required: true` or `confidence >= 0.6` for auto-activation. |
 | Event payload growth | Keep recommendation payload bounded (max 16 adapters, max 12 phases per template). |
 | Divergence between CLI preview and persisted output | Use the same `recommendAdapters()`/`selectWorkflowTemplate()` functions for both paths. |
+
+---
+
+## Evidence
+
+- `src/first-contact/materialize/recommend.ts` — deterministic adapter scoring engine (`recommendAdapters`) and workflow template selection (`selectWorkflowTemplate`).
+- `src/first-contact/materialize/templates/index.ts` — canonical workflow catalog: Next.js full-stack chatbot, Python CLI, and generic greenfield.
+- `src/first-contact/materialize/types.ts` — extended `MaterializationResult` with `RecommendedAdapter` and `WorkflowTemplate`.
+- `src/first-contact/materialize/engine.ts` — computes recommendations, adds them to `MISSION_MATERIALIZED`, persists them in `.synth/manifest.json` and the Discovery artifact.
+- `src/cli/first-contact.ts` — previews recommendations on `materialize --dry-run` (labeled pending approval) and includes them in `materialize --approve` output.
+- `tests/first-contact-recommendation.test.js` — covers determinism, scoring thresholds, template selection, dry-run gate, manifest persistence, and event payload.
+- `npm run govern` passes after implementation.
 
 ---
 
