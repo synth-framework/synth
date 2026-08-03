@@ -25,6 +25,7 @@ import { fileURLToPath } from "url"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, "..")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
+const CAPABILITY_LIST_PATH = path.resolve(PROJECT_ROOT, "docs", "reference", "capability-list.json")
 const OUTPUT_ROOT = path.resolve(PROJECT_ROOT, "distribution")
 
 function assert(condition, message) {
@@ -34,6 +35,14 @@ function assert(condition, message) {
 async function readCanonicalModel() {
   const content = await fs.readFile(MODEL_PATH, "utf-8")
   return JSON.parse(content)
+}
+
+async function readCapabilityList() {
+  const content = await fs.readFile(CAPABILITY_LIST_PATH, "utf-8")
+  const list = JSON.parse(content)
+  assert(list.schema === "synth-capability-list-v1", "Capability list must use expected schema")
+  assert(Array.isArray(list.capabilities), "Capability list must declare capabilities array")
+  return list
 }
 
 function stableStringify(value, indent = 2) {
@@ -106,11 +115,15 @@ function formatWorkflows(model) {
   }).join("\n\n")
 }
 
+function formatCapabilities(capabilities) {
+  return capabilities.map((c) => `- **${c.name}** — ${c.description}`).join("\n")
+}
+
 // ============================================================
 // Platform templates
 // ============================================================
 
-function claudeSkill(model) {
+function claudeSkill(model, capabilities = []) {
   return `# ${model.platform.name} Skill
 
 > ${model.platform.tagline}
@@ -147,15 +160,20 @@ ${formatGovernanceLifecycle(model)}
 
 ${formatWorkflows(model)}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 - Canonical model: \`${MODEL_PATH}\`
+- Capability list: \`${CAPABILITY_LIST_PATH}\`
 - Model version: \`${model.version}\`
 - Model hash: \`${modelHash(model)}\`
 `
 }
 
-function codexInstructions(model) {
+function codexInstructions(model, capabilities = []) {
   return `# ${model.platform.name} Repository Instructions
 
 ## Identity
@@ -185,13 +203,17 @@ ${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
 
 ${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function chatgptSkill(model) {
+function chatgptSkill(model, capabilities = []) {
   return `# ${model.platform.name} Custom GPT Instructions
 
 ## Role
@@ -222,13 +244,17 @@ ${model.protectedAssets.rule}
 
 ${model.governanceLifecycle.phases.map((p) => `- ${p.name}: ${p.description}`).join("\n")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version}, hash ${modelHash(model)})
 `
 }
 
-function geminiSkill(model) {
+function geminiSkill(model, capabilities = []) {
   return `# ${model.platform.name} Gem Instructions
 
 ## Identity
@@ -257,13 +283,17 @@ ${model.protectedAssets.assets.map((a) => `- ${a.name}: ${a.description}`).join(
 
 ${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function cursorRules(model) {
+function cursorRules(model, capabilities = []) {
   const rules = [
     "Always explain SYNTH using the seven public concepts: Mission, Expedition, Evidence, Plan, Event, State, Replay.",
     "During repository discovery, use only READ_ONLY and PROPOSAL_ONLY synth commands.",
@@ -285,13 +315,17 @@ ${formatCommandList(discoverySafeCommands(model), "synth")}
 
 ${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function clineRules(model) {
+function clineRules(model, capabilities = []) {
   return `# ${model.platform.name} Rules for Cline
 
 ## Public vocabulary
@@ -314,13 +348,17 @@ ${readOnlyCommands(model).map((c) => `- synth ${c.command}`).join("\n")}
 
 ${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function windsurfRules(model) {
+function windsurfRules(model, capabilities = []) {
   return `# ${model.platform.name} Rules for Windsurf
 
 ## Role
@@ -351,13 +389,17 @@ ${model.protectedAssets.assets.map((a) => `- ${a.name}: ${a.description}`).join(
 
 ${model.governanceLifecycle.phases.map((p) => `- ${p.name}: ${p.description}`).join("\n")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function rooRules(model) {
+function rooRules(model, capabilities = []) {
   return `# ${model.platform.name} Rules for Roo
 
 ## Identity
@@ -388,13 +430,17 @@ ${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
 
 ${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function aiderInstructions(model) {
+function aiderInstructions(model, capabilities = []) {
   return `# ${model.platform.name} Instructions for Aider
 
 ## Context
@@ -421,13 +467,17 @@ ${model.protectedAssets.assets.map((a) => `- ${a.name}`).join("\n")}
 
 ${model.governanceLifecycle.phases.map((p) => p.name).join(" → ")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function continueRules(model) {
+function continueRules(model, capabilities = []) {
   return `# ${model.platform.name} Rules for Continue.dev
 
 ## Assistant identity
@@ -453,13 +503,17 @@ ${model.protectedAssets.rule}
 
 ${model.governanceLifecycle.phases.map((p) => `- ${p.name}: ${p.description}`).join("\n")}
 
+## Capabilities
+
+${formatCapabilities(capabilities)}
+
 ## Source
 
 Canonical model: \`${MODEL_PATH}\` (version ${model.version})
 `
 }
 
-function mcpManifest(model) {
+function mcpManifest(model, capabilities = []) {
   const readOnly = readOnlyCommands(model)
   const proposals = proposalCommands(model)
 
@@ -471,6 +525,8 @@ function mcpManifest(model) {
     repository: model.platform.repository,
     npm_package: model.platform.npmPackage,
     public_vocabulary: model.publicVocabulary.concepts.map((c) => c.name),
+    capabilities: capabilities.map((c) => c.name),
+    capability_count: capabilities.length,
     tools: [
       ...readOnly.map((c) => ({
         name: c.command.replace(/\s+/g, "_"),
@@ -512,12 +568,12 @@ const PROJECTION_REGISTRY = {
   "aider-instructions": { template: aiderInstructions, path: "ide-rules/.aider-instructions.md" },
   "continue-rules": { template: continueRules, path: "ide-rules/.continue/rules.md" },
   "mcp-manifest": {
-    template: (model) => stableStringify(mcpManifest(model)),
+    template: (model, capabilities) => stableStringify(mcpManifest(model, capabilities)),
     path: "mcp/manifest.json",
   },
 }
 
-function getProjections(model) {
+function getProjections(model, capabilities) {
   assert(Array.isArray(model.distributionTargets), "Canonical model must declare distributionTargets")
 
   const projections = []
@@ -529,7 +585,7 @@ function getProjections(model) {
     projections.push({
       target: target.id,
       path: entry.path,
-      content: entry.template(model),
+      content: entry.template(model, capabilities),
     })
   }
   return projections
@@ -598,12 +654,13 @@ async function main() {
   const checkMode = flags.check === true
   const outDir = flags.outDir ? path.resolve(flags.outDir) : OUTPUT_ROOT
   const model = await readCanonicalModel()
+  const capabilityList = await readCapabilityList()
 
   assert(model["$schema"] === "synth-ai-capability-model-v1", "Unsupported model schema")
   assert(typeof model.version === "string", "Model version must be a string")
   assert(Array.isArray(model.distributionTargets), "Canonical model must declare distributionTargets")
 
-  const projections = getProjections(model)
+  const projections = getProjections(model, capabilityList.capabilities)
 
   if (checkMode) {
     const regenerated = {}
