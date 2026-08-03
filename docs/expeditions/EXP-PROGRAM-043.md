@@ -71,12 +71,14 @@ Objective: every CLI response must tell the operator what just happened and what
 EXP-PROGRAM-043 / B
 ├── EXP-CLI-002       Human-readable output mode (`--human`)                                      [COMPLETED]
 ├── EXP-CLI-003       `synth expedition list` and `synth program list` commands                   [COMPLETED]
+├── EXP-CLI-004       Weighted inventory and next-action ranking for programs and expeditions    [COMPLETED]
 ├── EXP-EXPLAIN-001   Actionable `synth explain status`                                           [COMPLETED]
 ├── EXP-DRYRUN-001    Pre-flight dry-run for state-changing commands                              [COMPLETED]
-└── EXP-OUTPUT-001    Separate structured stdout from diagnostic logs                             [COMPLETED]
+├── EXP-OUTPUT-001    Separate structured stdout from diagnostic logs                             [COMPLETED]
+└── EXP-WARN-001      Stable warning IDs and one-line fix commands                                [COMPLETED]
 ```
 
-_Note: B was prioritized because every state-changing command needs both human-readable output and a safe preview. DRYRUN-001 prevents the `canonical-state.json` hand-edit class of mistakes._
+_Note: B was prioritized because every state-changing command needs both human-readable output and a safe preview. DRYRUN-001 prevents the `canonical-state.json` hand-edit class of mistakes. EXP-WARN-001 makes persistent warnings actionable by giving them stable codes and `fixCommand` fields._
 
 ### C — Capability Transparency & Graceful Degradation
 

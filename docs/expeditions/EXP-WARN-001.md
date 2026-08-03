@@ -2,7 +2,7 @@
 
 > Give every persistent CLI warning a stable ID and a one-line fix command so operators and agents know exactly what to run.
 
-**Status:** Executing  
+**Status:** Completed  
 **Kind:** Governance Expedition  
 **Priority:** High  
 **Program:** EXP-PROGRAM-043 — Agent Onboarding & Operator Experience  
@@ -37,9 +37,9 @@ Persistent warnings like `ProjectionConsistency: Generated documentation 'AI_CON
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| W1 | Docs-provenance warning has no stable ID | Medium | In progress |
-| W2 | Docs-provenance warning does not say how to fix it | High | In progress |
-| W3 | Agents cannot pattern-match warnings to recovery commands | Medium | In progress |
+| W1 | Docs-provenance warning has no stable ID | Medium | Completed |
+| W2 | Docs-provenance warning does not say how to fix it | High | Completed |
+| W3 | Agents cannot pattern-match warnings to recovery commands | Medium | Completed |
 
 ---
 
@@ -111,6 +111,14 @@ A `fixCommand` must be:
 3. `synth verify` reports `WARN-DOCS-001` with `fixCommand: "synth docs generate --provenance"` when provenance is missing.
 4. Existing documentation-projection tests still pass.
 5. `npm run build` succeeds and targeted tests pass.
+
+## Completion Evidence
+
+- `src/verification/warning-catalog.ts` defines `WARN-DOCS-001` with message template, severity, and `fixCommand: "synth docs generate --provenance"`.
+- `src/verification/checks.ts` `checkProjectionConsistency` emits `WARN-DOCS-001` with `code`, `fixCommand`, and `nextStep` when generated docs lack provenance metadata.
+- `src/cli/synth.ts` `cmdDocsGenerate` accepts `--provenance`, regenerates projections, and includes `provenance: true` in the structured output.
+- `tests/docs-provenance.test.js` verifies `--provenance` acceptance, provenance markers in generated docs, and `WARN-DOCS-001` reporting with `fixCommand`.
+- Existing documentation-projection tests (`documentation-expedition.test.js`, `documentation-integrity.test.js`, `continuous-publication.test.js`) continue to pass.
 
 ---
 
