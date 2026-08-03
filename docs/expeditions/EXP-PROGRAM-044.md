@@ -75,7 +75,7 @@ Operational Readiness & Self-Hosting
 │       Ensure `synth docs generate` emits provenance metadata that
 │       satisfies `synth verify` (continues EXP-DOC-007).
 │
-├── EXP-BOOTSTRAP-002 Framework Self-Hosting
+├── EXP-BOOTSTRAP-002 Framework Self-Hosting (Completed)
 │       Initialize the synth-v2 repository as a SYNTH project.
 │
 └── EXP-GOV-025       Safe State Repair & Divergence Recovery

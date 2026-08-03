@@ -1,0 +1,170 @@
+{
+  "schema": "synth-bootstrap-manifest-v1",
+  "version": "2.4.1",
+  "governanceVersion": "2.1",
+  "projectName": "Synth Framework",
+  "root": "/Users/dev/Projects/synth-v2",
+  "generatedAt": "2026-08-03T20:08:04.215Z",
+  "commands": [
+    {
+      "name": "version",
+      "description": "Print the installed Synth version"
+    },
+    {
+      "name": "doctor",
+      "description": "Verify installation and project health"
+    },
+    {
+      "name": "checkpoint",
+      "description": "Run pre-flight checkpoint before implementation work"
+    },
+    {
+      "name": "init",
+      "description": "Initialize the current directory as a Synth project"
+    },
+    {
+      "name": "bootstrap",
+      "description": "Transform a repository into a Synth project"
+    },
+    {
+      "name": "discover",
+      "description": "Produce a read-only analysis of a repository"
+    },
+    {
+      "name": "govern",
+      "description": "Run the full governance pipeline"
+    },
+    {
+      "name": "validate",
+      "description": "Analyze changes, plan validations, and execute them (--dry-run, --full)"
+    },
+    {
+      "name": "verify",
+      "description": "Verify governance invariants, projection consistency, and event-log signatures"
+    },
+    {
+      "name": "approval",
+      "description": "Two-party approval operations (request, grant, deny, list, show)"
+    },
+    {
+      "name": "status",
+      "description": "Report the current project state"
+    },
+    {
+      "name": "mission",
+      "description": "Mission Studio operations (create, approve, snapshot)"
+    },
+    {
+      "name": "program",
+      "description": "Governance program inventory (list)"
+    },
+    {
+      "name": "intent",
+      "description": "Intent model operations (create)"
+    },
+    {
+      "name": "alignment",
+      "description": "Intent alignment and divergence governance (prepare)"
+    },
+    {
+      "name": "expedition",
+      "description": "Expedition lifecycle (create, approve, commit, start, complete, archive, list)"
+    },
+    {
+      "name": "docs",
+      "description": "Documentation operations (generate)"
+    },
+    {
+      "name": "explain",
+      "description": "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)"
+    },
+    {
+      "name": "repair",
+      "description": "Repair operations (replay)"
+    },
+    {
+      "name": "certify",
+      "description": "Run failure and recovery certification scenarios"
+    },
+    {
+      "name": "capabilities",
+      "description": "List installed and missing CLI capabilities"
+    },
+    {
+      "name": "first-contact",
+      "description": "Guided onboarding entry point (greenfield, brownfield, legacy) and greenfield workflow (start, clarify, project, verify, approve, materialize, status)"
+    },
+    {
+      "name": "genesis",
+      "description": "Alias for the greenfield onboarding workflow (first-contact)"
+    },
+    {
+      "name": "ai",
+      "description": "AI agent interoperability (refresh)"
+    },
+    {
+      "name": "repo",
+      "description": "Repository and release governance operations"
+    },
+    {
+      "name": "snapshot",
+      "description": "Create, list, show, and verify git-anchored governance snapshots"
+    },
+    {
+      "name": "adapter",
+      "description": "Delegate to the adapter management CLI"
+    },
+    {
+      "name": "log",
+      "description": "Query the governance event log (read-only)"
+    },
+    {
+      "name": "task",
+      "description": "Canonical task orchestration (list, explain, graph, doctor)"
+    },
+    {
+      "name": "migrate",
+      "description": "Detect, plan, archive, and import legacy Synth state (detect, plan, archive, import)"
+    }
+  ],
+  "capabilities": [
+    "repository",
+    "github",
+    "tdd",
+    "bdd",
+    "conversation",
+    "document",
+    "filesystem",
+    "specification",
+    "knowledge-extraction",
+    "confidence",
+    "dependency",
+    "architecture",
+    "mission-builder",
+    "expedition-builder",
+    "objective-builder",
+    "wizard"
+  ],
+  "layout": {
+    "docs": "docs/",
+    "generatedDocs": "docs/generated/",
+    "examples": "examples/",
+    "data": ".synth/data/",
+    "proof": "proof/",
+    "src": "src/",
+    "tests": "tests/",
+    "scripts": "scripts/",
+    "website": "website/"
+  },
+  "publicVocabulary": [
+    "Mission",
+    "Expedition",
+    "Evidence",
+    "Plan",
+    "Event",
+    "State",
+    "Replay"
+  ],
+  "govern": "npm run govern",
+  "quickStart": "synth init && synth docs generate && npm run govern"
+}
