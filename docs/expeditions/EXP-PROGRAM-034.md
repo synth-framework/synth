@@ -1,6 +1,6 @@
 # EXP-PROGRAM-034 — Task Orchestration Engine
 
-**Status:** Active — design phase approved  
+**Status:** Completed — implementation accepted  
 **Kind:** Program  
 **Priority:** Critical  
 **Authority:** ADR-044 — External Build Systems Are Adapters  
@@ -213,7 +213,7 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 
 ### Implementation-phase deliverables
 
-- [ ] ADR-044 accepted.
+- [x] ADR-044 accepted.
 - [x] Task schema and registry implemented (`EXP-TASK-001`).
 - [x] Read-only/diagnostic task CLI implemented (`EXP-TASK-002`): `list`, `explain`, `graph`, `doctor`.
 - [x] Task execution CLI implemented (`EXP-TASK-003`): `run`, `affected`, `generate`.
