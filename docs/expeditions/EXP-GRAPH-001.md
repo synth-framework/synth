@@ -2,7 +2,7 @@
 
 > Implement the generic DAG primitive defined in `docs/design/shared-dependency-graph.md` so both `EXP-PROGRAM-031` (portfolio graph) and `EXP-PROGRAM-034` (task graph) consume the same graph engine.
 
-**Status:** Draft  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-031 — Architectural Convergence  
@@ -78,6 +78,27 @@ Prevent `EXP-PROGRAM-031` and `EXP-PROGRAM-034` from building independent graph 
 - Public Vocabulary
 
 ---
+
+## Evidence
+
+- Implementation: `src/graph/dependency-graph.ts`
+  - Exports `Graph<T>`, `GraphNode<T>`, `GraphEdge`, and `EdgeType`.
+  - Implements `buildGraph`, `topologicalSort`, `detectCycles`, `isAcyclic`, `reachableFrom`, and `buildAdjacencyLists`.
+  - Deterministic ordering is driven by input order, not alphabetical sorting.
+  - Edge-type filtering is supported but defaults to considering all edges.
+- Refactored consumer: `src/domain/graph.ts` delegates `detectCycles`, `isAcyclic`, `reachableFrom`, and graph types to the primitive.
+- Adopted consumer: `src/task/task-graph.ts` builds task graphs and passes `depends_on` as the edge type explicitly.
+- Tests: `tests/graph-dependency-primitive.test.js`
+  - Covers acyclic, cyclic, empty, and disconnected graphs.
+  - Pins determinism, input-order stability, and cycle-order stability.
+  - Validates `buildGraph` validation rules and edge-type filtering.
+- Tests: `tests/shared-dependency-graph-implementation.test.js`
+  - Verifies the charter, prefix registry, and cross-program references.
+- Validation:
+  - `npm run build` passes.
+  - `node tests/graph-dependency-primitive.test.js` passes.
+  - `node tests/shared-dependency-graph-implementation.test.js` passes.
+  - `node tests/task-graph.test.js` passes.
 
 ## Related documents
 
