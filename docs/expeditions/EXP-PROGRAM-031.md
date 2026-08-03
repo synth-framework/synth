@@ -53,15 +53,15 @@ Architectural Convergence
 │       Execute ADR-039 review, record outcomes, define shared dependency-graph primitive.
 │
 ├── EXP-GRAPH-001        Shared Dependency-Graph Primitive
-│       Architecture Expedition — Executing
+│       Architecture Expedition — Completed
 │       Implement the generic DAG primitive consumed by 031 and 034.
 │
 ├── EXP-REVIEW-002       Second Convergence Review of Program 034
-│       Review Expedition
+│       Review Expedition — Completed (CONVERGED)
 │       Re-evaluate Program 034 after TASK-004 rewrite and design-phase cleanup.
 │
 ├── EXP-REVIEW-003       Third Convergence Review of Program 043
-│       Review Expedition
+│       Review Expedition — Completed (CONVERGED)
 │       Re-evaluate Program 043 after Workstreams A–E merge and 034 task-engine implementation.
 │
 ├── EXP-CONVERGENCE-001  Program Review Engine

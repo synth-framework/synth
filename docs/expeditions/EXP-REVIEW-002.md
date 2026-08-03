@@ -2,13 +2,14 @@
 
 > Re-evaluate `EXP-PROGRAM-034 — Task Orchestration Engine` under ADR-039 after it completed the required design-phase rewrite: shared dependency-graph primitive adopted, `TASK-004` rewritten, acceptance criteria split, and `TASK-007` deferred.
 
-**Status:** Proposed  
+**Status:** Completed — Outcome **CONVERGED** at the design level  
 **Kind:** Review Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-031 — Architectural Convergence  
 **Authority:** ADR-039 — Architectural Convergence Review  
 **Depends On:** EXP-REVIEW-001, EXP-GRAPH-001, `EXP-PROGRAM-034` design-phase actions  
 **Blocks:** `EXP-PROGRAM-034` leaving design phase
+**Completed:** 2026-08-03
 
 ---
 

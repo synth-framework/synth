@@ -2,13 +2,14 @@
 
 > Re-evaluate `EXP-PROGRAM-043 — Agent Onboarding & Operator Experience` under ADR-039 after Workstreams A–E merged and `EXP-PROGRAM-034` reached implementation phase.
 
-**Status:** Proposed  
+**Status:** Completed — Outcome **CONVERGED**  
 **Kind:** Review Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-031 — Architectural Convergence  
 **Authority:** ADR-039 — Architectural Convergence Review  
 **Depends On:** EXP-REVIEW-001, EXP-REVIEW-002, EXP-PROGRAM-043 Workstreams A–E, EXP-PROGRAM-034 TASK-007  
 **Blocks:** EXP-PROGRAM-043 Phase 3 (task-engine migration), EXP-PROGRAM-043 Workstream F
+**Completed:** 2026-08-03
 
 ---
 
