@@ -2,10 +2,10 @@
 
 **Review ID:** EXP-REVIEW-001  
 **Authority:** ADR-039 — Architectural Convergence Review  
-**Date:** 2026-08-01  
-**Reviewer:** Synth architectural baseline + Program 031 gating function  
+**Date:** 2026-08-03  
+**Reviewer:** synth-cli/operator  
 **Programs reviewed:** EXP-PROGRAM-043, EXP-PROGRAM-034  
-**Outcome:** 043 CONVERGED (with caveats), 034 REWRITE REQUIRED (design level)  
+**Outcome:** EXP-PROGRAM-043 **CONVERGED** (all workstreams complete); EXP-PROGRAM-034 **REWRITE REQUIRED** at design level  
 
 ---
 
@@ -13,19 +13,18 @@
 
 ### EXP-PROGRAM-043 — Agent Onboarding & Operator Experience
 
-Workstreams A–E are implemented and merged:
+All workstreams are implemented, reviewed, and merged:
 
 - A: Guided first-contact flow.
 - B: Actionable CLI output (`--dry-run`, `--human`).
 - C: Capability transparency (`synth capabilities`) and repository adapter surface (`EXP-ADP-001`).
 - D: Derived-state protection (`EXP-GUARD-001`), expedition scope (`EXP-SCOPE-001`), and completion gates (`EXP-GATE-014`).
 - E: Evidence capture (`EXP-EVIDENCE-001`), event-log query (`EXP-EVENTLOG-001`), and AGENTS.md sync (`EXP-AGENTS-001`).
-
-Workstream F (agent identity, event signing, two-party approval, git snapshots) remains deferred.
+- F: Agent identity (`EXP-IDENTITY-001`), event signing (`EXP-SIGN-001`), two-party approval (`EXP-APPROVAL-001`), and git snapshots (`EXP-GIT-001`).
 
 ### EXP-PROGRAM-034 — Task Orchestration Engine
 
-Still in design phase. Charter defines task model, registry, CLI, dependency graph, impact-aware execution, npm adapter, CI adapter, task groups, explanation, doctor, and migration. Depends on Program 030 and ADR-044. Risks duplicate graph engine with Program 031.
+Still in design phase. Charter defines task model, registry, CLI, dependency graph, impact-aware execution, npm adapter, CI adapter, task groups, explanation, doctor, and migration. Depends on Program 030 and ADR-044. The design currently risks building a duplicate graph engine; it must adopt the shared dependency-graph primitive defined in `docs/design/shared-dependency-graph.md` before leaving design phase.
 
 ---
 
@@ -69,8 +68,8 @@ Still in design phase. Charter defines task model, registry, CLI, dependency gra
 
 | Program | Outcome | Rationale | Required actions |
 |---|---|---|---|
-| EXP-PROGRAM-043 | **CONVERGED** | Workstreams A–E align with current architecture and have passing tests/evidence. | Complete Workstream F under the same program; do not begin new operator-experience work until identity/trust layer is in place. |
-| EXP-PROGRAM-034 | **REWRITE REQUIRED** | Design phase is valid but TASK-004 would duplicate graph work; scope must narrow. | 1. Adopt `docs/design/shared-dependency-graph.md` primitive. 2. Split acceptance criteria into design and implementation phases. 3. Defer CI migration. 4. Re-enter Convergence Review before implementation. |
+| EXP-PROGRAM-043 | **CONVERGED** (all workstreams complete) | Workstreams A–F align with the current architecture and have passing tests/evidence. | Continue to closure under the existing program charter; any new operator-experience work must pass ADR-039 review before implementation. |
+| EXP-PROGRAM-034 | **REWRITE REQUIRED** | Design phase is valid but `TASK-004` would duplicate graph work; scope must narrow and adopt the shared primitive. | 1. Adopt the primitive defined in `docs/design/shared-dependency-graph.md`. 2. Rewrite `TASK-004` to consume the shared primitive. 3. Split acceptance criteria into design-phase and implementation-phase deliverables. 4. Defer CI migration (`TASK-007`) until the task engine is accepted. 5. Re-enter Convergence Review before leaving design phase. |
 
 ---
 

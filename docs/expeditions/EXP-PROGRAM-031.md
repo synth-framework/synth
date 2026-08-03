@@ -183,8 +183,11 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 **First milestone (completed):**
 
 1. [x] Run a convergence review of `EXP-PROGRAM-043` before it begins implementation.
+   - Recorded in `docs/governance/convergence-review-043-034.md`.
 2. [x] Run a design review of `EXP-PROGRAM-034` before it leaves the design phase.
+   - Outcome: REWRITE REQUIRED; adopt `docs/design/shared-dependency-graph.md` before implementation.
 3. [x] Define the shared dependency-graph primitive that both 034 and 031 will use.
+   - Contract: `docs/design/shared-dependency-graph.md`.
 
 **Second milestone (completed):**
 

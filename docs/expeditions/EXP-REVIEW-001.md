@@ -2,7 +2,7 @@
 
 > Execute the first Architectural Convergence Review under ADR-039, record the outcomes, and define the shared dependency-graph primitive that 031 and 034 will use.
 
-**Status:** Proposed  
+**Status:** Completed  
 **Kind:** Architecture Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-031 — Architectural Convergence  
@@ -96,6 +96,16 @@ ADR-039 mandates that active Programs undergo a Convergence Review before implem
 
 - New event types.
 - Replay semantics changes.
+
+## Evidence
+
+- Review record: `docs/governance/convergence-review-043-034.md`
+- Shared dependency-graph design contract: `docs/design/shared-dependency-graph.md`
+- Program tracker updates:
+  - `docs/expeditions/EXP-PROGRAM-031.md` — marks Program 031 Active and records EXP-REVIEW-001.
+  - `docs/expeditions/EXP-PROGRAM-043.md` — records CONVERGED outcome for EXP-REVIEW-001.
+  - `docs/expeditions/EXP-PROGRAM-034.md` — records REWRITE REQUIRED outcome and alignment actions for EXP-REVIEW-001.
+- Validation test: `tests/convergence-review-043-034.test.js`
 
 ## Related Documents
 

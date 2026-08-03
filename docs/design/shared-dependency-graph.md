@@ -2,7 +2,7 @@
 
 **Authority:** EXP-REVIEW-001 — First Convergence Review of Program 043 and Program 034  
 **Status:** Design contract  
-**Date:** 2026-08-01  
+**Date:** 2026-08-03  
 
 ---
 
@@ -45,8 +45,18 @@ type Graph<T> = {
 ### Operations
 
 ```ts
+// Build a graph from an array of node payloads and directed edges.
+// The builder validates that every edge references an existing node id.
+function buildGraph<T>({
+  nodes,
+  edges,
+}: {
+  nodes: { id: string; payload: T; metadata?: Record<string, unknown> }[]
+  edges: { from: string; to: string; type: EdgeType; metadata?: Record<string, unknown> }[]
+}): Graph<T>
+
 // Return a topologically sorted list of node ids, or the first cycle found.
-function topologicalSort<T>(graph: Graph<T>): { order: string[] } | { cycle: string[] }
+function topologicalSort<T>(graph: Graph<T>): { ok: true; order: string[] } | { ok: false; cycle: string[] }
 
 // Return all elementary cycles in the graph.
 function detectCycles<T>(graph: Graph<T>): string[][]
@@ -63,6 +73,15 @@ function buildAdjacencyLists(graph: Graph<unknown>): {
   outbound: Map<string, Set<string>>
 }
 ```
+
+### Determinism requirements
+
+All operations are deterministic for a given input graph:
+
+- `topologicalSort` returns node ids in a stable order; when multiple nodes are eligible, the node that was first discovered (i.e., appears first in the input edge or node order) is emitted first.
+- `detectCycles` returns cycles in a stable order; nodes within a cycle are ordered by first discovery during traversal.
+- `reachableFrom` returns nodes in breadth-first order, ordered by first discovery from `startId`.
+- `buildAdjacencyLists` preserves input order in the adjacency sets, which must be iterated in insertion order by callers that require stability.
 
 ### Consumers
 

@@ -232,9 +232,22 @@ Inventoryed all existing npm scripts in `package.json`. Mapped each to a task, g
 
 ## Convergence Review
 
-- **Outcome:** CONVERGED at the design level.
-- **Review:** EXP-REVIEW-002 / `docs/governance/convergence-review-034-002.md`
-- **Previous review:** EXP-REVIEW-001 / `docs/governance/convergence-review-043-034.md` (REWRITE REQUIRED)
+### EXP-REVIEW-001 — First Convergence Review
+
+- **Outcome:** **REWRITE REQUIRED** at the design level.
+- **Review record:** `docs/governance/convergence-review-043-034.md`
+- **Authority:** ADR-039 — Architectural Convergence Review
+- **Required alignment actions:**
+  1. Adopt the shared dependency-graph primitive defined in `docs/design/shared-dependency-graph.md`.
+  2. Rewrite `TASK-004` to consume the shared primitive rather than building a separate task graph engine.
+  3. Split acceptance criteria into design-phase and implementation-phase deliverables.
+  4. Defer `TASK-007` (CI Orchestration Adapter) until the task engine is accepted.
+  5. Re-enter Convergence Review before leaving design phase.
+
+### EXP-REVIEW-002 — Second Convergence Review
+
+- **Outcome:** **CONVERGED** at the design level.
+- **Review record:** `docs/governance/convergence-review-034-002.md`
 - **Required actions completed before design approval:**
   1. [x] Implement the shared dependency-graph primitive in `EXP-GRAPH-001`.
   2. [x] Adopt the primitive defined in `docs/design/shared-dependency-graph.md`.
