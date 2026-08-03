@@ -200,6 +200,7 @@ function toFailure(
   const conflicts: GovernanceResolutionFailure["conflicts"] = divergences.map((d) => ({
     artifact: d.artifact || "unknown",
     issue: d.description,
+    kind: d.kind,
   }))
   return {
     status: "error",

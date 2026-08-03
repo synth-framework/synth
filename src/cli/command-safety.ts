@@ -41,6 +41,8 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "govern", safety: "MUTATING", description: "Run the full governance pipeline", requiresApproval: true },
   { command: "repair replay", safety: "POTENTIALLY_MUTATING", description: "Propose repairs for runtime drift without mutating state" },
   { command: "repair replay --approve", safety: "MUTATING", description: "Apply repairs for runtime drift", requiresApproval: true },
+  { command: "repair state", safety: "POTENTIALLY_MUTATING", description: "Diagnose canonical-state divergences without mutating state" },
+  { command: "repair state --approve", safety: "MUTATING", description: "Regenerate canonical-state.json from replay", requiresApproval: true },
   { command: "first-contact", safety: "PROPOSAL_ONLY", description: "Preview guided onboarding plan for greenfield, brownfield, or legacy projects" },
   { command: "first-contact --dry-run", safety: "PROPOSAL_ONLY", description: "Preview guided onboarding plan without mutating state" },
   { command: "first-contact --approve", safety: "MUTATING", description: "Apply guided onboarding plan", requiresApproval: true },
@@ -231,6 +233,9 @@ export function classifyInvocation(
   if (namespace === "docs" && sub === "generate") return "docs generate"
   if (namespace === "repair" && sub === "replay") {
     return flags.approve === true || flags.approve === "true" ? "repair replay --approve" : "repair replay"
+  }
+  if (namespace === "repair" && sub === "state") {
+    return flags.approve === true || flags.approve === "true" ? "repair state --approve" : "repair state"
   }
   if (namespace === "first-contact" || namespace === "genesis") {
     const prefix = namespace

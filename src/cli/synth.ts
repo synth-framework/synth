@@ -63,6 +63,10 @@ import {
 } from "./repo.js"
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
+import {
+  resolveGovernanceContext,
+  isGovernanceResolutionFailure,
+} from "../runtime/governance-resolver.js"
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery, classifyInvocation } from "./command-safety.js"
 import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { runCertification, printCertificationReport, writeMatrix } from "./certification-runner.js"
@@ -3312,6 +3316,8 @@ async function cmdRepairHelp() {
   printJson(namespaceHelp("repair", "Runtime repair operations", [
     { name: "synth repair replay", description: "Detect runtime drift against certified Mission snapshots and propose repairs" },
     { name: "synth repair replay --approve", description: "Apply proposed repairs by emitting compensating runtime events", args: "--approve" },
+    { name: "synth repair state", description: "Detect canonical-state divergences and propose regeneration from replay" },
+    { name: "synth repair state --approve", description: "Regenerate canonical-state.json by emitting a REPAIR_ACCEPTED audit event", args: "--approve" },
   ], {
     note: "Repair uses only public CLI commands and the ExecutionGate. It never edits event logs or state files directly.",
   }))
@@ -3514,6 +3520,180 @@ async function cmdRepairReplay(args: string[], flags: Record<string, string | bo
   if (failed) {
     process.exit(1)
   }
+}
+
+const REPAIRABLE_DIVERGENCE_KINDS = [
+  "state-lags-events",
+  "replayed-state-mismatch",
+  "missing-events",
+]
+
+interface StateRepairEntry {
+  kind: string
+  severity: string
+  artifact: string
+  description: string
+  action: string
+}
+
+async function cmdRepairState(flags: Record<string, string | boolean>) {
+  const approve = flags.approve === true || flags.approve === "true"
+  await sdk.paths.ensureDataDir(sdk.workspace.root())
+  const rootDir = process.cwd()
+
+  const ctxResult = await resolveGovernanceContext(rootDir)
+  let stateDivergences: Array<{ kind: string; severity: string; artifact: string; description: string }> = []
+  let unrepairableDivergences: Array<{ kind: string; severity: string; artifact: string; description: string }> = []
+
+  if (isGovernanceResolutionFailure(ctxResult)) {
+    // EXP-GOV-025: some resolution failures are repairable canonical-state
+    // divergences (missing-events, replayed-state-mismatch). Surface them as
+    // proposed repairs when they are the only problem; otherwise treat the
+    // failure as unrepairable through state regeneration.
+    const conflicts = ctxResult.conflicts || []
+    stateDivergences = conflicts
+      .filter((c) => REPAIRABLE_DIVERGENCE_KINDS.includes(c.kind || ""))
+      .map((c) => ({
+        kind: c.kind || "unknown",
+        severity: "error" as const,
+        artifact: c.artifact || "canonical-state.json",
+        description: c.issue,
+      }))
+    unrepairableDivergences = conflicts
+      .filter((c) => !REPAIRABLE_DIVERGENCE_KINDS.includes(c.kind || ""))
+      .map((c) => ({
+        kind: c.kind || "unknown",
+        severity: "error" as const,
+        artifact: c.artifact || "unknown",
+        description: c.issue,
+      }))
+  } else {
+    const graphViolations = ctxResult.derived.graphViolations || []
+    const divergences = ctxResult.derived.divergences
+    stateDivergences = divergences
+      .filter((d) => REPAIRABLE_DIVERGENCE_KINDS.includes(d.kind))
+      .map((d) => ({
+        kind: d.kind,
+        severity: d.severity,
+        artifact: d.artifact || "canonical-state.json",
+        description: d.description,
+      }))
+    unrepairableDivergences = [
+      ...graphViolations.map((v) => ({
+        kind: v.kind || "aggregate-graph-violation",
+        severity: "error" as const,
+        artifact: "event-log.jsonl",
+        description: v.message,
+      })),
+      ...divergences
+        .filter((d) => !REPAIRABLE_DIVERGENCE_KINDS.includes(d.kind))
+        .map((d) => ({
+          kind: d.kind,
+          severity: d.severity,
+          artifact: d.artifact || "unknown",
+          description: d.description,
+        })),
+    ]
+  }
+
+  const repairs: StateRepairEntry[] = stateDivergences.map((d) => ({
+    kind: d.kind,
+    severity: d.severity,
+    artifact: d.artifact || "canonical-state.json",
+    description: d.description,
+    action: "regenerate-canonical-state-from-replay",
+  }))
+
+  if (stateDivergences.length === 0 && unrepairableDivergences.length === 0) {
+    printJson({
+      status: "ok",
+      kind: "RepairReport",
+      mode: approve ? "apply" : "dry-run",
+      repairs: [],
+      note: "No canonical-state divergences detected.",
+    })
+    return
+  }
+
+  if (unrepairableDivergences.length > 0) {
+    printJson({
+      status: "error",
+      kind: "RepairReport",
+      mode: approve ? "apply" : "dry-run",
+      repairs,
+      unrepairable: unrepairableDivergences,
+      note: "Event-log graph violations or non-state divergences are present. These cannot be repaired by regenerating canonical-state.json.",
+    })
+    process.exit(1)
+  }
+
+  if (!approve) {
+    printJson({
+      status: "ok",
+      kind: "RepairReport",
+      mode: "dry-run",
+      repairs,
+      nextStep: "Run 'synth repair state --approve' to regenerate canonical-state.json from replay.",
+    })
+    return
+  }
+
+  // EXP-GOV-025: apply the repair by recording a REPAIR_ACCEPTED audit event.
+  // The runtime commit rewrites canonical-state.json with the replayed state,
+  // which resolves state-lags-events, replayed-state-mismatch, and missing-events
+  // divergences without hand-editing derived JSON.
+  const gateCtx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const recordResult = await gateCtx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "RecordRepair",
+    payload: {
+      repairPlan: {
+        action: "regenerate-canonical-state-from-replay",
+        divergences: stateDivergences,
+      },
+      appliedActions: ["regenerate-canonical-state"],
+    },
+  })
+
+  if (recordResult.status !== "ok") {
+    printError(`Repair failed: ${recordResult.error || JSON.stringify(recordResult)}`, {
+      code: "RepairFailed",
+      category: "repair",
+      suggestion: "Inspect the event log and run 'synth explain diagnostics'.",
+    })
+  }
+
+  // Verify the repair by re-resolving the governance context.
+  const afterCtx = await resolveGovernanceContext(rootDir)
+  const remaining = isGovernanceResolutionFailure(afterCtx)
+    ? []
+    : afterCtx.derived.divergences.filter((d) => REPAIRABLE_DIVERGENCE_KINDS.includes(d.kind))
+
+  printJson({
+    status: remaining.length === 0 ? "ok" : "warning",
+    kind: "RepairReport",
+    mode: "apply",
+    repairs: repairs.map((r) => ({ ...r, status: "repaired" })),
+    remainingDivergences: remaining,
+    note:
+      remaining.length === 0
+        ? "canonical-state.json regenerated from replay; repair recorded as REPAIR_ACCEPTED event."
+        : "Some canonical-state divergences remain after repair.",
+  })
+
+  if (remaining.length > 0) {
+    process.exit(1)
+  }
+}
+
+async function cmdRepairStateHelp() {
+  printJson(namespaceHelp("repair state", "Repair canonical-state divergences", [
+    { name: "synth repair state", description: "Diagnose canonical-state divergences" },
+    { name: "synth repair state --approve", description: "Regenerate canonical-state.json from replay and record the repair", args: "--approve" },
+  ]))
 }
 
 async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
@@ -4812,9 +4992,10 @@ async function main() {
     case "repair": {
       const sub = positional[1]
       if (sub === "replay") await cmdRepairReplay(positional.slice(2), flags)
+      else if (sub === "state") await cmdRepairState(flags)
       else
         printError(
-          "Usage: synth repair replay [--approve]",
+          "Usage: synth repair replay [--approve] or synth repair state [--approve]",
         )
       break
     }
