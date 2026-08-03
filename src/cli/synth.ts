@@ -136,6 +136,7 @@ const COMMANDS = [
   { name: "status", description: "Report the current project state" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "program", description: "Governance program inventory (list)" },
+  { name: "project", description: "Project-level derived artifacts" },
   { name: "intent", description: "Intent model operations (create)" },
   { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, archive, list)" },
@@ -1938,6 +1939,7 @@ async function cmdProjectAgentsMd(flags: Record<string, string | boolean>) {
     status: "ok",
     kind: "AgentsContractGenerated",
     wrote: result.wrote,
+    stale: result.stale,
     fragmentCount: result.fragmentCount,
     path: "AGENTS.md",
   })

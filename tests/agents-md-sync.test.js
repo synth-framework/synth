@@ -95,3 +95,43 @@ test("synth project AGENTS.md preserves existing baseline content", { concurrenc
   assert.ok(content.includes("Custom rule"), "should preserve baseline rules")
   assert.ok(content.includes("preserve-project"), "should add provenance")
 })
+
+test("synth project AGENTS.md preserves user content outside the SYNTH block", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "section-merge-project" }))
+  fs.writeFileSync(
+    path.join(dir, "AGENTS.md"),
+    "# User guide\n\nThis is user-owned content.\n\n<!-- SYNTH:contract:start -->\nold generated content\n<!-- SYNTH:contract:end -->\n\n## User appendix\n\nMore user content."
+  )
+
+  const result = runSynth(["project", "AGENTS.md"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+
+  const content = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+  assert.ok(content.includes("# User guide"), "should preserve content before SYNTH block")
+  assert.ok(content.includes("This is user-owned content."), "should preserve user body before SYNTH block")
+  assert.ok(content.includes("## User appendix"), "should preserve content after SYNTH block")
+  assert.ok(content.includes("More user content."), "should preserve user body after SYNTH block")
+  assert.ok(!content.includes("old generated content"), "should replace stale SYNTH block")
+  assert.ok(content.includes("section-merge-project"), "should include fresh provenance")
+})
+
+test("synth project AGENTS.md regenerates only the SYNTH block on second run", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "idempotent-project" }))
+  fs.writeFileSync(path.join(dir, "AGENTS.md"), "# User preamble\n\n<!-- SYNTH:contract:start -->\nold\n<!-- SYNTH:contract:end -->")
+
+  runSynth(["project", "AGENTS.md"], dir)
+  const afterFirst = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+
+  const result = runSynth(["project", "AGENTS.md"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+  const output = parseJson(result.stdout)
+  assert.strictEqual(output.wrote, false, "should not rewrite when fresh")
+  assert.strictEqual(output.stale, false, "should report not stale")
+
+  const afterSecond = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+  assert.strictEqual(afterFirst, afterSecond, "content should be identical across fresh runs")
+  assert.ok(afterSecond.includes("# User preamble"), "should keep user preamble")
+  assert.ok(!afterSecond.includes("old\n<!-- SYNTH:contract:end -->"), "should not keep old block content")
+})
