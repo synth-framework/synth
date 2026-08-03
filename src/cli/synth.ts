@@ -4221,7 +4221,9 @@ async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
   const outDir = typeof flags["out-dir"] === "string" ? flags["out-dir"] : "./docs/generated"
   const knowledgeBaseDir = typeof flags["knowledge-base"] === "string" ? flags["knowledge-base"] : "./docs"
   const linkPrefix = typeof flags["link-prefix"] === "string" ? flags["link-prefix"] : undefined
-  const provenance = flags.provenance === true
+  // EXP-DOC-008: provenance metadata is embedded by default; --provenance is
+  // an explicit no-op that confirms the behavior for scripts and CI.
+  const provenance = true
 
   const result = (await bootstrap({
     skipGenesis: true,
