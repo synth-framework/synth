@@ -88,6 +88,7 @@ import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
 import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
+import { rankExpeditions, rankPrograms } from "../governance/rank.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
@@ -1033,7 +1034,10 @@ async function cmdProgramHelp() {
     { name: "synth program list", description: "List all governance programs" },
     { name: "synth program list --status <status>", description: "Filter programs by status", args: "--status Proposed | Active | Completed" },
     { name: "synth program list --priority <priority>", description: "Filter programs by priority", args: "--priority Critical | High | Medium | Low" },
-  ], { note: "Program list is read-only and derived from docs/expeditions/*.md." }))
+    { name: "synth program rank", description: "Rank active programs by weighted open work" },
+    { name: "synth program rank --next", description: "Return the single highest-priority active program" },
+    { name: "synth program rank --status <status>", description: "Rank programs by status", args: "--status Proposed | Active | Completed" },
+  ], { note: "Program list and rank are read-only and derived from docs/expeditions/*.md." }))
 }
 
 async function cmdValidateHelp() {
@@ -1769,7 +1773,11 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
     { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
     { name: "synth expedition list --program <program-id>", description: "Filter expeditions by program", args: "--program EXP-PROGRAM-043" },
-  ], { note: "expedition list is read-only and derived from docs/expeditions/*.md." }))
+    { name: "synth expedition rank", description: "Rank open expeditions by priority, status, and downstream impact" },
+    { name: "synth expedition rank --next", description: "Return the single highest-priority open expedition" },
+    { name: "synth expedition rank --status <status>", description: "Rank expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
+    { name: "synth expedition rank --program <program-id>", description: "Rank expeditions within a program", args: "--program EXP-PROGRAM-043" },
+  ], { note: "expedition list and rank are read-only and derived from docs/expeditions/*.md." }))
 }
 
 async function cmdDoctorHelp() {
@@ -2919,6 +2927,64 @@ async function cmdExpeditionList(flags: Record<string, string | boolean>) {
     count: expeditions.length,
     expeditions,
   })
+}
+
+// ============================================================
+// EXP-CLI-004: Weighted governance inventory ranking
+// ============================================================
+async function cmdProgramRank(flags: Record<string, string | boolean>) {
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const human = flags.human === true || flags.human === "true"
+  const result = await rankPrograms(charterDir, {
+    status: typeof flags.status === "string" ? flags.status : undefined,
+    priority: typeof flags.priority === "string" ? flags.priority : undefined,
+  }, {
+    next: flags.next === true || flags.next === "true",
+    human,
+  })
+
+  if (human && result.next) {
+    const top = result.programs.find((p) => p.id === result.next)
+    if (top) {
+      printJson({
+        status: "ok",
+        kind: "ProgramRankHuman",
+        next: result.next,
+        text: `Next recommended program: ${result.next} (score ${top.score})\n  ${top.name}.\n  Reason: ${top.rationale}.`,
+      })
+      return
+    }
+  }
+
+  printJson(result)
+}
+
+async function cmdExpeditionRank(flags: Record<string, string | boolean>) {
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const human = flags.human === true || flags.human === "true"
+  const result = await rankExpeditions(charterDir, {
+    status: typeof flags.status === "string" ? flags.status : undefined,
+    priority: typeof flags.priority === "string" ? flags.priority : undefined,
+    program: typeof flags.program === "string" ? flags.program : undefined,
+  }, {
+    next: flags.next === true || flags.next === "true",
+    human,
+  })
+
+  if (human && result.next) {
+    const top = result.expeditions.find((e) => e.id === result.next)
+    if (top) {
+      printJson({
+        status: "ok",
+        kind: "ExpeditionRankHuman",
+        next: result.next,
+        text: `Next recommended expedition: ${result.next} (score ${top.score})\n  ${top.name}.\n  Reason: ${top.rationale}.`,
+      })
+      return
+    }
+  }
+
+  printJson(result)
 }
 
 async function cmdMissionSnapshot(args: string[], flags: Record<string, string | boolean>) {
@@ -4135,6 +4201,7 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
   }
   if (namespace === "program") {
     if (sub === "list") return "program list"
+    if (sub === "rank") return "program rank"
   }
   if (namespace === "validate") {
     if (flags.full === true || flags.full === "true") return "validate --full"
@@ -4193,6 +4260,7 @@ function classifyInvocation(rawArgs: string[], positional: string[], flags: Reco
     if (sub === "evidence") return "expedition evidence"
     if (sub === "certify") return "expedition certify"
     if (sub === "list") return "expedition list"
+    if (sub === "rank") return "expedition rank"
   }
   if (namespace === "capabilities") {
     return "capabilities"
@@ -4564,9 +4632,10 @@ async function main() {
     case "program": {
       const sub = positional[1]
       if (sub === "list") await cmdProgramList(flags)
+      else if (sub === "rank") await cmdProgramRank(flags)
       else
         printError(
-          "Usage: synth program list [--status <status>] [--priority <priority>]",
+          "Usage: synth program list [--status <status>] [--priority <priority>] | synth program rank [--next] [--status <status>] [--priority <priority>]",
         )
       break
     }
@@ -4604,9 +4673,10 @@ async function main() {
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
+      else if (sub === "rank") await cmdExpeditionRank(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>]",
         )
       break
     }
