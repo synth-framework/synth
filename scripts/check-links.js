@@ -20,6 +20,10 @@ const EXCLUDED_DIRS = new Set([
   "proof",
 ])
 
+// Source fragments for derived documents are not standalone navigable pages;
+// their links are validated in the generated documents that embed them.
+const EXCLUDED_FILES = new Set(["knowledge/AGENTS-intro.md"])
+
 const MD_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g
 const HTML_HREF_RE = /href=["']([^"']+)["']/g
 const HTML_SRC_RE = /src=["']([^"']+)["']/g
@@ -49,8 +53,10 @@ function isExternal(href) {
 
 async function checkMarkdownLinks(root, broken, checked, warnings) {
   for await (const file of walk(root, ".md")) {
-    const content = await fs.readFile(file, "utf-8")
     const relativeFile = path.relative(root, file)
+    if (EXCLUDED_FILES.has(relativeFile)) continue
+
+    const content = await fs.readFile(file, "utf-8")
     const dir = path.dirname(file)
 
     let match
