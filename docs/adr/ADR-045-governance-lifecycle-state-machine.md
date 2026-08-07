@@ -55,6 +55,8 @@ This rule preserves two distinct responsibilities:
 
 Mission remains a deterministic projection, not an imperative creation, but its projection belongs to Synthesis, not Genesis.
 
+> **Reference implementation:** The canonical `ProjectMission` capability is implemented in `src/governance/project-mission.ts` and exposed through the developer CLI as `synth mission project --alignment-contract-id <id>`. No consumer may implement its own projection logic; all surfaces must use this capability. This reference implementation satisfies EXP-REFINE-014.
+
 ---
 
 ## Lifecycle Overview

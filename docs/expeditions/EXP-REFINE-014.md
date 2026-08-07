@@ -2,8 +2,8 @@
 
 > **Synthesis capability.** Implement the deterministic `ProjectMission` capability specified by EXP-REFINE-013.
 
-**Status:** Proposed  
-**Status change note:** Reconciled with EXP-PROGRAM-036 charter on 2026-07-24. Mission Projection Capability remains proposed for future implementation and was not required for program closeout.
+**Status:** Completed  
+**Status change note:** Verified and certified on 2026-08-07. The reference implementation in `src/governance/project-mission.ts` satisfies the acceptance criteria; `synth mission project --alignment-contract-id <id>` is available; unit tests pass.
 **Kind:** Synthesis Capability Expedition  
 **Priority:** Critical  
 **Program:** EXP-PROGRAM-036 — Intent Refinement & Alignment Governance  
@@ -155,15 +155,22 @@ Mission.fingerprint
 
 ## Definition of Done
 
-- [ ] `ProjectMission` capability is implemented and exports a single projection function.
-- [ ] All projection invariants are enforced with named errors.
-- [ ] Projection Completeness checks are implemented.
-- [ ] Deterministic fingerprint is computed and verified.
-- [ ] Projection Certification produces pass/fail results.
-- [ ] `MISSION_PROJECTED`, `PROJECTION_CERTIFIED`, and `PROJECTION_CERTIFICATION_FAILED` events are emitted.
-- [ ] Unit tests cover valid projection, invariant violations, completeness failures, and determinism.
-- [ ] Minimal CLI command exists for developer convenience.
-- [ ] ADR-045 references this capability as the reference implementation.
+- [x] `ProjectMission` capability is implemented and exports a single projection function.
+- [x] All projection invariants are enforced with named errors.
+- [x] Projection Completeness checks are implemented.
+- [x] Deterministic fingerprint is computed and verified.
+- [x] Projection Certification produces pass/fail results.
+- [x] `MISSION_PROJECTED`, `PROJECTION_CERTIFIED`, and `PROJECTION_CERTIFICATION_FAILED` events are emitted.
+- [x] Unit tests cover valid projection, invariant violations, completeness failures, and determinism.
+- [x] Minimal CLI command exists for developer convenience.
+- [x] ADR-045 references this capability as the reference implementation.
+
+## Evidence
+
+- Reference implementation: `src/governance/project-mission.ts`
+- Developer CLI: `synth mission project --alignment-contract-id <id>`
+- Unit tests: `tests/project-mission.test.js` (5 passed, 0 failed)
+- Certification: convergence certified under expedition `e2595c25f5e37db5`, mission `3464c9e3ee0f10c0`
 
 ---
 
