@@ -1,8 +1,10 @@
 {
   "version": "1.0.0",
   "repositoryType": "unknown",
-  "currentPhase": "initialized",
+  "currentPhase": "executing",
   "governanceVersion": "2.1",
   "mutationPolicy": "MUTATING",
+  "activeMissionId": "52f6b63e0aae01f2",
+  "activeExpeditionId": "564d07132eb41be0",
   "blockers": []
 }

@@ -747,15 +747,25 @@ export function createDefaultCapabilities(): Capability[] {
       handler: ({ intent, state, executionCtx }) => {
         const id = String(intent.payload.id)
         const existing = state.expeditions[id]
+        const force = intent.payload.force === true || intent.payload.force === "true"
+        const forceReason = typeof intent.payload.forceReason === "string" ? intent.payload.forceReason : undefined
         if (!existing) {
           const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
           const payload: Record<string, unknown> = { id, status: "completed" }
+          if (force) {
+            payload.force = true
+            if (forceReason) payload.forceReason = forceReason
+          }
           if (metadata) payload.metadata = metadata
           return { events: [{ type: "EXPEDITION_COMPLETED", payload }] }
         }
-        const updated = completeExpedition(existing, executionCtx)
+        const updated = completeExpedition(existing, executionCtx, force, forceReason)
         const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
         const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+        if (force) {
+          payload.force = true
+          if (forceReason) payload.forceReason = forceReason
+        }
         if (metadata) payload.metadata = metadata
         return { events: [{ type: "EXPEDITION_COMPLETED", payload }], result: updated }
       },

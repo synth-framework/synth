@@ -1,0 +1,18 @@
+{
+  "schema": "synth-discovery-baseline-v1",
+  "generatedAt": "2026-08-04T04:09:52.235Z",
+  "targetDir": "/Users/dev/Projects/synth-v2",
+  "discoverySessionId": "session-ccd644ecb0aedaab",
+  "discoverySessionHash": "ccd644ecb0aedaab69d2b4cfb273187f960fe71cf6139596fcfd686a86c98ee7",
+  "analysis": {
+    "languages": [
+      "JavaScript/TypeScript",
+      "Python"
+    ],
+    "frameworks": [],
+    "hasTests": true,
+    "fileCount": 2162,
+    "observationCount": 7
+  },
+  "signature": "e72dc6e1a986c57e0adb99c49973d671908b2c8d4c0043145e4270a923dae567"
+}
