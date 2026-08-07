@@ -185,3 +185,56 @@ test("synth project AGENTS.md surfaces detection context and discovery baseline"
   assert.ok(content.includes("nextjs-runtime"), "should surface detected adapters")
   assert.ok(content.includes("Legacy config file present"), "should surface discovery findings")
 })
+
+
+test("synth project AGENTS.md includes knowledge/AGENTS-intro.md inside the SYNTH block", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "intro-project" }))
+  fs.mkdirSync(path.join(dir, "knowledge"), { recursive: true })
+  fs.writeFileSync(
+    path.join(dir, "knowledge", "AGENTS-intro.md"),
+    "# Intro fragment\n\nIntro-specific rule for this project."
+  )
+
+  const result = runSynth(["project", "AGENTS.md"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+
+  const content = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+  assert.ok(content.includes("# Intro fragment"), "should include intro fragment content")
+  assert.ok(content.includes("Intro-specific rule for this project."), "should include intro fragment body")
+  assert.ok(content.indexOf("<!-- SYNTH:contract:start -->") < content.indexOf("# Intro fragment"), "intro should be inside SYNTH block")
+  assert.ok(content.includes("intro-project"), "should include project name")
+})
+
+test("synth project AGENTS.md does not duplicate the intro fragment as a regular fragment", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "no-dup-project" }))
+  fs.mkdirSync(path.join(dir, "knowledge"), { recursive: true })
+  fs.writeFileSync(
+    path.join(dir, "knowledge", "AGENTS-intro.md"),
+    "# Intro fragment\n\nIntro-specific rule."
+  )
+
+  const result = runSynth(["project", "AGENTS.md"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+  const output = parseJson(result.stdout)
+  assert.strictEqual(output.fragmentCount, 0, "intro fragment should not count as a regular fragment")
+
+  const content = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+  const matches = content.split("Intro-specific rule.").length - 1
+  assert.strictEqual(matches, 1, "intro fragment content should appear exactly once")
+})
+
+test("synth project AGENTS.md uses fallback baseline when no intro fragment exists", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "fallback-project" }))
+
+  const result = runSynth(["project", "AGENTS.md"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+
+  const content = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+  assert.ok(content.includes("AI Operator Contract"), "should include fallback contract header")
+  assert.ok(content.includes("Pre-flight checkpoint"), "should include fallback pre-flight checkpoint")
+  assert.ok(content.includes("Protected Assets"), "should include fallback protected assets")
+  assert.ok(content.includes("fallback-project"), "should include project name")
+})
