@@ -25,7 +25,7 @@ export type AgentAction =
   | { kind: "expedition.approve"; expeditionId: string }
   | { kind: "expedition.commit"; expeditionId: string }
   | { kind: "expedition.start"; expeditionId: string }
-  | { kind: "expedition.complete"; expeditionId: string }
+  | { kind: "expedition.complete"; expeditionId: string; force?: boolean }
   | { kind: "expedition.archive"; expeditionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
 
@@ -241,7 +241,10 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
       }
 
       // Convergence Certification enforcement (EXP-GOV-015 M5)
-      if (derivedState) {
+      // --force bypasses this gate so operators can close expeditions when
+      // convergence certification is genuinely unavailable, but the bypass is
+      // recorded in the event log and surfaced in reports.
+      if (!action.force && derivedState) {
         const hasConvergenceCertification = Object.values(derivedState.convergenceCertifications).some(
           (c) => c.expeditionId === action.expeditionId && c.decision === "converged"
         )

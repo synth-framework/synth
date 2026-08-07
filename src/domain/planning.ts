@@ -155,13 +155,20 @@ export function startExpedition(expedition: Expedition, ctx: DomainContext): Exp
 }
 
 /** Complete an expedition */
-export function completeExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
+export function completeExpedition(
+  expedition: Expedition,
+  ctx: DomainContext,
+  force?: boolean,
+  forceReason?: string,
+): Expedition {
   if (expedition.status !== "executing") {
     throw new Error("INVARIANT_VIOLATION: can only complete an executing expedition")
   }
   return {
     ...expedition,
     status: "completed",
+    ...(force !== undefined && { force }),
+    ...(forceReason !== undefined && { forceReason }),
     updatedAt: ctx.timestamp,
   }
 }
