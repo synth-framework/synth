@@ -95,6 +95,27 @@ async function testExpeditionShowHuman() {
   console.log("[PASS] synth expedition show --human returns prose")
 }
 
+async function testExpeditionShowRuntimeFallback() {
+  const { stdout, status } = runSynth(["expedition", "show", "--id", "8cea04db9fd036af"])
+  assert(status === 0, `expedition show for CLI-created expedition should exit 0, got ${status}\n${stdout}`)
+  const output = parseJson(stdout)
+  assert(output.status === "ok", `status should be ok, got ${output.status}`)
+  assert(output.kind === "ExpeditionShow", `kind should be ExpeditionShow, got ${output.kind}`)
+  assert(output.expedition.id === "8cea04db9fd036af", `expedition id should match, got ${output.expedition.id}`)
+  assert(output.expedition.name === "Expedition and Mission Human-Readable Reports", `name should match, got ${output.expedition.name}`)
+  assert(output.missionId === "74c3a70571facb87", `missionId should match, got ${output.missionId}`)
+  console.log("[PASS] synth expedition show falls back to runtime state")
+}
+
+async function testExpeditionShowHumanRuntimeFallback() {
+  const { stdout, status } = runSynth(["expedition", "show", "--id", "8cea04db9fd036af", "--human"])
+  assert(status === 0, `expedition show --human for CLI-created expedition should exit 0, got ${status}\n${stdout}`)
+  assert(stdout.includes("Expedition: 8cea04db9fd036af"), "human output should include expedition header")
+  assert(stdout.includes("Mission: 74c3a70571facb87"), "human output should include mission id")
+  assert(!stdout.trim().startsWith("{"), "human output should not start with JSON")
+  console.log("[PASS] synth expedition show --human falls back to runtime state")
+}
+
 async function testProgramHelpIncludesShow() {
   const { stdout, status } = runSynth(["program", "--help"])
   assert(status === 0, "program --help should exit 0")
@@ -133,6 +154,8 @@ async function main() {
   await testExpeditionShowMissing()
   await testExpeditionShowMissingId()
   await testExpeditionShowHuman()
+  await testExpeditionShowRuntimeFallback()
+  await testExpeditionShowHumanRuntimeFallback()
   await testProgramHelpIncludesShow()
   await testExpeditionHelpIncludesShow()
   await testShowCommandsAreDiscoverySafe()

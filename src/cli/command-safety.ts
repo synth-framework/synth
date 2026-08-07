@@ -35,6 +35,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "doctor", safety: "READ_ONLY", description: "Verify installation and project health" },
   { command: "checkpoint", safety: "READ_ONLY", description: "Run pre-flight checkpoint before implementation work" },
   { command: "status", safety: "READ_ONLY", description: "Report the current project state" },
+  { command: "report", safety: "READ_ONLY", description: "Print a global human-readable project report" },
   { command: "explain", safety: "READ_ONLY", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { command: "validate", safety: "READ_ONLY", description: "Analyze changes and plan validations" },
   { command: "validate --full", safety: "MUTATING", description: "Run the complete canonical governance pipeline", requiresApproval: true },
@@ -85,11 +86,13 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "mission snapshot", safety: "READ_ONLY", description: "Inspect or list Mission snapshots" },
   { command: "mission project", safety: "READ_ONLY", description: "Project a Mission from an approved Alignment Contract" },
   { command: "mission verify-charter", safety: "READ_ONLY", description: "Verify expedition charter integrity" },
+  { command: "mission report", safety: "READ_ONLY", description: "Show mission status and its expeditions" },
   { command: "program list", safety: "READ_ONLY", description: "List governance programs" },
   { command: "program show", safety: "READ_ONLY", description: "Show a single governance program" },
   { command: "program rank", safety: "READ_ONLY", description: "Rank active programs by weighted open work" },
   { command: "expedition list", safety: "READ_ONLY", description: "List governance expeditions" },
   { command: "expedition show", safety: "READ_ONLY", description: "Show a single governance expedition" },
+  { command: "expedition report", safety: "READ_ONLY", description: "Show a rich expedition report with charter intent, evidence, and expected output" },
   { command: "expedition rank", safety: "READ_ONLY", description: "Rank open expeditions by priority, status, and downstream impact" },
   { command: "validate dependencies", safety: "READ_ONLY", description: "Verify expedition charter dependency resolution" },
   { command: "validate artifact", safety: "READ_ONLY", description: "Validate governance artifacts" },
@@ -225,6 +228,8 @@ export function classifyInvocation(
   const namespace = positional[0] || ""
   const sub = positional[1]
 
+  if (namespace === "report") return "report"
+
   if (namespace === "bootstrap") {
     if (flags.approve === true) return "bootstrap --approve"
     if (flags["dry-run"] === true) return "bootstrap --dry-run"
@@ -273,6 +278,7 @@ export function classifyInvocation(
     if (sub === "snapshot") return "mission snapshot"
     if (sub === "project") return "mission project"
     if (sub === "verify-charter") return "mission verify-charter"
+    if (sub === "report") return "mission report"
   }
   if (namespace === "program") {
     if (sub === "list") return "program list"
@@ -335,6 +341,7 @@ export function classifyInvocation(
     if (sub === "list") return "expedition list"
     if (sub === "show") return "expedition show"
     if (sub === "rank") return "expedition rank"
+    if (sub === "report") return "expedition report"
   }
   if (namespace === "capabilities") {
     return "capabilities"

@@ -23,7 +23,7 @@ import { createInitializationEvidenceStore } from "../initialization/evidence-st
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
-import { setAgentTelemetry, printJson, printError, setHumanMode } from "./print.js"
+import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
@@ -102,8 +102,10 @@ import {
   findUpstreamExpeditions,
   findDownstreamExpeditions,
 } from "../governance/inventory.js"
+import { loadExpeditionCharterDetails } from "../governance/charter-report.js"
 import { rankExpeditions, rankPrograms } from "../governance/rank.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
+import { validateEvaluationResult, formatEvaluationErrors } from "../domain/evaluation.js"
 import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
@@ -134,6 +136,7 @@ const COMMANDS = [
   { name: "verify", description: "Verify governance invariants, projection consistency, and event-log signatures" },
   { name: "approval", description: "Two-party approval operations (request, grant, deny, list, show)" },
   { name: "status", description: "Report the current project state" },
+  { name: "report", description: "Print a global human-readable project report" },
   { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
   { name: "program", description: "Governance program inventory (list)" },
   { name: "project", description: "Project-level derived artifacts" },
@@ -1002,6 +1005,13 @@ async function cmdHelp() {
     usage: "synth <command> [options]",
     commands: COMMANDS,
     vocabulary: PUBLIC_VOCABULARY,
+    globalOptions: [
+      { name: "--json", description: "Emit machine-clean JSON and suppress diagnostic logs to stderr" },
+      { name: "--human", description: "Emit prose summaries instead of JSON" },
+      { name: "--quiet", description: "Suppress bootstrap and diagnostic INFO/WARN/DEBUG logs" },
+      { name: "--summary", description: "Emit a condensed summary: status, kind, id, and next step" },
+      { name: "--discovery-mode", description: "Reject mutating commands; safe for read-only exploration" },
+    ],
     note: "All output is JSON by default for agent consumption.",
   })
 }
@@ -1136,8 +1146,12 @@ async function cmdMissionHelp() {
     { name: "synth mission project --alignment-contract-id <id>", description: "Project a Mission from an approved Alignment Contract (EXP-REFINE-014)" },
     { name: "synth mission approve --draft-id <id> --alignment-contract-id <contract-id>", description: "Approve a Mission draft" },
     { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
+    { name: "synth mission list [--status <status>] [--program <program-id>]", description: "List missions with optional filters" },
+    { name: "synth mission show --id <mission-id>", description: "Show a single mission and its expeditions", args: "--id 74c3a70571facb87" },
     { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
     { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
+    { name: "synth mission report --id <mission-id>", description: "Show mission status and its expeditions", args: "--id 74c3a70571facb87" },
+    { name: "synth mission complete --id <mission-id>", description: "Complete an active Mission", args: "--id 74c3a70571facb87" },
   ]))
 }
 
@@ -1887,6 +1901,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
     { name: "synth expedition list --program <program-id>", description: "Filter expeditions by program", args: "--program EXP-PROGRAM-043" },
     { name: "synth expedition show --id <expedition-id>", description: "Show a single expedition with upstream/downstream context", args: "--id EXP-CLI-005" },
+    { name: "synth expedition report --id <expedition-id>", description: "Show a rich report with charter intent, evidence, and expected output", args: "--id EXP-CLI-005" },
     { name: "synth expedition rank", description: "Rank open expeditions by priority, status, and downstream impact" },
     { name: "synth expedition rank --next", description: "Return the single highest-priority open expedition" },
     { name: "synth expedition rank --status <status>", description: "Rank expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
@@ -2442,30 +2457,109 @@ async function cmdBootstrap(args: string[], flags: Record<string, string | boole
 }
 
 async function cmdGovern(flags: Record<string, string | boolean>) {
-  const verdict = checkGovernDelegation(process.cwd())
-  if (!verdict.allowed) {
-    if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
-      return runInternalGovernance(verdict.condition)
+  const pipelineMode =
+    flags.pipeline === true ||
+    flags.pipeline === "true" ||
+    flags.explain === true ||
+    flags.explain === "true" ||
+    typeof flags.profile === "string" ||
+    flags.full === true ||
+    flags.full === "true"
+
+  if (pipelineMode) {
+    const verdict = checkGovernDelegation(process.cwd())
+    if (!verdict.allowed) {
+      if (verdict.condition === "missing-package-json" || verdict.condition === "missing-govern-script") {
+        return runInternalGovernance(verdict.condition)
+      }
+      return printError(verdict.message)
     }
-    return printError(verdict.message)
+    const args = ["run", "govern"]
+    if (flags.explain === true || flags.explain === "true") args.push("--explain")
+    if (typeof flags.profile === "string") args.push("--profile", flags.profile)
+    if (flags.full === true || flags.full === "true") args.push("--full")
+    const result = await runNpmScript(args, verdict.childEnv, process.cwd())
+    printJson({
+      status: result.status === 0 ? "ok" : "error",
+      kind: "GovernResult",
+      delegated: true,
+      condition: "delegated",
+      exitCode: result.status,
+      output: result.stdout,
+      errors: result.stderr,
+    })
+    if (result.status !== 0) {
+      process.exit(result.status)
+    }
+    return
   }
-  const args = ["run", "govern"]
-  if (flags.explain === true || flags.explain === "true") args.push("--explain")
-  if (typeof flags.profile === "string") args.push("--profile", flags.profile)
-  if (flags.full === true || flags.full === "true") args.push("--full")
-  const result = await runNpmScript(args, verdict.childEnv, process.cwd())
+
+  // Unified onboarding invocation: detect project state and route to the
+  // appropriate SYNTH entry point without requiring the user to choose commands.
+  const rootDir = process.cwd()
+  const hasManifest = sdk.paths.hasManifest(rootDir)
+  const intent = typeof flags.intent === "string" ? flags.intent : ""
+
+  if (!hasManifest) {
+    // Uninitialized project: greenfield or intent-driven onboarding.
+    if (intent) {
+      printJson({
+        status: "ok",
+        kind: "GovernRouted",
+        reason: "uninitialized_project_with_intent",
+        route: "first-contact start",
+        intent,
+      })
+      return cmdFirstContactStart([intent], flags)
+    }
+    printJson({
+      status: "ok",
+      kind: "GovernRouted",
+      reason: "uninitialized_project",
+      route: "first-contact onboard:detect",
+    })
+    return cmdFirstContactOnboardDetect([], flags)
+  }
+
+  const statePath = sdk.paths.stateFile(rootDir)
+  let hasGovernanceState = false
+  try {
+    await fs.access(statePath)
+    hasGovernanceState = true
+  } catch {
+    hasGovernanceState = false
+  }
+
+  if (!hasGovernanceState) {
+    // Initialized but not yet governed: bootstrap an existing repository.
+    printJson({
+      status: "ok",
+      kind: "GovernRouted",
+      reason: "initialized_not_governed",
+      route: "bootstrap --approve",
+    })
+    return cmdBootstrap([rootDir], { ...flags, approve: true })
+  }
+
+  // Already governed.
+  if (intent) {
+    printJson({
+      status: "ok",
+      kind: "GovernRouted",
+      reason: "governed_project_with_intent",
+      route: "mission create",
+      intent,
+    })
+    return cmdMissionCreate({ ...flags, subject: intent, purpose: `Governed intent captured via synth govern: ${intent}` })
+  }
+
   printJson({
-    status: result.status === 0 ? "ok" : "error",
-    kind: "GovernResult",
-    delegated: true,
-    condition: "delegated",
-    exitCode: result.status,
-    output: result.stdout,
-    errors: result.stderr,
+    status: "ok",
+    kind: "GovernRouted",
+    reason: "governed_project_no_intent",
+    route: "status",
   })
-  if (result.status !== 0) {
-    process.exit(result.status)
-  }
+  return cmdStatus()
 }
 
 async function cmdStatus() {
@@ -2903,6 +2997,45 @@ async function cmdMissionProject(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdMissionComplete(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : ""
+  if (!id) {
+    printError("Usage: synth mission complete --id <mission-id>", {
+      code: "MissingMissionId",
+      category: "validation",
+      suggestion: "Run 'synth status' to see active missions.",
+    })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CompleteMission",
+    payload: { id },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || `Failed to complete mission ${id}`, {
+      code: "MissionCompleteFailed",
+      category: "lifecycle",
+      suggestion: "Ensure the mission is active and all its expeditions are completed or cancelled.",
+    })
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "MissionCompleted",
+    missionId: id,
+    result: result.result,
+  })
+}
+
 const EVIDENCE_CONFIDENCE_LEVELS = ["unknown", "low", "medium", "high", "certain"]
 
 async function cmdMissionDecisions(flags: Record<string, string | boolean>) {
@@ -3013,6 +3146,148 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
 // ============================================================
 // EXP-CLI-003: Governance inventory list commands
 // ============================================================
+
+// Merge charter metadata with the authoritative runtime expedition state.
+// Runtime status is authoritative; charter data enriches name, kind, priority,
+// program, and dependency fields. CLI-created expeditions with no charter are
+// still included, so list/show never return "not found" for a real expedition.
+type MergedExpeditionRecord = import("../governance/inventory.js").ExpeditionRecord & {
+  missionId?: string
+}
+
+async function buildMergedExpeditionMap(
+  charterDir: string,
+  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+): Promise<Map<string, MergedExpeditionRecord>> {
+  const inventory = await loadGovernanceInventory(charterDir)
+  const charterMap = new Map(inventory.expeditions.map((e) => [e.id, e]))
+  const runtimeExpeditions = !isGovernanceResolutionFailure(resolved)
+    ? resolved.authoritative.replayedState.expeditions
+    : {}
+
+  const allIds = new Set([...charterMap.keys(), ...Object.keys(runtimeExpeditions)])
+  const merged = new Map<string, MergedExpeditionRecord>()
+  for (const id of allIds) {
+    const charter = charterMap.get(id)
+    const runtime = runtimeExpeditions[id]
+    merged.set(id, {
+      id,
+      name: charter?.name || runtime?.name || id,
+      kind: charter?.kind || "Unknown",
+      status: runtime?.status || charter?.status || "Unknown",
+      priority: charter?.priority || "Unknown",
+      program: charter?.program || "",
+      dependsOn: charter?.dependsOn || runtime?.dependsOn || [],
+      blocks: charter?.blocks || [],
+      missionId: runtime?.missionId,
+    })
+  }
+  return merged
+}
+
+async function buildMergedExpeditionList(
+  charterDir: string,
+  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+): Promise<MergedExpeditionRecord[]> {
+  const map = await buildMergedExpeditionMap(charterDir, resolved)
+  return Array.from(map.values())
+}
+
+async function findMergedExpeditionById(
+  charterDir: string,
+  id: string,
+  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+): Promise<MergedExpeditionRecord | undefined> {
+  const map = await buildMergedExpeditionMap(charterDir, resolved)
+  return map.get(id)
+}
+
+const PROGRAM_INFERENCE_STOP_WORDS = new Set([
+  "the", "and", "for", "with", "from", "that", "this", "into", "over", "under", "through", "before", "after", "above", "below", "between", "among", "within", "without", "during", "while", "about", "against", "around", "behind", "beyond", "except", "inside", "outside", "until", "upon", "toward", "towards", "across", "along", "beside", "beyond", "concerning", "despite", "following", "including", "regarding", "regardless", "since", "throughout", "unless", "whether", "which", "their", "there", "where", "when", "what", "who", "how", "why", "will", "would", "could", "should", "may", "might", "must", "shall", "can", "cannot", "has", "have", "had", "was", "were", "been", "being", "are", "is", "am", "do", "does", "did", "done", "get", "gets", "got", "make", "makes", "made", "take", "takes", "took", "come", "comes", "came", "use", "uses", "used", "using", "need", "needs", "needed", "want", "wants", "wanted", "like", "likes", "liked", "work", "works", "worked", "working",
+])
+
+function extractMeaningfulTokens(text: string): string[] {
+  const normalized = text.toLowerCase().replace(/[^a-z0-9\s]/g, " ")
+  return normalized
+    .split(/\s+/)
+    .map((t) => t.replace(/s$/, ""))
+    .filter((t) => t.length >= 4 && !PROGRAM_INFERENCE_STOP_WORDS.has(t))
+}
+
+function scoreProgramMatch(
+  missionTokens: Set<string>,
+  programName: string,
+  programExpeditionNames: string[],
+): number {
+  let score = 0
+  for (const token of extractMeaningfulTokens(programName)) {
+    if (missionTokens.has(token)) score += 3
+  }
+  for (const name of programExpeditionNames) {
+    for (const token of extractMeaningfulTokens(name)) {
+      if (missionTokens.has(token)) score += 1
+    }
+  }
+  return score
+}
+
+// Infer a mission's owning program from its expeditions' charter records.
+// If all charter-backed expeditions under the mission belong to the same program,
+// return that program. Otherwise, fall back to a keyword match against program
+// names and their charter expedition names so CLI-created missions without
+// charters still surface a plausible program.
+async function inferMissionProgram(
+  charterDir: string,
+  missionId: string,
+  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+): Promise<{ id: string; name: string } | undefined> {
+  if (isGovernanceResolutionFailure(resolved)) return undefined
+  const inventory = await loadGovernanceInventory(charterDir)
+  const missionExpeditions = Object.values(resolved.authoritative.replayedState.expeditions).filter(
+    (e) => e.missionId === missionId,
+  )
+
+  const expeditionPrograms = missionExpeditions
+    .map((e) => {
+      const charter = inventory.expeditions.find((ce) => ce.id === e.id)
+      return charter?.program
+    })
+    .filter((program): program is string => Boolean(program))
+
+  const distinct = Array.from(new Set(expeditionPrograms))
+  if (distinct.length === 1) {
+    const program = inventory.programs.find((p) => p.id === distinct[0])
+    return program ? { id: program.id, name: program.name } : { id: distinct[0], name: distinct[0] }
+  }
+
+  const mission = resolved.authoritative.replayedState.missions[missionId]
+  if (!mission) return undefined
+  const missionText = [mission.name, mission.purpose, ...missionExpeditions.map((e) => e.name), ...missionExpeditions.map((e) => e.goal)].join(" ")
+  const missionTokens = new Set(extractMeaningfulTokens(missionText))
+  if (missionTokens.size === 0) return undefined
+
+  const programExpeditionsMap = new Map<string, string[]>()
+  for (const p of inventory.programs) {
+    programExpeditionsMap.set(p.id, inventory.expeditions.filter((e) => e.program === p.id).map((e) => e.name))
+  }
+
+  let bestProgram: { id: string; name: string } | undefined
+  let bestScore = 0
+  for (const program of inventory.programs) {
+    const score = scoreProgramMatch(missionTokens, program.name, programExpeditionsMap.get(program.id) || [])
+    if (score > bestScore) {
+      bestScore = score
+      bestProgram = { id: program.id, name: program.name }
+    }
+  }
+
+  // Require a minimum signal to avoid spurious matches.
+  if (bestScore >= 4) {
+    return bestProgram
+  }
+  return undefined
+}
+
 async function cmdProgramList(flags: Record<string, string | boolean>) {
   const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
   const inventory = await loadGovernanceInventory(charterDir)
@@ -3031,9 +3306,9 @@ async function cmdProgramList(flags: Record<string, string | boolean>) {
 
 async function cmdExpeditionList(flags: Record<string, string | boolean>) {
   const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
-  const inventory = await loadGovernanceInventory(charterDir)
+  const resolved = await resolveGovernanceContext(process.cwd())
+  let expeditions = await buildMergedExpeditionList(charterDir, resolved)
 
-  let expeditions = inventory.expeditions
   expeditions = filterByValues(expeditions, (e) => e.status, typeof flags.status === "string" ? flags.status : undefined)
   expeditions = filterByValues(expeditions, (e) => e.priority, typeof flags.priority === "string" ? flags.priority : undefined)
 
@@ -3043,11 +3318,14 @@ async function cmdExpeditionList(flags: Record<string, string | boolean>) {
     expeditions = expeditions.filter((e) => allowed.has(e.program))
   }
 
+  // Remove runtime-only fields from the list response to keep the public shape stable.
+  const publicExpeditions = expeditions.map(({ missionId: _missionId, ...rest }) => rest)
+
   printJson({
     status: "ok",
     kind: "ExpeditionList",
-    count: expeditions.length,
-    expeditions,
+    count: publicExpeditions.length,
+    expeditions: publicExpeditions,
   })
 }
 
@@ -3170,7 +3448,8 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   }
 
   const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
-  const expedition = await findExpeditionById(charterDir, id)
+  const resolved = await resolveGovernanceContext(process.cwd())
+  const expedition = await findMergedExpeditionById(charterDir, id, resolved)
   if (!expedition) {
     printError(`Expedition ${id} not found.`, {
       code: "ExpeditionNotFound",
@@ -3181,9 +3460,9 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   }
 
   const [programRecord, upstream, downstream] = await Promise.all([
-    findProgramById(charterDir, expedition.program),
-    findUpstreamExpeditions(charterDir, expedition),
-    findDownstreamExpeditions(charterDir, expedition),
+    expedition.program ? findProgramById(charterDir, expedition.program) : Promise.resolve(undefined),
+    expedition.program ? findUpstreamExpeditions(charterDir, expedition as import("../governance/inventory.js").ExpeditionRecord) : Promise.resolve([]),
+    expedition.program ? findDownstreamExpeditions(charterDir, expedition as import("../governance/inventory.js").ExpeditionRecord) : Promise.resolve([]),
   ])
 
   const program = programRecord
@@ -3202,7 +3481,7 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
     console.log(
       `Expedition: ${expedition.id} — ${expedition.name}\n` +
       `Status: ${expedition.status} | Priority: ${expedition.priority}\n` +
-      `Program: ${program.id} — ${program.name}\n` +
+      `Program: ${program.id ? `${program.id} — ${program.name}` : "Unknown"}${expedition.missionId ? `\nMission: ${expedition.missionId}` : ""}\n` +
       `Depends on: ${expedition.dependsOn.length === 0 ? "None" : expedition.dependsOn.join(", ")}\n` +
       `Blocks: ${expedition.blocks.length === 0 ? "None" : expedition.blocks.join(", ")}\n` +
       `Upstream: ${upstreamText}\n` +
@@ -3211,13 +3490,466 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
     return
   }
 
+  const { missionId, ...publicExpedition } = expedition
   printJson({
     status: "ok",
     kind: "ExpeditionShow",
-    expedition,
-    program,
+    expedition: publicExpedition,
+    program: program.id ? program : undefined,
+    missionId,
     upstream,
     downstream,
+  })
+}
+
+// ============================================================
+// Human-readable governance reports
+// ============================================================
+async function cmdExpeditionReport(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth expedition report --id <expedition-id>", {
+      code: "MissingExpeditionId",
+      category: "validation",
+      suggestion: "Run 'synth expedition list' to see available expeditions.",
+    })
+    return
+  }
+
+  // Resolve runtime state first so we can fall back to CLI-created expeditions
+  // that have no docs/expeditions charter file.
+  const resolved = await resolveGovernanceContext(process.cwd())
+  const runtimeExpedition = !isGovernanceResolutionFailure(resolved)
+    ? resolved.authoritative.replayedState.expeditions[id]
+    : undefined
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const charterRecord = await findExpeditionById(charterDir, id)
+
+  if (!charterRecord && !runtimeExpedition) {
+    printError(`Expedition ${id} not found.`, {
+      code: "ExpeditionNotFound",
+      category: "validation",
+      suggestion: "Run 'synth expedition list' to see available expeditions.",
+    })
+    return
+  }
+
+  // Build a unified expedition record. Charter docs win for priority/kind/program;
+  // runtime state provides the authoritative status, mission id, attachments, and goal.
+  const expeditionRecord: import("../governance/inventory.js").ExpeditionRecord = charterRecord || {
+    id: runtimeExpedition!.id,
+    name: runtimeExpedition!.name,
+    kind: "Unknown",
+    status: runtimeExpedition!.status,
+    priority: "Unknown",
+    program: "",
+    dependsOn: runtimeExpedition!.dependsOn || [],
+    blocks: [],
+  }
+
+  const charterDetails = (await loadExpeditionCharterDetails(charterDir, id)) || {
+    purpose: runtimeExpedition?.goal || "",
+    goal: runtimeExpedition?.goal || "",
+    deliverables: [],
+    acceptanceCriteria: [],
+    evidence: [],
+    outOfScope: [],
+    relatedDocuments: [],
+    expectedOutput: "",
+  }
+
+  const [programRecord, upstream, downstream] = await Promise.all([
+    findProgramById(charterDir, expeditionRecord.program),
+    charterRecord ? findUpstreamExpeditions(charterDir, charterRecord) : Promise.resolve([]),
+    charterRecord ? findDownstreamExpeditions(charterDir, charterRecord) : Promise.resolve([]),
+  ])
+
+  const program = programRecord
+    ? { id: programRecord.id, name: programRecord.name }
+    : { id: expeditionRecord.program, name: expeditionRecord.program }
+
+  const runtimeStatus = runtimeExpedition?.status || expeditionRecord.status
+  const missionId = runtimeExpedition?.missionId || ""
+  const forceCompleted = runtimeExpedition?.force === true
+  const forceReason = runtimeExpedition?.forceReason
+  const attachments: Array<{ kind: string; path: string; hash?: string; note?: string }> = runtimeExpedition
+    ? (runtimeExpedition.attachments || []).map((a) => ({
+        kind: a.kind,
+        path: a.path,
+        hash: a.hash,
+        note: a.note,
+      }))
+    : []
+
+  const human = flags.human === true || flags.human === "true"
+  if (human) {
+    const deliverablesText =
+      charterDetails.deliverables.length === 0
+        ? "  (none documented)"
+        : charterDetails.deliverables.map((d) => `  • ${d}`).join("\n")
+    const criteriaText =
+      charterDetails.acceptanceCriteria.length === 0
+        ? "  (none documented)"
+        : charterDetails.acceptanceCriteria.map((c) => `  • ${c}`).join("\n")
+    const evidenceText =
+      attachments.length === 0 && charterDetails.evidence.length === 0
+        ? "  (none attached)"
+        : [
+            ...attachments.map((a) => `  • [${a.kind}] ${a.path}${a.note ? ` — ${a.note}` : ""}`),
+            ...charterDetails.evidence.map((e) => `  • ${e}`),
+          ].join("\n")
+    const scopeText =
+      charterDetails.outOfScope.length === 0
+        ? "  (none documented)"
+        : charterDetails.outOfScope.map((s) => `  • ${s}`).join("\n")
+    const relatedText =
+      charterDetails.relatedDocuments.length === 0
+        ? "  (none documented)"
+        : charterDetails.relatedDocuments.map((r) => `  • ${r}`).join("\n")
+    const upstreamText = upstream.length === 0 ? "None" : upstream.map((e) => `${e.id} (${e.status})`).join(", ")
+    const downstreamText = downstream.length === 0 ? "None" : downstream.map((e) => `${e.id} (${e.status})`).join(", ")
+
+    const forceText = forceCompleted
+      ? `\nForce completed: yes${forceReason ? `\nForce reason: ${forceReason}` : ""}`
+      : ""
+
+    console.log(
+      `Expedition: ${id} — ${expeditionRecord.name}\n` +
+      `Status: ${runtimeStatus} | Priority: ${expeditionRecord.priority}\n` +
+      `Program: ${program.id ? `${program.id} — ${program.name}` : "Unknown"}${missionId ? `\nMission: ${missionId}` : ""}${forceText}\n\n` +
+      `Purpose:\n  ${charterDetails.purpose || "(not documented)"}\n\n` +
+      `Deliverables:\n${deliverablesText}\n\n` +
+      `Definition of done / Acceptance criteria:\n${criteriaText}\n\n` +
+      `Evidence:\n${evidenceText}\n\n` +
+      `Out of scope:\n${scopeText}\n\n` +
+      `Related documents:\n${relatedText}\n\n` +
+      `Depends on: ${expeditionRecord.dependsOn.length === 0 ? "None" : expeditionRecord.dependsOn.join(", ")}\n` +
+      `Blocks: ${expeditionRecord.blocks.length === 0 ? "None" : expeditionRecord.blocks.join(", ")}\n` +
+      `Upstream: ${upstreamText}\n` +
+      `Downstream: ${downstreamText}`,
+    )
+    return
+  }
+
+  const expeditionOutput: Record<string, unknown> = {
+    id,
+    name: expeditionRecord.name,
+    status: runtimeStatus,
+    priority: expeditionRecord.priority,
+    kind: expeditionRecord.kind,
+    program: program.id ? program : undefined,
+    missionId: missionId || undefined,
+    dependsOn: expeditionRecord.dependsOn,
+    blocks: expeditionRecord.blocks,
+    upstream,
+    downstream,
+  }
+  if (forceCompleted) {
+    expeditionOutput.force = true
+    if (forceReason) expeditionOutput.forceReason = forceReason
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionReport",
+    expedition: expeditionOutput,
+    charter: charterDetails,
+    attachments,
+  })
+}
+
+async function cmdMissionList(flags: Record<string, string | boolean>) {
+  const resolved = await resolveGovernanceContext(process.cwd())
+  if (isGovernanceResolutionFailure(resolved)) {
+    printError("Could not resolve governance context.", {
+      code: "GovernanceResolutionFailure",
+      category: "runtime",
+      suggestion: "Run 'synth explain replay' to diagnose state issues.",
+    })
+    return
+  }
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const missions = Object.values(resolved.authoritative.replayedState.missions)
+
+  let missionsWithProgram = await Promise.all(
+    missions.map(async (m) => {
+      const program = await inferMissionProgram(charterDir, m.id, resolved)
+      return {
+        id: m.id,
+        name: m.name,
+        status: m.status,
+        purpose: m.purpose,
+        program: program || undefined,
+        createdAt: m.createdAt,
+        updatedAt: m.updatedAt,
+      }
+    }),
+  )
+
+  missionsWithProgram = filterByValues(
+    missionsWithProgram,
+    (m) => m.status,
+    typeof flags.status === "string" ? flags.status : undefined,
+  )
+
+  const programFilter = typeof flags.program === "string" ? flags.program : undefined
+  if (programFilter && programFilter.trim() !== "") {
+    const allowed = new Set(programFilter.split(",").map((s) => s.trim()).filter(Boolean))
+    missionsWithProgram = missionsWithProgram.filter((m) => m.program && allowed.has(m.program.id))
+  }
+
+  printJson({
+    status: "ok",
+    kind: "MissionList",
+    count: missionsWithProgram.length,
+    missions: missionsWithProgram,
+  })
+}
+
+async function cmdMissionShow(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth mission show --id <mission-id>", {
+      code: "MissingMissionId",
+      category: "validation",
+      suggestion: "Run 'synth mission list' to see available missions.",
+    })
+    return
+  }
+
+  const resolved = await resolveGovernanceContext(process.cwd())
+  if (isGovernanceResolutionFailure(resolved)) {
+    printError("Could not resolve governance context.", {
+      code: "GovernanceResolutionFailure",
+      category: "runtime",
+      suggestion: "Run 'synth explain replay' to diagnose state issues.",
+    })
+    return
+  }
+
+  const mission = resolved.authoritative.replayedState.missions[id]
+  if (!mission) {
+    printError(`Mission ${id} not found.`, {
+      code: "MissionNotFound",
+      category: "validation",
+      suggestion: "Run 'synth mission list' to see available missions.",
+    })
+    return
+  }
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const program = await inferMissionProgram(charterDir, id, resolved)
+
+  const expeditionRecords = Object.values(resolved.authoritative.replayedState.expeditions)
+    .filter((e) => e.missionId === id)
+    .map((e) => ({
+      id: e.id,
+      name: e.name,
+      status: e.status,
+      goal: e.goal,
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id))
+
+  printJson({
+    status: "ok",
+    kind: "MissionShow",
+    mission: {
+      id: mission.id,
+      name: mission.name,
+      status: mission.status,
+      purpose: mission.purpose,
+      program: program || undefined,
+      createdAt: mission.createdAt,
+      updatedAt: mission.updatedAt,
+    },
+    expeditions: expeditionRecords,
+  })
+}
+
+async function cmdMissionReport(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth mission report --id <mission-id>", {
+      code: "MissingMissionId",
+      category: "validation",
+      suggestion: "Run 'synth status' to see active missions.",
+    })
+    return
+  }
+
+  const resolved = await resolveGovernanceContext(process.cwd())
+  if (isGovernanceResolutionFailure(resolved)) {
+    printError("Could not resolve governance context.", {
+      code: "GovernanceResolutionFailure",
+      category: "runtime",
+      suggestion: "Run 'synth explain replay' to diagnose state issues.",
+    })
+    return
+  }
+
+  const mission = resolved.authoritative.replayedState.missions[id]
+  if (!mission) {
+    printError(`Mission ${id} not found.`, {
+      code: "MissionNotFound",
+      category: "validation",
+      suggestion: "Run 'synth status' to see active missions.",
+    })
+    return
+  }
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const inventory = await loadGovernanceInventory(charterDir)
+  const program = await inferMissionProgram(charterDir, id, resolved)
+
+  const expeditionRecords = Object.values(resolved.authoritative.replayedState.expeditions)
+    .filter((e) => e.missionId === id)
+    .map((e) => {
+      const charter = inventory.expeditions.find((ce) => ce.id === e.id)
+      return {
+        id: e.id,
+        name: e.name,
+        status: e.status,
+        priority: charter?.priority || "Unknown",
+        program: charter?.program || "",
+        goal: e.goal,
+      }
+    })
+
+  const human = flags.human === true || flags.human === "true"
+  if (human) {
+    const expeditionLines =
+      expeditionRecords.length === 0
+        ? "  No expeditions."
+        : expeditionRecords.map((e) => `  ${e.id}  ${e.status.padEnd(10)} ${e.name}`).join("\n")
+    console.log(
+      `Mission: ${id} — ${mission.name}\n` +
+      `Status: ${mission.status}${program ? `\nProgram: ${program.id} — ${program.name}` : ""}\n` +
+      `Purpose:\n  ${mission.purpose}\n\n` +
+      `Expeditions:\n${expeditionLines}`,
+    )
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "MissionReport",
+    mission: {
+      id: mission.id,
+      name: mission.name,
+      status: mission.status,
+      purpose: mission.purpose,
+      program: program || undefined,
+      createdAt: mission.createdAt,
+      updatedAt: mission.updatedAt,
+    },
+    expeditions: expeditionRecords,
+  })
+}
+
+// ============================================================
+// Global human-readable project report
+// ============================================================
+async function cmdReport(flags: Record<string, string | boolean>) {
+  const briefing = await buildOperatorBriefing(process.cwd())
+  if (briefing.status === "error") {
+    printError(briefing.diagnostic, {
+      code: "GovernanceResolutionFailure",
+      category: "runtime",
+      suggestion: briefing.recovery,
+    })
+    return
+  }
+
+  const resolved = await resolveGovernanceContext(process.cwd())
+  if (isGovernanceResolutionFailure(resolved)) {
+    printError("Could not resolve governance context.", {
+      code: "GovernanceResolutionFailure",
+      category: "runtime",
+      suggestion: "Run 'synth explain replay' to diagnose state issues.",
+    })
+    return
+  }
+
+  let projectName = "Synth Project"
+  try {
+    const manifest = JSON.parse(await fs.readFile(sdk.paths.manifestPath(process.cwd()), "utf-8"))
+    if (typeof manifest.projectName === "string" && manifest.projectName.length > 0) {
+      projectName = manifest.projectName
+    }
+  } catch {
+    // Fall back to default project name.
+  }
+
+  const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
+  const state = resolved.authoritative.replayedState
+  const activeExpedition = briefing.activeExpeditions[0] ?? null
+  // Prefer the mission that owns the executing expedition; otherwise the first active mission.
+  const activeMissionId = activeExpedition ? state.expeditions[activeExpedition.id]?.missionId : null
+  const activeMission =
+    (activeMissionId ? briefing.missions.find((m) => m.id === activeMissionId) : undefined) ??
+    briefing.missions.find((m) => m.status === "active") ??
+    null
+  const missionPurpose = activeMission ? state.missions[activeMission.id]?.purpose : ""
+  const activeMissionProgram = activeMission ? await inferMissionProgram(charterDir, activeMission.id, resolved) : undefined
+  const expeditionGoal = activeExpedition ? state.expeditions[activeExpedition.id]?.goal : ""
+
+  const human = flags.human === true || flags.human === "true"
+  if (human) {
+    const blockerText =
+      briefing.blockers.length === 0
+        ? "None"
+        : briefing.blockers.map((b) => `  • ${b.description}`).join("\n")
+    const nextStepText =
+      briefing.nextActions.length === 0
+        ? "No pending actions."
+        : `  ${briefing.nextActions[0].command}${briefing.nextActions[0].reason ? ` — ${briefing.nextActions[0].reason}` : ""}`
+    const missionText = activeMission
+      ? `Mission: ${activeMission.name} (${activeMission.id})\nStatus: ${activeMission.status}${activeMissionProgram ? `\nProgram: ${activeMissionProgram.id} — ${activeMissionProgram.name}` : ""}${missionPurpose ? `\nPurpose:\n  ${missionPurpose}` : ""}`
+      : "Mission: none active"
+    const expeditionText = activeExpedition
+      ? `Expedition: ${activeExpedition.name} (${activeExpedition.id}) — ${activeExpedition.status}${expeditionGoal ? `\nGoal:\n  ${expeditionGoal}` : ""}`
+      : "Expedition: none executing"
+
+    console.log(
+      `Project: ${projectName}\n` +
+      `Phase: ${briefing.phase}\n` +
+      `Event count: ${briefing.eventCount}\n\n` +
+      `${missionText}\n\n` +
+      `${expeditionText}\n\n` +
+      `Blockers:\n${blockerText}\n\n` +
+      `Next step:\n${nextStepText}`,
+    )
+    return
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ProjectReport",
+    projectName,
+    phase: briefing.phase,
+    summary: briefing.summary,
+    mission: activeMission
+      ? {
+          id: activeMission.id,
+          name: activeMission.name,
+          status: activeMission.status,
+          purpose: missionPurpose,
+          program: activeMissionProgram || undefined,
+        }
+      : null,
+    expedition: activeExpedition
+      ? {
+          id: activeExpedition.id,
+          name: activeExpedition.name,
+          status: activeExpedition.status,
+          goal: expeditionGoal,
+        }
+      : null,
+    blockers: briefing.blockers,
+    nextActions: briefing.nextActions,
+    eventCount: briefing.eventCount,
   })
 }
 
@@ -3716,7 +4448,16 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = await gateDecision({ kind: "expedition.create", missionId: missionSubject }, state, gateCtx.runtime)
+
+  // EXP-CLI-00x: --mission may be an existing mission id or name. Resolve it
+  // before planning so Mission Studio does not fabricate a duplicate mission.
+  const existingMission = Object.values(state.missions || {}).find(
+    (m) => m.id === missionSubject || m.name === missionSubject,
+  )
+  const resolvedMissionId = existingMission ? existingMission.id : missionSubject
+  const resolvedMissionName = existingMission ? existingMission.name : missionSubject
+
+  const intake = await gateDecision({ kind: "expedition.create", missionId: resolvedMissionId }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -3728,8 +4469,10 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const timestamp = Date.now()
 
   const observations = [
-    makeObservation("mission", missionSubject, timestamp, { purpose: "Auto-created from CLI" }),
-    makeObservation("expedition", subject, timestamp, { goal, missionSubject }),
+    existingMission
+      ? makeObservation("mission", resolvedMissionName, timestamp, { id: resolvedMissionId, purpose: "Referenced existing mission" })
+      : makeObservation("mission", missionSubject, timestamp, { purpose: "Auto-created from CLI" }),
+    makeObservation("expedition", subject, timestamp, { goal, missionSubject: resolvedMissionId }),
   ]
   const sessionResult = (await ctx.api.missionStudioOperation({
     operation: "startSession",
@@ -3759,7 +4502,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     capability: "CreateExpedition",
     payload: {
       id: expeditionId,
-      missionId: missionSubject,
+      missionId: resolvedMissionId,
       name: subject,
       goal,
       metadata: scope.length > 0 ? { scope } : {},
@@ -3776,7 +4519,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     draftId: expeditionId,
     draftPath,
     integrity: "certified",
-    missionSubject,
+    missionSubject: existingMission ? `${resolvedMissionName} (${resolvedMissionId})` : missionSubject,
     expeditionSubject: subject,
     goal,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
@@ -4056,7 +4799,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   // before we even consider evidence or verification. This keeps the error
   // surfaced by `expedition.complete` stable and lets `--force` act only on
   // operational gates, not on architectural convergence.
-  const intake = await gateDecision({ kind: "expedition.complete", expeditionId }, state, ctx.runtime)
+  const intake = await gateDecision({ kind: "expedition.complete", expeditionId, force }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     printGateBlock(intake)
   }
@@ -4303,16 +5046,31 @@ async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
     )
   }
 
-  let evaluation: import("../governance/proposal-evaluation/types.js").EvaluationResult | undefined
+  let parsed: unknown
   try {
     const raw = await fs.readFile(path.resolve(evaluationPath), "utf-8")
-    evaluation = JSON.parse(raw) as import("../governance/proposal-evaluation/types.js").EvaluationResult
+    parsed = JSON.parse(raw)
   } catch (err) {
-    printError(`Failed to read evaluation file: ${err instanceof Error ? err.message : String(err)}`, {
-      code: "EvaluationFileReadFailed",
-      category: "io",
+    printError(
+      `Evaluation file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+      {
+        code: "EvaluationFileParseFailed",
+        category: "validation",
+        suggestion: "Verify the file contains a single JSON object and check for trailing commas or unmatched braces.",
+      },
+    )
+  }
+
+  const validation = validateEvaluationResult(parsed)
+  if (!validation.valid) {
+    printError(formatEvaluationErrors(validation.errors), {
+      code: "EvaluationSchemaValidationFailed",
+      category: "validation",
+      suggestion: "Provide an EvaluationResult with decision, confidence, matchedRules, violatedRules, matchedDriftClasses, evidence, reasoning, and deterministic: true.",
+      errors: validation.errors,
     })
   }
+  const evaluation = validation.result
 
   const artifactPath = evidencePath ?? evaluationPath
   const artifacts: import("../governance/convergence-certification/types.js").ImplementedArtifact[] = artifactPath
@@ -4797,11 +5555,23 @@ async function main() {
     process.env.SYNTH_QUIET_LOGS = "1"
   }
 
+  // EXP-QUIET-001: global --quiet suppresses bootstrap and diagnostic logs.
+  const quietFlag = rawArgs.includes("--quiet")
+  if (quietFlag) {
+    setQuietMode(true)
+  }
+
+  // EXP-QUIET-001: global --summary emits a condensed status/ID/next-step summary.
+  const summaryFlag = rawArgs.includes("--summary")
+  if (summaryFlag) {
+    setSummaryMode(true)
+  }
+
   // EXP-BROWNFIELD-001: Discovery Safety Model flag. Treat it as a boolean
   // sentinel and remove it from parsing so it does not consume the next
   // positional argument.
   const discoveryModeFlag = rawArgs.includes("--discovery-mode")
-  const filteredArgs = rawArgs.filter((arg) => arg !== "--json" && arg !== "--discovery-mode")
+  const filteredArgs = rawArgs.filter((arg) => arg !== "--json" && arg !== "--discovery-mode" && arg !== "--quiet" && arg !== "--summary")
   const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
 
   // Propagate the global --json flag to subcommands that need to know it
@@ -4866,9 +5636,13 @@ async function main() {
       await cmdDiscover(positional.slice(1), flags)
       break
 
-    case "govern":
+    case "govern": {
+      if (!flags.intent && positional[1]) {
+        flags.intent = positional[1]
+      }
       await cmdGovern(flags)
       break
+    }
 
     case "validate": {
       const sub = positional[1]
@@ -4904,18 +5678,26 @@ async function main() {
       await cmdStatus()
       break
 
+    case "report":
+      await cmdReport(flags)
+      break
+
     case "mission": {
       const sub = positional[1]
       if (sub === "create") await cmdMissionCreate(flags)
       else if (sub === "project") await cmdMissionProject(flags)
       else if (sub === "approve") await cmdMissionApprove(flags)
       else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)
+      else if (sub === "list") await cmdMissionList(flags)
+      else if (sub === "show") await cmdMissionShow(flags)
       else if (sub === "verify-charter") await cmdMissionVerifyCharter(flags)
       else if (sub === "decisions") await cmdMissionDecisions(flags)
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
+      else if (sub === "report") await cmdMissionReport(flags)
+      else if (sub === "complete") await cmdMissionComplete(flags)
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list]",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission list [--status <status>] [--program <program-id>] | synth mission show --id <mission-id> | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list] | synth mission report --id <mission-id> | synth mission complete --id <mission-id>",
         )
       break
     }
@@ -4967,9 +5749,10 @@ async function main() {
       else if (sub === "list") await cmdExpeditionList(flags)
       else if (sub === "show") await cmdExpeditionShow(flags)
       else if (sub === "rank") await cmdExpeditionRank(flags)
+      else if (sub === "report") await cmdExpeditionReport(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>]",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition report --id <expedition-id>",
         )
       break
     }

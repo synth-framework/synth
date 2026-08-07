@@ -118,6 +118,17 @@ async function testExpeditionHelp() {
   console.log("[PASS] synth expedition --help lists list subcommand")
 }
 
+async function testExpeditionListIncludesRuntimeExpeditions() {
+  const { stdout, status } = runSynth(["expedition", "list"])
+  assert(status === 0, `expedition list should exit 0, got ${status}\n${stdout}`)
+  const output = parseJson(stdout)
+  const runtimeExpedition = output.expeditions.find((e) => e.id === "8cea04db9fd036af")
+  assert(runtimeExpedition, "CLI-created expedition 8cea04db9fd036af should appear in list")
+  assert(runtimeExpedition.name === "Expedition and Mission Human-Readable Reports", `name should match, got ${runtimeExpedition.name}`)
+  assert(typeof runtimeExpedition.status === "string", "status should be a string")
+  console.log("[PASS] synth expedition list includes runtime expeditions")
+}
+
 async function testDiscoveryModeSafe() {
   const { stdout, status } = runSynth(["expedition", "list", "--discovery-mode"])
   assert(status === 0, `expedition list should be discovery-safe, got ${status}\n${stdout}`)
@@ -133,6 +144,7 @@ async function main() {
   await testExpeditionList()
   await testExpeditionListFilterProgram()
   await testExpeditionListFilterStatusAndPriority()
+  await testExpeditionListIncludesRuntimeExpeditions()
   await testCountsMatchExplainIdentity()
   await testProgramHelp()
   await testExpeditionHelp()
