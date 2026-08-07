@@ -135,3 +135,53 @@ test("synth project AGENTS.md regenerates only the SYNTH block on second run", {
   assert.ok(afterSecond.includes("# User preamble"), "should keep user preamble")
   assert.ok(!afterSecond.includes("old\n<!-- SYNTH:contract:end -->"), "should not keep old block content")
 })
+
+test("synth project AGENTS.md surfaces detection context and discovery baseline", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  fs.writeFileSync(path.join(dir, "package.json"), JSON.stringify({ name: "detected-project" }))
+  fs.mkdirSync(path.join(dir, ".synth"), { recursive: true })
+  fs.writeFileSync(
+    path.join(dir, ".synth", "context.json"),
+    JSON.stringify({
+      repositoryType: "brownfield-node",
+      phase: "architecture-discovery",
+      implementationState: "complete",
+      intent: "transform existing system under governance",
+      sourceHistory: "AVAILABLE",
+      classificationConfidence: "high",
+      generatedAt: new Date().toISOString(),
+    })
+  )
+  fs.mkdirSync(path.join(dir, ".synth", "discovery"), { recursive: true })
+  fs.writeFileSync(
+    path.join(dir, ".synth", "discovery", "baseline-2026-01-01T00-00-00-000Z-abcdef.json"),
+    JSON.stringify({
+      schema: "synth-discovery-baseline-v1",
+      generatedAt: "2026-01-01T00:00:00.000Z",
+      targetDir: dir,
+      discoverySessionId: "session-abc",
+      discoverySessionHash: "hash-abc",
+      repositoryType: "node",
+      analysis: {
+        languages: ["JavaScript/TypeScript"],
+        frameworks: ["Next.js"],
+        hasTests: true,
+        hasPackageManager: true,
+        fileCount: 42,
+      },
+      findings: [{ description: "Legacy config file present", category: "risk", severity: "medium" }],
+      signature: "dummy",
+    })
+  )
+
+  const result = runSynth(["project", "AGENTS.md"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+
+  const content = fs.readFileSync(path.join(dir, "AGENTS.md"), "utf-8")
+  assert.ok(content.includes("brownfield-node"), "should surface repository type from context")
+  assert.ok(content.includes("architecture-discovery"), "should surface workflow phase")
+  assert.ok(content.includes("JavaScript/TypeScript"), "should surface detected languages")
+  assert.ok(content.includes("Next.js"), "should surface detected frameworks")
+  assert.ok(content.includes("nextjs-runtime"), "should surface detected adapters")
+  assert.ok(content.includes("Legacy config file present"), "should surface discovery findings")
+})

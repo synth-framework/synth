@@ -28,6 +28,214 @@ export type AgentsContractOptions = {
 const CONTRACT_START = "<!-- SYNTH:contract:start -->"
 const CONTRACT_END = "<!-- SYNTH:contract:end -->"
 
+// ------------------------------------------------------------------
+// Detection-to-contract surfacing (E1: Detection-to-Contract Surfacing)
+// ------------------------------------------------------------------
+
+type AgentContextContract = {
+  schema?: string
+  repositoryType: string
+  phase: string
+  implementationState: string
+  intent: string
+  sourceHistory: string
+  classificationConfidence: string
+  generatedAt: string
+  derivedFrom?: { discoverySessionId: string; discoverySessionHash: string }
+}
+
+type DiscoveryBaseline = {
+  schema: "synth-discovery-baseline-v1"
+  generatedAt: string
+  targetDir: string
+  discoverySessionId?: string
+  discoverySessionHash?: string
+  repositoryType?: string
+  analysis?: {
+    languages: string[]
+    frameworks: string[]
+    hasTests: boolean
+    hasPackageManager: boolean
+    fileCount: number
+  }
+  findings?: Array<{ id?: string; description: string; category: string; severity: string; confidence?: { label: string } }>
+  observations?: Array<{ type: string; payload: { subject: string; [key: string]: unknown } }>
+  adapterErrors?: string[]
+  agentContext?: AgentContextContract
+}
+
+type DetectedAdapter = {
+  adapterId: string
+  kind: string
+  reason: string
+}
+
+async function readAgentContext(rootDir: string): Promise<AgentContextContract | null> {
+  try {
+    const raw = await fs.readFile(path.join(sdk.paths.synthDir(rootDir), "context.json"), "utf-8")
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+
+    // Support both the canonical synth-agent-context-v1 schema and the legacy
+    // snake-case classification context written by earlier bootstrap flows.
+    const repositoryType =
+      typeof parsed.repositoryType === "string"
+        ? parsed.repositoryType
+        : typeof parsed.repository_type === "string"
+          ? parsed.repository_type
+          : "unknown"
+    const phase = typeof parsed.phase === "string" ? parsed.phase : "unknown"
+    const implementationState = typeof parsed.implementationState === "string" ? parsed.implementationState : "unknown"
+    const intent = typeof parsed.intent === "string" ? parsed.intent : "unknown"
+    const sourceHistory = typeof parsed.sourceHistory === "string" ? parsed.sourceHistory : "UNKNOWN"
+    const classificationConfidence =
+      typeof parsed.classificationConfidence === "string" ? parsed.classificationConfidence : "unknown"
+    const generatedAt = typeof parsed.generatedAt === "string" ? parsed.generatedAt : new Date().toISOString()
+
+    return {
+      repositoryType,
+      phase,
+      implementationState,
+      intent,
+      sourceHistory,
+      classificationConfidence,
+      generatedAt,
+      derivedFrom:
+        typeof parsed.derivedFrom === "object" && parsed.derivedFrom !== null
+          ? (parsed.derivedFrom as { discoverySessionId: string; discoverySessionHash: string })
+          : undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
+async function readDiscoveryBaseline(rootDir: string): Promise<DiscoveryBaseline | null> {
+  const dir = sdk.paths.discoveryDir(rootDir)
+  let entries: Dirent[]
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true })
+  } catch {
+    return null
+  }
+
+  const baselines = entries
+    .filter((e) => e.isFile() && e.name.startsWith("baseline-") && e.name.endsWith(".json"))
+    .map((e) => path.join(dir, e.name))
+    .sort()
+
+  if (baselines.length === 0) return null
+
+  try {
+    const raw = await fs.readFile(baselines[baselines.length - 1]!, "utf-8")
+    return JSON.parse(raw) as DiscoveryBaseline
+  } catch {
+    return null
+  }
+}
+
+function deriveAgentContext(
+  context: AgentContextContract | null,
+  baseline: DiscoveryBaseline | null
+): AgentContextContract | null {
+  const baselineContext = baseline?.agentContext
+  const analysis = baseline?.analysis
+
+  if (!context && !baselineContext && !analysis) return null
+
+  const derivedFromAnalysis = analysis
+    ? (() => {
+        const languages = analysis.languages.map((l) => l.toLowerCase())
+        const hasNode =
+          languages.includes("javascript/typescript") ||
+          languages.includes("typescript") ||
+          languages.includes("javascript")
+        const hasPython = languages.includes("python")
+        const isPolyglot = hasNode && hasPython
+        const repositoryType =
+          baseline?.repositoryType ??
+          (analysis.fileCount === 0
+            ? "greenfield"
+            : isPolyglot
+              ? "brownfield-polyglot"
+              : hasNode
+                ? "brownfield-node"
+                : hasPython
+                  ? "brownfield-python"
+                  : "brownfield-product")
+        return {
+          repositoryType,
+          phase: analysis.fileCount === 0 ? "specification-discovery" : "architecture-discovery",
+          implementationState: analysis.fileCount === 0 ? "missing" : "complete",
+          intent: analysis.fileCount === 0 ? "initialize a new system under governance" : "transform existing system under governance",
+          sourceHistory: "UNKNOWN" as const,
+          classificationConfidence: analysis.fileCount > 0 && analysis.languages.length > 0 ? "high" : "medium",
+          generatedAt: baseline!.generatedAt,
+          derivedFrom: baseline?.discoverySessionId && baseline?.discoverySessionHash
+            ? { discoverySessionId: baseline.discoverySessionId, discoverySessionHash: baseline.discoverySessionHash }
+            : undefined,
+        }
+      })()
+    : null
+
+  const base = context ?? baselineContext ?? derivedFromAnalysis
+  if (!base) return null
+
+  const genericRepoTypes = new Set(["unknown", "synth_governed_project", "project"])
+
+  return {
+    repositoryType: genericRepoTypes.has(base.repositoryType)
+      ? (derivedFromAnalysis?.repositoryType ?? base.repositoryType)
+      : base.repositoryType,
+    phase: base.phase === "unknown" ? (derivedFromAnalysis?.phase ?? base.phase) : base.phase,
+    implementationState: base.implementationState === "unknown" ? (derivedFromAnalysis?.implementationState ?? base.implementationState) : base.implementationState,
+    intent: base.intent === "unknown" ? (derivedFromAnalysis?.intent ?? base.intent) : base.intent,
+    sourceHistory: base.sourceHistory === "UNKNOWN" ? (derivedFromAnalysis?.sourceHistory ?? base.sourceHistory) : base.sourceHistory,
+    classificationConfidence: base.classificationConfidence === "unknown" ? (derivedFromAnalysis?.classificationConfidence ?? base.classificationConfidence) : base.classificationConfidence,
+    generatedAt: base.generatedAt,
+    derivedFrom: base.derivedFrom,
+  }
+}
+
+function detectAdapters(
+  context: AgentContextContract | null,
+  baseline: DiscoveryBaseline | null,
+  agentContext: AgentContextContract | null = deriveAgentContext(context, baseline)
+): DetectedAdapter[] {
+  const adapters: DetectedAdapter[] = []
+  const repoType = agentContext?.repositoryType ?? baseline?.repositoryType ?? "unknown"
+  const languages = new Set(baseline?.analysis?.languages.map((l) => l.toLowerCase()) ?? [])
+  const frameworks = new Set(baseline?.analysis?.frameworks.map((f) => f.toLowerCase()) ?? [])
+  const hasTests = baseline?.analysis?.hasTests ?? false
+  const sourceHistory = agentContext?.sourceHistory ?? "UNKNOWN"
+
+  if (sourceHistory === "AVAILABLE" || sourceHistory === "EXTERNAL") {
+    adapters.push({ adapterId: "repository", kind: "integration", reason: "Git source history detected" })
+  }
+
+  if (languages.has("javascript/typescript") || languages.has("typescript") || languages.has("javascript")) {
+    adapters.push({ adapterId: "nextjs-runtime", kind: "runtime", reason: "JavaScript/TypeScript language detected" })
+    adapters.push({ adapterId: "api-route", kind: "runtime", reason: "JavaScript/TypeScript language detected" })
+  }
+
+  if (languages.has("python")) {
+    adapters.push({ adapterId: "python-cli", kind: "runtime", reason: "Python language detected" })
+  }
+
+  if (frameworks.has("react") || frameworks.has("next.js") || frameworks.has("nextjs")) {
+    adapters.push({ adapterId: "nextjs-runtime", kind: "runtime", reason: "Next.js/React framework detected" })
+  }
+
+  if (hasTests) {
+    adapters.push({ adapterId: "tdd", kind: "methodology", reason: "Test suite detected" })
+  }
+
+  if (repoType.includes("brownfield") || repoType.includes("polyglot")) {
+    adapters.push({ adapterId: "repository", kind: "integration", reason: "Brownfield/polyglot repository detected" })
+  }
+
+  return adapters.slice(0, 16)
+}
+
 async function* walk(dir: string): AsyncGenerator<string> {
   let entries: Dirent[]
   try {
@@ -116,7 +324,13 @@ function findExecutingExpeditions(state: CanonicalState | null) {
   return Object.values(state.expeditions).filter((e) => e.status === "executing")
 }
 
-function renderRepositoryStatus(state: CanonicalState | null, manifest: { projectName: string; governanceVersion: string }): string {
+function renderRepositoryStatus(
+  state: CanonicalState | null,
+  manifest: { projectName: string; governanceVersion: string },
+  context: AgentContextContract | null,
+  baseline: DiscoveryBaseline | null,
+  adapters: DetectedAdapter[]
+): string {
   const phase = state?.lifecycle ?? "initialized"
   const activeMission = findActiveMission(state)
   const executing = findExecutingExpeditions(state)
@@ -129,6 +343,52 @@ function renderRepositoryStatus(state: CanonicalState | null, manifest: { projec
     lines += executing.map((e) => `\n- **Executing Expedition:** \`${e.id}\` — ${e.name}`).join("")
   }
   lines += `\n- **Governance version:** Synth v${manifest.governanceVersion}`
+
+  // Detection-to-contract surfacing
+  const agentContext = context ?? baseline?.agentContext
+  lines += "\n\n### Project context"
+  lines += `\n- **Repository type:** ${agentContext?.repositoryType ?? baseline?.repositoryType ?? "not detected"}`
+  lines += `\n- **Workflow phase:** ${agentContext?.phase ?? "not detected"}`
+  lines += `\n- **Implementation state:** ${agentContext?.implementationState ?? "not detected"}`
+  lines += `\n- **Classification confidence:** ${agentContext?.classificationConfidence ?? "not detected"}`
+  if (agentContext?.intent) {
+    lines += `\n- **Detected intent:** ${agentContext.intent}`
+  }
+  if (agentContext?.sourceHistory) {
+    lines += `\n- **Source history:** ${agentContext.sourceHistory}`
+  }
+
+  if (baseline?.analysis) {
+    const analysis = baseline.analysis
+    lines += "\n\n### Detected stack"
+    lines += `\n- **Languages:** ${analysis.languages.length > 0 ? analysis.languages.join(", ") : "none detected"}`
+    lines += `\n- **Frameworks:** ${analysis.frameworks.length > 0 ? analysis.frameworks.join(", ") : "none detected"}`
+    lines += `\n- **Package manager:** ${analysis.hasPackageManager ? "detected" : "not detected"}`
+    lines += `\n- **Tests:** ${analysis.hasTests ? "detected" : "not detected"}`
+    lines += `\n- **File count:** ${analysis.fileCount}`
+  }
+
+  if (adapters.length > 0) {
+    lines += "\n\n### Detected adapters"
+    for (const adapter of adapters) {
+      lines += `\n- **${adapter.adapterId}** (${adapter.kind}) — ${adapter.reason}`
+    }
+  }
+
+  if (baseline?.findings && baseline.findings.length > 0) {
+    lines += "\n\n### Discovery findings"
+    for (const finding of baseline.findings.slice(0, 10)) {
+      lines += `\n- **${finding.severity}** — ${finding.description} (${finding.category})`
+    }
+  }
+
+  if (baseline?.adapterErrors && baseline.adapterErrors.length > 0) {
+    lines += "\n\n### Discovery warnings"
+    for (const warning of baseline.adapterErrors.slice(0, 5)) {
+      lines += `\n- ${warning}`
+    }
+  }
+
   return lines
 }
 
@@ -153,6 +413,10 @@ async function generateSynthBlock(
 ): Promise<string> {
   const state = await sdk.state.readState(rootDir)
   const fragments = await collectFragments(rootDir)
+  const context = await readAgentContext(rootDir)
+  const baseline = await readDiscoveryBaseline(rootDir)
+  const agentContext = deriveAgentContext(context, baseline)
+  const adapters = detectAdapters(context, baseline, agentContext)
 
   const parts = [
     "> **AI Operator Contract — Read before modifying this repository.**",
@@ -177,7 +441,7 @@ async function generateSynthBlock(
     "",
     "## Repository status",
     "",
-    renderRepositoryStatus(state, manifest),
+    renderRepositoryStatus(state, manifest, agentContext, baseline, adapters),
     "",
     "---",
     "",

@@ -239,8 +239,30 @@ If any step fails, stop and ask the operator for the next step.
 
 - **Phase:** initialized
 - **Active Mission:** `52f6b63e0aae01f2` — Fix AGENTS.md contract generation
-- **Executing Expedition:** `49fcabcb5d2af694` — AGENTS.md section-level generator
+- **Executing Expedition:** `90d0bd95c5f46a26` — Fallback expedition report for CLI-created expeditions
 - **Governance version:** Synth v2.1
+
+### Project context
+- **Repository type:** brownfield-polyglot
+- **Workflow phase:** architecture-discovery
+- **Implementation state:** complete
+- **Classification confidence:** high
+- **Detected intent:** transform existing system under governance
+- **Source history:** UNKNOWN
+
+### Detected stack
+- **Languages:** JavaScript/TypeScript, Python
+- **Frameworks:** none detected
+- **Package manager:** not detected
+- **Tests:** detected
+- **File count:** 2162
+
+### Detected adapters
+- **nextjs-runtime** (runtime) — JavaScript/TypeScript language detected
+- **api-route** (runtime) — JavaScript/TypeScript language detected
+- **python-cli** (runtime) — Python language detected
+- **tdd** (methodology) — Test suite detected
+- **repository** (integration) — Brownfield/polyglot repository detected
 
 ---
 
@@ -273,8 +295,8 @@ Any change to these assets requires an Architecture Expedition and a new ADR.
 
 ## Active work
 
-- **Expedition `49fcabcb5d2af694` — AGENTS.md section-level generator**
-  - Goal: Implement synth project AGENTS.md so it updates only a marked SYNTH block from live state and preserves all user-owned content
+- **Expedition `90d0bd95c5f46a26` — Fallback expedition report for CLI-created expeditions**
+  - Goal: Make synth expedition report resolve expeditions from runtime governance state when no docs/expeditions charter file exists, so CLI-created expeditions can be reported with JSON and --human output.
 
 ---
 
