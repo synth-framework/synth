@@ -35,6 +35,8 @@ import { TypeChecker, buildTypedIR } from "../compiler/type-checker.js"
 import { PlanningEngine, PlanningCoordinator } from "../planning/index.js"
 import { MissionStudio, MissionIntake } from "../mission-studio/index.js"
 import { WorkspaceCognitionEnvironment, createStateReader } from "../workspace/index.js"
+import { parseCharterDirectory, registerDependencyPolicy } from "../governance/dependency-graph.js"
+import path from "path"
 
 import type { InfraConfig } from "../infra/index.js"
 import type { RuntimeConfig } from "../runtime/engine.js"
@@ -99,6 +101,12 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
   const policyEngine = createPolicyEngine()
   policyEngine.register(createTwoPartyApprovalPolicy())
 
+  // EXP-GATE-013: Load expedition dependency graph from charters and register
+  // the dependency enforcement policy before the engine is frozen.
+  const charterDir = path.join(root(), "docs", "expeditions")
+  const dependencyRecords = await parseCharterDirectory(charterDir)
+  registerDependencyPolicy(policyEngine, dependencyRecords)
+
   // === STEP 4: VALIDATION (pure) ===
   logger.info("[4/13] Validation layer ready")
 
@@ -124,6 +132,8 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
     infra.eventStore,
     infra.stateStore,
     validateInvocation,
+    new Map(),
+    dependencyRecords,
   )
   gate.registerMutationProvider(new FilesystemMutationProvider())
 

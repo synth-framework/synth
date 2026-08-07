@@ -26,6 +26,7 @@ import type {
 export type ExecutionPhase =
   | "VALIDATE"
   | "POLICY_CHECK"
+  | "DEPENDENCY_GATE_CHECK"
   | "RESOLVE_CAPABILITY"
   | "EXECUTE_DOMAIN"
   | "MUTATE_EXTERNAL"
@@ -69,6 +70,7 @@ export class ContractViolation extends Error {
 export const CONTRACT_STEPS: ExecutionPhase[] = [
   "VALIDATE",
   "POLICY_CHECK",
+  "DEPENDENCY_GATE_CHECK",
   "RESOLVE_CAPABILITY",
   "EXECUTE_DOMAIN",
   "MUTATE_EXTERNAL",

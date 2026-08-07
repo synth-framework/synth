@@ -6,7 +6,7 @@
 // Evaluated at: pre-execution, during execution, post-execution.
 // ============================================================
 
-import type { CanonicalState, CapabilityInvocation } from "../types/index.js"
+import type { CanonicalState, CapabilityInvocation, DerivedState } from "../types/index.js"
 
 /** Recursively freeze a value and all its nested objects/arrays/maps/sets. */
 function deepFreeze<T>(value: T): T {
@@ -63,7 +63,8 @@ export type PolicyScope = {
 /** Policy condition function */
 export type PolicyCondition = (
   intent: CapabilityInvocation,
-  state: CanonicalState
+  state: CanonicalState,
+  derivedState?: DerivedState
 ) => boolean
 
 /** Policy evaluation result */
@@ -118,7 +119,8 @@ export class PolicyEngine {
   /** Evaluate all applicable policies for an intent */
   evaluate(
     intent: CapabilityInvocation,
-    state: CanonicalState
+    state: CanonicalState,
+    derivedState?: DerivedState
   ): PolicyEvaluation[] {
     const results: PolicyEvaluation[] = []
 
@@ -145,7 +147,7 @@ export class PolicyEngine {
       }
 
       // Evaluate condition
-      const matched = policy.condition(intent, state)
+      const matched = policy.condition(intent, state, derivedState)
 
       results.push({
         policyId: policy.id,
@@ -162,9 +164,10 @@ export class PolicyEngine {
   /** Check if intent is allowed (aggregate policy result) */
   isAllowed(
     intent: CapabilityInvocation,
-    state: CanonicalState
+    state: CanonicalState,
+    derivedState?: DerivedState
   ): { allowed: boolean; reason?: string } {
-    const evaluations = this.evaluate(intent, state)
+    const evaluations = this.evaluate(intent, state, derivedState)
 
     // Sort by severity: critical > high > medium > low > informational
     const severityOrder: Record<PolicySeverity, number> = {

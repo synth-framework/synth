@@ -25,9 +25,12 @@ import type {
   Execution,
   ExecutionIntentState,
   ExecutionGraphState,
+  Expedition,
 } from "../../types/index.js"
+import { checkUpstreamDependencies, type DependencyStatus } from "../../governance/dependency-graph.js"
 
 export function buildDerivedState(events: SynthEvent[]): DerivedState {
+  const convergenceCertifications = buildConvergenceCertifications(events)
   return {
     reviewGateExpeditions: buildReviewGateExpeditions(events),
     intentModels: buildIntentModels(events),
@@ -36,11 +39,12 @@ export function buildDerivedState(events: SynthEvent[]): DerivedState {
     alignmentContracts: buildAlignmentContracts(events),
     referenceEvidence: buildReferenceEvidence(events),
     divergenceGates: buildDivergenceGates(events),
-    convergenceCertifications: buildConvergenceCertifications(events),
+    convergenceCertifications,
     generatedWorkItems: buildGeneratedWorkItems(events),
     executions: buildExecutions(events),
     executionIntents: buildExecutionIntents(events),
     executionGraphs: buildExecutionGraphs(events),
+    dependencyStatusMap: buildDependencyStatusMap(events, convergenceCertifications),
   }
 }
 
@@ -497,6 +501,74 @@ export function buildConvergenceCertifications(
   }
 
   return state
+}
+
+/** Build a minimal expedition status map from events for dependency propagation. */
+function buildExpeditionsForDependencyMap(events: SynthEvent[]): Record<string, Expedition> {
+  const expeditions: Record<string, Expedition> = {}
+
+  for (const event of events) {
+    const payload = event.payload as Record<string, unknown> | undefined
+    if (!payload) continue
+
+    switch (event.type) {
+      case "EXPEDITION_CREATED": {
+        const expedition = payload.expedition as Expedition
+        if (expedition) {
+          expeditions[expedition.id] = expedition
+        }
+        break
+      }
+      case "EXPEDITION_APPROVED":
+      case "EXPEDITION_AUTHORIZED":
+      case "EXPEDITION_COMMITTED":
+      case "EXPEDITION_STARTED":
+      case "EXPEDITION_COMPLETED":
+      case "EXPEDITION_ARCHIVED": {
+        const expeditionId = String(payload.id)
+        const existing = expeditions[expeditionId]
+        if (existing) {
+          const statusMap: Record<string, Expedition["status"]> = {
+            EXPEDITION_APPROVED: "approved",
+            EXPEDITION_AUTHORIZED: "committed",
+            EXPEDITION_COMMITTED: "committed",
+            EXPEDITION_STARTED: "executing",
+            EXPEDITION_COMPLETED: "completed",
+            EXPEDITION_ARCHIVED: "cancelled",
+          }
+          const nextStatus = statusMap[event.type]
+          if (nextStatus) {
+            expeditions[expeditionId] = { ...existing, status: nextStatus, updatedAt: event.timestamp }
+          }
+        }
+        break
+      }
+    }
+  }
+
+  return expeditions
+}
+
+/** Propagate upstream gate status to every expedition that declares dependencies. */
+function buildDependencyStatusMap(
+  events: SynthEvent[],
+  convergenceCertifications: Record<string, ConvergenceCertificationState>,
+): Record<string, DependencyStatus> {
+  const expeditions = buildExpeditionsForDependencyMap(events)
+  const state = { expeditions } as { expeditions: Record<string, Expedition> }
+  const map: Record<string, DependencyStatus> = {}
+
+  for (const expedition of Object.values(expeditions)) {
+    if (!expedition.dependsOn?.length) continue
+    map[expedition.id] = checkUpstreamDependencies(
+      expedition.id,
+      state as import("../../types/index.js").CanonicalState,
+      undefined,
+      convergenceCertifications,
+    ).status
+  }
+
+  return map
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 import type { Policy, PolicyEngine } from "../policy/policy-engine.js"
-import type { CanonicalState, CapabilityInvocation } from "../types/index.js"
+import type { CanonicalState, CapabilityInvocation, ConvergenceCertificationState, DerivedState } from "../types/index.js"
 
 export type DependencyStatus = "resolved" | "partial" | "unresolved"
 
@@ -82,6 +82,9 @@ export async function parseCharterDirectory(charterDir: string): Promise<Depende
   return records
 }
 
+/** Certification result categories used for dependency propagation. */
+export type GateStatus = "pass" | "partial_pass" | "fail"
+
 export type DependencyCheckResult = {
   expeditionId: string
   status: DependencyStatus
@@ -92,11 +95,63 @@ export type DependencyCheckResult = {
   }[]
 }
 
-/** Check whether an expedition's upstream dependencies are resolved */
+const LIFECYCLE_CAPABILITIES = new Set([
+  "CreateExpedition",
+  "ApproveExpedition",
+  "CommitExpedition",
+  "StartExpedition",
+  "CompleteExpedition",
+  "ArchiveExpedition",
+  "CertifyConvergence",
+])
+
+/** Extract the expedition context from a capability invocation. */
+export function getExpeditionIdFromInvocation(intent: CapabilityInvocation): string | undefined {
+  const payload = (intent.payload ?? {}) as Record<string, unknown>
+  if (payload.expeditionId) return String(payload.expeditionId)
+  if (LIFECYCLE_CAPABILITIES.has(intent.capability) && payload.id) return String(payload.id)
+  return undefined
+}
+
+/** Map a convergence certification decision to a gate status. */
+export function getCertificationGateStatus(
+  certifications: Record<string, ConvergenceCertificationState>,
+  expeditionId: string,
+): GateStatus | undefined {
+  const certification = Object.values(certifications).find((c) => c.expeditionId === expeditionId)
+  if (!certification) return undefined
+  switch (certification.decision) {
+    case "converged":
+      return "pass"
+    case "insufficient_evidence":
+      return "partial_pass"
+    case "diverged":
+      return "fail"
+    default:
+      return undefined
+  }
+}
+
+/** Convert a gate status into the dependency vocabulary. */
+export function gateStatusToDependencyStatus(gateStatus: GateStatus | undefined): DependencyStatus {
+  switch (gateStatus) {
+    case "pass":
+      return "resolved"
+    case "partial_pass":
+      return "partial"
+    case "fail":
+      return "unresolved"
+    default:
+      return "unresolved"
+  }
+}
+
+/** Check whether an expedition's upstream dependencies are resolved. */
 export function checkUpstreamDependencies(
   expeditionId: string,
   state: CanonicalState,
   records?: DependencyRecord[],
+  convergenceCertifications?: Record<string, ConvergenceCertificationState>,
 ): DependencyCheckResult {
   const upstreamExpeditions: DependencyCheckResult["upstreamExpeditions"] = []
 
@@ -113,13 +168,38 @@ export function checkUpstreamDependencies(
   for (const depId of dependsOn) {
     const depExpedition = state.expeditions?.[depId]
     const depStatus = depExpedition?.status
-    const resolved = depStatus === "completed" || depStatus === "cancelled"
-    upstreamExpeditions.push({ id: depId, gateStatus: depStatus, resolved })
+    const lifecycleComplete = depStatus === "completed" || depStatus === "cancelled"
+
+    let gateStatus: string | undefined = depStatus
+    let resolved = lifecycleComplete
+
+    if (lifecycleComplete && convergenceCertifications) {
+      const certificationGate = getCertificationGateStatus(convergenceCertifications, depId)
+      if (certificationGate === "pass") {
+        resolved = true
+        gateStatus = "pass"
+      } else if (certificationGate === "partial_pass") {
+        resolved = false
+        gateStatus = "partial_pass"
+      } else if (certificationGate === "fail") {
+        resolved = false
+        gateStatus = "fail"
+      } else {
+        // Completed without certification is treated as unresolved.
+        resolved = false
+        gateStatus = depStatus
+      }
+    }
+
+    upstreamExpeditions.push({ id: depId, gateStatus, resolved })
   }
 
   const allResolved = upstreamExpeditions.every((u) => u.resolved)
+  const anyPartial = upstreamExpeditions.some((u) => u.gateStatus === "partial_pass")
   const anyInProgress = upstreamExpeditions.some(
-    (u) => !u.resolved && (u.gateStatus === "executing" || u.gateStatus === "approved" || u.gateStatus === "committed"),
+    (u) =>
+      !u.resolved &&
+      (u.gateStatus === "executing" || u.gateStatus === "approved" || u.gateStatus === "committed"),
   )
 
   let status: DependencyStatus
@@ -127,7 +207,7 @@ export function checkUpstreamDependencies(
     status = "resolved"
   } else if (allResolved) {
     status = "resolved"
-  } else if (anyInProgress) {
+  } else if (anyPartial || anyInProgress) {
     status = "partial"
   } else {
     status = "unresolved"
@@ -135,6 +215,28 @@ export function checkUpstreamDependencies(
 
   return { expeditionId, status, upstreamExpeditions }
 }
+
+/** Capabilities that may carry an expedition context and should be gated. */
+const GOVERNED_CAPABILITIES = [
+  "CreateExpedition",
+  "ApproveExpedition",
+  "CommitExpedition",
+  "StartExpedition",
+  "CompleteExpedition",
+  "ArchiveExpedition",
+  "CertifyConvergence",
+  "CreateExecutionIntent",
+  "StartExecutionIntent",
+  "CompleteExecutionIntent",
+  "FailExecutionIntent",
+  "OpenReviewGate",
+  "ResolveReviewGate",
+  "OpenAcceptanceGate",
+  "ResolveAcceptanceGate",
+  "RequestRevision",
+  "FulfillCondition",
+  "ApproveRefinedIntent",
+]
 
 /** Create a dependency enforcement policy for the policy engine */
 export function createDependencyEnforcementPolicy(
@@ -144,13 +246,14 @@ export function createDependencyEnforcementPolicy(
     id: "dependency-enforcement",
     name: "Dependency Enforcement",
     scope: {
-      excludeActors: ["synth-cli"],
+      capabilities: GOVERNED_CAPABILITIES,
     },
-    condition: (intent: CapabilityInvocation, state: CanonicalState) => {
-      const expeditionId = String(intent.payload?.expeditionId || intent.payload?.id || "")
+    condition: (intent: CapabilityInvocation, state: CanonicalState, derivedState?: DerivedState) => {
+      const expeditionId = getExpeditionIdFromInvocation(intent)
       if (!expeditionId) return false
 
-      const result = checkUpstreamDependencies(expeditionId, state, dependencyRecords)
+      const certifications = derivedState?.convergenceCertifications
+      const result = checkUpstreamDependencies(expeditionId, state, dependencyRecords, certifications)
       return result.status !== "resolved"
     },
     effect: "DENY",
@@ -175,4 +278,71 @@ export type PropagationResult = {
   policyId: string
   effect: string
   blockedExpeditions: string[]
+}
+
+/** Error thrown when an expedition is blocked by an upstream gate. */
+export class DependencyGateBlockedError extends Error {
+  constructor(
+    public readonly expeditionId: string,
+    public readonly dependencyCheck: DependencyCheckResult,
+  ) {
+    super(
+      `DEPENDENCY_GATE_BLOCKED: Expedition ${expeditionId} is blocked by an upstream gate: ${dependencyCheck.status}`
+    )
+    this.name = "DependencyGateBlockedError"
+  }
+}
+
+/** Assert that a capability invocation is not blocked by upstream dependencies. */
+export function assertDependencyGateAllowed(
+  intent: CapabilityInvocation,
+  state: CanonicalState,
+  derivedState: DerivedState,
+  dependencyRecords?: DependencyRecord[],
+): void {
+  const expeditionId = getExpeditionIdFromInvocation(intent)
+  if (!expeditionId) return
+
+  const result = checkUpstreamDependencies(
+    expeditionId,
+    state,
+    dependencyRecords,
+    derivedState.convergenceCertifications,
+  )
+  if (result.status !== "resolved") {
+    throw new DependencyGateBlockedError(expeditionId, result)
+  }
+}
+
+/** List downstream expeditions that would be blocked by an upstream gate status. */
+export function getBlockedDownstreamExpeditions(
+  upstreamExpeditionId: string,
+  state: CanonicalState,
+  dependencyRecords: DependencyRecord[],
+): string[] {
+  return dependencyRecords
+    .filter(
+      (record) =>
+        record.dependsOn.includes(upstreamExpeditionId) &&
+        state.expeditions[record.expeditionId]?.status !== "completed" &&
+        state.expeditions[record.expeditionId]?.status !== "cancelled",
+    )
+    .map((record) => record.expeditionId)
+}
+
+/** Build a status map for every expedition that declares dependencies. */
+export function buildDependencyStatusMap(
+  state: CanonicalState,
+  dependencyRecords: DependencyRecord[],
+  convergenceCertifications?: Record<string, ConvergenceCertificationState>,
+): Record<string, DependencyStatus> {
+  const map: Record<string, DependencyStatus> = {}
+  const ids = new Set([
+    ...Object.keys(state.expeditions).filter((id) => state.expeditions[id].dependsOn?.length),
+    ...dependencyRecords.map((r) => r.expeditionId),
+  ])
+  for (const id of ids) {
+    map[id] = checkUpstreamDependencies(id, state, dependencyRecords, convergenceCertifications).status
+  }
+  return map
 }

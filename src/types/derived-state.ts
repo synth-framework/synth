@@ -18,6 +18,7 @@ import type {
   ConvergenceCertificationState,
 } from "./state.js"
 import type { ExecutionIntentState, ExecutionGraphState } from "./execution-intent.js"
+import type { DependencyStatus } from "../governance/dependency-graph.js"
 
 /** All workflow, governance, execution, and audit state derived from events. */
 export type DerivedState = {
@@ -33,6 +34,8 @@ export type DerivedState = {
   executions: Record<string, Execution>
   executionIntents: Record<string, ExecutionIntentState>
   executionGraphs: Record<string, ExecutionGraphState>
+  /** Propagated dependency gate status for every expedition that declares upstream dependencies. */
+  dependencyStatusMap: Record<string, DependencyStatus>
 }
 
 /** Projection wrapper for cached derived state. */

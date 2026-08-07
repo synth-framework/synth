@@ -42,6 +42,8 @@ import type { EventStore } from "../infra/event-store.js"
 import { EVENT_STORE_WRITE_TOKEN } from "../infra/event-store.js"
 import type { IStateStore } from "../infra/state-store.js"
 import { getLifecycleContinuation, MAX_LIFECYCLE_DEPTH } from "../runtime/governance-lifecycle.js"
+import { buildDerivedState } from "../state/derived/index.js"
+import { assertDependencyGateAllowed, type DependencyRecord } from "../governance/dependency-graph.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import {
   CONTRACT_STEPS,
@@ -118,6 +120,7 @@ export class ExecutionGate {
     private stateStore: IStateStore,
     private validator: (invocation: CapabilityInvocation) => ValidationResult,
     private mutationProviders: Map<string, MutationProvider> = new Map(),
+    private dependencyRecords: DependencyRecord[] = [],
   ) {
     this.adrRegistry = loadAdrRegistry()
     this.snapshotAdapter = new GitSnapshotAdapter()
@@ -172,9 +175,11 @@ export class ExecutionGate {
       phases.push(validation)
 
       // === PHASE 2: POLICY CHECK ===
+      const events = await this.eventStore.loadAll()
+      const derivedState = buildDerivedState(events)
       let approvalRequestId: string | undefined
       const policyCheck = this.runPhase("POLICY_CHECK", () => {
-        const result = this.policyEngine.isAllowed(invocation, currentState)
+        const result = this.policyEngine.isAllowed(invocation, currentState, derivedState)
         if (!result.allowed) {
           // EXP-APPROVAL-001: if the policy requires verification (two-party
           // approval), check whether a valid approval exists in state before
@@ -195,6 +200,13 @@ export class ExecutionGate {
         return result
       })
       phases.push(policyCheck)
+
+      // === PHASE 2b: DEPENDENCY GATE CHECK (EXP-GATE-013) ===
+      const dependencyGateCheck = this.runPhase("DEPENDENCY_GATE_CHECK", () => {
+        assertDependencyGateAllowed(invocation, currentState, derivedState, this.dependencyRecords)
+        return { passed: true }
+      })
+      phases.push(dependencyGateCheck)
 
       // === PHASE 3: RESOLVE CAPABILITY ===
       const resolveCap = this.runPhase("RESOLVE_CAPABILITY", () => {
