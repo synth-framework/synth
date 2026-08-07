@@ -300,6 +300,11 @@ export class ExecutionGate {
       const snapshotEvents = await this.maybeCreateSnapshot(process.cwd(), executionResult.events, invocation.actor)
       if (snapshotEvents.length > 0) {
         await this.eventStore.appendBatch(snapshotEvents, EVENT_STORE_WRITE_TOKEN)
+        // EXP-STATE-LAG-001: snapshot events are part of the audit log, so the
+        // canonical state must reflect them. Rebuild and save state to prevent
+        // the canonical-state.json version from lagging the event log.
+        const snapshotState = await this.runtime.getState()
+        await this.stateStore.save(snapshotState)
       }
 
       // === LIFECYCLE CONTINUATION ===

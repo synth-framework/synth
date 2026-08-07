@@ -10,7 +10,11 @@
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { spawnSync } from "child_process"
+import { bootstrap } from "../dist/core/bootstrap.js"
+import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
+const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 const SNAPSHOT_STORE_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "snapshot-store.js")
@@ -75,6 +79,27 @@ function baseConfidence() {
     observationCoverage: 1,
     evidenceQuality: 1,
     consistency: 1,
+  }
+}
+
+function runSynth(args, cwd) {
+  const result = spawnSync("node", [CLI_PATH, ...args], {
+    cwd,
+    encoding: "utf-8",
+    timeout: 60000,
+  })
+  return {
+    stdout: result.stdout || "",
+    stderr: result.stderr || "",
+    status: result.status,
+  }
+}
+
+function parseJson(stdout) {
+  try {
+    return JSON.parse(stdout.trim())
+  } catch (err) {
+    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
   }
 }
 
@@ -414,6 +439,244 @@ async function testSnapshotStateConflictFailure() {
   console.log("[PASS] snapshot contradicting event log is a resolution failure")
 }
 
+// ------------------------------------------------------------
+// Fixture: snapshot-approved mission later completed (no conflict)
+// ------------------------------------------------------------
+async function testSnapshotApprovedMissionCompletedNoConflict() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-completed-"))
+  try {
+    await writeManifest(tmpDir)
+    const now = Date.now()
+    const missionId = "M-SNAPSHOT-COMPLETED"
+    await writeEventLog(tmpDir, [
+      {
+        id: "GENESIS",
+        type: "SYSTEM_GENESIS",
+        timestamp: now,
+        transactionId: "genesis-tx",
+        capability: "Genesis",
+        actor: "system",
+        payload: { projectName: "Completed Snapshot Test", systemId: "stale-test", partitions: 1 },
+      },
+      {
+        id: "E-MISSION",
+        type: "MISSION_CREATED",
+        timestamp: now + 1,
+        transactionId: "tx-1",
+        capability: "CreateMission",
+        actor: "system",
+        payload: {
+          mission: {
+            id: missionId,
+            name: "Completed Snapshot Mission",
+            purpose: "Test",
+            status: "draft",
+            expeditions: [],
+            metadata: {},
+            createdAt: now + 1,
+            updatedAt: now + 1,
+          },
+        },
+      },
+      {
+        id: "E-APPROVE",
+        type: "MISSION_APPROVED",
+        timestamp: now + 2,
+        transactionId: "tx-2",
+        capability: "ApproveMission",
+        actor: "system",
+        payload: { id: missionId, status: "active" },
+      },
+      {
+        id: "E-COMPLETE",
+        type: "MISSION_COMPLETED",
+        timestamp: now + 3,
+        transactionId: "tx-3",
+        capability: "CompleteMission",
+        actor: "system",
+        payload: { id: missionId, status: "completed" },
+      },
+    ])
+
+    // Snapshot records the mission as approved before the completion event.
+    await writeCertifiedSnapshot(tmpDir, missionId, "Completed Snapshot Mission")
+
+    const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
+    const result = await resolveGovernanceContext(tmpDir)
+    assert(!isGovernanceResolutionFailure(result), "completed mission should not conflict with approval snapshot")
+    assert(result.derived.divergences.every((d) => d.kind !== "snapshot-state-conflict"), "should not report snapshot-state-conflict")
+    assert(result.authoritative.replayedState.missions[missionId].status === "completed", "replayed state should keep completed status")
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+  console.log("[PASS] snapshot-approved mission later completed is not a conflict")
+}
+
+// ------------------------------------------------------------
+// Fixture: snapshot-approved mission later archived (conflict)
+// ------------------------------------------------------------
+async function testSnapshotApprovedMissionArchivedConflict() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-archived-"))
+  try {
+    await writeManifest(tmpDir)
+    const now = Date.now()
+    const missionId = "M-SNAPSHOT-ARCHIVED"
+    await writeEventLog(tmpDir, [
+      {
+        id: "GENESIS",
+        type: "SYSTEM_GENESIS",
+        timestamp: now,
+        transactionId: "genesis-tx",
+        capability: "Genesis",
+        actor: "system",
+        payload: { projectName: "Archived Snapshot Test", systemId: "stale-test", partitions: 1 },
+      },
+      {
+        id: "E-MISSION",
+        type: "MISSION_CREATED",
+        timestamp: now + 1,
+        transactionId: "tx-1",
+        capability: "CreateMission",
+        actor: "system",
+        payload: {
+          mission: {
+            id: missionId,
+            name: "Archived Snapshot Mission",
+            purpose: "Test",
+            status: "draft",
+            expeditions: [],
+            metadata: {},
+            createdAt: now + 1,
+            updatedAt: now + 1,
+          },
+        },
+      },
+      {
+        id: "E-APPROVE",
+        type: "MISSION_APPROVED",
+        timestamp: now + 2,
+        transactionId: "tx-2",
+        capability: "ApproveMission",
+        actor: "system",
+        payload: { id: missionId, status: "active" },
+      },
+      {
+        id: "E-ARCHIVE",
+        type: "MISSION_ARCHIVED",
+        timestamp: now + 3,
+        transactionId: "tx-3",
+        capability: "ArchiveMission",
+        actor: "system",
+        payload: { id: missionId, status: "archived" },
+      },
+    ])
+
+    await writeCertifiedSnapshot(tmpDir, missionId, "Archived Snapshot Mission")
+
+    const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
+    const result = await resolveGovernanceContext(tmpDir)
+    assert(isGovernanceResolutionFailure(result), "archived mission should conflict with approval snapshot")
+    assert(
+      result.conflicts.some((c) => c.issue.includes("Archived Snapshot Mission") || c.issue.includes("archived")),
+      "failure should reference the archived mission conflict",
+    )
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+  console.log("[PASS] snapshot-approved mission later archived is still a conflict")
+}
+
+async function testExpeditionCompletionDoesNotLagState() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-state-lag-regression-"))
+  try {
+    await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
+
+    const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
+    assert(bootstrapResult.status === 0, `bootstrap must exit 0:\n${bootstrapResult.stderr}`)
+
+    const missionResult = runSynth(["mission", "create", "--subject", "Lag Test", "--purpose", "Test state lag fix"], tmpDir)
+    assert(missionResult.status === 0, `mission create must exit 0:\n${missionResult.stderr}`)
+    const missionDraft = parseJson(missionResult.stdout)
+    const missionDraftId = missionDraft.draftId
+
+    // Add evidence to raise mission confidence; evidence add returns a successor draft.
+    let currentDraftId = missionDraftId
+    for (let i = 0; i < 3; i++) {
+      const evidenceResult = runSynth(
+        ["mission", "evidence", "add", "--draft-id", currentDraftId, "--subject", `Contract evidence ${i + 1}`, "--purpose", "Governance contract certification", "--confidence", "high"],
+        tmpDir,
+      )
+      assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
+      const evidenceOutput = parseJson(evidenceResult.stdout)
+      currentDraftId = evidenceOutput.draftId || currentDraftId
+      if (evidenceOutput.confidence?.overall >= 0.7) break
+    }
+    const approvedMissionDraftId = currentDraftId
+
+    // Create an alignment contract so mission approval can proceed.
+    const dataDir = path.join(tmpDir, ".synth", "data")
+    const gateCtx = await bootstrap({
+      skipGenesis: true,
+      infra: {
+        eventLogPath: path.join(dataDir, "event-log.jsonl"),
+        statePath: path.join(dataDir, "canonical-state.json"),
+      },
+    })
+    const { contractId } = await createAlignedContract(gateCtx)
+
+    const approveResult = runSynth(["mission", "approve", "--draft-id", approvedMissionDraftId, "--alignment-contract-id", contractId], tmpDir)
+    assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stdout}\n${approveResult.stderr}`)
+    const approveOutput = parseJson(approveResult.stdout)
+    assert(approveOutput.decision?.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput)}`)
+    const missionId = approveOutput.runtime?.missionId
+    assert(missionId, `mission approve should return a runtime missionId`)
+
+    const expeditionResult = runSynth(
+      ["expedition", "create", "--mission", missionId, "--subject", "State Lag Regression", "--goal", "Verify state does not lag after completion"],
+      tmpDir,
+    )
+    assert(expeditionResult.status === 0, `expedition create must exit 0:\n${expeditionResult.stderr}`)
+    const expeditionDraft = parseJson(expeditionResult.stdout)
+    const expeditionDraftId = expeditionDraft.draftId
+
+    const expApproveResult = runSynth(["expedition", "approve", "--draft-id", expeditionDraftId], tmpDir)
+    assert(expApproveResult.status === 0, `expedition approve must exit 0:\n${expApproveResult.stderr}`)
+
+    const expCommitResult = runSynth(["expedition", "commit", "--proposal-id", expeditionDraftId], tmpDir)
+    assert(expCommitResult.status === 0, `expedition commit must exit 0:\n${expCommitResult.stderr}`)
+
+    const expStartResult = runSynth(["expedition", "start", "--id", expeditionDraftId], tmpDir)
+    assert(expStartResult.status === 0, `expedition start must exit 0:\n${expStartResult.stderr}`)
+
+    // Dirty the working tree so the governance snapshot phase produces a
+    // GOVERNANCE_SNAPSHOT_FAILED event. This is the condition that previously
+    // caused canonical state to lag the event log.
+    await fs.writeFile(path.join(tmpDir, "dirty-file.txt"), "dirty", "utf-8")
+
+    const expEvidenceResult = runSynth(
+      ["expedition", "evidence", "--id", expeditionDraftId, "--attach", "dirty-file.txt", "--note", "regression evidence"],
+      tmpDir,
+    )
+    assert(expEvidenceResult.status === 0, `expedition evidence must exit 0:\n${expEvidenceResult.stderr}`)
+
+    // Force completion to bypass verification; state persistence is what matters.
+    const completeResult = runSynth(
+      ["expedition", "complete", "--id", expeditionDraftId, "--force", "--reason", "regression test bypass"],
+      tmpDir,
+    )
+    assert(completeResult.status === 0, `expedition complete must exit 0:\n${completeResult.stdout}\n${completeResult.stderr}`)
+
+    // Verify replay consistency WITHOUT running repair.
+    const replayResult = runSynth(["explain", "replay"], tmpDir)
+    assert(replayResult.status === 0, `explain replay must exit 0:\n${replayResult.stderr}`)
+    const replayOutput = parseJson(replayResult.stdout)
+    assert(replayOutput.consistent === true, `replay must be consistent after completion, got ${JSON.stringify(replayOutput)}`)
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+  console.log("[PASS] expedition completion in dirty working tree does not lag canonical state")
+}
+
 async function main() {
   try {
     await fs.access(RESOLVER_MODULE_PATH)
@@ -427,6 +690,9 @@ async function main() {
   await testMissingEventsFailure()
   await testDivergentReplayFailure()
   await testSnapshotStateConflictFailure()
+  await testSnapshotApprovedMissionCompletedNoConflict()
+  await testSnapshotApprovedMissionArchivedConflict()
+  await testExpeditionCompletionDoesNotLagState()
 
   console.log("\n[STALE STATE] All tests passed")
 }

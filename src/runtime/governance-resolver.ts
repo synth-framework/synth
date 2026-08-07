@@ -140,7 +140,13 @@ function mergeSnapshotState(
 
   for (const mission of approvedMissions) {
     if (base.missions[mission.id]) {
-      base.missions[mission.id].status = "active"
+      // Snapshots record approval, but the event log may have since moved the
+      // mission to a terminal state. Do not resurrect a completed or archived
+      // mission just because its approval snapshot is still present.
+      const currentStatus = base.missions[mission.id].status
+      if (currentStatus !== "completed" && currentStatus !== "archived") {
+        base.missions[mission.id].status = "active"
+      }
     } else {
       base.missions[mission.id] = {
         id: mission.id,

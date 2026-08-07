@@ -106,7 +106,11 @@ export function validateConsistency(input: ValidateConsistencyInput): ValidateCo
   const approvedMissions = getApprovedMissionsFromSnapshots(snapshots)
   for (const mission of approvedMissions) {
     const replayed = replayedState.missions[mission.id]
-    if (replayed && replayed.status !== "active") {
+    // A mission may progress from active to completed after its approval snapshot
+    // is taken. Completion is a valid terminal state, not a conflict with the
+    // snapshot that recorded its approval. Only non-active, non-completed states
+    // (e.g. archived, draft) contradict an approved snapshot.
+    if (replayed && replayed.status !== "active" && replayed.status !== "completed") {
       divergences.push({
         kind: "snapshot-state-conflict",
         severity: "error",

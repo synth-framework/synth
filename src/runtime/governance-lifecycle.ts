@@ -100,11 +100,24 @@ export function getLifecycleContinuation(
 
     case "CONVERGENCE_CERTIFIED": {
       if (payload.decision !== "converged") return null
+      const missionId = String(payload.missionId)
+      const mission = state.missions[missionId]
+      if (!mission || mission.status !== "active") return null
+      // Only auto-complete the mission when every expedition belonging to it
+      // has reached a terminal state. This prevents premature completion for
+      // missions with multiple parallel expeditions.
+      const missionExpeditions = Object.values(state.expeditions).filter(
+        (e) => e.missionId === missionId
+      )
+      const allTerminal = missionExpeditions.length > 0 && missionExpeditions.every(
+        (e) => e.status === "completed" || e.status === "cancelled"
+      )
+      if (!allTerminal) return null
       return {
         invocation: {
           actor,
           capability: "CompleteMission",
-          payload: { id: String(payload.missionId) },
+          payload: { id: missionId },
         },
       }
     }

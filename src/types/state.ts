@@ -86,6 +86,10 @@ export type Expedition = {
   dependsOn: string[]
   metadata: Record<string, unknown>
   attachments?: Array<{ path: string; hash: string; kind: string; note?: string }>
+  /** True when completion bypassed verification or convergence gates via --force. */
+  force?: boolean
+  /** Human-readable reason recorded when the expedition was force-completed. */
+  forceReason?: string
   createdAt: number
   updatedAt: number
 }

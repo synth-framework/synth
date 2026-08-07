@@ -29,6 +29,14 @@ import type {
 import type { HistoricalAliasRegistry } from "./historical-aliases.js"
 import { getCanonicalId, identityKey } from "./historical-aliases.js"
 
+function attachmentKey(attachment: unknown): string {
+  const record = (attachment ?? {}) as Record<string, unknown>
+  const kind = typeof record.kind === "string" ? record.kind : ""
+  const path = typeof record.path === "string" ? record.path : ""
+  const hash = typeof record.hash === "string" ? record.hash : ""
+  return `${kind}:${path}:${hash}`
+}
+
 export function createEmptyState(): CanonicalState {
   return {
     version: 0,
@@ -297,7 +305,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     case "EXPEDITION_COMPLETED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
-        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "completed", updatedAt: event.timestamp }
+        const update: Partial<typeof state.expeditions[typeof expeditionId]> = {
+          status: "completed",
+          updatedAt: event.timestamp,
+        }
+        if (payload.force === true) {
+          update.force = true
+          if (typeof payload.forceReason === "string") {
+            update.forceReason = payload.forceReason
+          }
+        }
+        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], ...update }
       }
       break
     }
@@ -321,9 +339,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       const incoming = Array.isArray(payload.attachments) ? payload.attachments : []
       if (state.expeditions[expeditionId]) {
         const existing = state.expeditions[expeditionId].attachments || []
+        const seen = new Set(existing.map(attachmentKey))
+        const deduped: Array<{ path: string; hash: string; kind: string; note?: string }> = []
+        for (const attachment of incoming) {
+          const key = attachmentKey(attachment)
+          if (seen.has(key)) continue
+          seen.add(key)
+          deduped.push(attachment as { path: string; hash: string; kind: string; note?: string })
+        }
         state.expeditions[expeditionId] = {
           ...state.expeditions[expeditionId],
-          attachments: [...existing, ...incoming],
+          attachments: [...existing, ...deduped],
           updatedAt: event.timestamp,
         }
       }
