@@ -2,8 +2,8 @@
 
 > **Normative reference for SYNTH greenfield onboarding.** Defines the canonical operator journey, CLI workflow, approval boundaries, mutation guarantees, expected artifacts, and certification criteria for turning an unstructured operator idea into an approved Mission before any project state is created.
 
-**Version:** 1.0.0  
-**Status:** Proposed  
+**Version:** 1.1.0  
+**Status:** Accepted  
 **Governed by:** EXP-AIFC-001 — Discovery Lifecycle Specification  
 **Program:** EXP-PROGRAM-022 — AI-Native First Contact
 
@@ -330,8 +330,8 @@ derivedFrom
 
 Two explicit approvals are required:
 
-1. **Discovery Approval** — the operator confirms the Discovery artifact and selected architecture.
-2. **Mission Approval** — the operator confirms the generated Mission.
+1. **Discovery Approval** — the operator confirms the Discovery artifact and selected architecture by running `synth first-contact approve`.
+2. **Materialization Approval** — the operator confirms the generated Mission and authorizes project initialization by running `synth first-contact materialize --approve`.
 
 No materialization may occur without both approvals.
 

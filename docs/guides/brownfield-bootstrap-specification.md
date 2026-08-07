@@ -2,8 +2,8 @@
 
 > **Normative reference for SYNTH brownfield onboarding.** Defines the canonical operator journey, CLI workflow, approval boundaries, mutation guarantees, expected artifacts, and certification criteria for adopting SYNTH governance on an existing repository.
 
-**Version:** 1.0.0  
-**Status:** Proposed  
+**Version:** 1.1.0  
+**Status:** Accepted  
 **Governed by:** EXP-BROWNFIELD-001 — Brownfield Bootstrap Hardening  
 **Program:** EXP-PROGRAM-004 — First Contact Program
 
@@ -383,9 +383,8 @@ Generic help is returned only for `synth --help`.
 
 ```text
 .synth/proposals/
-    bootstrap-proposal.json
     mission-proposal.json
-    expedition-proposal.json
+    expedition-proposals.json
 ```
 
 ### 9.4 After Approve and Initialize
