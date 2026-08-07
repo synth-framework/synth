@@ -239,7 +239,6 @@ If any step fails, stop and ask the operator for the next step.
 
 - **Phase:** initialized
 - **Active Mission:** `52f6b63e0aae01f2` — Fix AGENTS.md contract generation
-- **Executing Expedition:** `90d0bd95c5f46a26` — Fallback expedition report for CLI-created expeditions
 - **Governance version:** Synth v2.1
 
 ### Project context
@@ -295,8 +294,7 @@ Any change to these assets requires an Architecture Expedition and a new ADR.
 
 ## Active work
 
-- **Expedition `90d0bd95c5f46a26` — Fallback expedition report for CLI-created expeditions**
-  - Goal: Make synth expedition report resolve expeditions from runtime governance state when no docs/expeditions charter file exists, so CLI-created expeditions can be reported with JSON and --human output.
+No expeditions currently executing.
 
 ---
 
