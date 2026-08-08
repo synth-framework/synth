@@ -74,6 +74,26 @@ async function testDocumentationLowRisk() {
   console.log("[PASS] Documentation-only change is low risk")
 }
 
+async function testBrownfieldCommonFiles() {
+  const { analyzeFiles } = await loadAnalyzer()
+
+  const report = analyzeFiles([
+    "package.json",
+    "tsconfig.json",
+    ".env.example",
+    "src/lib/supabase.ts",
+    "src/lib/storage.ts",
+  ])
+
+  assert(report.affectedCapabilities.includes("ProjectConfig"), "should detect ProjectConfig from package.json")
+  assert(report.affectedCapabilities.includes("TypeScriptConfig"), "should detect TypeScriptConfig from tsconfig.json")
+  assert(report.affectedCapabilities.includes("EnvironmentConfig"), "should detect EnvironmentConfig from .env.example")
+  assert(report.affectedCapabilities.includes("ApplicationLibrary"), "should detect ApplicationLibrary from src/lib/")
+  assert(report.protectedAssets.length === 0, "brownfield config files should not flag Protected Assets")
+  assert(report.risk === "medium", `expected medium risk for library code, got ${report.risk}`)
+  console.log("[PASS] Brownfield common files map to relevant capabilities")
+}
+
 async function testParseDiffNameStatus() {
   const { parseDiff } = await loadAnalyzer()
 
@@ -129,6 +149,7 @@ async function main() {
   await testProtectedAssetEscalation()
   await testRuntimeHighRisk()
   await testDocumentationLowRisk()
+  await testBrownfieldCommonFiles()
   await testParseDiffNameStatus()
   await testAnalyzeDiff()
   await testWorkingTreeDiff()

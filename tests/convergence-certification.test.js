@@ -15,8 +15,9 @@ import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { rebuildState } from "../dist/runtime/replay.js"
-import { buildObservedFeatures } from "../dist/governance/convergence-certification/index.js"
+import { buildObservedFeatures, certifyConvergence as evaluateConvergence } from "../dist/governance/convergence-certification/index.js"
 import { evaluateProposal } from "../dist/governance/proposal-evaluation/index.js"
+import { validateEvaluationResult } from "../dist/domain/evaluation.js"
 import { program027RuleSet } from "../dist/governance/proposal-evaluation/rules/program-027.js"
 
 let ctxCounter = 0
@@ -365,6 +366,34 @@ test("buildObservedFeatures mirrors buildProposal shape", () => {
   assert.equal(proposal.features[0].kind, "boolean")
   assert.equal(proposal.features[0].name, "hasPersistentHeader")
   assert.equal(proposal.features[0].value, true)
+})
+
+// ------------------------------------------------------------------
+// Regression: OKEng wild-test evaluation file
+// ------------------------------------------------------------------
+
+test("OKEng evaluation file validates and certifies without schema crash", async () => {
+  const evalPath = path.join(process.cwd(), "proof", "wild-okeng", "convergence-evaluation.json")
+  const raw = await fs.readFile(evalPath, "utf-8")
+  const parsed = JSON.parse(raw)
+
+  const validated = validateEvaluationResult(parsed)
+  assert.equal(validated.valid, true, `OKEng evaluation should validate: ${validated.valid ? "" : JSON.stringify(validated.errors)}`)
+
+  const subject = {
+    missionId: "M-OKEng",
+    expeditionId: "E-OKEng",
+    artifacts: [{ kind: "artifact", id: "alignment-audit", path: "proof/alignment-audit.md", description: "Alignment audit" }],
+    runtimeEvidence: [{ kind: "runtime", id: "cli-observation", source: "agent", observation: "Wild-test observations", timestamp: Date.now() }],
+    executionEvidence: [{ kind: "execution", id: "wild-test", eventIds: ["e1"], summary: "OKEng wild-test execution" }],
+  }
+
+  const result = evaluateConvergence(subject, validated.result)
+  assert.equal(result.decision, "diverged", `OKEng evaluation should diverge, got ${result.decision}`)
+  assert.ok(result.failureClasses.includes("outcome_drift"), `Expected outcome_drift, got ${JSON.stringify(result.failureClasses)}`)
+  assert.ok(result.failureClasses.includes("contract_drift"), `Expected contract_drift, got ${JSON.stringify(result.failureClasses)}`)
+  assert.ok(result.evidence.violatedContractFields.length > 0, "Evidence should include violated contract fields")
+  assert.ok(result.evidence.violatedIntentClauses.length > 0, "Evidence should include violated intent clauses")
 })
 
 await cleanData()

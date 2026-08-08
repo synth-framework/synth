@@ -85,6 +85,12 @@ const GOVERNANCE_CLASS_ORDER: GovernanceClass[] = [
   "tests",
 ]
 
+const VALIDATION_SCRIPT_PATTERN = /^(test|tests|lint|typecheck|validate|verify|check|govern)(:|$)/i
+
+function isValidationScriptName(name: string): boolean {
+  return VALIDATION_SCRIPT_PATTERN.test(name)
+}
+
 function getGovernanceClass(capability: string): GovernanceClass {
   const normalized = capability.toLowerCase()
   if (normalized.includes("documentation") || normalized.includes("website") || normalized === "examples") return "documentation"
@@ -361,16 +367,33 @@ export function buildValidationPlan(
 
   const affectedClasses = getAffectedGovernanceClasses(report, map)
   const selected = Array.from(scripts)
-  const orderedRun = usesTaskRegistry ? orderTasks(selected, options) : orderScripts(selected, options)
+  let orderedRun = usesTaskRegistry ? orderTasks(selected, options) : orderScripts(selected, options)
+
+  // Fallback for brownfield projects: if no mapped validations were selected
+  // but capabilities were detected, run any available project-level validation
+  // scripts/tasks (e.g. npm test, lint, govern) instead of returning an empty
+  // plan with medium risk.
+  if (orderedRun.length === 0 && report.affectedCapabilities.length > 0) {
+    const fallbackItems = availableItems.filter((item) => isValidationScriptName(item))
+    orderedRun = usesTaskRegistry ? orderTasks(fallbackItems, options) : orderScripts(fallbackItems, options)
+  }
+
   const skip = availableItems.filter((s) => !orderedRun.includes(s))
 
   const mappedCapabilities = report.affectedCapabilities.filter((c) => c in map.capabilities)
   const confidence = computeConfidence(report.affectedCapabilities, mappedCapabilities, false)
 
-  const reason =
+  let reason =
     report.affectedCapabilities.length === 1
       ? `Change affects ${report.affectedCapabilities[0]}; running mapped validations.`
       : `Change affects ${report.affectedCapabilities.length} capabilities; running mapped validations.`
+  if (selected.length === 0 && orderedRun.length > 0) {
+    reason = `Change affects ${report.affectedCapabilities.length} capabilities with no direct validation mapping; running available project-level validations.`
+  }
+
+  const allCapabilitiesUnmapped =
+    report.affectedCapabilities.length > 0 && mappedCapabilities.length === 0
+  const risk = allCapabilitiesUnmapped && orderedRun.length > 0 ? "low" : report.risk
 
   const explanations: Record<string, string> = {}
   for (const script of orderedRun) {
@@ -385,7 +408,7 @@ export function buildValidationPlan(
     skip,
     confidence,
     protectedAssetsTouched: false,
-    risk: report.risk,
+    risk,
     reason,
     governanceClasses: affectedClasses,
     explanations,

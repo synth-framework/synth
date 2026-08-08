@@ -121,7 +121,7 @@ function baseEvaluation() {
         ruleName: "Example rule",
         outcome: "pass",
         severity: "blocking",
-        contractClauses: [{ field: "example.field", requirement: "Example requirement" }],
+        contractClauses: [{ field: "example.field", requirement: "Example requirement", values: ["example value"] }],
       },
     ],
     violatedRules: [],

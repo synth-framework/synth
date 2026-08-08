@@ -7,6 +7,14 @@
 
 import type { ExecutionIntentState, ExecutionGraphState } from "./execution-intent.js"
 
+/** Canonical work-item statuses — keep in sync with the WorkItem type below. */
+export const WORK_ITEM_STATUSES: readonly string[] = [
+  "idle",
+  "active",
+  "blocked",
+  "complete",
+]
+
 /** WorkItem — the canonical execution entity; smallest unit of intentional work */
 export type WorkItem = {
   id: string
@@ -16,6 +24,14 @@ export type WorkItem = {
   createdAt: number
   updatedAt: number
 }
+
+/** Canonical plan statuses — keep in sync with the Plan type below. */
+export const PLAN_STATUSES: readonly string[] = [
+  "draft",
+  "active",
+  "completed",
+  "deprecated",
+]
 
 /** Plan — structured decomposition of project objective */
 export type Plan = {
@@ -46,6 +62,15 @@ export type Project = {
   status: "active" | "archived" | "terminated"
 }
 
+/** Canonical mission statuses — keep in sync with the Mission type below. */
+export const MISSION_STATUSES: readonly string[] = [
+  "projected",
+  "draft",
+  "active",
+  "completed",
+  "archived",
+]
+
 /** Mission — long-term strategic direction */
 export type Mission = {
   id: string
@@ -73,13 +98,25 @@ export type Mission = {
   updatedAt: number
 }
 
+/** Canonical expedition statuses — keep in sync with the Expedition type below. */
+export const EXPEDITION_STATUSES: readonly string[] = [
+  "draft",
+  "approved",
+  "committed",
+  "executing",
+  "paused",
+  "completed",
+  "cancelled",
+  "archived",
+]
+
 /** Expedition — bounded engineering objective */
 export type Expedition = {
   id: string
   missionId: string
   name: string
   goal: string
-  status: "draft" | "approved" | "committed" | "executing" | "completed" | "cancelled"
+  status: "draft" | "approved" | "committed" | "executing" | "paused" | "completed" | "cancelled" | "archived"
   objectives: string[]
   discoveries: string[]
   decisions: string[]
@@ -300,6 +337,12 @@ export type ConvergenceCertificationState = {
   certifiedAt: number
   certifier: { kind: string; id: string }
 }
+
+/** Canonical objective statuses — keep in sync with the Objective type below. */
+export const OBJECTIVE_STATUSES: readonly string[] = [
+  "draft",
+  "completed",
+]
 
 /** Objective — specific measurable outcome within an expedition */
 export type Objective = {

@@ -16,13 +16,13 @@ export function buildEvidenceTrace(
   }
 
   const violatedContractFields = Array.from(
-    new Set(violatedRules.map((r) => r.contractClauses.field))
+    new Set(violatedRules.flatMap((r) => r.contractClauses.map((c) => c.field)))
   )
 
   const violatedIntentClauses = Array.from(
     new Set(
       violatedRules.flatMap((r) =>
-        r.contractClauses.values.map((v) => `${r.contractClauses.field}: ${v}`)
+        r.contractClauses.flatMap((c) => c.values.map((v) => `${c.field}: ${v}`))
       )
     )
   )

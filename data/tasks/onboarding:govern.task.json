@@ -1,7 +1,7 @@
 {
   "id": "onboarding:govern",
   "description": "Run the canonical governance pipeline after onboarding",
-  "command": "synth task run govern",
+  "command": "npm run govern",
   "group": "onboarding",
   "dependsOn": [],
   "tags": ["onboarding", "governance"],

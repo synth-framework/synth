@@ -137,7 +137,9 @@ function lifecycleRule(): ProjectModelRule {
       const hasImplementation =
         hasClaim(evidenceGraph, "Node.js project manifest present") ||
         hasClaim(evidenceGraph, "Implementation directory observed")
-      const hasTests = hasClaim(evidenceGraph, "Tests directory observed")
+      const hasTests =
+        hasClaim(evidenceGraph, "Tests directory observed") ||
+        hasClaim(evidenceGraph, "Project-level validation script present")
       const hasDocs = hasClaim(evidenceGraph, "Documentation present")
       const hasArchitecture = hasClaim(evidenceGraph, "Architecture documentation present")
 
@@ -149,6 +151,7 @@ function lifecycleRule(): ProjectModelRule {
           ...findClaimIds(evidenceGraph, "Node.js project manifest present"),
           ...findClaimIds(evidenceGraph, "Implementation directory observed"),
           ...findClaimIds(evidenceGraph, "Tests directory observed"),
+          ...findClaimIds(evidenceGraph, "Project-level validation script present"),
         ]
         stage = {
           value: "implementation",
@@ -378,6 +381,33 @@ function testingCapabilityRule(): ProjectModelRule {
           field: "testing",
           value: item,
           confidence: deterministicConfidence(0.9, "Tests directory observed", "deterministic"),
+          evidenceClaimIds: item.evidenceClaimIds,
+        },
+      ]
+    },
+  }
+}
+
+function testingCapabilityFromScriptsRule(): ProjectModelRule {
+  return {
+    id: "project-model:capability:testing:scripts",
+    domain: "capability",
+    requiredClaims: ["Project-level validation script present"],
+    infer(evidenceGraph) {
+      const claims = findClaims(evidenceGraph, "Project-level validation script present")
+      if (claims.length === 0) return undefined
+
+      const item: CapabilityItem = {
+        name: "testing",
+        available: true,
+        evidenceClaimIds: claims.map((claim) => claim.id),
+      }
+
+      return [
+        {
+          field: "testing",
+          value: item,
+          confidence: deterministicConfidence(0.85, "Project-level validation script present", "deterministic"),
           evidenceClaimIds: item.evidenceClaimIds,
         },
       ]
@@ -793,6 +823,7 @@ export function createDefaultProjectModelRules(): ProjectModelRule[] {
     frameworkRule(),
     runtimeRule(),
     testingCapabilityRule(),
+    testingCapabilityFromScriptsRule(),
     documentationCapabilityRule(),
     containerizationCapabilityRule(),
     deploymentCapabilityRule(),

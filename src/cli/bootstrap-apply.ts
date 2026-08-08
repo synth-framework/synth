@@ -273,13 +273,27 @@ async function writeDefaultCapabilityValidationMap(targetDir: string) {
 
   // Choose a validation script that exists or can be safely added.
   const scripts = packageJson.scripts || {}
-  let validationScript = "govern"
-  if (scripts.test) {
-    validationScript = "test"
-  } else if (hasPackageJson && !scripts.govern) {
-    // Use a safe placeholder that exits 0 on any Node installation.
-    // The operator is expected to replace this with the real governance pipeline.
-    scripts.govern = "node --version"
+  // Always point the capability validation map at the "govern" script so that
+  // `synth validate --full` and `npm run govern` follow the same path.
+  const validationScript = "govern"
+
+  if (hasPackageJson && !scripts.govern) {
+    // Build a project-specific govern script from existing npm scripts.
+    // Avoid synth/validate/npm-run-govern to prevent recursion through the
+    // governance delegation guard (see src/cli/govern-delegation.ts).
+    const parts: string[] = []
+    if (scripts.build) parts.push("npm run build")
+    if (scripts.test) parts.push("npm test")
+    if (scripts["docs:check-links"]) parts.push("npm run docs:check-links")
+    if (scripts.proof) parts.push("npm run proof")
+
+    if (parts.length > 0) {
+      scripts.govern = parts.join(" && ")
+    } else {
+      // No project validation scripts exist yet. Provide an informative no-op
+      // that tells the operator how to wire a real pipeline.
+      scripts.govern = "echo 'SYNTH governance pipeline not configured. Add build, test, docs:check-links, or proof scripts to package.json and update this govern script.'"
+    }
     packageJson.scripts = scripts
     await sdk.json.writeJson(packageJsonPath, packageJson)
   }

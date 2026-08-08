@@ -2,7 +2,7 @@
 // GOVERNANCE: Convergence Certification — Dimension Evaluation
 // ============================================================
 
-import type { EvaluationResult, RuleResult, EvidenceTrace } from "../proposal-evaluation/types.js"
+import type { EvaluationResult, RuleResult, EvidenceTrace, ContractClause } from "../proposal-evaluation/types.js"
 import type {
   CertificationSubject,
   CertificationDimension,
@@ -12,7 +12,7 @@ import type {
   ConvergenceDecision,
 } from "./types.js"
 
-const CONTRACT_FIDELITY_FIELDS: Array<RuleResult["contractClauses"]["field"]> = [
+const CONTRACT_FIDELITY_FIELDS: Array<ContractClause["field"]> = [
   "forbiddenDrift",
   "requiredProperties",
   "requiredBehaviors",
@@ -37,11 +37,13 @@ function buildDimensionEvidence(
   passedRules: RuleResult[]
 ): EvidenceTrace {
   const allRules = [...violatedRules, ...passedRules]
-  const violatedContractFields = Array.from(new Set(violatedRules.map((r) => r.contractClauses.field)))
+  const violatedContractFields = Array.from(
+    new Set(violatedRules.flatMap((r) => r.contractClauses.map((c) => c.field)))
+  )
   const violatedIntentClauses = Array.from(
     new Set(
       violatedRules.flatMap((r) =>
-        r.contractClauses.values.map((v) => `${r.contractClauses.field}: ${v}`)
+        r.contractClauses.flatMap((c) => c.values.map((v) => `${c.field}: ${v}`))
       )
     )
   )
@@ -60,11 +62,11 @@ function buildDimensionEvidence(
 }
 
 function evaluateIntentFidelity(evaluation: EvaluationResult): DimensionResult {
-  const relevantViolations = evaluation.violatedRules.filter(
-    (r) => r.contractClauses.field === "forbiddenInterpretation"
+  const relevantViolations = evaluation.violatedRules.filter((r) =>
+    r.contractClauses.some((c) => c.field === "forbiddenInterpretation")
   )
-  const relevantPasses = evaluation.matchedRules.filter(
-    (r) => r.contractClauses.field === "forbiddenInterpretation"
+  const relevantPasses = evaluation.matchedRules.filter((r) =>
+    r.contractClauses.some((c) => c.field === "forbiddenInterpretation")
   )
   const outcome: DimensionOutcome = relevantViolations.length > 0 ? "fail" : "pass"
   const confidence = outcome === "pass" ? 1 : Math.max(0, 1 - relevantViolations.length * 0.2)
@@ -77,7 +79,7 @@ function evaluateIntentFidelity(evaluation: EvaluationResult): DimensionResult {
       outcome === "pass"
         ? "No forbidden interpretations detected in outcome."
         : `Forbidden interpretations detected: ${relevantViolations
-            .map((r) => r.contractClauses.values.join(", "))
+            .map((r) => r.contractClauses.flatMap((c) => c.values).join(", "))
             .join("; ")}`,
     evidence: buildDimensionEvidence("intent_fidelity", relevantViolations, relevantPasses),
   }
@@ -85,10 +87,10 @@ function evaluateIntentFidelity(evaluation: EvaluationResult): DimensionResult {
 
 function evaluateContractFidelity(evaluation: EvaluationResult): DimensionResult {
   const relevantViolations = evaluation.violatedRules.filter((r) =>
-    CONTRACT_FIDELITY_FIELDS.includes(r.contractClauses.field)
+    r.contractClauses.some((c) => CONTRACT_FIDELITY_FIELDS.includes(c.field))
   )
   const relevantPasses = evaluation.matchedRules.filter((r) =>
-    CONTRACT_FIDELITY_FIELDS.includes(r.contractClauses.field)
+    r.contractClauses.some((c) => CONTRACT_FIDELITY_FIELDS.includes(c.field))
   )
   const outcome: DimensionOutcome = relevantViolations.length > 0 ? "fail" : "pass"
   const confidence = outcome === "pass" ? 1 : Math.max(0, 1 - relevantViolations.length * 0.15)
@@ -101,7 +103,7 @@ function evaluateContractFidelity(evaluation: EvaluationResult): DimensionResult
       outcome === "pass"
         ? "Outcome satisfies contract constraints."
         : `Contract constraints violated: ${relevantViolations
-            .map((r) => r.contractClauses.values.join(", "))
+            .map((r) => r.contractClauses.flatMap((c) => c.values).join(", "))
             .join("; ")}`,
     evidence: buildDimensionEvidence("contract_fidelity", relevantViolations, relevantPasses),
   }
@@ -140,12 +142,12 @@ function evaluateDriftAbsence(evaluation: EvaluationResult): DimensionResult {
   const outcome: DimensionOutcome = hasDrift ? "fail" : "pass"
 
   const violatedContractFields = Array.from(
-    new Set(evaluation.violatedRules.map((r) => r.contractClauses.field))
+    new Set(evaluation.violatedRules.flatMap((r) => r.contractClauses.map((c) => c.field)))
   )
   const violatedIntentClauses = Array.from(
     new Set(
       evaluation.violatedRules.flatMap((r) =>
-        r.contractClauses.values.map((v) => `${r.contractClauses.field}: ${v}`)
+        r.contractClauses.flatMap((c) => c.values.map((v) => `${c.field}: ${v}`))
       )
     )
   )

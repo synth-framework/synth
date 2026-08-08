@@ -5,9 +5,10 @@
 // guides the operator through the correct initialization path.
 // ============================================================
 
+import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runSynth, parseJson, withTempDir, writeManifest } from "./helpers/cli-harness.js"
+import { runSynth, parseJson, withTempDir, writeManifest, CLI_PATH } from "./helpers/cli-harness.js"
 
 function assert(condition, message) {
   if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
@@ -140,6 +141,44 @@ async function testGenesisAliasWorks() {
   console.log("[PASS] synth genesis --dry-run routes to first-contact onboard plan")
 }
 
+async function testApproveThroughSymlink() {
+  await withTempDir("synth-onboard-symlink-", async (tmpDir) => {
+    const binDir = path.join(tmpDir, "bin")
+    await fs.mkdir(binDir, { recursive: true })
+    const symlinkPath = path.join(binDir, "synth")
+    await fs.symlink(CLI_PATH, symlinkPath)
+
+    const result = spawnSync("node", [symlinkPath, "first-contact", "--approve", "--name", "Symlink Test Project"], {
+      cwd: tmpDir,
+      encoding: "utf-8",
+      timeout: 120000,
+    })
+    assert(result.status === 0, `approve through symlink should exit 0, got ${result.status}\n${result.stdout}\n${result.stderr}`)
+    const output = parseJson(result.stdout)
+    assert(output.status === "ok", `status should be ok, got ${output.status}`)
+    assert(output.kind === "FirstContactOnboardCompleted", `kind should be FirstContactOnboardCompleted, got ${output.kind}`)
+
+    const manifestPath = path.join(tmpDir, ".synth", "manifest.json")
+    assert(await fs.access(manifestPath).then(() => true).catch(() => false), "manifest should be created")
+  })
+  console.log("[PASS] synth first-contact --approve works through a symlinked global install")
+}
+
+async function testOnboardingGovernTaskRunsProjectGovern() {
+  await withTempDir("synth-onboard-govern-task-", async (tmpDir) => {
+    await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "onboard-govern", version: "1.0.0", scripts: {} }), "utf-8")
+
+    let result = runSynth(["first-contact", "--approve", "--name", "Onboard Govern Test"], tmpDir)
+    assert(result.status === 0, `first-contact --approve should exit 0: ${result.stdout}\n${result.stderr}`)
+
+    result = runSynth(["task", "run", "onboarding:govern"], tmpDir)
+    assert(result.status === 0, `task run onboarding:govern should exit 0: ${result.stdout}\n${result.stderr}`)
+    const output = parseJson(result.stdout)
+    assert(output.status === "ok", `onboarding:govern status should be ok, got ${output.status}`)
+  })
+  console.log("[PASS] task run onboarding:govern delegates to project npm run govern")
+}
+
 async function main() {
   await testDryRunOnEmptyDirectory()
   await testPlanOnBrownfieldDirectory()
@@ -149,6 +188,8 @@ async function main() {
   await testDiscoveryModeBlocksApprove()
   await testDiscoveryModeAllowsDryRun()
   await testGenesisAliasWorks()
+  await testApproveThroughSymlink()
+  await testOnboardingGovernTaskRunsProjectGovern()
   console.log("\n[FIRST-CONTACT ONBOARD] All tests passed")
 }
 

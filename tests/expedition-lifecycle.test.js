@@ -262,7 +262,126 @@ async function testLegacyExpeditionIdFlag(projectDir, missionId) {
   const startOutput = parseJson(startResult.stdout)
   assert(startOutput.kind === "ExpeditionStarted", `legacy --expedition-id start should work, got ${startOutput.kind}`)
 
+  // Clean up the executing expedition so subsequent mission planning is not blocked.
+  const archiveResult = runSynth(["expedition", "archive", "--id", draftId, "--reason", "Test cleanup"], projectDir)
+  assert(archiveResult.status === 0, `expedition archive cleanup must exit 0:\n${archiveResult.stderr}`)
+
   console.log("[PASS] Legacy --expedition-id flag remains supported")
+}
+
+async function createStartedExpedition(projectDir, missionId, subject) {
+  const createResult = runSynth(
+    ["expedition", "create", "--mission", missionId, "--subject", subject, "--goal", "Test goal"],
+    projectDir,
+  )
+  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
+  const draftId = parseJson(createResult.stdout).draftId
+
+  const approveResult = runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
+  assert(approveResult.status === 0, `expedition approve must exit 0:\n${approveResult.stderr}`)
+
+  const commitResult = runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
+  assert(commitResult.status === 0, `expedition commit must exit 0:\n${commitResult.stderr}`)
+
+  const startResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
+  assert(startResult.status === 0, `expedition start must exit 0:\n${startResult.stderr}`)
+  const startOutput = parseJson(startResult.stdout)
+  assert(startOutput.kind === "ExpeditionStarted", `expedition start should return ExpeditionStarted, got ${startOutput.kind}`)
+  assert(startOutput.result.status === "executing", `expedition should be executing, got ${startOutput.result.status}`)
+
+  return draftId
+}
+
+async function testArchiveSetsArchivedStatus(projectDir, missionId) {
+  const draftId = await createStartedExpedition(projectDir, missionId, "Archive Test")
+
+  const archiveResult = runSynth(["expedition", "archive", "--id", draftId, "--reason", "Testing archive semantics"], projectDir)
+  assert(archiveResult.status === 0, `expedition archive must exit 0:\n${archiveResult.stderr}`)
+  const archiveOutput = parseJson(archiveResult.stdout)
+  assert(archiveOutput.kind === "ExpeditionArchived", `expedition archive should return ExpeditionArchived, got ${archiveOutput.kind}`)
+  assert(archiveOutput.result.status === "archived", `expedition should be archived, got ${archiveOutput.result.status}`)
+
+  console.log("[PASS] Archive sets expedition status to archived")
+}
+
+async function testStartFromArchivedAndPaused(projectDir, missionId) {
+  const draftId = await createStartedExpedition(projectDir, missionId, "Resume Test")
+
+  // Pause an executing expedition.
+  const pauseResult = runSynth(["expedition", "pause", "--id", draftId], projectDir)
+  assert(pauseResult.status === 0, `expedition pause must exit 0:\n${pauseResult.stderr}`)
+  const pauseOutput = parseJson(pauseResult.stdout)
+  assert(pauseOutput.kind === "ExpeditionPaused", `expedition pause should return ExpeditionPaused, got ${pauseOutput.kind}`)
+  assert(pauseOutput.result.status === "paused", `expedition should be paused, got ${pauseOutput.result.status}`)
+
+  // Start from paused.
+  const resumeResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
+  assert(resumeResult.status === 0, `expedition start from paused must exit 0:\n${resumeResult.stderr}`)
+  const resumeOutput = parseJson(resumeResult.stdout)
+  assert(resumeOutput.kind === "ExpeditionStarted", `expedition start from paused should return ExpeditionStarted, got ${resumeOutput.kind}`)
+  assert(resumeOutput.result.status === "executing", `expedition should be executing after resume, got ${resumeOutput.result.status}`)
+
+  // Archive and restart from archived.
+  const archiveResult = runSynth(["expedition", "archive", "--id", draftId, "--reason", "Testing restart from archived"], projectDir)
+  assert(archiveResult.status === 0, `expedition archive must exit 0:\n${archiveResult.stderr}`)
+
+  const restartResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
+  assert(restartResult.status === 0, `expedition start from archived must exit 0:\n${restartResult.stderr}`)
+  const restartOutput = parseJson(restartResult.stdout)
+  assert(restartOutput.kind === "ExpeditionStarted", `expedition start from archived should return ExpeditionStarted, got ${restartOutput.kind}`)
+  assert(restartOutput.result.status === "executing", `expedition should be executing after restart from archived, got ${restartOutput.result.status}`)
+
+  // Clean up the executing expedition so subsequent mission planning is not blocked.
+  const cleanupArchiveResult = runSynth(["expedition", "archive", "--id", draftId, "--reason", "Test cleanup"], projectDir)
+  assert(cleanupArchiveResult.status === 0, `expedition archive cleanup must exit 0:\n${cleanupArchiveResult.stderr}`)
+
+  console.log("[PASS] Start works from paused and archived statuses")
+}
+
+async function testPauseRequiresExecuting(projectDir, missionId) {
+  const createResult = runSynth(
+    ["expedition", "create", "--mission", missionId, "--subject", "Pause Invalid Test", "--goal", "Test goal"],
+    projectDir,
+  )
+  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
+  const draftId = parseJson(createResult.stdout).draftId
+
+  const pauseResult = runSynth(["expedition", "pause", "--id", draftId], projectDir)
+  assert(pauseResult.status !== 0, "expedition pause should fail when not executing")
+  const pauseOutput = parseJson(pauseResult.stdout)
+  assert(pauseOutput.status === "error", "pause failure should report error status")
+  assert(pauseOutput.error && pauseOutput.error.includes("executing"), `pause failure should explain executing requirement, got ${JSON.stringify(pauseOutput)}`)
+
+  console.log("[PASS] Pause is rejected for non-executing expeditions")
+}
+
+async function testCreateWhileAnotherExecuting(projectDir, missionId) {
+  const executingId = await createStartedExpedition(projectDir, missionId, "Executing Expedition")
+
+  const createResult = runSynth(
+    ["expedition", "create", "--mission", missionId, "--subject", "Queued Expedition", "--goal", "Test goal"],
+    projectDir,
+  )
+  assert(createResult.status === 0, `expedition create must exit 0 while another expedition is executing:\n${createResult.stderr}`)
+  const createOutput = parseJson(createResult.stdout)
+  assert(createOutput.kind === "ExpeditionDraft", `expedition create should return ExpeditionDraft, got ${createOutput.kind}`)
+  const queuedId = createOutput.draftId
+
+  // Starting the queued expedition should be blocked while the first is executing.
+  runSynth(["expedition", "approve", "--draft-id", queuedId], projectDir)
+  runSynth(["expedition", "commit", "--proposal-id", queuedId], projectDir)
+
+  const startResult = runSynth(["expedition", "start", "--id", queuedId], projectDir)
+  assert(startResult.status !== 0, "expedition start should fail while another is executing")
+  const startOutput = parseJson(startResult.stdout)
+  assert(startOutput.status === "error", "start failure should report error status")
+  assert(startOutput.error && startOutput.error.includes(executingId), `start failure should name the executing expedition, got ${JSON.stringify(startOutput)}`)
+
+  // Clean up the executing expedition so subsequent mission planning is not blocked.
+  const archiveResult = runSynth(["expedition", "archive", "--id", executingId, "--reason", "Test cleanup"], projectDir)
+  assert(archiveResult.status === 0, `expedition archive cleanup must exit 0:\n${archiveResult.stderr}`)
+
+  console.log("[PASS] Expedition create is allowed while another is executing; starting a second is still blocked")
 }
 
 async function main() {
@@ -278,6 +397,14 @@ async function main() {
     await testInvalidTransitions(projectDir, missionId2, gateCtx2, contractId2)
     const { missionId: missionId3 } = await createAndApproveMission(projectDir)
     await testLegacyExpeditionIdFlag(projectDir, missionId3)
+    const { missionId: missionId4 } = await createAndApproveMission(projectDir)
+    await testArchiveSetsArchivedStatus(projectDir, missionId4)
+    const { missionId: missionId5 } = await createAndApproveMission(projectDir)
+    await testStartFromArchivedAndPaused(projectDir, missionId5)
+    const { missionId: missionId6 } = await createAndApproveMission(projectDir)
+    await testPauseRequiresExecuting(projectDir, missionId6)
+    const { missionId: missionId7 } = await createAndApproveMission(projectDir)
+    await testCreateWhileAnotherExecuting(projectDir, missionId7)
     console.log("\nAll expedition lifecycle tests passed.")
   } finally {
     await fs.rm(projectDir, { recursive: true, force: true })

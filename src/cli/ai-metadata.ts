@@ -88,12 +88,49 @@ export type AiMetadataBundle = {
   skills: AiSkillRecommendation
 }
 
-export function deriveRepositoryType(state: CanonicalState): RepositoryType {
+export function normalizeDiscoveryRepositoryType(raw: string): RepositoryType | undefined {
+  if (raw === "empty") return "greenfield"
+  if (raw === "polyglot") return "hybrid"
+  if (["brownfield", "node", "python"].includes(raw)) return "brownfield"
+  return undefined
+}
+
+async function readDiscoveryBaselineRepositoryType(synthDir: string): Promise<RepositoryType | undefined> {
+  const discoveryDir = sdk.paths.discoveryDir(path.dirname(synthDir))
+  let entries: import("fs").Dirent[]
+  try {
+    entries = await fs.readdir(discoveryDir, { withFileTypes: true })
+  } catch {
+    return undefined
+  }
+
+  const baselines = entries
+    .filter((e) => e.isFile() && e.name.startsWith("baseline-") && e.name.endsWith(".json"))
+    .map((e) => path.join(discoveryDir, e.name))
+    .sort()
+
+  if (baselines.length === 0) return undefined
+
+  try {
+    const raw = await fs.readFile(baselines[baselines.length - 1]!, "utf-8")
+    const parsed = JSON.parse(raw) as { analysis?: { repositoryType?: string } }
+    const rawType = parsed.analysis?.repositoryType
+    if (typeof rawType === "string") {
+      return normalizeDiscoveryRepositoryType(rawType)
+    }
+  } catch {
+    // ignore malformed baseline
+  }
+  return undefined
+}
+
+export function deriveRepositoryType(state: CanonicalState, baselineRepositoryType?: RepositoryType): RepositoryType {
   // The canonical Project type does not persist sourceType. We infer repository
   // class from recorded discoveries and lifecycle state. A materialized project
   // with discoveries has almost certainly been through brownfield discovery.
   const hasDiscoveries = Object.keys(state.discoveries).length > 0
   if (hasDiscoveries) return "brownfield"
+  if (baselineRepositoryType) return baselineRepositoryType
   if (state.lifecycle === "materialized") return "greenfield"
   return "unknown"
 }
@@ -158,11 +195,13 @@ export function deriveBlockers(state: CanonicalState): string[] {
   return blockers
 }
 
-export function deriveAiMetadata(
+export async function deriveAiMetadata(
   state: CanonicalState,
   manifest: { name?: string; governanceVersion?: string },
-): AiMetadataBundle {
-  const repositoryType = deriveRepositoryType(state)
+  synthDir?: string,
+): Promise<AiMetadataBundle> {
+  const baselineRepositoryType = synthDir ? await readDiscoveryBaselineRepositoryType(synthDir) : undefined
+  const repositoryType = deriveRepositoryType(state, baselineRepositoryType)
   const currentPhase = deriveLifecyclePhase(state)
   const mutationPolicy = deriveMutationPolicy(currentPhase)
   const activeMission = deriveActiveMission(state)
@@ -251,7 +290,7 @@ export async function writeAiMetadata(
   const aiDir = path.join(synthDir, AI_METADATA_DIR)
   await fs.mkdir(aiDir, { recursive: true })
 
-  const bundle = deriveAiMetadata(state, manifest)
+  const bundle = await deriveAiMetadata(state, manifest, synthDir)
 
   await fs.writeFile(path.join(aiDir, "discovery.json"), JSON.stringify(bundle.discovery, null, 2), "utf-8")
   await fs.writeFile(path.join(aiDir, "capabilities.json"), JSON.stringify(bundle.capabilities, null, 2), "utf-8")
