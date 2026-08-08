@@ -6120,11 +6120,17 @@ async function main() {
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
       else if (sub === "show") await cmdExpeditionShow(flags)
+      else if (sub === "explain") await cmdExpeditionShow(flags)
       else if (sub === "rank") await cmdExpeditionRank(flags)
       else if (sub === "report") await cmdExpeditionReport(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition pause --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> [--evaluation <path>] | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition report --id <expedition-id>",
+          `Unknown subcommand '${sub}' for 'synth expedition'. Did you mean 'synth expedition show --id <expedition-id>'?`,
+          {
+            code: "UnknownExpeditionSubcommand",
+            category: "cli",
+            suggestion: "Run 'synth expedition --help' for the full list of lifecycle and inventory commands.",
+          },
         )
       break
     }

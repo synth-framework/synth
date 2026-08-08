@@ -269,6 +269,37 @@ async function testLegacyExpeditionIdFlag(projectDir, missionId) {
   console.log("[PASS] Legacy --expedition-id flag remains supported")
 }
 
+async function testExplainAliasRedirectsToShow(projectDir, missionId) {
+  const createResult = runSynth(
+    ["expedition", "create", "--mission", missionId, "--subject", "Explain Alias Expedition", "--goal", "Test explain alias"],
+    projectDir,
+  )
+  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
+  const draftId = parseJson(createResult.stdout).draftId
+
+  runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
+  runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
+
+  const explainResult = runSynth(["expedition", "explain", "--id", draftId], projectDir)
+  assert(explainResult.status === 0, `expedition explain should redirect to show and exit 0:\n${explainResult.stderr}`)
+  const explainOutput = parseJson(explainResult.stdout)
+  assert(explainOutput.kind === "ExpeditionShow", `expedition explain should return ExpeditionShow, got ${explainOutput.kind}`)
+  assert(explainOutput.expedition?.id === draftId, `expedition explain should show the requested expedition, got ${explainOutput.expedition?.id}`)
+
+  // Unknown subcommand should produce a friendly error with a suggestion.
+  const unknownResult = runSynth(["expedition", "does-not-exist", "--id", draftId], projectDir)
+  assert(unknownResult.status !== 0, "unknown expedition subcommand should fail")
+  const unknownOutput = parseJson(unknownResult.stdout)
+  assert(unknownOutput.status === "error", "unknown subcommand should report error status")
+  assert(unknownOutput.error && unknownOutput.error.includes("Did you mean"), `unknown subcommand error should suggest show, got ${JSON.stringify(unknownOutput)}`)
+
+  // Clean up the committed expedition so subsequent mission planning is not blocked.
+  const archiveResult = runSynth(["expedition", "archive", "--id", draftId, "--reason", "Test cleanup"], projectDir)
+  assert(archiveResult.status === 0, `expedition archive cleanup must exit 0:\n${archiveResult.stderr}`)
+
+  console.log("[PASS] expedition explain redirects to show; unknown subcommand suggests show")
+}
+
 async function createStartedExpedition(projectDir, missionId, subject) {
   const createResult = runSynth(
     ["expedition", "create", "--mission", missionId, "--subject", subject, "--goal", "Test goal"],
@@ -482,6 +513,8 @@ async function main() {
     await testInvalidTransitions(projectDir, missionId2, gateCtx2, contractId2)
     const { missionId: missionId3 } = await createAndApproveMission(projectDir)
     await testLegacyExpeditionIdFlag(projectDir, missionId3)
+    const { missionId: missionId3b } = await createAndApproveMission(projectDir)
+    await testExplainAliasRedirectsToShow(projectDir, missionId3b)
     const { missionId: missionId4 } = await createAndApproveMission(projectDir)
     await testArchiveSetsArchivedStatus(projectDir, missionId4)
     const { missionId: missionId5 } = await createAndApproveMission(projectDir)
