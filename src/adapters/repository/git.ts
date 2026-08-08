@@ -29,6 +29,8 @@ import type {
   SnapshotResult,
   SnapshotEntry,
   VerifyResult,
+  CompletionReadinessOptions,
+  CompletionReadinessResult,
 } from "./types.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../../adapter/git-snapshot.js"
 
@@ -62,6 +64,13 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   private _config?: RepositoryConfig
   private _health: AdapterHealth = { state: "unknown", message: "Adapter not yet health-checked" }
   private _snapshotAdapter = new GitSnapshotAdapter()
+
+  constructor(config?: Partial<RepositoryConfig>) {
+    if (config) {
+      this._config = { ...this._config, ...config } as RepositoryConfig
+      this._state = "configured"
+    }
+  }
 
   get state(): AdapterState {
     return this._state
@@ -271,6 +280,23 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   async createSnapshot(options: SnapshotOptions): Promise<SnapshotResult> {
     const cwd = this.repoPath()
     return this._snapshotAdapter.createSnapshot({ cwd, ...options })
+  }
+
+  async validateCompletionReadiness(options: CompletionReadinessOptions = {}): Promise<CompletionReadinessResult> {
+    const cwd = this.repoPath()
+    // If there is no git repository, there is no working tree to snapshot and
+    // therefore no source-change gate to enforce.
+    if (!this.isGitRepo()) {
+      return { ok: true }
+    }
+    // If snapshot policy is disabled, do not block completion for working-tree
+    // state; the operator has explicitly turned off governance anchoring.
+    const config = loadSnapshotConfig(cwd)
+    if (config.snapshotPolicy === "disabled") {
+      return { ok: true }
+    }
+    const result = this._snapshotAdapter.canSnapshot(cwd)
+    return result
   }
 
   async listSnapshots(limit?: number): Promise<SnapshotEntry[]> {
@@ -662,6 +688,6 @@ ${synthExec} explain replay >/dev/null 2>&1 || true`,
   }
 }
 
-export function createGitRepositoryAdapter(): GitRepositoryAdapter {
-  return new GitRepositoryAdapter()
+export function createGitRepositoryAdapter(config?: Partial<RepositoryConfig>): GitRepositoryAdapter {
+  return new GitRepositoryAdapter(config)
 }

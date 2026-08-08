@@ -44,7 +44,8 @@ import type { IStateStore } from "../infra/state-store.js"
 import { getLifecycleContinuation, MAX_LIFECYCLE_DEPTH } from "../runtime/governance-lifecycle.js"
 import { buildDerivedState } from "../state/derived/index.js"
 import { assertDependencyGateAllowed, type DependencyRecord } from "../governance/dependency-graph.js"
-import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
+import type { RepositoryAdapter } from "../adapters/repository/types.js"
+import { createGitRepositoryAdapter } from "../adapters/repository/git.js"
 import {
   CONTRACT_STEPS,
   validateContract,
@@ -110,7 +111,7 @@ export type MutationAuthorization =
 /** Execution Gate — the single mutation authority */
 export class ExecutionGate {
   private adrRegistry: AdrRegistry
-  private snapshotAdapter: GitSnapshotAdapter
+  private repositoryAdapter: RepositoryAdapter
 
   constructor(
     private registry: Registry,
@@ -123,7 +124,41 @@ export class ExecutionGate {
     private dependencyRecords: DependencyRecord[] = [],
   ) {
     this.adrRegistry = loadAdrRegistry()
-    this.snapshotAdapter = new GitSnapshotAdapter()
+    this.repositoryAdapter = createGitRepositoryAdapter({ path: this.resolveProjectRoot() })
+  }
+
+  // ===== PROJECT ROOT RESOLUTION =====
+
+  /**
+   * Infer the governed project root from the event store's data directory.
+   *
+   * The event store knows where its log lives; that path is the only reliable
+   * source of the project root. Using process.cwd() here would bind the
+   * repository adapter to the shell's working directory, which breaks tests
+   * that create isolated data directories inside the SYNTH source tree.
+   */
+  private resolveProjectRoot(): string {
+    const dataDir = this.eventStore.getDataDir()
+    if (!dataDir) return process.cwd()
+
+    const normalized = path.resolve(dataDir)
+    const base = path.basename(normalized)
+    const parent = path.basename(path.dirname(normalized))
+
+    // Governed projects: event log lives at <root>/.synth/data/event-log.jsonl
+    if (parent === ".synth" && base === "data") {
+      return path.dirname(path.dirname(normalized))
+    }
+
+    // Legacy / source-repository layout: event log lives at <root>/data/event-log.jsonl
+    if (base === "data") {
+      return path.dirname(normalized)
+    }
+
+    // Isolated test data directories or custom layouts: treat the data
+    // directory itself as the project root. If it is not a git repository,
+    // the repository adapter will simply skip the completion-readiness check.
+    return normalized
   }
 
   // ===== PUBLIC API: The only mutation entry points =====
@@ -161,7 +196,7 @@ export class ExecutionGate {
 
     try {
       // === PHASE 1: VALIDATE ===
-      const validation = this.runPhase("VALIDATE", () => {
+      const validation = await this.runPhase("VALIDATE", () => {
         const result = this.validator(invocation)
         if (!result.valid) {
           const errors = result.errors
@@ -178,7 +213,7 @@ export class ExecutionGate {
       const events = await this.eventStore.loadAll()
       const derivedState = buildDerivedState(events)
       let approvalRequestId: string | undefined
-      const policyCheck = this.runPhase("POLICY_CHECK", () => {
+      const policyCheck = await this.runPhase("POLICY_CHECK", () => {
         const result = this.policyEngine.isAllowed(invocation, currentState, derivedState)
         if (!result.allowed) {
           // EXP-APPROVAL-001: if the policy requires verification (two-party
@@ -202,14 +237,31 @@ export class ExecutionGate {
       phases.push(policyCheck)
 
       // === PHASE 2b: DEPENDENCY GATE CHECK (EXP-GATE-013) ===
-      const dependencyGateCheck = this.runPhase("DEPENDENCY_GATE_CHECK", () => {
+      const dependencyGateCheck = await this.runPhase("DEPENDENCY_GATE_CHECK", () => {
         assertDependencyGateAllowed(invocation, currentState, derivedState, this.dependencyRecords)
         return { passed: true }
       })
       phases.push(dependencyGateCheck)
 
+      // === PHASE 2c: REPOSITORY ADAPTER COMPLETION READINESS (EXP-GIT-001) ===
+      // For expedition completion, ask the repository adapter whether the
+      // working tree is in a state that can be snapshotted. This keeps
+      // VCS-specific checks (clean working tree, stash policy, etc.) inside
+      // the adapter contract instead of the core control boundary.
+      if (invocation.capability === "CompleteExpedition") {
+        const readinessCheck = await this.runPhase("REPOSITORY_ADAPTER_CHECK", async () => {
+          const expeditionId = String(invocation.payload.id ?? invocation.payload.expeditionId ?? "")
+          const readiness = await this.repositoryAdapter.validateCompletionReadiness({ expeditionId })
+          if (!readiness.ok) {
+            throw new Error(`REPOSITORY_NOT_READY: ${readiness.reason || "Repository adapter blocked expedition completion"}`)
+          }
+          return { passed: true }
+        })
+        phases.push(readinessCheck)
+      }
+
       // === PHASE 3: RESOLVE CAPABILITY ===
-      const resolveCap = this.runPhase("RESOLVE_CAPABILITY", () => {
+      const resolveCap = await this.runPhase("RESOLVE_CAPABILITY", () => {
         const cap = this.registry.resolve(invocation.capability)
         if (!cap) {
           // Not a hard failure — unknown capabilities produce no events
@@ -667,9 +719,6 @@ export class ExecutionGate {
     const completedEvent = events.find((e) => e.type === "EXPEDITION_COMPLETED")
     if (!completedEvent) return []
 
-    const config = loadSnapshotConfig(cwd)
-    if (!config.autoTagOnComplete || config.snapshotPolicy === "disabled") return []
-
     const payload = completedEvent.payload as Record<string, unknown>
     const expeditionId = String(payload.expeditionId ?? payload.id ?? "")
     const state = await this.runtime.getState()
@@ -677,8 +726,7 @@ export class ExecutionGate {
     const stateHash = state.stateHash
 
     try {
-      const result = this.snapshotAdapter.createSnapshot({
-        cwd,
+      const result = await this.repositoryAdapter.createSnapshot({
         trigger: "EXPEDITION_COMPLETED",
         expeditionId,
         actor,
@@ -846,9 +894,9 @@ export class ExecutionGate {
     return event
   }
 
-  private runPhase<T>(phase: ExecutionPhase, fn: () => T): PhaseResult<T> {
+  private async runPhase<T>(phase: ExecutionPhase, fn: () => T | Promise<T>): Promise<PhaseResult<T>> {
     try {
-      const output = fn()
+      const output = await fn()
       return { phase, passed: true, output, durationMs: 0 }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)

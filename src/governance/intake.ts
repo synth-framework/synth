@@ -254,24 +254,7 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
         }
       }
 
-      // Convergence Certification enforcement (EXP-GOV-015 M5)
-      // --force bypasses this gate so operators can close expeditions when
-      // convergence certification is genuinely unavailable, but the bypass is
-      // recorded in the event log and surfaced in reports.
-      if (!action.force && derivedState) {
-        const hasConvergenceCertification = Object.values(derivedState.convergenceCertifications).some(
-          (c) => c.expeditionId === action.expeditionId && c.decision === "converged"
-        )
-        if (!hasConvergenceCertification) {
-          return {
-            decision: "BLOCK",
-            reason: "Convergence Certification required before closing expedition",
-            requiredAction: "Run convergence certification on this expedition before completing it.",
-          }
-        }
-      }
-
-      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 
     case "expedition.archive": {

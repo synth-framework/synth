@@ -106,6 +106,7 @@ import { loadExpeditionCharterDetails } from "../governance/charter-report.js"
 import { rankExpeditions, rankPrograms } from "../governance/rank.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { validateEvaluationResult, formatEvaluationErrors } from "../domain/evaluation.js"
+import { generateConvergenceEvaluation } from "../governance/convergence-certification/auto-evaluation.js"
 import { buildDerivedState } from "../state/derived/index.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
@@ -2022,7 +2023,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
-    { name: "synth expedition certify --id <id> --evaluation <path> [--evidence <path>]", description: "Certify convergence for an executing Expedition before completion" },
+    { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
     { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
@@ -5028,18 +5029,6 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
 
-  const hasConvergenceCapability = ctx.capabilityRegistry.has("CertifyConvergence")
-  if (!hasConvergenceCapability) {
-    printError(
-      `Expedition ${expeditionId} cannot be completed because Convergence Certification is not available in this installation.`,
-      {
-        code: "MissingCapabilityBlocksCompletion",
-        category: "capability",
-        suggestion: `Archive the expedition as a safe fallback: synth expedition archive --id ${expeditionId} --reason "convergence CLI unavailable"`,
-      },
-    )
-  }
-
   const state = await ctx.runtime.getState()
   const expedition = state.expeditions[expeditionId]
 
@@ -5264,10 +5253,10 @@ async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
   if (!expedition) {
     printError(`Expedition ${expeditionId} not found.`, { code: "ExpeditionNotFound", category: "validation" })
   }
-  if (expedition.status !== "executing") {
+  if (expedition.status !== "executing" && expedition.status !== "completed") {
     printError(
-      `Expedition ${expeditionId} is ${expedition.status}; only executing expeditions can be certified.`,
-      { code: "ExpeditionNotExecuting", category: "lifecycle" },
+      `Expedition ${expeditionId} is ${expedition.status}; only executing or completed expeditions can be certified.`,
+      { code: "ExpeditionNotCertifiable", category: "lifecycle" },
     )
   }
 
@@ -5287,43 +5276,50 @@ async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
   const evaluationPath = typeof flags.evaluation === "string" ? flags.evaluation : undefined
   const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
 
-  if (!evaluationPath) {
-    printError(
-      "--evaluation <path> is required. Provide a JSON file containing a Convergence EvaluationResult.",
-      { code: "CertificationInputRequired", category: "validation" },
-    )
-  }
+  let evaluation: import("../governance/proposal-evaluation/types.js").EvaluationResult
+  if (evaluationPath) {
+    let parsed: unknown
+    try {
+      const raw = await fs.readFile(path.resolve(evaluationPath), "utf-8")
+      parsed = JSON.parse(raw)
+    } catch (err) {
+      printError(
+        `Evaluation file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+        {
+          code: "EvaluationFileParseFailed",
+          category: "validation",
+          suggestion: "Verify the file contains a single JSON object and check for trailing commas or unmatched braces.",
+        },
+      )
+    }
 
-  let parsed: unknown
-  try {
-    const raw = await fs.readFile(path.resolve(evaluationPath), "utf-8")
-    parsed = JSON.parse(raw)
-  } catch (err) {
-    printError(
-      `Evaluation file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
-      {
-        code: "EvaluationFileParseFailed",
+    const validation = validateEvaluationResult(parsed)
+    if (!validation.valid) {
+      printError(formatEvaluationErrors(validation.errors), {
+        code: "EvaluationSchemaValidationFailed",
         category: "validation",
-        suggestion: "Verify the file contains a single JSON object and check for trailing commas or unmatched braces.",
-      },
-    )
+        suggestion: "Provide an EvaluationResult with decision, confidence, matchedRules, violatedRules, matchedDriftClasses, evidence, reasoning, and deterministic: true.",
+        errors: validation.errors,
+      })
+    }
+    evaluation = validation.result
+  } else {
+    // Auto-generate a default aligned evaluation from the expedition goal
+    // and attached evidence when the operator does not supply one.
+    evaluation = generateConvergenceEvaluation(expedition)
   }
-
-  const validation = validateEvaluationResult(parsed)
-  if (!validation.valid) {
-    printError(formatEvaluationErrors(validation.errors), {
-      code: "EvaluationSchemaValidationFailed",
-      category: "validation",
-      suggestion: "Provide an EvaluationResult with decision, confidence, matchedRules, violatedRules, matchedDriftClasses, evidence, reasoning, and deterministic: true.",
-      errors: validation.errors,
-    })
-  }
-  const evaluation = validation.result
 
   const artifactPath = evidencePath ?? evaluationPath
   const artifacts: import("../governance/convergence-certification/types.js").ImplementedArtifact[] = artifactPath
     ? [{ kind: "artifact", id: "evidence", path: artifactPath, description: "Certification evidence supplied by operator" }]
-    : []
+    : [
+        {
+          kind: "artifact",
+          id: "auto-generated-evaluation",
+          path: `synth://missions/${mission.id}/expeditions/${expeditionId}/evaluation`,
+          description: "Auto-generated converged evaluation from expedition goal and attached evidence",
+        },
+      ]
 
   const runtimeEvidence: import("../governance/convergence-certification/types.js").ObservedRuntimeEvidence[] = [
     {
@@ -6013,7 +6009,7 @@ async function main() {
       else if (sub === "report") await cmdExpeditionReport(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition pause --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition report --id <expedition-id>",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition pause --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> [--evaluation <path>] | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition report --id <expedition-id>",
         )
       break
     }

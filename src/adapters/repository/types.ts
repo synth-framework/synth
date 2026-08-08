@@ -79,6 +79,15 @@ export type SnapshotOptions = {
   eventOffset?: number
 }
 
+export type CompletionReadinessOptions = {
+  expeditionId?: string
+}
+
+export type CompletionReadinessResult = {
+  ok: boolean
+  reason?: string
+}
+
 export type SnapshotResult = {
   ok: boolean
   snapshotId: string
@@ -131,6 +140,7 @@ export interface RepositoryAdapter {
   commit(message: string): Promise<AdapterState>
 
   createSnapshot(options: SnapshotOptions): Promise<SnapshotResult>
+  validateCompletionReadiness(options?: CompletionReadinessOptions): Promise<CompletionReadinessResult>
   listSnapshots(limit?: number): Promise<SnapshotEntry[]>
   verifySnapshot(tagName: string): Promise<VerifyResult>
 

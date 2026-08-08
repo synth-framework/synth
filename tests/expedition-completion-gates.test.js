@@ -1,10 +1,11 @@
 // ============================================================
-// EXP-GATE-014 — Mandatory Verification Gates Before Completion
+// EXP-GATE-014 — Verification Gates Before Completion
 // ============================================================
 // Verifies that `synth expedition complete` cannot succeed while:
 //   - verification is failing,
-//   - no evidence is attached,
-//   - Convergence Certification is missing.
+//   - no evidence is attached.
+// Convergence Certification is a separate, post-completion gate and
+// no longer blocks expedition completion.
 // Also verifies the operator --force override path.
 // ============================================================
 
@@ -194,17 +195,71 @@ async function testBlocksWhenVerifyFails(projectDir, missionId, gateCtx, contrac
   console.log("[PASS] Completion blocked when verification fails")
 }
 
-async function testBlocksWithoutConvergenceCertification(projectDir, missionId) {
+async function testSucceedsWithoutConvergenceCertification(projectDir, missionId) {
   const expeditionId = await createExecutingExpedition(projectDir, missionId)
   await attachEvidence(projectDir, expeditionId)
 
   const result = runSynth(["expedition", "complete", "--id", expeditionId], projectDir)
-  assert(result.status !== 0, "complete should fail without convergence certification")
+  assert(result.status === 0, `complete must succeed without convergence certification:\n${result.stderr}`)
   const output = parseJson(result.stdout)
-  assert(output.status === "error", "missing-certification failure should report error status")
-  const code = output.error?.code || output.code
-  assert(code === "MissingConvergenceCertificationBlocksCompletion" || code === "LifecycleBlocked", `expected structured convergence blocker, got ${JSON.stringify(output.error || output)}`)
-  console.log("[PASS] Completion blocked without convergence certification")
+  assert(output.kind === "ExpeditionCompleted", `complete should return ExpeditionCompleted, got ${output.kind}`)
+  assert(output.result.status === "completed", `expedition should be completed, got ${output.result.status}`)
+  console.log("[PASS] Completion succeeds without convergence certification")
+}
+
+async function testCertifyAfterCompletion(projectDir, missionId, gateCtx, contractId) {
+  const expeditionId = await createExecutingExpedition(projectDir, missionId)
+  await attachEvidence(projectDir, expeditionId)
+
+  const completeResult = runSynth(["expedition", "complete", "--id", expeditionId], projectDir)
+  assert(completeResult.status === 0, `complete must succeed before certification:\n${completeResult.stderr}`)
+
+  const certifyResult = runSynth(["expedition", "certify", "--id", expeditionId, "--evaluation", "nonexistent.json"], projectDir)
+  assert(certifyResult.status !== 0, "certify with bad evaluation path should fail")
+
+  // Auto-generated evaluation should succeed on the completed expedition.
+  const autoCertifyResult = runSynth(["expedition", "certify", "--id", expeditionId], projectDir)
+  assert(autoCertifyResult.status === 0, `certify after completion with auto-evaluation must succeed:\n${autoCertifyResult.stderr}`)
+  const output = parseJson(autoCertifyResult.stdout)
+  assert(output.kind === "ConvergenceCertified", `certify should return ConvergenceCertified, got ${output.kind}`)
+  assert(output.decision === "converged", `certify decision should be converged, got ${output.decision}`)
+  console.log("[PASS] Certification succeeds after completion with auto-generated evaluation")
+}
+
+async function testCustomEvaluationStillWorks(projectDir, missionId, gateCtx, contractId) {
+  const expeditionId = await createExecutingExpedition(projectDir, missionId)
+  await attachEvidence(projectDir, expeditionId)
+
+  const completeResult = runSynth(["expedition", "complete", "--id", expeditionId], projectDir)
+  assert(completeResult.status === 0, `complete must succeed:\n${completeResult.stderr}`)
+
+  const evalPath = path.join(projectDir, "convergence-evaluation.json")
+  await fs.writeFile(
+    evalPath,
+    JSON.stringify({
+      decision: "aligned",
+      confidence: 1,
+      matchedRules: [],
+      violatedRules: [],
+      matchedDriftClasses: [],
+      evidence: {
+        summary: "Custom evaluation.",
+        ruleResults: [],
+        matchedDriftClasses: [],
+        violatedContractFields: [],
+        violatedIntentClauses: [],
+      },
+      reasoning: ["Custom evaluation supplied by operator."],
+      deterministic: true,
+    }, null, 2),
+    "utf-8",
+  )
+
+  const certifyResult = runSynth(["expedition", "certify", "--id", expeditionId, "--evaluation", evalPath], projectDir)
+  assert(certifyResult.status === 0, `certify with custom evaluation must succeed:\n${certifyResult.stderr}`)
+  const output = parseJson(certifyResult.stdout)
+  assert(output.kind === "ConvergenceCertified", `certify should return ConvergenceCertified, got ${output.kind}`)
+  console.log("[PASS] Certification succeeds after completion with custom evaluation")
 }
 
 async function testSucceedsWithAllGates(projectDir, missionId, gateCtx, contractId) {
@@ -266,7 +321,9 @@ async function main() {
 
   await withProject(testBlocksWithoutEvidence)
   await withProject(testBlocksWhenVerifyFails)
-  await withProject(testBlocksWithoutConvergenceCertification)
+  await withProject(testSucceedsWithoutConvergenceCertification)
+  await withProject(testCertifyAfterCompletion)
+  await withProject(testCustomEvaluationStillWorks)
   await withProject(testSucceedsWithAllGates)
   await withProject(testForceBypassesEvidenceAndVerify)
   await withProject(testForceRequiresReason)

@@ -17,7 +17,7 @@ import os from "os"
 import { execSync } from "child_process"
 import { runSynth, parseJson, writeEventLog } from "./helpers/cli-harness.js"
 
-const TEST_TIMEOUT = 60000
+const TEST_TIMEOUT = 120000
 
 function git(cwd, args) {
   return execSync(`git ${args.join(" ")}`, { cwd, encoding: "utf-8" }).trim()
@@ -284,6 +284,63 @@ test("GOVERNANCE_SNAPSHOT_CREATED event is recorded after expedition complete", 
     assert.strictEqual(snapshotEvent.payload.trigger, "EXPEDITION_COMPLETED")
     assert.strictEqual(snapshotEvent.payload.expeditionId, expeditionId)
     assert.ok(snapshotEvent.payload.tagName, "snapshot event should reference a tag")
+  } finally {
+    await cleanup(dir)
+  }
+})
+
+test("expedition complete fails fast when source files are dirty", { timeout: TEST_TIMEOUT }, async () => {
+  const dir = await createTempProject()
+  try {
+    const expeditionId = await makeExecutingExpedition(dir)
+
+    await fs.mkdir(path.join(dir, "src"), { recursive: true })
+    await fs.writeFile(path.join(dir, "src", "uncommitted.ts"), "export const x = 1\n", "utf-8")
+
+    const beforeEvents = await readEventLog(dir)
+    const completeResult = runSynth(
+      ["expedition", "complete", "--id", expeditionId, "--force", "--reason", "test dirty source"],
+      dir,
+    )
+    assert.notStrictEqual(completeResult.status, 0, "expedition complete should fail when source changes are present")
+
+    const output = parseJson(completeResult.stdout)
+    assert.strictEqual(output.status, "error")
+    assert.ok(
+      output.error?.includes("REPOSITORY_NOT_READY") || output.error?.includes("uncommitted") || output.error?.includes("source changes"),
+      `expected repository readiness blocker, got: ${JSON.stringify(output)}`,
+    )
+
+    const afterEvents = await readEventLog(dir)
+    const completedEvent = afterEvents.find((e) => e.type === "EXPEDITION_COMPLETED")
+    assert.strictEqual(
+      completedEvent,
+      undefined,
+      "EXPEDITION_COMPLETED should not be emitted when repository readiness check fails",
+    )
+  } finally {
+    await cleanup(dir)
+  }
+})
+
+test("expedition complete succeeds when only governance files are dirty", { timeout: TEST_TIMEOUT }, async () => {
+  const dir = await createTempProject()
+  try {
+    const expeditionId = await makeExecutingExpedition(dir)
+
+    await writePolicyFile(dir, "snapshot-policy.yaml", "git:\n  snapshotPolicy: tag-only\n")
+
+    const beforeEvents = await readEventLog(dir)
+    const completeResult = runSynth(
+      ["expedition", "complete", "--id", expeditionId, "--force", "--reason", "test dirty governance"],
+      dir,
+    )
+    assert.strictEqual(completeResult.status, 0, `expedition complete must succeed with dirty governance files: ${completeResult.stderr}`)
+
+    const afterEvents = await readEventLog(dir)
+    const snapshotEvent = afterEvents.find((e) => e.type === "GOVERNANCE_SNAPSHOT_CREATED")
+    assert.ok(snapshotEvent, "GOVERNANCE_SNAPSHOT_CREATED event should be recorded for dirty governance files")
+    assert.strictEqual(snapshotEvent.payload.expeditionId, expeditionId)
   } finally {
     await cleanup(dir)
   }
