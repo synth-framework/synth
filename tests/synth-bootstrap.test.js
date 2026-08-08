@@ -206,7 +206,7 @@ async function testBootstrapWritesGovernScriptFromExistingScripts() {
     assert(packageJson.scripts.govern === "npm run build && npm test", `expected meaningful govern script, got: ${packageJson.scripts.govern}`)
 
     const map = JSON.parse(await fs.readFile(path.join(tmpDir, "docs", "reference", "capability-validation-map.json"), "utf-8"))
-    assert(JSON.stringify(map.capabilities.Project.proofs) === JSON.stringify(["govern"]), `validation map proofs should point to govern, got: ${JSON.stringify(map.capabilities.Project.proofs)}`)
+    assert(JSON.stringify(map.capabilities.ProjectConfig.proofs) === JSON.stringify(["govern"]), `validation map proofs should point to govern, got: ${JSON.stringify(map.capabilities.ProjectConfig.proofs)}`)
 
     console.log("[PASS] bootstrap writes a govern script from existing npm scripts")
   } finally {

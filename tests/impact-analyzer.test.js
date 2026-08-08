@@ -94,6 +94,21 @@ async function testBrownfieldCommonFiles() {
   console.log("[PASS] Brownfield common files map to relevant capabilities")
 }
 
+async function testSynthAiMetadataMapping() {
+  const { analyzeFiles } = await loadAnalyzer()
+
+  const report = analyzeFiles([
+    ".synth/ai/lifecycle.json",
+    ".synth/ai/capabilities.json",
+    ".synth/ai/interaction-manifest.json",
+  ])
+
+  assert(report.affectedCapabilities.includes("ProjectConfig"), "should detect ProjectConfig from .synth/ai files")
+  assert(report.affectedCapabilities.length === 1, `expected only ProjectConfig, got ${report.affectedCapabilities.join(", ")}`)
+  assert(report.risk === "low", `expected low risk for AI metadata, got ${report.risk}`)
+  console.log("[PASS] .synth/ai metadata files map to ProjectConfig")
+}
+
 async function testParseDiffNameStatus() {
   const { parseDiff } = await loadAnalyzer()
 
@@ -150,6 +165,7 @@ async function main() {
   await testRuntimeHighRisk()
   await testDocumentationLowRisk()
   await testBrownfieldCommonFiles()
+  await testSynthAiMetadataMapping()
   await testParseDiffNameStatus()
   await testAnalyzeDiff()
   await testWorkingTreeDiff()

@@ -304,14 +304,14 @@ async function writeDefaultCapabilityValidationMap(targetDir: string) {
     lintScope: ["src/"],
     typecheckScope: ["src/"],
     capabilities: {
-      Project: {
+      ProjectConfig: {
         unitTests: [],
         integrationTests: [],
         benchmarks: [],
         proofs: [validationScript],
-        lintScope: ["src/"],
-        typecheckScope: ["src/"],
-        governanceClass: "governance",
+        lintScope: ["package.json", ".synth/ai/"],
+        typecheckScope: [],
+        governanceClass: "tests",
       },
     },
   }

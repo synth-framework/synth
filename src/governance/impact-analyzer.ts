@@ -72,6 +72,7 @@ const DEFAULT_RULES: MappingRule[] = [
   // Brownfield project files that do not live under capability-scoped dirs
   { pattern: /^src\/lib\//, capability: "ApplicationLibrary", risk: "medium" },
   { pattern: /^package\.json$/, capability: "ProjectConfig", risk: "low" },
+  { pattern: /^\.synth\/ai\//, capability: "ProjectConfig", risk: "low" },
   { pattern: /^tsconfig\.json$/, capability: "TypeScriptConfig", risk: "low" },
   { pattern: /^\.env\.example$/, capability: "EnvironmentConfig", risk: "low" },
 

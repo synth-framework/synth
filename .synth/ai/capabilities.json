@@ -9,7 +9,7 @@
     {
       "name": "Expedition",
       "description": "Create and execute Expeditions",
-      "availability": "available"
+      "availability": "requires_mission"
     },
     {
       "name": "Discovery",
