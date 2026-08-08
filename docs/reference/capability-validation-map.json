@@ -817,6 +817,20 @@
       "typecheckScope": [],
       "governanceClass": "release"
     },
+    "ProjectConfig": {
+      "unitTests": [
+        "test:validation-mapping"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [],
+      "lintScope": [
+        "package.json",
+        ".synth/ai/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
     "Constitution": {
       "unitTests": [
         "test:public-vocabulary-audit"
