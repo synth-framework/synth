@@ -89,6 +89,18 @@ test("lifecycle rule infers implementation stage with tests", () => {
   assert.strictEqual(updates[0].value.confidence.value, 0.95)
 })
 
+test("lifecycle rule infers implementation stage from project-level validation script", () => {
+  const graph = makeGraph([
+    { assertion: "Node.js project manifest present" },
+    { assertion: "Project-level validation script present" },
+  ])
+  const rule = ruleById("project-model:lifecycle")
+  const updates = rule.infer(graph, {})
+
+  assert.strictEqual(updates[0].value.value, "implementation")
+  assert.strictEqual(updates[0].value.confidence.value, 0.95)
+})
+
 test("lifecycle rule infers specification stage from docs", () => {
   const graph = makeGraph([{ assertion: "Documentation present" }])
   const rule = ruleById("project-model:lifecycle")
@@ -148,6 +160,17 @@ test("capability rules infer testing and documentation", () => {
   const names = updates.map((u) => u.value.name)
   assert.ok(names.includes("testing"))
   assert.ok(names.includes("documentation"))
+})
+
+test("capability rules infer testing from project-level validation script", () => {
+  const graph = makeGraph([{ assertion: "Project-level validation script present" }])
+  const rules = createDefaultProjectModelRules().filter((r) => r.domain === "capability")
+  const updates = rules.flatMap((rule) => rule.infer(graph, {}) ?? [])
+
+  const testingUpdates = updates.filter((u) => u.value.name === "testing")
+  assert.strictEqual(testingUpdates.length, 1)
+  assert.strictEqual(testingUpdates[0].value.available, true)
+  assert.strictEqual(testingUpdates[0].confidence.value, 0.85)
 })
 
 test("knowledge rules infer readme, architecture, and docs inventory", () => {

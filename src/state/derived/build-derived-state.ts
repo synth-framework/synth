@@ -8,6 +8,9 @@
 // live inside src/runtime/replay.ts applyEvent().
 // ============================================================
 
+import {
+  EXPEDITION_STATUSES,
+} from "../../types/index.js"
 import type {
   SynthEvent,
   DerivedState,
@@ -523,9 +526,10 @@ function buildExpeditionsForDependencyMap(events: SynthEvent[]): Record<string, 
       case "EXPEDITION_AUTHORIZED":
       case "EXPEDITION_COMMITTED":
       case "EXPEDITION_STARTED":
+      case "EXPEDITION_PAUSED":
       case "EXPEDITION_COMPLETED":
       case "EXPEDITION_ARCHIVED": {
-        const expeditionId = String(payload.id)
+        const expeditionId = String(payload.id ?? payload.expeditionId)
         const existing = expeditions[expeditionId]
         if (existing) {
           const statusMap: Record<string, Expedition["status"]> = {
@@ -533,10 +537,19 @@ function buildExpeditionsForDependencyMap(events: SynthEvent[]): Record<string, 
             EXPEDITION_AUTHORIZED: "committed",
             EXPEDITION_COMMITTED: "committed",
             EXPEDITION_STARTED: "executing",
+            EXPEDITION_PAUSED: "paused",
             EXPEDITION_COMPLETED: "completed",
-            EXPEDITION_ARCHIVED: "cancelled",
           }
-          const nextStatus = statusMap[event.type]
+          let nextStatus: Expedition["status"] | undefined = statusMap[event.type]
+          if (event.type === "EXPEDITION_ARCHIVED") {
+            // Historical archive events may carry the target status in
+            // payload.status (e.g. "cancelled"). Prefer that when valid.
+            const candidate = payload.status
+            nextStatus =
+              typeof candidate === "string" && EXPEDITION_STATUSES.includes(candidate)
+                ? (candidate as Expedition["status"])
+                : "archived"
+          }
           if (nextStatus) {
             expeditions[expeditionId] = { ...existing, status: nextStatus, updatedAt: event.timestamp }
           }

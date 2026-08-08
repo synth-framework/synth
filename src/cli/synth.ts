@@ -17,7 +17,7 @@ import { createReplayVerifier } from "../core/replay-verifier.js"
 import { Logger } from "../observability/tracer.js"
 import { runBootstrap } from "./bootstrap-apply.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
-import { refreshAiMetadata } from "./ai-metadata.js"
+import { refreshAiMetadata, normalizeDiscoveryRepositoryType } from "./ai-metadata.js"
 import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
@@ -90,7 +90,7 @@ import {
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import * as sdk from "../sdk/index.js"
-import { buildValidationPlan, type CapabilityValidationMap } from "../validation/planner.js"
+import { buildValidationPlan, type CapabilityValidationMap, type ValidationPlan } from "../validation/planner.js"
 import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
 import { runTasks } from "../task/task-runner.js"
 import {
@@ -637,6 +637,62 @@ async function cmdCertify(flags: Record<string, string | boolean>) {
   }
 }
 
+function buildConfidenceAnalysis(
+  report: ReturnType<typeof analyzeFiles>,
+  plan: ValidationPlan,
+  effectiveRun: string[],
+  availableScripts: string[],
+) {
+  const reasons: string[] = []
+  const nextSteps: string[] = []
+
+  if (plan.protectedAssetsTouched) {
+    reasons.push("Protected Asset touched; full constitutional validation required.")
+  } else if (report.affectedCapabilities.length === 0) {
+    reasons.push("No affected capabilities detected.")
+  } else {
+    const mapped = report.affectedCapabilities.filter((c) => c !== "Unknown")
+    const unmapped = report.affectedCapabilities.filter((c) => c === "Unknown")
+    if (mapped.length > 0) {
+      reasons.push(`${mapped.length} affected capability/capabilities map to known validation entries.`)
+    }
+    if (unmapped.length > 0) {
+      reasons.push(`${unmapped.length} affected capability/capabilities are unmapped; confidence is reduced.`)
+      nextSteps.push("Map changed files to capabilities in docs/reference/capability-validation-map.json, or add project-level validation scripts.")
+    }
+  }
+
+  const hasValidationScript = availableScripts.some((s) => /^(test|lint|typecheck|validate|verify|check|govern)(:|$)/i.test(s))
+  const hasTestsDirectory = report.affectedCapabilities.includes("Tests") || report.affectedClasses.includes("tests")
+  if (!hasTestsDirectory && !hasValidationScript) {
+    reasons.push("No tests/ directory or project-level validation script detected.")
+    nextSteps.push("Add a tests/ directory or define npm scripts such as test, lint, typecheck, or govern.")
+  } else if (!hasTestsDirectory && hasValidationScript) {
+    reasons.push("No tests/ directory, but project-level validation scripts provide fallback coverage.")
+  }
+
+  if (effectiveRun.length === 0 && report.affectedCapabilities.length > 0) {
+    reasons.push("No validation tasks could be selected for the affected capabilities.")
+    nextSteps.push("Add matching validation scripts to package.json or capability-validation-map.json.")
+  }
+
+  if (plan.risk === "low" && effectiveRun.length > 0) {
+    reasons.push("Validation plan covers affected changes with concrete checks.")
+  }
+
+  if (nextSteps.length === 0 && plan.confidence < 1.0) {
+    nextSteps.push("Add capability-specific tests or expand the capability-validation-map.json mapping.")
+  }
+
+  return {
+    score: plan.confidence,
+    risk: plan.risk,
+    promotionRisk: report.promotionRisk,
+    reasons,
+    nextSteps: nextSteps.length > 0 ? nextSteps : ["Confidence is high; no immediate action required."],
+  }
+}
+
 async function cmdValidate(flags: Record<string, string | boolean>) {
   const fullMode = flags.full === true || flags.full === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
@@ -662,6 +718,13 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
         protectedAssetsTouched: true,
         reason: "Full validation requested.",
         profile,
+        confidenceAnalysis: {
+          score: 1.0,
+          risk: "high",
+          promotionRisk: "high",
+          reasons: ["Full validation requested; constitutional pipeline required."],
+          nextSteps: ["Run the full governance pipeline (npm run govern or synth validate --full)."],
+        },
         note: delegated
           ? "Dry-run: would delegate to npm run govern."
           : `Dry-run: would use internal governance pipeline (${condition}).`,
@@ -691,6 +754,13 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
       confidence: 1.0,
       protectedAssetsTouched: false,
       reason: "No changed files detected.",
+      confidenceAnalysis: {
+        score: 1.0,
+        risk: "low",
+        promotionRisk: "low",
+        reasons: ["No changed files detected."],
+        nextSteps: ["No validation needed; make changes to trigger validation planning."],
+      },
       note: dryRun ? "Dry-run: no changed files detected." : "No validation needed.",
     })
     return
@@ -698,8 +768,13 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
 
   const report = analyzeFiles(files)
 
-  const packagePath = path.resolve(__dirname, "..", "..", "package.json")
-  const packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
+  const packagePath = path.resolve(process.cwd(), "package.json")
+  let packageJson: { scripts?: Record<string, string> } = {}
+  try {
+    packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
+  } catch {
+    packageJson = {}
+  }
   const availableScripts = Object.keys(packageJson.scripts || {})
 
   // Load the canonical task registry so the planner can discover and order
@@ -757,6 +832,8 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     }
   }
 
+  const confidenceAnalysis = buildConfidenceAnalysis(report, plan, effectiveRun, availableScripts)
+
   if (dryRun) {
     const output: Record<string, unknown> = {
       status: "ok",
@@ -765,6 +842,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
       ...plan,
       run: effectiveRun,
       skip: effectiveSkip,
+      confidenceAnalysis,
       note: "Dry-run: plan computed but not executed.",
     }
     if (explain) {
@@ -785,6 +863,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     run: effectiveRun,
     skip: effectiveSkip,
     execution,
+    confidenceAnalysis,
     note: execution.success
       ? "All planned validations passed."
       : `Planned validation failed: ${execution.failedScript}`,
@@ -1096,6 +1175,24 @@ async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBas
   return baselinePath
 }
 
+async function updateLifecycleRepositoryType(targetDir: string, rawRepositoryType: string): Promise<string | undefined> {
+  const lifecyclePath = path.join(sdk.paths.synthDir(targetDir), "ai", "lifecycle.json")
+  const normalized = normalizeDiscoveryRepositoryType(rawRepositoryType)
+  if (!normalized) return undefined
+
+  let lifecycle: Record<string, unknown> = {}
+  try {
+    const raw = await fs.readFile(lifecyclePath, "utf-8")
+    lifecycle = JSON.parse(raw) as Record<string, unknown>
+  } catch {
+    // lifecycle.json may not exist yet; write a fresh one.
+  }
+
+  lifecycle.repositoryType = normalized
+  await fs.writeFile(lifecyclePath, JSON.stringify(lifecycle, null, 2), "utf-8")
+  return lifecyclePath
+}
+
 async function cmdDiscover(args: string[], flags: Record<string, string | boolean>) {
   const exportMode = flags.export === true || flags.export === "true"
   const targetDir = args[0] ? path.resolve(args[0]) : process.cwd()
@@ -1129,10 +1226,16 @@ async function cmdDiscover(args: string[], flags: Record<string, string | boolea
       discoverySessionHash: requireString(analysis.discoverySessionHash, "unknown"),
       analysis: result.analysis,
     })
+    const lifecyclePath = await updateLifecycleRepositoryType(targetDir, analysis.repositoryType)
     printJson({
       ...result,
       baselinePath,
-      note: "Discovery baseline exported. The artifact is read-only; consumers must not mutate it.",
+      lifecyclePath,
+      note: "Discovery baseline exported and lifecycle.json updated with repositoryType. The baseline artifact is read-only; consumers must not mutate it.",
+      nextSteps: [
+        "Run 'synth validate' to see the confidence score and required checks for working-tree changes.",
+        "If the score is below 1.0, follow the concrete next steps printed by synth validate.",
+      ],
     })
     return
   }
@@ -1153,6 +1256,30 @@ async function cmdMissionHelp() {
     { name: "synth mission report --id <mission-id>", description: "Show mission status and its expeditions", args: "--id 74c3a70571facb87" },
     { name: "synth mission complete --id <mission-id>", description: "Complete an active Mission", args: "--id 74c3a70571facb87" },
   ]))
+}
+
+async function cmdMissionApproveHelp() {
+  printJson({
+    status: "ok",
+    name: "synth",
+    namespace: "mission",
+    subcommand: "approve",
+    description: "Approve a Mission draft and bind it to an Alignment Contract.",
+    usage: "synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>",
+    required: [
+      { name: "--draft-id <draft-id>", description: "Id of the Mission draft to approve (returned by synth mission create)" },
+      { name: "--alignment-contract-id <contract-id>", description: "Id of the approved Alignment Contract that governs the Mission" },
+    ],
+    optional: [
+      { name: "--human", description: "Emit a human-readable summary instead of JSON" },
+      { name: "--summary", description: "Emit a condensed status/ID/next-step summary" },
+      { name: "--quiet", description: "Suppress bootstrap and diagnostic logs" },
+    ],
+    examples: [
+      "synth mission approve --draft-id 74c3a70571facb87 --alignment-contract-id alignment-contract-msjisgwg-v05a18",
+    ],
+    note: "Approval is gated by Mission Studio confidence and the Alignment Contract.",
+  })
 }
 
 async function cmdProgramHelp() {
@@ -1909,6 +2036,29 @@ async function cmdExpeditionHelp() {
   ], { note: "expedition list and rank are read-only and derived from docs/expeditions/*.md." }))
 }
 
+async function cmdExpeditionApproveHelp() {
+  printJson({
+    status: "ok",
+    name: "synth",
+    namespace: "expedition",
+    subcommand: "approve",
+    description: "Approve an Expedition draft so it can be committed and started.",
+    usage: "synth expedition approve --draft-id <draft-id>",
+    required: [
+      { name: "--draft-id <draft-id>", description: "Id of the Expedition draft to approve (returned by synth expedition create)" },
+    ],
+    optional: [
+      { name: "--human", description: "Emit a human-readable summary instead of JSON" },
+      { name: "--summary", description: "Emit a condensed status/ID/next-step summary" },
+      { name: "--quiet", description: "Suppress bootstrap and diagnostic logs" },
+    ],
+    examples: [
+      "synth expedition approve --draft-id 0b15edbbb74e4701",
+    ],
+    note: "Approval advances the Expedition from Draft to Approved.",
+  })
+}
+
 async function cmdDoctorHelp() {
   printJson(namespaceHelp("doctor", "Verify installation and project health", [
     { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
@@ -2562,6 +2712,50 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
   return cmdStatus()
 }
 
+async function buildStatusValidationSummary(): Promise<Record<string, unknown> | undefined> {
+  const diffText = getWorkingTreeDiff()
+  const files = parseDiff(diffText)
+  if (files.length === 0) {
+    return { score: 1.0, risk: "low", reasons: ["No changed files detected."], nextSteps: ["No validation needed."] }
+  }
+
+  const report = analyzeFiles(files)
+  const packagePath = path.resolve(process.cwd(), "package.json")
+  let packageJson: { scripts?: Record<string, string> } = {}
+  try {
+    packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
+  } catch {
+    packageJson = {}
+  }
+  const availableScripts = Object.keys(packageJson.scripts || {})
+
+  let taskRegistry: TaskRegistry | undefined
+  try {
+    taskRegistry = await loadTaskRegistry()
+  } catch {
+    taskRegistry = undefined
+  }
+
+  const mapPath = path.resolve(process.cwd(), "docs", "reference", "capability-validation-map.json")
+  let map
+  try {
+    map = JSON.parse(await fs.readFile(mapPath, "utf-8"))
+  } catch {
+    return undefined
+  }
+
+  const plan = buildValidationPlan(report, map, { availableScripts, taskRegistry, profile: "pull-request" })
+  const analysis = buildConfidenceAnalysis(report, plan, plan.run, availableScripts)
+  return {
+    score: analysis.score,
+    risk: analysis.risk,
+    promotionRisk: analysis.promotionRisk,
+    reasons: analysis.reasons,
+    nextSteps: analysis.nextSteps,
+    command: "synth validate",
+  }
+}
+
 async function cmdStatus() {
   await sdk.paths.ensureDataDir(sdk.workspace.root())
   const logger = new Logger("status")
@@ -2571,6 +2765,10 @@ async function cmdStatus() {
   const synthDir = sdk.paths.synthDir(sdk.workspace.root())
   await refreshAiMetadata(synthDir)
   const briefing = await buildOperatorBriefing(process.cwd())
+  const validation = await buildStatusValidationSummary()
+  if (briefing.status === "ok" && validation) {
+    ;(briefing as Record<string, unknown>).validation = validation
+  }
   printJson(briefing)
   if (briefing.status === "error") {
     process.exit(1)
@@ -4746,6 +4944,56 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdExpeditionPause(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "PauseExpedition",
+      payload: { id: expeditionId },
+      eventType: "EXPEDITION_PAUSED",
+      expeditionId,
+      targetStatus: "paused",
+    })
+    printJson(dryRun)
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "expedition.pause", expeditionId }, state, ctx.runtime)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "PauseExpedition",
+    payload: { id: expeditionId },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ExpeditionPauseFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionPaused",
+    expeditionId,
+    result: result.result,
+    nextStep: `synth expedition start --id ${expeditionId}`,
+  })
+}
+
 async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   const expeditionId = resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
@@ -4875,7 +5123,7 @@ async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
       payload: { id: expeditionId, reason },
       eventType: "EXPEDITION_ARCHIVED",
       expeditionId,
-      targetStatus: "cancelled",
+      targetStatus: "archived",
     })
     printJson(dryRun)
     return
@@ -5257,10 +5505,22 @@ async function cmdAdapter(args: string[]) {
   })
 }
 
-function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () => Promise<void> } | undefined {
+function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () => Promise<void>; subcommand?: string } | undefined {
   if (rawArgs.length < 2) return undefined
   if (!rawArgs.includes("--help") && !rawArgs.includes("-h")) return undefined
   const namespace = rawArgs[0]
+
+  // EXP-CLI-003: subcommand-specific help for approve operations so agents can
+  // discover required options without reading source code.
+  const positional = rawArgs.filter((arg) => arg !== "--help" && arg !== "-h")
+  const subcommand = positional[1]
+  if (namespace === "mission" && subcommand === "approve") {
+    return { namespace, handler: cmdMissionApproveHelp, subcommand }
+  }
+  if (namespace === "expedition" && subcommand === "approve") {
+    return { namespace, handler: cmdExpeditionApproveHelp, subcommand }
+  }
+
   switch (namespace) {
     case "bootstrap":
       return { namespace, handler: cmdBootstrapHelp }
@@ -5742,6 +6002,7 @@ async function main() {
       else if (sub === "approve") await cmdExpeditionApprove(flags)
       else if (sub === "commit") await cmdExpeditionCommit(flags)
       else if (sub === "start") await cmdExpeditionStart(flags)
+      else if (sub === "pause") await cmdExpeditionPause(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
       else if (sub === "archive") await cmdExpeditionArchive(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
@@ -5752,7 +6013,7 @@ async function main() {
       else if (sub === "report") await cmdExpeditionReport(flags)
       else
         printError(
-          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition report --id <expedition-id>",
+          "Usage: synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] | synth expedition approve --draft-id <id> | synth expedition commit --proposal-id <id> | synth expedition start --id <id> | synth expedition pause --id <id> | synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] | synth expedition archive --id <id> --reason <reason> | synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>] | synth expedition certify --id <id> --evaluation <path> | synth expedition list [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition show --id <expedition-id> | synth expedition rank [--next] [--status <status>] [--priority <priority>] [--program <program-id>] | synth expedition report --id <expedition-id>",
         )
       break
     }

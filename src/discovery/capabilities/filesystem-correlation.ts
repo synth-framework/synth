@@ -99,6 +99,13 @@ export function createFilesystemCorrelationCapability(): CorrelationCapability {
           assertion: "Documentation present",
           confidence: deterministicConfidence(1.0, "README.md exists"),
         },
+        {
+          id: "filesystem:project-validation-script",
+          priority: 85,
+          requiredFacts: ["project validation script present"],
+          assertion: "Project-level validation script present",
+          confidence: deterministicConfidence(0.9, "package.json contains a validation script such as test, lint, or govern"),
+        },
       ]
     },
   }

@@ -69,6 +69,12 @@ const DEFAULT_RULES: MappingRule[] = [
   { pattern: /^src\/cli\//, capability: "CLI", risk: "medium" },
   { pattern: /^src\/documentation\//, capability: "DocumentationProjection", risk: "medium" },
 
+  // Brownfield project files that do not live under capability-scoped dirs
+  { pattern: /^src\/lib\//, capability: "ApplicationLibrary", risk: "medium" },
+  { pattern: /^package\.json$/, capability: "ProjectConfig", risk: "low" },
+  { pattern: /^tsconfig\.json$/, capability: "TypeScriptConfig", risk: "low" },
+  { pattern: /^\.env\.example$/, capability: "EnvironmentConfig", risk: "low" },
+
   // Low-risk surface
   { pattern: /^docs\//, capability: "Documentation", risk: "low" },
   { pattern: /^website\//, capability: "Website", risk: "low" },

@@ -181,6 +181,60 @@ async function testBootstrapDoesNotMutateWithoutApprove() {
   }
 }
 
+async function testBootstrapWritesGovernScriptFromExistingScripts() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-govern-"))
+  try {
+    await fs.writeFile(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify({
+        name: "govern-test",
+        version: "1.0.0",
+        scripts: {
+          build: "echo building",
+          test: "echo testing",
+        },
+      }, null, 2),
+      "utf-8",
+    )
+    await fs.mkdir(path.join(tmpDir, "src"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, "src", "index.js"), "console.log('hello')\n", "utf-8")
+
+    const { status, stderr } = runSynth(["bootstrap", "--approve", "--name", "Govern Test"], tmpDir)
+    assert(status === 0, `bootstrap --approve should exit 0: ${stderr}`)
+
+    const packageJson = JSON.parse(await fs.readFile(path.join(tmpDir, "package.json"), "utf-8"))
+    assert(packageJson.scripts.govern === "npm run build && npm test", `expected meaningful govern script, got: ${packageJson.scripts.govern}`)
+
+    const map = JSON.parse(await fs.readFile(path.join(tmpDir, "docs", "reference", "capability-validation-map.json"), "utf-8"))
+    assert(JSON.stringify(map.capabilities.Project.proofs) === JSON.stringify(["govern"]), `validation map proofs should point to govern, got: ${JSON.stringify(map.capabilities.Project.proofs)}`)
+
+    console.log("[PASS] bootstrap writes a govern script from existing npm scripts")
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+}
+
+async function testBootstrapGovernScriptIsInformativeWhenNoScriptsExist() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-govern-empty-"))
+  try {
+    await fs.writeFile(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify({ name: "govern-empty-test", version: "1.0.0", scripts: {} }, null, 2),
+      "utf-8",
+    )
+
+    const { status, stderr } = runSynth(["bootstrap", "--approve", "--name", "Govern Empty Test"], tmpDir)
+    assert(status === 0, `bootstrap --approve should exit 0: ${stderr}`)
+
+    const packageJson = JSON.parse(await fs.readFile(path.join(tmpDir, "package.json"), "utf-8"))
+    assert(packageJson.scripts.govern && packageJson.scripts.govern.includes("not configured"), `expected informative govern script, got: ${packageJson.scripts.govern}`)
+
+    console.log("[PASS] bootstrap writes an informative govern script when no validation scripts exist")
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+}
+
 async function main() {
   try {
     await fs.access(CLI_PATH)
@@ -195,6 +249,8 @@ async function main() {
   await testBootstrapBrownfield()
   await testBootstrapPolyglot()
   await testBootstrapDoesNotMutateWithoutApprove()
+  await testBootstrapWritesGovernScriptFromExistingScripts()
+  await testBootstrapGovernScriptIsInformativeWhenNoScriptsExist()
 
   console.log("\n[SYNTH BOOTSTRAP] All tests passed")
 }

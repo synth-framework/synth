@@ -16,7 +16,7 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
+export const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 
 /** Verify the CLI binary exists. */

@@ -88,6 +88,27 @@ async function readPackageJsonDependencies(
   }
 }
 
+async function readPackageJsonScripts(
+  fs: FilesystemProvider,
+  path: string,
+): Promise<Record<string, string>> {
+  const content = await fs.readFile(`${path}/package.json`)
+  if (!content) return {}
+  try {
+    const pkg = JSON.parse(content)
+    return typeof pkg.scripts === "object" && pkg.scripts !== null ? pkg.scripts : {}
+  } catch {
+    return {}
+  }
+}
+
+const VALIDATION_SCRIPT_PATTERN = /^(test|tests|lint|typecheck|validate|verify|check|govern)(:|$)/i
+
+function isValidationScript(name: string, command: string): boolean {
+  if (!command || typeof command !== "string") return false
+  return VALIDATION_SCRIPT_PATTERN.test(name)
+}
+
 function createObservation(
   source: DiscoverySource,
   fact: string,
@@ -231,6 +252,19 @@ export function createFilesystemDiscoveryAdapterWithProvider(
             createObservation(source, "manifest dependencies observed", {
               path: `${path}/package.json`,
               dependencies,
+            }),
+          )
+        }
+
+        const scripts = await readPackageJsonScripts(fs, path)
+        const validationScripts = Object.entries(scripts)
+          .filter(([name, command]) => isValidationScript(name, command))
+          .map(([name, command]) => ({ name, command }))
+        if (validationScripts.length > 0) {
+          observations.push(
+            createObservation(source, "project validation script present", {
+              path: `${path}/package.json`,
+              scripts: validationScripts,
             }),
           )
         }

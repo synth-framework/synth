@@ -70,6 +70,7 @@ export type StateEvent =
   | { type: "EXPEDITION_AUTHORIZED"; expeditionId: string }
   | { type: "EXPEDITION_COMMITTED"; expeditionId: string }
   | { type: "EXPEDITION_STARTED"; expeditionId: string }
+  | { type: "EXPEDITION_PAUSED"; expeditionId: string }
   | { type: "EXPEDITION_COMPLETED"; expeditionId: string }
   | { type: "EXPEDITION_ARCHIVED"; expeditionId: string; reason?: string }
   | { type: "EVIDENCE_ATTACHED"; expeditionId: string; attachments: unknown[]; note?: string }

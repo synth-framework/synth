@@ -82,6 +82,9 @@ export function evaluateProposal(
   const ruleResults = ruleSet.rules.map((rule) => {
     const outcome = rule.evaluate(featureList.features)
     const observedFeatures = featureList.features.filter((f) => rule.featureNames.includes(f.name))
+    const clauseSummary = rule.contractClauses
+      .map((clause) => `${clause.field}: ${clause.values.join(", ")}`)
+      .join("; ")
 
     return {
       ruleId: rule.id,
@@ -91,8 +94,8 @@ export function evaluateProposal(
       contractClauses: rule.contractClauses,
       observedFeatures,
       rationale: outcome === "fail"
-        ? `Proposal violates ${rule.contractClauses.field}: ${rule.contractClauses.values.join(", ")}`
-        : `Proposal satisfies ${rule.contractClauses.field}: ${rule.contractClauses.values.join(", ")}`,
+        ? `Proposal violates ${clauseSummary}`
+        : `Proposal satisfies ${clauseSummary}`,
     }
   })
 

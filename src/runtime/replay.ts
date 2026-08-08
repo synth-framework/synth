@@ -2,6 +2,9 @@
 // RUNTIME: State Reconstruction (Replay Engine)
 // ============================================================
 
+import {
+  EXPEDITION_STATUSES,
+} from "../types/index.js"
 import type {
   SynthEvent,
   CanonicalState,
@@ -302,6 +305,13 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_PAUSED": {
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "paused", updatedAt: event.timestamp }
+      }
+      break
+    }
     case "EXPEDITION_COMPLETED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
@@ -322,9 +332,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     case "EXPEDITION_ARCHIVED": {
       const expeditionId = String(payload.expeditionId ?? payload.id)
       if (state.expeditions[expeditionId]) {
+        // Historical archive events recorded the target status in payload.status
+        // (e.g. "cancelled"). Respect that value when present; default to the
+        // current canonical "archived" status for newer events.
+        const candidate = payload.status
+        const archivedStatus: Expedition["status"] =
+          typeof candidate === "string" && EXPEDITION_STATUSES.includes(candidate)
+            ? (candidate as Expedition["status"])
+            : "archived"
         state.expeditions[expeditionId] = {
           ...state.expeditions[expeditionId],
-          status: "cancelled",
+          status: archivedStatus,
           updatedAt: event.timestamp,
           metadata: {
             ...state.expeditions[expeditionId].metadata,

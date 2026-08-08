@@ -324,6 +324,21 @@ export function applyDomain(
       return { events: [{ type: "EXPEDITION_STARTED", payload }] }
     }
 
+    case "PauseExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      if (!existing) {
+        const payload: Record<string, unknown> = { id, status: "paused" }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_PAUSED", payload }] }
+      }
+      const updated = planningLogic.pauseExpedition(existing, ctx)
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_PAUSED", payload }] }
+    }
+
     case "CompleteExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]

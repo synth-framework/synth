@@ -118,6 +118,16 @@ async function testExpeditionHelp() {
   console.log("[PASS] synth expedition --help lists list subcommand")
 }
 
+async function testExpeditionApproveHelp() {
+  const { stdout, status } = runSynth(["expedition", "approve", "--help"])
+  assert(status === 0, "expedition approve --help should exit 0")
+  const output = parseJson(stdout)
+  assert(output.namespace === "expedition", "help namespace should be expedition")
+  assert(output.subcommand === "approve", "help subcommand should be approve")
+  assert(output.required.some((r) => r.name.includes("--draft-id")), "expedition approve help should list --draft-id")
+  console.log("[PASS] synth expedition approve --help displays required arguments")
+}
+
 async function testExpeditionListIncludesRuntimeExpeditions() {
   const { stdout, status } = runSynth(["expedition", "list"])
   assert(status === 0, `expedition list should exit 0, got ${status}\n${stdout}`)
@@ -148,6 +158,7 @@ async function main() {
   await testCountsMatchExplainIdentity()
   await testProgramHelp()
   await testExpeditionHelp()
+  await testExpeditionApproveHelp()
   await testDiscoveryModeSafe()
   console.log("\n[GOVERNANCE INVENTORY CLI] All tests passed")
 }

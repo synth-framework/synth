@@ -8,6 +8,7 @@
 // ============================================================
 
 import { spawn } from "child_process"
+import { realpathSync } from "fs"
 import fs from "fs/promises"
 import path from "path"
 import * as sdk from "../sdk/index.js"
@@ -897,11 +898,21 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
 // ============================================================
 
 function resolveSynthCli(): string {
-  // Use the currently running synth CLI entry point if available; otherwise fall
-  // back to the local dist path. This lets first-contact dispatch to the same
-  // binary in both development and installed contexts.
-  if (process.argv[1] && process.argv[1].endsWith("synth.js")) {
-    return path.resolve(process.argv[1])
+  // Use the currently running synth CLI entry point if available. Resolve
+  // symlinks so global npm installs (where the user-facing binary is a
+  // symlink to dist/cli/synth.js) dispatch to the real entry point.
+  if (process.argv[1]) {
+    try {
+      const resolved = realpathSync(process.argv[1])
+      if (resolved.endsWith("synth.js")) {
+        return path.resolve(resolved)
+      }
+    } catch {
+      // If realpath fails, fall back to the literal argv[1] check.
+      if (process.argv[1].endsWith("synth.js")) {
+        return path.resolve(process.argv[1])
+      }
+    }
   }
   return path.resolve(process.cwd(), "dist", "cli", "synth.js")
 }

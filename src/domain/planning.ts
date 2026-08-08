@@ -144,12 +144,40 @@ export function commitExpedition(expedition: Expedition, ctx: DomainContext): Ex
 
 /** Start an expedition */
 export function startExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
-  if (expedition.status !== "committed") {
-    throw new Error("INVARIANT_VIOLATION: can only start a committed expedition")
+  const resumable: Expedition["status"][] = ["committed", "archived", "paused", "cancelled"]
+  if (!resumable.includes(expedition.status)) {
+    throw new Error(`INVARIANT_VIOLATION: can only start a committed, archived, paused, or cancelled expedition (current: ${expedition.status})`)
   }
   return {
     ...expedition,
     status: "executing",
+    updatedAt: ctx.timestamp,
+  }
+}
+
+/** Pause an executing expedition */
+export function pauseExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
+  if (expedition.status !== "executing") {
+    throw new Error("INVARIANT_VIOLATION: can only pause an executing expedition")
+  }
+  return {
+    ...expedition,
+    status: "paused",
+    updatedAt: ctx.timestamp,
+  }
+}
+
+/** Archive an expedition */
+export function archiveExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
+  if (expedition.status === "archived") {
+    throw new Error("INVARIANT_VIOLATION: expedition already archived")
+  }
+  if (expedition.status === "completed") {
+    throw new Error("INVARIANT_VIOLATION: cannot archive a completed expedition")
+  }
+  return {
+    ...expedition,
+    status: "archived",
     updatedAt: ctx.timestamp,
   }
 }

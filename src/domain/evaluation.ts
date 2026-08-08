@@ -23,8 +23,8 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string")
 }
 
-function validateRuleResult(rule: unknown, index: number, errors: EvaluationValidationError[]) {
-  const prefix = `matchedRules[${index}]`
+function validateRuleResult(rule: unknown, index: number, pathPrefix: string, errors: EvaluationValidationError[]) {
+  const prefix = `${pathPrefix}[${index}]`
   if (!isObject(rule)) {
     errors.push({ path: prefix, message: "Rule result must be an object" })
     return
@@ -55,6 +55,9 @@ function validateRuleResult(rule: unknown, index: number, errors: EvaluationVali
         if (typeof clause.requirement !== "string" || clause.requirement.length === 0) {
           errors.push({ path: `${prefix}.contractClauses[${i}].requirement`, message: "requirement is required and must be a non-empty string" })
         }
+        if (!isStringArray(clause.values)) {
+          errors.push({ path: `${prefix}.contractClauses[${i}].values`, message: "values is required and must be an array of strings" })
+        }
       }
     }
   }
@@ -81,7 +84,7 @@ function validateEvidence(evidence: unknown, errors: EvaluationValidationError[]
     errors.push({ path: "evidence.ruleResults", message: "evidence.ruleResults must be an array" })
   } else {
     for (let i = 0; i < evidence.ruleResults.length; i++) {
-      validateRuleResult(evidence.ruleResults[i], i, errors)
+      validateRuleResult(evidence.ruleResults[i], i, "evidence.ruleResults", errors)
     }
   }
 }
@@ -109,7 +112,7 @@ export function validateEvaluationResult(value: unknown): { valid: true; result:
     errors.push({ path: "matchedRules", message: "matchedRules must be an array" })
   } else {
     for (let i = 0; i < value.matchedRules.length; i++) {
-      validateRuleResult(value.matchedRules[i], i, errors)
+      validateRuleResult(value.matchedRules[i], i, "matchedRules", errors)
     }
   }
 
@@ -117,7 +120,7 @@ export function validateEvaluationResult(value: unknown): { valid: true; result:
     errors.push({ path: "violatedRules", message: "violatedRules must be an array" })
   } else {
     for (let i = 0; i < value.violatedRules.length; i++) {
-      validateRuleResult(value.violatedRules[i], i, errors)
+      validateRuleResult(value.violatedRules[i], i, "violatedRules", errors)
     }
   }
 

@@ -14,7 +14,7 @@ import {
   createMilestone, startMilestone, completeMilestone,
   createProject,
   createMission, approveMission, completeMission, archiveMission,
-  createExpedition, approveExpedition, commitExpedition, startExpedition, completeExpedition, cancelExpedition,
+  createExpedition, approveExpedition, commitExpedition, startExpedition, pauseExpedition, completeExpedition, cancelExpedition, archiveExpedition,
   createObjective, completeObjective,
   createDiscovery,
   createDecision, acceptDecision, rejectDecision,
@@ -700,13 +700,17 @@ export function createDefaultCapabilities(): Capability[] {
     },
     {
       name: "StartExpedition",
-      description: "Start an expedition",
+      description: "Start, resume, or unarchive an expedition",
       inputSchema: { required: ["id"], types: { id: "string" } },
       outputSchema: { events: ["EXPEDITION_STARTED"], resultType: "Expedition" },
       preconditions: [
         {
-          name: "expedition_exists_committed",
-          evaluate: (intent, state) => { const id = String(intent.payload.id); return state.expeditions[id]?.status === "committed" },
+          name: "expedition_exists_startable",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return status === "committed" || status === "archived" || status === "paused" || status === "cancelled"
+          },
         },
       ],
       postconditions: [],
@@ -727,6 +731,37 @@ export function createDefaultCapabilities(): Capability[] {
         const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
         if (metadata) payload.metadata = metadata
         return { events: [{ type: "EXPEDITION_STARTED", payload }], result: updated }
+      },
+    },
+    {
+      name: "PauseExpedition",
+      description: "Pause an executing expedition",
+      inputSchema: { required: ["id"], types: { id: "string" } },
+      outputSchema: { events: ["EXPEDITION_PAUSED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists_executing",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return state.expeditions[id]?.status === "executing" },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const existing = state.expeditions[id]
+        if (!existing) {
+          const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+          const payload: Record<string, unknown> = { id, status: "paused" }
+          if (metadata) payload.metadata = metadata
+          return { events: [{ type: "EXPEDITION_PAUSED", payload }] }
+        }
+        const updated = pauseExpedition(existing, executionCtx)
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_PAUSED", payload }], result: updated }
       },
     },
     {
@@ -785,7 +820,7 @@ export function createDefaultCapabilities(): Capability[] {
           evaluate: (intent, state) => {
             const id = String(intent.payload.id)
             const status = state.expeditions[id]?.status
-            return status !== "completed" && status !== "cancelled"
+            return status !== "completed" && status !== "cancelled" && status !== "archived"
           },
         },
       ],
@@ -799,11 +834,11 @@ export function createDefaultCapabilities(): Capability[] {
         const existing = state.expeditions[id]
         if (!existing) {
           const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
-          const payload: Record<string, unknown> = { expeditionId: id, status: "cancelled", reason }
+          const payload: Record<string, unknown> = { expeditionId: id, status: "archived", reason }
           if (metadata) payload.metadata = metadata
           return { events: [{ type: "EXPEDITION_ARCHIVED", payload }] }
         }
-        const updated = cancelExpedition(existing, executionCtx)
+        const updated = archiveExpedition(existing, executionCtx)
         const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
         const payload: Record<string, unknown> = { expeditionId: id, id: updated.id, status: updated.status, reason, archivedAt: executionCtx.timestamp }
         if (metadata) payload.metadata = metadata

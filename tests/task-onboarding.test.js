@@ -32,6 +32,9 @@ async function testOnboardingTasksDiscovered() {
   assert(detect.group === "onboarding", "onboarding:detect should belong to onboarding group")
   assert(detect.command === "synth first-contact onboard:detect", "onboarding:detect command should dispatch to CLI")
 
+  const govern = registry.tasks.get("onboarding:govern")
+  assert(govern.command === "npm run govern", `onboarding:govern should delegate to project govern script, got: ${govern.command}`)
+
   console.log("[PASS] onboarding tasks are discovered from dist/tasks/")
 }
 

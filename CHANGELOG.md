@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] — 2026-08-07
+
+### Added
+
+- `scripts/create-pr.sh` helper that wraps `gh pr create` and always uses `--body-file` to avoid shell interpolation issues with backticks and Markdown syntax.
+
+### Fixed
+
+- `scripts/check-links.js` now excludes `knowledge/AGENTS-intro.md` from standalone link checking. That file is a source fragment embedded into the generated `AGENTS.md`, so its links are validated in the generated document.
+
+### Documentation
+
+- `docs/expeditions/EXP-REFINE-014.md` marked as Completed with evidence pointing to `src/governance/project-mission.ts`, the `synth mission project` CLI, and the unit-test suite.
+- `docs/adr/ADR-045-governance-lifecycle-state-machine.md` now references `src/governance/project-mission.ts` as the canonical `ProjectMission` reference implementation.
+
 ## [2.4.1] — 2026-07-25
 
 ### Fixed

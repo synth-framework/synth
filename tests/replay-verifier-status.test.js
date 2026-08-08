@@ -74,3 +74,80 @@ test("committed expedition status does not produce structural divergence", async
   )
   assert.deepStrictEqual(structuralDivergences, [], "committed status should not be reported as valid_status_required")
 })
+
+test("historical archive event with payload.status cancelled replays as cancelled", async () => {
+  const events = [
+    makeEvent("MISSION_CREATED", {
+      mission: {
+        id: "m1",
+        name: "Mission 1",
+        purpose: "purpose",
+        status: "active",
+        expeditions: [],
+        metadata: {},
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    }),
+    makeEvent("EXPEDITION_CREATED", {
+      expedition: {
+        id: "e1",
+        missionId: "m1",
+        name: "Expedition 1",
+        goal: "goal",
+        status: "executing",
+        objectives: [],
+        discoveries: [],
+        decisions: [],
+        dependsOn: [],
+        metadata: {},
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    }),
+    makeEvent("EXPEDITION_ARCHIVED", {
+      expeditionId: "e1",
+      id: "e1",
+      status: "cancelled",
+      reason: "legacy cancelled archive",
+      archivedAt: 2,
+    }),
+  ]
+
+  const logPath = writeTmpLog(events)
+  const verifier = createReplayVerifier(new EventStore(logPath), new InMemoryStateStore())
+  const report = await verifier.verify()
+
+  assert.strictEqual(report.consistent, true, "replay should be consistent for legacy cancelled archive events")
+  assert.strictEqual(
+    report.divergences.some((d) => d.key === "expedition.e1.status"),
+    false,
+    "cancelled archive status should not be reported as divergence"
+  )
+})
+
+test("projected mission status does not produce structural divergence", async () => {
+  const events = [
+    makeEvent("MISSION_CREATED", {
+      mission: {
+        id: "m1",
+        name: "Mission 1",
+        purpose: "purpose",
+        status: "projected",
+        expeditions: [],
+        metadata: {},
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    }),
+  ]
+
+  const logPath = writeTmpLog(events)
+  const verifier = createReplayVerifier(new EventStore(logPath), new InMemoryStateStore())
+  const report = await verifier.verify()
+
+  const structuralDivergences = report.divergences.filter((d) =>
+    d.key === "mission.m1.status" && d.replayed === "valid_status_required"
+  )
+  assert.deepStrictEqual(structuralDivergences, [], "projected status should not be reported as valid_status_required")
+})

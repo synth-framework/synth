@@ -191,6 +191,27 @@ async function testUnknownCapability() {
   console.log("[PASS] Unknown capability handled gracefully")
 }
 
+async function testUnknownCapabilityWithValidationScripts() {
+  const { buildValidationPlan } = await loadPlanner()
+  const map = await loadJson(MAP_PATH)
+
+  const plan = buildValidationPlan(
+    {
+      files: [".env.example", "package.json", "src/lib/supabase.ts"],
+      affectedCapabilities: ["Unknown"],
+      protectedAssets: [],
+      risk: "medium",
+    },
+    map,
+    { availableScripts: ["lint", "typecheck", "test", "govern"] },
+  )
+
+  assert(plan.run.length > 0, "unknown capability with validation scripts should produce non-empty plan")
+  assert(plan.risk === "low", `expected low risk after fallback validation, got ${plan.risk}`)
+  assert(plan.confidence < 1.0, "unknown capability should reduce confidence")
+  console.log("[PASS] Unknown capability with validation scripts runs available validations and lowers risk")
+}
+
 async function testConfidence() {
   const { buildValidationPlan } = await loadPlanner()
   const map = await loadJson(MAP_PATH)
@@ -239,6 +260,7 @@ async function main() {
   await testOrdering()
   await testNoCapabilities()
   await testUnknownCapability()
+  await testUnknownCapabilityWithValidationScripts()
   await testConfidence()
 
   console.log("\n[VALIDATION PLANNER] All tests passed")

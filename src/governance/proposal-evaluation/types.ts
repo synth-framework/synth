@@ -37,23 +37,28 @@ export type RuleSeverity = "blocking" | "warning"
 
 export type RuleOutcome = "pass" | "fail"
 
+export type ContractField =
+  | "requiredProperties"
+  | "forbiddenProperties"
+  | "requiredBehaviors"
+  | "forbiddenInterpretation"
+  | "forbiddenDrift"
+  | "allowedInterpretation"
+  | "allowedVariation"
+  | "successCriteria"
+
+export type ContractClause = {
+  field: ContractField
+  requirement: string
+  values: string[]
+}
+
 export type EvaluationRule = {
   id: string
   name: string
   description: string
   severity: RuleSeverity
-  contractClauses: {
-    field:
-      | "requiredProperties"
-      | "forbiddenProperties"
-      | "requiredBehaviors"
-      | "forbiddenInterpretation"
-      | "forbiddenDrift"
-      | "allowedInterpretation"
-      | "allowedVariation"
-      | "successCriteria"
-    values: string[]
-  }
+  contractClauses: ContractClause[]
   featureNames: string[]
   evaluate: (features: ProposalFeature[]) => RuleOutcome
 }
@@ -63,7 +68,7 @@ export type RuleResult = {
   ruleName: string
   outcome: RuleOutcome
   severity: RuleSeverity
-  contractClauses: EvaluationRule["contractClauses"]
+  contractClauses: ContractClause[]
   observedFeatures: ProposalFeature[]
   rationale: string
 }

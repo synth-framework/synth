@@ -78,6 +78,17 @@ async function testMissionHelp() {
   console.log("[PASS] synth mission --help lists list and show subcommands")
 }
 
+async function testMissionApproveHelp() {
+  const { stdout, status } = runSynth(["mission", "approve", "--help"])
+  assert(status === 0, "mission approve --help should exit 0")
+  const output = parseJson(stdout)
+  assert(output.namespace === "mission", "help namespace should be mission")
+  assert(output.subcommand === "approve", "help subcommand should be approve")
+  assert(output.required.some((r) => r.name.includes("--draft-id")), "mission approve help should list --draft-id")
+  assert(output.required.some((r) => r.name.includes("--alignment-contract-id")), "mission approve help should list --alignment-contract-id")
+  console.log("[PASS] synth mission approve --help displays required arguments")
+}
+
 async function main() {
   await testMissionList()
   await testMissionListFilterStatus()
@@ -85,6 +96,7 @@ async function main() {
   await testMissionShow()
   await testMissionShowMissingId()
   await testMissionHelp()
+  await testMissionApproveHelp()
   console.log("\n[GOVERNANCE MISSION CLI] All tests passed")
 }
 

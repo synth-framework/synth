@@ -18,10 +18,13 @@ const genericDashboardRule: EvaluationRule = {
   name: "Forbidden drift: generic dashboard",
   description: "Detects metric cards, promotional banners, and disconnected widgets.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenDrift",
-    values: ["Generic SaaS dashboard with metric cards and promotional banners"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenDrift",
+      requirement: "Must not present a generic SaaS dashboard with metric cards and promotional banners",
+      values: ["Generic SaaS dashboard with metric cards and promotional banners"],
+    },
+  ],
   featureNames: ["hasMetricCards", "hasPromotionalBanners", "hasDisconnectedWidgets"],
   evaluate: (features) => {
     const hasMetricCards = getBoolean(features, "hasMetricCards")
@@ -36,10 +39,13 @@ const marketingLandingRule: EvaluationRule = {
   name: "Forbidden interpretation: marketing-first landing",
   description: "Detects when Mission Studio appears as one section among many marketing sections.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenInterpretation",
-    values: ["Marketing-first landing page where Mission Studio is one section among many"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenInterpretation",
+      requirement: "Must not use a marketing-first landing page where Mission Studio is one section among many",
+      values: ["Marketing-first landing page where Mission Studio is one section among many"],
+    },
+  ],
   featureNames: ["hasMarketingHero", "hasFeatureGrid", "hasMissionStudioAsSection"],
   evaluate: (features) => {
     const hasMarketingHero = getBoolean(features, "hasMarketingHero")
@@ -54,10 +60,13 @@ const chatPrimaryRule: EvaluationRule = {
   name: "Forbidden interpretation: chat-primary interface",
   description: "Detects chat bubbles or decorative AI imagery as the dominant interaction.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenInterpretation",
-    values: ["Chat interface with decorative AI imagery"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenInterpretation",
+      requirement: "Must not use a chat interface with decorative AI imagery as the dominant interaction",
+      values: ["Chat interface with decorative AI imagery"],
+    },
+  ],
   featureNames: ["hasChatPrimaryInteraction", "hasDecorativeAiImagery"],
   evaluate: (features) => {
     const hasChatPrimary = getBoolean(features, "hasChatPrimaryInteraction")
@@ -71,10 +80,13 @@ const pageJumpNavigationRule: EvaluationRule = {
   name: "Forbidden drift: page-jump navigation",
   description: "Detects lifecycle phases rendered as separate pages.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenDrift",
-    values: ["Page-jump navigation instead of a persistent workspace"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenDrift",
+      requirement: "Must not use page-jump navigation instead of a persistent workspace",
+      values: ["Page-jump navigation instead of a persistent workspace"],
+    },
+  ],
   featureNames: ["hasSeparateLifecyclePages", "hasPageJumpNavigation"],
   evaluate: (features) => {
     const hasSeparatePages = getBoolean(features, "hasSeparateLifecyclePages")
@@ -88,10 +100,13 @@ const storybookAestheticRule: EvaluationRule = {
   name: "Forbidden drift: storybook aesthetic",
   description: "Detects components displayed as isolated specimens.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenDrift",
-    values: ["Disconnected storybook aesthetic"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenDrift",
+      requirement: "Must not present components as isolated storybook specimens",
+      values: ["Disconnected storybook aesthetic"],
+    },
+  ],
   featureNames: ["hasComponentGrid", "hasIsolatedSpecimens"],
   evaluate: (features) => {
     const hasComponentGrid = getBoolean(features, "hasComponentGrid")
@@ -105,10 +120,13 @@ const placeholderArtifactsRule: EvaluationRule = {
   name: "Forbidden drift: placeholder artifacts",
   description: "Detects fake terminal output, mock data, or placeholder screenshots.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenDrift",
-    values: ["Placeholder artifacts", "Fake terminal output"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenDrift",
+      requirement: "Must not use placeholder artifacts, fake terminal output, or mock data",
+      values: ["Placeholder artifacts", "Fake terminal output"],
+    },
+  ],
   featureNames: ["hasFakeTerminalOutput", "hasMockData", "hasPlaceholderScreenshots"],
   evaluate: (features) => {
     const hasFakeTerminal = getBoolean(features, "hasFakeTerminalOutput")
@@ -123,10 +141,13 @@ const hardcodedValuesRule: EvaluationRule = {
   name: "Forbidden drift: hardcoded values",
   description: "Detects visual values outside the LDS-002 token system.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenDrift",
-    values: ["Hardcoded values outside the LDS-002 token system"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenDrift",
+      requirement: "Must not use hardcoded values outside the LDS-002 token system",
+      values: ["Hardcoded values outside the LDS-002 token system"],
+    },
+  ],
   featureNames: ["hasHardcodedColors", "hasHardcodedSpacing", "hasNonTokenTypography"],
   evaluate: (features) => {
     const hasHardcodedColors = getBoolean(features, "hasHardcodedColors")
@@ -141,10 +162,13 @@ const workspaceDilutionRule: EvaluationRule = {
   name: "Forbidden drift: workspace dilution",
   description: "Detects when Mission Studio shell is present but not dominant.",
   severity: "blocking",
-  contractClauses: {
-    field: "forbiddenDrift",
-    values: ["Workspace dilution", "Mission Studio not dominant"],
-  },
+  contractClauses: [
+    {
+      field: "forbiddenDrift",
+      requirement: "Must keep Mission Studio dominant and avoid workspace dilution",
+      values: ["Workspace dilution", "Mission Studio not dominant"],
+    },
+  ],
   featureNames: ["hasMissionStudioShell", "hasDominantMarketingContent"],
   evaluate: (features) => {
     const hasShell = getBoolean(features, "hasMissionStudioShell")
@@ -162,10 +186,13 @@ const persistentWorkspaceRule: EvaluationRule = {
   name: "Required behavior: persistent workspace",
   description: "Requires persistent header, sidebar, and scroll-driven phases.",
   severity: "blocking",
-  contractClauses: {
-    field: "requiredBehaviors",
-    values: ["Workspace persists while phases change"],
-  },
+  contractClauses: [
+    {
+      field: "requiredBehaviors",
+      requirement: "Workspace must persist while lifecycle phases change",
+      values: ["Workspace persists while phases change"],
+    },
+  ],
   featureNames: ["hasPersistentHeader", "hasPersistentSidebar", "hasScrollDrivenPhases"],
   evaluate: (features) => {
     const hasHeader = getBoolean(features, "hasPersistentHeader")
@@ -180,10 +207,13 @@ const heroInvitationRule: EvaluationRule = {
   name: "Allowed interpretation: hero invitation",
   description: "Permits a short hero that invites visitors into Mission Studio.",
   severity: "warning",
-  contractClauses: {
-    field: "allowedInterpretation",
-    values: ["Hero section that invites visitors into Mission Studio"],
-  },
+  contractClauses: [
+    {
+      field: "allowedInterpretation",
+      requirement: "A short hero section may invite visitors into Mission Studio",
+      values: ["Hero section that invites visitors into Mission Studio"],
+    },
+  ],
   featureNames: ["hasShortHero", "hasHeroCtaIntoWorkspace", "hasPersistentWorkspace"],
   evaluate: (features) => {
     const hasShortHero = getBoolean(features, "hasShortHero")
@@ -199,10 +229,13 @@ const deterministicDemoRule: EvaluationRule = {
   name: "Allowed interpretation: deterministic demo",
   description: "Permits a simulated operator adapter demonstrating deterministic execution.",
   severity: "warning",
-  contractClauses: {
-    field: "allowedInterpretation",
-    values: ["Demo operator adapter that simulates AI execution deterministically"],
-  },
+  contractClauses: [
+    {
+      field: "allowedInterpretation",
+      requirement: "A demo operator adapter may simulate deterministic execution",
+      values: ["Demo operator adapter that simulates AI execution deterministically"],
+    },
+  ],
   featureNames: ["hasDemoOperatorAdapter", "hasDeterministicExecution"],
   evaluate: (features) => {
     const hasAdapter = getBoolean(features, "hasDemoOperatorAdapter")
@@ -217,10 +250,13 @@ const lightThemeDefaultRule: EvaluationRule = {
   name: "Allowed variation: light-theme default",
   description: "Permits light theme default with optional dark mode. An unspecified theme is also valid.",
   severity: "warning",
-  contractClauses: {
-    field: "allowedVariation",
-    values: ["Light workspace theme as the default experience"],
-  },
+  contractClauses: [
+    {
+      field: "allowedVariation",
+      requirement: "Light workspace theme may be the default experience",
+      values: ["Light workspace theme as the default experience"],
+    },
+  ],
   featureNames: ["hasLightThemeDefault", "hasOptionalDarkMode"],
   evaluate: (features) => {
     const declared = features.some((f) => f.name === "hasLightThemeDefault")

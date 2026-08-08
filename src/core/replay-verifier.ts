@@ -29,6 +29,13 @@ import type { IStateStore } from "../infra/state-store.js"
 import { rebuildState, validateAggregateGraph } from "../runtime/replay.js"
 import type { AggregateGraphViolation } from "../runtime/replay.js"
 import type { SynthEvent } from "../types/index.js"
+import {
+  WORK_ITEM_STATUSES,
+  PLAN_STATUSES,
+  MISSION_STATUSES,
+  EXPEDITION_STATUSES,
+  OBJECTIVE_STATUSES,
+} from "../types/index.js"
 import { computeEventHash, stableStringify } from "./hash.js"
 import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import {
@@ -239,35 +246,35 @@ export class ReplayVerifier {
 
     for (const [id, workItem] of Object.entries(state.workItems)) {
       const wi = workItem as Record<string, unknown>
-      if (!["idle", "active", "blocked", "complete"].includes(wi.status as string)) {
+      if (!WORK_ITEM_STATUSES.includes(wi.status as string)) {
         diffs.push({ key: `workItem.${id}.status`, live: wi.status, replayed: "valid_status_required" })
       }
     }
 
     for (const [id, plan] of Object.entries(state.plans)) {
       const p = plan as Record<string, unknown>
-      if (!["draft", "active", "completed", "deprecated"].includes(p.status as string)) {
+      if (!PLAN_STATUSES.includes(p.status as string)) {
         diffs.push({ key: `plan.${id}.status`, live: p.status, replayed: "valid_status_required" })
       }
     }
 
     for (const [id, mission] of Object.entries(state.missions)) {
       const m = mission as Record<string, unknown>
-      if (!["draft", "active", "completed", "archived"].includes(m.status as string)) {
+      if (!MISSION_STATUSES.includes(m.status as string)) {
         diffs.push({ key: `mission.${id}.status`, live: m.status, replayed: "valid_status_required" })
       }
     }
 
     for (const [id, expedition] of Object.entries(state.expeditions)) {
       const e = expedition as Record<string, unknown>
-      if (!["draft", "approved", "committed", "executing", "completed", "cancelled"].includes(e.status as string)) {
+      if (!EXPEDITION_STATUSES.includes(e.status as string)) {
         diffs.push({ key: `expedition.${id}.status`, live: e.status, replayed: "valid_status_required" })
       }
     }
 
     for (const [id, objective] of Object.entries(state.objectives)) {
       const o = objective as Record<string, unknown>
-      if (!["draft", "completed"].includes(o.status as string)) {
+      if (!OBJECTIVE_STATUSES.includes(o.status as string)) {
         diffs.push({ key: `objective.${id}.status`, live: o.status, replayed: "valid_status_required" })
       }
     }

@@ -8,7 +8,7 @@
 //
 // Lifecycle (existing statuses, not renamed):
 //   Mission:    draft -> active -> completed | archived
-//   Expedition: draft -> approved -> executing -> completed | cancelled
+//   Expedition: draft -> approved -> committed -> executing <-> paused -> completed | cancelled | archived
 //
 // The gate makes the SYNTH-conformant path the lowest-friction valid
 // path for agents.
@@ -25,6 +25,7 @@ export type AgentAction =
   | { kind: "expedition.approve"; expeditionId: string }
   | { kind: "expedition.commit"; expeditionId: string }
   | { kind: "expedition.start"; expeditionId: string }
+  | { kind: "expedition.pause"; expeditionId: string }
   | { kind: "expedition.complete"; expeditionId: string; force?: boolean }
   | { kind: "expedition.archive"; expeditionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
@@ -120,20 +121,13 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
     }
 
     case "expedition.create": {
-      // Force single-threaded expedition execution. An agent cannot
-      // propose a new expedition while another one is still open.
-      if (executingExpedition) {
-        return {
-          decision: "BLOCK",
-          reason: `Cannot create a new expedition while ${executingExpedition.id} is still executing.`,
-          requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingExpedition.id}`,
-        }
-      }
+      // Expeditions can be created at any time; only starting a second
+      // executing expedition is blocked. This allows parallel planning
+      // and queueing of work while another expedition is in flight.
 
       // If a missionId is supplied, validate it. We do not require a
       // canonical active mission for every expedition proposal because
-      // mission approval currently lives in the planning snapshot layer;
-      // the closure rule above is the critical runtime enforcement.
+      // mission approval currently lives in the planning snapshot layer.
       if (action.missionId) {
         const parent = state.missions[action.missionId]
         if (parent && parent.status !== "active") {
@@ -196,10 +190,11 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
           requiredAction: "Create the expedition through the lifecycle first.",
         }
       }
-      if (expedition.status !== "committed") {
+      const startableStatuses: Expedition["status"][] = ["committed", "archived", "paused", "cancelled"]
+      if (!startableStatuses.includes(expedition.status)) {
         return {
           decision: "BLOCK",
-          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only committed expeditions can be started.`,
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only committed, archived, paused, or cancelled expeditions can be started.`,
           requiredAction: `Commit the expedition first: synth expedition commit --proposal-id ${action.expeditionId}`,
         }
       }
@@ -220,6 +215,25 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
         }
       }
 
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.pause": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create and start the expedition through the lifecycle first.",
+        }
+      }
+      if (expedition.status !== "executing") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; only executing expeditions can be paused.`,
+          requiredAction: `Start the expedition first: synth expedition start --expedition-id ${expedition.id}`,
+        }
+      }
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 
@@ -269,11 +283,11 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
           requiredAction: "Create the expedition through the lifecycle first.",
         }
       }
-      if (expedition.status === "completed" || expedition.status === "cancelled") {
+      if (expedition.status === "completed" || expedition.status === "cancelled" || expedition.status === "archived") {
         return {
           decision: "BLOCK",
           reason: `Expedition ${action.expeditionId} is already ${expedition.status}.`,
-          requiredAction: "Only active expeditions can be archived.",
+          requiredAction: "Only active or paused expeditions can be archived.",
         }
       }
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
