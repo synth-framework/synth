@@ -302,6 +302,8 @@ const ID_FIELD_NAMES = new Set([
   "certificationId",
   "revisionRequestId",
   "conditionId",
+  "snapshotId",
+  "stateHash",
 ])
 
 const TIMESTAMP_FIELD_NAMES = new Set([
