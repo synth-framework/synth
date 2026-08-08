@@ -849,6 +849,49 @@ export function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "CancelExpedition",
+      description: "Cancel a non-terminal expedition",
+      inputSchema: { required: ["id"], types: { id: "string", reason: "string" } },
+      outputSchema: { events: ["EXPEDITION_CANCELLED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+        {
+          name: "expedition_not_terminal",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return status !== "completed" && status !== "cancelled" && status !== "archived"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const existing = state.expeditions[id]
+        if (!existing) {
+          const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+          const payload: Record<string, unknown> = { expeditionId: id, status: "cancelled", reason }
+          if (metadata) payload.metadata = metadata
+          return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+        }
+        const updated = cancelExpedition(existing, executionCtx)
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { expeditionId: id, id: updated.id, status: updated.status, reason, cancelledAt: executionCtx.timestamp }
+        if (metadata) payload.metadata = metadata
+        return {
+          events: [{ type: "EXPEDITION_CANCELLED", payload }],
+          result: updated,
+        }
+      },
+    },
+    {
       name: "AttachEvidence",
       description: "Attach evidence artifacts to an expedition",
       inputSchema: { required: ["id", "attachments"], types: { id: "string", attachments: "array", note: "string" } },

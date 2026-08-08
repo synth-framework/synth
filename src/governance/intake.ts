@@ -26,6 +26,7 @@ export type AgentAction =
   | { kind: "expedition.commit"; expeditionId: string }
   | { kind: "expedition.start"; expeditionId: string }
   | { kind: "expedition.pause"; expeditionId: string }
+  | { kind: "expedition.cancel"; expeditionId: string }
   | { kind: "expedition.complete"; expeditionId: string; force?: boolean }
   | { kind: "expedition.archive"; expeditionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
@@ -255,6 +256,25 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
       }
 
 return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.cancel": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
+        }
+      }
+      if (expedition.status === "completed" || expedition.status === "cancelled" || expedition.status === "archived") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; cannot cancel a terminal or already cancelled expedition.`,
+          requiredAction: "Only draft, approved, committed, executing, or paused expeditions can be cancelled.",
+        }
+      }
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 
     case "expedition.archive": {

@@ -5,6 +5,9 @@
 // emit structured JSON while still respecting operator preference.
 // ============================================================
 
+import fs from "fs"
+import path from "path"
+
 let quietMode = false
 let summaryMode = false
 let humanMode = false
@@ -52,6 +55,38 @@ export interface ErrorDetails {
   documentation?: string
   /** Additional structured context; merged into the output object. */
   [key: string]: unknown
+}
+
+/**
+ * Append a structured error record to a local CLI error log.
+ *
+ * This log is intentionally outside the durable event store: printError can be
+ * called before bootstrap completes, so we cannot rely on the ExecutionGate or
+ * canonical event log. The local log is replay-safe because it is derived from
+ * CLI invocations and can be truncated or rotated by operators.
+ *
+ * Governed projects:  .synth/data/cli-errors.jsonl
+ * Legacy projects:    data/cli-errors.jsonl
+ */
+export function logCliError(record: Record<string, unknown>): void {
+  try {
+    const cwd = process.cwd()
+    const governedDir = path.join(cwd, ".synth", "data")
+    const legacyDir = path.join(cwd, "data")
+    const targetDir = fs.existsSync(governedDir) ? governedDir : legacyDir
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true })
+    }
+    const logPath = path.join(targetDir, "cli-errors.jsonl")
+    const line = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      cwd,
+      ...record,
+    }) + "\n"
+    fs.appendFileSync(logPath, line, "utf-8")
+  } catch {
+    // Best-effort: never let error logging crash the CLI.
+  }
 }
 
 function renderSummary(obj: unknown): string {
@@ -181,6 +216,18 @@ export function printError(error: string, kindOrDetails: string | ErrorDetails =
       kind = kindOrDetails.code
     }
   }
+  const output = summaryMode
+    ? { status: "error", kind, error, ...details }
+    : humanMode
+      ? { status: "error", kind, error, ...details }
+      : { status: "error", kind, error, ...details }
+  logCliError({
+    kind,
+    error,
+    exitCode: code,
+    mode: summaryMode ? "summary" : humanMode ? "human" : "json",
+    ...details,
+  })
   if (summaryMode) {
     console.log(`status: error\nkind: ${kind}\nerror: ${error}`)
   } else if (humanMode) {

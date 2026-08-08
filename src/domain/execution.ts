@@ -339,6 +339,24 @@ export function applyDomain(
       return { events: [{ type: "EXPEDITION_PAUSED", payload }] }
     }
 
+    case "CancelExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+      if (!existing) {
+        const payload: Record<string, unknown> = { id, status: "cancelled" }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+      }
+      const updated = planningLogic.cancelExpedition(existing, ctx)
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (reason) payload.reason = reason
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+    }
+
     case "CompleteExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]

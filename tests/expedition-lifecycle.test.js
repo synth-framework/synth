@@ -355,6 +355,54 @@ async function testPauseRequiresExecuting(projectDir, missionId) {
   console.log("[PASS] Pause is rejected for non-executing expeditions")
 }
 
+async function testCancelSetsCancelledStatus(projectDir, missionId) {
+  const draftId = await createStartedExpedition(projectDir, missionId, "Cancel Test")
+
+  const cancelResult = runSynth(["expedition", "cancel", "--id", draftId, "--reason", "Testing cancel semantics"], projectDir)
+  assert(cancelResult.status === 0, `expedition cancel must exit 0:\n${cancelResult.stderr}`)
+  const cancelOutput = parseJson(cancelResult.stdout)
+  assert(cancelOutput.kind === "ExpeditionCancelled", `expedition cancel should return ExpeditionCancelled, got ${cancelOutput.kind}`)
+  assert(cancelOutput.result.status === "cancelled", `expedition should be cancelled, got ${cancelOutput.result.status}`)
+
+  console.log("[PASS] Cancel sets expedition status to cancelled")
+}
+
+async function testStartFromCancelled(projectDir, missionId) {
+  const draftId = await createStartedExpedition(projectDir, missionId, "Restart From Cancelled")
+
+  const cancelResult = runSynth(["expedition", "cancel", "--id", draftId, "--reason", "Testing restart from cancelled"], projectDir)
+  assert(cancelResult.status === 0, `expedition cancel must exit 0:\n${cancelResult.stderr}`)
+
+  const restartResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
+  assert(restartResult.status === 0, `expedition start from cancelled must exit 0:\n${restartResult.stderr}`)
+  const restartOutput = parseJson(restartResult.stdout)
+  assert(restartOutput.kind === "ExpeditionStarted", `expedition start from cancelled should return ExpeditionStarted, got ${restartOutput.kind}`)
+  assert(restartOutput.result.status === "executing", `expedition should be executing after restart from cancelled, got ${restartOutput.result.status}`)
+
+  // Clean up the executing expedition so subsequent mission planning is not blocked.
+  const cleanupArchiveResult = runSynth(["expedition", "archive", "--id", draftId, "--reason", "Test cleanup"], projectDir)
+  assert(cleanupArchiveResult.status === 0, `expedition archive cleanup must exit 0:\n${cleanupArchiveResult.stderr}`)
+
+  console.log("[PASS] Start works from cancelled status")
+}
+
+async function testCliErrorLog(projectDir) {
+  // Trigger a deterministic CLI validation error and verify it is appended
+  // to the local structured error log.
+  const badResult = runSynth(["expedition", "cancel"], projectDir)
+  assert(badResult.status !== 0, "expedition cancel without --id should fail")
+
+  const errorLogPath = path.join(projectDir, ".synth", "data", "cli-errors.jsonl")
+  const logContent = await fs.readFile(errorLogPath, "utf-8")
+  const lines = logContent.trim().split("\n").filter(Boolean)
+  assert(lines.length > 0, `cli-errors.jsonl should contain at least one error entry, got: ${logContent}`)
+  const lastEntry = JSON.parse(lines[lines.length - 1])
+  assert(lastEntry.kind === "CLIError" || lastEntry.error?.includes("--id is required"), `last log entry should record the missing --id error, got ${JSON.stringify(lastEntry)}`)
+  assert(typeof lastEntry.timestamp === "string", `log entry should include an ISO timestamp, got ${JSON.stringify(lastEntry)}`)
+
+  console.log("[PASS] CLI errors are appended to structured local error log")
+}
+
 async function testCreateWhileAnotherExecuting(projectDir, missionId) {
   const executingId = await createStartedExpedition(projectDir, missionId, "Executing Expedition")
 
@@ -405,6 +453,11 @@ async function main() {
     await testPauseRequiresExecuting(projectDir, missionId6)
     const { missionId: missionId7 } = await createAndApproveMission(projectDir)
     await testCreateWhileAnotherExecuting(projectDir, missionId7)
+    const { missionId: missionId8 } = await createAndApproveMission(projectDir)
+    await testCancelSetsCancelledStatus(projectDir, missionId8)
+    const { missionId: missionId9 } = await createAndApproveMission(projectDir)
+    await testStartFromCancelled(projectDir, missionId9)
+    await testCliErrorLog(projectDir)
     console.log("\nAll expedition lifecycle tests passed.")
   } finally {
     await fs.rm(projectDir, { recursive: true, force: true })

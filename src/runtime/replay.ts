@@ -329,6 +329,21 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_CANCELLED": {
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          status: "cancelled",
+          updatedAt: event.timestamp,
+          metadata: {
+            ...state.expeditions[expeditionId].metadata,
+            cancelReason: typeof payload.reason === "string" ? payload.reason : undefined,
+          },
+        }
+      }
+      break
+    }
     case "EXPEDITION_ARCHIVED": {
       const expeditionId = String(payload.expeditionId ?? payload.id)
       if (state.expeditions[expeditionId]) {

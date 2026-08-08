@@ -2021,7 +2021,8 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
     { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
-    { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition as a safe fallback (Executing → Cancelled)" },
+    { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
+    { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
     { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
@@ -4995,6 +4996,60 @@ async function cmdExpeditionPause(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdExpeditionCancel(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const reason = typeof flags.reason === "string" ? flags.reason : ""
+  if (!reason) printError("--reason is required")
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "CancelExpedition",
+      payload: { id: expeditionId, reason },
+      eventType: "EXPEDITION_CANCELLED",
+      expeditionId,
+      targetStatus: "cancelled",
+    })
+    printJson(dryRun)
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "expedition.cancel", expeditionId }, state, ctx.runtime)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CancelExpedition",
+    payload: { id: expeditionId, reason },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ExpeditionCancelFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionCancelled",
+    expeditionId,
+    reason,
+    result: result.result,
+    nextStep: `synth expedition start --id ${expeditionId}`,
+  })
+}
+
 async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   const expeditionId = resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
@@ -5999,6 +6054,7 @@ async function main() {
       else if (sub === "commit") await cmdExpeditionCommit(flags)
       else if (sub === "start") await cmdExpeditionStart(flags)
       else if (sub === "pause") await cmdExpeditionPause(flags)
+      else if (sub === "cancel") await cmdExpeditionCancel(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
       else if (sub === "archive") await cmdExpeditionArchive(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
