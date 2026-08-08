@@ -1,11 +1,11 @@
 {
   "schema": "synth-ai-interaction-manifest-v1",
   "version": "1.0.0",
-  "generatedAt": "2026-08-08T05:10:29.294Z",
+  "generatedAt": "2026-08-08T19:43:42.943Z",
   "repositoryPurpose": "Governed SYNTH project: Synth Project",
   "repositoryType": "unknown",
-  "lifecyclePhase": "complete",
-  "mutationPolicy": "PROPOSAL_ONLY",
+  "lifecyclePhase": "executing",
+  "mutationPolicy": "MUTATING",
   "expectedWorkflows": [
     {
       "name": "Status",
@@ -32,9 +32,9 @@
       "requiresApproval": true
     },
     {
-      "name": "Create Mission",
-      "trigger": "No active mission",
-      "command": "synth mission create --subject <s> --purpose <p>",
+      "name": "Plan Expedition",
+      "trigger": "Active mission exists",
+      "command": "synth expedition create --mission <id> --subject <s> --goal <g>",
       "requiresApproval": true
     }
   ],
@@ -54,10 +54,6 @@
     {
       "action": "Bypass Mission Studio approval",
       "reason": "Approval is the explicit transition gate."
-    },
-    {
-      "action": "Apply state mutations",
-      "reason": "Only proposals are allowed; await operator approval."
     }
   ],
   "approvalRequirements": [
@@ -94,7 +90,7 @@
       "escalationMessage": "Expedition completion must be evidenced and approved."
     }
   ],
-  "preferredInteractionPattern": "Propose, explain, and await approval before any mutation.",
+  "preferredInteractionPattern": "Operate within the active expedition; record every state change as an event.",
   "evidenceExpectations": [
     "Mission or Expedition draft must reference an approved charter.",
     "State mutations must be recorded as replayable events.",
