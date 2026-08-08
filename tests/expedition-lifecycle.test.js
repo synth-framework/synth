@@ -403,6 +403,43 @@ async function testCliErrorLog(projectDir) {
   console.log("[PASS] CLI errors are appended to structured local error log")
 }
 
+async function testRefineCommand(projectDir, missionId, gateCtx, contractId) {
+  const draftId = await createStartedExpedition(projectDir, missionId, "Refine Test")
+
+  const refineResult = runSynth(
+    ["expedition", "refine", "--id", draftId, "--note", "Narrowed scope to repository adapter contract"],
+    projectDir,
+  )
+  assert(refineResult.status === 0, `expedition refine must exit 0:\n${refineResult.stderr}`)
+  const refineOutput = parseJson(refineResult.stdout)
+  assert(refineOutput.kind === "ExpeditionRefined", `expedition refine should return ExpeditionRefined, got ${refineOutput.kind}`)
+  assert(refineOutput.note === "Narrowed scope to repository adapter contract", `refine note should match, got ${refineOutput.note}`)
+  assert(typeof refineOutput.refinementId === "string" && refineOutput.refinementId.length > 0, `refinementId should be a non-empty string, got ${refineOutput.refinementId}`)
+  assert(refineOutput.result.status === "executing", `refine should keep expedition executing, got ${refineOutput.result.status}`)
+  assert(
+    refineOutput.result.metadata.refinementNote === "Narrowed scope to repository adapter contract",
+    `metadata should record refinement note, got ${JSON.stringify(refineOutput.result.metadata)}`,
+  )
+
+  // Refining a completed expedition should fail.
+  await certifyConvergence(gateCtx, missionId, draftId, contractId)
+  const evidenceFile = path.join(projectDir, "evidence.txt")
+  await fs.writeFile(evidenceFile, "test evidence", "utf-8")
+  runSynth(["expedition", "evidence", "--id", draftId, "--attach", evidenceFile], projectDir)
+  runSynth(["expedition", "complete", "--id", draftId], projectDir)
+
+  const refineAfterCompleteResult = runSynth(
+    ["expedition", "refine", "--id", draftId, "--note", "Should fail"],
+    projectDir,
+  )
+  assert(refineAfterCompleteResult.status !== 0, "expedition refine should fail after completion")
+  const refineAfterCompleteOutput = parseJson(refineAfterCompleteResult.stdout)
+  assert(refineAfterCompleteOutput.status === "error", "refine after completion should report error status")
+  assert(refineAfterCompleteOutput.error && refineAfterCompleteOutput.error.includes("terminal"), `refine failure should explain terminal requirement, got ${JSON.stringify(refineAfterCompleteOutput)}`)
+
+  console.log("[PASS] Refine records charter note without changing status, and is rejected for terminal expeditions")
+}
+
 async function testCreateWhileAnotherExecuting(projectDir, missionId) {
   const executingId = await createStartedExpedition(projectDir, missionId, "Executing Expedition")
 
@@ -457,6 +494,8 @@ async function main() {
     await testCancelSetsCancelledStatus(projectDir, missionId8)
     const { missionId: missionId9 } = await createAndApproveMission(projectDir)
     await testStartFromCancelled(projectDir, missionId9)
+    const { missionId: missionId10, gateCtx: gateCtx10, contractId: contractId10 } = await createAndApproveMission(projectDir)
+    await testRefineCommand(projectDir, missionId10, gateCtx10, contractId10)
     await testCliErrorLog(projectDir)
     console.log("\nAll expedition lifecycle tests passed.")
   } finally {

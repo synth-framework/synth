@@ -110,6 +110,43 @@ Everything in Synth is explained with seven concepts. Everything else is impleme
 
 ---
 
+## Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> MissionDraft : human intent
+    MissionDraft --> MissionActive : synth mission approve
+    MissionActive --> MissionCompleted : synth mission complete
+    MissionActive --> MissionArchived : synth mission archive
+
+    [*] --> ExpeditionDraft : synth expedition create
+    ExpeditionDraft --> ExpeditionApproved : synth expedition approve
+    ExpeditionApproved --> ExpeditionCommitted : synth expedition commit
+    ExpeditionCommitted --> ExpeditionExecuting : synth expedition start
+    ExpeditionExecuting --> ExpeditionPaused : synth expedition pause
+    ExpeditionPaused --> ExpeditionExecuting : synth expedition start
+    ExpeditionExecuting --> ExpeditionCancelled : synth expedition cancel
+    ExpeditionExecuting --> ExpeditionCompleted : synth expedition complete
+    ExpeditionExecuting --> ExpeditionArchived : synth expedition archive
+    ExpeditionCancelled --> ExpeditionExecuting : synth expedition start
+    ExpeditionCancelled --> ExpeditionArchived : synth expedition archive
+
+    ExpeditionDraft --> ExpeditionDraft : synth expedition refine
+    ExpeditionApproved --> ExpeditionApproved : synth expedition refine
+    ExpeditionCommitted --> ExpeditionCommitted : synth expedition refine
+    ExpeditionExecuting --> ExpeditionExecuting : synth expedition refine
+    ExpeditionPaused --> ExpeditionPaused : synth expedition refine
+
+    Program --> ExpeditionDraft : groups
+    Program --> ExpeditionApproved : groups
+    Program --> ExpeditionCommitted : groups
+    Program --> ExpeditionExecuting : groups
+```
+
+A **Program** is a read-only grouping of Expeditions. It is discovered from the expedition charters in `docs/expeditions/*.md` and exposed through `synth program list`, `synth program show --id <id>`, and `synth program rank`. There is no separate `program create` command because Programs emerge from the chartered work, not from a standalone lifecycle event.
+
+---
+
 ## Documentation
 
 - [Quick Start](docs/getting-started/README.md) — Install and run your first Mission in five minutes

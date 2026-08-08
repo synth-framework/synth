@@ -344,6 +344,22 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_REFINED": {
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          updatedAt: event.timestamp,
+          metadata: {
+            ...state.expeditions[expeditionId].metadata,
+            refinementId: typeof payload.refinementId === "string" ? payload.refinementId : undefined,
+            refinementNote: typeof payload.note === "string" ? payload.note : undefined,
+            refinementAt: event.timestamp,
+          },
+        }
+      }
+      break
+    }
     case "EXPEDITION_ARCHIVED": {
       const expeditionId = String(payload.expeditionId ?? payload.id)
       if (state.expeditions[expeditionId]) {

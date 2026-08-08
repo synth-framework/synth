@@ -2024,6 +2024,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
+    { name: "synth expedition refine --id <id> --note <text>", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
     { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
@@ -4860,7 +4861,7 @@ interface LifecycleDryRunInput {
   payload: Record<string, unknown>
   eventType: string
   expeditionId: string
-  targetStatus: string
+  targetStatus?: string
 }
 
 async function runLifecycleDryRun(
@@ -4890,7 +4891,9 @@ async function runLifecycleDryRun(
       payload: input.payload,
     },
     verifyResult: { pass, fail, warn },
-    stateDelta: `expedition ${input.expeditionId} status: ${beforeStatus} → ${input.targetStatus}`,
+    stateDelta: input.targetStatus
+      ? `expedition ${input.expeditionId} status: ${beforeStatus} → ${input.targetStatus}`
+      : `expedition ${input.expeditionId} metadata updated (${input.eventType})`,
   }
 }
 
@@ -5291,6 +5294,61 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     note,
     manifestPath: path.relative(process.cwd(), manifestPath),
     result: result.result,
+  })
+}
+
+async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const note = typeof flags.note === "string" ? flags.note : ""
+  if (!note) printError("--note is required")
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "RefineExpedition",
+      payload: { id: expeditionId, note },
+      eventType: "EXPEDITION_REFINED",
+      expeditionId,
+      targetStatus: undefined,
+    })
+    printJson(dryRun)
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "expedition.refine", expeditionId }, state, ctx.runtime)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "RefineExpedition",
+    payload: { id: expeditionId, note },
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ExpeditionRefineFailed")
+  }
+
+  const refined = result.result as { metadata?: Record<string, unknown> } | undefined
+  printJson({
+    status: "ok",
+    kind: "ExpeditionRefined",
+    expeditionId,
+    note,
+    refinementId: refined?.metadata?.refinementId,
+    result: refined,
   })
 }
 
@@ -6058,6 +6116,7 @@ async function main() {
       else if (sub === "complete") await cmdExpeditionComplete(flags)
       else if (sub === "archive") await cmdExpeditionArchive(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
+      else if (sub === "refine") await cmdExpeditionRefine(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
       else if (sub === "show") await cmdExpeditionShow(flags)
