@@ -33,6 +33,7 @@ import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
 import { cmdExplainAgents } from "./agent-guide.js"
+import { cmdRelease } from "./release.js"
 import { cmdVerify } from "./verify.js"
 import { cmdVerifySignatures } from "./signatures.js"
 import {
@@ -148,6 +149,7 @@ const COMMANDS = [
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
+  { name: "release", description: "Deterministic, operator-approved release versioning" },
   { name: "certify", description: "Run failure and recovery certification scenarios" },
   { name: "capabilities", description: "List installed and missing CLI capabilities" },
   { name: "first-contact", description: "Guided onboarding entry point (greenfield, brownfield, legacy) and greenfield workflow (start, clarify, project, verify, approve, materialize, status)" },
@@ -1185,7 +1187,8 @@ async function writeDiscoveryBaseline(targetDir: string, data: Omit<DiscoveryBas
 }
 
 async function updateLifecycleRepositoryType(targetDir: string, rawRepositoryType: string): Promise<string | undefined> {
-  const lifecyclePath = path.join(sdk.paths.synthDir(targetDir), "ai", "lifecycle.json")
+  const lifecycleDir = path.join(sdk.paths.synthDir(targetDir), "ai")
+  const lifecyclePath = path.join(lifecycleDir, "lifecycle.json")
   const normalized = normalizeDiscoveryRepositoryType(rawRepositoryType)
   if (!normalized) return undefined
 
@@ -1198,6 +1201,7 @@ async function updateLifecycleRepositoryType(targetDir: string, rawRepositoryTyp
   }
 
   lifecycle.repositoryType = normalized
+  await fs.mkdir(lifecycleDir, { recursive: true })
   await fs.writeFile(lifecyclePath, JSON.stringify(lifecycle, null, 2), "utf-8")
   return lifecyclePath
 }
@@ -6172,6 +6176,10 @@ async function main() {
         )
       break
     }
+
+    case "release":
+      await cmdRelease(flags)
+      break
 
     case "certify":
       await cmdCertify(flags)

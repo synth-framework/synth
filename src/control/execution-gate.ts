@@ -15,6 +15,7 @@
 // ============================================================
 
 import crypto from "crypto"
+import os from "os"
 import path from "path"
 import type {
   CapabilityInvocation,
@@ -139,7 +140,14 @@ export class ExecutionGate {
    */
   private resolveProjectRoot(): string {
     const dataDir = this.eventStore.getDataDir()
-    if (!dataDir) return process.cwd()
+    if (!dataDir) {
+      // In-memory event stores have no file-system project root. Using
+      // process.cwd() would bind the repository adapter to the shell's working
+      // directory and break tests that run inside the SYNTH source tree while
+      // it has uncommitted changes. Use a non-git directory so the adapter
+      // skips VCS-specific readiness checks.
+      return path.join(os.tmpdir(), "synth-anonymous-project")
+    }
 
     const normalized = path.resolve(dataDir)
     const base = path.basename(normalized)

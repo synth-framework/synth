@@ -313,7 +313,8 @@
     "CLI": {
       "unitTests": [
         "test",
-        "test:synth-cli"
+        "test:synth-cli",
+        "test:release"
       ],
       "integrationTests": [
         "test:operator-journey"
@@ -322,7 +323,8 @@
       "proofs": [],
       "lintScope": [
         "src/cli/",
-        "tests/synth-cli.test.js"
+        "tests/synth-cli.test.js",
+        "tests/release.test.js"
       ],
       "typecheckScope": [
         "src/cli/"

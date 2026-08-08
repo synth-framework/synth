@@ -81,6 +81,10 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "repo pr merge", safety: "MUTATING", description: "Merge an approved pull request", requiresApproval: true },
   { command: "repo release create", safety: "MUTATING", description: "Create a governed release", requiresApproval: true },
   { command: "repo status", safety: "READ_ONLY", description: "Report repository governance state" },
+  // Automated release versioning (EXP-RELEASE-001)
+  { command: "release", safety: "PROPOSAL_ONLY", description: "Preview the next semver release without mutating state" },
+  { command: "release --dry-run", safety: "PROPOSAL_ONLY", description: "Preview the next semver release without mutating state" },
+  { command: "release --approve", safety: "MUTATING", description: "Apply the next semver release", requiresApproval: true },
   { command: "mission decisions", safety: "READ_ONLY", description: "List Mission decisions" },
   { command: "mission evidence add", safety: "PROPOSAL_ONLY", description: "Add evidence to a Mission draft" },
   { command: "mission snapshot", safety: "READ_ONLY", description: "Inspect or list Mission snapshots" },
@@ -269,6 +273,11 @@ export function classifyInvocation(
     if (sub === "pr" && positional[2] === "merge") return "repo pr merge"
     if (sub === "release" && positional[2] === "create") return "repo release create"
     if (sub === "status") return "repo status"
+  }
+  if (namespace === "release") {
+    if (flags.approve === true || flags.approve === "true") return "release --approve"
+    if (flags["dry-run"] === true) return "release --dry-run"
+    return "release"
   }
   if (namespace === "mission") {
     if (sub === "create") return "mission create"
