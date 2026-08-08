@@ -32,6 +32,7 @@ import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.
 import { cmdExplainIdentity } from "./repository-identity.js"
 import { cmdExplainResume } from "./resume-briefing.js"
 import { cmdExplainGovernance } from "./explain-governance.js"
+import { cmdExplainAgents } from "./agent-guide.js"
 import { cmdVerify } from "./verify.js"
 import { cmdVerifySignatures } from "./signatures.js"
 import {
@@ -1342,8 +1343,9 @@ async function cmdExplainHelp() {
     { name: "synth explain identity", description: "Repository identity projection from replayable evidence" },
     { name: "synth explain resume", description: "What happened, what was decided, what is next" },
     { name: "synth explain governance", description: "Governance Record lineage derived from replay" },
+    { name: "synth explain agents", description: "Comprehensive machine-readable guide for AI agents operating SYNTH" },
     { name: "synth explain all", description: "Umbrella report with every section above" },
-  ], { note: "Every explain subcommand is read-only. Use --log <path> to inspect an alternative project log. Use --json for machine output." }))
+  ], { note: "Every explain subcommand is read-only. Use --log <path> to inspect an alternative project log. Use --json for machine output. Use --markdown with synth explain agents for prose output." }))
 }
 
 async function cmdIntentHelp() {
@@ -6155,6 +6157,7 @@ async function main() {
       else if (sub === "identity") await cmdExplainIdentity(flags)
       else if (sub === "resume") await cmdExplainResume(flags)
       else if (sub === "governance") await cmdExplainGovernance(flags)
+      else if (sub === "agents") await cmdExplainAgents(flags)
       else await cmdExplainObservability(sub, flags)
       break
     }
