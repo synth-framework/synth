@@ -235,6 +235,38 @@ async function testBootstrapGovernScriptIsInformativeWhenNoScriptsExist() {
   }
 }
 
+async function testBootstrapGeneratesRichBrownfieldMap() {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-brownfield-map-"))
+  try {
+    await fs.writeFile(
+      path.join(tmpDir, "package.json"),
+      JSON.stringify({ name: "next-app", version: "1.0.0", scripts: { test: "echo test", build: "echo build" } }, null, 2),
+      "utf-8",
+    )
+    await fs.writeFile(path.join(tmpDir, "tsconfig.json"), JSON.stringify({ compilerOptions: {} }, null, 2), "utf-8")
+    await fs.writeFile(path.join(tmpDir, ".env.example"), "# env\n", "utf-8")
+    await fs.mkdir(path.join(tmpDir, "src", "app"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, "src", "app", "page.tsx"), "export default function Page() {}\n", "utf-8")
+    await fs.mkdir(path.join(tmpDir, "src", "components"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, "src", "components", "Button.tsx"), "export function Button() {}\n", "utf-8")
+
+    const { status, stderr } = runSynth(["bootstrap", "--approve", "--name", "Next App"], tmpDir)
+    assert(status === 0, `bootstrap --approve should exit 0: ${stderr}`)
+
+    const map = JSON.parse(await fs.readFile(path.join(tmpDir, "docs", "reference", "capability-validation-map.json"), "utf-8"))
+    assert(map.capabilities.ProjectConfig, "map should include ProjectConfig")
+    assert(map.capabilities.TypeScriptConfig, "map should include TypeScriptConfig")
+    assert(map.capabilities.EnvironmentConfig, "map should include EnvironmentConfig")
+    assert(map.capabilities.NextJsAppRouter, "map should include NextJsAppRouter")
+    assert(map.capabilities.ReactComponents, "map should include ReactComponents")
+    assert(JSON.stringify(map.capabilities.NextJsAppRouter.proofs) === JSON.stringify(["govern"]), "NextJsAppRouter should map to govern")
+
+    console.log("[PASS] bootstrap generates a rich capability-validation-map for brownfield web projects")
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true })
+  }
+}
+
 async function main() {
   try {
     await fs.access(CLI_PATH)
@@ -251,6 +283,7 @@ async function main() {
   await testBootstrapDoesNotMutateWithoutApprove()
   await testBootstrapWritesGovernScriptFromExistingScripts()
   await testBootstrapGovernScriptIsInformativeWhenNoScriptsExist()
+  await testBootstrapGeneratesRichBrownfieldMap()
 
   console.log("\n[SYNTH BOOTSTRAP] All tests passed")
 }

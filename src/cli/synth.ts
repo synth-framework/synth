@@ -643,6 +643,7 @@ function buildConfidenceAnalysis(
   plan: ValidationPlan,
   effectiveRun: string[],
   availableScripts: string[],
+  map?: CapabilityValidationMap,
 ) {
   const reasons: string[] = []
   const nextSteps: string[] = []
@@ -652,14 +653,20 @@ function buildConfidenceAnalysis(
   } else if (report.affectedCapabilities.length === 0) {
     reasons.push("No affected capabilities detected.")
   } else {
-    const mapped = report.affectedCapabilities.filter((c) => c !== "Unknown")
-    const unmapped = report.affectedCapabilities.filter((c) => c === "Unknown")
+    const capabilitySet = map?.capabilities ? new Set(Object.keys(map.capabilities)) : undefined
+    const mapped = capabilitySet
+      ? report.affectedCapabilities.filter((c) => capabilitySet.has(c))
+      : report.affectedCapabilities.filter((c) => c !== "Unknown")
+    const unmapped = capabilitySet
+      ? report.affectedCapabilities.filter((c) => !capabilitySet.has(c))
+      : report.affectedCapabilities.filter((c) => c === "Unknown")
     if (mapped.length > 0) {
-      reasons.push(`${mapped.length} affected capability/capabilities map to known validation entries.`)
+      reasons.push(`${mapped.length} of ${report.affectedCapabilities.length} affected capabilities map to validation entries in docs/reference/capability-validation-map.json.`)
     }
     if (unmapped.length > 0) {
-      reasons.push(`${unmapped.length} affected capability/capabilities are unmapped; confidence is reduced.`)
-      nextSteps.push("Map changed files to capabilities in docs/reference/capability-validation-map.json, or add project-level validation scripts.")
+      const unmappedList = unmapped.join(", ")
+      reasons.push(`${unmapped.length} of ${report.affectedCapabilities.length} affected capabilities are not mapped to validation entries: ${unmappedList}.`)
+      nextSteps.push("Add or expand capability entries in docs/reference/capability-validation-map.json, or add project-level validation scripts such as test, lint, typecheck, or govern.")
     }
   }
 
@@ -833,7 +840,7 @@ async function cmdValidate(flags: Record<string, string | boolean>) {
     }
   }
 
-  const confidenceAnalysis = buildConfidenceAnalysis(report, plan, effectiveRun, availableScripts)
+  const confidenceAnalysis = buildConfidenceAnalysis(report, plan, effectiveRun, availableScripts, map)
 
   if (dryRun) {
     const output: Record<string, unknown> = {
@@ -2748,7 +2755,7 @@ async function buildStatusValidationSummary(): Promise<Record<string, unknown> |
   }
 
   const plan = buildValidationPlan(report, map, { availableScripts, taskRegistry, profile: "pull-request" })
-  const analysis = buildConfidenceAnalysis(report, plan, plan.run, availableScripts)
+  const analysis = buildConfidenceAnalysis(report, plan, plan.run, availableScripts, map)
   return {
     score: analysis.score,
     risk: analysis.risk,

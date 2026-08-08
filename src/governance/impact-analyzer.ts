@@ -76,6 +76,27 @@ const DEFAULT_RULES: MappingRule[] = [
   { pattern: /^tsconfig\.json$/, capability: "TypeScriptConfig", risk: "low" },
   { pattern: /^\.env\.example$/, capability: "EnvironmentConfig", risk: "low" },
 
+  // Common web framework layouts (Next.js, React, Express-style Node servers)
+  { pattern: /^(src\/)?app\//, capability: "NextJsAppRouter", risk: "medium" },
+  { pattern: /^(src\/)?components\//, capability: "ReactComponents", risk: "medium" },
+  { pattern: /^(src\/)?context\//, capability: "ReactContext", risk: "medium" },
+  { pattern: /^(src\/)?hooks\//, capability: "ReactHooks", risk: "medium" },
+  { pattern: /^src\/routes\//, capability: "NodeServer", risk: "medium" },
+  { pattern: /^(src\/)?(server|app)\.(ts|js|mjs|cjs)$/, capability: "NodeServer", risk: "medium" },
+
+  // Polyglot project files
+  { pattern: /^src\/.*\.py$/, capability: "PythonApplication", risk: "medium" },
+  { pattern: /^(app|main|manage)\.py$/, capability: "PythonApplication", risk: "medium" },
+  { pattern: /^requirements\.txt$/, capability: "PythonDependencies", risk: "low" },
+  { pattern: /^pyproject\.toml$/, capability: "PythonDependencies", risk: "low" },
+  { pattern: /^(cmd|pkg|internal)\//, capability: "GoApplication", risk: "medium" },
+  { pattern: /^go\.mod$/, capability: "GoApplication", risk: "low" },
+  { pattern: /^src\/.*\.rs$/, capability: "RustApplication", risk: "medium" },
+  { pattern: /^Cargo\.toml$/, capability: "RustApplication", risk: "low" },
+  { pattern: /^src\/main\/java\//, capability: "JavaApplication", risk: "medium" },
+  { pattern: /^pom\.xml$/, capability: "JavaApplication", risk: "low" },
+  { pattern: /^build\.gradle(\.kts)?$/, capability: "JavaApplication", risk: "low" },
+
   // Low-risk surface
   { pattern: /^docs\//, capability: "Documentation", risk: "low" },
   { pattern: /^website\//, capability: "Website", risk: "low" },
