@@ -2059,7 +2059,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
     { name: "synth expedition commit --all-approved --mission <id>", description: "Commit all approved Expeditions for a Mission" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
-    { name: "synth expedition start --all-committed --mission <id>", description: "Start the next committed Expedition for a Mission (skips remaining while another is executing)" },
+    { name: "synth expedition start --all-committed --mission <id>", description: "Start all committed Expeditions for a Mission" },
     { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
     { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
@@ -5174,17 +5174,6 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
 
     const results = []
     for (const id of ids) {
-      const currentState = await ctx.runtime.getState()
-      const executing = Object.values(currentState.expeditions).find((e: any) => e.status === "executing")
-      if (executing && executing.id !== id) {
-        results.push({
-          status: "skipped",
-          expeditionId: id,
-          reason: `Another expedition (${executing.id}) is already executing.`,
-          requiredAction: `Complete ${executing.id} before starting ${id}.`,
-        })
-        continue
-      }
       results.push(await startOneExpedition(ctx, id, false))
     }
     const errors = results.filter((r) => r.status === "error")
@@ -5193,7 +5182,6 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
       kind: "ExpeditionBatchStarted",
       missionId,
       processed: results.filter((r) => r.status === "ok").length,
-      skipped: results.filter((r) => r.status === "skipped").length,
       failed: errors.length,
       results,
     })

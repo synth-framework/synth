@@ -150,11 +150,10 @@ async function testBatchStart(projectDir, missionId) {
   assert(result.status === 0, `batch start must exit 0:\n${result.stderr}`)
   const output = parseJson(result.stdout)
   assert(output.kind === "ExpeditionBatchStarted", `expected ExpeditionBatchStarted, got ${output.kind}`)
-  assert(output.processed === 1, `expected 1 started, got ${output.processed}`)
-  assert(output.skipped === 2, `expected 2 skipped, got ${output.skipped}`)
+  assert(output.processed === 3, `expected 3 started, got ${output.processed}`)
   assert(output.failed === 0, `expected 0 failures, got ${output.failed}`)
 
-  console.log("[PASS] Batch start starts first committed expedition and skips remaining")
+  console.log("[PASS] Batch start starts all committed expeditions")
 }
 
 async function testBatchRequiresMission(projectDir) {

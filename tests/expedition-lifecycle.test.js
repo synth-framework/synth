@@ -483,21 +483,23 @@ async function testCreateWhileAnotherExecuting(projectDir, missionId) {
   assert(createOutput.kind === "ExpeditionDraft", `expedition create should return ExpeditionDraft, got ${createOutput.kind}`)
   const queuedId = createOutput.draftId
 
-  // Starting the queued expedition should be blocked while the first is executing.
+  // Starting the queued expedition is allowed while the first is executing.
   runSynth(["expedition", "approve", "--draft-id", queuedId], projectDir)
   runSynth(["expedition", "commit", "--proposal-id", queuedId], projectDir)
 
   const startResult = runSynth(["expedition", "start", "--id", queuedId], projectDir)
-  assert(startResult.status !== 0, "expedition start should fail while another is executing")
+  assert(startResult.status === 0, `expedition start should succeed while another is executing:\n${startResult.stderr}`)
   const startOutput = parseJson(startResult.stdout)
-  assert(startOutput.status === "error", "start failure should report error status")
-  assert(startOutput.error && startOutput.error.includes(executingId), `start failure should name the executing expedition, got ${JSON.stringify(startOutput)}`)
+  assert(startOutput.kind === "ExpeditionStarted", `expedition start should return ExpeditionStarted, got ${startOutput.kind}`)
+  assert(startOutput.result.status === "executing", `queued expedition should be executing, got ${startOutput.result.status}`)
 
-  // Clean up the executing expedition so subsequent mission planning is not blocked.
-  const archiveResult = runSynth(["expedition", "archive", "--id", executingId, "--reason", "Test cleanup"], projectDir)
-  assert(archiveResult.status === 0, `expedition archive cleanup must exit 0:\n${archiveResult.stderr}`)
+  // Clean up both executing expeditions so subsequent mission planning is not blocked.
+  const archiveResult1 = runSynth(["expedition", "archive", "--id", executingId, "--reason", "Test cleanup"], projectDir)
+  assert(archiveResult1.status === 0, `expedition archive cleanup must exit 0:\n${archiveResult1.stderr}`)
+  const archiveResult2 = runSynth(["expedition", "archive", "--id", queuedId, "--reason", "Test cleanup"], projectDir)
+  assert(archiveResult2.status === 0, `expedition archive cleanup must exit 0:\n${archiveResult2.stderr}`)
 
-  console.log("[PASS] Expedition create is allowed while another is executing; starting a second is still blocked")
+  console.log("[PASS] Expedition create is allowed while another is executing; starting a second is allowed")
 }
 
 async function main() {
