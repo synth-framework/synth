@@ -1,0 +1,14 @@
+{
+  "id": "test:governance-quiet-output",
+  "description": "npm script migration: test:governance-quiet-output",
+  "command": "node tests/governance-quiet-output.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1333,6 +1333,7 @@ async function cmdHelp() {
       { name: "--json", description: "Emit machine-clean JSON and suppress diagnostic logs to stderr" },
       { name: "--human", description: "Emit prose summaries instead of JSON" },
       { name: "--quiet", description: "Suppress bootstrap and diagnostic INFO/WARN/DEBUG logs" },
+      { name: "--no-bootstrap-logs", description: "Alias for --quiet; suppress bootstrap and diagnostic logs" },
       { name: "--summary", description: "Emit a condensed summary: status, kind, id, and next step" },
       { name: "--discovery-mode", description: "Reject mutating commands; safe for read-only exploration" },
     ],
@@ -1521,6 +1522,7 @@ async function cmdMissionApproveHelp() {
       { name: "--human", description: "Emit a human-readable summary instead of JSON" },
       { name: "--summary", description: "Emit a condensed status/ID/next-step summary" },
       { name: "--quiet", description: "Suppress bootstrap and diagnostic logs" },
+      { name: "--no-bootstrap-logs", description: "Alias for --quiet" },
     ],
     examples: [
       "synth mission approve --draft-id 74c3a70571facb87 --alignment-contract-id alignment-contract-msjisgwg-v05a18",
@@ -2307,6 +2309,7 @@ async function cmdExpeditionApproveHelp() {
       { name: "--human", description: "Emit a human-readable summary instead of JSON" },
       { name: "--summary", description: "Emit a condensed status/ID/next-step summary" },
       { name: "--quiet", description: "Suppress bootstrap and diagnostic logs" },
+      { name: "--no-bootstrap-logs", description: "Alias for --quiet" },
     ],
     examples: [
       "synth expedition approve --draft-id 0b15edbbb74e4701",
@@ -6681,8 +6684,8 @@ async function main() {
     process.env.SYNTH_QUIET_LOGS = "1"
   }
 
-  // EXP-QUIET-001: global --quiet suppresses bootstrap and diagnostic logs.
-  const quietFlag = rawArgs.includes("--quiet")
+  // EXP-QUIET-001: global --quiet and --no-bootstrap-logs suppress bootstrap and diagnostic logs.
+  const quietFlag = rawArgs.includes("--quiet") || rawArgs.includes("--no-bootstrap-logs")
   if (quietFlag) {
     setQuietMode(true)
   }
@@ -6697,7 +6700,13 @@ async function main() {
   // sentinel and remove it from parsing so it does not consume the next
   // positional argument.
   const discoveryModeFlag = rawArgs.includes("--discovery-mode")
-  const filteredArgs = rawArgs.filter((arg) => arg !== "--json" && arg !== "--discovery-mode" && arg !== "--quiet" && arg !== "--summary")
+  const filteredArgs = rawArgs.filter((arg) =>
+    arg !== "--json" &&
+    arg !== "--discovery-mode" &&
+    arg !== "--quiet" &&
+    arg !== "--no-bootstrap-logs" &&
+    arg !== "--summary"
+  )
   const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
 
   // Propagate the global --json flag to subcommands that need to know it
