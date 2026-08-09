@@ -1500,6 +1500,7 @@ async function cmdMissionHelp() {
     { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
     { name: "synth mission list [--status <status>] [--program <program-id>]", description: "List missions with optional filters" },
     { name: "synth mission show --id <mission-id>", description: "Show a single mission and its expeditions", args: "--id 74c3a70571facb87" },
+    { name: "synth mission verify-charter --file <path>", description: "Verify a Mission charter file before approval" },
     { name: "synth mission decisions [--draft-id <id>]", description: "List Mission decisions" },
     { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
     { name: "synth mission report --id <mission-id>", description: "Show mission status and its expeditions", args: "--id 74c3a70571facb87" },
@@ -2266,21 +2267,21 @@ async function cmdAlignmentPrepare() {
 
 async function cmdExpeditionHelp() {
   printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
-    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
-    { name: "synth expedition create --mission <mission> --template <id> [--subject <subject>]", description: "Create an Expedition from a named template (ci, deployment, observability, documentation)" },
-    { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
-    { name: "synth expedition approve --all-drafts --mission <id>", description: "Approve all draft Expeditions for a Mission" },
-    { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
-    { name: "synth expedition commit --all-approved --mission <id>", description: "Commit all approved Expeditions for a Mission" },
-    { name: "synth expedition start --id <id> [--no-auto-commit]", description: "Begin executing a committed Expedition (Committed → Executing); derived state is auto-committed by default" },
-    { name: "synth expedition start --all-committed --mission <id> [--no-auto-commit]", description: "Start all committed Expeditions for a Mission" },
-    { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] [--no-auto-commit]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
-    { name: "synth expedition finish --id <id> [--note <text>] [--force --reason <text>] [--no-auto-commit]", description: "Atomically attach git-diff evidence, certify convergence, and complete an executing Expedition" },
-    { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
-    { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
-    { name: "synth expedition evidence --id <id> [--git-diff] [--baseline <commit>] [--test-results <path>] [--attach <path>[,...]] [--note <text>] [--no-auto-commit]", description: "Capture and attach evidence artifacts to an executing Expedition" },
-    { name: "synth expedition refine --id <id> --note <text> [--no-auto-commit]", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
-    { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>] [--no-auto-commit]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
+    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] [--dry-run]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
+    { name: "synth expedition create --mission <mission> --template <id> [--subject <subject>] [--dry-run]", description: "Create an Expedition from a named template (ci, deployment, observability, documentation)" },
+    { name: "synth expedition approve --draft-id <id> [--dry-run]", description: "Approve an Expedition draft (Draft → Approved)" },
+    { name: "synth expedition approve --all-drafts --mission <id> [--dry-run]", description: "Approve all draft Expeditions for a Mission" },
+    { name: "synth expedition commit --proposal-id <id> [--dry-run]", description: "Commit approved Expedition to runtime (Approved → Committed)" },
+    { name: "synth expedition commit --all-approved --mission <id> [--dry-run]", description: "Commit all approved Expeditions for a Mission" },
+    { name: "synth expedition start --id <id> [--no-auto-commit] [--dry-run]", description: "Begin executing a committed Expedition (Committed → Executing); derived state is auto-committed by default" },
+    { name: "synth expedition start --all-committed --mission <id> [--no-auto-commit] [--dry-run]", description: "Start all committed Expeditions for a Mission" },
+    { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>] [--no-auto-commit] [--dry-run]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
+    { name: "synth expedition finish --id <id> [--note <text>] [--force --reason <text>] [--no-auto-commit] [--dry-run]", description: "Atomically attach git-diff evidence, certify convergence, and complete an executing Expedition" },
+    { name: "synth expedition cancel --id <id> --reason <reason> [--dry-run]", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
+    { name: "synth expedition archive --id <id> --reason <reason> [--dry-run]", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
+    { name: "synth expedition evidence --id <id> [--git-diff] [--baseline <commit>] [--test-results <path>] [--attach <path>[,...]] [--note <text>] [--no-auto-commit] [--dry-run]", description: "Capture and attach evidence artifacts to an executing Expedition" },
+    { name: "synth expedition refine --id <id> --note <text> [--no-auto-commit] [--dry-run]", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
+    { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>] [--no-auto-commit] [--dry-run]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
     { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
@@ -2291,7 +2292,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition rank --next", description: "Return the single highest-priority open expedition" },
     { name: "synth expedition rank --status <status>", description: "Rank expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
     { name: "synth expedition rank --program <program-id>", description: "Rank expeditions within a program", args: "--program EXP-PROGRAM-043" },
-  ], { note: "expedition list and rank are read-only and derived from docs/expeditions/*.md." }))
+  ], { note: "expedition list, show, report, and rank are read-only and derived from docs/expeditions/*.md. Mutating subcommands support --dry-run." }))
 }
 
 async function cmdExpeditionApproveHelp() {
@@ -6447,6 +6448,8 @@ function isNamespaceHelp(rawArgs: string[]): { namespace: string; handler: () =>
       return { namespace, handler: cmdMissionHelp }
     case "program":
       return { namespace, handler: cmdProgramHelp }
+    case "project":
+      return { namespace, handler: cmdProjectHelp }
     case "intent":
       return { namespace, handler: cmdIntentHelp }
     case "alignment":
