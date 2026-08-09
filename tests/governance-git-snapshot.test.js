@@ -299,7 +299,7 @@ test("expedition complete fails fast when source files are dirty", { timeout: TE
 
     const beforeEvents = await readEventLog(dir)
     const completeResult = runSynth(
-      ["expedition", "complete", "--id", expeditionId, "--force", "--reason", "test dirty source"],
+      ["expedition", "complete", "--id", expeditionId],
       dir,
     )
     assert.notStrictEqual(completeResult.status, 0, "expedition complete should fail when source changes are present")
