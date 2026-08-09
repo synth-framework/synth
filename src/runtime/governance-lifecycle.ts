@@ -1,4 +1,4 @@
-import type { CanonicalState, SynthEvent, CapabilityInvocation } from "../types/index.js"
+import type { CanonicalState, DerivedState, SynthEvent, CapabilityInvocation } from "../types/index.js"
 
 export const MAX_LIFECYCLE_DEPTH = 3
 
@@ -24,6 +24,7 @@ export interface LifecycleContinuation {
  */
 export function getLifecycleContinuation(
   state: CanonicalState,
+  derivedState: DerivedState,
   domainEvents: SynthEvent[],
   actor: string,
 ): LifecycleContinuation | null {
@@ -105,13 +106,20 @@ export function getLifecycleContinuation(
       if (!mission || mission.status !== "active") return null
       // Only auto-complete the mission when every expedition belonging to it
       // has reached a terminal state. This prevents premature completion for
-      // missions with multiple parallel expeditions.
+      // missions with multiple parallel expeditions. An expedition whose
+      // outcome has been certified as converged is also considered terminal,
+      // because convergence certification verifies the expedition delivered
+      // its aligned intent and may be closed automatically by the lifecycle.
+      const certifications = derivedState.convergenceCertifications ?? {}
       const missionExpeditions = Object.values(state.expeditions).filter(
         (e) => e.missionId === missionId
       )
-      const allTerminal = missionExpeditions.length > 0 && missionExpeditions.every(
-        (e) => e.status === "completed" || e.status === "cancelled"
-      )
+      const allTerminal = missionExpeditions.length > 0 && missionExpeditions.every((e) => {
+        if (e.status === "completed" || e.status === "cancelled") return true
+        return Object.values(certifications).some(
+          (c) => c.expeditionId === e.id && c.status === "certified"
+        )
+      })
       if (!allTerminal) return null
       return {
         invocation: {

@@ -393,8 +393,11 @@ export class ExecutionGate {
       if (lifecycleDepth < MAX_LIFECYCLE_DEPTH && invocation.context?.disableLifecycleContinuation !== true) {
         try {
           const updatedState = await this.runtime.getState()
+          const allEvents = await this.eventStore.loadAll()
+          const derivedState = buildDerivedState(allEvents)
           const continuation = getLifecycleContinuation(
             updatedState,
+            derivedState,
             executionResult.events,
             invocation.actor,
           )
