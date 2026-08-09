@@ -30,6 +30,7 @@
     "test": "node scripts/task-adapter-shim.js test",
     "test:governance-evaluation-enforcement": "node scripts/task-adapter-shim.js test:governance-evaluation-enforcement",
     "test:governance-quiet-output": "node scripts/task-adapter-shim.js test:governance-quiet-output",
+    "test:expedition-reuse-and-templates": "node scripts/task-adapter-shim.js test:expedition-reuse-and-templates",
     "test:proposal-evaluation": "node scripts/task-adapter-shim.js test:proposal-evaluation",
     "test:skr": "node scripts/task-adapter-shim.js test:skr",
     "test:audit": "node scripts/task-adapter-shim.js test:audit",

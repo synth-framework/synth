@@ -110,6 +110,7 @@ import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { validateEvaluationResult, formatEvaluationErrors } from "../domain/evaluation.js"
 import { generateConvergenceEvaluation } from "../governance/convergence-certification/auto-evaluation.js"
 import { buildDerivedState } from "../state/derived/index.js"
+import { findExpeditionTemplate, EXPEDITION_TEMPLATES } from "../governance/expedition-templates.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 import type { SynthEvent } from "../types/index.js"
@@ -2266,6 +2267,7 @@ async function cmdAlignmentPrepare() {
 async function cmdExpeditionHelp() {
   printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
     { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
+    { name: "synth expedition create --mission <mission> --template <id> [--subject <subject>]", description: "Create an Expedition from a named template (ci, deployment, observability, documentation)" },
     { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
     { name: "synth expedition approve --all-drafts --mission <id>", description: "Approve all draft Expeditions for a Mission" },
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
@@ -3243,14 +3245,36 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
-  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
+  let alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
   if (!alignmentContractId) {
+    // EXP-REUSE-001: surface approved alignment contracts so operators can reuse
+    // an existing baseline instead of creating a new one for every mission.
+    const lookupCtx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const events = await lookupCtx.runtime.loadEvents()
+    const derived = buildDerivedState(events)
+    const approvedContracts = Object.values(derived.alignmentContracts).filter(
+      (c) => c.status === "approved"
+    )
+
+    let suggestion: string
+    if (approvedContracts.length > 0) {
+      const list = approvedContracts
+        .map((c) => `  - ${c.id}: ${c.intentSummary || "(no summary)"}`)
+        .join("\n")
+      suggestion = `Approved alignment contracts available for reuse:\n${list}\n\nCreate a new contract with:\n  synth alignment prepare\nOr approve with an existing contract:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>`
+    } else {
+      suggestion = "No approved alignment contracts found.\nCreate one with:\n  synth alignment prepare\nThen approve the mission with:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>"
+    }
+
     printError(
       "Mission approval requires --alignment-contract-id.",
       {
         code: "MissingAlignmentContractId",
         category: "governance",
-        suggestion: "Create an alignment contract first:\n  synth alignment prepare\nThen approve the mission with:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>",
+        suggestion,
       },
     )
   }
@@ -4909,14 +4933,38 @@ async function cmdRepairStateHelp() {
 
 async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   const missionSubject = typeof flags.mission === "string" ? flags.mission : ""
-  const subject = typeof flags.subject === "string" ? flags.subject : ""
-  const goal = typeof flags.goal === "string" ? flags.goal : ""
+  let subject = typeof flags.subject === "string" ? flags.subject : ""
+  let goal = typeof flags.goal === "string" ? flags.goal : ""
+  let scope: string[] = []
+
+  const templateId = typeof flags.template === "string" ? flags.template : ""
+  if (templateId) {
+    const template = findExpeditionTemplate(templateId)
+    if (!template) {
+      printError(
+        `Unknown expedition template: ${templateId}`,
+        {
+          code: "UnknownExpeditionTemplate",
+          category: "configuration",
+          suggestion: `Available templates: ${EXPEDITION_TEMPLATES.map((t) => t.id).join(", ")}`,
+        },
+      )
+    }
+    if (!subject) subject = template.name
+    if (!goal) goal = template.goal
+    scope = template.defaultScope ? [...template.defaultScope] : []
+  }
+
   const rawScope = typeof flags.scope === "string" ? flags.scope : ""
-  const scope = rawScope
+  const explicitScope = rawScope
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
-  if (!missionSubject || !subject) printError("--mission and --subject are required")
+  if (explicitScope.length > 0) {
+    scope = explicitScope
+  }
+
+  if (!missionSubject || !subject) printError("--mission and --subject are required (or use --template)")
 
   // Resolve the project's actual governance state before allowing expedition
   // proposal. Planning itself remains in-memory.
