@@ -29,6 +29,7 @@ coverage/
 
 .synth/cache/
 .synth/data/
+.synth/ai/
 data/*
 !data/tasks/
 !data/tasks/*.task.json

@@ -2349,7 +2349,7 @@ async function cmdAiHelp() {
 
 async function cmdAiRefresh() {
   const synthDir = sdk.paths.synthDir(sdk.workspace.root())
-  await refreshAiMetadata(synthDir)
+  await refreshAiMetadata(synthDir, true)
   printJson({ status: "ok", message: "AI metadata refreshed", path: path.join(synthDir, "ai") })
 }
 

@@ -197,14 +197,31 @@ export async function writeAiInteractionManifest(
   synthDir: string,
   state: CanonicalState,
   manifest: { name?: string; purpose?: string; governanceVersion?: string },
+  force = false,
 ): Promise<void> {
   const aiDir = path.join(synthDir, "ai")
   await fs.mkdir(aiDir, { recursive: true })
 
   const interactionManifest = deriveInteractionManifest(state, manifest)
-  await fs.writeFile(
-    path.join(aiDir, "interaction-manifest.json"),
-    JSON.stringify(interactionManifest, null, 2),
-    "utf-8",
-  )
+  const manifestPath = path.join(aiDir, "interaction-manifest.json")
+
+  if (!force) {
+    let existing: AiInteractionManifest | undefined
+    try {
+      existing = JSON.parse(await fs.readFile(manifestPath, "utf-8")) as AiInteractionManifest
+    } catch {
+      existing = undefined
+    }
+    if (existing && manifestsEqualExceptGeneratedAt(existing, interactionManifest)) {
+      return
+    }
+  }
+
+  await fs.writeFile(manifestPath, JSON.stringify(interactionManifest, null, 2), "utf-8")
+}
+
+function manifestsEqualExceptGeneratedAt(a: AiInteractionManifest, b: AiInteractionManifest): boolean {
+  const { generatedAt: _a, ...aRest } = a
+  const { generatedAt: _b, ...bRest } = b
+  return JSON.stringify(aRest) === JSON.stringify(bRest)
 }

@@ -1,13 +1,13 @@
 {
   "expedition": "EXP-GOVERNABILITY-006B",
   "specificationId": "lifecycle-replay-specification-program-027",
-  "generatedAt": "2026-07-24T01:26:55.183Z",
+  "generatedAt": "2026-08-09T00:05:31.788Z",
   "replays": {
     "happyPath": {
       "type": "happy",
       "result": "Mission completed",
-      "eventCount": 24,
-      "stateHash": "066bde814f80d2e00153591054b4a4e9e5e24e55cffce910137a088843fe03b2",
+      "eventCount": 25,
+      "stateHash": "9233e8180b065ef836c45eb1447e08dcf3f854de100bc3e046441f1209afa8b7",
       "eventSequence": [
         "SYSTEM_GENESIS",
         "REFERENCE_EVIDENCE_CREATED",
@@ -31,6 +31,7 @@
         "ACCEPTANCE_GATE_OPENED",
         "ACCEPTANCE_GATE_RESOLVED",
         "EXPEDITION_COMPLETED",
+        "GOVERNANCE_SNAPSHOT_FAILED",
         "CONVERGENCE_CERTIFIED",
         "MISSION_COMPLETED"
       ]
@@ -38,8 +39,8 @@
     "recovery": {
       "type": "recovery",
       "result": "Mission completed after revision",
-      "eventCount": 27,
-      "stateHash": "eee6539d00f3191348dcd33269d076779132fa84c76c1ccc9d5b15ead11653e0",
+      "eventCount": 28,
+      "stateHash": "e23de3d7366c4f8714b6d7c48a13a9ba91f42924b7ab307d072705fe832b66a7",
       "eventSequence": [
         "SYSTEM_GENESIS",
         "REFERENCE_EVIDENCE_CREATED",
@@ -66,6 +67,7 @@
         "ACCEPTANCE_GATE_OPENED",
         "ACCEPTANCE_GATE_RESOLVED",
         "EXPEDITION_COMPLETED",
+        "GOVERNANCE_SNAPSHOT_FAILED",
         "CONVERGENCE_CERTIFIED",
         "MISSION_COMPLETED"
       ]
@@ -94,8 +96,8 @@
       "type": "drift",
       "driftClassId": "D02",
       "result": "Mission completion blocked",
-      "eventCount": 23,
-      "stateHash": "9e919f8213e8abed094d22d6e9c5384ede6d662e08deeb3cfed5713124b6a6dd",
+      "eventCount": 24,
+      "stateHash": "b7468047bd89a60083362c6a4547c0217be328e0698264d38f0c5aa08a865c8c",
       "eventSequence": [
         "SYSTEM_GENESIS",
         "REFERENCE_EVIDENCE_CREATED",
@@ -119,6 +121,7 @@
         "ACCEPTANCE_GATE_OPENED",
         "ACCEPTANCE_GATE_RESOLVED",
         "EXPEDITION_COMPLETED",
+        "GOVERNANCE_SNAPSHOT_FAILED",
         "CONVERGENCE_DIVERGED"
       ]
     }
