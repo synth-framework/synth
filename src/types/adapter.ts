@@ -40,6 +40,8 @@ export type AdapterFamily =
   | "filesystem"
   | "operational-artifact"
   | "runtime"
+  | "planning"
+  | "intelligence"
 
 export type AdapterDeterminism = "deterministic" | "contextual" | "non-deterministic"
 

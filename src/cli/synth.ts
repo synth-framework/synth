@@ -21,6 +21,7 @@ import { refreshAiMetadata, normalizeDiscoveryRepositoryType } from "./ai-metada
 import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
+import { createDefaultAdapterCatalog } from "../adapters/adapter-catalog.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
@@ -164,24 +165,6 @@ const COMMANDS = [
   { name: "migrate", description: "Detect, plan, archive, and import legacy Synth state (detect, plan, archive, import)" },
 ]
 
-const ADAPTER_NAMES = [
-  "repository",
-  "github",
-  "tdd",
-  "bdd",
-  "conversation",
-  "document",
-  "filesystem",
-  "specification",
-  "knowledge-extraction",
-  "confidence",
-  "dependency",
-  "architecture",
-  "mission-builder",
-  "expedition-builder",
-  "objective-builder",
-  "wizard",
-]
 
 // Wraps shared setAgentTelemetry to parse CLI flags into telemetry data.
 function setAgentTelemetryFromFlags(flags: Record<string, string | boolean>) {
@@ -2719,6 +2702,9 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   await sdk.files.ensureDirectory(synthDir)
   await sdk.files.ensureDirectory(dataDir)
 
+  const adapterCatalog = createDefaultAdapterCatalog()
+  const capabilities = adapterCatalog.list()
+
   const manifest = {
     schema: "synth-bootstrap-manifest-v1",
     version: await getVersion(),
@@ -2727,7 +2713,7 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     root: targetDir,
     generatedAt: new Date().toISOString(),
     commands: COMMANDS.map((c) => ({ name: c.name, description: c.description })),
-    capabilities: ADAPTER_NAMES,
+    capabilities,
     layout: {
       docs: "docs/",
       generatedDocs: "docs/generated/",

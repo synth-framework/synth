@@ -12,82 +12,25 @@ import type {
   WorkflowTemplate,
 } from "./types.js"
 import { WORKFLOW_TEMPLATES } from "./templates/index.js"
+import {
+  createDefaultAdapterCatalog,
+  type AdapterCatalog,
+} from "../../adapters/adapter-catalog.js"
+import type { AdapterDescriptor } from "../../types/adapter.js"
 
-interface AdapterCatalogEntry {
-  adapterId: string
-  kind: RecommendedAdapter["kind"]
-  version: string
-  runtimes: string[]
-  languages: string[]
-  platforms: string[]
-  capabilities: string[]
-  optionalCapabilities: string[]
-}
-
-const ADAPTER_CATALOG: AdapterCatalogEntry[] = [
-  {
-    adapterId: "nextjs-runtime",
-    kind: "runtime",
-    version: "1.0.0",
-    runtimes: ["web", "node"],
-    languages: ["typescript", "javascript"],
-    platforms: ["vercel"],
-    capabilities: ["ui"],
-    optionalCapabilities: ["frontend", "react"],
-  },
-  {
-    adapterId: "api-route",
-    kind: "runtime",
-    version: "1.0.0",
-    runtimes: ["web", "node"],
-    languages: ["typescript", "javascript"],
-    platforms: ["vercel"],
-    capabilities: ["api"],
-    optionalCapabilities: ["launch"],
-  },
-  {
-    adapterId: "python-cli",
-    kind: "runtime",
-    version: "1.0.0",
-    runtimes: ["cli"],
-    languages: ["python"],
-    platforms: [],
-    capabilities: ["cli"],
-    optionalCapabilities: [],
-  },
-  {
-    adapterId: "tdd",
-    kind: "methodology",
-    version: "1.0.0",
-    runtimes: [],
-    languages: [],
-    platforms: [],
-    capabilities: ["testing"],
-    optionalCapabilities: ["test"],
-  },
-  {
-    adapterId: "github",
-    kind: "integration",
-    version: "1.0.0",
-    runtimes: [],
-    languages: [],
-    platforms: ["github"],
-    capabilities: ["ci"],
-    optionalCapabilities: ["github-actions"],
-  },
-  {
-    adapterId: "repository",
-    kind: "integration",
-    version: "1.0.0",
-    runtimes: [],
-    languages: [],
-    platforms: ["git"],
-    capabilities: ["repository"],
-    optionalCapabilities: ["version-control"],
-  },
-]
+const catalog: AdapterCatalog = createDefaultAdapterCatalog()
 
 const MAX_ADAPTERS = 16
+
+function toRecommendedKind(kind: AdapterDescriptor["kind"]): RecommendedAdapter["kind"] {
+  if (kind === "integration" || kind === "methodology" || kind === "runtime") {
+    return kind
+  }
+  // Fallback for descriptors with planning/intelligence kinds that are not
+  // valid first-contact recommendations. They are scored normally but
+  // surfaced as integration adapters.
+  return "integration"
+}
 
 function normalize(value: string): string {
   return value.toLowerCase().trim()
@@ -120,14 +63,19 @@ export function recommendAdapters(options: MaterializationOptions): RecommendedA
   const requiredCaps = approvedArtifact.capabilities.required.map(normalize)
   const optionalCaps = approvedArtifact.capabilities.optional.map(normalize)
 
-  const scored = ADAPTER_CATALOG.map((entry): RecommendedAdapter => {
+  const descriptors = catalog.all()
+
+  const scored = descriptors.map((descriptor): RecommendedAdapter => {
     let score = 0
     const matchedRequired: string[] = []
     const matchedOptional: string[] = []
     const matchedPlatforms: string[] = []
 
+    const descriptorCapabilities = descriptor.capabilities.map(normalize)
+    const descriptorOptionalCapabilities = (descriptor.optionalCapabilities ?? []).map(normalize)
+
     for (const cap of requiredCaps) {
-      if (entry.capabilities.map(normalize).includes(cap)) {
+      if (descriptorCapabilities.includes(cap)) {
         score += 0.4
         matchedRequired.push(cap)
       }
@@ -135,8 +83,8 @@ export function recommendAdapters(options: MaterializationOptions): RecommendedA
 
     for (const cap of optionalCaps) {
       if (
-        entry.capabilities.map(normalize).includes(cap) ||
-        entry.optionalCapabilities.map(normalize).includes(cap)
+        descriptorCapabilities.includes(cap) ||
+        descriptorOptionalCapabilities.includes(cap)
       ) {
         score += 0.1
         matchedOptional.push(cap)
@@ -144,27 +92,27 @@ export function recommendAdapters(options: MaterializationOptions): RecommendedA
     }
 
     for (const platform of platforms) {
-      if (entry.platforms.map(normalize).includes(platform)) {
+      if ((descriptor.platforms ?? []).map(normalize).includes(platform)) {
         score += 0.2
         matchedPlatforms.push(platform)
       }
     }
 
-    const runtimeMatch = entry.runtimes.map(normalize).includes(targetRuntime)
-    const languageMatch = hasIntersection(entry.languages, languages)
+    const runtimeMatch = (descriptor.runtimes ?? []).map(normalize).includes(targetRuntime)
+    const languageMatch = hasIntersection(descriptor.languages ?? [], languages)
     if (runtimeMatch || languageMatch) {
       score += 0.3
     }
 
     // Intent-text boost for common keywords that are not captured as
     // structured capabilities.
-    if (entry.adapterId === "nextjs-runtime" && /\b(web|ui|frontend|react)\b/.test(intentText)) {
+    if (descriptor.id === "nextjs-runtime" && /\b(web|ui|frontend|react)\b/.test(intentText)) {
       score += 0.1
     }
-    if (entry.adapterId === "api-route" && /\b(api|endpoint|backend)\b/.test(intentText)) {
+    if (descriptor.id === "api-route" && /\b(api|endpoint|backend)\b/.test(intentText)) {
       score += 0.1
     }
-    if (entry.adapterId === "python-cli" && /\b(cli|command.line|script)\b/.test(intentText)) {
+    if (descriptor.id === "python-cli" && /\b(cli|command.line|script)\b/.test(intentText)) {
       score += 0.1
     }
 
@@ -188,11 +136,11 @@ export function recommendAdapters(options: MaterializationOptions): RecommendedA
 
     const reason = reasons.length > 0
       ? reasons.join("; ")
-      : `Candidate adapter for ${entry.kind} integration`
+      : `Candidate adapter for ${descriptor.kind} integration`
 
     return {
-      adapterId: entry.adapterId,
-      kind: entry.kind,
+      adapterId: descriptor.id,
+      kind: toRecommendedKind(descriptor.kind),
       confidence: score,
       reason,
       required: matchedRequired.length > 0,
@@ -210,7 +158,7 @@ export function recommendAdapters(options: MaterializationOptions): RecommendedA
  * Return the registered version for a recommended adapter id.
  */
 export function getAdapterVersion(adapterId: string): string {
-  return ADAPTER_CATALOG.find((entry) => entry.adapterId === adapterId)?.version ?? "1.0.0"
+  return catalog.resolve(adapterId)?.version ?? "1.0.0"
 }
 
 /**
