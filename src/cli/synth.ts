@@ -2055,8 +2055,11 @@ async function cmdExpeditionHelp() {
   printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
     { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
     { name: "synth expedition approve --draft-id <id>", description: "Approve an Expedition draft (Draft → Approved)" },
+    { name: "synth expedition approve --all-drafts --mission <id>", description: "Approve all draft Expeditions for a Mission" },
     { name: "synth expedition commit --proposal-id <id>", description: "Commit approved Expedition to runtime (Approved → Committed)" },
+    { name: "synth expedition commit --all-approved --mission <id>", description: "Commit all approved Expeditions for a Mission" },
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
+    { name: "synth expedition start --all-committed --mission <id>", description: "Start the next committed Expedition for a Mission (skips remaining while another is executing)" },
     { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
     { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
@@ -2082,20 +2085,23 @@ async function cmdExpeditionApproveHelp() {
     name: "synth",
     namespace: "expedition",
     subcommand: "approve",
-    description: "Approve an Expedition draft so it can be committed and started.",
-    usage: "synth expedition approve --draft-id <draft-id>",
+    description: "Approve an Expedition draft so it can be committed and started, or approve all drafts for a Mission.",
+    usage: "synth expedition approve --draft-id <draft-id> | synth expedition approve --all-drafts --mission <mission-id>",
     required: [
       { name: "--draft-id <draft-id>", description: "Id of the Expedition draft to approve (returned by synth expedition create)" },
+      { name: "--all-drafts --mission <mission-id>", description: "Approve every Expedition in draft status for the given Mission" },
     ],
     optional: [
+      { name: "--dry-run", description: "Preview which drafts would be approved without mutating state" },
       { name: "--human", description: "Emit a human-readable summary instead of JSON" },
       { name: "--summary", description: "Emit a condensed status/ID/next-step summary" },
       { name: "--quiet", description: "Suppress bootstrap and diagnostic logs" },
     ],
     examples: [
       "synth expedition approve --draft-id 0b15edbbb74e4701",
+      "synth expedition approve --all-drafts --mission 0c3c95e581c0fd75",
     ],
-    note: "Approval advances the Expedition from Draft to Approved.",
+    note: "Approval advances the Expedition from Draft to Approved. Batch mode skips expeditions that are no longer in draft state.",
   })
 }
 
@@ -4784,36 +4790,42 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
   })
 }
 
-async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
-  const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
-  if (!draftId) printError("--draft-id is required")
+function findExpeditionIdsByMissionAndStatus(
+  state: import("../types/index.js").CanonicalState,
+  missionId: string,
+  status: string,
+): string[] {
+  return Object.values(state.expeditions)
+    .filter((e: any) => e.missionId === missionId && e.status === status)
+    .map((e: any) => e.id)
+    .sort()
+}
 
-  // EXP-DRYRUN-001: preview mode short-circuits before gate decisions or draft
-  // file access so operators can see what event would be appended.
-  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
-    const ctx = await bootstrapWithCapabilities({
-      skipGenesis: true,
-      infra: { persistence: "file" },
-    })
-    const dryRun = await runLifecycleDryRun(ctx, {
+async function approveOneExpedition(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  draftId: string,
+  dryRun: boolean,
+): Promise<Record<string, unknown>> {
+  if (dryRun) {
+    return runLifecycleDryRun(ctx, {
       capability: "ApproveExpedition",
       payload: { id: draftId },
       eventType: "EXPEDITION_APPROVED",
       expeditionId: draftId,
       targetStatus: "approved",
     })
-    printJson(dryRun)
-    return
   }
 
-  const gateCtx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
-  const state = await gateCtx.runtime.getState()
-  const intake = await gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state, gateCtx.runtime)
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "expedition.approve", expeditionId: draftId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
-    printGateBlock(intake)
+    return {
+      status: "error",
+      draftId,
+      code: "LifecycleBlocked",
+      error: intake.reason,
+      requiredAction: intake.requiredAction,
+    }
   }
 
   const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
@@ -4823,18 +4835,13 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
   try {
     draftData = JSON.parse(await fs.readFile(draftPath, "utf-8"))
   } catch {
-    printError(`Draft not found: ${draftPath}`)
+    return { status: "error", draftId, code: "DraftNotFound", error: `Draft not found: ${draftPath}` }
   }
 
   const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
   if (!integrity.ok) {
-    printError(integrity.message)
+    return { status: "error", draftId, code: "DraftIntegrityFailed", error: integrity.message }
   }
-
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
 
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
@@ -4843,48 +4850,105 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printError(result.error || "Unknown execution gate error", "ExpeditionApproveFailed")
+    return { status: "error", draftId, code: "ExpeditionApproveFailed", error: result.error || "Unknown execution gate error" }
   }
 
-  printJson({
+  return {
     status: "ok",
     kind: "ExpeditionApproved",
     draftId,
     proposalId: draftId,
     result: result.result,
     nextStep: `synth expedition commit --proposal-id ${draftId}`,
-  })
+  }
 }
 
-async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
-  const proposalId = typeof flags["proposal-id"] === "string" ? flags["proposal-id"] : ""
-  if (!proposalId) printError("--proposal-id is required")
+async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
+  const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
+  const missionId = typeof flags.mission === "string" ? flags.mission : undefined
+  const allDrafts = flags["all-drafts"] === true || flags["all-drafts"] === "true"
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
 
-  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+  if (allDrafts) {
+    if (!missionId) printError("--all-drafts requires --mission")
+    if (draftId) printError("Cannot use --draft-id with --all-drafts")
+
     const ctx = await bootstrapWithCapabilities({
       skipGenesis: true,
       infra: { persistence: "file" },
     })
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const state = await ctx.runtime.getState()
+    const ids = findExpeditionIdsByMissionAndStatus(state, missionId, "draft")
+
+    if (dryRun) {
+      const previews = []
+      for (const id of ids) {
+        previews.push(await approveOneExpedition(ctx, id, true))
+      }
+      printJson({
+        status: "ok",
+        kind: "ExpeditionBatchApproveDryRun",
+        missionId,
+        wouldApprove: ids,
+        previews,
+      })
+      return
+    }
+
+    const results = []
+    for (const id of ids) {
+      results.push(await approveOneExpedition(ctx, id, false))
+    }
+    const errors = results.filter((r) => r.status === "error")
+    printJson({
+      status: errors.length === 0 ? "ok" : "error",
+      kind: "ExpeditionBatchApproved",
+      missionId,
+      processed: results.filter((r) => r.status === "ok").length,
+      failed: errors.length,
+      results,
+      nextStep: errors.length === 0 ? `synth expedition commit --all-approved --mission ${missionId}` : undefined,
+    })
+    if (errors.length > 0) process.exit(1)
+    return
+  }
+
+  if (!draftId) printError("--draft-id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const result = await approveOneExpedition(ctx, draftId, dryRun)
+  printJson(result)
+  if (result.status === "error") process.exit(1)
+}
+
+async function commitOneExpedition(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  proposalId: string,
+  dryRun: boolean,
+): Promise<Record<string, unknown>> {
+  if (dryRun) {
+    return runLifecycleDryRun(ctx, {
       capability: "CommitExpedition",
       payload: { id: proposalId },
       eventType: "EXPEDITION_COMMITTED",
       expeditionId: proposalId,
       targetStatus: "committed",
     })
-    printJson(dryRun)
-    return
   }
-
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
 
   const state = await ctx.runtime.getState()
   const intake = await gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
-    printGateBlock(intake)
+    return {
+      status: "error",
+      proposalId,
+      code: "LifecycleBlocked",
+      error: intake.reason,
+      requiredAction: intake.requiredAction,
+    }
   }
 
   const result = await ctx.api.handleIntent({
@@ -4894,16 +4958,77 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printError(result.error || "Unknown execution gate error", "ExpeditionCommitFailed")
+    return { status: "error", proposalId, code: "ExpeditionCommitFailed", error: result.error || "Unknown execution gate error" }
   }
 
-  printJson({
+  return {
     status: "ok",
     kind: "ExpeditionCommitted",
     proposalId,
     result: result.result,
     nextStep: `synth expedition start --id ${proposalId}`,
+  }
+}
+
+async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
+  const proposalId = typeof flags["proposal-id"] === "string" ? flags["proposal-id"] : ""
+  const missionId = typeof flags.mission === "string" ? flags.mission : undefined
+  const allApproved = flags["all-approved"] === true || flags["all-approved"] === "true"
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+
+  if (allApproved) {
+    if (!missionId) printError("--all-approved requires --mission")
+    if (proposalId) printError("Cannot use --proposal-id with --all-approved")
+
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const state = await ctx.runtime.getState()
+    const ids = findExpeditionIdsByMissionAndStatus(state, missionId, "approved")
+
+    if (dryRun) {
+      const previews = []
+      for (const id of ids) {
+        previews.push(await commitOneExpedition(ctx, id, true))
+      }
+      printJson({
+        status: "ok",
+        kind: "ExpeditionBatchCommitDryRun",
+        missionId,
+        wouldCommit: ids,
+        previews,
+      })
+      return
+    }
+
+    const results = []
+    for (const id of ids) {
+      results.push(await commitOneExpedition(ctx, id, false))
+    }
+    const errors = results.filter((r) => r.status === "error")
+    printJson({
+      status: errors.length === 0 ? "ok" : "error",
+      kind: "ExpeditionBatchCommitted",
+      missionId,
+      processed: results.filter((r) => r.status === "ok").length,
+      failed: errors.length,
+      results,
+      nextStep: errors.length === 0 ? `synth expedition start --all-committed --mission ${missionId}` : undefined,
+    })
+    if (errors.length > 0) process.exit(1)
+    return
+  }
+
+  if (!proposalId) printError("--proposal-id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
   })
+  const result = await commitOneExpedition(ctx, proposalId, dryRun)
+  printJson(result)
+  if (result.status === "error") process.exit(1)
 }
 
 function resolveExpeditionId(flags: Record<string, string | boolean>): string {
@@ -4955,47 +5080,45 @@ async function runLifecycleDryRun(
 
 function getCurrentGitCommit(): string | undefined {
   try {
-    return execSync("git rev-parse HEAD", { cwd: process.cwd(), encoding: "utf-8" }).trim()
+    return execSync("git rev-parse HEAD", {
+      cwd: process.cwd(),
+      encoding: "utf-8",
+      stdio: "pipe",
+    }).trim()
   } catch {
     return undefined
   }
 }
 
-async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
-  if (!expeditionId) printError("--id is required")
-
+async function startOneExpedition(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  expeditionId: string,
+  dryRun: boolean,
+): Promise<Record<string, unknown>> {
   const baselineCommit = getCurrentGitCommit()
   const startPayload: Record<string, unknown> = { id: expeditionId }
   if (baselineCommit) startPayload.baselineCommit = baselineCommit
 
-  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
-    const ctx = await bootstrapWithCapabilities({
-      skipGenesis: true,
-      infra: { persistence: "file" },
-    })
-    const dryRun = await runLifecycleDryRun(ctx, {
+  if (dryRun) {
+    return runLifecycleDryRun(ctx, {
       capability: "StartExpedition",
       payload: startPayload,
       eventType: "EXPEDITION_STARTED",
       expeditionId,
       targetStatus: "executing",
     })
-    printJson(dryRun)
-    return
   }
-
-  // Use the project's actual event log so the StartExpedition event is
-  // persisted and replayable.
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
 
   const state = await ctx.runtime.getState()
   const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
-    printGateBlock(intake)
+    return {
+      status: "error",
+      expeditionId,
+      code: "LifecycleBlocked",
+      error: intake.reason,
+      requiredAction: intake.requiredAction,
+    }
   }
 
   const result = await ctx.api.handleIntent({
@@ -5005,16 +5128,88 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   })
 
   if (result.status !== "ok") {
-    printError(result.error || "Unknown execution gate error", "ExpeditionStartFailed")
+    return { status: "error", expeditionId, code: "ExpeditionStartFailed", error: result.error || "Unknown execution gate error" }
   }
 
-  printJson({
+  return {
     status: "ok",
     kind: "ExpeditionStarted",
     expeditionId,
     result: result.result,
     nextStep: `synth expedition complete --id ${expeditionId}`,
+  }
+}
+
+async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  const missionId = typeof flags.mission === "string" ? flags.mission : undefined
+  const allCommitted = flags["all-committed"] === true || flags["all-committed"] === "true"
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+
+  if (allCommitted) {
+    if (!missionId) printError("--all-committed requires --mission")
+    if (expeditionId) printError("Cannot use --id with --all-committed")
+
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const state = await ctx.runtime.getState()
+    const ids = findExpeditionIdsByMissionAndStatus(state, missionId, "committed")
+
+    if (dryRun) {
+      const previews = []
+      for (const id of ids) {
+        previews.push(await startOneExpedition(ctx, id, true))
+      }
+      printJson({
+        status: "ok",
+        kind: "ExpeditionBatchStartDryRun",
+        missionId,
+        wouldStart: ids,
+        previews,
+      })
+      return
+    }
+
+    const results = []
+    for (const id of ids) {
+      const currentState = await ctx.runtime.getState()
+      const executing = Object.values(currentState.expeditions).find((e: any) => e.status === "executing")
+      if (executing && executing.id !== id) {
+        results.push({
+          status: "skipped",
+          expeditionId: id,
+          reason: `Another expedition (${executing.id}) is already executing.`,
+          requiredAction: `Complete ${executing.id} before starting ${id}.`,
+        })
+        continue
+      }
+      results.push(await startOneExpedition(ctx, id, false))
+    }
+    const errors = results.filter((r) => r.status === "error")
+    printJson({
+      status: errors.length === 0 ? "ok" : "error",
+      kind: "ExpeditionBatchStarted",
+      missionId,
+      processed: results.filter((r) => r.status === "ok").length,
+      skipped: results.filter((r) => r.status === "skipped").length,
+      failed: errors.length,
+      results,
+    })
+    if (errors.length > 0) process.exit(1)
+    return
+  }
+
+  if (!expeditionId) printError("--id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
   })
+  const result = await startOneExpedition(ctx, expeditionId, dryRun)
+  printJson(result)
+  if (result.status === "error") process.exit(1)
 }
 
 async function cmdExpeditionPause(flags: Record<string, string | boolean>) {
