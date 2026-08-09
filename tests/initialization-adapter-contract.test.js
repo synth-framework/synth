@@ -303,7 +303,7 @@ test("filesystem initialization adapter describe returns canonical descriptor", 
   const descriptor = adapter.describe()
 
   assert.ok(descriptor, "describe returns a descriptor")
-  assert.strictEqual(descriptor.id, "filesystem")
+  assert.strictEqual(descriptor.id, "filesystem-initialization")
   assert.strictEqual(descriptor.kind, "integration")
   assert.strictEqual(descriptor.family, "initialization")
   assert.ok(Array.isArray(descriptor.capabilities))

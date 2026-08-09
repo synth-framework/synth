@@ -15,7 +15,7 @@
 import fs from "fs"
 import path from "path"
 import { execSync } from "child_process"
-import type { AdapterState, AdapterHealth, AdapterHealthState } from "../../types/index.js"
+import type { AdapterState, AdapterHealth, AdapterHealthState, AdapterDescriptor } from "../../types/index.js"
 import type {
   TddAdapter,
   TddConfig,
@@ -37,6 +37,19 @@ export class TddAdapterImpl implements TddAdapter {
     kind: "tdd" as const,
     category: "methodology" as const,
     description: "Test-Driven Development methodology adapter",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "tdd",
+      name: "TDD Methodology Adapter",
+      version: this.metadata.version,
+      kind: "methodology",
+      family: "planning",
+      description: this.metadata.description,
+      capabilities: ["testing", "test", "test-generation", "red-green-refactor", "test-evidence", "coverage-tracking"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

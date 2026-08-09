@@ -18,6 +18,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { WizardAdapter, WizardAction, WizardConfig } from "./types.js"
 
@@ -28,6 +29,19 @@ export class WizardAdapterImpl implements WizardAdapter {
     kind: "wizard" as const,
     category: "planning" as const,
     description: "Wizard planning adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "wizard",
+      name: "Wizard Adapter",
+      version: this.metadata.version,
+      kind: "planning",
+      family: "planning",
+      description: this.metadata.description,
+      capabilities: ["objective-wizard", "interactive-planning", "action-generation"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

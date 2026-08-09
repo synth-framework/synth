@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { ConfidenceAdapter, ConfidenceAdapterConfig, ConfidenceReport } from "./types.js"
 
@@ -27,6 +28,19 @@ export class ConfidenceAdapterImpl implements ConfidenceAdapter {
     kind: "confidence" as const,
     category: "intelligence" as const,
     description: "Confidence evaluation intelligence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "confidence",
+      name: "Confidence Evaluation Adapter",
+      version: this.metadata.version,
+      kind: "intelligence",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["confidence-scoring", "uncertainty-aggregation", "risk-highlighting"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

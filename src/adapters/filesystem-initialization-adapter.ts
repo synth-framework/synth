@@ -99,7 +99,7 @@ export function createFilesystemInitializationAdapter(root: string = process.cwd
 
     describe(): AdapterDescriptor {
       return {
-        id: "filesystem",
+        id: "filesystem-initialization",
         name: "Filesystem Initialization Adapter",
         version: FILESYSTEM_ADAPTER_VERSION,
         kind: "integration",
