@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.1] — 2026-08-09
+
+### Other
+
+- expedition(6b189799e5c4d44c): add atomic expedition finish command
+
+
 ## [2.6.0] — 2026-08-09
 
 ### Added
