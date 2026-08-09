@@ -9,7 +9,7 @@
 // environment interaction explicit.
 // ============================================================
 
-import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation } from "../types.js"
+import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation, AdapterDescriptor } from "../types.js"
 import type { GitProvider } from "../providers/git-provider.js"
 import { createProcessGitProvider } from "../providers/process-git-provider.js"
 
@@ -46,6 +46,20 @@ export function createGitDiscoveryAdapterWithProvider(git: GitProvider): Discove
     id: GIT_ADAPTER_ID,
     version: GIT_ADAPTER_VERSION,
     determinism: "deterministic",
+
+    describe(): AdapterDescriptor {
+      return {
+        id: GIT_ADAPTER_ID,
+        name: "Git Discovery Adapter",
+        version: GIT_ADAPTER_VERSION,
+        kind: "integration",
+        family: "discovery",
+        description: "Produces immutable observations about a Git repository",
+        sourceTypes: ["filesystem"],
+        capabilities: ["git-repository-detection", "remote-observation", "branch-observation", "commit-observation"],
+        determinism: "deterministic",
+      }
+    },
 
     canHandle(source: DiscoverySource): boolean {
       return source.type === "filesystem"

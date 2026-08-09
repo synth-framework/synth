@@ -21,6 +21,7 @@ import type {
   ProjectModel,
   ProjectModelInput,
 } from "../initialization/project-model.js"
+import type { AdapterDescriptor } from "../types/adapter.js"
 
 export type SourceType =
   | "unknown"
@@ -63,6 +64,9 @@ export interface InitializationAdapter {
    * produce missions, expeditions, or work items.
    */
   collectEvidence(input: InitializationInput): Promise<InitializationEvidence>
+
+  /** Return the canonical descriptor for this adapter. */
+  describe?(): AdapterDescriptor
 }
 
 /**

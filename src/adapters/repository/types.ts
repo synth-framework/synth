@@ -2,7 +2,7 @@
 // ADAPTER: Repository — Types
 // ============================================================
 
-import type { AdapterState, ObservationBatch } from "../../types/index.js"
+import type { AdapterState, ObservationBatch, AdapterDescriptor } from "../../types/index.js"
 
 export type PromotionMode = "direct" | "staged"
 
@@ -129,6 +129,8 @@ export interface RepositoryAdapter {
   }
   readonly state: AdapterState
   readonly config?: RepositoryConfig
+
+  describe?(): AdapterDescriptor
 
   initialize(): Promise<AdapterState>
   configure(config: RepositoryConfig): Promise<AdapterState>

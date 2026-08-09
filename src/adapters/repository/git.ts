@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type {
   RepositoryAdapter,
@@ -84,6 +85,30 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
     return this._health
   }
 
+  describe(): AdapterDescriptor {
+    return {
+      id: "repository",
+      name: "Git Repository Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "repository",
+      description: "Git reference implementation of the Repository Adapter",
+      sourceTypes: ["git"],
+      platforms: ["git"],
+      capabilities: ["version-control", "branch-management", "commit", "snapshot", "promotion", "merge"],
+      configSchema: {
+        properties: {
+          path: { type: "string", description: "Local repository path" },
+          remote: { type: "string", description: "Default remote name" },
+          defaultBranch: { type: "string", description: "Default branch name" },
+          promotionMode: { type: "string", description: "Promotion mode: direct or staged" },
+        },
+        required: ["path", "remote", "defaultBranch", "promotionMode"],
+      },
+      determinism: "contextual",
+    }
+  }
+
   private setHealth(state: AdapterHealthState, message: string, diagnostics?: Record<string, unknown>): void {
     this._health = { state, message, diagnostics }
   }
@@ -135,7 +160,7 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
     const hookPath = path.join(this.repoPath(), ".git", "hooks", "pre-commit")
     if (!fs.existsSync(hookPath)) return false
     const content = fs.readFileSync(hookPath, "utf-8")
-    return content.includes("npm run govern")
+    return content.includes("Synth pre-commit governance hook")
   }
 
   private hasProofGenerated(): boolean {

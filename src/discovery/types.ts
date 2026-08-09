@@ -488,6 +488,10 @@ export type ObservationCapability = {
 
 export type AdapterDeterminism = "deterministic" | "contextual" | "non-deterministic"
 
+// Canonical descriptor from the adapter constitution.
+import type { AdapterDescriptor } from "../types/adapter.js"
+export type { AdapterDescriptor }
+
 export type AdapterExecutionRecord = {
   adapterId: string
   adapterVersion: string
@@ -623,6 +627,9 @@ export type DiscoveryAdapter = {
     source: DiscoverySource,
     context: DiscoveryContext,
   ): Promise<Observation[]>
+
+  /** Return the canonical descriptor for this adapter. */
+  describe?(): AdapterDescriptor
 }
 
 // ============================================================

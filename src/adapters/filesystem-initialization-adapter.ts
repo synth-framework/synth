@@ -14,6 +14,7 @@ import type {
   InitializationEvidence,
   SourceType,
 } from "./initialization-adapter.js"
+import type { AdapterDescriptor } from "../types/adapter.js"
 import type { LifecycleStage, DomainModel, Constraint, ConfidenceScore } from "../initialization/project-model.js"
 import { createPosixFilesystemProvider, type FilesystemProvider } from "../infra/filesystem-provider.js"
 
@@ -95,6 +96,20 @@ export function createFilesystemInitializationAdapter(root: string = process.cwd
   return {
     id: "filesystem",
     version: FILESYSTEM_ADAPTER_VERSION,
+
+    describe(): AdapterDescriptor {
+      return {
+        id: "filesystem",
+        name: "Filesystem Initialization Adapter",
+        version: FILESYSTEM_ADAPTER_VERSION,
+        kind: "integration",
+        family: "initialization",
+        description: "Discovers a local directory and produces governed initialization evidence without implementation assumptions",
+        sourceTypes: ["filesystem"],
+        capabilities: ["filesystem-scan", "lifecycle-inference", "domain-inference"],
+        determinism: "deterministic",
+      }
+    },
 
     canHandle(input: InitializationInput): boolean {
       return input.sourceType === "filesystem"
