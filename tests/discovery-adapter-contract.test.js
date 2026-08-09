@@ -6,9 +6,15 @@ import { test } from "node:test"
 import assert from "node:assert"
 import {
   createFilesystemDiscoveryAdapterWithProvider,
+  createGitDiscoveryAdapter,
+  createOperationalArtifactDiscoveryAdapter,
   createAdapterRegistry,
   FILESYSTEM_ADAPTER_ID,
   FILESYSTEM_ADAPTER_VERSION,
+  GIT_ADAPTER_ID,
+  GIT_ADAPTER_VERSION,
+  OPERATIONAL_ARTIFACT_ADAPTER_ID,
+  OPERATIONAL_ARTIFACT_ADAPTER_VERSION,
 } from "../dist/discovery/index.js"
 import { createInMemoryFilesystemProvider } from "../dist/environment/index.js"
 
@@ -157,4 +163,44 @@ test("adapter registry list returns sorted adapter ids", () => {
   const registry = createAdapterRegistry({ adapters: [adapterB, adapterA] })
 
   assert.deepStrictEqual(registry.list(), ["discovery:beta", FILESYSTEM_ADAPTER_ID])
+})
+
+test("filesystem adapter describe returns canonical descriptor", () => {
+  const fs = createInMemoryFilesystemProvider({})
+  const adapter = createFilesystemDiscoveryAdapterWithProvider(fs)
+  const descriptor = adapter.describe()
+
+  assert.ok(descriptor, "describe returns a descriptor")
+  assert.strictEqual(descriptor.id, FILESYSTEM_ADAPTER_ID)
+  assert.strictEqual(descriptor.version, FILESYSTEM_ADAPTER_VERSION)
+  assert.strictEqual(descriptor.kind, "integration")
+  assert.strictEqual(descriptor.family, "filesystem")
+  assert.ok(Array.isArray(descriptor.capabilities))
+  assert.strictEqual(descriptor.determinism, "deterministic")
+})
+
+test("git adapter describe returns canonical descriptor", () => {
+  const adapter = createGitDiscoveryAdapter()
+  const descriptor = adapter.describe()
+
+  assert.ok(descriptor, "describe returns a descriptor")
+  assert.strictEqual(descriptor.id, GIT_ADAPTER_ID)
+  assert.strictEqual(descriptor.version, GIT_ADAPTER_VERSION)
+  assert.strictEqual(descriptor.kind, "integration")
+  assert.strictEqual(descriptor.family, "discovery")
+  assert.ok(Array.isArray(descriptor.capabilities))
+  assert.strictEqual(descriptor.determinism, "deterministic")
+})
+
+test("operational artifact adapter describe returns canonical descriptor", () => {
+  const adapter = createOperationalArtifactDiscoveryAdapter()
+  const descriptor = adapter.describe()
+
+  assert.ok(descriptor, "describe returns a descriptor")
+  assert.strictEqual(descriptor.id, OPERATIONAL_ARTIFACT_ADAPTER_ID)
+  assert.strictEqual(descriptor.version, OPERATIONAL_ARTIFACT_ADAPTER_VERSION)
+  assert.strictEqual(descriptor.kind, "integration")
+  assert.strictEqual(descriptor.family, "operational-artifact")
+  assert.ok(Array.isArray(descriptor.capabilities))
+  assert.strictEqual(descriptor.determinism, "deterministic")
 })

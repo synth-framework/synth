@@ -38,6 +38,19 @@ test("GitRepositoryAdapter starts in discovered state", () => {
   assert.strictEqual(adapter.metadata.kind, "repository")
 })
 
+test("GitRepositoryAdapter describe returns canonical descriptor", () => {
+  const adapter = createGitRepositoryAdapter()
+  const descriptor = adapter.describe()
+
+  assert.ok(descriptor, "describe returns a descriptor")
+  assert.strictEqual(descriptor.id, "repository")
+  assert.strictEqual(descriptor.kind, "integration")
+  assert.strictEqual(descriptor.family, "repository")
+  assert.ok(Array.isArray(descriptor.capabilities))
+  assert.ok(descriptor.configSchema, "descriptor includes config schema")
+  assert.strictEqual(descriptor.determinism, "contextual")
+})
+
 test("GitRepositoryAdapter transitions through lifecycle", async () => {
   initRepo()
   const adapter = createGitRepositoryAdapter()
@@ -92,7 +105,7 @@ test("GitRepositoryAdapter installs governance hooks", async () => {
   const status = await adapter.status()
   assert.strictEqual(status.hooksInstalled, true)
   const hookContent = fs.readFileSync(path.join(TEST_REPO, ".git", "hooks", "pre-commit"), "utf-8")
-  assert.ok(hookContent.includes("npm run govern"))
+  assert.ok(hookContent.includes("Synth pre-commit governance hook"))
 })
 
 test("Adapter lifecycle: discover -> configure -> validate -> enable -> disable", async () => {

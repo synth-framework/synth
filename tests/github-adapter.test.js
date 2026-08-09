@@ -53,6 +53,19 @@ test("GitHubAdapter starts in discovered state", () => {
   assert.strictEqual(adapter.metadata.kind, "github")
 })
 
+test("GitHubAdapter describe returns canonical descriptor", () => {
+  const adapter = createGitHubAdapter()
+  const descriptor = adapter.describe()
+
+  assert.ok(descriptor, "describe returns a descriptor")
+  assert.strictEqual(descriptor.id, "github")
+  assert.strictEqual(descriptor.kind, "integration")
+  assert.strictEqual(descriptor.family, "github")
+  assert.ok(Array.isArray(descriptor.capabilities))
+  assert.ok(descriptor.configSchema, "descriptor includes config schema")
+  assert.strictEqual(descriptor.determinism, "contextual")
+})
+
 test("GitHubAdapter transitions through lifecycle", async () => {
   const adapter = createGitHubAdapter()
   await adapter.configure(baseConfig)

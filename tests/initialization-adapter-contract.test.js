@@ -22,6 +22,10 @@ import {
   evidenceToProjectModelInput,
 } from "../dist/adapters/initialization-adapter.js"
 
+import {
+  createFilesystemInitializationAdapter,
+} from "../dist/adapters/filesystem-initialization-adapter.js"
+
 // ------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------
@@ -292,4 +296,16 @@ test("ProjectModel carries schema version", () => {
 test("InitializationAdapter carries semantic version", async () => {
   const adapter = createConversationAdapter()
   assert.strictEqual(adapter.version, "1.1.0")
+})
+
+test("filesystem initialization adapter describe returns canonical descriptor", () => {
+  const adapter = createFilesystemInitializationAdapter()
+  const descriptor = adapter.describe()
+
+  assert.ok(descriptor, "describe returns a descriptor")
+  assert.strictEqual(descriptor.id, "filesystem")
+  assert.strictEqual(descriptor.kind, "integration")
+  assert.strictEqual(descriptor.family, "initialization")
+  assert.ok(Array.isArray(descriptor.capabilities))
+  assert.strictEqual(descriptor.determinism, "deterministic")
 })
