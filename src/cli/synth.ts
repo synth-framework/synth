@@ -2061,6 +2061,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition start --id <id>", description: "Begin executing a committed Expedition (Committed → Executing)" },
     { name: "synth expedition start --all-committed --mission <id>", description: "Start all committed Expeditions for a Mission" },
     { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
+    { name: "synth expedition finish --id <id> [--note <text>] [--force --reason <text>]", description: "Atomically attach git-diff evidence, certify convergence, and complete an executing Expedition" },
     { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--baseline <commit>] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
@@ -5304,40 +5305,12 @@ async function cmdExpeditionCancel(flags: Record<string, string | boolean>) {
   })
 }
 
-async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
-  if (!expeditionId) printError("--id is required")
-
-  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
-  const force = flags.force === true || flags.force === "true"
-  const forceReason = typeof flags.reason === "string" ? flags.reason : undefined
-  if (force && !forceReason) {
-    printError("--force requires --reason to record why the verification gates were bypassed")
-  }
-
-  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
-    const ctx = await bootstrapWithCapabilities({
-      skipGenesis: true,
-      infra: { persistence: "file" },
-    })
-    const dryRun = await runLifecycleDryRun(ctx, {
-      capability: "CompleteExpedition",
-      payload: { id: expeditionId, evidencePath, force, forceReason },
-      eventType: "EXPEDITION_COMPLETED",
-      expeditionId,
-      targetStatus: "completed",
-    })
-    printJson(dryRun)
-    return
-  }
-
-  // Use the project's actual event log so the CompleteExpedition event is
-  // persisted and replayable.
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
-
+async function completeExpedition(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  expeditionId: string,
+  options: { evidencePath?: string; force?: boolean; forceReason?: string; skipDirtyCheck?: boolean } = {},
+): Promise<{ status: string; result: unknown; evidencePath?: string; force: boolean; forceReason?: string }> {
+  const { evidencePath, force = false, forceReason, skipDirtyCheck = false } = options
   const state = await ctx.runtime.getState()
   const expedition = state.expeditions[expeditionId]
 
@@ -5354,7 +5327,9 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
   // Derived SYNTH state (.synth/data, proof/) is expected to be committed
   // alongside source changes before an expedition is completed. --force lets
   // operators override this when there is a recorded reason.
-  if (!force) {
+  // The `finish` command bypasses this check because it captures the current
+  // working-tree diff as evidence before completing.
+  if (!force && !skipDirtyCheck) {
     const { dirty, status: gitStatus } = await getWorkingTreeStatus()
     if (dirty) {
       printError(
@@ -5413,15 +5388,152 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     printError(result.error || "Unknown execution gate error", "ExpeditionCompleteFailed")
   }
 
-  printJson({
+  return {
     status: "ok",
-    kind: "ExpeditionCompleted",
-    expeditionId,
+    result: result.result,
     evidencePath,
     force,
     forceReason,
-    result: result.result,
+  }
+}
+
+async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+  const force = flags.force === true || flags.force === "true"
+  const forceReason = typeof flags.reason === "string" ? flags.reason : undefined
+  if (force && !forceReason) {
+    printError("--force requires --reason to record why the verification gates were bypassed")
+  }
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "CompleteExpedition",
+      payload: { id: expeditionId, evidencePath, force, forceReason },
+      eventType: "EXPEDITION_COMPLETED",
+      expeditionId,
+      targetStatus: "completed",
+    })
+    printJson(dryRun)
+    return
+  }
+
+  // Use the project's actual event log so the CompleteExpedition event is
+  // persisted and replayable.
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
   })
+
+  const { status, result, evidencePath: finalEvidencePath, force: finalForce, forceReason: finalForceReason } = await completeExpedition(
+    ctx,
+    expeditionId,
+    { evidencePath, force, forceReason },
+  )
+
+  printJson({
+    status,
+    kind: "ExpeditionCompleted",
+    expeditionId,
+    evidencePath: finalEvidencePath,
+    force: finalForce,
+    forceReason: finalForceReason,
+    result,
+  })
+}
+
+// ============================================================
+// EXP-ATOMIC-FINISH-001: Atomic expedition finish command
+// ============================================================
+// Combines evidence capture, convergence certification, and expedition
+// completion into a single atomic CLI operation. This removes the most
+// common source of agent friction: forgetting to commit state before
+// completing an expedition.
+// ============================================================
+async function cmdExpeditionFinish(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const note = typeof flags.note === "string" ? flags.note : "Auto-attached by synth expedition finish"
+  const force = flags.force === true || flags.force === "true"
+  const forceReason = typeof flags.reason === "string" ? flags.reason : undefined
+  if (force && !forceReason) {
+    printError("--force requires --reason to record why the verification gates were bypassed")
+  }
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "CompleteExpedition",
+      payload: { id: expeditionId, force, forceReason },
+      eventType: "EXPEDITION_COMPLETED",
+      expeditionId,
+      targetStatus: "completed",
+    })
+    printJson({ ...dryRun, kind: "ExpeditionFinishDryRun", note: "Finish runs evidence + certify + complete; dry-run only previews complete gate." })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  // 1. Attach git-diff evidence automatically.
+  const { attachments, warnings, manifestPath } = await attachExpeditionEvidence(ctx, expeditionId, {
+    gitDiff: true,
+    note,
+  })
+
+  // 2. Certify convergence with an auto-generated evaluation.
+  const certification = await certifyExpedition(ctx, expeditionId)
+  if (certification.decision !== "converged") {
+    printError(
+      `Expedition ${expeditionId} convergence certification diverged.`,
+      {
+        code: "ConvergenceDivergedBlocksFinish",
+        category: "governance",
+        decision: certification.decision,
+        confidence: certification.confidence,
+        result: certification.result,
+      },
+    )
+  }
+
+  // 3. Complete the expedition, reusing the same gate checks as `complete`.
+  // The dirty-tree check is skipped because finish already captured the diff
+  // as evidence in step 1.
+  const { result: completeResult } = await completeExpedition(ctx, expeditionId, {
+    force,
+    forceReason,
+    skipDirtyCheck: true,
+  })
+
+  const response: Record<string, unknown> = {
+    status: "ok",
+    kind: "ExpeditionFinished",
+    expeditionId,
+    missionId: certification.missionId,
+    alignmentContractId: certification.alignmentContractId,
+    certificationId: certification.certificationId,
+    attachments,
+    manifestPath: path.relative(process.cwd(), manifestPath),
+    result: completeResult,
+    steps: ["evidence-attached", "convergence-certified", "expedition-completed"],
+  }
+  if (warnings.length > 0) {
+    response.warnings = warnings
+  }
+  printJson(response)
 }
 
 async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
@@ -5478,33 +5590,27 @@ async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
   })
 }
 
-async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
-  if (!expeditionId) printError("--id is required")
+type EvidenceAttachment = { kind: string; path: string; hash: string }
 
-  const gitDiff = flags["git-diff"] === true || flags["git-diff"] === "true"
-  const testResultsPath = typeof flags["test-results"] === "string" ? flags["test-results"] : undefined
-  const rawAttach = typeof flags.attach === "string" ? flags.attach : ""
-  const attachPaths = rawAttach
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-  const note = typeof flags.note === "string" ? flags.note : undefined
-
+async function attachExpeditionEvidence(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  expeditionId: string,
+  options: {
+    gitDiff?: boolean
+    testResultsPath?: string
+    attachPaths?: string[]
+    note?: string
+    baseline?: string
+  } = {},
+): Promise<{ attachments: EvidenceAttachment[]; warnings: string[]; manifestPath: string }> {
   const baseDir = path.join(process.cwd(), "proof", "expeditions", expeditionId)
   await fs.mkdir(baseDir, { recursive: true })
   const attachmentsDir = path.join(baseDir, "attachments")
   await fs.mkdir(attachmentsDir, { recursive: true })
 
-  const baselineFlag = typeof flags.baseline === "string" ? flags.baseline : undefined
+  const { gitDiff = false, testResultsPath, attachPaths = [], note, baseline: baselineFlag } = options
   const warnings: string[] = []
-
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
-
-  const captured: Array<{ kind: string; path: string; hash: string }> = []
+  const captured: EvidenceAttachment[] = []
 
   async function captureFile(kind: string, sourcePath: string, destName: string) {
     const resolvedSource = path.resolve(sourcePath)
@@ -5588,14 +5694,43 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     printError(result.error || "Unknown execution gate error", "EvidenceAttachFailed")
   }
 
+  return { attachments: captured, warnings, manifestPath }
+}
+
+async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const gitDiff = flags["git-diff"] === true || flags["git-diff"] === "true"
+  const testResultsPath = typeof flags["test-results"] === "string" ? flags["test-results"] : undefined
+  const rawAttach = typeof flags.attach === "string" ? flags.attach : ""
+  const attachPaths = rawAttach
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+  const note = typeof flags.note === "string" ? flags.note : undefined
+  const baseline = typeof flags.baseline === "string" ? flags.baseline : undefined
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const { attachments, warnings, manifestPath } = await attachExpeditionEvidence(ctx, expeditionId, {
+    gitDiff,
+    testResultsPath,
+    attachPaths,
+    note,
+    baseline,
+  })
+
   const response: Record<string, unknown> = {
     status: "ok",
     kind: "EvidenceAttached",
     expeditionId,
-    attachments: captured,
+    attachments,
     note,
     manifestPath: path.relative(process.cwd(), manifestPath),
-    result: result.result,
   }
   if (warnings.length > 0) {
     response.warnings = warnings
@@ -5658,15 +5793,11 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   })
 }
 
-async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
-  if (!expeditionId) printError("--id is required")
-
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
-
+async function certifyExpedition(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  expeditionId: string,
+  options: { evaluationPath?: string; evidencePath?: string } = {},
+): Promise<{ decision: string; confidence?: unknown; certificationId?: string; result: unknown; missionId: string; alignmentContractId: string }> {
   const state = await ctx.runtime.getState()
   const expedition = state.expeditions[expeditionId]
   if (!expedition) {
@@ -5692,8 +5823,7 @@ async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
     )
   }
 
-  const evaluationPath = typeof flags.evaluation === "string" ? flags.evaluation : undefined
-  const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+  const { evaluationPath, evidencePath } = options
 
   let evaluation: import("../governance/proposal-evaluation/types.js").EvaluationResult
   if (evaluationPath) {
@@ -5784,17 +5914,44 @@ async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
     )
   )
 
-  const decision = (result.result as Record<string, unknown>)?.decision as string
+  return {
+    decision: (result.result as Record<string, unknown>)?.decision as string,
+    confidence: (result.result as Record<string, unknown>)?.confidence,
+    certificationId: (certificationEvent?.payload as Record<string, unknown>)?.certificationId as string | undefined,
+    result: result.result,
+    missionId: mission.id,
+    alignmentContractId,
+  }
+}
+
+async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const { decision, confidence, certificationId, result, missionId, alignmentContractId } = await certifyExpedition(
+    ctx,
+    expeditionId,
+    {
+      evaluationPath: typeof flags.evaluation === "string" ? flags.evaluation : undefined,
+      evidencePath: typeof flags.evidence === "string" ? flags.evidence : undefined,
+    },
+  )
+
   printJson({
     status: decision === "converged" ? "ok" : "error",
     kind: decision === "converged" ? "ConvergenceCertified" : "ConvergenceDiverged",
     expeditionId,
-    missionId: mission.id,
+    missionId,
     alignmentContractId,
     decision,
-    confidence: (result.result as Record<string, unknown>)?.confidence,
-    certificationId: (certificationEvent?.payload as Record<string, unknown>)?.certificationId,
-    result: result.result,
+    confidence,
+    certificationId,
+    result,
     nextStep: decision === "converged" ? `synth expedition complete --id ${expeditionId}` : undefined,
   })
 }
@@ -6430,6 +6587,7 @@ async function main() {
       else if (sub === "pause") await cmdExpeditionPause(flags)
       else if (sub === "cancel") await cmdExpeditionCancel(flags)
       else if (sub === "complete") await cmdExpeditionComplete(flags)
+      else if (sub === "finish") await cmdExpeditionFinish(flags)
       else if (sub === "archive") await cmdExpeditionArchive(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
       else if (sub === "refine") await cmdExpeditionRefine(flags)

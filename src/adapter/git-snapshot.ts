@@ -185,6 +185,19 @@ function isGovernanceFile(cwd: string, relPath: string): boolean {
       if (relPath === dir || relPath.startsWith(dir + "/")) return true
     }
   }
+  // Proof artifacts are derived from governance state and are included in
+  // snapshots when includeProofs is enabled; treat them as governance files
+  // so evidence attachment does not block expedition completion.
+  for (const p of PROOF_GLOBS) {
+    if (p.includes("*")) {
+      const dir = path.dirname(p)
+      if (relPath === dir || relPath.startsWith(dir + "/")) return true
+    }
+    if (relPath === p) return true
+  }
+  // All runtime state under .synth/data/ (including decisions, drafts,
+  // snapshots, and checkpoints) is derived governance state.
+  if (relPath.startsWith(".synth/data/")) return true
   return false
 }
 
