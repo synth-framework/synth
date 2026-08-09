@@ -3023,6 +3023,18 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
 
+  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
+  if (!alignmentContractId) {
+    printError(
+      "Mission approval requires --alignment-contract-id.",
+      {
+        code: "MissingAlignmentContractId",
+        category: "governance",
+        suggestion: "Create an alignment contract first:\n  synth alignment prepare\nThen approve the mission with:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>",
+      },
+    )
+  }
+
   // Validate the draft exists before running the approval gate. This gives the
   // operator a clear input-validation error (Draft not found) before any
   // lifecycle gate messaging, which is easier to recover from.
@@ -3127,7 +3139,6 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   // certified and the decision must not be recorded. This keeps planning and
   // runtime state atomic: a certified snapshot always implies corresponding
   // runtime events.
-  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
   let runtimeResult: Awaited<ReturnType<typeof materializeApprovedMission>>
   try {
     runtimeResult = await materializeApprovedMission(gateCtx, approvedData, alignmentContractId)
@@ -3313,7 +3324,15 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
   const purpose = typeof flags.purpose === "string" ? flags.purpose : undefined
   const confidence = typeof flags.confidence === "string" ? flags.confidence : "high"
   if (!EVIDENCE_CONFIDENCE_LEVELS.includes(confidence)) {
-    printError(`Unknown confidence level: "${confidence}". Valid levels: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}`)
+    const isNumeric = /^\d+(\.\d+)?$/.test(confidence)
+    printError(
+      `Unknown confidence level: "${confidence}". Valid levels: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}`,
+      {
+        code: "InvalidConfidenceLevel",
+        category: "cli",
+        suggestion: `Use a named confidence level: ${EVIDENCE_CONFIDENCE_LEVELS.join(", ")}.${isNumeric ? " Numeric values like \"0.9\" are not accepted." : ""}`,
+      },
+    )
   }
 
   const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
@@ -5161,6 +5180,7 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
           code: "DirtyWorkingTreeBlocksCompletion",
           category: "governance",
           suggestion: `Commit your changes first, for example:\n  git add -A && git commit -m "expedition(${expeditionId}): describe changes"\nOr bypass with --force --reason "<why tree is dirty>".`,
+          nextStep: `git add -A && git commit -m "expedition(${expeditionId}): describe changes"`,
           gitStatus,
         },
       )
@@ -6167,6 +6187,16 @@ async function main() {
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else if (sub === "report") await cmdMissionReport(flags)
       else if (sub === "complete") await cmdMissionComplete(flags)
+      else if (sub === "certify") {
+        printError(
+          "synth mission certify does not exist. Missions are closed with synth mission complete --id <mission-id>.",
+          {
+            code: "UnknownMissionSubcommand",
+            category: "cli",
+            suggestion: "Close the mission with:\n  synth mission complete --id <mission-id>",
+          },
+        )
+      }
       else
         printError(
           "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission list [--status <status>] [--program <program-id>] | synth mission show --id <mission-id> | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list] | synth mission report --id <mission-id> | synth mission complete --id <mission-id>",
