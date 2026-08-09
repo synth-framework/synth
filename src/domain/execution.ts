@@ -313,13 +313,16 @@ export function applyDomain(
       }
       const existing = state.expeditions[id]
       const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const baselineCommit = typeof intent.payload.baselineCommit === "string" ? intent.payload.baselineCommit : undefined
       if (!existing) {
         const payload: Record<string, unknown> = { id, status: "executing" }
+        if (baselineCommit) payload.baselineCommit = baselineCommit
         if (metadata) payload.metadata = metadata
         return { events: [{ type: "EXPEDITION_STARTED", payload }] }
       }
       const updated = planningLogic.startExpedition(existing, ctx)
       const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (baselineCommit) payload.baselineCommit = baselineCommit
       if (metadata) payload.metadata = metadata
       return { events: [{ type: "EXPEDITION_STARTED", payload }] }
     }

@@ -301,8 +301,20 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     }
     case "EXPEDITION_STARTED": {
       const expeditionId = String(payload.id)
-      if (state.expeditions[expeditionId]) {
-        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "executing", updatedAt: event.timestamp }
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        const baselineCommit = typeof payload.baselineCommit === "string" ? payload.baselineCommit : undefined
+        const eventMetadata = typeof payload.metadata === "object" && payload.metadata !== null ? (payload.metadata as Record<string, unknown>) : undefined
+        state.expeditions[expeditionId] = {
+          ...existing,
+          status: "executing",
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            ...(baselineCommit ? { baselineCommit } : {}),
+            ...(eventMetadata ?? {}),
+          },
+        }
       }
       break
     }

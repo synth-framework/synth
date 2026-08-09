@@ -9,7 +9,7 @@
 import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
-import { spawn } from "child_process"
+import { spawn, execSync } from "child_process"
 import { sha256 } from "../sdk/hashing/index.js"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../core/bootstrap.js"
@@ -2036,7 +2036,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition complete --id <id> [--evidence <path>] [--force --reason <text>]", description: "Complete an executing Expedition (Executing → Completed); requires passing verification and attached evidence" },
     { name: "synth expedition cancel --id <id> --reason <reason>", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition archive --id <id> --reason <reason>", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
-    { name: "synth expedition evidence --id <id> [--git-diff] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
+    { name: "synth expedition evidence --id <id> [--git-diff] [--baseline <commit>] [--test-results <path>] [--attach <path>[,...]] [--note <text>]", description: "Capture and attach evidence artifacts to an executing Expedition" },
     { name: "synth expedition refine --id <id> --note <text>", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
     { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
@@ -4910,9 +4910,21 @@ async function runLifecycleDryRun(
   }
 }
 
+function getCurrentGitCommit(): string | undefined {
+  try {
+    return execSync("git rev-parse HEAD", { cwd: process.cwd(), encoding: "utf-8" }).trim()
+  } catch {
+    return undefined
+  }
+}
+
 async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   const expeditionId = resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
+
+  const baselineCommit = getCurrentGitCommit()
+  const startPayload: Record<string, unknown> = { id: expeditionId }
+  if (baselineCommit) startPayload.baselineCommit = baselineCommit
 
   if (flags["dry-run"] === true || flags["dry-run"] === "true") {
     const ctx = await bootstrapWithCapabilities({
@@ -4921,7 +4933,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
     })
     const dryRun = await runLifecycleDryRun(ctx, {
       capability: "StartExpedition",
-      payload: { id: expeditionId },
+      payload: startPayload,
       eventType: "EXPEDITION_STARTED",
       expeditionId,
       targetStatus: "executing",
@@ -4946,7 +4958,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "StartExpedition",
-    payload: { id: expeditionId },
+    payload: startPayload,
   })
 
   if (result.status !== "ok") {
@@ -5238,6 +5250,14 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
   const attachmentsDir = path.join(baseDir, "attachments")
   await fs.mkdir(attachmentsDir, { recursive: true })
 
+  const baselineFlag = typeof flags.baseline === "string" ? flags.baseline : undefined
+  const warnings: string[] = []
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
   const captured: Array<{ kind: string; path: string; hash: string }> = []
 
   async function captureFile(kind: string, sourcePath: string, destName: string) {
@@ -5248,9 +5268,44 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     captured.push({ kind, path: path.relative(process.cwd(), destPath), hash: sha256(content) })
   }
 
+  async function isWorkingTreeDirty(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const child = spawn("git", ["status", "--porcelain"], { cwd: process.cwd() })
+      let stdout = ""
+      child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
+      child.on("close", (code) => {
+        resolve(code === 0 && stdout.trim().length > 0)
+      })
+      child.on("error", () => resolve(false))
+    })
+  }
+
   if (gitDiff) {
+    const dirty = await isWorkingTreeDirty()
+    let baselineCommit = baselineFlag
+    if (!baselineCommit && !dirty) {
+      const state = await ctx.runtime.getState()
+      const expedition = state.expeditions[expeditionId]
+      const storedBaseline = expedition?.metadata?.baselineCommit
+      if (typeof storedBaseline === "string") {
+        baselineCommit = storedBaseline
+      }
+    }
+
+    const diffArgs = dirty
+      ? ["diff", "HEAD"]
+      : baselineCommit
+      ? ["diff", `${baselineCommit}..HEAD`]
+      : ["diff", "HEAD"]
+
+    if (!dirty && baselineCommit) {
+      warnings.push(`Working tree is clean; diffing from baseline ${baselineCommit}`)
+    } else if (!dirty) {
+      warnings.push("Working tree is clean and no baseline commit was recorded; git-diff may be empty")
+    }
+
     const diff = await new Promise<string>((resolve, reject) => {
-      const child = spawn("git", ["diff", "HEAD"], { cwd: process.cwd() })
+      const child = spawn("git", diffArgs, { cwd: process.cwd() })
       let stdout = ""
       let stderr = ""
       child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
@@ -5261,6 +5316,11 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
       })
       child.on("error", reject)
     })
+
+    if (diff.trim().length === 0) {
+      warnings.push("git-diff produced an empty patch")
+    }
+
     const destPath = path.join(baseDir, "git-diff.patch")
     await fs.writeFile(destPath, diff)
     captured.push({ kind: "git-diff", path: path.relative(process.cwd(), destPath), hash: sha256(diff) })
@@ -5284,11 +5344,6 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
   }
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2))
 
-  const ctx = await bootstrapWithCapabilities({
-    skipGenesis: true,
-    infra: { persistence: "file" },
-  })
-
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "AttachEvidence",
@@ -5299,7 +5354,7 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     printError(result.error || "Unknown execution gate error", "EvidenceAttachFailed")
   }
 
-  printJson({
+  const response: Record<string, unknown> = {
     status: "ok",
     kind: "EvidenceAttached",
     expeditionId,
@@ -5307,7 +5362,11 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     note,
     manifestPath: path.relative(process.cwd(), manifestPath),
     result: result.result,
-  })
+  }
+  if (warnings.length > 0) {
+    response.warnings = warnings
+  }
+  printJson(response)
 }
 
 async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
