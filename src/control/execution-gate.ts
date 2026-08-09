@@ -256,7 +256,13 @@ export class ExecutionGate {
       // working tree is in a state that can be snapshotted. This keeps
       // VCS-specific checks (clean working tree, stash policy, etc.) inside
       // the adapter contract instead of the core control boundary.
-      if (invocation.capability === "CompleteExpedition") {
+      // EXP-034d3ecc2cc0015e: --force bypasses the readiness gate because the
+      // operator has already recorded a reason for overriding the dirty-tree
+      // check at the CLI layer.
+      const isForceComplete =
+        invocation.capability === "CompleteExpedition" &&
+        (invocation.payload.force === true || invocation.payload.force === "true")
+      if (invocation.capability === "CompleteExpedition" && !isForceComplete) {
         const readinessCheck = await this.runPhase("REPOSITORY_ADAPTER_CHECK", async () => {
           const expeditionId = String(invocation.payload.id ?? invocation.payload.expeditionId ?? "")
           const readiness = await this.repositoryAdapter.validateCompletionReadiness({ expeditionId })

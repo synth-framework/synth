@@ -43,6 +43,19 @@ function assert(condition, message) {
   if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
+function initGit(projectDir) {
+  const result = spawnSync("git", ["init"], { cwd: projectDir })
+  assert(result.status === 0, `git init must succeed:\n${result.stderr}`)
+  spawnSync("git", ["config", "user.email", "test@synth.local"], { cwd: projectDir })
+  spawnSync("git", ["config", "user.name", "Synth Test"], { cwd: projectDir })
+}
+
+function commitAll(projectDir, message) {
+  spawnSync("git", ["add", "-A"], { cwd: projectDir })
+  const result = spawnSync("git", ["commit", "-m", message], { cwd: projectDir })
+  assert(result.status === 0, `git commit must succeed:\n${result.stderr}`)
+}
+
 async function setupProject() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gate-014-"))
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
@@ -301,6 +314,62 @@ async function testForceRequiresReason(projectDir, missionId) {
   console.log("[PASS] --force requires --reason")
 }
 
+async function testBlocksWhenWorkingTreeDirty(projectDir, missionId, gateCtx, contractId) {
+  initGit(projectDir)
+  commitAll(projectDir, "initial state")
+
+  const expeditionId = await createExecutingExpedition(projectDir, missionId)
+  await certifyConvergence(gateCtx, missionId, expeditionId, contractId)
+  await attachEvidence(projectDir, expeditionId)
+
+  const result = runSynth(["expedition", "complete", "--id", expeditionId], projectDir)
+  assert(result.status !== 0, "complete should fail when working tree is dirty")
+  const output = parseJson(result.stdout)
+  assert(output.status === "error", "dirty-tree failure should report error status")
+  assert(
+    output.code === "DirtyWorkingTreeBlocksCompletion" || output.error?.code === "DirtyWorkingTreeBlocksCompletion",
+    `expected DirtyWorkingTreeBlocksCompletion, got ${JSON.stringify(output.error || output)}`,
+  )
+  assert(typeof output.gitStatus === "string" && output.gitStatus.length > 0, "error should include git status output")
+  console.log("[PASS] Completion blocked when working tree has uncommitted changes")
+}
+
+async function testForceBypassesDirtyWorkingTree(projectDir, missionId, gateCtx, contractId) {
+  initGit(projectDir)
+  commitAll(projectDir, "initial state")
+
+  const expeditionId = await createExecutingExpedition(projectDir, missionId)
+  await certifyConvergence(gateCtx, missionId, expeditionId, contractId)
+  await attachEvidence(projectDir, expeditionId)
+
+  const result = runSynth(
+    ["expedition", "complete", "--id", expeditionId, "--force", "--reason", "operator override for hotfix"],
+    projectDir,
+  )
+  assert(result.status === 0, `force complete must succeed with dirty tree:\n${result.stderr}`)
+  const output = parseJson(result.stdout)
+  assert(output.kind === "ExpeditionCompleted", `force complete should return ExpeditionCompleted, got ${output.kind}`)
+  assert(output.force === true, "output should record that force was used")
+  console.log("[PASS] --force --reason bypasses dirty working tree gate")
+}
+
+async function testSucceedsWithCleanWorkingTree(projectDir, missionId, gateCtx, contractId) {
+  initGit(projectDir)
+  commitAll(projectDir, "initial state")
+
+  const expeditionId = await createExecutingExpedition(projectDir, missionId)
+  await certifyConvergence(gateCtx, missionId, expeditionId, contractId)
+  await attachEvidence(projectDir, expeditionId)
+  commitAll(projectDir, `expedition(${expeditionId}): capture evidence`)
+
+  const result = runSynth(["expedition", "complete", "--id", expeditionId], projectDir)
+  assert(result.status === 0, `complete must succeed with clean working tree:\n${result.stderr}`)
+  const output = parseJson(result.stdout)
+  assert(output.kind === "ExpeditionCompleted", `complete should return ExpeditionCompleted, got ${output.kind}`)
+  assert(output.result.status === "completed", `expedition should be completed, got ${output.result.status}`)
+  console.log("[PASS] Completion succeeds when working tree is clean")
+}
+
 async function withProject(testFn) {
   const projectDir = await setupProject()
   try {
@@ -327,6 +396,9 @@ async function main() {
   await withProject(testSucceedsWithAllGates)
   await withProject(testForceBypassesEvidenceAndVerify)
   await withProject(testForceRequiresReason)
+  await withProject(testBlocksWhenWorkingTreeDirty)
+  await withProject(testForceBypassesDirtyWorkingTree)
+  await withProject(testSucceedsWithCleanWorkingTree)
 
   console.log("\n[EXP-GATE-014] All tests passed")
 }

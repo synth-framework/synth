@@ -277,6 +277,30 @@ function printGateBlock(result: Extract<ReturnType<typeof validateAgentAction>, 
   )
 }
 
+/**
+ * Inspect the git working tree and return whether it is dirty along with the
+ * porcelain status text. Non-git directories are treated as clean so the CLI
+ * can still operate outside version control.
+ */
+async function getWorkingTreeStatus(): Promise<{ dirty: boolean; status: string }> {
+  return new Promise((resolve) => {
+    const child = spawn("git", ["status", "--porcelain"], { cwd: process.cwd() })
+    let stdout = ""
+    child.stdout.on("data", (data: Buffer) => {
+      stdout += data.toString("utf-8")
+    })
+    child.on("close", (code) => {
+      const status = stdout.trim()
+      resolve({ dirty: code === 0 && status.length > 0, status })
+    })
+    child.on("error", () => resolve({ dirty: false, status: "" }))
+  })
+}
+
+async function isWorkingTreeDirty(): Promise<boolean> {
+  return (await getWorkingTreeStatus()).dirty
+}
+
 async function getVersion(): Promise<string> {
   try {
     const packagePath = path.resolve(__dirname, "..", "..", "package.json")
@@ -5124,6 +5148,25 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     printGateBlock(intake)
   }
 
+  // EXP-034d3ecc2cc0015e: mandatory git-clean working tree gate.
+  // Derived SYNTH state (.synth/data, proof/) is expected to be committed
+  // alongside source changes before an expedition is completed. --force lets
+  // operators override this when there is a recorded reason.
+  if (!force) {
+    const { dirty, status: gitStatus } = await getWorkingTreeStatus()
+    if (dirty) {
+      printError(
+        `Expedition ${expeditionId} cannot be completed while the working tree has uncommitted changes.\n\n${gitStatus}`,
+        {
+          code: "DirtyWorkingTreeBlocksCompletion",
+          category: "governance",
+          suggestion: `Commit your changes first, for example:\n  git add -A && git commit -m "expedition(${expeditionId}): describe changes"\nOr bypass with --force --reason "<why tree is dirty>".`,
+          gitStatus,
+        },
+      )
+    }
+  }
+
   // EXP-GATE-014: mandatory evidence gate.
   const hasEvidence = expedition && Array.isArray(expedition.attachments) && expedition.attachments.length > 0
   if (!hasEvidence && !force) {
@@ -5266,18 +5309,6 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     const destPath = path.join(kind === "attachment" ? attachmentsDir : baseDir, destName)
     await fs.writeFile(destPath, content)
     captured.push({ kind, path: path.relative(process.cwd(), destPath), hash: sha256(content) })
-  }
-
-  async function isWorkingTreeDirty(): Promise<boolean> {
-    return new Promise((resolve) => {
-      const child = spawn("git", ["status", "--porcelain"], { cwd: process.cwd() })
-      let stdout = ""
-      child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
-      child.on("close", (code) => {
-        resolve(code === 0 && stdout.trim().length > 0)
-      })
-      child.on("error", () => resolve(false))
-    })
   }
 
   if (gitDiff) {
