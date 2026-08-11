@@ -58,6 +58,48 @@ function deriveCapabilityWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
     }))
 }
 
+function deriveFrictionWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
+  const events = ctx.authoritative.events || []
+  const warnings: Blocker[] = []
+
+  const dirtyTreeFailures = events.filter((e) => {
+    const payload = e.payload as { reason?: string }
+    return (
+      e.type === "GOVERNANCE_SNAPSHOT_FAILED" &&
+      typeof payload?.reason === "string" &&
+      /uncommitted|dirty|working tree/i.test(payload.reason)
+    )
+  }).length
+
+  if (dirtyTreeFailures > 0) {
+    warnings.push({
+      kind: "dirty-tree-friction",
+      description: `${dirtyTreeFailures} expedition completion(s) failed because of uncommitted source changes.`,
+      remediation: "Commit source changes before `synth expedition complete`, or use the exact suggested commit command shown in the error.",
+    })
+  }
+
+  const repairsAccepted = events.filter((e) => e.type === "REPAIR_ACCEPTED").length
+  if (repairsAccepted > 0) {
+    warnings.push({
+      kind: "repair-friction",
+      description: `${repairsAccepted} state repair operation(s) were accepted.`,
+      remediation: "Run `synth explain replay` and review REPAIR_ACCEPTED events for recurring state drift.",
+    })
+  }
+
+  const cancelledExpeditions = events.filter((e) => e.type === "EXPEDITION_CANCELLED").length
+  if (cancelledExpeditions > 0) {
+    warnings.push({
+      kind: "cancellation-friction",
+      description: `${cancelledExpeditions} expedition(s) were cancelled.`,
+      remediation: "Review cancellation reasons with `synth expedition list --status cancelled` and refine mission scope before creating new expeditions.",
+    })
+  }
+
+  return warnings
+}
+
 function deriveWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
   const divergences = ctx.derived.divergences
     .filter((d) => d.severity === "warning")
@@ -66,7 +108,7 @@ function deriveWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
       description: d.description,
       remediation: `Inspect ${d.artifact || "governance artifacts"} and follow the recovery guidance.`,
     }))
-  return [...divergences, ...deriveCapabilityWarnings(ctx)]
+  return [...divergences, ...deriveCapabilityWarnings(ctx), ...deriveFrictionWarnings(ctx)]
 }
 
 function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {
@@ -147,7 +189,7 @@ function toNextAction(ctx: ResolvedGovernanceContext, transition: ValidTransitio
     case "AddMissionEvidence": {
       const evidenceDraftId = findDraftId(ctx) ?? "<draft-id>"
       return {
-        command: `synth mission evidence add --draft-id ${evidenceDraftId} --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]`,
+        command: `synth mission evidence add --draft-id ${evidenceDraftId} --subject "<evidence>" [--purpose "<context>"] [--confidence high]`,
         reason: transition.reason,
         priority: 1,
       }
@@ -163,7 +205,7 @@ function toNextAction(ctx: ResolvedGovernanceContext, transition: ValidTransitio
     case "CreateExpedition":
       return {
         command: activeMission
-          ? `synth expedition create --mission ${activeMission.id} --subject \"<expedition>\" --goal \"<goal>\"`
+          ? `synth expedition create --mission ${activeMission.id} --subject "<expedition>" --goal "<goal>"`
           : "synth expedition create --mission <mission-id> --subject \"<expedition>\" --goal \"<goal>\"",
         reason: transition.reason,
         priority: 1,

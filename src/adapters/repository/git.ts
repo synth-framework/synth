@@ -320,8 +320,7 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
     if (config.snapshotPolicy === "disabled") {
       return { ok: true }
     }
-    const result = this._snapshotAdapter.canSnapshot(cwd)
-    return result
+    return this._snapshotAdapter.canSnapshot(cwd)
   }
 
   async listSnapshots(limit?: number): Promise<SnapshotEntry[]> {

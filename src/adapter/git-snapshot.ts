@@ -66,7 +66,12 @@ export type VerifyResult = {
   reason?: string
 }
 
-export type CanSnapshotResult = { ok: boolean; reason?: string }
+export type CanSnapshotResult = {
+  ok: boolean
+  reason?: string
+  gitStatus?: string[]
+  suggestedCommit?: string
+}
 
 const SNAPSHOT_FILES = [
   ".synth/data/event-log.jsonl",
@@ -328,9 +333,14 @@ export class GitSnapshotAdapter {
         return !isGovernanceFile(cwd, relPath)
       })
       if (sourceChanges.length > 0) {
+        const filePaths = sourceChanges.map((line) => line.slice(3).trim())
+        const message = "chore(synth): commit source changes before expedition completion"
+        const suggestedCommit = `git add ${filePaths.map((p) => JSON.stringify(p)).join(" ")} && git commit -m ${JSON.stringify(message)}`
         return {
           ok: false,
           reason: `Working tree has uncommitted source changes outside the snapshot set (${sourceChanges.length} file(s))`,
+          gitStatus: sourceChanges,
+          suggestedCommit,
         }
       }
     }

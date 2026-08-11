@@ -86,6 +86,8 @@ export type CompletionReadinessOptions = {
 export type CompletionReadinessResult = {
   ok: boolean
   reason?: string
+  gitStatus?: string[]
+  suggestedCommit?: string
 }
 
 export type SnapshotResult = {

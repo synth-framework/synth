@@ -330,7 +330,13 @@ function isDerivedStateFile(relPath: string): boolean {
  * block expedition completion, but they are reported separately so callers
  * can decide to auto-commit them.
  */
-async function getNonDerivedWorkingTreeStatus(): Promise<{ dirty: boolean; status: string; derivedOnly: boolean; derivedStatus: string }> {
+async function getNonDerivedWorkingTreeStatus(): Promise<{
+  dirty: boolean
+  status: string
+  derivedOnly: boolean
+  derivedStatus: string
+  suggestedCommit?: string
+}> {
   const { dirty, status } = await getWorkingTreeStatus()
   if (!dirty) {
     return { dirty: false, status, derivedOnly: false, derivedStatus: "" }
@@ -346,11 +352,17 @@ async function getNonDerivedWorkingTreeStatus(): Promise<{ dirty: boolean; statu
       nonDerivedLines.push(line)
     }
   }
+  const filePaths = nonDerivedLines.map((line) => line.slice(3).trim())
+  const suggestedCommit =
+    filePaths.length > 0
+      ? `git add ${filePaths.map((p) => JSON.stringify(p)).join(" ")} && git commit -m "expedition: describe source changes before completion"`
+      : undefined
   return {
     dirty: nonDerivedLines.length > 0,
     status: nonDerivedLines.join("\n"),
     derivedOnly: nonDerivedLines.length === 0,
     derivedStatus: derivedLines.join("\n"),
+    suggestedCommit,
   }
 }
 
@@ -5593,22 +5605,23 @@ async function completeExpedition(
   // The `finish` command bypasses this check because it captures the current
   // working-tree diff as evidence before completing.
   if (!force && !skipDirtyCheck) {
-    const { dirty, status: gitStatus } = await getNonDerivedWorkingTreeStatus()
+    const { dirty, status: gitStatus, suggestedCommit } = await getNonDerivedWorkingTreeStatus()
     if (dirty) {
+      const nextStep = suggestedCommit || `git add -A && git commit -m "expedition(${expeditionId}): describe changes"`
       printError(
         `Expedition ${expeditionId} cannot be completed while the working tree has uncommitted source changes.\n\n${gitStatus}`,
         {
           code: "DirtyWorkingTreeBlocksCompletion",
           category: "governance",
-          suggestion: `Commit source changes first, for example:\n  git add -A && git commit -m "expedition(${expeditionId}): describe changes"\nOr bypass with --force --reason "<why tree is dirty>".`,
-          nextStep: `git add -A && git commit -m "expedition(${expeditionId}): describe changes"`,
+          suggestion: `Commit source changes first:\n  ${nextStep}\nOr bypass with --force --reason "<why tree is dirty>".`,
+          nextStep,
           gitStatus,
+          suggestedCommit,
         },
       )
     }
   }
 
-  // EXP-GATE-014: mandatory evidence gate.
   const hasEvidence = expedition && Array.isArray(expedition.attachments) && expedition.attachments.length > 0
   if (!hasEvidence && !force) {
     printError(
