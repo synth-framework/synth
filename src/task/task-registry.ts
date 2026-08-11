@@ -9,6 +9,7 @@ import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
 import { assertTask, type Task } from "./task-schema.js"
+import { createDefaultAdapterCatalog } from "../adapters/adapter-catalog.js"
 
 export type TaskRegistry = {
   tasks: Map<string, Task>
@@ -65,6 +66,16 @@ export async function loadTaskRegistry(options: RegistryLoadOptions = {}): Promi
 
       const task = assertTask(parsed)
 
+      if (task.adapterHints && task.adapterHints.length > 0) {
+        const catalog = createDefaultAdapterCatalog()
+        for (const hint of task.adapterHints) {
+          const descriptor = catalog.resolve(hint)
+          if (!descriptor) {
+            throw new Error(`Task "${task.id}" references unknown adapter hint: ${hint}`)
+          }
+        }
+      }
+
       // Later directories override earlier ones. This lets project-level tasks
       // (data/tasks/, .synth/tasks/) replace framework-owned defaults.
       tasks.set(task.id, task)
@@ -109,4 +120,42 @@ export function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
 export function getTasksByTag(registry: TaskRegistry, tag: string): Task[] {
   const ids = registry.tags.get(tag) ?? []
   return ids.map((id) => registry.tasks.get(id)!).filter(Boolean)
+}
+
+/**
+ * Find adapter IDs that satisfy a capability for a given runtime and language.
+ *
+ * This helper lets the planning engine ask "which adapter can do X?" without
+ * hardcoding adapter names. Results are ranked by catalog relevance scores.
+ */
+export function findAdaptersForCapability(
+  capability: string,
+  runtime?: string,
+  language?: string,
+): string[] {
+  const catalog = createDefaultAdapterCatalog()
+  const descriptors = catalog.query({
+    capability,
+    ...(runtime ? { runtime } : {}),
+    ...(language ? { language } : {}),
+  })
+  return descriptors.map((d) => d.id)
+}
+
+/**
+ * Validate that every adapter hint on every task resolves to a known catalog
+ * descriptor. Returns a list of problems; empty means valid.
+ */
+export function validateTaskAdapterHints(registry: TaskRegistry): string[] {
+  const catalog = createDefaultAdapterCatalog()
+  const problems: string[] = []
+  for (const task of registry.tasks.values()) {
+    if (!task.adapterHints) continue
+    for (const hint of task.adapterHints) {
+      if (!catalog.resolve(hint)) {
+        problems.push(`Task "${task.id}" references unknown adapter hint: ${hint}`)
+      }
+    }
+  }
+  return problems
 }

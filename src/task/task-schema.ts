@@ -16,6 +16,7 @@ export type Task = {
   estimatedDurationMs: number
   capabilities: string[]
   lifecycle?: TaskLifecycle
+  adapterHints?: string[]
 }
 
 export type TaskValidationError = {
@@ -92,6 +93,10 @@ export function validateTask(task: unknown): TaskValidationResult {
 
   if ("capabilities" in t && !isStringArray(t.capabilities)) {
     errors.push({ path: "capabilities", message: "capabilities must be an array of strings" })
+  }
+
+  if ("adapterHints" in t && t.adapterHints !== undefined && !isStringArray(t.adapterHints)) {
+    errors.push({ path: "adapterHints", message: "adapterHints must be an array of strings" })
   }
 
   if ("estimatedDurationMs" in t) {
