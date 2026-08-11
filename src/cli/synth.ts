@@ -22,6 +22,7 @@ import { createInitializationEngine } from "../initialization/engine.js"
 import { createInitializationEvidenceStore } from "../initialization/evidence-store.js"
 import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
 import { createDefaultAdapterCatalog } from "../adapters/adapter-catalog.js"
+import { detectRecommendedAdapters } from "./detect-adapters.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
@@ -2711,11 +2712,26 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
   const sourceLocation = typeof flags["source-location"] === "string" ? flags["source-location"] : targetDir
   const declaredIntent = typeof flags["declared-intent"] === "string" ? flags["declared-intent"] : undefined
 
+  const explicitAdapters =
+    typeof flags.adapters === "string" && flags.adapters.length > 0
+      ? flags.adapters.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined
+  const excludedAdapters =
+    typeof flags["without-adapters"] === "string" && flags["without-adapters"].length > 0
+      ? flags["without-adapters"].split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined
+
   await sdk.files.ensureDirectory(synthDir)
   await sdk.files.ensureDirectory(dataDir)
 
   const adapterCatalog = createDefaultAdapterCatalog()
   const capabilities = adapterCatalog.list()
+
+  const adapterSelection = await detectRecommendedAdapters({
+    targetDir,
+    explicitAdapters,
+    excludedAdapters,
+  })
 
   const manifest = {
     schema: "synth-bootstrap-manifest-v1",
@@ -2726,6 +2742,11 @@ async function cmdInit(args: string[], flags: Record<string, string | boolean>) 
     generatedAt: new Date().toISOString(),
     commands: COMMANDS.map((c) => ({ name: c.name, description: c.description })),
     capabilities,
+    adapters: {
+      selected: adapterSelection.selected,
+      config: adapterSelection.config,
+      diagnostics: adapterSelection.diagnostics,
+    },
     layout: {
       docs: "docs/",
       generatedDocs: "docs/generated/",
@@ -2836,6 +2857,14 @@ async function cmdBootstrap(args: string[], flags: Record<string, string | boole
     withExample: flags["with-example"] === true || flags["with-example"] === "true",
     projectName: typeof flags.name === "string" ? flags.name : undefined,
     streamStages: flags["stream-stages"] === true || flags["stream-stages"] === "true",
+    adapters:
+      typeof flags.adapters === "string" && flags.adapters.length > 0
+        ? flags.adapters.split(",").map((s) => s.trim()).filter(Boolean)
+        : undefined,
+    withoutAdapters:
+      typeof flags["without-adapters"] === "string" && flags["without-adapters"].length > 0
+        ? flags["without-adapters"].split(",").map((s) => s.trim()).filter(Boolean)
+        : undefined,
   }
 
   const result = await runBootstrap(targetDir, options)

@@ -13,6 +13,7 @@ import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
 import { generateAgentContext } from "./bootstrap-context.js"
+import { detectRecommendedAdapters } from "./detect-adapters.js"
 
 export type BootstrapStage = {
   stage: string
@@ -28,6 +29,8 @@ export type BootstrapOptions = {
   withExample: boolean
   projectName?: string
   streamStages?: boolean
+  adapters?: string[]
+  withoutAdapters?: string[]
 }
 
 type StageRunner = {
@@ -162,11 +165,18 @@ async function initSynthProject(
   targetDir: string,
   projectName: string,
   agentContext?: import("./bootstrap-context.js").AgentContext,
+  adapterOptions?: { adapters?: string[]; withoutAdapters?: string[] },
 ) {
   const root = sdk.workspace.root(targetDir)
   const governanceVersion = "2.1"
   await sdk.files.ensureDirectory(sdk.paths.synthDir(root))
   await sdk.files.ensureDirectory(sdk.paths.dataDir(root))
+
+  const adapterSelection = await detectRecommendedAdapters({
+    targetDir,
+    explicitAdapters: adapterOptions?.adapters,
+    excludedAdapters: adapterOptions?.withoutAdapters,
+  })
 
   const version = "2.0.0" // bootstrap does not need to read package.json; manifest will be regenerated on init
   const manifest = {
@@ -194,6 +204,11 @@ async function initSynthProject(
       "dependency", "architecture", "mission-builder", "expedition-builder",
       "objective-builder", "wizard",
     ],
+    adapters: {
+      selected: adapterSelection.selected,
+      config: adapterSelection.config,
+      diagnostics: adapterSelection.diagnostics,
+    },
     layout: {
       docs: "docs/",
       generatedDocs: "docs/generated/",
@@ -570,7 +585,10 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
 
   // Apply phase
   await run("init", "Create .synth/ manifest and data directory", () =>
-    initSynthProject(resolvedDir, projectName, analysis.agentContext)
+    initSynthProject(resolvedDir, projectName, analysis.agentContext, {
+      adapters: options.adapters,
+      withoutAdapters: options.withoutAdapters,
+    })
   )
 
   // Generate docs only if docs directory exists; otherwise this is a fresh project.
