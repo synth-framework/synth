@@ -4,6 +4,7 @@ Generated: {{generatedAt}}
 Source: {{source}}
 Events analyzed: {{eventCount}}
 Time range: {{firstTimestamp}} → {{lastTimestamp}}
+Since: {{since}}
 
 ## Lifecycle summary
 

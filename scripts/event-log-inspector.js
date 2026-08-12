@@ -6,9 +6,15 @@
 // and emits a concise self-inspecting report.
 //
 // Usage:
-//   node scripts/event-log-inspector.js [path/to/event-log.jsonl]
+//   node scripts/event-log-inspector.js [path/to/event-log.jsonl] [--since <timestamp|offset>]
 //
 // Defaults to .synth/data/event-log.jsonl in the project root.
+// --since <timestamp|offset> restricts the report to events at or after a
+//   numeric value. The comparison is purely numeric, so pass epoch-millis for
+//   real timestamps or a monotonic counter offset when the log uses those.
+//   Events without a numeric timestamp are always included. The report meta
+//   records the window and how many events were excluded, so re-running a
+//   cumulative log over a newer window stops re-flagging resolved history.
 // ============================================================
 
 import fs from "node:fs"
@@ -19,7 +25,7 @@ const DEFAULT_LOG_PATH = path.join(process.cwd(), ".synth", "data", "event-log.j
 
 const DIRTY_TREE_RE = /uncommitted|dirty|working tree/i
 
-async function inspectEventLog(logPath) {
+async function inspectEventLog(logPath, since) {
   const input = logPath && fs.existsSync(logPath) ? logPath : DEFAULT_LOG_PATH
   if (!fs.existsSync(input)) {
     throw new Error(`Event log not found: ${input}`)
@@ -30,6 +36,7 @@ async function inspectEventLog(logPath) {
 
   const stats = {
     eventCount: 0,
+    excludedCount: 0,
     byType: new Map(),
     byCapability: new Map(),
     firstTimestamp: undefined,
@@ -56,11 +63,16 @@ async function inspectEventLog(logPath) {
       continue
     }
 
-    stats.eventCount += 1
     const type = event.type || "UNKNOWN"
     const capability = event.capability || "UNKNOWN"
     const ts = event.timestamp
 
+    if (since !== undefined && typeof ts === "number" && Number.isFinite(ts) && ts < since) {
+      stats.excludedCount += 1
+      continue
+    }
+
+    stats.eventCount += 1
     increment(stats.byType, type)
     increment(stats.byCapability, capability)
 
@@ -117,14 +129,14 @@ async function inspectEventLog(logPath) {
     if (type === "EXPEDITION_COMPLETED") stats.expeditionCompletions += 1
   }
 
-  return buildReport(input, stats)
+  return buildReport(input, stats, since)
 }
 
 function increment(map, key) {
   map.set(key, (map.get(key) || 0) + 1)
 }
 
-function buildReport(input, stats) {
+function buildReport(input, stats, since) {
   const byType = Object.fromEntries(
     [...stats.byType.entries()].sort((a, b) => b[1] - a[1]),
   )
@@ -186,6 +198,9 @@ function buildReport(input, stats) {
       eventCount: stats.eventCount,
       firstTimestamp: stats.firstTimestamp,
       lastTimestamp: stats.lastTimestamp,
+      ...(since !== undefined
+        ? { since, excludedEvents: stats.excludedCount }
+        : {}),
     },
     summary: {
       missionsApproved: stats.missionApprovals,
@@ -226,10 +241,36 @@ function groupBy(items, key) {
   return Object.fromEntries([...map.entries()])
 }
 
+function parseSince(value) {
+  if (value === undefined) {
+    throw new Error("--since requires a numeric <timestamp|offset> value")
+  }
+  const n = Number(value)
+  if (!Number.isFinite(n)) {
+    throw new Error(`--since expects a numeric timestamp/offset, got "${value}"`)
+  }
+  return n
+}
+
 async function main() {
-  const logPath = process.argv[2]
   try {
-    const report = await inspectEventLog(logPath)
+    const argv = process.argv.slice(2)
+    let logPath
+    let since
+    for (let i = 0; i < argv.length; i += 1) {
+      const arg = argv[i]
+      if (arg === "--since") {
+        i += 1
+        since = parseSince(argv[i])
+      } else if (arg.startsWith("--since=")) {
+        since = parseSince(arg.slice("--since=".length))
+      } else if (!logPath) {
+        logPath = arg
+      } else {
+        throw new Error(`Unexpected argument: ${arg}`)
+      }
+    }
+    const report = await inspectEventLog(logPath, since)
     console.log(JSON.stringify(report, null, 2))
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err))
