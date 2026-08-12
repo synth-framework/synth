@@ -288,6 +288,50 @@ async function isWorkingTreeDirty(): Promise<boolean> {
   return (await getWorkingTreeStatus()).dirty
 }
 
+/**
+ * Run a git command to completion. Resolves when the command exits 0 and
+ * rejects with the captured stderr otherwise.
+ */
+function runGitSpawn(args: string[]): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("git", args, { cwd: process.cwd() })
+    let stderr = ""
+    child.stderr.on("data", (data: Buffer) => { stderr += data.toString("utf-8") })
+    child.on("close", (code) => {
+      if (code !== 0) reject(new Error(stderr.trim() || `git ${args[0]} exited with code ${code}`))
+      else resolve()
+    })
+    child.on("error", reject)
+  })
+}
+
+/**
+ * Return the paths of untracked source files in the working tree, excluding
+ * derived SYNTH state. Uses `--untracked-files=all` so files nested in
+ * otherwise-untracked directories are listed individually. Outside git or on
+ * git errors an empty list is returned so evidence capture degrades gracefully.
+ */
+async function getUntrackedSourcePaths(): Promise<string[]> {
+  return new Promise((resolve) => {
+    const child = spawn("git", ["status", "--porcelain", "--untracked-files=all"], { cwd: process.cwd() })
+    let stdout = ""
+    child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
+    child.on("close", (code) => {
+      if (code !== 0) {
+        resolve([])
+        return
+      }
+      const paths = stdout
+        .split("\n")
+        .filter((line) => line.startsWith("?? "))
+        .map((line) => line.slice(3))
+        .filter((p) => !isDerivedStateFile(p))
+      resolve(paths)
+    })
+    child.on("error", () => resolve([]))
+  })
+}
+
 // ============================================================
 // EXP-AUTO-COMMIT-001: Auto-commit derived SYNTH state
 // ============================================================
@@ -5976,21 +6020,51 @@ async function attachExpeditionEvidence(
       warnings.push("Working tree is clean and no baseline commit was recorded; git-diff may be empty")
     }
 
-    const diff = await new Promise<string>((resolve, reject) => {
-      const child = spawn("git", diffArgs, { cwd: process.cwd() })
-      let stdout = ""
-      let stderr = ""
-      child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
-      child.stderr.on("data", (data: Buffer) => { stderr += data.toString("utf-8") })
-      child.on("close", (code) => {
-        if (code !== 0) reject(new Error(stderr || `git diff exited with code ${code}`))
-        else resolve(stdout)
+    // Untracked source files never appear in `git diff`. Flag them as
+    // intent-to-add so their content is included in the patch, then restore
+    // the index afterwards.
+    const untrackedSourcePaths = await getUntrackedSourcePaths()
+    let intentToAddApplied = false
+    if (untrackedSourcePaths.length > 0) {
+      try {
+        await runGitSpawn(["add", "-N", "--", ...untrackedSourcePaths])
+        intentToAddApplied = true
+      } catch (err) {
+        warnings.push(`Failed to flag untracked source files for diff capture: ${(err as Error).message}`)
+      }
+    }
+
+    let diff: string
+    try {
+      diff = await new Promise<string>((resolve, reject) => {
+        const child = spawn("git", diffArgs, { cwd: process.cwd() })
+        let stdout = ""
+        let stderr = ""
+        child.stdout.on("data", (data: Buffer) => { stdout += data.toString("utf-8") })
+        child.stderr.on("data", (data: Buffer) => { stderr += data.toString("utf-8") })
+        child.on("close", (code) => {
+          if (code !== 0) reject(new Error(stderr || `git diff exited with code ${code}`))
+          else resolve(stdout)
+        })
+        child.on("error", reject)
       })
-      child.on("error", reject)
-    })
+    } finally {
+      if (intentToAddApplied) {
+        try {
+          await runGitSpawn(["reset", "-q", "--", ...untrackedSourcePaths])
+        } catch (err) {
+          warnings.push(`Failed to restore index for untracked source files: ${(err as Error).message}`)
+        }
+      }
+    }
 
     if (diff.trim().length === 0) {
-      warnings.push("git-diff produced an empty patch")
+      const missed = untrackedSourcePaths.filter((p) => !diff.includes(p))
+      warnings.push(
+        missed.length > 0
+          ? `git-diff produced an empty patch; untracked source files were not captured: ${missed.join(", ")}`
+          : "git-diff produced an empty patch"
+      )
     }
 
     const destPath = path.join(baseDir, "git-diff.patch")
