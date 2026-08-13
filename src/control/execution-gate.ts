@@ -274,6 +274,58 @@ export class ExecutionGate {
         phases.push(readinessCheck)
       }
 
+      // === PHASE 2d: EXECUTION BRANCH CHECK (ECOSYSTEM-001) ===
+      // The repository adapter resolves the declared branch policy and checks
+      // the current branch against the canonical branch for the operation.
+      // Only operations that authorize execution of governed work are gated:
+      //   - ApproveMission (mission role) -> must run on mission/<missionId>
+      //   - StartExpedition / CompleteExpedition (expedition role)
+      //     -> must run on expedition/<missionId>/<expeditionId>
+      //   - chore invocations (chore role) -> permitted on main only when the
+      //     operator enabled allowChoreOnMain and the capability is allowlisted.
+      // Creation and commit are planning steps and remain branch-agnostic.
+      // When the policy is off (default), the adapter returns ok and this
+      // phase always passes. Non-git projects degrade to observation.
+      const isChoreInvocation =
+        invocation.payload.chore === true ||
+        invocation.payload.chore === "true" ||
+        invocation.context?.chore === true ||
+        invocation.context?.chore === "true"
+      const branchGateRole = isChoreInvocation
+        ? ("chore" as const)
+        : invocation.capability === "ApproveMission"
+          ? ("mission" as const)
+          : invocation.capability === "StartExpedition" || invocation.capability === "CompleteExpedition"
+            ? ("expedition" as const)
+            : undefined
+      if (branchGateRole) {
+        const branchCheck = await this.runPhase("EXECUTION_BRANCH_CHECK", async () => {
+          const requestId = String(invocation.payload.id ?? invocation.payload.missionId ?? invocation.payload.expeditionId ?? "")
+          const roleId: { missionId?: string; expeditionId?: string; capability?: string } =
+            branchGateRole === "mission"
+              ? { missionId: requestId }
+              : branchGateRole === "chore"
+                ? { capability: invocation.capability }
+                : {
+                    expeditionId: requestId,
+                    missionId: String(currentState.expeditions?.[requestId]?.missionId ?? ""),
+                  }
+          const validateExecutionBranch = this.repositoryAdapter.validateExecutionBranch?.bind(this.repositoryAdapter)
+          if (!validateExecutionBranch) {
+            return { passed: true, role: branchGateRole, strategy: "observed" }
+          }
+          const result = await validateExecutionBranch(branchGateRole, roleId)
+          if (!result.ok) {
+            throw new Error(
+              `BRANCH_POLICY_DENIED: ${result.reason || "Execution branch policy violated"}` +
+                (result.requiredBranch ? ` (required: ${result.requiredBranch})` : ""),
+            )
+          }
+          return { passed: true, role: branchGateRole, strategy: result.strategy }
+        })
+        phases.push(branchCheck)
+      }
+
       // === PHASE 3: RESOLVE CAPABILITY ===
       const resolveCap = await this.runPhase("RESOLVE_CAPABILITY", () => {
         const cap = this.registry.resolve(invocation.capability)
