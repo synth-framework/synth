@@ -388,7 +388,7 @@ async function testRuntimeDataBoundary() {
 
   const missionId = "mission-runtime-data"
   const expeditionId = "exp-runtime-data-001"
-  const runtimeTarget = path.resolve("data", "runtime-data-test.json")
+  const runtimeTarget = path.resolve(".synth", "data", "runtime-data-test.json")
 
   // With only a committed expedition and autonomous identity, runtime data writes are blocked.
   await seedAuthority(ctx, computeEventHash, { missionId, expeditionId })

@@ -158,11 +158,6 @@ export class ExecutionGate {
       return path.dirname(path.dirname(normalized))
     }
 
-    // Legacy / source-repository layout: event log lives at <root>/data/event-log.jsonl
-    if (base === "data") {
-      return path.dirname(normalized)
-    }
-
     // Isolated test data directories or custom layouts: treat the data
     // directory itself as the project root. If it is not a git repository,
     // the repository adapter will simply skip the completion-readiness check.

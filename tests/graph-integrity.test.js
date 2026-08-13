@@ -52,7 +52,7 @@ const FIRST_CONTACT_ARCHIVE = path.join(
   "evidence-archive",
   "events.jsonl",
 )
-const LEGACY_LOG = path.join(process.cwd(), "data", "event-log.jsonl")
+const LEGACY_LOG = path.join(process.cwd(), ".synth", "data", "event-log.jsonl")
 const REPO_PROOF_DIR = path.join(process.cwd(), "proof")
 
 function invariantOf(report, invariant) {
@@ -345,10 +345,10 @@ test("proof generation with --out leaves data/ and proof/ byte-identical", () =>
     `sandbox ${proof.referenceExecution.sandbox} must live under os.tmpdir()`,
   )
 
-  // ...the canonical legacy log is untouched...
+  // ...the canonical governed log is untouched...
   assert.strictEqual(fs.existsSync(LEGACY_LOG), legacyExisted)
   if (legacyExisted) {
-    assert.strictEqual(sha256File(LEGACY_LOG), legacyHashBefore, "data/event-log.jsonl must be byte-identical")
+    assert.strictEqual(sha256File(LEGACY_LOG), legacyHashBefore, ".synth/data/event-log.jsonl must be byte-identical")
   }
 
   // ...and no new artifact appeared in the repo's proof/ directory.

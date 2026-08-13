@@ -9,6 +9,7 @@
 
 import { strict as assert } from "assert"
 import { promises as fs } from "fs"
+import os from "os"
 import path from "path"
 
 // ---- Modular dist/ imports (no monolithic synth-v5.js) ----
@@ -737,8 +738,7 @@ test("P0: event store guard blocks direct writes after seal", async () => {
 })
 
 test("P0: checkpoint store blocks direct writes without authorization", async () => {
-  const tmpDir = path.join(process.cwd(), "data", "test-checkpoints-" + Date.now())
-  await fs.mkdir(tmpDir, { recursive: true })
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-checkpoints-"))
   const store = new CheckpointStore(path.join(tmpDir, "checkpoints.json"))
   await store.initialize()
   try {
@@ -747,10 +747,11 @@ test("P0: checkpoint store blocks direct writes without authorization", async ()
   } catch (err) {
     assert.ok(err.message.includes("ILLEGAL_CHECKPOINTSTORE_WRITE"), `Expected checkpoint guard block, got: ${err.message}`)
   }
+  await fs.rm(tmpDir, { recursive: true, force: true })
 })
 
 test("P0: partition store blocks direct writes without authorization", async () => {
-  const tmpDir = path.join(process.cwd(), "data", "test-partitions-" + Date.now())
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-partitions-"))
   const store = new PartitionStore(1, tmpDir)
   await store.initialize()
   try {
@@ -759,6 +760,7 @@ test("P0: partition store blocks direct writes without authorization", async () 
   } catch (err) {
     assert.ok(err.message.includes("ILLEGAL_PARTITIONSTORE_WRITE"), `Expected partition guard block, got: ${err.message}`)
   }
+  await fs.rm(tmpDir, { recursive: true, force: true })
 })
 
 test("P0: registry and policy contents are deeply frozen after seal", async () => {

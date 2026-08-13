@@ -43,7 +43,7 @@ import { createMissionStudio } from "../dist/mission-studio/index.js"
 // Fixtures
 // ============================================================
 
-const LEGACY_LOG = path.join(process.cwd(), "data", "event-log.jsonl")
+const LEGACY_LOG = path.join(process.cwd(), ".synth", "data", "event-log.jsonl")
 
 let seq = 0
 function makeEvent(type, payload) {
@@ -210,7 +210,7 @@ test("memory-mode bootstrap keeps writes in memory and leaves the canonical log 
 
   assert.strictEqual(fs.existsSync(LEGACY_LOG), legacyExisted)
   if (legacyExisted) {
-    assert.strictEqual(sha256File(LEGACY_LOG), legacyHashBefore, "data/event-log.jsonl must be byte-identical")
+    assert.strictEqual(sha256File(LEGACY_LOG), legacyHashBefore, ".synth/data/event-log.jsonl must be byte-identical")
   }
 })
 
@@ -237,8 +237,8 @@ test("memory mode creates no event-log file in an empty working directory", () =
   const match = run.stdout.match(/events=(\d+)/)
   assert.ok(match && Number(match[1]) > 0, `write path must have appended events, got: ${run.stdout}`)
   assert.ok(
-    !fs.existsSync(path.join(dir, "data", "event-log.jsonl")),
-    "memory mode must not create data/event-log.jsonl, even under an empty cwd",
+    !fs.existsSync(path.join(dir, ".synth", "data", "event-log.jsonl")),
+    "memory mode must not create .synth/data/event-log.jsonl, even under an empty cwd",
   )
 })
 

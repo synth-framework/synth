@@ -6,24 +6,21 @@
 
 import path from "node:path"
 import { ensureDirectory } from "../files/index.js"
-import { hasManifest, isSynthSourceRepository } from "./synth.js"
 
 /**
  * Return the absolute path to the runtime data directory.
  *
- * Governed projects use `.synth/data/`. The legacy repo-root `data/`
- * path is retained only for the SYNTH source repository's own build/test
- * workflow.
+ * All SYNTH runtime data lives under `.synth/data/`.
  */
 export function dataDir(root: string): string {
-  if (hasManifest(root) || !isSynthSourceRepository(root)) {
-    return path.join(root, ".synth", "data")
-  }
-  return legacyDataDir(root)
+  return path.join(root, ".synth", "data")
 }
 
 /**
  * Return the absolute path to the legacy repo-root data directory.
+ *
+ * Retained only for the legacy-state migration subsystem (synth migrate).
+ * Runtime path resolution no longer routes through this location.
  */
 export function legacyDataDir(root: string): string {
   return path.join(root, "data")

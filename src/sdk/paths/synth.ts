@@ -5,7 +5,7 @@
 // ============================================================
 
 import path from "node:path"
-import { existsSync, readFileSync } from "../files/index.js"
+import { existsSync } from "../files/index.js"
 
 /**
  * Return the absolute path to the `.synth` directory for a workspace.
@@ -26,21 +26,6 @@ export function manifestPath(root: string): string {
  */
 export function hasManifest(root: string): boolean {
   return existsSync(manifestPath(root))
-}
-
-/**
- * Detect whether `root` is the SYNTH source repository itself.
- *
- * The source repository is ungoverned but still needs a runtime data
- * directory for its own build/test workflow.
- */
-export function isSynthSourceRepository(root: string): boolean {
-  try {
-    const pkg = JSON.parse(readFileSync(path.join(root, "package.json")))
-    return pkg.name === "@synth-framework/synth"
-  } catch {
-    return false
-  }
 }
 
 // ============================================================

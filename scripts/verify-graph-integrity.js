@@ -6,7 +6,7 @@
 // Integrity.
 //
 // The proof certifies a FRESHLY GENERATED reference execution, not the
-// repository's canonical log: the canonical data/event-log.jsonl is
+// repository's canonical log: the canonical .synth/data/event-log.jsonl is
 // gitignored local runtime state (absent in CI) and may carry
 // pre-HARDEN-001 pollution preserved as immutable forensic evidence
 // (checkable via scripts/verify-replay.js --strict-graph --log).

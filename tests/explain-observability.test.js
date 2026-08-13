@@ -666,11 +666,11 @@ test("explain commands never write to the inspected log or its directory", async
 })
 
 // ============================================================
-// Legacy default: repo data/ log stays byte-identical
+// Canonical default: repo .synth/data/ log stays byte-identical
 // ============================================================
 
-test("explain on the default data/ log leaves it byte-identical", () => {
-  const defaultLog = path.join(process.cwd(), "data", "event-log.jsonl")
+test("explain on the default .synth/data/ log leaves it byte-identical", () => {
+  const defaultLog = path.join(process.cwd(), ".synth", "data", "event-log.jsonl")
   if (!fs.existsSync(defaultLog)) return
   const before = crypto.createHash("sha256").update(fs.readFileSync(defaultLog)).digest("hex")
   const run = runExplain(["status"])

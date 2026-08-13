@@ -7,7 +7,7 @@
 
 import fs from "fs"
 import path from "path"
-import { dataDir, legacyDataDir } from "../sdk/paths/index.js"
+import { dataDir } from "../sdk/paths/index.js"
 
 let quietMode = false
 let summaryMode = false
@@ -67,14 +67,11 @@ export interface ErrorDetails {
  * CLI invocations and can be truncated or rotated by operators.
  *
  * Governed projects:  .synth/data/cli-errors.jsonl
- * Legacy projects:    data/cli-errors.jsonl
  */
 export function logCliError(record: Record<string, unknown>): void {
   try {
     const cwd = process.cwd()
-    const governedDir = dataDir(cwd)
-    const legacyDir = legacyDataDir(cwd)
-    const targetDir = fs.existsSync(governedDir) ? governedDir : legacyDir
+    const targetDir = dataDir(cwd)
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true })
     }

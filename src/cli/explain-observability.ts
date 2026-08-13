@@ -1168,8 +1168,8 @@ export async function cmdExplainObservability(
     printError(USAGE)
   }
 
-  // Migrate legacy data/ into .synth/data/ for governed projects before
-  // resolving any default paths.
+  // Ensure the runtime data directory exists before resolving any
+  // default paths.
   await ensureDataDir(root())
 
   const json = flagOn(flags, "json")
