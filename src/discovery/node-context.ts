@@ -47,12 +47,14 @@ async function safePathExists(path: string): Promise<boolean> {
   }
 }
 
+const EXEC_TOOL_TIMEOUT_MS = 15000
+
 function makeSafeExecTool(cwd: string): (command: string, args: string[]) => Promise<string | undefined> {
   return async (command: string, args: string[]): Promise<string | undefined> => {
     try {
       const { stdout } = await execFileAsync(command, args, {
         cwd,
-        timeout: 5000,
+        timeout: EXEC_TOOL_TIMEOUT_MS,
         windowsHide: true,
       })
       return stdout
