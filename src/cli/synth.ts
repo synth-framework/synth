@@ -811,6 +811,42 @@ async function cmdDoctor() {
   })
 }
 
+// Checkpoint branch step (ECOSYSTEM-001): resolve whether the current branch
+// satisfies the executing expedition's canonical branch via the repository
+// adapter. When the configured policy is off (default) or the VCS has no
+// branch concept, this degrades to observation and never blocks.
+async function resolveCheckpointBranch(
+  rootDir: string,
+  executingExpeditions: Array<{ id: string; missionId: string }>,
+): Promise<{ ok: boolean; detail: string; currentBranch?: string; requiredBranch?: string; nextStep?: string }> {
+  const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
+  const adapter = createGitRepositoryAdapter({ path: rootDir })
+  const status = await adapter.status()
+
+  if (executingExpeditions.length === 0) {
+    return { ok: true, detail: "No executing expedition to verify execution branch", currentBranch: status.branch }
+  }
+
+  const expedition = executingExpeditions[0]
+  const result = await adapter.validateExecutionBranch("expedition", {
+    expeditionId: expedition.id,
+    missionId: expedition.missionId,
+  })
+  return {
+    ok: result.ok,
+    detail: result.reason || (result.ok ? "Execution branch satisfies the declared policy" : "Execution branch policy violated"),
+    currentBranch: status.branch,
+    ...(result.requiredBranch ? { requiredBranch: result.requiredBranch } : {}),
+    ...(result.ok
+      ? {}
+      : {
+          nextStep: result.requiredBranch
+            ? `Switch to the canonical expedition branch: git checkout ${result.requiredBranch}`
+            : "Check the declared branch policy in .synth/config.yaml",
+        }),
+  }
+}
+
 async function cmdCheckpoint() {
   await sdk.paths.ensureDataDir(sdk.workspace.root())
 
@@ -827,6 +863,12 @@ async function cmdCheckpoint() {
       ? briefing.activeExpeditions.filter((e) => e.status === "executing")
       : []
   const hasExecutingExpedition = executingExpeditions.length > 0
+
+  // Step 4: execution branch policy (ECOSYSTEM-001). The checkpoint confirms
+  // that the current branch satisfies the executing expedition's canonical
+  // branch. When the declared policy is off (default) or the VCS has no branch
+  // concept, this step degrades to observation and never blocks.
+  const branch = await resolveCheckpointBranch(process.cwd(), executingExpeditions)
 
   const steps = {
     status: {
@@ -848,9 +890,15 @@ async function cmdCheckpoint() {
         ? {}
         : { nextStep: "Run 'synth expedition start --id <id>' to authorize implementation work." }),
     },
+    executionBranch: {
+      ok: branch.ok,
+      detail: branch.detail,
+      ...(branch.requiredBranch ? { requiredBranch: branch.requiredBranch } : {}),
+      ...(branch.ok ? {} : { nextStep: branch.nextStep }),
+    },
   }
 
-  const allOk = statusOk && replay.ok && hasExecutingExpedition
+  const allOk = statusOk && replay.ok && hasExecutingExpedition && branch.ok
   const nextSteps: string[] = []
   for (const step of Object.values(steps)) {
     if (!step.ok && step.nextStep) {
@@ -866,6 +914,7 @@ async function cmdCheckpoint() {
     kind: "AgentCheckpoint",
     steps,
     executingExpeditionIds: executingExpeditions.map((e) => e.id),
+    currentBranch: branch.currentBranch,
     nextSteps,
   })
 
@@ -3389,6 +3438,16 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
 
   const session = deserializePlanningSession(draftData)
 
+  // ECOSYSTEM-001: fail fast when the current branch does not satisfy the
+  // declared mission branch policy. The ExecutionGate enforces the same
+  // policy inside handleIntent during materialization.
+  const missionNode = Array.from(session.worldModel.nodes.values()).find(
+    (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
+  )
+  if (missionNode) {
+    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id })
+  }
+
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
@@ -5424,6 +5483,33 @@ function getCurrentGitCommit(): string | undefined {
   }
 }
 
+// CLI fail-fast branch guard (ECOSYSTEM-001): surface a branch-policy
+// violation before heavy lifecycle work runs. The ExecutionGate enforces the
+// same policy inside handleIntent; this gives the operator an early, specific
+// error naming the required canonical branch.
+async function assertExecutionBranch(
+  capability: string,
+  role: "mission" | "expedition" | "chore",
+  context: { missionId?: string; expeditionId?: string; capability?: string },
+): Promise<void> {
+  const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
+  const adapter = createGitRepositoryAdapter({ path: process.cwd() })
+  const result = await adapter.validateExecutionBranch(role, context)
+  if (result.ok) return
+  printError(
+    `BRANCH_POLICY_DENIED for ${capability}: ${result.reason || "Execution branch policy violated"}` +
+      (result.requiredBranch ? `\nRequired branch: ${result.requiredBranch}` : ""),
+    {
+      code: "BranchPolicyDenied",
+      category: "governance",
+      suggestion: result.requiredBranch
+        ? `Switch to the canonical branch before running this command:\n  git checkout ${result.requiredBranch}`
+        : "Check the declared branch policy in .synth/config.yaml",
+      ...(result.requiredBranch ? { requiredBranch: result.requiredBranch } : {}),
+    },
+  )
+}
+
 async function startOneExpedition(
   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   expeditionId: string,
@@ -5445,6 +5531,15 @@ async function startOneExpedition(
   }
 
   const state = await ctx.runtime.getState()
+  // ECOSYSTEM-001: fail fast when the current branch cannot host this
+  // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
+  const expeditionRecord = state.expeditions?.[expeditionId]
+  if (expeditionRecord?.missionId) {
+    await assertExecutionBranch("StartExpedition", "expedition", {
+      expeditionId,
+      missionId: expeditionRecord.missionId,
+    })
+  }
   const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     return {
@@ -5661,6 +5756,15 @@ async function completeExpedition(
   const { evidencePath, force = false, forceReason, skipDirtyCheck = false } = options
   const state = await ctx.runtime.getState()
   const expedition = state.expeditions[expeditionId]
+
+  // ECOSYSTEM-001: fail fast when the current branch cannot host this
+  // expedition's completion. The ExecutionGate re-enforces inside handleIntent.
+  if (expedition?.missionId) {
+    await assertExecutionBranch("CompleteExpedition", "expedition", {
+      expeditionId,
+      missionId: expedition.missionId,
+    })
+  }
 
   // Hard lifecycle gate first: Convergence Certification must be present
   // before we even consider evidence or verification. This keeps the error
