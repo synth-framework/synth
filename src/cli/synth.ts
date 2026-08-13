@@ -6973,6 +6973,13 @@ async function main() {
     flags.json = true
   }
 
+  // Propagate the global --summary flag to subcommands that consume it
+  // (e.g., synth explain ... --summary), while keeping it out of the
+  // positional arguments passed to delegated CLIs.
+  if (summaryFlag) {
+    flags.summary = true
+  }
+
   // EXP-FIRSTCONTACT-010: when running as part of an agent first-contact
   // experiment, merge telemetry (agent session and reasoning state) into
   // every JSON response so the CLI acts as an experimental sensor.
