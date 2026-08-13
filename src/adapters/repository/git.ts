@@ -33,6 +33,15 @@ import type {
   CompletionReadinessOptions,
   CompletionReadinessResult,
 } from "./types.js"
+import {
+  loadBranchPolicyConfig,
+  resolveExecutionBranch,
+} from "../../repository/branch-policy.js"
+import type {
+  ExecutionRole,
+  ExecutionBranchContext,
+  ExecutionBranchResult,
+} from "../../repository/branch-policy.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../../adapter/git-snapshot.js"
 
 function git(cwd: string, args: string[]): string {
@@ -321,6 +330,23 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
       return { ok: true }
     }
     return this._snapshotAdapter.canSnapshot(cwd)
+  }
+
+  async validateExecutionBranch(
+    role: ExecutionRole,
+    context: ExecutionBranchContext = {},
+  ): Promise<ExecutionBranchResult> {
+    // Degrade to observation when the VCS has no branch concept. Git has
+    // branches, so this only triggers outside a git repository: no repo is
+    // detected, so the framework records an explicit observation instead of
+    // silently fabricating a branch requirement.
+    if (!this.isGitRepo()) {
+      const policy = loadBranchPolicyConfig(this.repoPath())
+      return resolveExecutionBranch(role, "none", { ...policy, strategy: "observed" }, context)
+    }
+    const branch = this.currentBranch()
+    const policy = loadBranchPolicyConfig(this.repoPath())
+    return resolveExecutionBranch(role, branch, policy, context)
   }
 
   async listSnapshots(limit?: number): Promise<SnapshotEntry[]> {

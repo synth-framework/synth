@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { AdapterState, ObservationBatch, AdapterDescriptor } from "../../types/index.js"
+import type { BranchPolicy, ExecutionRole, ExecutionBranchContext, ExecutionBranchResult } from "../../repository/branch-policy.js"
 
 export type PromotionMode = "direct" | "staged"
 
@@ -142,6 +143,16 @@ export interface RepositoryAdapter {
   createBranch(name: string): Promise<AdapterState>
   checkout(name: string): Promise<AdapterState>
   commit(message: string): Promise<AdapterState>
+
+  /**
+   * Ask the repository adapter whether the current branch satisfies the
+   * declared execution-branch policy (ECOSYSTEM-001). Degrades to
+   * observation when the VCS has no branch concept.
+   */
+  validateExecutionBranch?(
+    role: ExecutionRole,
+    context?: ExecutionBranchContext,
+  ): Promise<ExecutionBranchResult>
 
   createSnapshot(options: SnapshotOptions): Promise<SnapshotResult>
   validateCompletionReadiness(options?: CompletionReadinessOptions): Promise<CompletionReadinessResult>
