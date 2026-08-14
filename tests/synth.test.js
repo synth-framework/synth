@@ -831,7 +831,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, repository governance, convergence certification, filesystem mutation, expedition lifecycle, and approval capabilities.
-  assert.equal(ctx.capabilityRegistry.size(), 45, `Registry must have 45 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  assert.equal(ctx.capabilityRegistry.size(), 46, `Registry must have 46 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("FilesystemWrite"), "Registry must have FilesystemWrite")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
@@ -853,6 +853,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   assert.ok(ctx.capabilityRegistry.has("RecordRepair"), "Registry must have RecordRepair")
   assert.ok(ctx.capabilityRegistry.has("InitializeRepository"), "Registry must have InitializeRepository")
   assert.ok(ctx.capabilityRegistry.has("CreateBranch"), "Registry must have CreateBranch")
+  assert.ok(ctx.capabilityRegistry.has("CreateExpeditionBranch"), "Registry must have CreateExpeditionBranch")
   assert.ok(ctx.capabilityRegistry.has("OpenPullRequest"), "Registry must have OpenPullRequest")
   assert.ok(ctx.capabilityRegistry.has("ApprovePromotion"), "Registry must have ApprovePromotion")
   assert.ok(ctx.capabilityRegistry.has("MergePullRequest"), "Registry must have MergePullRequest")
@@ -902,6 +903,22 @@ test("Expedition: CreateExpedition produces EXPEDITION_CREATED event", async () 
   const expEvent = events.find((e) => e.type === "EXPEDITION_CREATED" && e.payload.expedition.id === "E-1")
   assert.ok(expEvent, "EXPEDITION_CREATED event must exist")
   assert.equal(expEvent.payload.expedition.status, "draft")
+})
+
+test("Expedition: CreateExpeditionBranch records EXPEDITION_BRANCH_CREATED", async () => {
+  const ctx = await getTestCtx()
+  if (!ctx.isSealed) ctx.seal()
+  const result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "CreateExpeditionBranch",
+    payload: { expeditionId: "E-BR", branch: "expedition/M-BR/E-BR", baseCommit: "abc123" },
+  })
+  assert.equal(result.status, "ok", `CreateExpeditionBranch should succeed: ${result.error}`)
+  const events = await ctx.infra.eventStore.loadAll()
+  const branchEvent = events.find((e) => e.type === "EXPEDITION_BRANCH_CREATED" && e.payload?.expeditionId === "E-BR")
+  assert.ok(branchEvent, "EXPEDITION_BRANCH_CREATED event must exist")
+  assert.equal(branchEvent.payload.branch, "expedition/M-BR/E-BR")
+  assert.equal(branchEvent.payload.baseCommit, "abc123")
 })
 
 test("Expedition: StartExpedition transitions to executing", async () => {
