@@ -78,6 +78,8 @@
     "test:freeze-certification": "node scripts/task-adapter-shim.js test:freeze-certification",
     "test:mission-studio-adapter-mapper": "node scripts/task-adapter-shim.js test:mission-studio-adapter-mapper",
     "test:mission-studio-adapter-collector": "node scripts/task-adapter-shim.js test:mission-studio-adapter-collector",
+    "test:mission-studio-duplicate-detection": "node scripts/task-adapter-shim.js test:mission-studio-duplicate-detection",
+    "test:cli-duplicate-advisory": "node scripts/task-adapter-shim.js test:cli-duplicate-advisory",
     "test:genesis-snapshot-bridge": "node scripts/task-adapter-shim.js test:genesis-snapshot-bridge",
     "test:genesis-hardening": "node scripts/task-adapter-shim.js test:genesis-hardening",
     "test:api-adapter-integration": "node scripts/task-adapter-shim.js test:api-adapter-integration",
