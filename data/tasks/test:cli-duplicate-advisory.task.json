@@ -1,0 +1,14 @@
+{
+  "id": "test:cli-duplicate-advisory",
+  "description": "npm script migration: test:cli-duplicate-advisory",
+  "command": "node tests/cli-duplicate-advisory.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

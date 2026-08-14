@@ -1,0 +1,14 @@
+{
+  "id": "test:mission-studio-duplicate-detection",
+  "description": "npm script migration: test:mission-studio-duplicate-detection",
+  "command": "node tests/mission-studio-duplicate-detection.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

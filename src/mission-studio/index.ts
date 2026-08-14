@@ -23,6 +23,18 @@ export {
 } from "./snapshot-lineage.js"
 export { validateProposalGraph } from "./proposal-graph-validator.js"
 export {
+  tokenize,
+  buildWeightedTokens,
+  scoreWeightedJaccard,
+  findSimilarMissions,
+  findSimilarExpeditions,
+  SIMILARITY_THRESHOLD,
+  SIMILARITY_TOP_K,
+  type SimilarityCandidate,
+  type ComparableRecord,
+  type SimilarMatch,
+} from "./duplicate-detection.js"
+export {
   SNAPSHOT_SCHEMA_VERSION,
   canonicalizeSnapshot,
   signSnapshot,
