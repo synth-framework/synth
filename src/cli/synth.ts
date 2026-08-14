@@ -98,6 +98,8 @@ import {
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
+import { generateBranchName } from "../repository/branch-taxonomy.js"
+import { loadBranchPolicyConfig } from "../repository/branch-policy.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap, type ValidationPlan } from "../validation/planner.js"
 import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
@@ -832,10 +834,21 @@ async function resolveCheckpointBranch(
     return { ok: true, detail: "No executing expedition to verify execution branch", currentBranch: status.branch }
   }
 
-  const expedition = executingExpeditions[0]
+  // Match the current branch to the executing expedition whose canonical
+  // branch it satisfies, so multiple executing expeditions (or a canonical
+  // branch that differs from the first entry) are resolved correctly.
+  const match =
+    executingExpeditions.find((e) => {
+      try {
+        return generateBranchName("expedition", { missionId: e.missionId, expeditionId: e.id }) === status.branch
+      } catch {
+        return false
+      }
+    }) ?? executingExpeditions[0]
+
   const result = await adapter.validateExecutionBranch("expedition", {
-    expeditionId: expedition.id,
-    missionId: expedition.missionId,
+    expeditionId: match.id,
+    missionId: match.missionId,
   })
   return {
     ok: result.ok,
@@ -5527,6 +5540,49 @@ function getCurrentGitCommit(): string | undefined {
   }
 }
 
+// Auto-create the canonical expedition branch at start (ECOSYSTEM-001).
+// Only runs when the declared policy is enforce + featured and the VCS has a
+// branch concept. When it runs, it switches to the canonical branch so the
+// subsequent assertExecutionBranch and the ExecutionGate both pass. A
+// CreateExpeditionBranch intent is recorded through the gate so the event log
+// captures the canonical-branch decision before the expedition starts.
+async function ensureExpeditionBranch(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  expeditionId: string,
+  missionId: string,
+): Promise<{ branch: string; created: boolean }> {
+  const policy = loadBranchPolicyConfig(process.cwd())
+  if (policy.mode !== "enforce" || policy.strategy !== "featured") {
+    return { branch: "", created: false }
+  }
+  const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
+  const adapter = createGitRepositoryAdapter({ path: process.cwd() })
+  const status = await adapter.status()
+  if (!status.initialized) {
+    return { branch: "", created: false }
+  }
+  const canonical = generateBranchName("expedition", { missionId, expeditionId })
+  if (status.branch === canonical) {
+    return { branch: canonical, created: false }
+  }
+  const baseCommit = getCurrentGitCommit()
+  const exists = typeof adapter.branchExists === "function" ? await adapter.branchExists(canonical) : false
+  if (exists) {
+    await adapter.checkout(canonical)
+  } else {
+    await adapter.createBranch(canonical)
+  }
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "CreateExpeditionBranch",
+    payload: { expeditionId, branch: canonical, baseCommit: baseCommit || "" },
+  })
+  if (result.status !== "ok") {
+    printError(`Failed to record canonical expedition branch ${canonical}: ${result.error || JSON.stringify(result)}`)
+  }
+  return { branch: canonical, created: true }
+}
+
 // CLI fail-fast branch guard (ECOSYSTEM-001): surface a branch-policy
 // violation before heavy lifecycle work runs. The ExecutionGate enforces the
 // same policy inside handleIntent; this gives the operator an early, specific
@@ -5575,10 +5631,17 @@ async function startOneExpedition(
   }
 
   const state = await ctx.runtime.getState()
-  // ECOSYSTEM-001: fail fast when the current branch cannot host this
-  // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
+  // ECOSYSTEM-001: auto-create the canonical expedition branch at start when
+  // the declared policy is enforce + featured. This runs before the fail-fast
+  // guard so the canonical branch is established (or the operator is staying
+  // on the plan branch) before any lifecycle gate.
   const expeditionRecord = state.expeditions?.[expeditionId]
+  let autoCreatedBranch: { branch: string; created: boolean } | undefined
   if (expeditionRecord?.missionId) {
+    const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
+    if (branchInfo.created) autoCreatedBranch = branchInfo
+    // ECOSYSTEM-001: fail fast when the current branch cannot host this
+    // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
     await assertExecutionBranch("StartExpedition", "expedition", {
       expeditionId,
       missionId: expeditionRecord.missionId,
@@ -5611,6 +5674,12 @@ async function startOneExpedition(
     expeditionId,
     result: result.result,
     nextStep: `synth expedition complete --id ${expeditionId}`,
+  }
+  if (autoCreatedBranch) {
+    response.executionBranch = {
+      branch: autoCreatedBranch.branch,
+      created: true,
+    }
   }
 
   if (autoCommit) {

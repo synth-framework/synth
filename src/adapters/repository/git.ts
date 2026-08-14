@@ -304,6 +304,12 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
     return this.setState(this._state)
   }
 
+  async branchExists(name: string): Promise<boolean> {
+    if (!this.isGitRepo()) return false
+    const ref = gitSilent(this.repoPath(), ["rev-parse", "--verify", "--quiet", `refs/heads/${name}`])
+    return ref !== null && ref.length > 0
+  }
+
   async commit(message: string): Promise<AdapterState> {
     const cwd = this.repoPath()
     git(cwd, ["add", "-A"])

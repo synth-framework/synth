@@ -142,6 +142,8 @@ export interface RepositoryAdapter {
 
   createBranch(name: string): Promise<AdapterState>
   checkout(name: string): Promise<AdapterState>
+  /** Return whether a branch with the given name already exists. */
+  branchExists?(name: string): Promise<boolean>
   commit(message: string): Promise<AdapterState>
 
   /**

@@ -1146,6 +1146,18 @@ export function applyDomain(
       }
     }
 
+    case "CreateExpeditionBranch": {
+      const expeditionId = String(intent.payload.expeditionId)
+      const branch = String(intent.payload.branch)
+      const baseCommit = String(intent.payload.baseCommit || "")
+      return {
+        events: [{
+          type: "EXPEDITION_BRANCH_CREATED",
+          payload: { expeditionId, branch, baseCommit },
+        }],
+      }
+    }
+
     case "OpenPullRequest": {
       const pullRequestId = String(intent.payload.pullRequestId)
       const forgeId = String(intent.payload.forgeId)

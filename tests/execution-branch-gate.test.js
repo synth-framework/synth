@@ -322,7 +322,7 @@ async function testCheckpointBranchStepBlocksOnMainUnderEnforce() {
   console.log("[PASS] checkpoint branch step blocks on main under enforce and names the required branch")
 }
 
-async function testCliFailFastGuardBlocksOnMainUnderEnforce() {
+async function testCliAutoCreatesCanonicalBranchOnMainUnderEnforce() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-cli-"))
   gitInit(root)
   readConfig(root)
@@ -339,18 +339,53 @@ async function testCliFailFastGuardBlocksOnMainUnderEnforce() {
     timeout: 60000,
   })
   const output = JSON.parse(proc.stdout.trim())
-  assert.equal(proc.status, 1, "expedition start should fail fast on main under enforce")
+  assert.equal(proc.status, 0, `expedition start should auto-create the branch on main under enforce: ${output.error || JSON.stringify(output)}`)
+  assert.strictEqual(currentBranch(root), `expedition/${missionId}/${expeditionId}`, "CLI should switch to the canonical expedition branch")
   assert.ok(
-    output.error.includes("BRANCH_POLICY_DENIED"),
-    `expected branch denial in CLI error, got: ${output.error || JSON.stringify(output)}`,
+    output.executionBranch && output.executionBranch.branch === `expedition/${missionId}/${expeditionId}` && output.executionBranch.created === true,
+    `CLI should report the auto-created execution branch: ${JSON.stringify(output.executionBranch)}`,
   )
+
+  const logPath = path.join(root, ".synth", "data", "event-log.jsonl")
+  const log = fs.readFileSync(logPath, "utf-8").trim().split("\n").map((l) => JSON.parse(l))
   assert.ok(
-    output.error.includes(`expedition/${missionId}/${expeditionId}`),
-    `CLI denial should name the canonical branch: ${output.error}`,
+    log.some((e) => e.type === "EXPEDITION_BRANCH_CREATED" && e.payload?.expeditionId === expeditionId && e.payload?.branch === `expedition/${missionId}/${expeditionId}`),
+    "EXPEDITION_BRANCH_CREATED should be recorded for the auto-created branch",
   )
 
   fs.rmSync(root, { recursive: true, force: true })
-  console.log("[PASS] CLI fail-fast guard blocks expedition start on main under enforce")
+  console.log("[PASS] CLI expedition start auto-creates the canonical branch under enforce")
+}
+
+async function testCliStartOnCanonicalBranchDoesNotRecreate() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-cli2-"))
+  gitInit(root)
+  readConfig(root)
+  const ctx = await makeCtx(root)
+
+  const missionId = "m-cli2"
+  const expeditionId = "e-cli2-001"
+  await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
+  checkout(root, `expedition/${missionId}/${expeditionId}`)
+
+  const logPath = path.join(root, ".synth", "data", "event-log.jsonl")
+  const before = fs.readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean).length
+
+  const proc = spawnSync("node", [CLI_PATH, "expedition", "start", "--id", expeditionId], {
+    cwd: root,
+    encoding: "utf-8",
+    timeout: 60000,
+  })
+  const output = JSON.parse(proc.stdout.trim())
+  assert.equal(proc.status, 0, `expedition start should succeed on the canonical branch: ${output.error || JSON.stringify(output)}`)
+  assert.ok(!output.executionBranch, "No executionBranch report when already on the canonical branch")
+
+  const log = fs.readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l))
+  const createdCount = log.slice(before).filter((e) => e.type === "EXPEDITION_BRANCH_CREATED").length
+  assert.strictEqual(createdCount, 0, "EXPEDITION_BRANCH_CREATED must not be emitted when already on the canonical branch")
+
+  fs.rmSync(root, { recursive: true, force: true })
+  console.log("[PASS] CLI expedition start on the canonical branch does not recreate it")
 }
 
 async function main() {
@@ -360,7 +395,8 @@ async function main() {
   await testChoreLaneAllowsAllowlistedCapabilityOnMain()
   await testChoreLaneBlocksWhenAllowChoreOnMainDisabled()
   await testCheckpointBranchStepBlocksOnMainUnderEnforce()
-  await testCliFailFastGuardBlocksOnMainUnderEnforce()
+  await testCliAutoCreatesCanonicalBranchOnMainUnderEnforce()
+  await testCliStartOnCanonicalBranchDoesNotRecreate()
   console.log("\nAll execution-branch gate tests passed.")
 }
 

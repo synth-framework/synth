@@ -1212,6 +1212,36 @@ export function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "CreateExpeditionBranch",
+      description: "Create the canonical expedition execution branch",
+      inputSchema: {
+        required: ["expeditionId", "branch", "baseCommit"],
+        types: {
+          expeditionId: "string",
+          branch: "string",
+          baseCommit: "string",
+        },
+      },
+      outputSchema: { events: ["EXPEDITION_BRANCH_CREATED"], resultType: "ExpeditionBranch" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const expeditionId = String(intent.payload.expeditionId)
+        const branch = String(intent.payload.branch)
+        const baseCommit = String(intent.payload.baseCommit || "")
+        return {
+          events: [{
+            type: "EXPEDITION_BRANCH_CREATED",
+            payload: { expeditionId, branch, baseCommit },
+          }],
+          result: { expeditionId, branch, baseCommit },
+        }
+      },
+    },
+    {
       name: "OpenPullRequest",
       description: "Open a pull request as a promotion proposal",
       inputSchema: {

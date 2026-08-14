@@ -1,0 +1,8 @@
+# SYNTH project configuration
+# Derived from expedition ee4874cdcadaf218: enforce the expedition branch
+# workflow at start by auto-creating and staying on canonical expedition
+# branches (ECOSYSTEM-001).
+git:
+  branchStrategy: featured
+  branchPolicy:
+    mode: enforce
