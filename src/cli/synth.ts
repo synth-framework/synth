@@ -28,6 +28,11 @@ import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./go
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
+import {
+  findSimilarMissions,
+  findSimilarExpeditions,
+  type SimilarMatch,
+} from "../mission-studio/duplicate-detection.js"
 import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
 import { EXPECTED_CAPABILITIES, buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
@@ -1583,7 +1588,7 @@ async function cmdDiscover(args: string[], flags: Record<string, string | boolea
 
 async function cmdMissionHelp() {
   printJson(namespaceHelp("mission", "Mission Studio operations", [
-    { name: "synth mission create --subject <subject> --purpose <purpose>", description: "Create a Mission proposal" },
+    { name: "synth mission create --subject <subject> --purpose <purpose> [--intent <tokens>] [--scope <tokens>]", description: "Create a Mission proposal; --intent/--scope add explicit tokens for duplicate-aware advisory matching against existing missions" },
     { name: "synth mission project --alignment-contract-id <id>", description: "Project a Mission from an approved Alignment Contract (EXP-REFINE-014)" },
     { name: "synth mission approve --draft-id <id> --alignment-contract-id <contract-id>", description: "Approve a Mission draft" },
     { name: "synth mission evidence add --draft-id <id> --subject <subject> [--purpose <purpose>] [--confidence <level>]", description: "Add evidence to a Mission draft" },
@@ -2356,7 +2361,7 @@ async function cmdAlignmentPrepare() {
 
 async function cmdExpeditionHelp() {
   printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
-    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] [--dry-run]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary" },
+    { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] [--intent <tokens>] [--dry-run]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary; --intent adds explicit tokens for duplicate-aware advisory matching against existing expeditions" },
     { name: "synth expedition create --mission <mission> --template <id> [--subject <subject>] [--dry-run]", description: "Create an Expedition from a named template (ci, deployment, observability, documentation)" },
     { name: "synth expedition approve --draft-id <id> [--dry-run]", description: "Approve an Expedition draft (Draft → Approved)" },
     { name: "synth expedition approve --all-drafts --mission <id> [--dry-run]", description: "Approve all draft Expeditions for a Mission" },
@@ -3158,6 +3163,14 @@ async function cmdStatus() {
   }
 }
 
+function parseTokenList(value: string | boolean | undefined): string[] {
+  if (typeof value !== "string" || value.length === 0) return []
+  return value
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 0)
+}
+
 function makeObservation(
   type: string,
   subject: string,
@@ -3242,6 +3255,20 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     printGateBlock(intake)
   }
 
+  // EXP-DUP-001: duplicate-aware creation. Tokenize the candidate and
+  // surface existing missions with similar scope as an advisory.
+  const scopeTokens = parseTokenList(flags.scope)
+  const intentTokens = parseTokenList(flags.intent)
+  const similar = findSimilarMissions(
+    { subject, purpose, scopeTokens, intentTokens },
+    Object.values(state.missions || {}).map((m: any) => ({
+      id: m.id,
+      name: m.name,
+      purpose: m.purpose,
+      metadata: m.metadata,
+    })),
+  )
+
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
@@ -3300,6 +3327,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     subject,
     purpose,
     evidence,
+    similar,
     confidence: session.confidence,
     unknowns: session.unknowns,
     questions: session.questions,
@@ -5118,6 +5146,21 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     printGateBlock(intake)
   }
 
+  // EXP-DUP-001: duplicate-aware creation. Compare the candidate expedition
+  // (subject + goal + scope + intent tokens) against existing expeditions
+  // and the parent mission to surface near-duplicates as an advisory.
+  const scopeTokens = parseTokenList(flags.scope)
+  const intentTokens = parseTokenList(flags.intent)
+  const similar = findSimilarExpeditions(
+    { subject, goal, scopeTokens, intentTokens },
+    Object.values(state.expeditions || {}).map((e: any) => ({
+      id: e.id,
+      name: e.name,
+      goal: e.goal,
+      metadata: e.metadata,
+    })),
+  )
+
   const ctx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
@@ -5178,6 +5221,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     missionSubject: existingMission ? `${resolvedMissionName} (${resolvedMissionId})` : missionSubject,
     expeditionSubject: subject,
     goal,
+    similar,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
     nextStep: `synth expedition approve --draft-id ${expeditionId}`,
   })
