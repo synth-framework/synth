@@ -94,6 +94,8 @@ async function testCheckpoint() {
   assert(output.steps && output.steps.status, "checkpoint should include status step")
   assert(output.steps && output.steps.replay, "checkpoint should include replay step")
   assert(output.steps && output.steps.executingExpedition, "checkpoint should include executingExpedition step")
+  assert(output.steps && output.steps.executionBranch, "checkpoint should include executionBranch step (ECOSYSTEM-001)")
+  assert(output.currentBranch !== undefined, "checkpoint should report the current git branch")
   assert(Array.isArray(output.nextSteps), "checkpoint should provide nextSteps")
   console.log(`[PASS] synth checkpoint returns AgentCheckpoint (status=${output.status})`)
 }

@@ -5,6 +5,7 @@
 import {
   EXPEDITION_STATUSES,
 } from "../types/index.js"
+import { sortKeys } from "../sdk/json/index.js"
 import type {
   SynthEvent,
   CanonicalState,
@@ -300,8 +301,20 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
     }
     case "EXPEDITION_STARTED": {
       const expeditionId = String(payload.id)
-      if (state.expeditions[expeditionId]) {
-        state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "executing", updatedAt: event.timestamp }
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        const baselineCommit = typeof payload.baselineCommit === "string" ? payload.baselineCommit : undefined
+        const eventMetadata = typeof payload.metadata === "object" && payload.metadata !== null ? (payload.metadata as Record<string, unknown>) : undefined
+        state.expeditions[expeditionId] = {
+          ...existing,
+          status: "executing",
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            ...(baselineCommit ? { baselineCommit } : {}),
+            ...(eventMetadata ?? {}),
+          },
+        }
       }
       break
     }
@@ -326,6 +339,37 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
           }
         }
         state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], ...update }
+      }
+      break
+    }
+    case "EXPEDITION_CANCELLED": {
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          status: "cancelled",
+          updatedAt: event.timestamp,
+          metadata: {
+            ...state.expeditions[expeditionId].metadata,
+            cancelReason: typeof payload.reason === "string" ? payload.reason : undefined,
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_REFINED": {
+      const expeditionId = String(payload.id)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          updatedAt: event.timestamp,
+          metadata: {
+            ...state.expeditions[expeditionId].metadata,
+            refinementId: typeof payload.refinementId === "string" ? payload.refinementId : undefined,
+            refinementNote: typeof payload.note === "string" ? payload.note : undefined,
+            refinementAt: event.timestamp,
+          },
+        }
       }
       break
     }
@@ -739,6 +783,59 @@ export function rebuildStateFromOffset(events: SynthEvent[], startOffset: number
   return state
 }
 
+function sortedCopy<T>(value: T[] | undefined | null): T[] {
+  if (!Array.isArray(value)) return []
+  return [...value].sort()
+}
+
+/**
+ * Strip audit timestamps from metadata before hashing.
+ *
+ * Timestamps are event-time dependent, so including them would make the state
+ * hash differ across replays of logically equivalent histories. The hash should
+ * reflect structural/metadata state, not wall-clock observations.
+ */
+function hashableMetadata(metadata: Record<string, unknown> | undefined | null): Record<string, unknown> {
+  if (!metadata || typeof metadata !== "object") return {}
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(metadata)) {
+    if (key.endsWith("At") || key.endsWith("at")) continue
+    result[key] = value
+  }
+  return sortKeys(result) as Record<string, unknown>
+}
+
+function missionSummary(mission: Mission): Record<string, unknown> {
+  return sortKeys({
+    id: mission.id,
+    status: mission.status,
+    projectionStatus: mission.projectionStatus,
+    expeditions: sortedCopy(mission.expeditions),
+    objectives: sortedCopy(mission.objectives),
+    constraints: sortedCopy(mission.constraints),
+    nonGoals: sortedCopy(mission.nonGoals),
+    allowedVariation: sortedCopy(mission.allowedVariation),
+    forbiddenDrift: sortedCopy(mission.forbiddenDrift),
+    referenceEvidence: sortedCopy(mission.referenceEvidence),
+    metadata: hashableMetadata(mission.metadata),
+  }) as Record<string, unknown>
+}
+
+function expeditionSummary(expedition: Expedition): Record<string, unknown> {
+  return sortKeys({
+    id: expedition.id,
+    status: expedition.status,
+    objectives: sortedCopy(expedition.objectives),
+    discoveries: sortedCopy(expedition.discoveries),
+    decisions: sortedCopy(expedition.decisions),
+    dependsOn: sortedCopy(expedition.dependsOn),
+    metadata: hashableMetadata(expedition.metadata),
+    attachments: sortedCopy(expedition.attachments).map(attachmentKey),
+    force: expedition.force,
+    forceReason: expedition.forceReason,
+  }) as Record<string, unknown>
+}
+
 export function computeStateHash(state: CanonicalState): string {
   const data: Record<string, unknown> = {
     v: state.version,
@@ -746,8 +843,12 @@ export function computeStateHash(state: CanonicalState): string {
     plans: Object.keys(state.plans).sort(),
     milestones: Object.keys(state.milestones).sort(),
     projects: Object.keys(state.projects).sort(),
-    missions: Object.keys(state.missions).sort(),
-    expeditions: Object.keys(state.expeditions).sort(),
+    missions: Object.values(state.missions)
+      .map((m) => missionSummary(m))
+      .sort((a, b) => String(a.id).localeCompare(String(b.id))),
+    expeditions: Object.values(state.expeditions)
+      .map((e) => expeditionSummary(e))
+      .sort((a, b) => String(a.id).localeCompare(String(b.id))),
     objectives: Object.keys(state.objectives).sort(),
     discoveries: Object.keys(state.discoveries).sort(),
     decisions: Object.keys(state.decisions).sort(),
@@ -769,7 +870,7 @@ export function computeStateHash(state: CanonicalState): string {
   if (state.approvals && Object.keys(state.approvals).length > 0) {
     data.approvals = Object.keys(state.approvals).sort()
   }
-  const str = JSON.stringify(data)
+  const str = JSON.stringify(sortKeys(data))
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)

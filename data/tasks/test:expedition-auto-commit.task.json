@@ -1,0 +1,14 @@
+{
+  "id": "test:expedition-auto-commit",
+  "description": "npm script migration: test:expedition-auto-commit",
+  "command": "node tests/expedition-auto-commit.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

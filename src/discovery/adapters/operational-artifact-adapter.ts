@@ -13,7 +13,7 @@ import {
   createPosixFilesystemProvider,
   type FilesystemProvider,
 } from "../../infra/filesystem-provider.js"
-import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation } from "../types.js"
+import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation, AdapterDescriptor } from "../types.js"
 
 export const OPERATIONAL_ARTIFACT_ADAPTER_ID = "discovery:operational-artifacts"
 export const OPERATIONAL_ARTIFACT_ADAPTER_VERSION = "1.0.0"
@@ -218,6 +218,20 @@ export function createOperationalArtifactDiscoveryAdapterWithProvider(
     id: OPERATIONAL_ARTIFACT_ADAPTER_ID,
     version: OPERATIONAL_ARTIFACT_ADAPTER_VERSION,
     determinism: "deterministic",
+
+    describe(): AdapterDescriptor {
+      return {
+        id: OPERATIONAL_ARTIFACT_ADAPTER_ID,
+        name: "Operational Artifact Discovery Adapter",
+        version: OPERATIONAL_ARTIFACT_ADAPTER_VERSION,
+        kind: "integration",
+        family: "operational-artifact",
+        description: "Produces immutable observations about operational configuration artifacts in a repository",
+        sourceTypes: ["filesystem"],
+        capabilities: ["container-detection", "deployment-detection", "database-detection", "cicd-detection", "infrastructure-detection"],
+        determinism: "deterministic",
+      }
+    },
 
     canHandle(source: DiscoverySource): boolean {
       return source.type === "filesystem"

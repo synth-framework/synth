@@ -23,6 +23,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { DocumentAdapter, DocumentConfig, DocumentFormat } from "./types.js"
 
@@ -33,6 +34,19 @@ export class DocumentAdapterImpl implements DocumentAdapter {
     kind: "document" as const,
     category: "integration" as const,
     description: "Document evidence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "document",
+      name: "Document Evidence Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["document-observation", "markdown-analysis", "adr-detection", "knowledge-extraction"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

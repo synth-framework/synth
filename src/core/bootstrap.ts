@@ -161,9 +161,7 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
   logger.info("[12/13] Initializing API layer...")
 
   // Default snapshot store for approved mission model snapshots.
-  // Governed projects persist under `.synth/data/snapshots`. Ungoverned
-  // trees (including the SYNTH source repo) fall back to the legacy
-  // repo-root `data/snapshots` path until they are initialized.
+  // All runtime data persists under `.synth/data/`.
   const snapshotStore = createFileSystemSnapshotStore(snapshotsDir(root()))
   const api = createAPI(gate, planning, missionStudio, adapterRegistry, snapshotStore)
 

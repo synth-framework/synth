@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { KnowledgeExtractionAdapter, KnowledgeExtractionConfig } from "./types.js"
 
@@ -27,6 +28,19 @@ export class KnowledgeExtractionAdapterImpl implements KnowledgeExtractionAdapte
     kind: "knowledge-extraction" as const,
     category: "intelligence" as const,
     description: "Knowledge extraction intelligence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "knowledge-extraction",
+      name: "Knowledge Extraction Adapter",
+      version: this.metadata.version,
+      kind: "intelligence",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["knowledge-synthesis", "entity-extraction", "relationship-inference"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

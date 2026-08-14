@@ -39,9 +39,9 @@ function generateTemporaryProof() {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "synth-proof-"))
 
   try {
-    // Copy the data directory so proof generation mutations are isolated
-    // from the working repository.
-    fs.cpSync(path.join(process.cwd(), "data"), path.join(tempDir, "data"), { recursive: true })
+    // Copy the governed data directory so proof generation mutations are
+    // isolated from the working repository.
+    fs.cpSync(path.join(process.cwd(), ".synth", "data"), path.join(tempDir, ".synth", "data"), { recursive: true })
 
     // Symlink source, build, and script directories so the generator can
     // compute hashes and invoke audit scripts without duplicating the repo.

@@ -139,3 +139,46 @@ test("deriveRepositoryType falls back to discovery baseline repositoryType", asy
   assert.strictEqual(deriveRepositoryType(state, "brownfield"), "brownfield")
   assert.strictEqual(deriveRepositoryType(state, "hybrid"), "hybrid")
 })
+
+test("synth validate --dry-run reports mapped count aligned with capability-validation-map.json", async () => {
+  await withTempDir("synth-validate-mapping-alignment-", async (dir) => {
+    await setupProject(dir)
+
+    // Override the empty map with one that only knows about ProjectConfig.
+    const mapDir = path.join(dir, "docs", "reference")
+    await fs.writeFile(
+      path.join(mapDir, "capability-validation-map.json"),
+      JSON.stringify({
+        schema: "synth-capability-validation-map-v1",
+        lintScope: [],
+        typecheckScope: [],
+        capabilities: {
+          ProjectConfig: {
+            unitTests: [],
+            integrationTests: [],
+            benchmarks: [],
+            proofs: ["test"],
+            lintScope: ["package.json"],
+            typecheckScope: [],
+            governanceClass: "tests",
+          },
+        },
+      }, null, 2),
+    )
+
+    // Use a synthetic diff so we do not depend on an initialized git repo.
+    const diffText = ["package.json", "tsconfig.json", ".env.example", "src/lib/helper.ts"].join("\n")
+
+    const result = runSynth(["validate", "--dry-run", "--diff", diffText], dir)
+    assert.strictEqual(result.status, 0, `CLI failed: ${result.stderr}`)
+    const output = findJsonObject(result.stdout)
+
+    assert.ok(output.confidenceAnalysis, "confidenceAnalysis should be present")
+    const mappedReason = output.confidenceAnalysis.reasons.find((r) => r.includes("map to validation entries"))
+    const unmappedReason = output.confidenceAnalysis.reasons.find((r) => r.includes("not mapped to validation entries"))
+    assert.ok(mappedReason, `expected a mapped reason, got: ${JSON.stringify(output.confidenceAnalysis.reasons)}`)
+    assert.ok(unmappedReason, `expected an unmapped reason, got: ${JSON.stringify(output.confidenceAnalysis.reasons)}`)
+    assert.ok(mappedReason.includes("1 of"), `mapped reason should show aligned count: ${mappedReason}`)
+    assert.ok(unmappedReason.includes("ApplicationLibrary") || unmappedReason.includes("TypeScriptConfig") || unmappedReason.includes("EnvironmentConfig"), `unmapped reason should list missing capabilities: ${unmappedReason}`)
+  })
+})

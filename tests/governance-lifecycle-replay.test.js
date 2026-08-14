@@ -302,6 +302,8 @@ const ID_FIELD_NAMES = new Set([
   "certificationId",
   "revisionRequestId",
   "conditionId",
+  "snapshotId",
+  "stateHash",
 ])
 
 const TIMESTAMP_FIELD_NAMES = new Set([
@@ -697,13 +699,33 @@ test("Convergence failure replay is deterministic and blocks Mission completion"
   }
 })
 
+function evidenceEqualIgnoringGeneratedAt(a, b) {
+  const { generatedAt: _a, ...aRest } = a
+  const { generatedAt: _b, ...bRest } = b
+  return JSON.stringify(aRest) === JSON.stringify(bRest)
+}
+
+async function writeEvidenceIfChanged(evidencePath, evidence) {
+  await fs.mkdir(path.dirname(evidencePath), { recursive: true })
+  let existing
+  try {
+    existing = JSON.parse(await fs.readFile(evidencePath, "utf-8"))
+  } catch {
+    existing = undefined
+  }
+  if (existing && evidenceEqualIgnoringGeneratedAt(existing, evidence)) {
+    console.log(`Evidence unchanged: ${evidencePath}`)
+    return
+  }
+  await fs.writeFile(evidencePath, JSON.stringify(evidence, null, 2))
+  console.log(`Evidence written: ${evidencePath}`)
+}
+
 await cleanData()
 try {
   await run()
   const evidencePath = path.join(process.cwd(), "docs/governance/program-027/lifecycle-replay-evidence.json")
-  await fs.mkdir(path.dirname(evidencePath), { recursive: true })
-  await fs.writeFile(evidencePath, JSON.stringify(evidence, null, 2))
-  console.log(`Evidence written: ${evidencePath}`)
+  await writeEvidenceIfChanged(evidencePath, evidence)
 } finally {
   await cleanData()
 }

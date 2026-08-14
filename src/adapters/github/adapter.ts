@@ -5,7 +5,7 @@
 // All GitHub API interaction is isolated here.
 // ============================================================
 
-import type { AdapterState, AdapterHealth, AdapterHealthState } from "../../types/index.js"
+import type { AdapterState, AdapterHealth, AdapterHealthState, AdapterDescriptor } from "../../types/index.js"
 import type {
   GitHubAdapter,
   GitHubConfig,
@@ -48,6 +48,31 @@ export class GitHubAdapterImpl implements GitHubAdapter {
 
   get health(): AdapterHealth {
     return this._health
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "github",
+      name: "GitHub Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "github",
+      description: "GitHub integration adapter for issues, pull requests, and releases",
+      sourceTypes: ["github"],
+      platforms: ["github"],
+      capabilities: ["issue-management", "pull-request-management", "release-management", "repository-sync"],
+      configSchema: {
+        properties: {
+          owner: { type: "string", description: "Repository owner" },
+          repo: { type: "string", description: "Repository name" },
+          token: { type: "string", description: "GitHub API token" },
+          baseUrl: { type: "string", description: "Optional GitHub Enterprise base URL" },
+          defaultBranch: { type: "string", description: "Default branch name" },
+        },
+        required: ["owner", "repo", "token"],
+      },
+      determinism: "contextual",
+    }
   }
 
   private setHealth(state: AdapterHealthState, message: string, diagnostics?: Record<string, unknown>): void {

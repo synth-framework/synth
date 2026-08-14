@@ -2,7 +2,6 @@ export {
   synthDir,
   manifestPath,
   hasManifest,
-  isSynthSourceRepository,
   getManifestPath,
 } from "./synth.js"
 export {

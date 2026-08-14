@@ -29,6 +29,7 @@ coverage/
 
 .synth/cache/
 .synth/data/
+.synth/ai/
 data/*
 !data/tasks/
 !data/tasks/*.task.json
@@ -44,6 +45,14 @@ proof/
 .env
 .env.*
 !.env.example
+
+# =============================================================================
+# Local tooling config
+# =============================================================================
+
+# opencode project config is machine-local and can embed provider API keys.
+opencode.json
+opencode.jsonc
 
 # =============================================================================
 # IDE

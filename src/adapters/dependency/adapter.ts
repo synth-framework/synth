@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { DependencyAdapter, DependencyAdapterConfig, Graph, GraphEdge, GraphNode } from "./types.js"
 
@@ -27,6 +28,19 @@ export class DependencyAdapterImpl implements DependencyAdapter {
     kind: "dependency" as const,
     category: "intelligence" as const,
     description: "Dependency graph intelligence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "dependency",
+      name: "Dependency Graph Adapter",
+      version: this.metadata.version,
+      kind: "intelligence",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["dependency-graph", "component-detection", "capability-mapping"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

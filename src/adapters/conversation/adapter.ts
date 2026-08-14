@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { ConversationAdapter, ConversationConfig, ConversationRole, ConversationTurn } from "./types.js"
 
@@ -27,6 +28,19 @@ export class ConversationAdapterImpl implements ConversationAdapter {
     kind: "conversation" as const,
     category: "integration" as const,
     description: "Natural-language evidence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "conversation",
+      name: "Conversation Evidence Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["conversation-observation", "intent-extraction", "turn-analysis"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

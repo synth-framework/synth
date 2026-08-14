@@ -15,7 +15,7 @@ function makeTempProjectRoot() {
   return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "evidence-test-")))
 }
 
-function seedEvents(projectRoot) {
+function seedEvents(projectRoot, opts = {}) {
   const dataDir = path.join(projectRoot, ".synth", "data")
   fs.mkdirSync(dataDir, { recursive: true })
   fs.writeFileSync(path.join(projectRoot, ".synth", "manifest.json"), "{}\n")
@@ -77,7 +77,7 @@ function seedEvents(projectRoot) {
           discoveries: [],
           decisions: [],
           dependsOn: [],
-          metadata: {},
+          metadata: opts.baselineCommit ? { baselineCommit: opts.baselineCommit } : {},
           createdAt: 4,
           updatedAt: 4,
         },
@@ -170,5 +170,80 @@ test("expedition evidence is idempotent across repeated invocations", { concurre
   const events = eventLog(dir)
   const evidenceEvents = events.filter((e) => e.type === "EVIDENCE_ATTACHED")
   assert.strictEqual(evidenceEvents.length, 2, "each invocation should append an event")
+})
+
+test("expedition evidence --git-diff falls back to baseline..HEAD when working tree is clean", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  seedEvents(dir)
+  fs.writeFileSync(path.join(dir, "tracked.txt"), "initial")
+  spawnSync("git", ["init"], { cwd: dir })
+  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
+  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
+  spawnSync("git", ["add", "."], { cwd: dir })
+  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+
+  fs.writeFileSync(path.join(dir, "tracked.txt"), "committed change")
+  spawnSync("git", ["add", "."], { cwd: dir })
+  spawnSync("git", ["commit", "-m", "change"], { cwd: dir })
+
+  const initialCommit = spawnSync("git", ["rev-parse", "HEAD~1"], { cwd: dir, encoding: "utf-8" }).stdout.trim()
+
+  const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff", "--baseline", initialCommit], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+  const output = parseJson(result.stdout)
+  assert.strictEqual(output.kind, "EvidenceAttached")
+  assert.ok(Array.isArray(output.warnings), "should include warnings")
+  assert.ok(output.warnings.some((w) => String(w).includes("baseline")), "should warn about baseline fallback")
+
+  const patchPath = path.join(dir, "proof", "expeditions", "e1", "git-diff.patch")
+  const patchContent = fs.readFileSync(patchPath, "utf-8")
+  assert.ok(patchContent.includes("committed change"), "patch should contain committed change via baseline fallback")
+})
+
+test("expedition evidence --git-diff warns when patch is empty", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  seedEvents(dir)
+  spawnSync("git", ["init"], { cwd: dir })
+  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
+  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
+  fs.writeFileSync(path.join(dir, "tracked.txt"), "content")
+  spawnSync("git", ["add", "."], { cwd: dir })
+  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+
+  const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+  const output = parseJson(result.stdout)
+  assert.strictEqual(output.kind, "EvidenceAttached")
+  assert.ok(Array.isArray(output.warnings), "should include warnings")
+  assert.ok(output.warnings.some((w) => String(w).includes("empty")), "should warn about empty patch")
+})
+
+test("expedition evidence --git-diff captures untracked source files and restores the index", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  seedEvents(dir)
+  spawnSync("git", ["init"], { cwd: dir })
+  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
+  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
+  fs.writeFileSync(path.join(dir, "tracked.txt"), "content")
+  spawnSync("git", ["add", "."], { cwd: dir })
+  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+  fs.writeFileSync(path.join(dir, "new-source.ts"), "const brandNew = true\n")
+  fs.writeFileSync(path.join(dir, ".synth", "data", "canonical-state.json"), "derived")
+
+  const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+
+  const patchPath = path.join(dir, "proof", "expeditions", "e1", "git-diff.patch")
+  assert.ok(fs.existsSync(patchPath), "git-diff.patch should exist")
+  const patchContent = fs.readFileSync(patchPath, "utf-8")
+  assert.ok(patchContent.includes("new-source.ts"), "patch should include untracked source file")
+  assert.ok(patchContent.includes("brandNew"), "patch should include untracked file content")
+  assert.ok(!patchContent.includes("canonical-state"), "patch should exclude derived state")
+
+  const porcelain = spawnSync("git", ["status", "--porcelain"], { cwd: dir, encoding: "utf-8" }).stdout
+  assert.ok(porcelain.includes("?? new-source.ts"), "untracked file should remain untracked after capture")
+  assert.ok(!porcelain.includes("A  new-source.ts"), "intent-to-add entry should be restored")
+  const output = parseJson(result.stdout)
+  assert.ok(!(output.warnings || []).some((w) => String(w).includes("empty")), "patch should not be empty")
 })
 

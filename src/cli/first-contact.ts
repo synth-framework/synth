@@ -7,9 +7,9 @@
 // until approval / materialization.
 // ============================================================
 
-import { spawn } from "child_process"
 import { realpathSync } from "fs"
 import fs from "fs/promises"
+import { spawn, execSync } from "child_process"
 import path from "path"
 import * as sdk from "../sdk/index.js"
 import { runBootstrap } from "./bootstrap-apply.js"
@@ -23,7 +23,7 @@ import type { ArchitectureCandidate } from "../first-contact/project/types.js"
 import { verifyCapabilities } from "../first-contact/verify/index.js"
 import { materialize, recommendAdapters, selectWorkflowTemplate } from "../first-contact/materialize/index.js"
 import { hashArtifact } from "../first-contact/artifact/canonical.js"
-import { createGitRepositoryAdapter } from "../adapters/repository/git.js"
+import { detectRecommendedAdapters } from "./detect-adapters.js"
 
 const DRAFT_STATUS = "draft" as const
 const APPROVED_STATUS = "approved" as const
@@ -476,21 +476,8 @@ interface OnboardPlan {
 }
 
 export async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAdapterSnapshot> {
-  const adapter = createGitRepositoryAdapter()
-  await adapter.configure({
-    path: targetDir,
-    remote: "origin",
-    defaultBranch: "main",
-    promotionMode: "direct",
-  })
-
-  let hasLocalGit = false
-  try {
-    await fs.access(path.join(targetDir, ".git"))
-    hasLocalGit = true
-  } catch {
-    hasLocalGit = false
-  }
+  const selection = await detectRecommendedAdapters({ targetDir })
+  const hasLocalGit = selection.selected.includes("integration:repository")
 
   let hasExternalGit = false
   let current = targetDir
@@ -525,26 +512,61 @@ export async function detectRepositoryAdapter(targetDir: string): Promise<Reposi
     }
   }
 
-  await adapter.healthCheck()
-  const status = await adapter.status()
-  const healthState = adapter.health.state
+  const git = (args: string[]) =>
+    execSync(["git", ...args].join(" "), {
+      cwd: targetDir,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim()
+
+  let branch: string | undefined
+  try {
+    branch = git(["rev-parse", "--abbrev-ref", "HEAD"])
+  } catch {
+    branch = undefined
+  }
+
+  let remoteConfigured = false
+  try {
+    git(["remote", "get-url", "origin"])
+    remoteConfigured = true
+  } catch {
+    remoteConfigured = false
+  }
+
+  let uncommittedChanges = false
+  try {
+    const statusOutput = git(["status", "--porcelain"])
+    uncommittedChanges = statusOutput.length > 0
+  } catch {
+    uncommittedChanges = false
+  }
+
+  let hooksInstalled = false
+  try {
+    const hooksDir = git(["config", "--get", "core.hooksPath"])
+    hooksInstalled = hooksDir.length > 0
+  } catch {
+    hooksInstalled = false
+  }
+
   const health: RepositoryAdapterSnapshot["health"] =
-    healthState === "healthy" ? "healthy" : healthState === "unhealthy" ? "unhealthy" : "unknown"
+    branch && (hasLocalGit || hasExternalGit) ? "healthy" : "unknown"
 
   let nextStep = "synth repo status"
-  if (!status.hooksInstalled) {
+  if (!hooksInstalled) {
     nextStep = "Install governance hooks: synth adapter install-hooks"
-  } else if (!status.remoteConfigured) {
+  } else if (!remoteConfigured) {
     nextStep = "Configure a remote: synth adapter configure remote=<remote-url>"
   }
 
   return {
     detected,
-    initialized: status.initialized,
-    branch: status.branch,
-    remoteConfigured: status.remoteConfigured,
-    uncommittedChanges: status.uncommittedChanges,
-    hooksInstalled: status.hooksInstalled,
+    initialized: hasLocalGit,
+    branch,
+    remoteConfigured,
+    uncommittedChanges,
+    hooksInstalled,
     health,
     nextStep,
   }

@@ -154,6 +154,57 @@ async function testValidateFullIsMutatingInPlan() {
   console.log("[PASS] validate --full --dry-run reports mutating governance plan")
 }
 
+async function testProjectHelpRendersNamespaceHelp() {
+  const { stdout, status } = runSynth(["project", "--help"])
+  assert(status === 0, "project --help should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "project --help status should be ok")
+  assert(output.namespace === "project", "project --help should report namespace 'project'")
+  assert(Array.isArray(output.subcommands), "project --help should list subcommands")
+  assert(output.subcommands.some((c) => c.name.includes("AGENTS.md")), "project --help should include AGENTS.md")
+  console.log("[PASS] synth project --help returns structured namespace help")
+}
+
+async function testMissionHelpIncludesVerifyCharter() {
+  const { stdout, status } = runSynth(["mission", "--help"])
+  assert(status === 0, "mission --help should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "mission --help status should be ok")
+  assert(output.namespace === "mission", "mission --help should report namespace 'mission'")
+  assert(
+    output.subcommands.some((c) => c.name.includes("verify-charter")),
+    "mission --help should include verify-charter subcommand",
+  )
+  console.log("[PASS] synth mission --help includes verify-charter")
+}
+
+async function testExpeditionHelpAdvertisesDryRun() {
+  const { stdout, status } = runSynth(["expedition", "--help"])
+  assert(status === 0, "expedition --help should exit 0")
+  const output = parseJson(stdout)
+  assert(output.status === "ok", "expedition --help status should be ok")
+  assert(output.namespace === "expedition", "expedition --help should report namespace 'expedition'")
+  const mutatingCommands = [
+    "create",
+    "approve",
+    "commit",
+    "start",
+    "complete",
+    "finish",
+    "cancel",
+    "archive",
+    "evidence",
+    "refine",
+    "certify",
+  ]
+  for (const sub of mutatingCommands) {
+    const entry = output.subcommands.find((c) => c.name.startsWith(`synth expedition ${sub}`))
+    assert(entry, `expedition --help should include ${sub} subcommand`)
+    assert(entry.name.includes("[--dry-run]"), `expedition ${sub} should advertise --dry-run`)
+  }
+  console.log("[PASS] synth expedition --help advertises --dry-run on all mutating subcommands")
+}
+
 async function main() {
   try {
     await fs.access(CLI_PATH)
@@ -172,6 +223,9 @@ async function main() {
   await testAdapterJsonOutput()
   await testSingleChannelErrorOutput()
   await testValidateFullIsMutatingInPlan()
+  await testProjectHelpRendersNamespaceHelp()
+  await testMissionHelpIncludesVerifyCharter()
+  await testExpeditionHelpAdvertisesDryRun()
 
   console.log("\n[SYNTH CLI Contract] All tests passed")
 }

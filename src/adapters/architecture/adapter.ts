@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { ArchitectureAdapter, ArchitectureAdapterConfig, ArchitectureStyle } from "./types.js"
 
@@ -33,6 +34,19 @@ export class ArchitectureAdapterImpl implements ArchitectureAdapter {
     kind: "architecture" as const,
     category: "intelligence" as const,
     description: "Architecture inference intelligence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "architecture",
+      name: "Architecture Inference Adapter",
+      version: this.metadata.version,
+      kind: "intelligence",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["architecture-inference", "style-detection", "pattern-recognition"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

@@ -528,6 +528,7 @@ function buildExpeditionsForDependencyMap(events: SynthEvent[]): Record<string, 
       case "EXPEDITION_STARTED":
       case "EXPEDITION_PAUSED":
       case "EXPEDITION_COMPLETED":
+      case "EXPEDITION_CANCELLED":
       case "EXPEDITION_ARCHIVED": {
         const expeditionId = String(payload.id ?? payload.expeditionId)
         const existing = expeditions[expeditionId]
@@ -539,6 +540,7 @@ function buildExpeditionsForDependencyMap(events: SynthEvent[]): Record<string, 
             EXPEDITION_STARTED: "executing",
             EXPEDITION_PAUSED: "paused",
             EXPEDITION_COMPLETED: "completed",
+            EXPEDITION_CANCELLED: "cancelled",
           }
           let nextStatus: Expedition["status"] | undefined = statusMap[event.type]
           if (event.type === "EXPEDITION_ARCHIVED") {

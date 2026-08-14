@@ -286,6 +286,7 @@ export async function writeAiMetadata(
   synthDir: string,
   state: CanonicalState,
   manifest: { name?: string; governanceVersion?: string },
+  force = false,
 ): Promise<void> {
   const aiDir = path.join(synthDir, AI_METADATA_DIR)
   await fs.mkdir(aiDir, { recursive: true })
@@ -299,10 +300,10 @@ export async function writeAiMetadata(
   await fs.writeFile(path.join(aiDir, "skills.json"), JSON.stringify(bundle.skills, null, 2), "utf-8")
 
   // EXP-AI-004: interaction manifest is derived from the same canonical state.
-  await writeAiInteractionManifest(synthDir, state, manifest)
+  await writeAiInteractionManifest(synthDir, state, manifest, force)
 }
 
-export async function refreshAiMetadata(synthDir: string): Promise<void> {
+export async function refreshAiMetadata(synthDir: string, force = false): Promise<void> {
   const root = path.dirname(synthDir)
 
   let state: CanonicalState | null
@@ -318,5 +319,5 @@ export async function refreshAiMetadata(synthDir: string): Promise<void> {
 
   const manifest = await sdk.manifest.readManifestMaybe<{ name?: string; governanceVersion?: string }>(root) ?? {}
 
-  await writeAiMetadata(synthDir, state, manifest)
+  await writeAiMetadata(synthDir, state, manifest, force)
 }

@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { ExpeditionBuilderAdapter, ExpeditionBuilderConfig } from "./types.js"
 
@@ -27,6 +28,19 @@ export class ExpeditionBuilderAdapterImpl implements ExpeditionBuilderAdapter {
     kind: "expedition-builder" as const,
     category: "planning" as const,
     description: "Expedition builder planning adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "expedition-builder",
+      name: "Expedition Builder Adapter",
+      version: this.metadata.version,
+      kind: "planning",
+      family: "planning",
+      description: this.metadata.description,
+      capabilities: ["expedition-synthesis", "work-breakdown", "dependency-sequencing"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

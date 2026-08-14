@@ -176,22 +176,41 @@ async function testCertifyUnblocksComplete() {
   })
 }
 
-async function testCompleteBlockedWithoutCertification() {
-  await withTempDir("synth-complete-blocked-", async (tmpDir) => {
+async function testCompleteSucceedsWithoutCertification() {
+  await withTempDir("synth-complete-sans-cert-", async (tmpDir) => {
     await setupGovernedProject(tmpDir)
+    await attachEvidence(tmpDir, "expedition-1")
 
     const { status, stdout } = runSynth(["expedition", "complete", "--id", "expedition-1"], tmpDir)
-    assert(status !== 0, "complete should be blocked without certification")
-    assert(stdout.includes("Convergence Certification required"), `expected convergence block, got: ${stdout}`)
+    assert(status === 0, `complete should succeed without certification:\n${stdout}`)
 
-    console.log("[PASS] synth expedition complete blocked without certification")
+    console.log("[PASS] synth expedition complete succeeds without certification")
+  })
+}
+
+async function testCertifyAfterCompletion() {
+  await withTempDir("synth-certify-after-complete-", async (tmpDir) => {
+    await setupGovernedProject(tmpDir)
+    await attachEvidence(tmpDir, "expedition-1")
+
+    let result = runSynth(["expedition", "complete", "--id", "expedition-1"], tmpDir)
+    assert(result.status === 0, `complete should succeed:\n${result.stdout}`)
+
+    result = runSynth(["expedition", "certify", "--id", "expedition-1"], tmpDir)
+    assert(result.status === 0, `certify after completion with auto-evaluation should succeed:\n${result.stdout}`)
+    const output = parseJson(result.stdout)
+    assert(output.status === "ok", `certify status should be ok, got ${output.status}`)
+    assert(output.decision === "converged", `decision should be converged, got ${output.decision}`)
+
+    console.log("[PASS] synth expedition certify succeeds after completion with auto-evaluation")
   })
 }
 
 async function main() {
   await testCertifyCommandEmitsEvent()
   await testCertifyUnblocksComplete()
-  await testCompleteBlockedWithoutCertification()
+  await testCompleteSucceedsWithoutCertification()
+  await testCertifyAfterCompletion()
   console.log("\n[CONVERGENCE CERTIFICATION CLI] All tests passed")
 }
 

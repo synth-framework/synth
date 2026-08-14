@@ -8,13 +8,14 @@ import type { AgentIdentity } from "../identity/types.js"
 import { applyDomain } from "../domain/execution.js"
 import { identityPayloadMetadata } from "../identity/index.js"
 import * as sdk from "../sdk/index.js"
+import { sha256 } from "../sdk/hashing/index.js"
 import {
   createWorkItem, startWorkItem, completeWorkItem, blockWorkItem,
   createPlan, activatePlan, completePlan,
   createMilestone, startMilestone, completeMilestone,
   createProject,
   createMission, approveMission, completeMission, archiveMission,
-  createExpedition, approveExpedition, commitExpedition, startExpedition, pauseExpedition, completeExpedition, cancelExpedition, archiveExpedition,
+  createExpedition, approveExpedition, commitExpedition, startExpedition, pauseExpedition, completeExpedition, cancelExpedition, archiveExpedition, refineExpedition,
   createObjective, completeObjective,
   createDiscovery,
   createDecision, acceptDecision, rejectDecision,
@@ -844,6 +845,93 @@ export function createDefaultCapabilities(): Capability[] {
         if (metadata) payload.metadata = metadata
         return {
           events: [{ type: "EXPEDITION_ARCHIVED", payload }],
+          result: updated,
+        }
+      },
+    },
+    {
+      name: "CancelExpedition",
+      description: "Cancel a non-terminal expedition",
+      inputSchema: { required: ["id"], types: { id: "string", reason: "string" } },
+      outputSchema: { events: ["EXPEDITION_CANCELLED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+        {
+          name: "expedition_not_terminal",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return status !== "completed" && status !== "cancelled" && status !== "archived"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const existing = state.expeditions[id]
+        if (!existing) {
+          const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+          const payload: Record<string, unknown> = { expeditionId: id, status: "cancelled", reason }
+          if (metadata) payload.metadata = metadata
+          return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+        }
+        const updated = cancelExpedition(existing, executionCtx)
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { expeditionId: id, id: updated.id, status: updated.status, reason, cancelledAt: executionCtx.timestamp }
+        if (metadata) payload.metadata = metadata
+        return {
+          events: [{ type: "EXPEDITION_CANCELLED", payload }],
+          result: updated,
+        }
+      },
+    },
+    {
+      name: "RefineExpedition",
+      description: "Record a charter refinement on a committed or executing expedition",
+      inputSchema: { required: ["id", "note"], types: { id: "string", note: "string", refinementId: "string" } },
+      outputSchema: { events: ["EXPEDITION_REFINED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+        {
+          name: "expedition_not_terminal",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return status !== "completed" && status !== "cancelled" && status !== "archived"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const note = typeof intent.payload.note === "string" ? intent.payload.note : ""
+        const refinementId = typeof intent.payload.refinementId === "string" ? intent.payload.refinementId : sha256(`${id}:${executionCtx.timestamp}:${note}`).slice(0, 16)
+        const existing = state.expeditions[id]
+        if (!existing) {
+          const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+          const payload: Record<string, unknown> = { expeditionId: id, note, refinementId }
+          if (metadata) payload.metadata = metadata
+          return { events: [{ type: "EXPEDITION_REFINED", payload }] }
+        }
+        const updated = refineExpedition(existing, executionCtx, note, refinementId)
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { expeditionId: id, id: updated.id, status: updated.status, note, refinementId, refinedAt: executionCtx.timestamp }
+        if (metadata) payload.metadata = metadata
+        return {
+          events: [{ type: "EXPEDITION_REFINED", payload }],
           result: updated,
         }
       },

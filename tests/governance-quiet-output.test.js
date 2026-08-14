@@ -55,6 +55,12 @@ async function main() {
     assert(quietResult.stdout.trim().startsWith("{"), "quiet status should still emit JSON to stdout")
     assert(!quietResult.stderr.includes('"level":"INFO"'), "quiet status should suppress INFO logs to stderr")
 
+    // --no-bootstrap-logs is an alias for --quiet and suppresses INFO logs.
+    const noBootstrapResult = runSynth(["status", "--no-bootstrap-logs"], projectDir)
+    assert(noBootstrapResult.status === 0, `no-bootstrap-logs status must exit 0: ${noBootstrapResult.stderr}`)
+    assert(noBootstrapResult.stdout.trim().startsWith("{"), "no-bootstrap-logs status should still emit JSON to stdout")
+    assert(!noBootstrapResult.stderr.includes('"level":"INFO"'), "no-bootstrap-logs status should suppress INFO logs to stderr")
+
     // --summary emits a condensed summary.
     const summaryResult = runSynth(["status", "--summary"], projectDir)
     assert(summaryResult.status === 0, `summary status must exit 0: ${summaryResult.stderr}`)
@@ -70,6 +76,7 @@ async function main() {
 
     console.log("[PASS] default status emits JSON and INFO logs")
     console.log("[PASS] --quiet suppresses INFO logs")
+    console.log("[PASS] --no-bootstrap-logs suppresses INFO logs")
     console.log("[PASS] --summary emits condensed summary")
     console.log("[PASS] --quiet --summary work together")
     console.log("\nAll quiet/summary output tests passed.")

@@ -313,13 +313,16 @@ export function applyDomain(
       }
       const existing = state.expeditions[id]
       const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const baselineCommit = typeof intent.payload.baselineCommit === "string" ? intent.payload.baselineCommit : undefined
       if (!existing) {
         const payload: Record<string, unknown> = { id, status: "executing" }
+        if (baselineCommit) payload.baselineCommit = baselineCommit
         if (metadata) payload.metadata = metadata
         return { events: [{ type: "EXPEDITION_STARTED", payload }] }
       }
       const updated = planningLogic.startExpedition(existing, ctx)
       const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (baselineCommit) payload.baselineCommit = baselineCommit
       if (metadata) payload.metadata = metadata
       return { events: [{ type: "EXPEDITION_STARTED", payload }] }
     }
@@ -337,6 +340,41 @@ export function applyDomain(
       const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
       if (metadata) payload.metadata = metadata
       return { events: [{ type: "EXPEDITION_PAUSED", payload }] }
+    }
+
+    case "CancelExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+      if (!existing) {
+        const payload: Record<string, unknown> = { id, status: "cancelled" }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+      }
+      const updated = planningLogic.cancelExpedition(existing, ctx)
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status }
+      if (reason) payload.reason = reason
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+    }
+
+    case "RefineExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const note = typeof intent.payload.note === "string" ? intent.payload.note : ""
+      const refinementId = typeof intent.payload.refinementId === "string" ? intent.payload.refinementId : `${id}-refinement-${ctx.timestamp}`
+      if (!existing) {
+        const payload: Record<string, unknown> = { id, note, refinementId }
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_REFINED", payload }] }
+      }
+      const updated = planningLogic.refineExpedition(existing, ctx, note, refinementId)
+      const payload: Record<string, unknown> = { id: updated.id, status: updated.status, note, refinementId }
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_REFINED", payload }] }
     }
 
     case "CompleteExpedition": {

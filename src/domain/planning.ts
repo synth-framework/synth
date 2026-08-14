@@ -213,6 +213,28 @@ export function cancelExpedition(expedition: Expedition, ctx: DomainContext): Ex
   }
 }
 
+/** Refine an expedition charter — record scope clarifications or decisions */
+export function refineExpedition(
+  expedition: Expedition,
+  ctx: DomainContext,
+  note: string,
+  refinementId: string,
+): Expedition {
+  if (expedition.status === "completed" || expedition.status === "cancelled" || expedition.status === "archived") {
+    throw new Error("INVARIANT_VIOLATION: cannot refine a terminal expedition")
+  }
+  return {
+    ...expedition,
+    updatedAt: ctx.timestamp,
+    metadata: {
+      ...expedition.metadata,
+      refinementId,
+      refinementNote: note,
+      refinementAt: ctx.timestamp,
+    },
+  }
+}
+
 /** Add an objective to an expedition */
 export function addObjectiveToExpedition(expedition: Expedition, objectiveId: string): Expedition {
   if (expedition.objectives.includes(objectiveId)) return expedition

@@ -30,7 +30,7 @@ import {
 // Fixtures
 // ============================================================
 
-const LEGACY_LOG = path.join(process.cwd(), "data", "event-log.jsonl")
+const LEGACY_LOG = path.join(process.cwd(), ".synth", "data", "event-log.jsonl")
 const FIRST_CONTACT_ARCHIVE = path.join(
   process.cwd(),
   "examples",
@@ -248,8 +248,8 @@ test("graph violations never feed the legacy consistent verdict", async () => {
 // 215-event log now replays with a clean graph. The environment-independent
 // defective-log checks below use the committed first-contact archive instead.
 test(
-  "legacy data/event-log.jsonl: consistent and graph clean after EXP-GOV-009 aliases",
-  { skip: !fs.existsSync(LEGACY_LOG) && "requires local data/event-log.jsonl (gitignored runtime state)" },
+  "canonical .synth/data/event-log.jsonl: consistent and graph clean after EXP-GOV-009 aliases",
+  { skip: !fs.existsSync(LEGACY_LOG) && "requires local .synth/data/event-log.jsonl (gitignored runtime state)" },
   async () => {
     const verifier = createReplayVerifier(new EventStore(LEGACY_LOG), new InMemoryStateStore())
     const result = await verifier.verify()

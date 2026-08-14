@@ -13,6 +13,7 @@ import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { writeAgentArtifacts } from "./agent-artifacts.js"
 import { generateAgentContext } from "./bootstrap-context.js"
+import { detectRecommendedAdapters } from "./detect-adapters.js"
 
 export type BootstrapStage = {
   stage: string
@@ -28,6 +29,8 @@ export type BootstrapOptions = {
   withExample: boolean
   projectName?: string
   streamStages?: boolean
+  adapters?: string[]
+  withoutAdapters?: string[]
 }
 
 type StageRunner = {
@@ -162,11 +165,18 @@ async function initSynthProject(
   targetDir: string,
   projectName: string,
   agentContext?: import("./bootstrap-context.js").AgentContext,
+  adapterOptions?: { adapters?: string[]; withoutAdapters?: string[] },
 ) {
   const root = sdk.workspace.root(targetDir)
   const governanceVersion = "2.1"
   await sdk.files.ensureDirectory(sdk.paths.synthDir(root))
   await sdk.files.ensureDirectory(sdk.paths.dataDir(root))
+
+  const adapterSelection = await detectRecommendedAdapters({
+    targetDir,
+    explicitAdapters: adapterOptions?.adapters,
+    excludedAdapters: adapterOptions?.withoutAdapters,
+  })
 
   const version = "2.0.0" // bootstrap does not need to read package.json; manifest will be regenerated on init
   const manifest = {
@@ -194,6 +204,11 @@ async function initSynthProject(
       "dependency", "architecture", "mission-builder", "expedition-builder",
       "objective-builder", "wizard",
     ],
+    adapters: {
+      selected: adapterSelection.selected,
+      config: adapterSelection.config,
+      diagnostics: adapterSelection.diagnostics,
+    },
     layout: {
       docs: "docs/",
       generatedDocs: "docs/generated/",
@@ -257,6 +272,119 @@ async function initSynthProject(
   }
 }
 
+interface DetectedProjectProfile {
+  hasTypeScript: boolean
+  hasNodeServer: boolean
+  hasNextJsAppRouter: boolean
+  hasReactComponents: boolean
+  hasReactContext: boolean
+  hasReactHooks: boolean
+  hasApplicationLibrary: boolean
+  hasEnvironmentConfig: boolean
+  hasPython: boolean
+  hasPythonDeps: boolean
+  hasGo: boolean
+  hasRust: boolean
+  hasJava: boolean
+}
+
+async function detectProjectProfile(targetDir: string): Promise<DetectedProjectProfile> {
+  const exists = (p: string) => sdk.files.exists(path.join(targetDir, p))
+  const isDir = (p: string) => sdk.files.isDirectory(path.join(targetDir, p))
+
+  const [hasTypeScript, hasEnvironmentConfig] = await Promise.all([
+    exists("tsconfig.json"),
+    exists(".env.example"),
+  ])
+
+  const [
+    hasApplicationLibrary,
+    hasNextJsAppRouter,
+    hasReactComponents,
+    hasReactContext,
+    hasReactHooks,
+    hasNodeServerRoutes,
+    hasPython,
+    hasPythonDeps,
+    hasGo,
+    hasRust,
+    hasJava,
+  ] = await Promise.all([
+    isDir("src/lib") || isDir("lib"),
+    isDir("src/app") || isDir("app") || (await exists("next.config.js")) || (await exists("next.config.ts")),
+    isDir("src/components") || isDir("components"),
+    isDir("src/context") || isDir("context"),
+    isDir("src/hooks") || isDir("hooks"),
+    isDir("src/routes"),
+    exists("app.py") || exists("main.py") || exists("manage.py") || isDir("src").then(async (ok) => ok && (await listHasExtension(path.join(targetDir, "src"), ".py"))),
+    exists("requirements.txt") || exists("pyproject.toml"),
+    exists("go.mod") || isDir("cmd") || isDir("pkg") || isDir("internal"),
+    exists("Cargo.toml") || isDir("src").then(async (ok) => ok && (await listHasExtension(path.join(targetDir, "src"), ".rs"))),
+    exists("pom.xml") || exists("build.gradle") || exists("build.gradle.kts") || isDir("src/main/java"),
+  ])
+
+  const hasNodeServer =
+    (await exists("server.ts")) ||
+    (await exists("server.js")) ||
+    (await exists("server.mjs")) ||
+    (await exists("server.cjs")) ||
+    (await exists("src/server.ts")) ||
+    (await exists("src/server.js")) ||
+    (await exists("src/server.mjs")) ||
+    (await exists("src/server.cjs")) ||
+    (await exists("app.ts")) ||
+    (await exists("app.js")) ||
+    (await exists("src/app.ts")) ||
+    (await exists("src/app.js")) ||
+    hasNodeServerRoutes
+
+  return {
+    hasTypeScript,
+    hasNodeServer,
+    hasNextJsAppRouter,
+    hasReactComponents,
+    hasReactContext,
+    hasReactHooks,
+    hasApplicationLibrary,
+    hasEnvironmentConfig,
+    hasPython,
+    hasPythonDeps,
+    hasGo,
+    hasRust,
+    hasJava,
+  }
+}
+
+async function listHasExtension(dirPath: string, ext: string): Promise<boolean> {
+  try {
+    const entries = await sdk.files.listDirectory(dirPath)
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry)
+      const stat = await sdk.files.isDirectory(fullPath)
+      if (stat) {
+        if (await listHasExtension(fullPath, ext)) return true
+      } else if (entry.endsWith(ext)) {
+        return true
+      }
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
+function createCapabilityEntry(validationScript: string, lintScope: string[], typecheckScope: string[] = []): any {
+  return {
+    unitTests: [],
+    integrationTests: [],
+    benchmarks: [],
+    proofs: [validationScript],
+    lintScope,
+    typecheckScope,
+    governanceClass: "tests",
+  }
+}
+
 async function writeDefaultCapabilityValidationMap(targetDir: string) {
   const referenceDir = path.join(targetDir, "docs", "reference")
   await sdk.files.ensureDirectory(referenceDir)
@@ -298,22 +426,61 @@ async function writeDefaultCapabilityValidationMap(targetDir: string) {
     await sdk.json.writeJson(packageJsonPath, packageJson)
   }
 
+  const profile = await detectProjectProfile(targetDir)
+  const capabilities: Record<string, any> = {
+    ProjectConfig: createCapabilityEntry(validationScript, ["package.json", ".synth/ai/"]),
+  }
+
+  if (profile.hasApplicationLibrary) {
+    capabilities.ApplicationLibrary = createCapabilityEntry(validationScript, ["src/lib/", "lib/"], ["src/lib/", "lib/"])
+  }
+  if (profile.hasTypeScript) {
+    capabilities.TypeScriptConfig = createCapabilityEntry(validationScript, ["tsconfig.json"], ["tsconfig.json"])
+  }
+  if (profile.hasEnvironmentConfig) {
+    capabilities.EnvironmentConfig = createCapabilityEntry(validationScript, [".env.example"])
+  }
+  if (profile.hasNextJsAppRouter) {
+    capabilities.NextJsAppRouter = createCapabilityEntry(validationScript, ["src/app/", "app/"], ["src/app/", "app/"])
+  }
+  if (profile.hasReactComponents) {
+    capabilities.ReactComponents = createCapabilityEntry(validationScript, ["src/components/", "components/"], ["src/components/", "components/"])
+  }
+  if (profile.hasReactContext) {
+    capabilities.ReactContext = createCapabilityEntry(validationScript, ["src/context/", "context/"], ["src/context/", "context/"])
+  }
+  if (profile.hasReactHooks) {
+    capabilities.ReactHooks = createCapabilityEntry(validationScript, ["src/hooks/", "hooks/"], ["src/hooks/", "hooks/"])
+  }
+  if (profile.hasNodeServer) {
+    capabilities.NodeServer = createCapabilityEntry(
+      validationScript,
+      ["server.*", "src/server.*", "app.ts", "app.js", "src/app.ts", "src/app.js", "src/routes/"],
+      ["server.*", "src/server.*", "app.ts", "app.js", "src/app.ts", "src/app.js", "src/routes/"],
+    )
+  }
+  if (profile.hasPython) {
+    capabilities.PythonApplication = createCapabilityEntry(validationScript, ["src/**/*.py", "app.py", "main.py", "manage.py"])
+  }
+  if (profile.hasPythonDeps) {
+    capabilities.PythonDependencies = createCapabilityEntry(validationScript, ["requirements.txt", "pyproject.toml"])
+  }
+  if (profile.hasGo) {
+    capabilities.GoApplication = createCapabilityEntry(validationScript, ["cmd/", "pkg/", "internal/", "go.mod"])
+  }
+  if (profile.hasRust) {
+    capabilities.RustApplication = createCapabilityEntry(validationScript, ["src/**/*.rs", "Cargo.toml"])
+  }
+  if (profile.hasJava) {
+    capabilities.JavaApplication = createCapabilityEntry(validationScript, ["src/main/java/", "pom.xml", "build.gradle", "build.gradle.kts"])
+  }
+
   const map = {
     schema: "synth-capability-validation-map-v1",
     description: "Default capability validation map generated by synth bootstrap.",
     lintScope: ["src/"],
     typecheckScope: ["src/"],
-    capabilities: {
-      ProjectConfig: {
-        unitTests: [],
-        integrationTests: [],
-        benchmarks: [],
-        proofs: [validationScript],
-        lintScope: ["package.json", ".synth/ai/"],
-        typecheckScope: [],
-        governanceClass: "tests",
-      },
-    },
+    capabilities,
   }
 
   await sdk.json.writeJson(path.join(referenceDir, "capability-validation-map.json"), map)
@@ -418,7 +585,10 @@ export async function runBootstrap(targetDir: string, options: BootstrapOptions)
 
   // Apply phase
   await run("init", "Create .synth/ manifest and data directory", () =>
-    initSynthProject(resolvedDir, projectName, analysis.agentContext)
+    initSynthProject(resolvedDir, projectName, analysis.agentContext, {
+      adapters: options.adapters,
+      withoutAdapters: options.withoutAdapters,
+    })
   )
 
   // Generate docs only if docs directory exists; otherwise this is a fresh project.

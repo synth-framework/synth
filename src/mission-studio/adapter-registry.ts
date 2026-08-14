@@ -1,15 +1,23 @@
 // ============================================================
 // MISSION STUDIO: Adapter Registry
 // ============================================================
-// Central registry for Mission Studio planning adapters.
-// These adapters produce observations for mission and expedition
-// planning, not for the discovery pipeline.
+// Central registry for Mission Studio planning and intelligence
+// adapters. These adapters produce observations for mission and
+// expedition planning, not for the discovery pipeline.
 //
-// Core code depends only on adapter interfaces, not on specific
-// implementations.
+// The registry is now catalog-driven: it queries the unified
+// AdapterCatalog for adapters in the "planning" and "intelligence"
+// families and registers their factories from a canonical provider
+// map. This removes the previous hardcoded factory list while
+// preserving typed getters for known adapters.
 // ============================================================
 
 import type { Adapter } from "../types/index.js"
+import type { AdapterDescriptor } from "../types/adapter.js"
+import {
+  createDefaultAdapterCatalog,
+  type AdapterCatalog,
+} from "../adapters/adapter-catalog.js"
 import { createGitRepositoryAdapter, GitRepositoryAdapter } from "../adapters/repository/git.js"
 import { createGitHubAdapter, GitHubAdapterImpl } from "../adapters/github/adapter.js"
 import { createTddAdapter, TddAdapterImpl } from "../adapters/tdd/adapter.js"
@@ -29,27 +37,42 @@ import { createWizardAdapter, WizardAdapterImpl } from "../adapters/wizard/adapt
 
 export type AdapterConstructor = () => Adapter
 
+/** Canonical factory provider for Mission Studio catalog adapters. */
+const PLANNING_ADAPTER_FACTORIES: Record<string, AdapterConstructor> = {
+  repository: () => createGitRepositoryAdapter(),
+  github: () => createGitHubAdapter(),
+  tdd: () => createTddAdapter(),
+  bdd: () => createBddAdapter(),
+  conversation: () => createConversationAdapter(),
+  document: () => createDocumentAdapter(),
+  filesystem: () => createFilesystemAdapter(),
+  specification: () => createSpecificationAdapter(),
+  "knowledge-extraction": () => createKnowledgeExtractionAdapter(),
+  confidence: () => createConfidenceAdapter(),
+  dependency: () => createDependencyAdapter(),
+  architecture: () => createArchitectureAdapter(),
+  "mission-builder": () => createMissionBuilderAdapter(),
+  "expedition-builder": () => createExpeditionBuilderAdapter(),
+  "objective-builder": () => createObjectiveBuilderAdapter(),
+  wizard: () => createWizardAdapter(),
+}
+
 export class AdapterRegistry {
   private adapters = new Map<string, Adapter>()
   private factories = new Map<string, AdapterConstructor>()
+  private catalog: AdapterCatalog
 
-  constructor() {
-    this.registerFactory("repository", () => createGitRepositoryAdapter())
-    this.registerFactory("github", () => createGitHubAdapter())
-    this.registerFactory("tdd", () => createTddAdapter())
-    this.registerFactory("bdd", () => createBddAdapter())
-    this.registerFactory("conversation", () => createConversationAdapter())
-    this.registerFactory("document", () => createDocumentAdapter())
-    this.registerFactory("filesystem", () => createFilesystemAdapter())
-    this.registerFactory("specification", () => createSpecificationAdapter())
-    this.registerFactory("knowledge-extraction", () => createKnowledgeExtractionAdapter())
-    this.registerFactory("confidence", () => createConfidenceAdapter())
-    this.registerFactory("dependency", () => createDependencyAdapter())
-    this.registerFactory("architecture", () => createArchitectureAdapter())
-    this.registerFactory("mission-builder", () => createMissionBuilderAdapter())
-    this.registerFactory("expedition-builder", () => createExpeditionBuilderAdapter())
-    this.registerFactory("objective-builder", () => createObjectiveBuilderAdapter())
-    this.registerFactory("wizard", () => createWizardAdapter())
+  constructor(catalog: AdapterCatalog = createDefaultAdapterCatalog()) {
+    this.catalog = catalog
+    this.seedFromFactoryMap()
+  }
+
+  private seedFromFactoryMap(): void {
+    // The factory map defines which adapters Mission Studio knows how to
+    // instantiate. Metadata for each adapter comes from the catalog.
+    for (const [name, factory] of Object.entries(PLANNING_ADAPTER_FACTORIES)) {
+      this.registerFactory(name, factory)
+    }
   }
 
   registerFactory(name: string, factory: AdapterConstructor): void {
@@ -167,8 +190,20 @@ export class AdapterRegistry {
   list(): string[] {
     return Array.from(this.factories.keys())
   }
+
+  /** Return the canonical descriptor for a registered adapter, if indexed. */
+  descriptor(name: string): AdapterDescriptor | undefined {
+    return this.catalog.resolve(name)
+  }
+
+  /** Return canonical descriptors for all registered adapters. */
+  descriptors(): AdapterDescriptor[] {
+    return this.list()
+      .map((name) => this.catalog.resolve(name))
+      .filter((descriptor): descriptor is AdapterDescriptor => descriptor !== undefined)
+  }
 }
 
-export function createAdapterRegistry(): AdapterRegistry {
-  return new AdapterRegistry()
+export function createAdapterRegistry(catalog?: AdapterCatalog): AdapterRegistry {
+  return new AdapterRegistry(catalog)
 }

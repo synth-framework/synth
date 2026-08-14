@@ -1,0 +1,14 @@
+{
+  "id": "test:expedition-reuse-and-templates",
+  "description": "npm script migration: test:expedition-reuse-and-templates",
+  "command": "node tests/expedition-reuse-and-templates.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance",
+    "test"
+  ],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

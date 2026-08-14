@@ -313,7 +313,8 @@
     "CLI": {
       "unitTests": [
         "test",
-        "test:synth-cli"
+        "test:synth-cli",
+        "test:release"
       ],
       "integrationTests": [
         "test:operator-journey"
@@ -322,7 +323,8 @@
       "proofs": [],
       "lintScope": [
         "src/cli/",
-        "tests/synth-cli.test.js"
+        "tests/synth-cli.test.js",
+        "tests/release.test.js"
       ],
       "typecheckScope": [
         "src/cli/"
@@ -827,6 +829,240 @@
       "lintScope": [
         "package.json",
         ".synth/ai/"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
+    "ApplicationLibrary": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/lib/"
+      ],
+      "typecheckScope": [
+        "src/lib/"
+      ],
+      "governanceClass": "tests"
+    },
+    "TypeScriptConfig": {
+      "unitTests": [],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "tsconfig.json"
+      ],
+      "typecheckScope": [
+        "tsconfig.json"
+      ],
+      "governanceClass": "tests"
+    },
+    "EnvironmentConfig": {
+      "unitTests": [],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        ".env.example"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
+    "NextJsAppRouter": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/app/",
+        "app/"
+      ],
+      "typecheckScope": [
+        "src/app/",
+        "app/"
+      ],
+      "governanceClass": "tests"
+    },
+    "ReactComponents": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/components/",
+        "components/"
+      ],
+      "typecheckScope": [
+        "src/components/",
+        "components/"
+      ],
+      "governanceClass": "tests"
+    },
+    "ReactContext": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/context/",
+        "context/"
+      ],
+      "typecheckScope": [
+        "src/context/",
+        "context/"
+      ],
+      "governanceClass": "tests"
+    },
+    "ReactHooks": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/hooks/",
+        "hooks/"
+      ],
+      "typecheckScope": [
+        "src/hooks/",
+        "hooks/"
+      ],
+      "governanceClass": "tests"
+    },
+    "NodeServer": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "server.*",
+        "src/server.*",
+        "app.ts",
+        "app.js",
+        "src/app.ts",
+        "src/app.js",
+        "src/routes/"
+      ],
+      "typecheckScope": [
+        "server.*",
+        "src/server.*",
+        "app.ts",
+        "app.js",
+        "src/app.ts",
+        "src/app.js",
+        "src/routes/"
+      ],
+      "governanceClass": "tests"
+    },
+    "PythonApplication": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/**/*.py",
+        "app.py",
+        "main.py",
+        "manage.py"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
+    "PythonDependencies": {
+      "unitTests": [],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "requirements.txt",
+        "pyproject.toml"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
+    "GoApplication": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "cmd/",
+        "pkg/",
+        "internal/",
+        "go.mod"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
+    "RustApplication": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/**/*.rs",
+        "Cargo.toml"
+      ],
+      "typecheckScope": [],
+      "governanceClass": "tests"
+    },
+    "JavaApplication": {
+      "unitTests": [
+        "test"
+      ],
+      "integrationTests": [],
+      "benchmarks": [],
+      "proofs": [
+        "govern"
+      ],
+      "lintScope": [
+        "src/main/java/",
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts"
       ],
       "typecheckScope": [],
       "governanceClass": "tests"

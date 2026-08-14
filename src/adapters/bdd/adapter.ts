@@ -15,7 +15,7 @@ import fs from "fs"
 import path from "path"
 import { execSync } from "child_process"
 import { shortHash } from "../../sdk/hashing/index.js"
-import type { AdapterState, AdapterHealth, AdapterHealthState } from "../../types/index.js"
+import type { AdapterState, AdapterHealth, AdapterHealthState, AdapterDescriptor } from "../../types/index.js"
 import type {
   BddAdapter,
   BddConfig,
@@ -38,6 +38,19 @@ export class BddAdapterImpl implements BddAdapter {
     kind: "bdd" as const,
     category: "methodology" as const,
     description: "Behavior-Driven Development methodology adapter",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "bdd",
+      name: "BDD Methodology Adapter",
+      version: this.metadata.version,
+      kind: "methodology",
+      family: "planning",
+      description: this.metadata.description,
+      capabilities: ["testing", "behavior-driven-development", "feature-definition", "scenario-generation", "acceptance-tests", "traceability-matrix"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

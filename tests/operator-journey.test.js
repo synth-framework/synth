@@ -40,7 +40,7 @@ function now() {
 
 async function cleanSnapshotStore() {
   try {
-    await fs.rm(path.join(process.cwd(), "data", "snapshots"), { recursive: true, force: true })
+    await fs.rm(path.join(process.cwd(), ".synth", "data", "snapshots"), { recursive: true, force: true })
   } catch {
     /* ok */
   }

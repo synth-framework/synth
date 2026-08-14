@@ -2,7 +2,7 @@
 // ADAPTER: GitHub — Types
 // ============================================================
 
-import type { AdapterState, AdapterHealth } from "../../types/index.js"
+import type { AdapterState, AdapterHealth, AdapterDescriptor } from "../../types/index.js"
 
 export type GitHubConfig = {
   owner: string
@@ -91,6 +91,8 @@ export interface GitHubAdapter {
   readonly state: AdapterState
   readonly health: AdapterHealth
   readonly config?: GitHubConfig
+
+  describe?(): AdapterDescriptor
 
   initialize(): Promise<AdapterState>
   configure(config: Record<string, unknown>): Promise<AdapterState>

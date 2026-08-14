@@ -13,7 +13,10 @@
 // and ExecutionGate respectively.
 // ============================================================
 
-import { createFilesystemInitializationAdapter } from "../adapters/filesystem-initialization-adapter.js"
+import {
+  createDefaultAdapterCatalog,
+  createInitializationAdapter,
+} from "../adapters/adapter-catalog.js"
 import { evidenceToProjectModelInput } from "../adapters/initialization-adapter.js"
 import type {
   InitializationAdapter,
@@ -44,7 +47,11 @@ export interface InitializationEngine {
 }
 
 function defaultAdapters(): InitializationAdapter[] {
-  return [createFilesystemInitializationAdapter()]
+  const catalog = createDefaultAdapterCatalog()
+  return catalog
+    .query({ family: "initialization" })
+    .map(createInitializationAdapter)
+    .filter((adapter): adapter is InitializationAdapter => adapter !== undefined)
 }
 
 function emptyEvidence(sourceType: SourceType): InitializationEvidence {

@@ -12,7 +12,7 @@ import {
   createPosixFilesystemProvider,
   type FilesystemProvider,
 } from "../../infra/filesystem-provider.js"
-import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation } from "../types.js"
+import type { DiscoveryAdapter, DiscoveryContext, DiscoverySource, Observation, AdapterDescriptor } from "../types.js"
 
 export const FILESYSTEM_ADAPTER_ID = "discovery:filesystem"
 export const FILESYSTEM_ADAPTER_VERSION = "1.0.0"
@@ -138,6 +138,20 @@ export function createFilesystemDiscoveryAdapterWithProvider(
     id: FILESYSTEM_ADAPTER_ID,
     version: FILESYSTEM_ADAPTER_VERSION,
     determinism: "deterministic",
+
+    describe(): AdapterDescriptor {
+      return {
+        id: FILESYSTEM_ADAPTER_ID,
+        name: "Filesystem Discovery Adapter",
+        version: FILESYSTEM_ADAPTER_VERSION,
+        kind: "integration",
+        family: "filesystem",
+        description: "Produces immutable observations about a local filesystem directory",
+        sourceTypes: ["filesystem"],
+        capabilities: ["filesystem-scan", "manifest-detection", "extension-inventory"],
+        determinism: "deterministic",
+      }
+    },
 
     canHandle(source: DiscoverySource): boolean {
       return source.type === "filesystem"

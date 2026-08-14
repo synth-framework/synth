@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type {
   RepositoryAdapter,
@@ -29,7 +30,18 @@ import type {
   SnapshotResult,
   SnapshotEntry,
   VerifyResult,
+  CompletionReadinessOptions,
+  CompletionReadinessResult,
 } from "./types.js"
+import {
+  loadBranchPolicyConfig,
+  resolveExecutionBranch,
+} from "../../repository/branch-policy.js"
+import type {
+  ExecutionRole,
+  ExecutionBranchContext,
+  ExecutionBranchResult,
+} from "../../repository/branch-policy.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../../adapter/git-snapshot.js"
 
 function git(cwd: string, args: string[]): string {
@@ -63,6 +75,13 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   private _health: AdapterHealth = { state: "unknown", message: "Adapter not yet health-checked" }
   private _snapshotAdapter = new GitSnapshotAdapter()
 
+  constructor(config?: Partial<RepositoryConfig>) {
+    if (config) {
+      this._config = { ...this._config, ...config } as RepositoryConfig
+      this._state = "configured"
+    }
+  }
+
   get state(): AdapterState {
     return this._state
   }
@@ -73,6 +92,30 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
 
   get health(): AdapterHealth {
     return this._health
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "repository",
+      name: "Git Repository Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "repository",
+      description: "Git reference implementation of the Repository Adapter",
+      sourceTypes: ["git"],
+      platforms: ["git"],
+      capabilities: ["version-control", "branch-management", "commit", "snapshot", "promotion", "merge"],
+      configSchema: {
+        properties: {
+          path: { type: "string", description: "Local repository path" },
+          remote: { type: "string", description: "Default remote name" },
+          defaultBranch: { type: "string", description: "Default branch name" },
+          promotionMode: { type: "string", description: "Promotion mode: direct or staged" },
+        },
+        required: ["path", "remote", "defaultBranch", "promotionMode"],
+      },
+      determinism: "contextual",
+    }
   }
 
   private setHealth(state: AdapterHealthState, message: string, diagnostics?: Record<string, unknown>): void {
@@ -126,7 +169,7 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
     const hookPath = path.join(this.repoPath(), ".git", "hooks", "pre-commit")
     if (!fs.existsSync(hookPath)) return false
     const content = fs.readFileSync(hookPath, "utf-8")
-    return content.includes("npm run govern")
+    return content.includes("Synth pre-commit governance hook")
   }
 
   private hasProofGenerated(): boolean {
@@ -271,6 +314,39 @@ export class GitRepositoryAdapter implements RepositoryAdapter {
   async createSnapshot(options: SnapshotOptions): Promise<SnapshotResult> {
     const cwd = this.repoPath()
     return this._snapshotAdapter.createSnapshot({ cwd, ...options })
+  }
+
+  async validateCompletionReadiness(options: CompletionReadinessOptions = {}): Promise<CompletionReadinessResult> {
+    const cwd = this.repoPath()
+    // If there is no git repository, there is no working tree to snapshot and
+    // therefore no source-change gate to enforce.
+    if (!this.isGitRepo()) {
+      return { ok: true }
+    }
+    // If snapshot policy is disabled, do not block completion for working-tree
+    // state; the operator has explicitly turned off governance anchoring.
+    const config = loadSnapshotConfig(cwd)
+    if (config.snapshotPolicy === "disabled") {
+      return { ok: true }
+    }
+    return this._snapshotAdapter.canSnapshot(cwd)
+  }
+
+  async validateExecutionBranch(
+    role: ExecutionRole,
+    context: ExecutionBranchContext = {},
+  ): Promise<ExecutionBranchResult> {
+    // Degrade to observation when the VCS has no branch concept. Git has
+    // branches, so this only triggers outside a git repository: no repo is
+    // detected, so the framework records an explicit observation instead of
+    // silently fabricating a branch requirement.
+    if (!this.isGitRepo()) {
+      const policy = loadBranchPolicyConfig(this.repoPath())
+      return resolveExecutionBranch(role, "none", { ...policy, strategy: "observed" }, context)
+    }
+    const branch = this.currentBranch()
+    const policy = loadBranchPolicyConfig(this.repoPath())
+    return resolveExecutionBranch(role, branch, policy, context)
   }
 
   async listSnapshots(limit?: number): Promise<SnapshotEntry[]> {
@@ -662,6 +738,6 @@ ${synthExec} explain replay >/dev/null 2>&1 || true`,
   }
 }
 
-export function createGitRepositoryAdapter(): GitRepositoryAdapter {
-  return new GitRepositoryAdapter()
+export function createGitRepositoryAdapter(config?: Partial<RepositoryConfig>): GitRepositoryAdapter {
+  return new GitRepositoryAdapter(config)
 }

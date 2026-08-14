@@ -19,6 +19,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { FilesystemAdapter, FilesystemConfig } from "./types.js"
 
@@ -52,6 +53,19 @@ export class FilesystemAdapterImpl implements FilesystemAdapter {
     kind: "filesystem" as const,
     category: "integration" as const,
     description: "Filesystem evidence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "filesystem",
+      name: "Filesystem Evidence Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["filesystem-observation", "file-inventory", "text-snippet-extraction"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

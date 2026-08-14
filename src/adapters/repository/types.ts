@@ -2,7 +2,8 @@
 // ADAPTER: Repository — Types
 // ============================================================
 
-import type { AdapterState, ObservationBatch } from "../../types/index.js"
+import type { AdapterState, ObservationBatch, AdapterDescriptor } from "../../types/index.js"
+import type { BranchPolicy, ExecutionRole, ExecutionBranchContext, ExecutionBranchResult } from "../../repository/branch-policy.js"
 
 export type PromotionMode = "direct" | "staged"
 
@@ -79,6 +80,17 @@ export type SnapshotOptions = {
   eventOffset?: number
 }
 
+export type CompletionReadinessOptions = {
+  expeditionId?: string
+}
+
+export type CompletionReadinessResult = {
+  ok: boolean
+  reason?: string
+  gitStatus?: string[]
+  suggestedCommit?: string
+}
+
 export type SnapshotResult = {
   ok: boolean
   snapshotId: string
@@ -121,6 +133,8 @@ export interface RepositoryAdapter {
   readonly state: AdapterState
   readonly config?: RepositoryConfig
 
+  describe?(): AdapterDescriptor
+
   initialize(): Promise<AdapterState>
   configure(config: RepositoryConfig): Promise<AdapterState>
   status(): Promise<RepositoryStatus>
@@ -130,7 +144,18 @@ export interface RepositoryAdapter {
   checkout(name: string): Promise<AdapterState>
   commit(message: string): Promise<AdapterState>
 
+  /**
+   * Ask the repository adapter whether the current branch satisfies the
+   * declared execution-branch policy (ECOSYSTEM-001). Degrades to
+   * observation when the VCS has no branch concept.
+   */
+  validateExecutionBranch?(
+    role: ExecutionRole,
+    context?: ExecutionBranchContext,
+  ): Promise<ExecutionBranchResult>
+
   createSnapshot(options: SnapshotOptions): Promise<SnapshotResult>
+  validateCompletionReadiness(options?: CompletionReadinessOptions): Promise<CompletionReadinessResult>
   listSnapshots(limit?: number): Promise<SnapshotEntry[]>
   verifySnapshot(tagName: string): Promise<VerifyResult>
 

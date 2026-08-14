@@ -1,0 +1,14 @@
+{
+  "id": "test:release",
+  "description": "Regression tests for synth release versioning",
+  "command": "node tests/release.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

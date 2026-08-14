@@ -26,9 +26,10 @@ import type {
   ProjectionCapability,
   ReplayReport,
 } from "./types.js"
-import { createFilesystemObservationCapability } from "./capabilities/filesystem-capability.js"
-import { createGitObservationCapability } from "./capabilities/git-capability.js"
-import { createOperationalArtifactObservationCapability } from "./capabilities/operational-artifact-capability.js"
+import {
+  createDefaultAdapterCatalog,
+  createObservationCapability,
+} from "../adapters/adapter-catalog.js"
 import { executeProjectionCapabilities } from "./projection-capability-executor.js"
 import { createFindingsProjectionCapability } from "./projections/findings.js"
 import { createProjectModelProjectionCapability } from "./projections/project-model-capability.js"
@@ -42,11 +43,11 @@ function createObservationId(index: number): string {
 }
 
 function defaultObservationCapabilities(): ObservationCapability[] {
-  return [
-    createFilesystemObservationCapability(),
-    createGitObservationCapability(),
-    createOperationalArtifactObservationCapability(),
-  ]
+  const catalog = createDefaultAdapterCatalog()
+  return catalog
+    .query({ family: ["discovery", "filesystem", "operational-artifact"] })
+    .map(createObservationCapability)
+    .filter((capability): capability is ObservationCapability => capability !== undefined)
 }
 
 function adaptersFromCapabilities(capabilities: ObservationCapability[]): DiscoveryAdapter[] {

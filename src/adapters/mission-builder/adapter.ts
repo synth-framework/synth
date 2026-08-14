@@ -17,6 +17,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { MissionBuilderAdapter, MissionBuilderConfig } from "./types.js"
 
@@ -27,6 +28,19 @@ export class MissionBuilderAdapterImpl implements MissionBuilderAdapter {
     kind: "mission-builder" as const,
     category: "planning" as const,
     description: "Mission builder planning adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "mission-builder",
+      name: "Mission Builder Adapter",
+      version: this.metadata.version,
+      kind: "planning",
+      family: "planning",
+      description: this.metadata.description,
+      capabilities: ["mission-synthesis", "goal-extraction", "purpose-definition"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

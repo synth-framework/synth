@@ -66,7 +66,12 @@ export type VerifyResult = {
   reason?: string
 }
 
-export type CanSnapshotResult = { ok: boolean; reason?: string }
+export type CanSnapshotResult = {
+  ok: boolean
+  reason?: string
+  gitStatus?: string[]
+  suggestedCommit?: string
+}
 
 const SNAPSHOT_FILES = [
   ".synth/data/event-log.jsonl",
@@ -185,6 +190,19 @@ function isGovernanceFile(cwd: string, relPath: string): boolean {
       if (relPath === dir || relPath.startsWith(dir + "/")) return true
     }
   }
+  // Proof artifacts are derived from governance state and are included in
+  // snapshots when includeProofs is enabled; treat them as governance files
+  // so evidence attachment does not block expedition completion.
+  for (const p of PROOF_GLOBS) {
+    if (p.includes("*")) {
+      const dir = path.dirname(p)
+      if (relPath === dir || relPath.startsWith(dir + "/")) return true
+    }
+    if (relPath === p) return true
+  }
+  // All runtime state under .synth/data/ (including decisions, drafts,
+  // snapshots, and checkpoints) is derived governance state.
+  if (relPath.startsWith(".synth/data/")) return true
   return false
 }
 
@@ -315,9 +333,14 @@ export class GitSnapshotAdapter {
         return !isGovernanceFile(cwd, relPath)
       })
       if (sourceChanges.length > 0) {
+        const filePaths = sourceChanges.map((line) => line.slice(3).trim())
+        const message = "chore(synth): commit source changes before expedition completion"
+        const suggestedCommit = `git add ${filePaths.map((p) => JSON.stringify(p)).join(" ")} && git commit -m ${JSON.stringify(message)}`
         return {
           ok: false,
           reason: `Working tree has uncommitted source changes outside the snapshot set (${sourceChanges.length} file(s))`,
+          gitStatus: sourceChanges,
+          suggestedCommit,
         }
       }
     }

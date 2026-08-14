@@ -152,6 +152,49 @@ async function testWorkingTreeDiff() {
   console.log("[PASS] getWorkingTreeDiff returns git diff output")
 }
 
+async function testNextJsAndReactFiles() {
+  const { analyzeFiles } = await loadAnalyzer()
+
+  const report = analyzeFiles([
+    "src/app/page.tsx",
+    "src/app/layout.tsx",
+    "src/app/api/route.ts",
+    "src/components/Button.tsx",
+    "src/context/AuthContext.tsx",
+    "src/hooks/useAuth.ts",
+    "server.ts",
+  ])
+
+  assert(report.affectedCapabilities.includes("NextJsAppRouter"), "should detect NextJsAppRouter from src/app/")
+  assert(report.affectedCapabilities.includes("ReactComponents"), "should detect ReactComponents from src/components/")
+  assert(report.affectedCapabilities.includes("ReactContext"), "should detect ReactContext from src/context/")
+  assert(report.affectedCapabilities.includes("ReactHooks"), "should detect ReactHooks from src/hooks/")
+  assert(report.affectedCapabilities.includes("NodeServer"), "should detect NodeServer from server.ts")
+  console.log("[PASS] Next.js/React/Node server files map to relevant capabilities")
+}
+
+async function testPolyglotFiles() {
+  const { analyzeFiles } = await loadAnalyzer()
+
+  const report = analyzeFiles([
+    "src/main.py",
+    "requirements.txt",
+    "cmd/server/main.go",
+    "go.mod",
+    "src/lib.rs",
+    "Cargo.toml",
+    "src/main/java/com/example/App.java",
+    "pom.xml",
+  ])
+
+  assert(report.affectedCapabilities.includes("PythonApplication"), "should detect PythonApplication")
+  assert(report.affectedCapabilities.includes("PythonDependencies"), "should detect PythonDependencies")
+  assert(report.affectedCapabilities.includes("GoApplication"), "should detect GoApplication")
+  assert(report.affectedCapabilities.includes("RustApplication"), "should detect RustApplication")
+  assert(report.affectedCapabilities.includes("JavaApplication"), "should detect JavaApplication")
+  console.log("[PASS] Polyglot project files map to relevant capabilities")
+}
+
 async function main() {
   try {
     await fs.access(ANALYZER_PATH)
@@ -166,6 +209,8 @@ async function main() {
   await testDocumentationLowRisk()
   await testBrownfieldCommonFiles()
   await testSynthAiMetadataMapping()
+  await testNextJsAndReactFiles()
+  await testPolyglotFiles()
   await testParseDiffNameStatus()
   await testAnalyzeDiff()
   await testWorkingTreeDiff()

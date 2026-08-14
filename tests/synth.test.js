@@ -9,6 +9,7 @@
 
 import { strict as assert } from "assert"
 import { promises as fs } from "fs"
+import os from "os"
 import path from "path"
 
 // ---- Modular dist/ imports (no monolithic synth-v5.js) ----
@@ -737,8 +738,7 @@ test("P0: event store guard blocks direct writes after seal", async () => {
 })
 
 test("P0: checkpoint store blocks direct writes without authorization", async () => {
-  const tmpDir = path.join(process.cwd(), "data", "test-checkpoints-" + Date.now())
-  await fs.mkdir(tmpDir, { recursive: true })
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-checkpoints-"))
   const store = new CheckpointStore(path.join(tmpDir, "checkpoints.json"))
   await store.initialize()
   try {
@@ -747,10 +747,11 @@ test("P0: checkpoint store blocks direct writes without authorization", async ()
   } catch (err) {
     assert.ok(err.message.includes("ILLEGAL_CHECKPOINTSTORE_WRITE"), `Expected checkpoint guard block, got: ${err.message}`)
   }
+  await fs.rm(tmpDir, { recursive: true, force: true })
 })
 
 test("P0: partition store blocks direct writes without authorization", async () => {
-  const tmpDir = path.join(process.cwd(), "data", "test-partitions-" + Date.now())
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-partitions-"))
   const store = new PartitionStore(1, tmpDir)
   await store.initialize()
   try {
@@ -759,6 +760,7 @@ test("P0: partition store blocks direct writes without authorization", async () 
   } catch (err) {
     assert.ok(err.message.includes("ILLEGAL_PARTITIONSTORE_WRITE"), `Expected partition guard block, got: ${err.message}`)
   }
+  await fs.rm(tmpDir, { recursive: true, force: true })
 })
 
 test("P0: registry and policy contents are deeply frozen after seal", async () => {
@@ -828,8 +830,8 @@ test("P2: state store hash integrity on save/load cycle", async () => {
 test("Expedition: capability registry includes Expedition capabilities", async () => {
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
-  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, repository governance, convergence certification, and filesystem mutation capabilities
-  assert.equal(ctx.capabilityRegistry.size(), 42, `Registry must have 42 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, repository governance, convergence certification, filesystem mutation, expedition lifecycle, and approval capabilities.
+  assert.equal(ctx.capabilityRegistry.size(), 45, `Registry must have 45 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("FilesystemWrite"), "Registry must have FilesystemWrite")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")
@@ -838,8 +840,11 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   assert.ok(ctx.capabilityRegistry.has("CertifyConvergence"), "Registry must have CertifyConvergence")
   assert.ok(ctx.capabilityRegistry.has("CommitExpedition"), "Registry must have CommitExpedition")
   assert.ok(ctx.capabilityRegistry.has("StartExpedition"), "Registry must have StartExpedition")
+  assert.ok(ctx.capabilityRegistry.has("PauseExpedition"), "Registry must have PauseExpedition")
   assert.ok(ctx.capabilityRegistry.has("CompleteExpedition"), "Registry must have CompleteExpedition")
+  assert.ok(ctx.capabilityRegistry.has("CancelExpedition"), "Registry must have CancelExpedition")
   assert.ok(ctx.capabilityRegistry.has("ArchiveExpedition"), "Registry must have ArchiveExpedition")
+  assert.ok(ctx.capabilityRegistry.has("RefineExpedition"), "Registry must have RefineExpedition")
   assert.ok(ctx.capabilityRegistry.has("FulfillCondition"), "Registry must have FulfillCondition")
   assert.ok(ctx.capabilityRegistry.has("AddObjective"), "Registry must have AddObjective")
   assert.ok(ctx.capabilityRegistry.has("CompleteObjective"), "Registry must have CompleteObjective")
@@ -854,6 +859,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   assert.ok(ctx.capabilityRegistry.has("CreateRelease"), "Registry must have CreateRelease")
   assert.ok(ctx.capabilityRegistry.has("MigrateArchive"), "Registry must have MigrateArchive")
   assert.ok(ctx.capabilityRegistry.has("MigrateImport"), "Registry must have MigrateImport")
+  assert.ok(ctx.capabilityRegistry.has("Approval"), "Registry must have Approval")
 })
 
 test("Expedition: CreateMission produces MISSION_CREATED event", async () => {

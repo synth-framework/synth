@@ -20,6 +20,7 @@ import type {
   ObservationBatch,
   ObservationCategory,
   ObservationConfidence,
+  AdapterDescriptor,
 } from "../../types/index.js"
 import type { SpecificationAdapter, SpecificationConfig, SpecificationFormat } from "./types.js"
 
@@ -30,6 +31,19 @@ export class SpecificationAdapterImpl implements SpecificationAdapter {
     kind: "specification" as const,
     category: "integration" as const,
     description: "Specification evidence adapter for Mission Studio",
+  }
+
+  describe(): AdapterDescriptor {
+    return {
+      id: "specification",
+      name: "Specification Evidence Adapter",
+      version: this.metadata.version,
+      kind: "integration",
+      family: "intelligence",
+      description: this.metadata.description,
+      capabilities: ["openapi-detection", "asyncapi-detection", "graphql-detection", "protobuf-detection", "json-schema-detection"],
+      determinism: "deterministic",
+    }
   }
 
   private _state: AdapterState = "discovered"

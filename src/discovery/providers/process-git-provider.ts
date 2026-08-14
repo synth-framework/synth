@@ -18,11 +18,13 @@ import {
   type GitWorkingTreeState,
 } from "./git-provider.js"
 
+const GIT_EXEC_TIMEOUT_MS = 15000
+
 function runGit(path: string, args: string[]): string {
   return execFileSync("git", args, {
     cwd: path,
     encoding: "utf8",
-    timeout: 5000,
+    timeout: GIT_EXEC_TIMEOUT_MS,
   })
 }
 
@@ -32,7 +34,7 @@ function isGitRepository(path: string): boolean {
       cwd: path,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
-      timeout: 5000,
+      timeout: GIT_EXEC_TIMEOUT_MS,
     })
     return true
   } catch {

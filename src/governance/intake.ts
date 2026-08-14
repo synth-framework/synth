@@ -26,6 +26,8 @@ export type AgentAction =
   | { kind: "expedition.commit"; expeditionId: string }
   | { kind: "expedition.start"; expeditionId: string }
   | { kind: "expedition.pause"; expeditionId: string }
+  | { kind: "expedition.cancel"; expeditionId: string }
+  | { kind: "expedition.refine"; expeditionId: string }
   | { kind: "expedition.complete"; expeditionId: string; force?: boolean }
   | { kind: "expedition.archive"; expeditionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
@@ -47,8 +49,8 @@ function findActiveMission(state: CanonicalState): Mission | undefined {
   return Object.values(state.missions).find((m) => m.status === "active")
 }
 
-function findExecutingExpedition(state: CanonicalState): Expedition | undefined {
-  return Object.values(state.expeditions).find((e) => e.status === "executing")
+function findExecutingExpeditionInMission(state: CanonicalState, missionId: string): Expedition | undefined {
+  return Object.values(state.expeditions).find((e) => e.missionId === missionId && e.status === "executing")
 }
 
 function findExpedition(state: CanonicalState, id: string): Expedition | undefined {
@@ -64,7 +66,6 @@ function findExpedition(state: CanonicalState, id: string): Expedition | undefin
  */
 export function validateAgentAction(action: AgentAction, state: CanonicalState, derivedState?: DerivedState): IntakeResult {
   const activeMission = findActiveMission(state)
-  const executingExpedition = findExecutingExpedition(state)
 
   switch (action.kind) {
     case "mission.create": {
@@ -75,14 +76,18 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
 
     case "mission.approve": {
       // Planning approval happens before canonical state mutation.
-      // We only enforce that no expedition is currently executing,
-      // because mission-level intent should not drift while work is
-      // supposedly bounded by an active expedition.
-      if (executingExpedition) {
-        return {
-          decision: "BLOCK",
-          reason: `Mission approval is blocked while expedition ${executingExpedition.id} is executing.`,
-          requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingExpedition.id}`,
+      // We enforce that no expedition in the same mission is currently
+      // executing, because mission-level intent should not drift while
+      // work is supposedly bounded by an active expedition in that mission.
+      const missionId = action.missionId || activeMission?.id
+      if (missionId) {
+        const executingInMission = findExecutingExpeditionInMission(state, missionId)
+        if (executingInMission) {
+          return {
+            decision: "BLOCK",
+            reason: `Mission approval is blocked while expedition ${executingInMission.id} is executing in the same mission.`,
+            requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingInMission.id}`,
+          }
         }
       }
 
@@ -107,23 +112,27 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
 
     case "mission.evidence.add": {
       // Evidence is gathered during planning. We allow it unless an
-      // expedition is already executing, which would indicate the agent
-      // is gathering evidence for a new mission instead of closing the
-      // active expedition.
-      if (executingExpedition) {
-        return {
-          decision: "BLOCK",
-          reason: `Evidence cannot be added to a mission draft while expedition ${executingExpedition.id} is executing.`,
-          requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingExpedition.id}`,
+      // expedition in the same mission is already executing, which would
+      // indicate the agent is gathering evidence for a new mission instead
+      // of closing the active expedition in that mission.
+      const evidenceMissionId = action.missionId || activeMission?.id
+      if (evidenceMissionId) {
+        const executingInMission = findExecutingExpeditionInMission(state, evidenceMissionId)
+        if (executingInMission) {
+          return {
+            decision: "BLOCK",
+            reason: `Evidence cannot be added to a mission draft while expedition ${executingInMission.id} is executing in the same mission.`,
+            requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingInMission.id}`,
+          }
         }
       }
       return { decision: "ALLOW" }
     }
 
     case "expedition.create": {
-      // Expeditions can be created at any time; only starting a second
-      // executing expedition is blocked. This allows parallel planning
-      // and queueing of work while another expedition is in flight.
+      // Expeditions can be created at any time; multiple expeditions may
+      // execute concurrently within and across missions. This allows parallel
+      // planning and queueing of work while other expeditions are in flight.
 
       // If a missionId is supplied, validate it. We do not require a
       // canonical active mission for every expedition proposal because
@@ -198,14 +207,6 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
           requiredAction: `Commit the expedition first: synth expedition commit --proposal-id ${action.expeditionId}`,
         }
       }
-      if (executingExpedition && executingExpedition.id !== expedition.id) {
-        return {
-          decision: "BLOCK",
-          reason: `Another expedition (${executingExpedition.id}) is already executing.`,
-          requiredAction: `Complete ${executingExpedition.id} before starting ${expedition.id}.`,
-        }
-      }
-
       // Governance gate check: verify no upstream expedition blocks this one.
       if (derivedState && isBlockedByUpstreamGate(state, derivedState, action.expeditionId)) {
         return {
@@ -254,23 +255,44 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
         }
       }
 
-      // Convergence Certification enforcement (EXP-GOV-015 M5)
-      // --force bypasses this gate so operators can close expeditions when
-      // convergence certification is genuinely unavailable, but the bypass is
-      // recorded in the event log and surfaced in reports.
-      if (!action.force && derivedState) {
-        const hasConvergenceCertification = Object.values(derivedState.convergenceCertifications).some(
-          (c) => c.expeditionId === action.expeditionId && c.decision === "converged"
-        )
-        if (!hasConvergenceCertification) {
-          return {
-            decision: "BLOCK",
-            reason: "Convergence Certification required before closing expedition",
-            requiredAction: "Run convergence certification on this expedition before completing it.",
-          }
+return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.cancel": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
         }
       }
+      if (expedition.status === "completed" || expedition.status === "cancelled" || expedition.status === "archived") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; cannot cancel a terminal or already cancelled expedition.`,
+          requiredAction: "Only draft, approved, committed, executing, or paused expeditions can be cancelled.",
+        }
+      }
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
 
+    case "expedition.refine": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
+        }
+      }
+      if (expedition.status === "completed" || expedition.status === "cancelled" || expedition.status === "archived") {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} is ${expedition.status}; cannot refine a terminal expedition.`,
+          requiredAction: "Only draft, approved, committed, executing, or paused expeditions can be refined.",
+        }
+      }
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
     }
 
@@ -294,24 +316,20 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
     }
 
     case "execution.mutate": {
-      if (!executingExpedition) {
+      const targetExpedition = action.expeditionId ? findExpedition(state, action.expeditionId) : undefined
+      if (!targetExpedition || targetExpedition.status !== "executing") {
         return {
           decision: "BLOCK",
-          reason: "No expedition is currently executing. All execution mutations require an active expedition.",
-          requiredAction: "Start an expedition before performing execution work.",
-        }
-      }
-      if (action.expeditionId && executingExpedition.id !== action.expeditionId) {
-        return {
-          decision: "BLOCK",
-          reason: `Execution is bound to expedition ${executingExpedition.id}, not ${action.expeditionId}.`,
-          requiredAction: `Either work on ${executingExpedition.id} or complete it and start ${action.expeditionId}.`,
+          reason: action.expeditionId
+            ? `Expedition ${action.expeditionId} is not executing. All execution mutations require an active expedition.`
+            : "No expedition specified. All execution mutations require an active expedition.",
+          requiredAction: "Start the expedition before performing execution work.",
         }
       }
       return {
         decision: "ALLOW",
-        activeMissionId: executingExpedition.missionId,
-        activeExpeditionId: executingExpedition.id,
+        activeMissionId: targetExpedition.missionId,
+        activeExpeditionId: targetExpedition.id,
       }
     }
   }

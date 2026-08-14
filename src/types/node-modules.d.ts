@@ -44,7 +44,7 @@ declare module "crypto" {
 }
 
 declare module "child_process" {
-  export interface ExecSyncOptions { cwd?: string; encoding?: string }
+  export interface ExecSyncOptions { cwd?: string; encoding?: string; stdio?: any }
   export function execSync(command: string, options?: ExecSyncOptions): string
 }
 
