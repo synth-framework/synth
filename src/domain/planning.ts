@@ -87,6 +87,26 @@ export function addExpeditionToMission(mission: Mission, expeditionId: string): 
   }
 }
 
+/** Remove an expedition reference from a mission's expedition list */
+export function removeExpeditionFromMission(mission: Mission, expeditionId: string): Mission {
+  if (!mission.expeditions.includes(expeditionId)) return mission
+  return {
+    ...mission,
+    expeditions: mission.expeditions.filter((id) => id !== expeditionId),
+  }
+}
+
+/** Delete an empty mission — only allowed when it hosts no expeditions */
+export function deleteMission(mission: Mission, ctx: DomainContext): Mission {
+  if (mission.expeditions.length > 0) {
+    throw new Error("INVARIANT_VIOLATION: can only delete an empty mission that has no expeditions")
+  }
+  return {
+    ...mission,
+    updatedAt: ctx.timestamp,
+  }
+}
+
 // ============================================================
 // Expedition
 // ============================================================
@@ -231,6 +251,38 @@ export function refineExpedition(
       refinementId,
       refinementNote: note,
       refinementAt: ctx.timestamp,
+    },
+  }
+}
+
+/** Delete an empty expedition — only allowed when it has no objectives */
+export function deleteExpedition(expedition: Expedition, ctx: DomainContext): Expedition {
+  if (expedition.objectives.length > 0) {
+    throw new Error("INVARIANT_VIOLATION: can only delete an empty expedition that has no objectives")
+  }
+  return {
+    ...expedition,
+    updatedAt: ctx.timestamp,
+  }
+}
+
+/** Re-parent an expedition to a different mission */
+export function moveExpedition(
+  expedition: Expedition,
+  toMissionId: string,
+  ctx: DomainContext,
+  overrides: Partial<Pick<Expedition, "metadata">> = {}
+): Expedition {
+  if (expedition.missionId === toMissionId) {
+    throw new Error("INVARIANT_VIOLATION: expedition already belongs to the target mission")
+  }
+  return {
+    ...expedition,
+    missionId: toMissionId,
+    updatedAt: ctx.timestamp,
+    metadata: {
+      ...expedition.metadata,
+      ...overrides.metadata,
     },
   }
 }

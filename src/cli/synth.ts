@@ -1612,6 +1612,7 @@ async function cmdMissionHelp() {
     { name: "synth mission snapshot [<snapshot-id> | list]", description: "Inspect or list Mission snapshots" },
     { name: "synth mission report --id <mission-id>", description: "Show mission status and its expeditions", args: "--id 74c3a70571facb87" },
     { name: "synth mission complete --id <mission-id>", description: "Complete an active Mission", args: "--id 74c3a70571facb87" },
+    { name: "synth mission delete --id <mission-id> [--reason <text>] [--dry-run]", description: "Delete an empty Mission that hosts no Expeditions", args: "--id 74c3a70571facb87" },
   ]))
 }
 
@@ -2386,6 +2387,8 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition finish --id <id> [--note <text>] [--force --reason <text>] [--no-auto-commit] [--dry-run]", description: "Atomically attach git-diff evidence, certify convergence, and complete an executing Expedition" },
     { name: "synth expedition cancel --id <id> --reason <reason> [--dry-run]", description: "Cancel an Expedition as a safe fallback (Executing → Cancelled)" },
     { name: "synth expedition archive --id <id> --reason <reason> [--dry-run]", description: "Archive an Expedition (Executing | Cancelled → Archived)" },
+    { name: "synth expedition delete --id <id> [--reason <text>] [--dry-run]", description: "Delete an empty Expedition that has no objectives" },
+    { name: "synth expedition move --id <id> --to-mission <mission-id> [--reason <text>] [--approved] [--dry-run]", description: "Re-parent an Expedition to another Mission under scope-and-intent verification; use --approved to override a misaligned move with operator approval" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--baseline <commit>] [--test-results <path>] [--attach <path>[,...]] [--note <text>] [--no-auto-commit] [--dry-run]", description: "Capture and attach evidence artifacts to an executing Expedition" },
     { name: "synth expedition refine --id <id> --note <text> [--no-auto-commit] [--dry-run]", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
     { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>] [--no-auto-commit] [--dry-run]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
@@ -3696,6 +3699,73 @@ async function cmdMissionComplete(flags: Record<string, string | boolean>) {
   printJson({
     status: "ok",
     kind: "MissionCompleted",
+    missionId: id,
+    result: result.result,
+  })
+}
+
+async function cmdMissionDelete(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : ""
+  if (!id) {
+    printError("Usage: synth mission delete --id <mission-id> [--reason <text>]", {
+      code: "MissingMissionId",
+      category: "validation",
+      suggestion: "Run 'synth mission list' to see available missions.",
+    })
+    return
+  }
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const state = await ctx.runtime.getState()
+    const intake = await gateDecision({ kind: "mission.delete", missionId: id }, state, ctx.runtime)
+    if (intake.decision === "BLOCK") {
+      printGateBlock(intake)
+    }
+    printJson({
+      status: "ok",
+      kind: "LifecycleDryRun",
+      wouldAppend: {
+        type: "MISSION_DELETED",
+        payload: { id },
+      },
+      verifyResult: { pass: 0, fail: 0, warn: 0 },
+      stateDelta: `mission ${id} removed from governance state`,
+    })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "mission.delete", missionId: id }, state, ctx.runtime)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const payload: Record<string, unknown> = { id }
+  const reason = typeof flags.reason === "string" ? flags.reason : undefined
+  if (reason) payload.reason = reason
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "DeleteMission",
+    payload,
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "MissionDeleteFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "MissionDeleted",
     missionId: id,
     result: result.result,
   })
@@ -6183,6 +6253,142 @@ async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
   })
 }
 
+async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const reason = typeof flags.reason === "string" ? flags.reason : undefined
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const state = await ctx.runtime.getState()
+    const intake = await gateDecision({ kind: "expedition.delete", expeditionId }, state, ctx.runtime)
+    if (intake.decision === "BLOCK") {
+      printGateBlock(intake)
+    }
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "DeleteExpedition",
+      payload: { id: expeditionId, ...(reason ? { reason } : {}) },
+      eventType: "EXPEDITION_DELETED",
+      expeditionId,
+    })
+    printJson(dryRun)
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision({ kind: "expedition.delete", expeditionId }, state, ctx.runtime)
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const payload: Record<string, unknown> = { id: expeditionId }
+  if (reason) payload.reason = reason
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "DeleteExpedition",
+    payload,
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ExpeditionDeleteFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionDeleted",
+    expeditionId,
+    result: result.result,
+  })
+}
+
+async function cmdExpeditionMove(flags: Record<string, string | boolean>) {
+  const expeditionId = resolveExpeditionId(flags)
+  if (!expeditionId) printError("--id is required")
+
+  const toMissionId =
+    typeof flags["to-mission"] === "string"
+      ? flags["to-mission"]
+      : typeof flags["toMission"] === "string"
+        ? flags["toMission"]
+        : ""
+  if (!toMissionId) printError("--to-mission <mission-id> is required")
+
+  const reason = typeof flags.reason === "string" ? flags.reason : undefined
+  const approved = flags.approved === true || flags.approved === "true"
+
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const ctx = await bootstrapWithCapabilities({
+      skipGenesis: true,
+      infra: { persistence: "file" },
+    })
+    const state = await ctx.runtime.getState()
+    const intake = await gateDecision(
+      { kind: "expedition.move", expeditionId, toMissionId },
+      state,
+      ctx.runtime,
+    )
+    if (intake.decision === "BLOCK") {
+      printGateBlock(intake)
+    }
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "MoveExpedition",
+      payload: { id: expeditionId, toMissionId },
+      eventType: "EXPEDITION_MOVED",
+      expeditionId,
+    })
+    printJson(dryRun)
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+
+  const state = await ctx.runtime.getState()
+  const intake = await gateDecision(
+    { kind: "expedition.move", expeditionId, toMissionId },
+    state,
+    ctx.runtime,
+  )
+  if (intake.decision === "BLOCK") {
+    printGateBlock(intake)
+  }
+
+  const payload: Record<string, unknown> = { id: expeditionId, toMissionId }
+  if (reason) payload.reason = reason
+  if (approved) payload.approved = true
+
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "MoveExpedition",
+    payload,
+  })
+
+  if (result.status !== "ok") {
+    printError(result.error || "Unknown execution gate error", "ExpeditionMoveFailed")
+  }
+
+  printJson({
+    status: "ok",
+    kind: "ExpeditionMoved",
+    expeditionId,
+    toMissionId,
+    verification: (result.result as { metadata?: { moveVerification?: string } } | undefined)?.metadata?.moveVerification,
+    result: result.result,
+  })
+}
+
 type EvidenceAttachment = { kind: string; path: string; hash: string }
 
 async function attachExpeditionEvidence(
@@ -7207,6 +7413,7 @@ async function main() {
       else if (sub === "snapshot") await cmdMissionSnapshot(positional.slice(2), flags)
       else if (sub === "report") await cmdMissionReport(flags)
       else if (sub === "complete") await cmdMissionComplete(flags)
+      else if (sub === "delete") await cmdMissionDelete(flags)
       else if (sub === "certify") {
         printError(
           "synth mission certify does not exist. Missions are closed with synth mission complete --id <mission-id>.",
@@ -7219,7 +7426,7 @@ async function main() {
       }
       else
         printError(
-          "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission list [--status <status>] [--program <program-id>] | synth mission show --id <mission-id> | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list] | synth mission report --id <mission-id> | synth mission complete --id <mission-id>",
+          "Usage: synth mission create --subject <subject> --purpose <purpose> [--evidence-file <path>] | synth mission project --alignment-contract-id <id> | synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id> | synth mission evidence add --draft-id <draft-id> --subject <subject> [--purpose <purpose>] [--confidence <level>] | synth mission list [--status <status>] [--program <program-id>] | synth mission show --id <mission-id> | synth mission verify-charter --file <path> | synth mission decisions [--draft-id <draft-id>] | synth mission snapshot [<snapshot-id> | list] | synth mission report --id <mission-id> | synth mission complete --id <mission-id> | synth mission delete --id <mission-id>",
         )
       break
     }
@@ -7269,6 +7476,8 @@ async function main() {
       else if (sub === "complete") await cmdExpeditionComplete(flags)
       else if (sub === "finish") await cmdExpeditionFinish(flags)
       else if (sub === "archive") await cmdExpeditionArchive(flags)
+      else if (sub === "delete") await cmdExpeditionDelete(flags)
+      else if (sub === "move") await cmdExpeditionMove(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
       else if (sub === "refine") await cmdExpeditionRefine(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)

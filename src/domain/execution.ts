@@ -36,6 +36,7 @@ import {
 } from "../governance/alignment-contract.js"
 import { createReferenceEvidence, validateReferenceEvidence, bindEvidenceToContract } from "../governance/reference-evidence.js"
 import { openDivergenceGate, resolveDivergenceGate, resolveDivergenceGateWithProposalEvaluation, isAligned } from "../governance/divergence-gate.js"
+import { assessExpeditionMissionAlignment } from "../governance/scope-alignment.js"
 import type { Proposal, ProposalEvaluationRuleSet, EvaluationResult } from "../governance/proposal-evaluation/types.js"
 import { evaluateProposal } from "../governance/proposal-evaluation/index.js"
 import { program027RuleSet } from "../governance/proposal-evaluation/rules/program-027.js"
@@ -258,6 +259,19 @@ export function applyDomain(
       return { events: [{ type: "MISSION_ARCHIVED", payload }] }
     }
 
+    case "DeleteMission": {
+      const id = String(intent.payload.id)
+      const existing = state.missions[id]
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const payload: Record<string, unknown> = { id }
+      if (reason) payload.reason = reason
+      if (metadata) payload.metadata = metadata
+      if (!existing) return { events: [{ type: "MISSION_DELETED", payload }] }
+      planningLogic.deleteMission(existing, ctx)
+      return { events: [{ type: "MISSION_DELETED", payload }] }
+    }
+
     case "CreateExpedition": {
       const id = String(intent.payload.id)
       const missionId = String(intent.payload.missionId)
@@ -358,6 +372,67 @@ export function applyDomain(
       if (reason) payload.reason = reason
       if (metadata) payload.metadata = metadata
       return { events: [{ type: "EXPEDITION_CANCELLED", payload }] }
+    }
+
+    case "DeleteExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+      const missionId = existing?.missionId || String(intent.payload.missionId || "")
+      const payload: Record<string, unknown> = { id, expeditionId: id, missionId }
+      if (reason) payload.reason = reason
+      if (metadata) payload.metadata = metadata
+      if (!existing) return { events: [{ type: "EXPEDITION_DELETED", payload }] }
+      const hasObjectives =
+        existing.objectives.length > 0 ||
+        Object.values(state.objectives || {}).some((o) => o.expeditionId === id)
+      if (hasObjectives) {
+        throw new Error("INVARIANT_VIOLATION: can only delete an empty expedition that has no objectives")
+      }
+      planningLogic.deleteExpedition(existing, ctx)
+      return { events: [{ type: "EXPEDITION_DELETED", payload }] }
+    }
+
+    case "MoveExpedition": {
+      const id = String(intent.payload.id)
+      const toMissionId = String(intent.payload.toMissionId)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+      const approved = intent.payload.approved === true || intent.payload.approved === "true"
+      const fromMissionId = existing?.missionId || String(intent.payload.fromMissionId || "")
+      if (!existing) {
+        const payload: Record<string, unknown> = { id, expeditionId: id, fromMissionId, toMissionId, verification: "scope_aligned" }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_MOVED", payload }] }
+      }
+      const targetMission = state.missions[toMissionId]
+      const alignment = assessExpeditionMissionAlignment(existing, targetMission)
+      const verification = alignment.aligned ? "scope_aligned" : "operator_approved"
+      if (!alignment.aligned && !approved) {
+        throw new Error(
+          `SCOPE_ALIGNMENT_REQUIRED: expedition ${id} scope is not aligned with mission ${toMissionId} ` +
+            `(alignment ${Math.round(alignment.score * 100)}%). Provide operator approval to proceed.`,
+        )
+      }
+      const updated = planningLogic.moveExpedition(existing, toMissionId, ctx, {
+        metadata: {
+          moveVerification: verification,
+          ...(reason ? { moveReason: reason } : {}),
+        },
+      })
+      const payload: Record<string, unknown> = {
+        id: updated.id,
+        expeditionId: updated.id,
+        fromMissionId,
+        toMissionId,
+        verification,
+      }
+      if (reason) payload.reason = reason
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_MOVED", payload }] }
     }
 
     case "RefineExpedition": {

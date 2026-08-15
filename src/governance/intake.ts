@@ -21,6 +21,7 @@ export type AgentAction =
   | { kind: "mission.create" }
   | { kind: "mission.approve"; missionId?: string }
   | { kind: "mission.evidence.add"; missionId?: string }
+  | { kind: "mission.delete"; missionId: string }
   | { kind: "expedition.create"; missionId?: string }
   | { kind: "expedition.approve"; expeditionId: string }
   | { kind: "expedition.commit"; expeditionId: string }
@@ -30,6 +31,8 @@ export type AgentAction =
   | { kind: "expedition.refine"; expeditionId: string }
   | { kind: "expedition.complete"; expeditionId: string; force?: boolean }
   | { kind: "expedition.archive"; expeditionId: string }
+  | { kind: "expedition.delete"; expeditionId: string }
+  | { kind: "expedition.move"; expeditionId: string; toMissionId: string }
   | { kind: "execution.mutate"; expeditionId: string }
 
 export type IntakeResult =
@@ -124,6 +127,25 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
             reason: `Evidence cannot be added to a mission draft while expedition ${executingInMission.id} is executing in the same mission.`,
             requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingInMission.id}`,
           }
+        }
+      }
+      return { decision: "ALLOW" }
+    }
+
+    case "mission.delete": {
+      const mission = state.missions[action.missionId]
+      if (!mission) {
+        return {
+          decision: "BLOCK",
+          reason: `Mission ${action.missionId} does not exist.`,
+          requiredAction: "Create the mission through the lifecycle first.",
+        }
+      }
+      if (mission.expeditions.length > 0) {
+        return {
+          decision: "BLOCK",
+          reason: `Mission ${action.missionId} still has ${mission.expeditions.length} expedition(s); only empty missions can be deleted.`,
+          requiredAction: "Remove or re-parent the expeditions before deleting the mission.",
         }
       }
       return { decision: "ALLOW" }
@@ -310,6 +332,48 @@ return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpedit
           decision: "BLOCK",
           reason: `Expedition ${action.expeditionId} is already ${expedition.status}.`,
           requiredAction: "Only active or paused expeditions can be archived.",
+        }
+      }
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.delete": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
+        }
+      }
+      const hasObjectives =
+        expedition.objectives.length > 0 ||
+        Object.values(state.objectives || {}).some((o) => o.expeditionId === expedition.id)
+      if (hasObjectives) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} still has objectives; only empty expeditions can be deleted.`,
+          requiredAction: "Remove or complete the objectives before deleting the expedition.",
+        }
+      }
+      return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }
+    }
+
+    case "expedition.move": {
+      const expedition = findExpedition(state, action.expeditionId)
+      if (!expedition) {
+        return {
+          decision: "BLOCK",
+          reason: `Expedition ${action.expeditionId} does not exist.`,
+          requiredAction: "Create the expedition through the lifecycle first.",
+        }
+      }
+      const target = state.missions[action.toMissionId]
+      if (!target) {
+        return {
+          decision: "BLOCK",
+          reason: `Mission ${action.toMissionId} does not exist; expedition cannot be re-parented to it.`,
+          requiredAction: "Provide an existing mission id as the re-parenting target.",
         }
       }
       return { decision: "ALLOW", activeMissionId: expedition.missionId, activeExpeditionId: expedition.id }

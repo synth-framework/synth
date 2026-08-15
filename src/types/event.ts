@@ -62,6 +62,7 @@ export type StateEvent =
   | { type: "MISSION_APPROVED"; missionId: string }
   | { type: "MISSION_COMPLETED"; missionId: string }
   | { type: "MISSION_ARCHIVED"; missionId: string }
+  | { type: "MISSION_DELETED"; missionId: string; reason?: string }
   | { type: "MISSION_PROJECTED"; projectionId: string; contractId: string; missionFingerprint: string }
   | { type: "PROJECTION_CERTIFIED"; certificationId: string; projectionId: string; checks: unknown[] }
   | { type: "PROJECTION_CERTIFICATION_FAILED"; certificationId: string; projectionId: string; reason: string }
@@ -75,6 +76,8 @@ export type StateEvent =
   | { type: "EXPEDITION_ARCHIVED"; expeditionId: string; reason?: string }
   | { type: "EXPEDITION_CANCELLED"; expeditionId: string; reason?: string }
   | { type: "EXPEDITION_REFINED"; expeditionId: string; note: string; refinementId: string }
+  | { type: "EXPEDITION_DELETED"; expeditionId: string; missionId: string; reason?: string }
+  | { type: "EXPEDITION_MOVED"; expeditionId: string; fromMissionId: string; toMissionId: string; verification: string; reason?: string }
   | { type: "EVIDENCE_ATTACHED"; expeditionId: string; attachments: unknown[]; note?: string }
   // Review gate lifecycle (EXP-PROGRAM-035)
   | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }

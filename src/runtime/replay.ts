@@ -259,6 +259,11 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "MISSION_DELETED": {
+      const missionId = String(payload.id ?? payload.missionId)
+      delete state.missions[missionId]
+      break
+    }
     case "EXPEDITION_CREATED": {
       const expedition = payload.expedition as Expedition
       if (expedition) {
@@ -369,6 +374,62 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
             refinementNote: typeof payload.note === "string" ? payload.note : undefined,
             refinementAt: event.timestamp,
           },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_DELETED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const missionId = String(payload.missionId ?? "")
+      const expedition = state.expeditions[expeditionId]
+      const owningMissionId = missionId || expedition?.missionId || ""
+      if (expedition) {
+        delete state.expeditions[expeditionId]
+      }
+      if (owningMissionId && state.missions[owningMissionId]) {
+        const mission = state.missions[owningMissionId]
+        if (mission.expeditions.includes(expeditionId)) {
+          state.missions[owningMissionId] = {
+            ...mission,
+            expeditions: mission.expeditions.filter((id) => id !== expeditionId),
+            updatedAt: event.timestamp,
+          }
+        }
+      }
+      break
+    }
+    case "EXPEDITION_MOVED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const fromMissionId = String(payload.fromMissionId ?? "")
+      const toMissionId = String(payload.toMissionId ?? "")
+      const expedition = state.expeditions[expeditionId]
+      if (!expedition) break
+      state.expeditions[expeditionId] = {
+        ...expedition,
+        missionId: toMissionId,
+        updatedAt: event.timestamp,
+        metadata: {
+          ...expedition.metadata,
+          movedFromMissionId: fromMissionId || undefined,
+          moveVerification: typeof payload.verification === "string" ? payload.verification : undefined,
+          moveReason: typeof payload.reason === "string" ? payload.reason : undefined,
+          movedAt: event.timestamp,
+        },
+      }
+      const sourceMission = fromMissionId ? state.missions[fromMissionId] : undefined
+      if (sourceMission && sourceMission.expeditions.includes(expeditionId)) {
+        state.missions[fromMissionId] = {
+          ...sourceMission,
+          expeditions: sourceMission.expeditions.filter((id) => id !== expeditionId),
+          updatedAt: event.timestamp,
+        }
+      }
+      const targetMission = state.missions[toMissionId]
+      if (targetMission && !targetMission.expeditions.includes(expeditionId)) {
+        state.missions[toMissionId] = {
+          ...targetMission,
+          expeditions: [...targetMission.expeditions, expeditionId],
+          updatedAt: event.timestamp,
         }
       }
       break
