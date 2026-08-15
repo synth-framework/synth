@@ -114,7 +114,7 @@ import {
   findDownstreamExpeditions,
 } from "../governance/inventory.js"
 import { loadExpeditionCharterDetails } from "../governance/charter-report.js"
-import { rankExpeditions, rankPrograms } from "../governance/rank.js"
+import { rankExpeditions, rankPrograms, rankExpeditionRecords } from "../governance/rank.js"
 import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { validateEvaluationResult, formatEvaluationErrors } from "../domain/evaluation.js"
 import { generateConvergenceEvaluation } from "../governance/convergence-certification/auto-evaluation.js"
@@ -2393,6 +2393,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition refine --id <id> --note <text> [--no-auto-commit] [--dry-run]", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
     { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>] [--no-auto-commit] [--dry-run]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
+    { name: "synth expedition list --mission <mission-id> [--ranked]", description: "List a single mission's expeditions; add --ranked to order them by priority, status, and downstream impact so operators see what is ahead within the mission", args: "--mission 2644f4a2c0ad2ad7 --ranked" },
     { name: "synth expedition list --status <status>", description: "Filter expeditions by status", args: "--status Draft | Proposed | Executing | Completed" },
     { name: "synth expedition list --priority <priority>", description: "Filter expeditions by priority", args: "--priority Critical | High | Medium | Low" },
     { name: "synth expedition list --program <program-id>", description: "Filter expeditions by program", args: "--program EXP-PROGRAM-043" },
@@ -4061,6 +4062,35 @@ async function cmdExpeditionList(flags: Record<string, string | boolean>) {
     expeditions = expeditions.filter((e) => allowed.has(e.program))
   }
 
+  // Mission-scoped listing: filter the merged inventory to a single mission
+  // using the runtime missionId association (charter records carry no mission
+  // binding). CLI-created expeditions without charters are still included via
+  // runtime state.
+  const missionFilter = typeof flags.mission === "string" ? flags.mission : undefined
+  if (missionFilter && missionFilter.trim() !== "") {
+    expeditions = expeditions.filter((e) => e.missionId === missionFilter)
+  }
+
+  // Ranked view: order the (optionally mission-scoped) expeditions by the
+  // canonical weighted score reusing the rankExpeditions machinery. Completed
+  // expeditions are excluded so operators see only the work still ahead.
+  const ranked = flags.ranked === true || flags.ranked === "true"
+  if (ranked) {
+    const inventory = await loadGovernanceInventory(charterDir)
+    const programById = new Map(inventory.programs.map((p) => [p.id, p]))
+    const rankedExpeditions = rankExpeditionRecords(expeditions, programById)
+    printJson({
+      status: "ok",
+      kind: "ExpeditionRank",
+      count: rankedExpeditions.length,
+      ...(missionFilter ? { missionId: missionFilter } : {}),
+      expeditions: rankedExpeditions,
+      next: rankedExpeditions.length > 0 ? rankedExpeditions[0].id : undefined,
+      warnings: [],
+    })
+    return
+  }
+
   // Remove runtime-only fields from the list response to keep the public shape stable.
   const publicExpeditions = expeditions.map(({ missionId: _missionId, ...rest }) => rest)
 
@@ -4068,6 +4098,7 @@ async function cmdExpeditionList(flags: Record<string, string | boolean>) {
     status: "ok",
     kind: "ExpeditionList",
     count: publicExpeditions.length,
+    ...(missionFilter ? { missionId: missionFilter } : {}),
     expeditions: publicExpeditions,
   })
 }
