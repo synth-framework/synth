@@ -3702,6 +3702,14 @@ async function cmdMissionComplete(flags: Record<string, string | boolean>) {
     kind: "MissionCompleted",
     missionId: id,
     result: result.result,
+    // Mission close is the natural release boundary: a single version bump
+    // per release is produced by `synth release`, which analyses commits
+    // since the last tag, updates package.json + CHANGELOG.md, and creates
+    // the vX.Y.Z tag. It is advisory here (also usable as a standalone
+    // manual trigger) and never publishes — pushing the tag triggers CI.
+    nextStep: "synth release --dry-run",
+    releaseGuidance:
+      "Mission complete. Cut the release with `synth release` (bumps version + CHANGELOG and tags vX.Y.Z from commits since the last tag). Preview with `synth release --dry-run`, then `synth release --approve`. Pushing the tag triggers the npm publish workflow.",
   })
 }
 
