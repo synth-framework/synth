@@ -59,12 +59,26 @@ function priorityWeight(priority: string): number {
   return PRIORITY_WEIGHTS[priority] ?? 0
 }
 
+/**
+ * Canonicalize a status token so lowercase runtime statuses (e.g.
+ * "executing", "committed") score the same as their capitalized charter
+ * equivalents ("Executing"). Committed runtime expeditions are treated as
+ * open with the same weight as Proposed/Draft.
+ */
+function normalizeStatus(status: string): string {
+  if (!status) return status
+  const canonical = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+  if (canonical === "Committed") return "Proposed"
+  return canonical
+}
+
 function statusWeight(status: string): number {
-  return STATUS_WEIGHTS[status] ?? 0
+  return STATUS_WEIGHTS[normalizeStatus(status)] ?? 0
 }
 
 function isOpenStatus(status: string): boolean {
-  return status === "Executing" || status === "Proposed" || status === "Draft"
+  const canonical = normalizeStatus(status)
+  return canonical === "Executing" || canonical === "Proposed" || canonical === "Draft"
 }
 
 /**
@@ -152,6 +166,59 @@ function computeDownstreamCount(
   return Math.max(0, reachable.size - 1)
 }
 
+/**
+ * Score a single expedition record using the canonical weighted formula:
+ * priority (x20) + status (x15) + downstream blocks (x5) + owning program
+ * priority (x10). Pure and deterministic; shared by the charter-based
+ * `rankExpeditions` and the mission-scoped `rankExpeditionRecords`.
+ */
+export function scoreExpeditionRecord(
+  expedition: ExpeditionRecord,
+  programById: Map<string, ProgramRecord>,
+  downstreamGraph: Graph<ExpeditionRecord>,
+): RankedExpedition {
+  const pWeight = priorityWeight(expedition.priority)
+  const sWeight = statusWeight(expedition.status)
+  const program = programById.get(expedition.program)
+  const progWeight = program ? priorityWeight(program.priority) : 0
+  const downstream = computeDownstreamCount(downstreamGraph, expedition.id)
+
+  const score = pWeight * 20 + sWeight * 15 + downstream * 5 + progWeight * 10
+
+  const parts: string[] = []
+  if (expedition.priority) parts.push(`${expedition.priority} priority`)
+  if (expedition.status) parts.push(expedition.status)
+  if (downstream > 0) parts.push(`blocks ${downstream} expedition${downstream === 1 ? "" : "s"}`)
+  if (program) parts.push(`program is ${program.priority}`)
+
+  return {
+    ...expedition,
+    score,
+    rationale: parts.join(", "),
+  }
+}
+
+/**
+ * Rank a pre-filtered list of expedition records by score (descending),
+ * breaking ties by id (ascending). Completed expeditions are excluded so
+ * the ranking reflects only open work still ahead. The downstream graph is
+ * built from the supplied records, so downstream impact is scoped to the
+ * given set (e.g. a single mission's expeditions).
+ */
+export function rankExpeditionRecords(
+  expeditions: ExpeditionRecord[],
+  programById: Map<string, ProgramRecord>,
+): RankedExpedition[] {
+  const open = expeditions.filter((e) => isOpenStatus(e.status))
+  const downstreamGraph = buildDownstreamGraph(open)
+  const ranked = open.map((e) => scoreExpeditionRecord(e, programById, downstreamGraph))
+  ranked.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    return a.id.localeCompare(b.id)
+  })
+  return ranked
+}
+
 export type RankExpeditionsOptions = {
   next?: boolean
   human?: boolean
@@ -207,19 +274,7 @@ export async function rankExpeditions(
   const warnings: HygieneWarning[] = []
 
   const ranked: RankedExpedition[] = expeditions.map((e) => {
-    const pWeight = priorityWeight(e.priority)
-    const sWeight = statusWeight(e.status)
-    const program = programById.get(e.program)
-    const progWeight = program ? priorityWeight(program.priority) : 0
-    const downstream = computeDownstreamCount(downstreamGraph, e.id)
-
-    const score = pWeight * 20 + sWeight * 15 + downstream * 5 + progWeight * 10
-
-    const parts: string[] = []
-    if (e.priority) parts.push(`${e.priority} priority`)
-    if (e.status) parts.push(e.status)
-    if (downstream > 0) parts.push(`blocks ${downstream} expedition${downstream === 1 ? "" : "s"}`)
-    if (program) parts.push(`program is ${program.priority}`)
+    const scored = scoreExpeditionRecord(e, programById, downstreamGraph)
 
     const programCompleted = compositionStatus.get(e.program)
     if (programCompleted) {
@@ -242,11 +297,7 @@ export async function rankExpeditions(
       }
     }
 
-    return {
-      ...e,
-      score,
-      rationale: parts.join(", "),
-    }
+    return scored
   })
 
   ranked.sort((a, b) => {
