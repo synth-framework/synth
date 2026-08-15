@@ -26,11 +26,14 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "init", safety: "MUTATING", description: "Initialize the current directory as a Synth project", requiresApproval: true },
   { command: "mission create", safety: "PROPOSAL_ONLY", description: "Create a Mission proposal" },
   { command: "mission approve", safety: "MUTATING", description: "Approve a Mission draft", requiresApproval: true },
+  { command: "mission delete", safety: "MUTATING", description: "Delete an empty Mission", requiresApproval: true },
   { command: "expedition create", safety: "PROPOSAL_ONLY", description: "Create an Expedition proposal" },
   { command: "expedition approve", safety: "MUTATING", description: "Approve an Expedition draft", requiresApproval: true },
   { command: "expedition commit", safety: "MUTATING", description: "Commit approved Expedition intent to runtime", requiresApproval: true },
   { command: "expedition start", safety: "MUTATING", description: "Start executing a committed Expedition", requiresApproval: true },
   { command: "expedition complete", safety: "MUTATING", description: "Complete an executing Expedition", requiresApproval: true },
+  { command: "expedition delete", safety: "MUTATING", description: "Delete an empty Expedition", requiresApproval: true },
+  { command: "expedition move", safety: "MUTATING", description: "Re-parent an Expedition to another Mission", requiresApproval: true },
   { command: "expedition certify", safety: "MUTATING", description: "Certify convergence for an executing Expedition", requiresApproval: true },
   { command: "doctor", safety: "READ_ONLY", description: "Verify installation and project health" },
   { command: "checkpoint", safety: "READ_ONLY", description: "Run pre-flight checkpoint before implementation work" },
@@ -288,6 +291,7 @@ export function classifyInvocation(
     if (sub === "project") return "mission project"
     if (sub === "verify-charter") return "mission verify-charter"
     if (sub === "report") return "mission report"
+    if (sub === "delete") return "mission delete"
   }
   if (namespace === "program") {
     if (sub === "list") return "program list"
@@ -345,6 +349,8 @@ export function classifyInvocation(
     if (sub === "start") return "expedition start"
     if (sub === "complete") return "expedition complete"
     if (sub === "archive") return "expedition archive"
+    if (sub === "delete") return "expedition delete"
+    if (sub === "move") return "expedition move"
     if (sub === "evidence") return "expedition evidence"
     if (sub === "certify") return "expedition certify"
     if (sub === "list") return "expedition list"

@@ -7,6 +7,7 @@ import type { Capability, CapabilityInvocation, CapabilityResult, CanonicalState
 import type { AgentIdentity } from "../identity/types.js"
 import { applyDomain } from "../domain/execution.js"
 import { identityPayloadMetadata } from "../identity/index.js"
+import { assessExpeditionMissionAlignment } from "../governance/scope-alignment.js"
 import * as sdk from "../sdk/index.js"
 import { sha256 } from "../sdk/hashing/index.js"
 import {
@@ -14,8 +15,8 @@ import {
   createPlan, activatePlan, completePlan,
   createMilestone, startMilestone, completeMilestone,
   createProject,
-  createMission, approveMission, completeMission, archiveMission,
-  createExpedition, approveExpedition, commitExpedition, startExpedition, pauseExpedition, completeExpedition, cancelExpedition, archiveExpedition, refineExpedition,
+  createMission, approveMission, completeMission, archiveMission, deleteMission,
+  createExpedition, approveExpedition, commitExpedition, startExpedition, pauseExpedition, completeExpedition, cancelExpedition, archiveExpedition, refineExpedition, deleteExpedition, moveExpedition,
   createObjective, completeObjective,
   createDiscovery,
   createDecision, acceptDecision, rejectDecision,
@@ -611,6 +612,42 @@ export function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "DeleteMission",
+      description: "Delete an empty mission that hosts no expeditions",
+      inputSchema: { required: ["id"], types: { id: "string", reason: "string" } },
+      outputSchema: { events: ["MISSION_DELETED"], resultType: "Mission" },
+      preconditions: [
+        {
+          name: "mission_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.missions },
+        },
+        {
+          name: "mission_empty",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const mission = state.missions[id]
+            return !!mission && mission.expeditions.length === 0
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const existing = state.missions[id]
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        if (!existing) return { events: [{ type: "MISSION_DELETED", payload }] }
+        const updated = deleteMission(existing, executionCtx)
+        return { events: [{ type: "MISSION_DELETED", payload }], result: updated }
+      },
+    },
+    {
       name: "CreateExpedition",
       description: "Create a new expedition",
       inputSchema: { required: ["id", "missionId", "name"], types: { id: "string", missionId: "string", name: "string", goal: "string" } },
@@ -934,6 +971,106 @@ export function createDefaultCapabilities(): Capability[] {
           events: [{ type: "EXPEDITION_REFINED", payload }],
           result: updated,
         }
+      },
+    },
+    {
+      name: "DeleteExpedition",
+      description: "Delete an empty expedition that has no objectives",
+      inputSchema: { required: ["id"], types: { id: "string", reason: "string" } },
+      outputSchema: { events: ["EXPEDITION_DELETED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+        {
+          name: "expedition_empty",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const expedition = state.expeditions[id]
+            if (!expedition) return false
+            if (expedition.objectives.length > 0) return false
+            return !Object.values(state.objectives || {}).some((o) => o.expeditionId === id)
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const existing = state.expeditions[id]
+        const missionId = existing?.missionId || String(intent.payload.missionId || "")
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id, expeditionId: id, missionId }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        if (!existing) return { events: [{ type: "EXPEDITION_DELETED", payload }] }
+        const updated = deleteExpedition(existing, executionCtx)
+        return { events: [{ type: "EXPEDITION_DELETED", payload }], result: updated }
+      },
+    },
+    {
+      name: "MoveExpedition",
+      description: "Re-parent an expedition to a different mission under scope-and-intent verification or explicit operator approval",
+      inputSchema: { required: ["id", "toMissionId"], types: { id: "string", toMissionId: "string", reason: "string", approved: "boolean" } },
+      outputSchema: { events: ["EXPEDITION_MOVED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_exists",
+          evaluate: (intent, state) => { const id = String(intent.payload.id); return id in state.expeditions },
+        },
+        {
+          name: "target_mission_exists",
+          evaluate: (intent, state) => { const toMissionId = String(intent.payload.toMissionId); return toMissionId in state.missions },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const toMissionId = String(intent.payload.toMissionId)
+        const reason = typeof intent.payload.reason === "string" ? intent.payload.reason : undefined
+        const approved = intent.payload.approved === true || intent.payload.approved === "true"
+        const existing = state.expeditions[id]
+        const fromMissionId = existing?.missionId || String(intent.payload.fromMissionId || "")
+        if (!existing) {
+          const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+          const payload: Record<string, unknown> = { id, expeditionId: id, fromMissionId, toMissionId, verification: "scope_aligned" }
+          if (reason) payload.reason = reason
+          if (metadata) payload.metadata = metadata
+          return { events: [{ type: "EXPEDITION_MOVED", payload }] }
+        }
+        const targetMission = state.missions[toMissionId]
+        const alignment = assessExpeditionMissionAlignment(existing, targetMission)
+        const verification = alignment.aligned ? "scope_aligned" : "operator_approved"
+        if (!alignment.aligned && !approved) {
+          throw new Error(
+            `SCOPE_ALIGNMENT_REQUIRED: expedition ${id} scope is not aligned with mission ${toMissionId} ` +
+              `(alignment ${Math.round(alignment.score * 100)}%). Provide operator approval to proceed.`,
+          )
+        }
+        const updated = moveExpedition(existing, toMissionId, executionCtx, {
+          metadata: {
+            moveVerification: verification,
+            ...(reason ? { moveReason: reason } : {}),
+          },
+        })
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = {
+          id: updated.id,
+          expeditionId: updated.id,
+          fromMissionId,
+          toMissionId,
+          verification,
+        }
+        if (reason) payload.reason = reason
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_MOVED", payload }], result: updated }
       },
     },
     {
