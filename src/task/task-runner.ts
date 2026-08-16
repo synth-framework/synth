@@ -99,7 +99,7 @@ function runCommand(command: string, cwd: string): Promise<{ status: number; std
  * Build a run plan for one or more target task ids. Dependencies are resolved
  * and ordered so each task runs after its upstream dependencies.
  */
-export function buildRunPlan(registry: TaskRegistry, targetIds: string[]): TaskRunPlan {
+function buildRunPlan(registry: TaskRegistry, targetIds: string[]): TaskRunPlan {
   const orderResult = taskExecutionOrder(registry)
   if (!orderResult.ok) {
     throw new Error(`Cannot plan execution: cycle detected (${orderResult.cycle.join(" -> ")})`)
@@ -135,7 +135,7 @@ export function buildRunPlan(registry: TaskRegistry, targetIds: string[]): TaskR
 /**
  * Execute a run plan. When dryRun is true, commands are not executed.
  */
-export async function executeRunPlan(plan: TaskRunPlan, cwd: string): Promise<TaskRunReport> {
+async function executeRunPlan(plan: TaskRunPlan, cwd: string): Promise<TaskRunReport> {
   const results: TaskRunResult[] = []
   const start = Date.now()
 

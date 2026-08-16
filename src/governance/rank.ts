@@ -88,7 +88,7 @@ function isOpenStatus(status: string): boolean {
  * word "completed" (but not active status words) is treated as a
  * completion claim.
  */
-export async function loadProgramCompositionStatus(
+async function loadProgramCompositionStatus(
   charterDir: string,
 ): Promise<Map<string, Set<string>>> {
   const result = new Map<string, Set<string>>()
@@ -172,7 +172,7 @@ function computeDownstreamCount(
  * priority (x10). Pure and deterministic; shared by the charter-based
  * `rankExpeditions` and the mission-scoped `rankExpeditionRecords`.
  */
-export function scoreExpeditionRecord(
+function scoreExpeditionRecord(
   expedition: ExpeditionRecord,
   programById: Map<string, ProgramRecord>,
   downstreamGraph: Graph<ExpeditionRecord>,

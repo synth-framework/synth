@@ -31,7 +31,7 @@ function stripVolatileFields(value: unknown): unknown {
  * generation timestamps) from serialization so the hash reflects semantic
  * content rather than when the artifact was produced.
  */
-export function canonicalizeArtifact<T extends Record<string, unknown>>(artifact: T): string {
+function canonicalizeArtifact<T extends Record<string, unknown>>(artifact: T): string {
   const cleaned = stripVolatileFields(artifact)
   const sorted = sortKeys(cleaned)
   return JSON.stringify(sorted)

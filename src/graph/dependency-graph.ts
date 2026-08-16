@@ -93,7 +93,7 @@ function edgeMatches(
  * Pass `edgeTypes` to restrict traversal to specific edge types; otherwise
  * all edges are included.
  */
-export function buildAdjacencyLists(
+function buildAdjacencyLists(
   graph: Graph<unknown>,
   edgeTypes?: EdgeType[],
 ): AdjacencyLists {
