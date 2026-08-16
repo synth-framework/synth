@@ -1,0 +1,209 @@
+{
+  "id": "dac069e8cc375a6b",
+  "createdAt": 1786844909661,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786844909661
+    },
+    {
+      "id": "obs-expedition-simplify-expedition-lifecycle-operations",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Simplify Expedition Lifecycle Operations",
+        "name": "Simplify Expedition Lifecycle Operations",
+        "goal": "Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft to Executing, auto-ignoring untracked scratch files) to improve simplification and coherence.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Simplify Expedition Lifecycle Operations",
+      "confidence": "high",
+      "timestamp": 1786844909661
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "15b4e275cb7e6b8c",
+        "immutable": true
+      },
+      {
+        "id": "24c6aac3d6f37352",
+        "observationId": "obs-expedition-simplify-expedition-lifecycle-operations",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Simplify Expedition Lifecycle Operations\",\"name\":\"Simplify Expedition Lifecycle Operations\",\"goal\":\"Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft t",
+        "fingerprint": "9751680ce3749a8a",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "15b4e275cb7e6b8c",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-simplify-expedition-lifecycle-operations",
+        {
+          "id": "24c6aac3d6f37352",
+          "observationId": "obs-expedition-simplify-expedition-lifecycle-operations",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Simplify Expedition Lifecycle Operations\",\"name\":\"Simplify Expedition Lifecycle Operations\",\"goal\":\"Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft t",
+          "fingerprint": "9751680ce3749a8a",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "407acb129d9c9ff1",
+        {
+          "id": "407acb129d9c9ff1",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "be2cba36f266b358",
+        {
+          "id": "be2cba36f266b358",
+          "kind": "expedition",
+          "name": "Simplify Expedition Lifecycle Operations",
+          "description": "Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft to Executing, auto-ignoring untracked scratch files) to improve simplification and coherence.",
+          "missionId": "407acb129d9c9ff1",
+          "goal": "Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft to Executing, auto-ignoring untracked scratch files) to improve simplification and coherence.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-simplify-expedition-lifecycle-operations"
+          ],
+          "evidenceRefs": [
+            "24c6aac3d6f37352"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "d50588c0a80f4f1c",
+        "source": "be2cba36f266b358",
+        "target": "407acb129d9c9ff1",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-simplify-expedition-lifecycle-operations"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "15b4e275cb7e6b8c",
+          "immutable": true
+        },
+        {
+          "id": "24c6aac3d6f37352",
+          "observationId": "obs-expedition-simplify-expedition-lifecycle-operations",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Simplify Expedition Lifecycle Operations\",\"name\":\"Simplify Expedition Lifecycle Operations\",\"goal\":\"Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft t",
+          "fingerprint": "9751680ce3749a8a",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "15b4e275cb7e6b8c",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-simplify-expedition-lifecycle-operations",
+          {
+            "id": "24c6aac3d6f37352",
+            "observationId": "obs-expedition-simplify-expedition-lifecycle-operations",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Simplify Expedition Lifecycle Operations\",\"name\":\"Simplify Expedition Lifecycle Operations\",\"goal\":\"Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft t",
+            "fingerprint": "9751680ce3749a8a",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

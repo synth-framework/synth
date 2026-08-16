@@ -1,0 +1,209 @@
+{
+  "id": "3919441f53c3f36c",
+  "createdAt": 1786844906042,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786844906042
+    },
+    {
+      "id": "obs-expedition-fix-cli-next-command-id-resolution",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Fix CLI Next-Command ID Resolution",
+        "name": "Fix CLI Next-Command ID Resolution",
+        "goal": "Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating or managing drafts to improve robustness and ease of use.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Fix CLI Next-Command ID Resolution",
+      "confidence": "high",
+      "timestamp": 1786844906042
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "b443258a36bd443a",
+        "immutable": true
+      },
+      {
+        "id": "a7d1d3f8ef66ccac",
+        "observationId": "obs-expedition-fix-cli-next-command-id-resolution",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Fix CLI Next-Command ID Resolution\",\"name\":\"Fix CLI Next-Command ID Resolution\",\"goal\":\"Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating ",
+        "fingerprint": "4482f5803f15e46c",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "b443258a36bd443a",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-fix-cli-next-command-id-resolution",
+        {
+          "id": "a7d1d3f8ef66ccac",
+          "observationId": "obs-expedition-fix-cli-next-command-id-resolution",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Fix CLI Next-Command ID Resolution\",\"name\":\"Fix CLI Next-Command ID Resolution\",\"goal\":\"Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating ",
+          "fingerprint": "4482f5803f15e46c",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "3b8992dd4d897de8",
+        {
+          "id": "3b8992dd4d897de8",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "d20048de59780e03",
+        {
+          "id": "d20048de59780e03",
+          "kind": "expedition",
+          "name": "Fix CLI Next-Command ID Resolution",
+          "description": "Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating or managing drafts to improve robustness and ease of use.",
+          "missionId": "3b8992dd4d897de8",
+          "goal": "Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating or managing drafts to improve robustness and ease of use.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-fix-cli-next-command-id-resolution"
+          ],
+          "evidenceRefs": [
+            "a7d1d3f8ef66ccac"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "03245f4442ff0383",
+        "source": "d20048de59780e03",
+        "target": "3b8992dd4d897de8",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-fix-cli-next-command-id-resolution"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "b443258a36bd443a",
+          "immutable": true
+        },
+        {
+          "id": "a7d1d3f8ef66ccac",
+          "observationId": "obs-expedition-fix-cli-next-command-id-resolution",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Fix CLI Next-Command ID Resolution\",\"name\":\"Fix CLI Next-Command ID Resolution\",\"goal\":\"Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating ",
+          "fingerprint": "4482f5803f15e46c",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "b443258a36bd443a",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-fix-cli-next-command-id-resolution",
+          {
+            "id": "a7d1d3f8ef66ccac",
+            "observationId": "obs-expedition-fix-cli-next-command-id-resolution",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Fix CLI Next-Command ID Resolution\",\"name\":\"Fix CLI Next-Command ID Resolution\",\"goal\":\"Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating ",
+            "fingerprint": "4482f5803f15e46c",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

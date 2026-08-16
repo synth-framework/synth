@@ -1,0 +1,209 @@
+{
+  "id": "d7abae63e9eedf10",
+  "createdAt": 1786845338929,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786845338929
+    },
+    {
+      "id": "obs-expedition-dependency-graph-hardening",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Dependency Graph Hardening",
+        "name": "Dependency Graph Hardening",
+        "goal": "Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Dependency Graph Hardening",
+      "confidence": "high",
+      "timestamp": 1786845338929
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "cc457002e6ab1e1d",
+        "immutable": true
+      },
+      {
+        "id": "bcab347a3f9c52c9",
+        "observationId": "obs-expedition-dependency-graph-hardening",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Dependency Graph Hardening\",\"name\":\"Dependency Graph Hardening\",\"goal\":\"Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.\",\"",
+        "fingerprint": "1f511402a6d82aaa",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "cc457002e6ab1e1d",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-dependency-graph-hardening",
+        {
+          "id": "bcab347a3f9c52c9",
+          "observationId": "obs-expedition-dependency-graph-hardening",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Dependency Graph Hardening\",\"name\":\"Dependency Graph Hardening\",\"goal\":\"Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.\",\"",
+          "fingerprint": "1f511402a6d82aaa",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "e8d9a5079d9b788c",
+        {
+          "id": "e8d9a5079d9b788c",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "048ed004760d5e35",
+        {
+          "id": "048ed004760d5e35",
+          "kind": "expedition",
+          "name": "Dependency Graph Hardening",
+          "description": "Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.",
+          "missionId": "e8d9a5079d9b788c",
+          "goal": "Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-dependency-graph-hardening"
+          ],
+          "evidenceRefs": [
+            "bcab347a3f9c52c9"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "5a624ca099cc34d5",
+        "source": "048ed004760d5e35",
+        "target": "e8d9a5079d9b788c",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-dependency-graph-hardening"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "cc457002e6ab1e1d",
+          "immutable": true
+        },
+        {
+          "id": "bcab347a3f9c52c9",
+          "observationId": "obs-expedition-dependency-graph-hardening",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Dependency Graph Hardening\",\"name\":\"Dependency Graph Hardening\",\"goal\":\"Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.\",\"",
+          "fingerprint": "1f511402a6d82aaa",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "cc457002e6ab1e1d",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-dependency-graph-hardening",
+          {
+            "id": "bcab347a3f9c52c9",
+            "observationId": "obs-expedition-dependency-graph-hardening",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Dependency Graph Hardening\",\"name\":\"Dependency Graph Hardening\",\"goal\":\"Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.\",\"",
+            "fingerprint": "1f511402a6d82aaa",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

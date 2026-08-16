@@ -1,0 +1,123 @@
+{
+  "id": "1b7ac5ac42d900d8",
+  "createdAt": 1786861150064,
+  "observations": [
+    {
+      "id": "obs-mission-knowledge-graph-and-cache-infrastructure",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Knowledge Graph and Cache Infrastructure",
+        "name": "Knowledge Graph and Cache Infrastructure",
+        "purpose": "Implement a graph database to assist with framework knowledge and configuration, and a Redis cache layer to serve as a hot workflow assistant and lower agent context saturation."
+      },
+      "evidenceReference": "evidence-mission-Knowledge Graph and Cache Infrastructure",
+      "confidence": "high",
+      "timestamp": 1786861150064
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "207f5cc8e25d296f",
+        "observationId": "obs-mission-knowledge-graph-and-cache-infrastructure",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Knowledge Graph and Cache Infrastructure\",\"name\":\"Knowledge Graph and Cache Infrastructure\",\"purpose\":\"Implement a graph database to assist with framework knowledge and configuration, and ",
+        "fingerprint": "d3b3195c8a998d33",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-knowledge-graph-and-cache-infrastructure",
+        {
+          "id": "207f5cc8e25d296f",
+          "observationId": "obs-mission-knowledge-graph-and-cache-infrastructure",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Knowledge Graph and Cache Infrastructure\",\"name\":\"Knowledge Graph and Cache Infrastructure\",\"purpose\":\"Implement a graph database to assist with framework knowledge and configuration, and ",
+          "fingerprint": "d3b3195c8a998d33",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.67,
+    "observationCoverage": 0.1,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "711e008610f45f08",
+        {
+          "id": "711e008610f45f08",
+          "kind": "mission",
+          "name": "Knowledge Graph and Cache Infrastructure",
+          "description": "Implement a graph database to assist with framework knowledge and configuration, and a Redis cache layer to serve as a hot workflow assistant and lower agent context saturation.",
+          "purpose": "Implement a graph database to assist with framework knowledge and configuration, and a Redis cache layer to serve as a hot workflow assistant and lower agent context saturation.",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-knowledge-graph-and-cache-infrastructure"
+          ],
+          "evidenceRefs": [
+            "207f5cc8e25d296f"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "207f5cc8e25d296f",
+          "observationId": "obs-mission-knowledge-graph-and-cache-infrastructure",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Knowledge Graph and Cache Infrastructure\",\"name\":\"Knowledge Graph and Cache Infrastructure\",\"purpose\":\"Implement a graph database to assist with framework knowledge and configuration, and ",
+          "fingerprint": "d3b3195c8a998d33",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-knowledge-graph-and-cache-infrastructure",
+          {
+            "id": "207f5cc8e25d296f",
+            "observationId": "obs-mission-knowledge-graph-and-cache-infrastructure",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Knowledge Graph and Cache Infrastructure\",\"name\":\"Knowledge Graph and Cache Infrastructure\",\"purpose\":\"Implement a graph database to assist with framework knowledge and configuration, and ",
+            "fingerprint": "d3b3195c8a998d33",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.67,
+      "observationCoverage": 0.1,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

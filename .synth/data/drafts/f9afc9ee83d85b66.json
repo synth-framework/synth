@@ -1,0 +1,123 @@
+{
+  "id": "f9afc9ee83d85b66",
+  "createdAt": 1786828552979,
+  "observations": [
+    {
+      "id": "obs-mission-framework-audit-and-maturation",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Audit and Maturation",
+        "name": "Framework Audit and Maturation",
+        "purpose": "Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for future cleanup and optimization missions."
+      },
+      "evidenceReference": "evidence-mission-Framework Audit and Maturation",
+      "confidence": "high",
+      "timestamp": 1786828552979
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "df7d9ca5fdb9968e",
+        "observationId": "obs-mission-framework-audit-and-maturation",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for fu",
+        "fingerprint": "216e51c493813017",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-audit-and-maturation",
+        {
+          "id": "df7d9ca5fdb9968e",
+          "observationId": "obs-mission-framework-audit-and-maturation",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for fu",
+          "fingerprint": "216e51c493813017",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.67,
+    "observationCoverage": 0.1,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "9861cf62476c90ae",
+        {
+          "id": "9861cf62476c90ae",
+          "kind": "mission",
+          "name": "Framework Audit and Maturation",
+          "description": "Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for future cleanup and optimization missions.",
+          "purpose": "Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for future cleanup and optimization missions.",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-audit-and-maturation"
+          ],
+          "evidenceRefs": [
+            "df7d9ca5fdb9968e"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "df7d9ca5fdb9968e",
+          "observationId": "obs-mission-framework-audit-and-maturation",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for fu",
+          "fingerprint": "216e51c493813017",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-audit-and-maturation",
+          {
+            "id": "df7d9ca5fdb9968e",
+            "observationId": "obs-mission-framework-audit-and-maturation",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for fu",
+            "fingerprint": "216e51c493813017",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.67,
+      "observationCoverage": 0.1,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

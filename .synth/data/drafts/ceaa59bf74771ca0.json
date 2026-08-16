@@ -1,0 +1,209 @@
+{
+  "id": "ceaa59bf74771ca0",
+  "createdAt": 1786844912540,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786844912540
+    },
+    {
+      "id": "obs-expedition-optimize-cli-bootstrap-performance",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Optimize CLI Bootstrap Performance",
+        "name": "Optimize CLI Bootstrap Performance",
+        "goal": "Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command latency.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Optimize CLI Bootstrap Performance",
+      "confidence": "high",
+      "timestamp": 1786844912540
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "5f3b88e185b11f35",
+        "immutable": true
+      },
+      {
+        "id": "5236c61a37c4b4a3",
+        "observationId": "obs-expedition-optimize-cli-bootstrap-performance",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Optimize CLI Bootstrap Performance\",\"name\":\"Optimize CLI Bootstrap Performance\",\"goal\":\"Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command lat",
+        "fingerprint": "1e0baa5ac7ad94b4",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "5f3b88e185b11f35",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-optimize-cli-bootstrap-performance",
+        {
+          "id": "5236c61a37c4b4a3",
+          "observationId": "obs-expedition-optimize-cli-bootstrap-performance",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Optimize CLI Bootstrap Performance\",\"name\":\"Optimize CLI Bootstrap Performance\",\"goal\":\"Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command lat",
+          "fingerprint": "1e0baa5ac7ad94b4",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "ab1d09b6e339441f",
+        {
+          "id": "ab1d09b6e339441f",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "efc1a865b9428945",
+        {
+          "id": "efc1a865b9428945",
+          "kind": "expedition",
+          "name": "Optimize CLI Bootstrap Performance",
+          "description": "Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command latency.",
+          "missionId": "ab1d09b6e339441f",
+          "goal": "Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command latency.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-optimize-cli-bootstrap-performance"
+          ],
+          "evidenceRefs": [
+            "5236c61a37c4b4a3"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "6653d25dfda846de",
+        "source": "efc1a865b9428945",
+        "target": "ab1d09b6e339441f",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-optimize-cli-bootstrap-performance"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "5f3b88e185b11f35",
+          "immutable": true
+        },
+        {
+          "id": "5236c61a37c4b4a3",
+          "observationId": "obs-expedition-optimize-cli-bootstrap-performance",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Optimize CLI Bootstrap Performance\",\"name\":\"Optimize CLI Bootstrap Performance\",\"goal\":\"Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command lat",
+          "fingerprint": "1e0baa5ac7ad94b4",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "5f3b88e185b11f35",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-optimize-cli-bootstrap-performance",
+          {
+            "id": "5236c61a37c4b4a3",
+            "observationId": "obs-expedition-optimize-cli-bootstrap-performance",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Optimize CLI Bootstrap Performance\",\"name\":\"Optimize CLI Bootstrap Performance\",\"goal\":\"Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command lat",
+            "fingerprint": "1e0baa5ac7ad94b4",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
