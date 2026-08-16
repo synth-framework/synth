@@ -1,6 +1,6 @@
 {
-  "version": 11,
-  "stateHash": "1024196406",
+  "version": 13,
+  "stateHash": "301939778",
   "lifecycle": "uninitialized",
   "workItems": {
     "W-1": {
@@ -71,7 +71,7 @@
       "missionId": "1ab241b02005b750",
       "name": "Mission Lifecycle Alignment",
       "goal": "Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, add constraints preventing mission amendments without operator permission, and ensure missions are properly discoverable in .synth state",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -85,14 +85,16 @@
         }
       },
       "createdAt": 20,
-      "updatedAt": 78,
+      "updatedAt": 79,
       "attachments": [
         {
           "kind": "git-diff",
           "path": "proof/expeditions/05aba9066ea7d1d4/git-diff.patch",
           "hash": "642f2b38d32f466d955aafe7e382ed3e3511c5bdde2694b9ff6d336ad7a3f21a"
         }
-      ]
+      ],
+      "force": true,
+      "forceReason": "Replay inconsistency from auto-commit during evidence attachment; expedition deliverables complete"
     },
     "886b4cc325d768d2": {
       "id": "886b4cc325d768d2",
@@ -132,5 +134,5 @@
       "capturedAt": 1786865514389
     }
   },
-  "lastEventOffset": 79
+  "lastEventOffset": 81
 }
