@@ -11,7 +11,7 @@ import { runTasks, runTaskGroup } from "../task/task-runner.js"
 import type { Task } from "../task/task-schema.js"
 import { printError, printJson } from "./print.js"
 
-export function namespaceHelp() {
+function namespaceHelp() {
   return {
     status: "ok" as const,
     name: "synth",
@@ -55,7 +55,7 @@ function taskSummary(task: Task) {
   }
 }
 
-export async function cmdTaskList(flags: Record<string, string | boolean>) {
+async function cmdTaskList(flags: Record<string, string | boolean>) {
   const registry = await loadRegistry()
   let tasks = Array.from(registry.tasks.values())
 
@@ -106,7 +106,7 @@ function countTransitiveDeps(registry: TaskRegistry, taskId: string, visited = n
   return count
 }
 
-export async function cmdTaskExplain(args: string[], flags: Record<string, string | boolean>) {
+async function cmdTaskExplain(args: string[], flags: Record<string, string | boolean>) {
   const id = args[0] || ""
   if (!id) {
     printError("Usage: synth task explain <id>", {
@@ -181,7 +181,7 @@ function graphToMermaid(registry: TaskRegistry, graph: TaskGraph): string {
   return lines.join("\n")
 }
 
-export async function cmdTaskGraph(args: string[], flags: Record<string, string | boolean>) {
+async function cmdTaskGraph(args: string[], flags: Record<string, string | boolean>) {
   const format = typeof flags.format === "string" ? flags.format : "json"
   const validFormats = ["json", "dot", "mermaid"]
   if (!validFormats.includes(format)) {
@@ -212,7 +212,7 @@ export async function cmdTaskGraph(args: string[], flags: Record<string, string 
   }
 }
 
-export async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
+async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
   const checks: { name: string; ok: boolean; detail: string }[] = []
   let registry: TaskRegistry | undefined
 
@@ -292,7 +292,7 @@ export async function cmdTaskDoctor(flags: Record<string, string | boolean>) {
   }
 }
 
-export async function cmdTaskRun(args: string[], flags: Record<string, string | boolean>) {
+async function cmdTaskRun(args: string[], flags: Record<string, string | boolean>) {
   const target = args[0] || ""
   if (!target) {
     printError("Usage: synth task run <id|group> [--dry-run]", {
@@ -352,7 +352,7 @@ function collectTaskFlags(flags: Record<string, string | boolean>): string[] {
   return tasks
 }
 
-export async function cmdTaskAffected(args: string[], flags: Record<string, string | boolean>) {
+async function cmdTaskAffected(args: string[], flags: Record<string, string | boolean>) {
   const changedTaskIds = collectTaskFlags(flags)
   if (changedTaskIds.length === 0) {
     printError("Usage: synth task affected --task <id> [--task <id>]...", {
@@ -374,7 +374,7 @@ export async function cmdTaskAffected(args: string[], flags: Record<string, stri
   })
 }
 
-export async function cmdTaskGenerate(args: string[], flags: Record<string, string | boolean>) {
+async function cmdTaskGenerate(args: string[], flags: Record<string, string | boolean>) {
   const id = args[0] || ""
   if (!id) {
     printError("Usage: synth task generate <id> --group <group> [--command <cmd>]", {

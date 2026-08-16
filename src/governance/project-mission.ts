@@ -116,7 +116,7 @@ function makeId(prefix: string): string {
 }
 
 /** Compute deterministic fingerprint from projection inputs. */
-export function computeMissionFingerprint(input: MissionProjectionInput): string {
+function computeMissionFingerprint(input: MissionProjectionInput): string {
   const canonical = JSON.stringify({
     alignmentContract: input.alignmentContract.id,
     intentModel: input.intentModel.id,
@@ -375,7 +375,7 @@ export function projectMission(input: MissionProjectionInput): MissionProjection
 /** Certify an already projected Mission, returning a new certification result.
  *  This is a pure re-evaluation; it does not mutate the package.
  */
-export function certifyMissionProjection(pkg: MissionProjectionPackage): ProjectionCertification {
+function certifyMissionProjection(pkg: MissionProjectionPackage): ProjectionCertification {
   const now = Date.now()
   const checks = enforceCompleteness(pkg.mission, pkg.alignmentContract)
   const allPassed = checks.every((c) => c.passed)

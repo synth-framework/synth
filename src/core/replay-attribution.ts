@@ -20,7 +20,7 @@
 import type { SynthEvent } from "../types/index.js"
 
 /** Report schema version carried by every attribution report. */
-export const REPLAY_ATTRIBUTION_VERSION = 1
+const REPLAY_ATTRIBUTION_VERSION = 1
 
 /** A reference to one event in the log. */
 export type AttributedEventRef = {
