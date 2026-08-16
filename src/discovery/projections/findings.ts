@@ -21,9 +21,9 @@ import type {
 } from "../types.js"
 import { DISCOVERY_FINDINGS_SCHEMA_VERSION } from "../types.js"
 
-export const FINDINGS_CAPABILITY_ID = "discovery:findings"
-export const FINDINGS_CAPABILITY_VERSION = "1.0.0"
-export const FINDINGS_PROJECTION_TYPE = "findings"
+const FINDINGS_CAPABILITY_ID = "discovery:findings"
+const FINDINGS_CAPABILITY_VERSION = "1.0.0"
+const FINDINGS_PROJECTION_TYPE = "findings"
 
 function generateFindingId(index: number): string {
   return `finding-${String(index).padStart(6, "0")}`
@@ -78,7 +78,7 @@ function createFinding(
  * Detects missing README and missing architecture documentation when
  * implementation signals are present.
  */
-export function projectFindings(evidenceGraph: EvidenceGraph): DiscoveryFindingSet {
+function projectFindings(evidenceGraph: EvidenceGraph): DiscoveryFindingSet {
   const findings: Finding[] = []
 
   const hasSourceDirectory = hasClaim(evidenceGraph, "Source directory observed")

@@ -70,7 +70,7 @@ import {
 import { createCapabilityRegistry } from "../capability/index.js"
 import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 
-export const EXPLAIN_OBSERVABILITY_VERSION = 1
+const EXPLAIN_OBSERVABILITY_VERSION = 1
 
 const DEFAULT_LOG_DISPLAY = path.posix.join(
   path.relative(root(), dataDir(root())).replace(/\\/g, "/") || ".",

@@ -4,21 +4,14 @@
 
 export {
   createFilesystemDiscoveryAdapter,
-  createFilesystemDiscoveryAdapterWithProvider,
-  FILESYSTEM_ADAPTER_ID,
-  FILESYSTEM_ADAPTER_VERSION,
+  createFilesystemDiscoveryAdapterWithProvider
 } from "./filesystem-adapter.js"
 
 export {
-  createGitDiscoveryAdapter,
-  createGitDiscoveryAdapterWithProvider,
-  GIT_ADAPTER_ID,
-  GIT_ADAPTER_VERSION,
+  createGitDiscoveryAdapter
 } from "./git-adapter.js"
 
 export {
   createOperationalArtifactDiscoveryAdapter,
-  createOperationalArtifactDiscoveryAdapterWithProvider,
-  OPERATIONAL_ARTIFACT_ADAPTER_ID,
-  OPERATIONAL_ARTIFACT_ADAPTER_VERSION,
+  createOperationalArtifactDiscoveryAdapterWithProvider
 } from "./operational-artifact-adapter.js"

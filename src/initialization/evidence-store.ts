@@ -17,7 +17,7 @@ import { stringifyJson } from "../sdk/json/index.js"
 import type { InitializationEvidence } from "../adapters/initialization-adapter.js"
 import type { ProjectModel } from "./project-model.js"
 
-export const INITIALIZATION_EVIDENCE_SCHEMA_VERSION = "1.0.0"
+const INITIALIZATION_EVIDENCE_SCHEMA_VERSION = "1.0.0"
 
 /** A persisted initialization evidence artifact. */
 export interface InitializationEvidenceArtifact {
@@ -87,6 +87,6 @@ export function createInitializationEvidenceStore(
 }
 
 /** Create a POSIX-backed evidence store rooted at the current directory. */
-export function createPosixInitializationEvidenceStore(): InitializationEvidenceStore {
+function createPosixInitializationEvidenceStore(): InitializationEvidenceStore {
   return createInitializationEvidenceStore(createPosixFilesystemProvider(process.cwd()))
 }

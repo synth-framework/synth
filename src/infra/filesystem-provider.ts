@@ -8,7 +8,7 @@
 
 import { resolve, dirname } from "node:path"
 import * as sdkFiles from "../sdk/files/index.js"
-import { IllegalMutationError } from "../core/errors.js"
+import { IllegalMutationError } from "../sdk/errors/index.js"
 
 export const FILESYSTEM_WRITE_TOKEN = Symbol("FILESYSTEM_WRITE_TOKEN")
 
@@ -27,7 +27,7 @@ export interface FilesystemProvider {
 }
 
 /** POSIX filesystem provider using Node.js fs/promises */
-export class PosixFilesystemProvider implements FilesystemProvider {
+class PosixFilesystemProvider implements FilesystemProvider {
   readonly name = "posix-filesystem"
   readonly version = "1.0.0"
   readonly root: string
@@ -82,7 +82,7 @@ export class PosixFilesystemProvider implements FilesystemProvider {
 }
 
 /** In-memory filesystem provider for testing */
-export class InMemoryFilesystemProvider implements FilesystemProvider {
+class InMemoryFilesystemProvider implements FilesystemProvider {
   readonly name = "in-memory-filesystem"
   readonly version = "1.0.0"
   readonly root = "/"
@@ -174,6 +174,6 @@ export function createPosixFilesystemProvider(root: string, writeToken?: symbol)
   return new PosixFilesystemProvider(root, writeToken)
 }
 
-export function createInMemoryFilesystemProvider(initialFiles?: Record<string, string>, writeToken?: symbol): FilesystemProvider {
+function createInMemoryFilesystemProvider(initialFiles?: Record<string, string>, writeToken?: symbol): FilesystemProvider {
   return new InMemoryFilesystemProvider(initialFiles, writeToken)
 }

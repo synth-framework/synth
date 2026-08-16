@@ -26,7 +26,7 @@ import type {
   MutationRequest,
   MutationProvider,
 } from "../types/index.js"
-import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governance/derived-files.js"
+import { isDerivedPath, matchesScope, toProjectRelativePath } from "../sdk/files/derived.js"
 import { dataDir, eventLogFile, stateFile } from "../sdk/paths/index.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"

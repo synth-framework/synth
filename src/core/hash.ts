@@ -19,7 +19,7 @@ export function sha256(obj: unknown): string {
  *  Excludes the eventHash field itself; includes previousHash so the
  *  chain is cryptographic.
  */
-export function eventContentForHash(event: {
+function eventContentForHash(event: {
   id: string
   type: string
   timestamp: number
