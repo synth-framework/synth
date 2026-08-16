@@ -1,0 +1,9 @@
+{
+  "status": "ok",
+  "consistent": true,
+  "eventCount": 17,
+  "liveHash": "297936698",
+  "replayHash": "297936698",
+  "chainValid": true,
+  "explanation": "Operational state is bit-for-bit identical to replayed state."
+}

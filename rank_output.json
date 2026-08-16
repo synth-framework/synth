@@ -1,0 +1,336 @@
+{
+  "status": "ok",
+  "kind": "ExpeditionRank",
+  "count": 26,
+  "expeditions": [
+    {
+      "id": "EXP-GATE-013",
+      "name": "Gate State & Dependency Enforcement",
+      "kind": "Engine Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-035",
+      "dependsOn": [
+        "EXP-GOVERNABILITY-003",
+        "EXP-GOVERNABILITY-004",
+        "EXP-GOVERNABILITY-005"
+      ],
+      "blocks": [
+        "EXP-GATE-012",
+        "EXP-HOME-028"
+      ],
+      "score": 130,
+      "rationale": "High priority, Proposed, blocks 2 expeditions, program is High"
+    },
+    {
+      "id": "EXP-REFINE-015",
+      "name": "Evidence-Grounded Mission Drafting",
+      "kind": "Genesis Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-036",
+      "dependsOn": [
+        "EXP-REFINE-013",
+        "EXP-GOVERNABILITY-005"
+      ],
+      "blocks": [
+        "EXP-HOME-028"
+      ],
+      "score": 125,
+      "rationale": "High priority, Proposed, blocks 1 expedition, program is High"
+    },
+    {
+      "id": "EXP-REFINE-016",
+      "name": "Artifact Scope & Completion Validation",
+      "kind": "Genesis Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-036",
+      "dependsOn": [
+        "EXP-REFINE-015"
+      ],
+      "blocks": [
+        "EXP-HOME-028"
+      ],
+      "score": 125,
+      "rationale": "High priority, Proposed, blocks 1 expedition, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-001",
+      "name": "Brand Presence",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-002",
+      "name": "Repository Readiness",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-003",
+      "name": "Documentation Hub",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-004",
+      "name": "Homepage Launch",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-005",
+      "name": "Installation Experience",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-006",
+      "name": "Examples Library",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-008",
+      "name": "Documentation Articles",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-012",
+      "name": "OSS Contribution Experience",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-016",
+      "name": "AI Discoverability",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-017",
+      "name": "Skill Ecosystem",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-019",
+      "name": "Metrics",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-020",
+      "name": "Launch Certification",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-021",
+      "name": "Community Listening & Feedback Loop",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-REFINE-010",
+      "name": "Interactive Decision Acquisition",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "High",
+      "program": "EXP-PROGRAM-036",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 120,
+      "rationale": "High priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-007",
+      "name": "Video Library",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-009",
+      "name": "Launch Campaign",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-010",
+      "name": "Developer Outreach",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-011",
+      "name": "Community Programs",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-013",
+      "name": "Conference Material",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-014",
+      "name": "Social Media Assets",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-015",
+      "name": "Content Calendar",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-ADOPT-018",
+      "name": "Integration Showcase",
+      "kind": "Expedition",
+      "status": "Proposed",
+      "priority": "Medium",
+      "program": "EXP-PROGRAM-037",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 100,
+      "rationale": "Medium priority, Proposed, program is High"
+    },
+    {
+      "id": "EXP-DOC-007",
+      "name": "Generated Documentation Provenance",
+      "kind": "Documentation Remediation Expedition",
+      "status": "Draft",
+      "priority": "Low",
+      "program": "EXP-PROGRAM-008",
+      "dependsOn": [],
+      "blocks": [],
+      "score": 90,
+      "rationale": "Low priority, Draft, program is Critical"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,12 @@
+{
+  "expeditionId": "d7abae63e9eedf10",
+  "capturedAt": 1786858520184,
+  "note": "Hardened dependency boundaries between the SDK and Core/Runtime by moving errors and the derived files catalog into the SDK, preventing circular dependencies and layer violations.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/d7abae63e9eedf10/git-diff.patch",
+      "hash": "8c424aeacb96943d5007d83f53f9f5ff80c08b5dd95d0aa0c6aef30eca1db728"
+    }
+  ]
+}

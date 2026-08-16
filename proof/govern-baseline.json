@@ -1,0 +1,62 @@
+{
+  "kind": "GovernSummary",
+  "schemaVersion": "1.0.0",
+  "mode": "full",
+  "changedFiles": [],
+  "totalDurationMs": 126333,
+  "executedDurationMs": 126333,
+  "checkCount": 2,
+  "skippedCount": 0,
+  "checks": [
+    {
+      "checkId": "build",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 34587,
+      "percentage": 27.4,
+      "startTime": "2026-08-16T06:50:11.378Z",
+      "endTime": "2026-08-16T06:50:45.965Z",
+      "module": "kernel",
+      "inputs": [
+        "src/**",
+        "tsconfig.json"
+      ],
+      "outputs": [
+        "dist/**"
+      ],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "11b0192deb22238635eb192584f26701eb4d4d94d940fbbe2b701e5c0fa0f97c"
+    },
+    {
+      "checkId": "proof",
+      "status": "failed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 91746,
+      "percentage": 72.6,
+      "startTime": "2026-08-16T06:50:45.975Z",
+      "endTime": "2026-08-16T06:52:17.721Z",
+      "module": "governance",
+      "inputs": [
+        "dist/**",
+        "data/event-log.jsonl",
+        "src/**"
+      ],
+      "outputs": [
+        "proof/proof-*.json"
+      ],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [
+        "Genesis",
+        "Replay"
+      ],
+      "fingerprint": "64da7f33ea41f1cf2634a7b0851e7125bd242c5e7ff8ca6a0603ddf6a739d753"
+    }
+  ]
+}

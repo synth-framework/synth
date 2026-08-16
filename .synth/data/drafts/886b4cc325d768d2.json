@@ -1,0 +1,209 @@
+{
+  "id": "886b4cc325d768d2",
+  "createdAt": 1786866465205,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "1ab241b02005b750",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786866465205
+    },
+    {
+      "id": "obs-expedition-expedition-lifecycle-alignment",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Expedition Lifecycle Alignment",
+        "name": "Expedition Lifecycle Alignment",
+        "goal": "Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching for expedition execution, enforce committed changes before finishing, streamline the run/finish two-command workflow, and ensure expeditions correctly capture git diff as evidence",
+        "missionSubject": "1ab241b02005b750"
+      },
+      "evidenceReference": "evidence-expedition-Expedition Lifecycle Alignment",
+      "confidence": "high",
+      "timestamp": 1786866465205
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "7e0fb02080ea2286",
+        "immutable": true
+      },
+      {
+        "id": "3ad16df2563a44cd",
+        "observationId": "obs-expedition-expedition-lifecycle-alignment",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Expedition Lifecycle Alignment\",\"name\":\"Expedition Lifecycle Alignment\",\"goal\":\"Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching",
+        "fingerprint": "4c8079193b30e230",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "7e0fb02080ea2286",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-expedition-lifecycle-alignment",
+        {
+          "id": "3ad16df2563a44cd",
+          "observationId": "obs-expedition-expedition-lifecycle-alignment",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Expedition Lifecycle Alignment\",\"name\":\"Expedition Lifecycle Alignment\",\"goal\":\"Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching",
+          "fingerprint": "4c8079193b30e230",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "ba0e82c84fd7713a",
+        {
+          "id": "ba0e82c84fd7713a",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "f558a646e641f7d0",
+        {
+          "id": "f558a646e641f7d0",
+          "kind": "expedition",
+          "name": "Expedition Lifecycle Alignment",
+          "description": "Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching for expedition execution, enforce committed changes before finishing, streamline the run/finish two-command workflow, and ensure expeditions correctly capture git diff as evidence",
+          "missionId": "ba0e82c84fd7713a",
+          "goal": "Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching for expedition execution, enforce committed changes before finishing, streamline the run/finish two-command workflow, and ensure expeditions correctly capture git diff as evidence",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-expedition-lifecycle-alignment"
+          ],
+          "evidenceRefs": [
+            "3ad16df2563a44cd"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "d598bb180d2c2a19",
+        "source": "f558a646e641f7d0",
+        "target": "ba0e82c84fd7713a",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-expedition-lifecycle-alignment"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "7e0fb02080ea2286",
+          "immutable": true
+        },
+        {
+          "id": "3ad16df2563a44cd",
+          "observationId": "obs-expedition-expedition-lifecycle-alignment",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Expedition Lifecycle Alignment\",\"name\":\"Expedition Lifecycle Alignment\",\"goal\":\"Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching",
+          "fingerprint": "4c8079193b30e230",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "7e0fb02080ea2286",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-expedition-lifecycle-alignment",
+          {
+            "id": "3ad16df2563a44cd",
+            "observationId": "obs-expedition-expedition-lifecycle-alignment",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Expedition Lifecycle Alignment\",\"name\":\"Expedition Lifecycle Alignment\",\"goal\":\"Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching",
+            "fingerprint": "4c8079193b30e230",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

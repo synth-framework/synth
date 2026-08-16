@@ -1,0 +1,123 @@
+{
+  "id": "02d253b7d5b296b6",
+  "createdAt": 1786867765788,
+  "observations": [
+    {
+      "id": "obs-mission-coherent-mission-lifecycle",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Coherent Mission Lifecycle",
+        "name": "Coherent Mission Lifecycle",
+        "purpose": "Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all known gaps, and leaves the expedition lifecycle room to align cleanly"
+      },
+      "evidenceReference": "evidence-mission-Coherent Mission Lifecycle",
+      "confidence": "high",
+      "timestamp": 1786867765788
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "25c3aea4c9ba3b10",
+        "observationId": "obs-mission-coherent-mission-lifecycle",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Coherent Mission Lifecycle\",\"name\":\"Coherent Mission Lifecycle\",\"purpose\":\"Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all kn",
+        "fingerprint": "e6da10a10d934b97",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-coherent-mission-lifecycle",
+        {
+          "id": "25c3aea4c9ba3b10",
+          "observationId": "obs-mission-coherent-mission-lifecycle",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Coherent Mission Lifecycle\",\"name\":\"Coherent Mission Lifecycle\",\"purpose\":\"Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all kn",
+          "fingerprint": "e6da10a10d934b97",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.67,
+    "observationCoverage": 0.1,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "31aff2bae5b0222a",
+        {
+          "id": "31aff2bae5b0222a",
+          "kind": "mission",
+          "name": "Coherent Mission Lifecycle",
+          "description": "Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all known gaps, and leaves the expedition lifecycle room to align cleanly",
+          "purpose": "Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all known gaps, and leaves the expedition lifecycle room to align cleanly",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-coherent-mission-lifecycle"
+          ],
+          "evidenceRefs": [
+            "25c3aea4c9ba3b10"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "25c3aea4c9ba3b10",
+          "observationId": "obs-mission-coherent-mission-lifecycle",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Coherent Mission Lifecycle\",\"name\":\"Coherent Mission Lifecycle\",\"purpose\":\"Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all kn",
+          "fingerprint": "e6da10a10d934b97",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-coherent-mission-lifecycle",
+          {
+            "id": "25c3aea4c9ba3b10",
+            "observationId": "obs-mission-coherent-mission-lifecycle",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Coherent Mission Lifecycle\",\"name\":\"Coherent Mission Lifecycle\",\"purpose\":\"Establish a bulletproof, minimal-ceremony mission lifecycle that is event-sourced from first draft, closes all kn",
+            "fingerprint": "e6da10a10d934b97",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.67,
+      "observationCoverage": 0.1,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

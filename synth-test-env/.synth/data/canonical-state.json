@@ -1,0 +1,115 @@
+{
+  "version": 17,
+  "stateHash": "297936698",
+  "lifecycle": "initialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {
+    "4d0ad09b35c008be": {
+      "id": "4d0ad09b35c008be",
+      "name": "Stress Test Mission",
+      "purpose": "To stress test the system",
+      "status": "active",
+      "expeditions": [
+        "5efda3991e55708f",
+        "9187d6b8c180ad74",
+        "05f132f5bb3caa3b",
+        "feacd42e029ba1eb",
+        "13589e763e1bc68f"
+      ],
+      "metadata": {},
+      "createdAt": 10,
+      "updatedAt": 16,
+      "alignmentContractId": "alignment-contract-msv5jcp7-s3ejyx"
+    }
+  },
+  "expeditions": {
+    "5efda3991e55708f": {
+      "id": "5efda3991e55708f",
+      "missionId": "4d0ad09b35c008be",
+      "name": "Expedition 1",
+      "goal": "Goal 1",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 12,
+      "updatedAt": 12
+    },
+    "9187d6b8c180ad74": {
+      "id": "9187d6b8c180ad74",
+      "missionId": "4d0ad09b35c008be",
+      "name": "Expedition 2",
+      "goal": "Goal 2",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 13,
+      "updatedAt": 13
+    },
+    "05f132f5bb3caa3b": {
+      "id": "05f132f5bb3caa3b",
+      "missionId": "4d0ad09b35c008be",
+      "name": "Expedition 3",
+      "goal": "Goal 3",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 14,
+      "updatedAt": 14
+    },
+    "feacd42e029ba1eb": {
+      "id": "feacd42e029ba1eb",
+      "missionId": "4d0ad09b35c008be",
+      "name": "Expedition 4",
+      "goal": "Goal 4",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 15,
+      "updatedAt": 15
+    },
+    "13589e763e1bc68f": {
+      "id": "13589e763e1bc68f",
+      "missionId": "4d0ad09b35c008be",
+      "name": "Expedition 5",
+      "goal": "Goal 5",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 16,
+      "updatedAt": 16
+    }
+  },
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-msv5jcl5-te6zcn": {
+      "id": "evidence-msv5jcl5-te6zcn",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1786845267833
+    }
+  },
+  "lastEventOffset": 17
+}

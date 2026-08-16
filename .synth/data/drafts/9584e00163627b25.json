@@ -1,0 +1,208 @@
+{
+  "id": "9584e00163627b25",
+  "createdAt": 1786865228929,
+  "observations": [
+    {
+      "id": "obs-mission-4ab7e9d2cc7b1b66",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "4ab7e9d2cc7b1b66",
+        "name": "4ab7e9d2cc7b1b66",
+        "purpose": "Auto-created from CLI"
+      },
+      "evidenceReference": "evidence-mission-4ab7e9d2cc7b1b66",
+      "confidence": "high",
+      "timestamp": 1786865228929
+    },
+    {
+      "id": "obs-expedition-placeholder-evidence-expedition",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Placeholder evidence expedition",
+        "name": "Placeholder evidence expedition",
+        "goal": "Capture git diff as evidence",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Placeholder evidence expedition",
+      "confidence": "high",
+      "timestamp": 1786865228929
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "d68b50955c27a400",
+        "observationId": "obs-mission-4ab7e9d2cc7b1b66",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"4ab7e9d2cc7b1b66\",\"name\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Auto-created from CLI\"}",
+        "fingerprint": "e5b7cf83a50194c1",
+        "immutable": true
+      },
+      {
+        "id": "4e65bb4fa0b683c5",
+        "observationId": "obs-expedition-placeholder-evidence-expedition",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Placeholder evidence expedition\",\"name\":\"Placeholder evidence expedition\",\"goal\":\"Capture git diff as evidence\",\"missionSubject\":\"4ab7e9d2cc7b1b66\"}",
+        "fingerprint": "c30e0b751159f92c",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-4ab7e9d2cc7b1b66",
+        {
+          "id": "d68b50955c27a400",
+          "observationId": "obs-mission-4ab7e9d2cc7b1b66",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"4ab7e9d2cc7b1b66\",\"name\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Auto-created from CLI\"}",
+          "fingerprint": "e5b7cf83a50194c1",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-placeholder-evidence-expedition",
+        {
+          "id": "4e65bb4fa0b683c5",
+          "observationId": "obs-expedition-placeholder-evidence-expedition",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Placeholder evidence expedition\",\"name\":\"Placeholder evidence expedition\",\"goal\":\"Capture git diff as evidence\",\"missionSubject\":\"4ab7e9d2cc7b1b66\"}",
+          "fingerprint": "c30e0b751159f92c",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "87a13fabbf110f9a",
+        {
+          "id": "87a13fabbf110f9a",
+          "kind": "mission",
+          "name": "4ab7e9d2cc7b1b66",
+          "description": "Auto-created from CLI",
+          "purpose": "Auto-created from CLI",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-4ab7e9d2cc7b1b66"
+          ],
+          "evidenceRefs": [
+            "d68b50955c27a400"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "60a2ee83589db0be",
+        {
+          "id": "60a2ee83589db0be",
+          "kind": "expedition",
+          "name": "Placeholder evidence expedition",
+          "description": "Capture git diff as evidence",
+          "missionId": "87a13fabbf110f9a",
+          "goal": "Capture git diff as evidence",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-placeholder-evidence-expedition"
+          ],
+          "evidenceRefs": [
+            "4e65bb4fa0b683c5"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "952e60d5a4978d93",
+        "source": "60a2ee83589db0be",
+        "target": "87a13fabbf110f9a",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-placeholder-evidence-expedition"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "d68b50955c27a400",
+          "observationId": "obs-mission-4ab7e9d2cc7b1b66",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"4ab7e9d2cc7b1b66\",\"name\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Auto-created from CLI\"}",
+          "fingerprint": "e5b7cf83a50194c1",
+          "immutable": true
+        },
+        {
+          "id": "4e65bb4fa0b683c5",
+          "observationId": "obs-expedition-placeholder-evidence-expedition",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Placeholder evidence expedition\",\"name\":\"Placeholder evidence expedition\",\"goal\":\"Capture git diff as evidence\",\"missionSubject\":\"4ab7e9d2cc7b1b66\"}",
+          "fingerprint": "c30e0b751159f92c",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-4ab7e9d2cc7b1b66",
+          {
+            "id": "d68b50955c27a400",
+            "observationId": "obs-mission-4ab7e9d2cc7b1b66",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"4ab7e9d2cc7b1b66\",\"name\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Auto-created from CLI\"}",
+            "fingerprint": "e5b7cf83a50194c1",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-placeholder-evidence-expedition",
+          {
+            "id": "4e65bb4fa0b683c5",
+            "observationId": "obs-expedition-placeholder-evidence-expedition",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Placeholder evidence expedition\",\"name\":\"Placeholder evidence expedition\",\"goal\":\"Capture git diff as evidence\",\"missionSubject\":\"4ab7e9d2cc7b1b66\"}",
+            "fingerprint": "c30e0b751159f92c",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

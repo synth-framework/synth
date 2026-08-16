@@ -1,0 +1,11 @@
+{
+  "expeditionId": "05aba9066ea7d1d4",
+  "capturedAt": 1786905007417,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/05aba9066ea7d1d4/git-diff.patch",
+      "hash": "642f2b38d32f466d955aafe7e382ed3e3511c5bdde2694b9ff6d336ad7a3f21a"
+    }
+  ]
+}

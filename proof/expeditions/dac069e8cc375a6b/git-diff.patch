@@ -1,0 +1,3613 @@
+diff --git a/knip-report.json b/knip-report.json
+new file mode 100644
+index 0000000..16ef018
+--- /dev/null
++++ b/knip-report.json
+@@ -0,0 +1,2 @@
++
++Run `knip --help` or visit https://knip.dev for help
+diff --git a/knip.config.js b/knip.config.js
+new file mode 100644
+index 0000000..d710c3b
+--- /dev/null
++++ b/knip.config.js
+@@ -0,0 +1,9 @@
++/**
++ * Knip config for SYNTH
++ * Use default report, scan src/ excluding node_modules/.git/.synth/dist
++ */
++
++module.exports = {
++  files: ["src/**/*.ts"],
++  exclude: ["**/node_modules/**", "**/.git/**", "**/.synth/**", "**/dist/**", "**/tests/**", "**/docs/**"],
++};
+diff --git a/knip.config.ts b/knip.config.ts
+new file mode 100644
+index 0000000..db4cb0a
+--- /dev/null
++++ b/knip.config.ts
+@@ -0,0 +1,9 @@
++import type { KnipConfig } from 'knip';
++
++const config: KnipConfig = {
++  entry: ['src/main.ts'],
++  project: ['src/**/*.ts', 'tests/**/*.ts', 'scripts/**/*.ts'],
++  exclude: ['**/node_modules/**', '**/.git/**', '**/.synth/**', '**/dist/**'],
++};
++
++export default config;
+diff --git a/rank_output.json b/rank_output.json
+new file mode 100644
+index 0000000..05a684a
+--- /dev/null
++++ b/rank_output.json
+@@ -0,0 +1,336 @@
++{
++  "status": "ok",
++  "kind": "ExpeditionRank",
++  "count": 26,
++  "expeditions": [
++    {
++      "id": "EXP-GATE-013",
++      "name": "Gate State & Dependency Enforcement",
++      "kind": "Engine Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-035",
++      "dependsOn": [
++        "EXP-GOVERNABILITY-003",
++        "EXP-GOVERNABILITY-004",
++        "EXP-GOVERNABILITY-005"
++      ],
++      "blocks": [
++        "EXP-GATE-012",
++        "EXP-HOME-028"
++      ],
++      "score": 130,
++      "rationale": "High priority, Proposed, blocks 2 expeditions, program is High"
++    },
++    {
++      "id": "EXP-REFINE-015",
++      "name": "Evidence-Grounded Mission Drafting",
++      "kind": "Genesis Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-036",
++      "dependsOn": [
++        "EXP-REFINE-013",
++        "EXP-GOVERNABILITY-005"
++      ],
++      "blocks": [
++        "EXP-HOME-028"
++      ],
++      "score": 125,
++      "rationale": "High priority, Proposed, blocks 1 expedition, program is High"
++    },
++    {
++      "id": "EXP-REFINE-016",
++      "name": "Artifact Scope & Completion Validation",
++      "kind": "Genesis Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-036",
++      "dependsOn": [
++        "EXP-REFINE-015"
++      ],
++      "blocks": [
++        "EXP-HOME-028"
++      ],
++      "score": 125,
++      "rationale": "High priority, Proposed, blocks 1 expedition, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-001",
++      "name": "Brand Presence",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-002",
++      "name": "Repository Readiness",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-003",
++      "name": "Documentation Hub",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-004",
++      "name": "Homepage Launch",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-005",
++      "name": "Installation Experience",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-006",
++      "name": "Examples Library",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-008",
++      "name": "Documentation Articles",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-012",
++      "name": "OSS Contribution Experience",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-016",
++      "name": "AI Discoverability",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-017",
++      "name": "Skill Ecosystem",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-019",
++      "name": "Metrics",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-020",
++      "name": "Launch Certification",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-021",
++      "name": "Community Listening & Feedback Loop",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-REFINE-010",
++      "name": "Interactive Decision Acquisition",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "High",
++      "program": "EXP-PROGRAM-036",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 120,
++      "rationale": "High priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-007",
++      "name": "Video Library",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-009",
++      "name": "Launch Campaign",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-010",
++      "name": "Developer Outreach",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-011",
++      "name": "Community Programs",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-013",
++      "name": "Conference Material",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-014",
++      "name": "Social Media Assets",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-015",
++      "name": "Content Calendar",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-ADOPT-018",
++      "name": "Integration Showcase",
++      "kind": "Expedition",
++      "status": "Proposed",
++      "priority": "Medium",
++      "program": "EXP-PROGRAM-037",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 100,
++      "rationale": "Medium priority, Proposed, program is High"
++    },
++    {
++      "id": "EXP-DOC-007",
++      "name": "Generated Documentation Provenance",
++      "kind": "Documentation Remediation Expedition",
++      "status": "Draft",
++      "priority": "Low",
++      "program": "EXP-PROGRAM-008",
++      "dependsOn": [],
++      "blocks": [],
++      "score": 90,
++      "rationale": "Low priority, Draft, program is Critical"
++    }
++  ],
++  "warnings": []
++}
+diff --git a/scripts/find-dead-code.sh b/scripts/find-dead-code.sh
+new file mode 100644
+index 0000000..c10c97a
+--- /dev/null
++++ b/scripts/find-dead-code.sh
+@@ -0,0 +1,32 @@
++#!/usr/bin/env bash
++# Find dead/unreferenced source files in a repo by scanning import references
++
++set -euo pipefail
++
++REPO_ROOT=$(pwd)
++
++dirs=(src tests scripts)
++
++# Collect all relevant source files
++all_files=()
++for d in "${dirs[@]}"; do
++  while IFS= read -r -d $'\0' file; do
++    all_files+=("$file")
++  done < <(find "$REPO_ROOT/$d" -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' \) -print0)
++done
++
++printf "Checking %d files under %s %s %s for references...\n" ${#all_files[@]} "${dirs[@]}"
++
++for f in "${all_files[@]}"; do
++  # Get relative path
++  rel=${f#${REPO_ROOT}/}
++  # Escape slashes for grep
++  pattern=$(printf '%s' "$rel" | sed 's/\//\\\//g')
++  # Count references (import/require) to this file string
++  count=$(grep -r --exclude-dir={node_modules,.git,.synth,dist} --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' -E "from ['\"']${pattern}['\"']|require\(['\"']${pattern}['\"']\)" . | wc -l || true)
++  if [[ $count -eq 0 ]]; then
++    printf "UNREFERENCED: %s\n" "$rel"
++  fi
++done
++
++printf "Done.\n"
+diff --git a/synth-test-env/.synth/AGENT_CONTRACT.md b/synth-test-env/.synth/AGENT_CONTRACT.md
+new file mode 100644
+index 0000000..a042855
+--- /dev/null
++++ b/synth-test-env/.synth/AGENT_CONTRACT.md
+@@ -0,0 +1,15 @@
++# SYNTH Agent Operating Contract
++
++This repository is governed by SYNTH. Before performing work:
++
++1. Resolve the active mission.
++2. Resolve the active expedition.
++3. Do not create plans outside an expedition.
++4. Do not execute without authorization.
++5. Every state change requires an event.
++6. Accepted evidence does not equal completed work.
++7. Do not begin another expedition until the current expedition is completed.
++8. Preserve canonical state.
++9. Prefer governed transitions over direct modifications.
++
++When in doubt, run `synth status` and ask the human for the next step.
+diff --git a/synth-test-env/.synth/ai/capabilities.json b/synth-test-env/.synth/ai/capabilities.json
+new file mode 100644
+index 0000000..df491cc
+--- /dev/null
++++ b/synth-test-env/.synth/ai/capabilities.json
+@@ -0,0 +1,40 @@
++{
++  "version": "1.0.0",
++  "capabilities": [
++    {
++      "name": "Mission",
++      "description": "Create and approve Missions",
++      "availability": "available"
++    },
++    {
++      "name": "Expedition",
++      "description": "Create and execute Expeditions",
++      "availability": "requires_mission"
++    },
++    {
++      "name": "Discovery",
++      "description": "Run Discovery workflows",
++      "availability": "available"
++    },
++    {
++      "name": "Governance",
++      "description": "Validate governance state",
++      "availability": "available"
++    },
++    {
++      "name": "Replay",
++      "description": "Inspect replayed state",
++      "availability": "available"
++    },
++    {
++      "name": "Knowledge",
++      "description": "Access canonical knowledge graph",
++      "availability": "available"
++    },
++    {
++      "name": "Execution",
++      "description": "Perform execution mutations",
++      "availability": "requires_expedition"
++    }
++  ]
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/ai/discovery.json b/synth-test-env/.synth/ai/discovery.json
+new file mode 100644
+index 0000000..8839a3c
+--- /dev/null
++++ b/synth-test-env/.synth/ai/discovery.json
+@@ -0,0 +1,38 @@
++{
++  "version": "1.0.0",
++  "supportedInputTypes": [
++    "natural_language",
++    "repository",
++    "document",
++    "url",
++    "diagram",
++    "image"
++  ],
++  "supportedOutputArtifacts": [
++    "DiscoveryArtifact",
++    "IntentModel",
++    "DomainModel",
++    "MissionProposal",
++    "UncertaintyReport"
++  ],
++  "discoveryModes": [
++    {
++      "name": "greenfield",
++      "repositoryType": "greenfield",
++      "command": "synth first-contact start --intent '<intent>'",
++      "description": "Start from raw intent and produce a Discovery artifact."
++    },
++    {
++      "name": "brownfield",
++      "repositoryType": "brownfield",
++      "command": "synth discover [--export]",
++      "description": "Capture baseline from an existing repository."
++    },
++    {
++      "name": "hybrid",
++      "repositoryType": "hybrid",
++      "command": "synth first-contact start --intent '<intent>' && synth discover [--export]",
++      "description": "Combine intent and repository baseline."
++    }
++  ]
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/ai/interaction-manifest.json b/synth-test-env/.synth/ai/interaction-manifest.json
+new file mode 100644
+index 0000000..de62e83
+--- /dev/null
++++ b/synth-test-env/.synth/ai/interaction-manifest.json
+@@ -0,0 +1,136 @@
++{
++  "schema": "synth-ai-interaction-manifest-v1",
++  "version": "1.0.0",
++  "generatedAt": "2026-08-16T01:54:08.665Z",
++  "repositoryPurpose": "Governed SYNTH project: Synth Project",
++  "repositoryType": "unknown",
++  "lifecyclePhase": "initialized",
++  "mutationPolicy": "MUTATING",
++  "expectedWorkflows": [
++    {
++      "name": "Status",
++      "trigger": "Agent needs orientation",
++      "command": "synth status",
++      "requiresApproval": false
++    },
++    {
++      "name": "Govern",
++      "trigger": "Before requesting merge or completing work",
++      "command": "npm run govern",
++      "requiresApproval": false
++    },
++    {
++      "name": "Refresh AI metadata",
++      "trigger": "After state changes",
++      "command": "synth ai refresh",
++      "requiresApproval": false
++    },
++    {
++      "name": "Genesis",
++      "trigger": "Raw product intent",
++      "command": "synth first-contact start '<intent>'",
++      "requiresApproval": true
++    },
++    {
++      "name": "Create Mission",
++      "trigger": "No active mission",
++      "command": "synth mission create --subject <s> --purpose <p>",
++      "requiresApproval": true
++    }
++  ],
++  "prohibitedActions": [
++    {
++      "action": "Edit event-log.jsonl manually",
++      "reason": "Events are immutable and replayable."
++    },
++    {
++      "action": "Edit canonical-state.json directly",
++      "reason": "State is a derived projection."
++    },
++    {
++      "action": "Run mutations outside an approved expedition",
++      "reason": "All execution must be governed."
++    },
++    {
++      "action": "Bypass Mission Studio approval",
++      "reason": "Approval is the explicit transition gate."
++    }
++  ],
++  "approvalRequirements": [
++    {
++      "action": "Bootstrap a repository",
++      "evidence": [
++        "Bootstrap proposal reviewed",
++        "Operator approval via --approve"
++      ],
++      "escalationMessage": "Do not bootstrap without explicit operator approval."
++    },
++    {
++      "action": "Approve a Mission draft",
++      "evidence": [
++        "Draft charter reviewed",
++        "Confidence threshold met"
++      ],
++      "escalationMessage": "Mission approval is an explicit operator decision."
++    },
++    {
++      "action": "Start an Expedition",
++      "evidence": [
++        "Approved mission exists",
++        "Expedition proposal reviewed"
++      ],
++      "escalationMessage": "Expeditions require mission approval and operator commit."
++    },
++    {
++      "action": "Complete an Expedition",
++      "evidence": [
++        "Acceptance criteria satisfied",
++        "Evidence attached"
++      ],
++      "escalationMessage": "Expedition completion must be evidenced and approved."
++    }
++  ],
++  "preferredInteractionPattern": "Operate within the active expedition; record every state change as an event.",
++  "evidenceExpectations": [
++    "Mission or Expedition draft must reference an approved charter.",
++    "State mutations must be recorded as replayable events.",
++    "Bootstrap or initialization requires explicit --approve.",
++    "Discovery --export produces immutable, signed baselines only."
++  ],
++  "escalationRules": [
++    {
++      "condition": "Mutation policy is READ_ONLY",
++      "action": "Stop and ask the operator for the next step."
++    },
++    {
++      "condition": "Mission status is unclear",
++      "action": "Run `synth status` and request clarification."
++    },
++    {
++      "condition": "Governance validation fails",
++      "action": "Do not mask errors; surface them and stop."
++    },
++    {
++      "condition": "No active expedition exists",
++      "action": "Propose an expedition before executing work."
++    }
++  ],
++  "ownershipBoundaries": [
++    {
++      "domain": "Governance",
++      "scope": "Read-only unless explicitly authorized."
++    },
++    {
++      "domain": "Mission",
++      "scope": "May propose and refine; approve only when asked."
++    },
++    {
++      "domain": "Expedition",
++      "scope": "May plan and execute within an approved expedition."
++    },
++    {
++      "domain": "Implementation",
++      "scope": "Only within an active, approved expedition."
++    }
++  ]
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/ai/lifecycle.json b/synth-test-env/.synth/ai/lifecycle.json
+new file mode 100644
+index 0000000..9604f8e
+--- /dev/null
++++ b/synth-test-env/.synth/ai/lifecycle.json
+@@ -0,0 +1,8 @@
++{
++  "version": "1.0.0",
++  "repositoryType": "unknown",
++  "currentPhase": "initialized",
++  "governanceVersion": "2.1",
++  "mutationPolicy": "MUTATING",
++  "blockers": []
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/ai/protocols.json b/synth-test-env/.synth/ai/protocols.json
+new file mode 100644
+index 0000000..c5e5059
+--- /dev/null
++++ b/synth-test-env/.synth/ai/protocols.json
+@@ -0,0 +1,10 @@
++{
++  "version": "1.0.0",
++  "protocols": [
++    {
++      "name": "genesis",
++      "version": "1.0.0",
++      "url": "docs/reference/genesis-protocol.md"
++    }
++  ]
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/ai/skills.json b/synth-test-env/.synth/ai/skills.json
+new file mode 100644
+index 0000000..1478043
+--- /dev/null
++++ b/synth-test-env/.synth/ai/skills.json
+@@ -0,0 +1,41 @@
++{
++  "version": "1.0.0",
++  "skills": [
++    {
++      "id": "genesis",
++      "name": "Genesis Skill",
++      "trigger": "User expresses raw product intent",
++      "description": "Begin a structured Discovery process."
++    },
++    {
++      "id": "brownfield-discovery",
++      "name": "Brownfield Discovery Skill",
++      "trigger": "Repository exists and is SYNTH-governed",
++      "description": "Capture baseline before proposing transformation."
++    },
++    {
++      "id": "mission-authoring",
++      "name": "Mission Authoring Skill",
++      "trigger": "Discovery artifact is approved",
++      "description": "Refine and approve a Mission draft."
++    },
++    {
++      "id": "expedition-planning",
++      "name": "Expedition Planning Skill",
++      "trigger": "Mission is active",
++      "description": "Propose Expeditions for the active Mission."
++    },
++    {
++      "id": "governance-verification",
++      "name": "Governance Verification Skill",
++      "trigger": "Before any state mutation",
++      "description": "Verify the action complies with governance."
++    },
++    {
++      "id": "replay-inspection",
++      "name": "Replay Inspection Skill",
++      "trigger": "Need to understand previous decisions",
++      "description": "Inspect replay output for context."
++    }
++  ]
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/context.json b/synth-test-env/.synth/context.json
+new file mode 100644
+index 0000000..22ce1b6
+--- /dev/null
++++ b/synth-test-env/.synth/context.json
+@@ -0,0 +1,7 @@
++{
++  "repository_type": "synth_governed_project",
++  "projectName": "Stress Test Project",
++  "governance_required": true,
++  "lifecycle_version": "v2",
++  "generatedAt": "2026-08-16T01:54:08.642Z"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/canonical-state.json b/synth-test-env/.synth/data/canonical-state.json
+new file mode 100644
+index 0000000..486dc7c
+--- /dev/null
++++ b/synth-test-env/.synth/data/canonical-state.json
+@@ -0,0 +1,115 @@
++{
++  "version": 17,
++  "stateHash": "297936698",
++  "lifecycle": "initialized",
++  "workItems": {},
++  "plans": {},
++  "milestones": {},
++  "projects": {},
++  "missions": {
++    "4d0ad09b35c008be": {
++      "id": "4d0ad09b35c008be",
++      "name": "Stress Test Mission",
++      "purpose": "To stress test the system",
++      "status": "active",
++      "expeditions": [
++        "5efda3991e55708f",
++        "9187d6b8c180ad74",
++        "05f132f5bb3caa3b",
++        "feacd42e029ba1eb",
++        "13589e763e1bc68f"
++      ],
++      "metadata": {},
++      "createdAt": 10,
++      "updatedAt": 16,
++      "alignmentContractId": "alignment-contract-msv5jcp7-s3ejyx"
++    }
++  },
++  "expeditions": {
++    "5efda3991e55708f": {
++      "id": "5efda3991e55708f",
++      "missionId": "4d0ad09b35c008be",
++      "name": "Expedition 1",
++      "goal": "Goal 1",
++      "status": "draft",
++      "objectives": [],
++      "discoveries": [],
++      "decisions": [],
++      "dependsOn": [],
++      "metadata": {},
++      "createdAt": 12,
++      "updatedAt": 12
++    },
++    "9187d6b8c180ad74": {
++      "id": "9187d6b8c180ad74",
++      "missionId": "4d0ad09b35c008be",
++      "name": "Expedition 2",
++      "goal": "Goal 2",
++      "status": "draft",
++      "objectives": [],
++      "discoveries": [],
++      "decisions": [],
++      "dependsOn": [],
++      "metadata": {},
++      "createdAt": 13,
++      "updatedAt": 13
++    },
++    "05f132f5bb3caa3b": {
++      "id": "05f132f5bb3caa3b",
++      "missionId": "4d0ad09b35c008be",
++      "name": "Expedition 3",
++      "goal": "Goal 3",
++      "status": "draft",
++      "objectives": [],
++      "discoveries": [],
++      "decisions": [],
++      "dependsOn": [],
++      "metadata": {},
++      "createdAt": 14,
++      "updatedAt": 14
++    },
++    "feacd42e029ba1eb": {
++      "id": "feacd42e029ba1eb",
++      "missionId": "4d0ad09b35c008be",
++      "name": "Expedition 4",
++      "goal": "Goal 4",
++      "status": "draft",
++      "objectives": [],
++      "discoveries": [],
++      "decisions": [],
++      "dependsOn": [],
++      "metadata": {},
++      "createdAt": 15,
++      "updatedAt": 15
++    },
++    "13589e763e1bc68f": {
++      "id": "13589e763e1bc68f",
++      "missionId": "4d0ad09b35c008be",
++      "name": "Expedition 5",
++      "goal": "Goal 5",
++      "status": "draft",
++      "objectives": [],
++      "discoveries": [],
++      "decisions": [],
++      "dependsOn": [],
++      "metadata": {},
++      "createdAt": 16,
++      "updatedAt": 16
++    }
++  },
++  "objectives": {},
++  "discoveries": {},
++  "decisions": {},
++  "referenceEvidence": {
++    "evidence-msv5jcl5-te6zcn": {
++      "id": "evidence-msv5jcl5-te6zcn",
++      "kind": "document",
++      "uri": "file://alignment/prepare.md",
++      "hash": "sha256:00000000",
++      "mimeType": "text/markdown",
++      "description": "Reference evidence created by alignment prepare",
++      "capturedAt": 1786845267833
++    }
++  },
++  "lastEventOffset": 17
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/decisions.jsonl b/synth-test-env/.synth/data/decisions.jsonl
+new file mode 100644
+index 0000000..98a2bd0
+--- /dev/null
++++ b/synth-test-env/.synth/data/decisions.jsonl
+@@ -0,0 +1 @@
++{"schema":"synth-decision-v1","id":"5201c0185d1d0b997857ce6f60039a4391ec5900ad20ae259ceaf3339fade7a7","type":"MISSION_APPROVAL_APPROVED","draftId":"570cdc23d7a0fc56","confidence":0.715,"snapshotId":"12e08d765c57ef89","previousHash":"genesis","timestamp":1786845276810}
+diff --git a/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.integrity.json b/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.integrity.json
+new file mode 100644
+index 0000000..837c087
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "05f132f5bb3caa3b",
++  "fingerprint": "ea999b3bd72861104c873299aa48ebcd946a8df5a94f0c8d7b3694f78f2e74ca",
++  "previousHash": "fd0df62ad2a747462e03e55ea8608da9d9a847f7d7b244983072ca72592c1537",
++  "createdAt": 1786845282982
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.json b/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.json
+new file mode 100644
+index 0000000..ad0b866
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.json
+@@ -0,0 +1,209 @@
++{
++  "id": "05f132f5bb3caa3b",
++  "createdAt": 1786845282936,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "id": "4d0ad09b35c008be",
++        "purpose": "Referenced existing mission"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845282936
++    },
++    {
++      "id": "obs-expedition-expedition-3",
++      "sourceAdapter": "synth-cli",
++      "type": "expedition",
++      "payload": {
++        "subject": "Expedition 3",
++        "name": "Expedition 3",
++        "goal": "Goal 3",
++        "missionSubject": "4d0ad09b35c008be"
++      },
++      "evidenceReference": "evidence-expedition-Expedition 3",
++      "confidence": "high",
++      "timestamp": 1786845282936
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++        "fingerprint": "00022af4d4706db3",
++        "immutable": true
++      },
++      {
++        "id": "efc06df8b9bf0dcd",
++        "observationId": "obs-expedition-expedition-3",
++        "source": "synth-cli",
++        "description": "expedition observation from synth-cli",
++        "snippet": "{\"subject\":\"Expedition 3\",\"name\":\"Expedition 3\",\"goal\":\"Goal 3\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++        "fingerprint": "b05e5779d3e42b4a",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "00022af4d4706db3",
++          "immutable": true
++        }
++      ],
++      [
++        "obs-expedition-expedition-3",
++        {
++          "id": "efc06df8b9bf0dcd",
++          "observationId": "obs-expedition-expedition-3",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 3\",\"name\":\"Expedition 3\",\"goal\":\"Goal 3\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "b05e5779d3e42b4a",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.6900000000000001,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "e7e27f20356ec0e9",
++        {
++          "id": "e7e27f20356ec0e9",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "Referenced existing mission",
++          "purpose": "Referenced existing mission",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ],
++      [
++        "a14d2891faf5b060",
++        {
++          "id": "a14d2891faf5b060",
++          "kind": "expedition",
++          "name": "Expedition 3",
++          "description": "Goal 3",
++          "missionId": "e7e27f20356ec0e9",
++          "goal": "Goal 3",
++          "objectiveIds": [],
++          "observationIds": [
++            "obs-expedition-expedition-3"
++          ],
++          "evidenceRefs": [
++            "efc06df8b9bf0dcd"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [
++      {
++        "id": "c1e7b0c8d3b2e4c0",
++        "source": "a14d2891faf5b060",
++        "target": "e7e27f20356ec0e9",
++        "relation": "parent_of",
++        "observationIds": [
++          "obs-expedition-expedition-3"
++        ]
++      }
++    ],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "00022af4d4706db3",
++          "immutable": true
++        },
++        {
++          "id": "efc06df8b9bf0dcd",
++          "observationId": "obs-expedition-expedition-3",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 3\",\"name\":\"Expedition 3\",\"goal\":\"Goal 3\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "b05e5779d3e42b4a",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++            "fingerprint": "00022af4d4706db3",
++            "immutable": true
++          }
++        ],
++        [
++          "obs-expedition-expedition-3",
++          {
++            "id": "efc06df8b9bf0dcd",
++            "observationId": "obs-expedition-expedition-3",
++            "source": "synth-cli",
++            "description": "expedition observation from synth-cli",
++            "snippet": "{\"subject\":\"Expedition 3\",\"name\":\"Expedition 3\",\"goal\":\"Goal 3\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++            "fingerprint": "b05e5779d3e42b4a",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.6900000000000001,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.8,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/13589e763e1bc68f.integrity.json b/synth-test-env/.synth/data/drafts/13589e763e1bc68f.integrity.json
+new file mode 100644
+index 0000000..d807c4c
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/13589e763e1bc68f.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "13589e763e1bc68f",
++  "fingerprint": "e0cfa6c73472f2ed9cf656c588772736fd17f5c1cd47f393577e64e6d654cb3e",
++  "previousHash": "66ba8a0f4ca753e9883de6ccf3644d2c2c65991386889581653742836ab5b779",
++  "createdAt": 1786845289411
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/13589e763e1bc68f.json b/synth-test-env/.synth/data/drafts/13589e763e1bc68f.json
+new file mode 100644
+index 0000000..605fc82
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/13589e763e1bc68f.json
+@@ -0,0 +1,209 @@
++{
++  "id": "13589e763e1bc68f",
++  "createdAt": 1786845289344,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "id": "4d0ad09b35c008be",
++        "purpose": "Referenced existing mission"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845289344
++    },
++    {
++      "id": "obs-expedition-expedition-5",
++      "sourceAdapter": "synth-cli",
++      "type": "expedition",
++      "payload": {
++        "subject": "Expedition 5",
++        "name": "Expedition 5",
++        "goal": "Goal 5",
++        "missionSubject": "4d0ad09b35c008be"
++      },
++      "evidenceReference": "evidence-expedition-Expedition 5",
++      "confidence": "high",
++      "timestamp": 1786845289344
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++        "fingerprint": "b72c8ac72c19a91e",
++        "immutable": true
++      },
++      {
++        "id": "0625fbee665c9881",
++        "observationId": "obs-expedition-expedition-5",
++        "source": "synth-cli",
++        "description": "expedition observation from synth-cli",
++        "snippet": "{\"subject\":\"Expedition 5\",\"name\":\"Expedition 5\",\"goal\":\"Goal 5\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++        "fingerprint": "b0b9e100ecfd2aa0",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "b72c8ac72c19a91e",
++          "immutable": true
++        }
++      ],
++      [
++        "obs-expedition-expedition-5",
++        {
++          "id": "0625fbee665c9881",
++          "observationId": "obs-expedition-expedition-5",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 5\",\"name\":\"Expedition 5\",\"goal\":\"Goal 5\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "b0b9e100ecfd2aa0",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.6900000000000001,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "16f28d11f7d71afd",
++        {
++          "id": "16f28d11f7d71afd",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "Referenced existing mission",
++          "purpose": "Referenced existing mission",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ],
++      [
++        "0ab1a21c1ec0293f",
++        {
++          "id": "0ab1a21c1ec0293f",
++          "kind": "expedition",
++          "name": "Expedition 5",
++          "description": "Goal 5",
++          "missionId": "16f28d11f7d71afd",
++          "goal": "Goal 5",
++          "objectiveIds": [],
++          "observationIds": [
++            "obs-expedition-expedition-5"
++          ],
++          "evidenceRefs": [
++            "0625fbee665c9881"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [
++      {
++        "id": "8595e6e11e595f44",
++        "source": "0ab1a21c1ec0293f",
++        "target": "16f28d11f7d71afd",
++        "relation": "parent_of",
++        "observationIds": [
++          "obs-expedition-expedition-5"
++        ]
++      }
++    ],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "b72c8ac72c19a91e",
++          "immutable": true
++        },
++        {
++          "id": "0625fbee665c9881",
++          "observationId": "obs-expedition-expedition-5",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 5\",\"name\":\"Expedition 5\",\"goal\":\"Goal 5\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "b0b9e100ecfd2aa0",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++            "fingerprint": "b72c8ac72c19a91e",
++            "immutable": true
++          }
++        ],
++        [
++          "obs-expedition-expedition-5",
++          {
++            "id": "0625fbee665c9881",
++            "observationId": "obs-expedition-expedition-5",
++            "source": "synth-cli",
++            "description": "expedition observation from synth-cli",
++            "snippet": "{\"subject\":\"Expedition 5\",\"name\":\"Expedition 5\",\"goal\":\"Goal 5\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++            "fingerprint": "b0b9e100ecfd2aa0",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.6900000000000001,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.8,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.integrity.json b/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.integrity.json
+new file mode 100644
+index 0000000..1843d87
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "570cdc23d7a0fc56",
++  "fingerprint": "ad5eb6a4ac9d94cf63aace5f7bef88b26502d3cc5c1cea9681b21bdd595dccde",
++  "previousHash": "46e453e28a4a6f3e0b5e66f0308980180750cbddd2b1add32411b8e6332baee5",
++  "createdAt": 1786845272951
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.json b/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.json
+new file mode 100644
+index 0000000..fd5c509
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.json
+@@ -0,0 +1,179 @@
++{
++  "id": "570cdc23d7a0fc56",
++  "createdAt": 1786845272872,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "purpose": "To stress test the system"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845270232
++    },
++    {
++      "id": "obs-evidence-stress-evidence",
++      "sourceAdapter": "synth-cli",
++      "type": "evidence",
++      "payload": {
++        "subject": "Stress Evidence",
++        "name": "Stress Evidence",
++        "description": "Push confidence",
++        "purpose": "Push confidence"
++      },
++      "evidenceReference": "evidence-evidence-Stress Evidence",
++      "confidence": "certain",
++      "timestamp": 1786845272872
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++        "fingerprint": "86e1ea1e9b489762",
++        "immutable": true
++      },
++      {
++        "id": "cfd1bfe03e6f6f98",
++        "observationId": "obs-evidence-stress-evidence",
++        "source": "synth-cli",
++        "description": "Push confidence",
++        "snippet": "Push confidence",
++        "fingerprint": "3f27248b7b18517a",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++          "fingerprint": "86e1ea1e9b489762",
++          "immutable": true
++        }
++      ],
++      [
++        "obs-evidence-stress-evidence",
++        {
++          "id": "cfd1bfe03e6f6f98",
++          "observationId": "obs-evidence-stress-evidence",
++          "source": "synth-cli",
++          "description": "Push confidence",
++          "snippet": "Push confidence",
++          "fingerprint": "3f27248b7b18517a",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.715,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.9,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "4d0ad09b35c008be",
++        {
++          "id": "4d0ad09b35c008be",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "To stress test the system",
++          "purpose": "To stress test the system",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++          "fingerprint": "86e1ea1e9b489762",
++          "immutable": true
++        },
++        {
++          "id": "cfd1bfe03e6f6f98",
++          "observationId": "obs-evidence-stress-evidence",
++          "source": "synth-cli",
++          "description": "Push confidence",
++          "snippet": "Push confidence",
++          "fingerprint": "3f27248b7b18517a",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++            "fingerprint": "86e1ea1e9b489762",
++            "immutable": true
++          }
++        ],
++        [
++          "obs-evidence-stress-evidence",
++          {
++            "id": "cfd1bfe03e6f6f98",
++            "observationId": "obs-evidence-stress-evidence",
++            "source": "synth-cli",
++            "description": "Push confidence",
++            "snippet": "Push confidence",
++            "fingerprint": "3f27248b7b18517a",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.715,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.9,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/5efda3991e55708f.integrity.json b/synth-test-env/.synth/data/drafts/5efda3991e55708f.integrity.json
+new file mode 100644
+index 0000000..7a7ab28
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/5efda3991e55708f.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "5efda3991e55708f",
++  "fingerprint": "4b1b9ce2da743dff7a7dcdc920e7be21ed9825012cc9a50e7574b0729396fa2d",
++  "previousHash": "2f0b15830c2404c7a784758b3c49175d28d1e4f5a5b95f73aab253ce5dfe44b7",
++  "createdAt": 1786845279379
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/5efda3991e55708f.json b/synth-test-env/.synth/data/drafts/5efda3991e55708f.json
+new file mode 100644
+index 0000000..94d9bef
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/5efda3991e55708f.json
+@@ -0,0 +1,209 @@
++{
++  "id": "5efda3991e55708f",
++  "createdAt": 1786845279329,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "id": "4d0ad09b35c008be",
++        "purpose": "Referenced existing mission"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845279329
++    },
++    {
++      "id": "obs-expedition-expedition-1",
++      "sourceAdapter": "synth-cli",
++      "type": "expedition",
++      "payload": {
++        "subject": "Expedition 1",
++        "name": "Expedition 1",
++        "goal": "Goal 1",
++        "missionSubject": "4d0ad09b35c008be"
++      },
++      "evidenceReference": "evidence-expedition-Expedition 1",
++      "confidence": "high",
++      "timestamp": 1786845279329
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++        "fingerprint": "7d6b0740f98411c9",
++        "immutable": true
++      },
++      {
++        "id": "f3a96beb3739676f",
++        "observationId": "obs-expedition-expedition-1",
++        "source": "synth-cli",
++        "description": "expedition observation from synth-cli",
++        "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++        "fingerprint": "860f2e3b66061137",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "7d6b0740f98411c9",
++          "immutable": true
++        }
++      ],
++      [
++        "obs-expedition-expedition-1",
++        {
++          "id": "f3a96beb3739676f",
++          "observationId": "obs-expedition-expedition-1",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "860f2e3b66061137",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.6900000000000001,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "9b9366a7731941c6",
++        {
++          "id": "9b9366a7731941c6",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "Referenced existing mission",
++          "purpose": "Referenced existing mission",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ],
++      [
++        "54ee7727c27aefb2",
++        {
++          "id": "54ee7727c27aefb2",
++          "kind": "expedition",
++          "name": "Expedition 1",
++          "description": "Goal 1",
++          "missionId": "9b9366a7731941c6",
++          "goal": "Goal 1",
++          "objectiveIds": [],
++          "observationIds": [
++            "obs-expedition-expedition-1"
++          ],
++          "evidenceRefs": [
++            "f3a96beb3739676f"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [
++      {
++        "id": "cbebfe58b99d1573",
++        "source": "54ee7727c27aefb2",
++        "target": "9b9366a7731941c6",
++        "relation": "parent_of",
++        "observationIds": [
++          "obs-expedition-expedition-1"
++        ]
++      }
++    ],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "7d6b0740f98411c9",
++          "immutable": true
++        },
++        {
++          "id": "f3a96beb3739676f",
++          "observationId": "obs-expedition-expedition-1",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "860f2e3b66061137",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++            "fingerprint": "7d6b0740f98411c9",
++            "immutable": true
++          }
++        ],
++        [
++          "obs-expedition-expedition-1",
++          {
++            "id": "f3a96beb3739676f",
++            "observationId": "obs-expedition-expedition-1",
++            "source": "synth-cli",
++            "description": "expedition observation from synth-cli",
++            "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++            "fingerprint": "860f2e3b66061137",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.6900000000000001,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.8,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/672004731f0236cc.integrity.json b/synth-test-env/.synth/data/drafts/672004731f0236cc.integrity.json
+new file mode 100644
+index 0000000..9154b55
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/672004731f0236cc.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "672004731f0236cc",
++  "fingerprint": "f8909bc41d79088270d6ae2cdb4a097110c60ec8bd2370ed955008095d44abbd",
++  "previousHash": "genesis",
++  "createdAt": 1786845270259
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/672004731f0236cc.json b/synth-test-env/.synth/data/drafts/672004731f0236cc.json
+new file mode 100644
+index 0000000..20b2df8
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/672004731f0236cc.json
+@@ -0,0 +1,123 @@
++{
++  "id": "672004731f0236cc",
++  "createdAt": 1786845270232,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "purpose": "To stress test the system"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845270232
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++        "fingerprint": "86e1ea1e9b489762",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++          "fingerprint": "86e1ea1e9b489762",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.67,
++    "observationCoverage": 0.1,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "4d0ad09b35c008be",
++        {
++          "id": "4d0ad09b35c008be",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "To stress test the system",
++          "purpose": "To stress test the system",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++          "fingerprint": "86e1ea1e9b489762",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++            "fingerprint": "86e1ea1e9b489762",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.67,
++      "observationCoverage": 0.1,
++      "evidenceQuality": 0.8,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.integrity.json b/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.integrity.json
+new file mode 100644
+index 0000000..45e8499
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "9187d6b8c180ad74",
++  "fingerprint": "83bd56284f5e37284c4c3257838a697e15800912b389ee2fe37740b2e525aa72",
++  "previousHash": "8b693dc3887c4882e993c5e3a3a70b102e5879ec5edbf956b1218d17649b89e0",
++  "createdAt": 1786845281016
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.json b/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.json
+new file mode 100644
+index 0000000..0b9fde1
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.json
+@@ -0,0 +1,209 @@
++{
++  "id": "9187d6b8c180ad74",
++  "createdAt": 1786845280968,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "id": "4d0ad09b35c008be",
++        "purpose": "Referenced existing mission"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845280968
++    },
++    {
++      "id": "obs-expedition-expedition-2",
++      "sourceAdapter": "synth-cli",
++      "type": "expedition",
++      "payload": {
++        "subject": "Expedition 2",
++        "name": "Expedition 2",
++        "goal": "Goal 2",
++        "missionSubject": "4d0ad09b35c008be"
++      },
++      "evidenceReference": "evidence-expedition-Expedition 2",
++      "confidence": "high",
++      "timestamp": 1786845280968
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++        "fingerprint": "72c9e1ec32cbf234",
++        "immutable": true
++      },
++      {
++        "id": "2b34abdfbe42e76c",
++        "observationId": "obs-expedition-expedition-2",
++        "source": "synth-cli",
++        "description": "expedition observation from synth-cli",
++        "snippet": "{\"subject\":\"Expedition 2\",\"name\":\"Expedition 2\",\"goal\":\"Goal 2\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++        "fingerprint": "4183e2fc2d541e9e",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "72c9e1ec32cbf234",
++          "immutable": true
++        }
++      ],
++      [
++        "obs-expedition-expedition-2",
++        {
++          "id": "2b34abdfbe42e76c",
++          "observationId": "obs-expedition-expedition-2",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 2\",\"name\":\"Expedition 2\",\"goal\":\"Goal 2\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "4183e2fc2d541e9e",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.6900000000000001,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "5d9928b00007e277",
++        {
++          "id": "5d9928b00007e277",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "Referenced existing mission",
++          "purpose": "Referenced existing mission",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ],
++      [
++        "ae90510e12eec063",
++        {
++          "id": "ae90510e12eec063",
++          "kind": "expedition",
++          "name": "Expedition 2",
++          "description": "Goal 2",
++          "missionId": "5d9928b00007e277",
++          "goal": "Goal 2",
++          "objectiveIds": [],
++          "observationIds": [
++            "obs-expedition-expedition-2"
++          ],
++          "evidenceRefs": [
++            "2b34abdfbe42e76c"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [
++      {
++        "id": "713f07cca23088a0",
++        "source": "ae90510e12eec063",
++        "target": "5d9928b00007e277",
++        "relation": "parent_of",
++        "observationIds": [
++          "obs-expedition-expedition-2"
++        ]
++      }
++    ],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "72c9e1ec32cbf234",
++          "immutable": true
++        },
++        {
++          "id": "2b34abdfbe42e76c",
++          "observationId": "obs-expedition-expedition-2",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 2\",\"name\":\"Expedition 2\",\"goal\":\"Goal 2\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "4183e2fc2d541e9e",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++            "fingerprint": "72c9e1ec32cbf234",
++            "immutable": true
++          }
++        ],
++        [
++          "obs-expedition-expedition-2",
++          {
++            "id": "2b34abdfbe42e76c",
++            "observationId": "obs-expedition-expedition-2",
++            "source": "synth-cli",
++            "description": "expedition observation from synth-cli",
++            "snippet": "{\"subject\":\"Expedition 2\",\"name\":\"Expedition 2\",\"goal\":\"Goal 2\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++            "fingerprint": "4183e2fc2d541e9e",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.6900000000000001,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.8,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.integrity.json b/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.integrity.json
+new file mode 100644
+index 0000000..7655410
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.integrity.json
+@@ -0,0 +1,7 @@
++{
++  "schema": "synth-draft-integrity-v1",
++  "draftId": "feacd42e029ba1eb",
++  "fingerprint": "a2b144d681167e939d22e9d6d6459ebbc5f215b3b35c9657b1d5ab0a23c95d0c",
++  "previousHash": "36f4b9f950a5531d71f1a407391b3a421b3758a2171ceef7409a02d806bc74f9",
++  "createdAt": 1786845287093
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.json b/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.json
+new file mode 100644
+index 0000000..07fe555
+--- /dev/null
++++ b/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.json
+@@ -0,0 +1,209 @@
++{
++  "id": "feacd42e029ba1eb",
++  "createdAt": 1786845286945,
++  "observations": [
++    {
++      "id": "obs-mission-stress-test-mission",
++      "sourceAdapter": "synth-cli",
++      "type": "mission",
++      "payload": {
++        "subject": "Stress Test Mission",
++        "name": "Stress Test Mission",
++        "id": "4d0ad09b35c008be",
++        "purpose": "Referenced existing mission"
++      },
++      "evidenceReference": "evidence-mission-Stress Test Mission",
++      "confidence": "high",
++      "timestamp": 1786845286945
++    },
++    {
++      "id": "obs-expedition-expedition-4",
++      "sourceAdapter": "synth-cli",
++      "type": "expedition",
++      "payload": {
++        "subject": "Expedition 4",
++        "name": "Expedition 4",
++        "goal": "Goal 4",
++        "missionSubject": "4d0ad09b35c008be"
++      },
++      "evidenceReference": "evidence-expedition-Expedition 4",
++      "confidence": "high",
++      "timestamp": 1786845286945
++    }
++  ],
++  "evidence": {
++    "evidence": [
++      {
++        "id": "1de0dc425cf0ca99",
++        "observationId": "obs-mission-stress-test-mission",
++        "source": "synth-cli",
++        "description": "mission observation from synth-cli",
++        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++        "fingerprint": "a5085e4652e2f500",
++        "immutable": true
++      },
++      {
++        "id": "4988ffba472ce1af",
++        "observationId": "obs-expedition-expedition-4",
++        "source": "synth-cli",
++        "description": "expedition observation from synth-cli",
++        "snippet": "{\"subject\":\"Expedition 4\",\"name\":\"Expedition 4\",\"goal\":\"Goal 4\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++        "fingerprint": "fe098d2df4005ab0",
++        "immutable": true
++      }
++    ],
++    "byObservationId": [
++      [
++        "obs-mission-stress-test-mission",
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "a5085e4652e2f500",
++          "immutable": true
++        }
++      ],
++      [
++        "obs-expedition-expedition-4",
++        {
++          "id": "4988ffba472ce1af",
++          "observationId": "obs-expedition-expedition-4",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 4\",\"name\":\"Expedition 4\",\"goal\":\"Goal 4\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "fe098d2df4005ab0",
++          "immutable": true
++        }
++      ]
++    ]
++  },
++  "questions": [],
++  "unknowns": [],
++  "confidence": {
++    "overall": 0.6900000000000001,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "worldModel": {
++    "version": 1,
++    "nodes": [
++      [
++        "151a7c8a8960657f",
++        {
++          "id": "151a7c8a8960657f",
++          "kind": "mission",
++          "name": "Stress Test Mission",
++          "description": "Referenced existing mission",
++          "purpose": "Referenced existing mission",
++          "expeditionIds": [],
++          "observationIds": [
++            "obs-mission-stress-test-mission"
++          ],
++          "evidenceRefs": [
++            "1de0dc425cf0ca99"
++          ],
++          "confidence": 0.8
++        }
++      ],
++      [
++        "07efa4481deb6305",
++        {
++          "id": "07efa4481deb6305",
++          "kind": "expedition",
++          "name": "Expedition 4",
++          "description": "Goal 4",
++          "missionId": "151a7c8a8960657f",
++          "goal": "Goal 4",
++          "objectiveIds": [],
++          "observationIds": [
++            "obs-expedition-expedition-4"
++          ],
++          "evidenceRefs": [
++            "4988ffba472ce1af"
++          ],
++          "confidence": 0.8
++        }
++      ]
++    ],
++    "edges": [
++      {
++        "id": "9b7864d6f5a3344a",
++        "source": "07efa4481deb6305",
++        "target": "151a7c8a8960657f",
++        "relation": "parent_of",
++        "observationIds": [
++          "obs-expedition-expedition-4"
++        ]
++      }
++    ],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++          "fingerprint": "a5085e4652e2f500",
++          "immutable": true
++        },
++        {
++          "id": "4988ffba472ce1af",
++          "observationId": "obs-expedition-expedition-4",
++          "source": "synth-cli",
++          "description": "expedition observation from synth-cli",
++          "snippet": "{\"subject\":\"Expedition 4\",\"name\":\"Expedition 4\",\"goal\":\"Goal 4\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++          "fingerprint": "fe098d2df4005ab0",
++          "immutable": true
++        }
++      ],
++      "byObservationId": [
++        [
++          "obs-mission-stress-test-mission",
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
++            "fingerprint": "a5085e4652e2f500",
++            "immutable": true
++          }
++        ],
++        [
++          "obs-expedition-expedition-4",
++          {
++            "id": "4988ffba472ce1af",
++            "observationId": "obs-expedition-expedition-4",
++            "source": "synth-cli",
++            "description": "expedition observation from synth-cli",
++            "snippet": "{\"subject\":\"Expedition 4\",\"name\":\"Expedition 4\",\"goal\":\"Goal 4\",\"missionSubject\":\"4d0ad09b35c008be\"}",
++            "fingerprint": "fe098d2df4005ab0",
++            "immutable": true
++          }
++        ]
++      ]
++    },
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.6900000000000001,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.8,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "planningDecisions": []
++  },
++  "planningDecisions": [],
++  "approvalState": "draft"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/event-log.jsonl b/synth-test-env/.synth/data/event-log.jsonl
+new file mode 100644
+index 0000000..b24a051
+--- /dev/null
++++ b/synth-test-env/.synth/data/event-log.jsonl
+@@ -0,0 +1,17 @@
++{"id":"97b595dd0dd8ccbaa74a61f40deab6135d7cb86cc52bfd9b2ec1d1000ea16d66-0","type":"PROJECT_INITIALIZED","timestamp":0,"transactionId":"97b595dd0dd8ccbaa74a61f40deab6135d7cb86cc52bfd9b2ec1d1000ea16d66","capability":"InitializeProject","actor":"synth-cli","payload":{"projectId":"831d17ba-74d5-48b8-a549-b7afde2445b6","name":"Stress Test Project","governanceVersion":"2.1","sourceType":"filesystem","sourceLocation":"/Users/dev/Projects/synth-v2/synth-test-env","adapterId":"filesystem","adapterVersion":"1.0.0","evidenceReference":".synth/data/evidence/initialization/2026-08-16T01-54-08-515Z-831d17ba-74d5-48b8-a549-b7afde2445b6.json","projectModel":{"schemaVersion":"1.0.0","identity":{"id":"831d17ba-74d5-48b8-a549-b7afde2445b6","name":"Stress Test Project"},"intent":{"statement":"unknown","targetOutcomes":[]},"lifecycleStage":"unknown","domains":[],"constraints":[],"evidence":[],"confidence":{"value":0,"label":"none"}},"metadata":{"identity":{"agentId":"synth-cli-55153","sessionId":"a8ac5fbe-f4b6-4b08-a35a-1bc623dfba1a","approvalMode":"autonomous","issuedAt":0}}},"previousHash":"genesis","eventHash":"41811c78e7ecc9808b65e66f0b87ed4e4f814d18d8a13f052d5181b968ab42f2"}
++{"id":"ad721e6b5fcba8abd00198507585a668c342ea695fa1b91465bc3636f5cba7dd-0","type":"REFERENCE_EVIDENCE_CREATED","timestamp":1,"transactionId":"ad721e6b5fcba8abd00198507585a668c342ea695fa1b91465bc3636f5cba7dd","capability":"CreateReferenceEvidence","actor":"synth-cli","payload":{"evidenceId":"evidence-msv5jcl5-te6zcn","evidence":{"id":"evidence-msv5jcl5-te6zcn","kind":"document","uri":"file://alignment/prepare.md","hash":"sha256:00000000","mimeType":"text/markdown","description":"Reference evidence created by alignment prepare","capturedAt":1786845267833}},"previousHash":"41811c78e7ecc9808b65e66f0b87ed4e4f814d18d8a13f052d5181b968ab42f2","eventHash":"2e4bb088296ee1698d5f49ae50b4e97ebeae48329d30c8c4b53529dedb342d34"}
++{"id":"e4024779570565e355ae9faabd8d6f32d29b14cf8f0f3440b5dc4bcf7d7a3816-0","type":"INTENT_MODEL_CREATED","timestamp":2,"transactionId":"e4024779570565e355ae9faabd8d6f32d29b14cf8f0f3440b5dc4bcf7d7a3816","capability":"CreateIntentModel","actor":"synth-cli","payload":{"intentModelId":"intent-model-msv5jcma-shbvt9","intentModel":{"id":"intent-model-msv5jcma-shbvt9","rawIntentReference":"synth-cli-alignment-prepare","explicitObjectives":["Mission created through CLI alignment prepare"],"implicitObjectives":[],"audience":"operators","problemStatement":"Provide an aligned intent model for Mission approval","desiredOutcome":"Aligned Mission approved","nonGoals":[],"forbiddenInterpretations":[],"allowedInterpretations":["CLI-prepared alignment"],"interpretations":[],"referenceEvidenceIds":["evidence-msv5jcl5-te6zcn"],"confidenceLevel":0.8,"unresolvedAmbiguity":[],"knownUnknowns":[],"status":"sufficient","version":1,"createdAt":1786845267874,"updatedAt":1786845267874}},"previousHash":"2e4bb088296ee1698d5f49ae50b4e97ebeae48329d30c8c4b53529dedb342d34","eventHash":"4f8ebd2474a97d1a35d34a3415de5c7179fd4b85a717fd704b54c96e285985ba"}
++{"id":"241cc6600c536ec88410391110780594a4079ab84d6d7a4fbfa0fee46ed73f9f-0","type":"ALIGNMENT_CONTRACT_CREATED","timestamp":3,"transactionId":"241cc6600c536ec88410391110780594a4079ab84d6d7a4fbfa0fee46ed73f9f","capability":"CreateAlignmentContract","actor":"synth-cli","payload":{"contractId":"alignment-contract-msv5jcp7-s3ejyx","contract":{"id":"alignment-contract-msv5jcp7-s3ejyx","intentModelId":"intent-model-msv5jcma-shbvt9","intentSummary":"Mission created through CLI alignment prepare","expectedExperience":"Aligned Mission execution","requiredProperties":["Mission approved with aligned intent"],"forbiddenProperties":["Mission approved without alignment contract"],"requiredBehaviors":["Approval validates alignment"],"visualReferences":[],"behavioralReferences":[],"functionalExpectations":[],"technicalConstraints":[],"successCriteria":["Mission approval succeeds"],"explicitNonRequirements":[],"allowedInterpretation":[],"allowedVariation":[],"forbiddenInterpretation":["Unaligned mission approval"],"forbiddenDrift":["Bypass alignment governance"],"referenceEvidenceIds":["evidence-msv5jcl5-te6zcn"],"dimensions":[],"objectiveCoverage":[],"implicitObjectiveStatus":[],"forbiddenInterpretations":[],"residualDivergence":[],"status":"draft","version":1,"createdAt":1786845267979,"updatedAt":1786845267979}},"previousHash":"4f8ebd2474a97d1a35d34a3415de5c7179fd4b85a717fd704b54c96e285985ba","eventHash":"c3a7fd0dd6f95e3449552df477ec5a779e05ae9710b07fa33983ef02d370dc18"}
++{"id":"73430ddf0bcd06b2608e751dcbaf576d289fbd6a5bc5ce0fd06e4796af6810b7-0","type":"ALIGNMENT_CONTRACT_SUBMITTED","timestamp":4,"transactionId":"73430ddf0bcd06b2608e751dcbaf576d289fbd6a5bc5ce0fd06e4796af6810b7","capability":"SubmitAlignmentContract","actor":"synth-cli","payload":{"contractId":"alignment-contract-msv5jcp7-s3ejyx"},"previousHash":"c3a7fd0dd6f95e3449552df477ec5a779e05ae9710b07fa33983ef02d370dc18","eventHash":"af68b9c61bb0836c81c0c87309ddd64f25f08ea2ab1278215911616907058287"}
++{"id":"73430ddf0bcd06b2608e751dcbaf576d289fbd6a5bc5ce0fd06e4796af6810b7-1","type":"ALIGNMENT_CONTRACT_CREATED","timestamp":4,"transactionId":"73430ddf0bcd06b2608e751dcbaf576d289fbd6a5bc5ce0fd06e4796af6810b7","capability":"SubmitAlignmentContract","actor":"synth-cli","payload":{"contractId":"alignment-contract-msv5jcp7-s3ejyx","contract":{"id":"alignment-contract-msv5jcp7-s3ejyx","intentModelId":"intent-model-msv5jcma-shbvt9","intentSummary":"Mission created through CLI alignment prepare","expectedExperience":"Aligned Mission execution","requiredProperties":["Mission approved with aligned intent"],"forbiddenProperties":["Mission approved without alignment contract"],"requiredBehaviors":["Approval validates alignment"],"visualReferences":[],"behavioralReferences":[],"functionalExpectations":[],"technicalConstraints":[],"successCriteria":["Mission approval succeeds"],"explicitNonRequirements":[],"allowedInterpretation":[],"allowedVariation":[],"forbiddenInterpretation":["Unaligned mission approval"],"forbiddenDrift":["Bypass alignment governance"],"referenceEvidenceIds":["evidence-msv5jcl5-te6zcn"],"dimensions":[],"objectiveCoverage":[],"implicitObjectiveStatus":[],"forbiddenInterpretations":[],"residualDivergence":[],"status":"awaiting_review","version":1,"createdAt":1786845267979,"updatedAt":1786845267999}},"previousHash":"af68b9c61bb0836c81c0c87309ddd64f25f08ea2ab1278215911616907058287","eventHash":"41a78e23f056d03228dcb35813ac5699c16c1ff63ae9c9954d73c178c32c3143"}
++{"id":"a5a3f88ca59f207fa3af633e5b69a7f6ded8932a0c5fd220b56dfa2b2c15a513-0","type":"ALIGNMENT_CONTRACT_APPROVED","timestamp":6,"transactionId":"a5a3f88ca59f207fa3af633e5b69a7f6ded8932a0c5fd220b56dfa2b2c15a513","capability":"ApproveAlignmentContract","actor":"synth-cli","payload":{"contractId":"alignment-contract-msv5jcp7-s3ejyx","approvedBy":{"kind":"human","id":"synth-cli-operator"}},"previousHash":"41a78e23f056d03228dcb35813ac5699c16c1ff63ae9c9954d73c178c32c3143","eventHash":"f84bc1b0bb5fdb567cf964aa85fe469deee0591ff5787147d278695bfeabcbeb"}
++{"id":"a5a3f88ca59f207fa3af633e5b69a7f6ded8932a0c5fd220b56dfa2b2c15a513-1","type":"ALIGNMENT_CONTRACT_CREATED","timestamp":6,"transactionId":"a5a3f88ca59f207fa3af633e5b69a7f6ded8932a0c5fd220b56dfa2b2c15a513","capability":"ApproveAlignmentContract","actor":"synth-cli","payload":{"contractId":"alignment-contract-msv5jcp7-s3ejyx","contract":{"id":"alignment-contract-msv5jcp7-s3ejyx","intentModelId":"intent-model-msv5jcma-shbvt9","intentSummary":"Mission created through CLI alignment prepare","expectedExperience":"Aligned Mission execution","requiredProperties":["Mission approved with aligned intent"],"forbiddenProperties":["Mission approved without alignment contract"],"requiredBehaviors":["Approval validates alignment"],"visualReferences":[],"behavioralReferences":[],"functionalExpectations":[],"technicalConstraints":[],"successCriteria":["Mission approval succeeds"],"explicitNonRequirements":[],"allowedInterpretation":[],"allowedVariation":[],"forbiddenInterpretation":["Unaligned mission approval"],"forbiddenDrift":["Bypass alignment governance"],"referenceEvidenceIds":["evidence-msv5jcl5-te6zcn"],"dimensions":[],"objectiveCoverage":[],"implicitObjectiveStatus":[],"forbiddenInterpretations":[],"residualDivergence":[],"status":"approved","version":1,"createdAt":1786845267979,"updatedAt":1786845268034,"approvedBy":{"kind":"human","id":"synth-cli-operator"},"approvedAt":1786845268034}},"previousHash":"f84bc1b0bb5fdb567cf964aa85fe469deee0591ff5787147d278695bfeabcbeb","eventHash":"24f77be44f6684eaac128f31a8737ca00691e2a3456c098285adafbeb30fd093"}
++{"id":"45c052d889a27bad1e1afa803d630c8b56e1c5b085ec3ec1a75e9907511bf5d6-0","type":"DIVERGENCE_GATE_OPENED","timestamp":8,"transactionId":"45c052d889a27bad1e1afa803d630c8b56e1c5b085ec3ec1a75e9907511bf5d6","capability":"OpenDivergenceGate","actor":"synth-cli","payload":{"gateId":"divergence-gate-msv5jcs9-qqkfco","contractId":"alignment-contract-msv5jcp7-s3ejyx","intentModelId":"intent-model-msv5jcma-shbvt9"},"previousHash":"24f77be44f6684eaac128f31a8737ca00691e2a3456c098285adafbeb30fd093","eventHash":"8b68dfc730488c8986836f08fb2f3246a0e20acb7865a886cb7bf71e41cd3567"}
++{"id":"af557d0fa59ab5aaa04470fa674e55a1e0d8d9b86997b0f33b178734d9015f1b-0","type":"DIVERGENCE_GATE_RESOLVED","timestamp":9,"transactionId":"af557d0fa59ab5aaa04470fa674e55a1e0d8d9b86997b0f33b178734d9015f1b","capability":"ResolveDivergenceGate","actor":"synth-cli","payload":{"gateId":"divergence-gate-msv5jcs9-qqkfco","contractId":"alignment-contract-msv5jcp7-s3ejyx","decision":"aligned","reportId":"divergence-report-msv5jcsz-0u1of0"},"previousHash":"8b68dfc730488c8986836f08fb2f3246a0e20acb7865a886cb7bf71e41cd3567","eventHash":"5beb3235b18d63544a12355ccc25f1e6615025d8490acfdcba755e3e32bdd359"}
++{"id":"6fc700c0971f3de01a7986af9d2e4aa42156bf2c31018fd65fb5e4907b313162-0","type":"MISSION_CREATED","timestamp":10,"transactionId":"6fc700c0971f3de01a7986af9d2e4aa42156bf2c31018fd65fb5e4907b313162","capability":"CreateMission","actor":"synth-cli","payload":{"mission":{"id":"4d0ad09b35c008be","name":"Stress Test Mission","purpose":"To stress test the system","status":"draft","expeditions":[],"metadata":{},"createdAt":10,"updatedAt":10},"metadata":{"identity":{"agentId":"synth-cli-55183","sessionId":"01b89daf-0f66-4960-a45d-9efded0a72f9","approvalMode":"autonomous","issuedAt":10}}},"previousHash":"5beb3235b18d63544a12355ccc25f1e6615025d8490acfdcba755e3e32bdd359","eventHash":"69999ae74d4732557098e92988ca0b6f37fcc939737600937590da1e72d780ec"}
++{"id":"03c8bdf415864d2b232a939c9dd58400cc7049fd6e0c2b97a621184d8248d3a8-0","type":"MISSION_APPROVED","timestamp":11,"transactionId":"03c8bdf415864d2b232a939c9dd58400cc7049fd6e0c2b97a621184d8248d3a8","capability":"ApproveMission","actor":"synth-cli","payload":{"id":"4d0ad09b35c008be","status":"active","alignmentContractId":"alignment-contract-msv5jcp7-s3ejyx","metadata":{"identity":{"agentId":"synth-cli-55183","sessionId":"01b89daf-0f66-4960-a45d-9efded0a72f9","approvalMode":"autonomous","issuedAt":11}}},"previousHash":"69999ae74d4732557098e92988ca0b6f37fcc939737600937590da1e72d780ec","eventHash":"a350ec0277d48ebf00cd3122ece52c2835e0299a4532b5db03b0ba2d02238e07"}
++{"id":"ab462abab2d49bcb7226eeb51c434cb0ae833f5f7742a33280cf4ba59caae4e4-0","type":"EXPEDITION_CREATED","timestamp":12,"transactionId":"ab462abab2d49bcb7226eeb51c434cb0ae833f5f7742a33280cf4ba59caae4e4","capability":"CreateExpedition","actor":"synth-cli","payload":{"expedition":{"id":"5efda3991e55708f","missionId":"4d0ad09b35c008be","name":"Expedition 1","goal":"Goal 1","status":"draft","objectives":[],"discoveries":[],"decisions":[],"dependsOn":[],"metadata":{},"createdAt":12,"updatedAt":12},"metadata":{"identity":{"agentId":"synth-cli-55186","sessionId":"3e8dd1e1-573b-4cb8-90b1-13dce100d492","approvalMode":"autonomous","issuedAt":12}}},"previousHash":"a350ec0277d48ebf00cd3122ece52c2835e0299a4532b5db03b0ba2d02238e07","eventHash":"46a5cda3f80efd26df07553437d29dc647c93998d1ee2efe3471b3d42c5c6c19"}
++{"id":"5cb45334f4bb59306d744a19ba84ad81ae431812afad6029b992ec5bea2de52f-0","type":"EXPEDITION_CREATED","timestamp":13,"transactionId":"5cb45334f4bb59306d744a19ba84ad81ae431812afad6029b992ec5bea2de52f","capability":"CreateExpedition","actor":"synth-cli","payload":{"expedition":{"id":"9187d6b8c180ad74","missionId":"4d0ad09b35c008be","name":"Expedition 2","goal":"Goal 2","status":"draft","objectives":[],"discoveries":[],"decisions":[],"dependsOn":[],"metadata":{},"createdAt":13,"updatedAt":13},"metadata":{"identity":{"agentId":"synth-cli-55189","sessionId":"fca32871-92f1-4108-bf76-f8f933812815","approvalMode":"autonomous","issuedAt":13}}},"previousHash":"46a5cda3f80efd26df07553437d29dc647c93998d1ee2efe3471b3d42c5c6c19","eventHash":"e5dc11289a09f2019410f587cbd3f1fa385e208ad468500831ef23db132f73cf"}
++{"id":"8e775c9e4c97afa7adc6cfa19de102dfb954dfae62a5d554ca6599b0ea851bd9-0","type":"EXPEDITION_CREATED","timestamp":14,"transactionId":"8e775c9e4c97afa7adc6cfa19de102dfb954dfae62a5d554ca6599b0ea851bd9","capability":"CreateExpedition","actor":"synth-cli","payload":{"expedition":{"id":"05f132f5bb3caa3b","missionId":"4d0ad09b35c008be","name":"Expedition 3","goal":"Goal 3","status":"draft","objectives":[],"discoveries":[],"decisions":[],"dependsOn":[],"metadata":{},"createdAt":14,"updatedAt":14},"metadata":{"identity":{"agentId":"synth-cli-55191","sessionId":"0d328a10-c8b4-4459-9614-41c1d5e2379c","approvalMode":"autonomous","issuedAt":14}}},"previousHash":"e5dc11289a09f2019410f587cbd3f1fa385e208ad468500831ef23db132f73cf","eventHash":"a05080c91d9ef5c28239b1194fa1fc426691cdd3c1116e85735c6fcf2139c521"}
++{"id":"bfaf05585e9e643bae6f29a534d6b053303596d63f7f4a62e09d5a68173ecc0b-0","type":"EXPEDITION_CREATED","timestamp":15,"transactionId":"bfaf05585e9e643bae6f29a534d6b053303596d63f7f4a62e09d5a68173ecc0b","capability":"CreateExpedition","actor":"synth-cli","payload":{"expedition":{"id":"feacd42e029ba1eb","missionId":"4d0ad09b35c008be","name":"Expedition 4","goal":"Goal 4","status":"draft","objectives":[],"discoveries":[],"decisions":[],"dependsOn":[],"metadata":{},"createdAt":15,"updatedAt":15},"metadata":{"identity":{"agentId":"synth-cli-55193","sessionId":"d2b69c4a-1b1c-484e-ada8-e812959d81d0","approvalMode":"autonomous","issuedAt":15}}},"previousHash":"a05080c91d9ef5c28239b1194fa1fc426691cdd3c1116e85735c6fcf2139c521","eventHash":"a7e9d3cf3b960dd4ffc9c58a061c0de7963fc4a4e47b4ab39d793e833ed117bc"}
++{"id":"d9a38a99b2df108d74f72f0472f34142f9b5bb227ce6db8e5abb97c76c87f840-0","type":"EXPEDITION_CREATED","timestamp":16,"transactionId":"d9a38a99b2df108d74f72f0472f34142f9b5bb227ce6db8e5abb97c76c87f840","capability":"CreateExpedition","actor":"synth-cli","payload":{"expedition":{"id":"13589e763e1bc68f","missionId":"4d0ad09b35c008be","name":"Expedition 5","goal":"Goal 5","status":"draft","objectives":[],"discoveries":[],"decisions":[],"dependsOn":[],"metadata":{},"createdAt":16,"updatedAt":16},"metadata":{"identity":{"agentId":"synth-cli-55196","sessionId":"cef2bb6a-b614-4ff5-9333-181b0837b28e","approvalMode":"autonomous","issuedAt":16}}},"previousHash":"a7e9d3cf3b960dd4ffc9c58a061c0de7963fc4a4e47b4ab39d793e833ed117bc","eventHash":"df044236605b99ea4645fcee60b6be41e75962c4e5eaf0d685c921c7ffa1b8ea"}
+diff --git a/synth-test-env/.synth/data/evidence/initialization/2026-08-16T01-54-08-515Z-831d17ba-74d5-48b8-a549-b7afde2445b6.json b/synth-test-env/.synth/data/evidence/initialization/2026-08-16T01-54-08-515Z-831d17ba-74d5-48b8-a549-b7afde2445b6.json
+new file mode 100644
+index 0000000..18e6ebc
+--- /dev/null
++++ b/synth-test-env/.synth/data/evidence/initialization/2026-08-16T01-54-08-515Z-831d17ba-74d5-48b8-a549-b7afde2445b6.json
+@@ -0,0 +1,39 @@
++{
++  "schemaVersion": "1.0.0",
++  "projectId": "831d17ba-74d5-48b8-a549-b7afde2445b6",
++  "projectName": "Stress Test Project",
++  "collectedAt": "2026-08-16T01:54:08.515Z",
++  "evidence": {
++    "adapterId": "filesystem",
++    "adapterVersion": "1.0.0",
++    "sourceType": "filesystem",
++    "lifecycleStage": "unknown",
++    "intent": "unknown",
++    "domains": [],
++    "constraints": [],
++    "summary": "Filesystem scan of /Users/dev/Projects/synth-v2/synth-test-env: 0 file(s), 0 directory(s), extensions=[], inferred stage=unknown",
++    "confidence": {
++      "value": 0,
++      "label": "none"
++    }
++  },
++  "model": {
++    "schemaVersion": "1.0.0",
++    "identity": {
++      "id": "831d17ba-74d5-48b8-a549-b7afde2445b6",
++      "name": "Stress Test Project"
++    },
++    "intent": {
++      "statement": "unknown",
++      "targetOutcomes": []
++    },
++    "lifecycleStage": "unknown",
++    "domains": [],
++    "constraints": [],
++    "evidence": [],
++    "confidence": {
++      "value": 0,
++      "label": "none"
++    }
++  }
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/data/snapshots/12e08d765c57ef89.json b/synth-test-env/.synth/data/snapshots/12e08d765c57ef89.json
+new file mode 100644
+index 0000000..de518cf
+--- /dev/null
++++ b/synth-test-env/.synth/data/snapshots/12e08d765c57ef89.json
+@@ -0,0 +1,309 @@
++{
++  "snapshot": {
++    "id": "12e08d765c57ef89",
++    "version": "1.0.0",
++    "signature": "1890abfa983a2366e298710ded0c3e07dc6f9b02b60f8de06a55afeaefd9f15a",
++    "sessionId": "570cdc23d7a0fc56",
++    "worldModel": {
++      "version": 1,
++      "nodes": {
++        "__type": "Map",
++        "value": [
++          [
++            "4d0ad09b35c008be",
++            {
++              "id": "4d0ad09b35c008be",
++              "kind": "mission",
++              "name": "Stress Test Mission",
++              "description": "To stress test the system",
++              "purpose": "To stress test the system",
++              "expeditionIds": [],
++              "observationIds": [
++                "obs-mission-stress-test-mission"
++              ],
++              "evidenceRefs": [
++                "1de0dc425cf0ca99"
++              ],
++              "confidence": 0.8
++            }
++          ]
++        ]
++      },
++      "edges": [],
++      "evidence": {
++        "evidence": [
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++            "fingerprint": "86e1ea1e9b489762",
++            "immutable": true
++          },
++          {
++            "id": "cfd1bfe03e6f6f98",
++            "observationId": "obs-evidence-stress-evidence",
++            "source": "synth-cli",
++            "description": "Push confidence",
++            "snippet": "Push confidence",
++            "fingerprint": "3f27248b7b18517a",
++            "immutable": true
++          }
++        ],
++        "byObservationId": {
++          "__type": "Map",
++          "value": [
++            [
++              "obs-mission-stress-test-mission",
++              {
++                "id": "1de0dc425cf0ca99",
++                "observationId": "obs-mission-stress-test-mission",
++                "source": "synth-cli",
++                "description": "mission observation from synth-cli",
++                "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++                "fingerprint": "86e1ea1e9b489762",
++                "immutable": true
++              }
++            ],
++            [
++              "obs-evidence-stress-evidence",
++              {
++                "id": "cfd1bfe03e6f6f98",
++                "observationId": "obs-evidence-stress-evidence",
++                "source": "synth-cli",
++                "description": "Push confidence",
++                "snippet": "Push confidence",
++                "fingerprint": "3f27248b7b18517a",
++                "immutable": true
++              }
++            ]
++          ]
++        }
++      },
++      "unknowns": [],
++      "confidence": {
++        "overall": 0.715,
++        "observationCoverage": 0.2,
++        "evidenceQuality": 0.9,
++        "consistency": 1,
++        "completeness": 1,
++        "inferenceDepth": 1,
++        "unknownImpact": 0,
++        "contradictionCount": 0
++      },
++      "planningDecisions": []
++    },
++    "proposals": [
++      {
++        "id": "2171f4a7e78c40d1",
++        "kind": "mission",
++        "name": "Stress Test Mission",
++        "description": "To stress test the system",
++        "purpose": "To stress test the system",
++        "evidenceRefs": [
++          "1de0dc425cf0ca99"
++        ],
++        "observationIds": [
++          "obs-mission-stress-test-mission"
++        ],
++        "confidence": 0.8,
++        "rationale": "Proposed from mission observation obs-mission-stress-test-mission"
++      }
++    ],
++    "timestamp": 1786845276597,
++    "lineage": {
++      "lineageId": "6fe4b8aadc12b795",
++      "version": 1,
++      "approvedAt": 1786845276597
++    }
++  },
++  "session": {
++    "id": "570cdc23d7a0fc56",
++    "createdAt": 1786845272872,
++    "observations": [
++      {
++        "id": "obs-mission-stress-test-mission",
++        "sourceAdapter": "synth-cli",
++        "type": "mission",
++        "payload": {
++          "subject": "Stress Test Mission",
++          "name": "Stress Test Mission",
++          "purpose": "To stress test the system"
++        },
++        "evidenceReference": "evidence-mission-Stress Test Mission",
++        "confidence": "high",
++        "timestamp": 1786845270232
++      },
++      {
++        "id": "obs-evidence-stress-evidence",
++        "sourceAdapter": "synth-cli",
++        "type": "evidence",
++        "payload": {
++          "subject": "Stress Evidence",
++          "name": "Stress Evidence",
++          "description": "Push confidence",
++          "purpose": "Push confidence"
++        },
++        "evidenceReference": "evidence-evidence-Stress Evidence",
++        "confidence": "certain",
++        "timestamp": 1786845272872
++      }
++    ],
++    "evidence": {
++      "evidence": [
++        {
++          "id": "1de0dc425cf0ca99",
++          "observationId": "obs-mission-stress-test-mission",
++          "source": "synth-cli",
++          "description": "mission observation from synth-cli",
++          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++          "fingerprint": "86e1ea1e9b489762",
++          "immutable": true
++        },
++        {
++          "id": "cfd1bfe03e6f6f98",
++          "observationId": "obs-evidence-stress-evidence",
++          "source": "synth-cli",
++          "description": "Push confidence",
++          "snippet": "Push confidence",
++          "fingerprint": "3f27248b7b18517a",
++          "immutable": true
++        }
++      ],
++      "byObservationId": {
++        "__type": "Map",
++        "value": [
++          [
++            "obs-mission-stress-test-mission",
++            {
++              "id": "1de0dc425cf0ca99",
++              "observationId": "obs-mission-stress-test-mission",
++              "source": "synth-cli",
++              "description": "mission observation from synth-cli",
++              "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++              "fingerprint": "86e1ea1e9b489762",
++              "immutable": true
++            }
++          ],
++          [
++            "obs-evidence-stress-evidence",
++            {
++              "id": "cfd1bfe03e6f6f98",
++              "observationId": "obs-evidence-stress-evidence",
++              "source": "synth-cli",
++              "description": "Push confidence",
++              "snippet": "Push confidence",
++              "fingerprint": "3f27248b7b18517a",
++              "immutable": true
++            }
++          ]
++        ]
++      }
++    },
++    "questions": [],
++    "unknowns": [],
++    "confidence": {
++      "overall": 0.715,
++      "observationCoverage": 0.2,
++      "evidenceQuality": 0.9,
++      "consistency": 1,
++      "completeness": 1,
++      "inferenceDepth": 1,
++      "unknownImpact": 0,
++      "contradictionCount": 0
++    },
++    "worldModel": {
++      "version": 1,
++      "nodes": {
++        "__type": "Map",
++        "value": [
++          [
++            "4d0ad09b35c008be",
++            {
++              "id": "4d0ad09b35c008be",
++              "kind": "mission",
++              "name": "Stress Test Mission",
++              "description": "To stress test the system",
++              "purpose": "To stress test the system",
++              "expeditionIds": [],
++              "observationIds": [
++                "obs-mission-stress-test-mission"
++              ],
++              "evidenceRefs": [
++                "1de0dc425cf0ca99"
++              ],
++              "confidence": 0.8
++            }
++          ]
++        ]
++      },
++      "edges": [],
++      "evidence": {
++        "evidence": [
++          {
++            "id": "1de0dc425cf0ca99",
++            "observationId": "obs-mission-stress-test-mission",
++            "source": "synth-cli",
++            "description": "mission observation from synth-cli",
++            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++            "fingerprint": "86e1ea1e9b489762",
++            "immutable": true
++          },
++          {
++            "id": "cfd1bfe03e6f6f98",
++            "observationId": "obs-evidence-stress-evidence",
++            "source": "synth-cli",
++            "description": "Push confidence",
++            "snippet": "Push confidence",
++            "fingerprint": "3f27248b7b18517a",
++            "immutable": true
++          }
++        ],
++        "byObservationId": {
++          "__type": "Map",
++          "value": [
++            [
++              "obs-mission-stress-test-mission",
++              {
++                "id": "1de0dc425cf0ca99",
++                "observationId": "obs-mission-stress-test-mission",
++                "source": "synth-cli",
++                "description": "mission observation from synth-cli",
++                "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
++                "fingerprint": "86e1ea1e9b489762",
++                "immutable": true
++              }
++            ],
++            [
++              "obs-evidence-stress-evidence",
++              {
++                "id": "cfd1bfe03e6f6f98",
++                "observationId": "obs-evidence-stress-evidence",
++                "source": "synth-cli",
++                "description": "Push confidence",
++                "snippet": "Push confidence",
++                "fingerprint": "3f27248b7b18517a",
++                "immutable": true
++              }
++            ]
++          ]
++        }
++      },
++      "unknowns": [],
++      "confidence": {
++        "overall": 0.715,
++        "observationCoverage": 0.2,
++        "evidenceQuality": 0.9,
++        "consistency": 1,
++        "completeness": 1,
++        "inferenceDepth": 1,
++        "unknownImpact": 0,
++        "contradictionCount": 0
++      },
++      "planningDecisions": []
++    },
++    "planningDecisions": [],
++    "approvalState": "approved"
++  }
++}
+\ No newline at end of file
+diff --git a/synth-test-env/.synth/manifest.json b/synth-test-env/.synth/manifest.json
+new file mode 100644
+index 0000000..88cfbc8
+--- /dev/null
++++ b/synth-test-env/.synth/manifest.json
+@@ -0,0 +1,197 @@
++{
++  "schema": "synth-bootstrap-manifest-v1",
++  "version": "2.6.1",
++  "governanceVersion": "2.1",
++  "projectName": "Stress Test Project",
++  "root": "/Users/dev/Projects/synth-v2/synth-test-env",
++  "generatedAt": "2026-08-16T01:54:08.425Z",
++  "commands": [
++    {
++      "name": "version",
++      "description": "Print the installed Synth version"
++    },
++    {
++      "name": "doctor",
++      "description": "Verify installation and project health"
++    },
++    {
++      "name": "checkpoint",
++      "description": "Run pre-flight checkpoint before implementation work"
++    },
++    {
++      "name": "init",
++      "description": "Initialize the current directory as a Synth project"
++    },
++    {
++      "name": "bootstrap",
++      "description": "Transform a repository into a Synth project"
++    },
++    {
++      "name": "discover",
++      "description": "Produce a read-only analysis of a repository"
++    },
++    {
++      "name": "govern",
++      "description": "Run the full governance pipeline"
++    },
++    {
++      "name": "validate",
++      "description": "Analyze changes, plan validations, and execute them (--dry-run, --full)"
++    },
++    {
++      "name": "verify",
++      "description": "Verify governance invariants, projection consistency, and event-log signatures"
++    },
++    {
++      "name": "approval",
++      "description": "Two-party approval operations (request, grant, deny, list, show)"
++    },
++    {
++      "name": "status",
++      "description": "Report the current project state"
++    },
++    {
++      "name": "report",
++      "description": "Print a global human-readable project report"
++    },
++    {
++      "name": "mission",
++      "description": "Mission Studio operations (create, approve, snapshot)"
++    },
++    {
++      "name": "program",
++      "description": "Governance program inventory (list)"
++    },
++    {
++      "name": "project",
++      "description": "Project-level derived artifacts"
++    },
++    {
++      "name": "intent",
++      "description": "Intent model operations (create)"
++    },
++    {
++      "name": "alignment",
++      "description": "Intent alignment and divergence governance (prepare)"
++    },
++    {
++      "name": "expedition",
++      "description": "Expedition lifecycle (create, approve, commit, start, complete, archive, list)"
++    },
++    {
++      "name": "docs",
++      "description": "Documentation operations (generate)"
++    },
++    {
++      "name": "explain",
++      "description": "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)"
++    },
++    {
++      "name": "repair",
++      "description": "Repair operations (replay)"
++    },
++    {
++      "name": "release",
++      "description": "Deterministic, operator-approved release versioning"
++    },
++    {
++      "name": "certify",
++      "description": "Run failure and recovery certification scenarios"
++    },
++    {
++      "name": "capabilities",
++      "description": "List installed and missing CLI capabilities"
++    },
++    {
++      "name": "first-contact",
++      "description": "Guided onboarding entry point (greenfield, brownfield, legacy) and greenfield workflow (start, clarify, project, verify, approve, materialize, status)"
++    },
++    {
++      "name": "genesis",
++      "description": "Alias for the greenfield onboarding workflow (first-contact)"
++    },
++    {
++      "name": "ai",
++      "description": "AI agent interoperability (refresh)"
++    },
++    {
++      "name": "repo",
++      "description": "Repository and release governance operations"
++    },
++    {
++      "name": "snapshot",
++      "description": "Create, list, show, and verify git-anchored governance snapshots"
++    },
++    {
++      "name": "adapter",
++      "description": "Delegate to the adapter management CLI"
++    },
++    {
++      "name": "log",
++      "description": "Query the governance event log (read-only)"
++    },
++    {
++      "name": "task",
++      "description": "Canonical task orchestration (list, explain, graph, doctor)"
++    },
++    {
++      "name": "migrate",
++      "description": "Detect, plan, archive, and import legacy Synth state (detect, plan, archive, import)"
++    }
++  ],
++  "capabilities": [
++    "api-route",
++    "architecture",
++    "bdd",
++    "confidence",
++    "conversation",
++    "dependency",
++    "discovery:filesystem",
++    "discovery:git",
++    "discovery:operational-artifacts",
++    "document",
++    "expedition-builder",
++    "filesystem",
++    "filesystem-initialization",
++    "github",
++    "knowledge-extraction",
++    "mission-builder",
++    "nextjs-runtime",
++    "objective-builder",
++    "python-cli",
++    "repository",
++    "specification",
++    "tdd",
++    "wizard"
++  ],
++  "adapters": {
++    "selected": [],
++    "config": {},
++    "diagnostics": [
++      "No local git repository detected",
++      "GitHub integration signals detected, but no local git repository"
++    ]
++  },
++  "layout": {
++    "docs": "docs/",
++    "generatedDocs": "docs/generated/",
++    "examples": "examples/",
++    "data": ".synth/data/",
++    "proof": "proof/",
++    "src": "src/",
++    "tests": "tests/",
++    "scripts": "scripts/",
++    "website": "website/"
++  },
++  "publicVocabulary": [
++    "Mission",
++    "Expedition",
++    "Evidence",
++    "Plan",
++    "Event",
++    "State",
++    "Replay"
++  ],
++  "govern": "npm run govern",
++  "quickStart": "synth init && synth docs generate && npm run govern"
++}
+\ No newline at end of file
+diff --git a/synth-test-env/align.json b/synth-test-env/align.json
+new file mode 100644
+index 0000000..2e07851
+--- /dev/null
++++ b/synth-test-env/align.json
+@@ -0,0 +1,8 @@
++{
++  "status": "ok",
++  "kind": "AlignmentPrepared",
++  "contractId": "alignment-contract-msv5jcp7-s3ejyx",
++  "intentModelId": "intent-model-msv5jcma-shbvt9",
++  "gateId": "divergence-gate-msv5jcs9-qqkfco",
++  "note": "This is a minimal aligned contract for CLI workflows. Production missions should run a full refinement session."
++}
+diff --git a/synth-test-env/approve.json b/synth-test-env/approve.json
+new file mode 100644
+index 0000000..14135d0
+--- /dev/null
++++ b/synth-test-env/approve.json
+@@ -0,0 +1,35 @@
++{
++  "status": "ok",
++  "kind": "MissionApprovalDecision",
++  "decision": {
++    "approved": true,
++    "confidence": 0.715
++  },
++  "draftId": "570cdc23d7a0fc56",
++  "decisionRecorded": true,
++  "snapshotId": "12e08d765c57ef89",
++  "snapshotPersisted": true,
++  "runtime": {
++    "missionId": "4d0ad09b35c008be",
++    "created": true,
++    "approved": true
++  },
++  "proposals": [
++    {
++      "id": "2171f4a7e78c40d1",
++      "kind": "mission",
++      "name": "Stress Test Mission",
++      "description": "To stress test the system",
++      "purpose": "To stress test the system",
++      "evidenceRefs": [
++        "1de0dc425cf0ca99"
++      ],
++      "observationIds": [
++        "obs-mission-stress-test-mission"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from mission observation obs-mission-stress-test-mission"
++    }
++  ],
++  "nextStep": "synth mission snapshot 12e08d765c57ef89 to inspect the persisted snapshot"
++}
+diff --git a/synth-test-env/create_mission.json b/synth-test-env/create_mission.json
+new file mode 100644
+index 0000000..d0c2590
+--- /dev/null
++++ b/synth-test-env/create_mission.json
+@@ -0,0 +1,40 @@
++{
++  "status": "ok",
++  "kind": "MissionDraft",
++  "draftId": "672004731f0236cc",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/672004731f0236cc.json",
++  "integrity": "certified",
++  "subject": "Stress Test Mission",
++  "purpose": "To stress test the system",
++  "similar": [],
++  "confidence": {
++    "overall": 0.67,
++    "observationCoverage": 0.1,
++    "evidenceQuality": 0.8,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "unknowns": [],
++  "questions": [],
++  "proposals": [
++    {
++      "id": "2171f4a7e78c40d1",
++      "kind": "mission",
++      "name": "Stress Test Mission",
++      "description": "To stress test the system",
++      "purpose": "To stress test the system",
++      "evidenceRefs": [
++        "1de0dc425cf0ca99"
++      ],
++      "observationIds": [
++        "obs-mission-stress-test-mission"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from mission observation obs-mission-stress-test-mission"
++    }
++  ],
++  "nextStep": "synth mission approve --draft-id 672004731f0236cc"
++}
+diff --git a/synth-test-env/evidence1.json b/synth-test-env/evidence1.json
+new file mode 100644
+index 0000000..3b9c461
+--- /dev/null
++++ b/synth-test-env/evidence1.json
+@@ -0,0 +1,21 @@
++{
++  "status": "ok",
++  "kind": "MissionDraft",
++  "draftId": "570cdc23d7a0fc56",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.json",
++  "supersedes": "672004731f0236cc",
++  "integrity": "certified",
++  "confidence": {
++    "overall": 0.715,
++    "observationCoverage": 0.2,
++    "evidenceQuality": 0.9,
++    "consistency": 1,
++    "completeness": 1,
++    "inferenceDepth": 1,
++    "unknownImpact": 0,
++    "contradictionCount": 0
++  },
++  "unknowns": [],
++  "questions": [],
++  "nextStep": "synth mission approve --draft-id 570cdc23d7a0fc56"
++}
+diff --git a/synth-test-env/exp_1.json b/synth-test-env/exp_1.json
+new file mode 100644
+index 0000000..7e285e6
+--- /dev/null
++++ b/synth-test-env/exp_1.json
+@@ -0,0 +1,30 @@
++{
++  "status": "ok",
++  "kind": "ExpeditionDraft",
++  "draftId": "5efda3991e55708f",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/5efda3991e55708f.json",
++  "integrity": "certified",
++  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
++  "expeditionSubject": "Expedition 1",
++  "goal": "Goal 1",
++  "similar": [],
++  "proposals": [
++    {
++      "id": "c03e22a452da7a85",
++      "kind": "expedition",
++      "name": "Expedition 1",
++      "description": "Goal 1",
++      "missionId": "bc6411919c009735",
++      "goal": "Goal 1",
++      "evidenceRefs": [
++        "f3a96beb3739676f"
++      ],
++      "observationIds": [
++        "obs-expedition-expedition-1"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from expedition observation obs-expedition-expedition-1"
++    }
++  ],
++  "nextStep": "synth expedition approve --draft-id 5efda3991e55708f"
++}
+diff --git a/synth-test-env/exp_2.json b/synth-test-env/exp_2.json
+new file mode 100644
+index 0000000..0b04882
+--- /dev/null
++++ b/synth-test-env/exp_2.json
+@@ -0,0 +1,41 @@
++{
++  "status": "ok",
++  "kind": "ExpeditionDraft",
++  "draftId": "9187d6b8c180ad74",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.json",
++  "integrity": "certified",
++  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
++  "expeditionSubject": "Expedition 2",
++  "goal": "Goal 2",
++  "similar": [
++    {
++      "id": "5efda3991e55708f",
++      "name": "Expedition 1",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    }
++  ],
++  "proposals": [
++    {
++      "id": "c7ad83c479825adf",
++      "kind": "expedition",
++      "name": "Expedition 2",
++      "description": "Goal 2",
++      "missionId": "27eec4be9af499b6",
++      "goal": "Goal 2",
++      "evidenceRefs": [
++        "2b34abdfbe42e76c"
++      ],
++      "observationIds": [
++        "obs-expedition-expedition-2"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from expedition observation obs-expedition-expedition-2"
++    }
++  ],
++  "nextStep": "synth expedition approve --draft-id 9187d6b8c180ad74"
++}
+diff --git a/synth-test-env/exp_3.json b/synth-test-env/exp_3.json
+new file mode 100644
+index 0000000..b04d195
+--- /dev/null
++++ b/synth-test-env/exp_3.json
+@@ -0,0 +1,51 @@
++{
++  "status": "ok",
++  "kind": "ExpeditionDraft",
++  "draftId": "05f132f5bb3caa3b",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.json",
++  "integrity": "certified",
++  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
++  "expeditionSubject": "Expedition 3",
++  "goal": "Goal 3",
++  "similar": [
++    {
++      "id": "5efda3991e55708f",
++      "name": "Expedition 1",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    },
++    {
++      "id": "9187d6b8c180ad74",
++      "name": "Expedition 2",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    }
++  ],
++  "proposals": [
++    {
++      "id": "2e199eb7f9e039c5",
++      "kind": "expedition",
++      "name": "Expedition 3",
++      "description": "Goal 3",
++      "missionId": "cbf96271c72716c1",
++      "goal": "Goal 3",
++      "evidenceRefs": [
++        "efc06df8b9bf0dcd"
++      ],
++      "observationIds": [
++        "obs-expedition-expedition-3"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from expedition observation obs-expedition-expedition-3"
++    }
++  ],
++  "nextStep": "synth expedition approve --draft-id 05f132f5bb3caa3b"
++}
+diff --git a/synth-test-env/exp_4.json b/synth-test-env/exp_4.json
+new file mode 100644
+index 0000000..7a305b4
+--- /dev/null
++++ b/synth-test-env/exp_4.json
+@@ -0,0 +1,61 @@
++{
++  "status": "ok",
++  "kind": "ExpeditionDraft",
++  "draftId": "feacd42e029ba1eb",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/feacd42e029ba1eb.json",
++  "integrity": "certified",
++  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
++  "expeditionSubject": "Expedition 4",
++  "goal": "Goal 4",
++  "similar": [
++    {
++      "id": "5efda3991e55708f",
++      "name": "Expedition 1",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    },
++    {
++      "id": "9187d6b8c180ad74",
++      "name": "Expedition 2",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    },
++    {
++      "id": "05f132f5bb3caa3b",
++      "name": "Expedition 3",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    }
++  ],
++  "proposals": [
++    {
++      "id": "e21b0337aee6673f",
++      "kind": "expedition",
++      "name": "Expedition 4",
++      "description": "Goal 4",
++      "missionId": "49a8c4e93aaad859",
++      "goal": "Goal 4",
++      "evidenceRefs": [
++        "4988ffba472ce1af"
++      ],
++      "observationIds": [
++        "obs-expedition-expedition-4"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from expedition observation obs-expedition-expedition-4"
++    }
++  ],
++  "nextStep": "synth expedition approve --draft-id feacd42e029ba1eb"
++}
+diff --git a/synth-test-env/exp_5.json b/synth-test-env/exp_5.json
+new file mode 100644
+index 0000000..0a10f88
+--- /dev/null
++++ b/synth-test-env/exp_5.json
+@@ -0,0 +1,71 @@
++{
++  "status": "ok",
++  "kind": "ExpeditionDraft",
++  "draftId": "13589e763e1bc68f",
++  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/13589e763e1bc68f.json",
++  "integrity": "certified",
++  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
++  "expeditionSubject": "Expedition 5",
++  "goal": "Goal 5",
++  "similar": [
++    {
++      "id": "5efda3991e55708f",
++      "name": "Expedition 1",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    },
++    {
++      "id": "9187d6b8c180ad74",
++      "name": "Expedition 2",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    },
++    {
++      "id": "05f132f5bb3caa3b",
++      "name": "Expedition 3",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    },
++    {
++      "id": "feacd42e029ba1eb",
++      "name": "Expedition 4",
++      "kind": "expedition",
++      "score": 1,
++      "overlap": [
++        "expedition",
++        "goal"
++      ]
++    }
++  ],
++  "proposals": [
++    {
++      "id": "55c4bf795e0a1d41",
++      "kind": "expedition",
++      "name": "Expedition 5",
++      "description": "Goal 5",
++      "missionId": "37ad453f4c2cd8b1",
++      "goal": "Goal 5",
++      "evidenceRefs": [
++        "0625fbee665c9881"
++      ],
++      "observationIds": [
++        "obs-expedition-expedition-5"
++      ],
++      "confidence": 0.8,
++      "rationale": "Proposed from expedition observation obs-expedition-expedition-5"
++    }
++  ],
++  "nextStep": "synth expedition approve --draft-id 13589e763e1bc68f"
++}
+diff --git a/synth-test-env/replay.json b/synth-test-env/replay.json
+new file mode 100644
+index 0000000..ca50545
+--- /dev/null
++++ b/synth-test-env/replay.json
+@@ -0,0 +1,9 @@
++{
++  "status": "ok",
++  "consistent": true,
++  "eventCount": 17,
++  "liveHash": "297936698",
++  "replayHash": "297936698",
++  "chainValid": true,
++  "explanation": "Operational state is bit-for-bit identical to replayed state."
++}
+diff --git a/synth-test-env/stress_test.sh b/synth-test-env/stress_test.sh
+new file mode 100644
+index 0000000..b5a4fa2
+--- /dev/null
++++ b/synth-test-env/stress_test.sh
+@@ -0,0 +1,34 @@
++#!/bin/bash
++set -e
++echo "Starting Stress Test in $(pwd)"
++
++echo "\n--- 1. Alignment Prepare ---"
++time node ../dist/cli/synth.js alignment prepare --purpose "Stress Testing" > align.json
++CONTRACT_ID=$(jq -r '.contractId' align.json)
++echo "Contract ID: $CONTRACT_ID"
++
++echo "\n--- 2. Mission Create ---"
++time node ../dist/cli/synth.js mission create --subject "Stress Test Mission" --purpose "To stress test the system" > create_mission.json
++DRAFT_ID=$(jq -r '.draftId' create_mission.json)
++echo "Draft ID: $DRAFT_ID"
++
++echo "\n--- 3. Mission Evidence Add ---"
++time node ../dist/cli/synth.js mission evidence add --draft-id $DRAFT_ID --subject "Stress Evidence" --purpose "Push confidence" --confidence certain > evidence1.json
++DRAFT_ID=$(jq -r '.draftId' evidence1.json)
++echo "New Draft ID: $DRAFT_ID"
++
++echo "\n--- 4. Mission Approve ---"
++time node ../dist/cli/synth.js mission approve --draft-id $DRAFT_ID --alignment-contract-id $CONTRACT_ID > approve.json
++MISSION_ID=$(jq -r '.runtime.missionId' approve.json)
++echo "Approved Mission ID: $MISSION_ID"
++
++echo "\n--- 5. Expedition Create (x5) ---"
++for i in {1..5}; do
++  time node ../dist/cli/synth.js expedition create --mission $MISSION_ID --subject "Expedition $i" --goal "Goal $i" > exp_$i.json
++  EXP_DRAFT_ID=$(jq -r '.draftId' exp_$i.json)
++  echo "Expedition $i Draft ID: $EXP_DRAFT_ID"
++done
++
++echo "\n--- 6. Explain Replay ---"
++time node ../dist/cli/synth.js explain replay > replay.json
++echo "Replay Check Completed"
+diff --git a/tests/compaction.test.js b/tests/compaction.test.js
+new file mode 100644
+index 0000000..80f49e4
+--- /dev/null
++++ b/tests/compaction.test.js
+@@ -0,0 +1,160 @@
++// ============================================================
++// RUNTIME: Event Log Compaction Tests
++// ============================================================
++
++import { strict as assert } from "assert"
++import { bootstrap } from "../dist/core/bootstrap.js"
++import { EVENT_STORE_WRITE_TOKEN } from "../dist/infra/event-store.js"
++import { rebuildState } from "../dist/runtime/replay.js"
++
++// Simple test framework helper
++const tests = []
++function test(name, fn) {
++  tests.push({ name, fn })
++}
++
++test("compaction collapses history and preserves replay consistency", async () => {
++  const ctx = await bootstrap({
++    infra: { persistence: "memory" },
++  })
++
++  // Append a sequence of test events
++  const event1 = {
++    id: "e1",
++    type: "PROJECT_CREATED",
++    timestamp: Date.now(),
++    transactionId: "tx1",
++    capability: "CreateProject",
++    actor: "agent",
++    payload: {
++      project: { id: "p1", name: "Compaction Project", status: "active", createdAt: Date.now() },
++    },
++  }
++
++  const event2 = {
++    id: "e2",
++    type: "MISSION_CREATED",
++    timestamp: Date.now() + 10,
++    transactionId: "tx2",
++    capability: "CreateMission",
++    actor: "agent",
++    payload: {
++      mission: { id: "m1", name: "Compaction Mission", status: "draft", expeditions: [], objectives: [], constraints: [], nonGoals: [], allowedVariation: [], forbiddenDrift: [], referenceEvidence: [], createdAt: Date.now() },
++    },
++  }
++
++  const event3 = {
++    id: "e3",
++    type: "MISSION_APPROVED",
++    timestamp: Date.now() + 20,
++    transactionId: "tx3",
++    capability: "ApproveMission",
++    actor: "agent",
++    payload: {
++      id: "m1",
++    },
++  }
++
++  // Archived mission
++  const event4 = {
++    id: "e4",
++    type: "MISSION_CREATED",
++    timestamp: Date.now() + 30,
++    transactionId: "tx4",
++    capability: "CreateMission",
++    actor: "agent",
++    payload: {
++      mission: { id: "m2", name: "Archived Mission", status: "archived", expeditions: [], objectives: [], constraints: [], nonGoals: [], allowedVariation: [], forbiddenDrift: [], referenceEvidence: [], createdAt: Date.now() },
++    },
++  }
++
++  // Completed expedition
++  const event5 = {
++    id: "e5",
++    type: "EXPEDITION_CREATED",
++    timestamp: Date.now() + 40,
++    transactionId: "tx5",
++    capability: "CreateExpedition",
++    actor: "agent",
++    payload: {
++      expedition: { id: "ex1", missionId: "m1", name: "Completed Exp", goal: "Goal", status: "completed", objectives: [], discoveries: [], decisions: [], dependsOn: [], metadata: {}, createdAt: Date.now() },
++    },
++  }
++
++  // Archived expedition
++  const event6 = {
++    id: "e6",
++    type: "EXPEDITION_CREATED",
++    timestamp: Date.now() + 50,
++    transactionId: "tx6",
++    capability: "CreateExpedition",
++    actor: "agent",
++    payload: {
++      expedition: { id: "ex2", missionId: "m1", name: "Archived Exp", goal: "Goal", status: "archived", objectives: [], discoveries: [], decisions: [], dependsOn: [], metadata: {}, createdAt: Date.now() },
++    },
++  }
++
++  // Cancelled expedition
++  const event7 = {
++    id: "e7",
++    type: "EXPEDITION_CREATED",
++    timestamp: Date.now() + 60,
++    transactionId: "tx7",
++    capability: "CreateExpedition",
++    actor: "agent",
++    payload: {
++      expedition: { id: "ex3", missionId: "m1", name: "Cancelled Exp", goal: "Goal", status: "cancelled", objectives: [], discoveries: [], decisions: [], dependsOn: [], metadata: {}, createdAt: Date.now() },
++    },
++  }
++
++  await ctx.infra.eventStore.appendBatch([event1, event2, event3, event4, event5, event6, event7], EVENT_STORE_WRITE_TOKEN)
++
++  const originalEvents = await ctx.infra.eventStore.loadAll()
++  assert.equal(originalEvents.length, 7, "Should have 7 original events")
++
++  const originalState = rebuildState(originalEvents)
++  assert.equal(originalState.lifecycle, "uninitialized")
++  assert.equal(originalState.projects["p1"].name, "Compaction Project")
++  assert.equal(originalState.missions["m1"].status, "active")
++  assert.equal(originalState.missions["m2"].status, "archived")
++  assert.equal(originalState.expeditions["ex1"].status, "completed")
++  assert.equal(originalState.expeditions["ex2"].status, "archived")
++  assert.equal(originalState.expeditions["ex3"].status, "cancelled")
++
++  // Compact all events
++  await ctx.infra.eventStore.compact(7, EVENT_STORE_WRITE_TOKEN)
++
++  const compactedEvents = await ctx.infra.eventStore.loadAll()
++  assert.equal(compactedEvents.length, 1, "Compacted event log should contain exactly 1 event")
++  assert.equal(compactedEvents[0].type, "SYSTEM_SNAPSHOT", "The event should be a SYSTEM_SNAPSHOT")
++
++  // Replay from compacted log
++  const compactedState = rebuildState(compactedEvents)
++  
++  // Verify state equivalence for active/completed entities
++  assert.equal(compactedState.projects["p1"].name, "Compaction Project")
++  assert.equal(compactedState.missions["m1"].status, "active")
++  assert.equal(compactedState.expeditions["ex1"].status, "completed")
++
++  // Verify pruning of archived/cancelled entities
++  assert.equal(compactedState.missions["m2"], undefined, "Archived mission should be pruned")
++  assert.equal(compactedState.expeditions["ex2"], undefined, "Archived expedition should be pruned")
++  assert.equal(compactedState.expeditions["ex3"], undefined, "Cancelled expedition should be pruned")
++})
++
++// Run the tests
++async function run() {
++  console.log("Running Compaction Tests...")
++  for (const { name, fn } of tests) {
++    try {
++      await fn()
++      console.log(`[PASS] ${name}`)
++    } catch (err) {
++      console.error(`[FAIL] ${name}`)
++      console.error(err)
++      process.exitCode = 1
++    }
++  }
++}
++
++await run()

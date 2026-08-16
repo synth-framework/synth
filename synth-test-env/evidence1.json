@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "kind": "MissionDraft",
+  "draftId": "570cdc23d7a0fc56",
+  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/570cdc23d7a0fc56.json",
+  "supersedes": "672004731f0236cc",
+  "integrity": "certified",
+  "confidence": {
+    "overall": 0.715,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.9,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "unknowns": [],
+  "questions": [],
+  "nextStep": "synth mission approve --draft-id 570cdc23d7a0fc56"
+}

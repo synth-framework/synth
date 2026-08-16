@@ -1,0 +1,71 @@
+{
+  "status": "ok",
+  "kind": "ExpeditionDraft",
+  "draftId": "13589e763e1bc68f",
+  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/13589e763e1bc68f.json",
+  "integrity": "certified",
+  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
+  "expeditionSubject": "Expedition 5",
+  "goal": "Goal 5",
+  "similar": [
+    {
+      "id": "5efda3991e55708f",
+      "name": "Expedition 1",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    },
+    {
+      "id": "9187d6b8c180ad74",
+      "name": "Expedition 2",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    },
+    {
+      "id": "05f132f5bb3caa3b",
+      "name": "Expedition 3",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    },
+    {
+      "id": "feacd42e029ba1eb",
+      "name": "Expedition 4",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "55c4bf795e0a1d41",
+      "kind": "expedition",
+      "name": "Expedition 5",
+      "description": "Goal 5",
+      "missionId": "37ad453f4c2cd8b1",
+      "goal": "Goal 5",
+      "evidenceRefs": [
+        "0625fbee665c9881"
+      ],
+      "observationIds": [
+        "obs-expedition-expedition-5"
+      ],
+      "confidence": 0.8,
+      "rationale": "Proposed from expedition observation obs-expedition-expedition-5"
+    }
+  ],
+  "nextStep": "synth expedition approve --draft-id 13589e763e1bc68f"
+}

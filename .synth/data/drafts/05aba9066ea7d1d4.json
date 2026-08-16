@@ -1,0 +1,209 @@
+{
+  "id": "05aba9066ea7d1d4",
+  "createdAt": 1786866457883,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "1ab241b02005b750",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786866457883
+    },
+    {
+      "id": "obs-expedition-mission-lifecycle-alignment",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Mission Lifecycle Alignment",
+        "name": "Mission Lifecycle Alignment",
+        "goal": "Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, add constraints preventing mission amendments without operator permission, and ensure missions are properly discoverable in .synth state",
+        "missionSubject": "1ab241b02005b750"
+      },
+      "evidenceReference": "evidence-expedition-Mission Lifecycle Alignment",
+      "confidence": "high",
+      "timestamp": 1786866457883
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "2a4ad95353e629bc",
+        "immutable": true
+      },
+      {
+        "id": "57c62376bf2ffebe",
+        "observationId": "obs-expedition-mission-lifecycle-alignment",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Mission Lifecycle Alignment\",\"name\":\"Mission Lifecycle Alignment\",\"goal\":\"Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, ",
+        "fingerprint": "c1208c931552a763",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "2a4ad95353e629bc",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-mission-lifecycle-alignment",
+        {
+          "id": "57c62376bf2ffebe",
+          "observationId": "obs-expedition-mission-lifecycle-alignment",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Mission Lifecycle Alignment\",\"name\":\"Mission Lifecycle Alignment\",\"goal\":\"Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, ",
+          "fingerprint": "c1208c931552a763",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "dac29dcc8e4300a9",
+        {
+          "id": "dac29dcc8e4300a9",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "e1f0afa8860c3bce",
+        {
+          "id": "e1f0afa8860c3bce",
+          "kind": "expedition",
+          "name": "Mission Lifecycle Alignment",
+          "description": "Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, add constraints preventing mission amendments without operator permission, and ensure missions are properly discoverable in .synth state",
+          "missionId": "dac29dcc8e4300a9",
+          "goal": "Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, add constraints preventing mission amendments without operator permission, and ensure missions are properly discoverable in .synth state",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-mission-lifecycle-alignment"
+          ],
+          "evidenceRefs": [
+            "57c62376bf2ffebe"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "1a0f97aabef62e85",
+        "source": "e1f0afa8860c3bce",
+        "target": "dac29dcc8e4300a9",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-mission-lifecycle-alignment"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "2a4ad95353e629bc",
+          "immutable": true
+        },
+        {
+          "id": "57c62376bf2ffebe",
+          "observationId": "obs-expedition-mission-lifecycle-alignment",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Mission Lifecycle Alignment\",\"name\":\"Mission Lifecycle Alignment\",\"goal\":\"Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, ",
+          "fingerprint": "c1208c931552a763",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"1ab241b02005b750\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "2a4ad95353e629bc",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-mission-lifecycle-alignment",
+          {
+            "id": "57c62376bf2ffebe",
+            "observationId": "obs-expedition-mission-lifecycle-alignment",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Mission Lifecycle Alignment\",\"name\":\"Mission Lifecycle Alignment\",\"goal\":\"Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, ",
+            "fingerprint": "c1208c931552a763",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

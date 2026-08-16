@@ -831,7 +831,7 @@ test("Expedition: capability registry includes Expedition capabilities", async (
   const ctx = await getTestCtx()
   if (!ctx.isSealed) ctx.seal()
   // Current modular default capabilities include canonical WorkItem, Plan, Milestone, Project, initialization, PCE, recovery, repository governance, convergence certification, filesystem mutation, expedition lifecycle, and approval capabilities.
-  assert.equal(ctx.capabilityRegistry.size(), 46, `Registry must have 46 default capabilities, got ${ctx.capabilityRegistry.size()}`)
+  assert.equal(ctx.capabilityRegistry.size(), 49, `Registry must have 49 default capabilities, got ${ctx.capabilityRegistry.size()}`)
   assert.ok(ctx.capabilityRegistry.has("InitializeProject"), "Registry must have InitializeProject")
   assert.ok(ctx.capabilityRegistry.has("FilesystemWrite"), "Registry must have FilesystemWrite")
   assert.ok(ctx.capabilityRegistry.has("CreateMission"), "Registry must have CreateMission")

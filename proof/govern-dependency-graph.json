@@ -1,0 +1,66 @@
+{
+  "kind": "GovernanceDependencyGraph",
+  "schemaVersion": "1.0.0",
+  "modules": [
+    "contracts",
+    "documentation",
+    "cli",
+    "kernel",
+    "runtime",
+    "governance",
+    "missions",
+    "expeditions",
+    "website",
+    "tests"
+  ],
+  "checks": [
+    {
+      "id": "build",
+      "module": "kernel",
+      "inputs": [
+        "src/**",
+        "tsconfig.json"
+      ],
+      "outputs": [
+        "dist/**"
+      ],
+      "scope": "governance",
+      "protectedAssets": [],
+      "determinism": "deterministic",
+      "validatorVersion": "1.0.0",
+      "algorithmVersion": "1.0.0"
+    },
+    {
+      "id": "proof",
+      "module": "governance",
+      "inputs": [
+        "dist/**",
+        "data/event-log.jsonl",
+        "src/**"
+      ],
+      "outputs": [
+        "proof/proof-*.json"
+      ],
+      "scope": "governance",
+      "protectedAssets": [
+        "Genesis",
+        "Replay"
+      ],
+      "determinism": "deterministic",
+      "validatorVersion": "1.0.0",
+      "algorithmVersion": "1.0.0"
+    }
+  ],
+  "edges": [],
+  "warnings": [
+    "Checks 'build' and 'proof' share inputs: src/**",
+    "Module 'contracts' has no registered checks.",
+    "Module 'documentation' has no registered checks.",
+    "Module 'cli' has no registered checks.",
+    "Module 'runtime' has no registered checks.",
+    "Module 'missions' has no registered checks.",
+    "Module 'expeditions' has no registered checks.",
+    "Module 'website' has no registered checks.",
+    "Module 'tests' has no registered checks."
+  ]
+}

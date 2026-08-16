@@ -1,0 +1,179 @@
+{
+  "id": "570cdc23d7a0fc56",
+  "createdAt": 1786845272872,
+  "observations": [
+    {
+      "id": "obs-mission-stress-test-mission",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Stress Test Mission",
+        "name": "Stress Test Mission",
+        "purpose": "To stress test the system"
+      },
+      "evidenceReference": "evidence-mission-Stress Test Mission",
+      "confidence": "high",
+      "timestamp": 1786845270232
+    },
+    {
+      "id": "obs-evidence-stress-evidence",
+      "sourceAdapter": "synth-cli",
+      "type": "evidence",
+      "payload": {
+        "subject": "Stress Evidence",
+        "name": "Stress Evidence",
+        "description": "Push confidence",
+        "purpose": "Push confidence"
+      },
+      "evidenceReference": "evidence-evidence-Stress Evidence",
+      "confidence": "certain",
+      "timestamp": 1786845272872
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "1de0dc425cf0ca99",
+        "observationId": "obs-mission-stress-test-mission",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
+        "fingerprint": "86e1ea1e9b489762",
+        "immutable": true
+      },
+      {
+        "id": "cfd1bfe03e6f6f98",
+        "observationId": "obs-evidence-stress-evidence",
+        "source": "synth-cli",
+        "description": "Push confidence",
+        "snippet": "Push confidence",
+        "fingerprint": "3f27248b7b18517a",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-stress-test-mission",
+        {
+          "id": "1de0dc425cf0ca99",
+          "observationId": "obs-mission-stress-test-mission",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
+          "fingerprint": "86e1ea1e9b489762",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-evidence-stress-evidence",
+        {
+          "id": "cfd1bfe03e6f6f98",
+          "observationId": "obs-evidence-stress-evidence",
+          "source": "synth-cli",
+          "description": "Push confidence",
+          "snippet": "Push confidence",
+          "fingerprint": "3f27248b7b18517a",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.715,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.9,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "4d0ad09b35c008be",
+        {
+          "id": "4d0ad09b35c008be",
+          "kind": "mission",
+          "name": "Stress Test Mission",
+          "description": "To stress test the system",
+          "purpose": "To stress test the system",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-stress-test-mission"
+          ],
+          "evidenceRefs": [
+            "1de0dc425cf0ca99"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "1de0dc425cf0ca99",
+          "observationId": "obs-mission-stress-test-mission",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
+          "fingerprint": "86e1ea1e9b489762",
+          "immutable": true
+        },
+        {
+          "id": "cfd1bfe03e6f6f98",
+          "observationId": "obs-evidence-stress-evidence",
+          "source": "synth-cli",
+          "description": "Push confidence",
+          "snippet": "Push confidence",
+          "fingerprint": "3f27248b7b18517a",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-stress-test-mission",
+          {
+            "id": "1de0dc425cf0ca99",
+            "observationId": "obs-mission-stress-test-mission",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"purpose\":\"To stress test the system\"}",
+            "fingerprint": "86e1ea1e9b489762",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-evidence-stress-evidence",
+          {
+            "id": "cfd1bfe03e6f6f98",
+            "observationId": "obs-evidence-stress-evidence",
+            "source": "synth-cli",
+            "description": "Push confidence",
+            "snippet": "Push confidence",
+            "fingerprint": "3f27248b7b18517a",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.715,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.9,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
