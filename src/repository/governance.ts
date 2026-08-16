@@ -18,7 +18,7 @@ export type RepositoryLifecycle =
 
 export type VersionStrategy = "semver" | "calver" | "build" | "custom"
 
-export function getRepositoryLifecycle(state: CanonicalState): RepositoryLifecycle {
+function getRepositoryLifecycle(state: CanonicalState): RepositoryLifecycle {
   return state.repository?.lifecycle || "uninitialized"
 }
 
@@ -101,7 +101,7 @@ export function validatePromotion(
   return { valid: errors.length === 0, errors }
 }
 
-export function formatReleaseNotes(state: CanonicalState): string {
+function formatReleaseNotes(state: CanonicalState): string {
   const missions = Object.values(state.missions)
     .filter((m) => m.status === "active" || m.status === "completed")
     .map((m) => `- ${m.name}: ${m.purpose}`)

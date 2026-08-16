@@ -207,7 +207,7 @@ class AdapterCatalogImpl implements AdapterCatalog {
   }
 }
 
-export function createAdapterCatalog(): AdapterCatalog {
+function createAdapterCatalog(): AdapterCatalog {
   return new AdapterCatalogImpl()
 }
 

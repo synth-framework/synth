@@ -13,7 +13,7 @@ import { root } from "../sdk/workspace/index.js"
  *  Direct writes through the public SDK are rejected; kernel stores
  *  (EventStore, StateStore, CheckpointStore) write these through their
  *  own module-private authorization tokens. */
-export const DERIVED_PATH_PATTERNS: readonly string[] = [
+const DERIVED_PATH_PATTERNS: readonly string[] = [
   ".synth/data/canonical-state.json",
   ".synth/data/event-log.jsonl",
   "AGENTS.md",
@@ -85,7 +85,7 @@ export function isDerivedPath(filePath: string): boolean {
 }
 
 /** Return the list of patterns that matched the path, for diagnostics. */
-export function matchingDerivedPatterns(filePath: string): string[] {
+function matchingDerivedPatterns(filePath: string): string[] {
   const relative = toProjectRelativePath(filePath)
   return DERIVED_PATH_PATTERNS.filter((pattern) => matchesScope(relative, pattern))
 }

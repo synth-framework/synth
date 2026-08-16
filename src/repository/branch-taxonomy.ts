@@ -8,7 +8,7 @@
 
 export type BranchType = "main" | "release" | "mission" | "expedition" | "hotfix"
 
-export const BRANCH_TYPES: BranchType[] = ["main", "release", "mission", "expedition", "hotfix"]
+const BRANCH_TYPES: BranchType[] = ["main", "release", "mission", "expedition", "hotfix"]
 
 export type BranchNamingRule = {
   type: BranchType
@@ -18,7 +18,7 @@ export type BranchNamingRule = {
   allowedBaseBranches: BranchType[]
 }
 
-export const BRANCH_RULES: Record<BranchType, BranchNamingRule> = {
+const BRANCH_RULES: Record<BranchType, BranchNamingRule> = {
   main: {
     type: "main",
     prefix: "main",

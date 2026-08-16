@@ -45,7 +45,7 @@ async function countEventLog(root: string): Promise<number> {
  * The identity is never stored; it is recomputed from the repository's
  * evidence every time the command runs.
  */
-export async function buildRepositoryIdentity(cwd: string): Promise<RepositoryIdentity> {
+async function buildRepositoryIdentity(cwd: string): Promise<RepositoryIdentity> {
   const rootDataDir = dataDir(cwd)
   const manifest = await sdk.json.readJsonMaybe<Record<string, any>>(manifestPath(cwd))
   const state = await sdk.state.readState(cwd)

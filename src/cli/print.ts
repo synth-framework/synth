@@ -8,11 +8,8 @@
 export {
   setAgentTelemetry,
   setHumanMode,
-  isHumanMode,
   setQuietMode,
-  isQuietMode,
   setSummaryMode,
-  isSummaryMode,
   printJson,
   printError,
   type ErrorDetails,

@@ -28,7 +28,7 @@ export type GitHubAdapterConfig = {
   remote?: string
 }
 
-export class GitHubAdapter implements ForgeAdapter {
+class GitHubAdapter implements ForgeAdapter {
   readonly providerName = "github"
 
   constructor(private config: GitHubAdapterConfig = {}) {}
@@ -125,7 +125,7 @@ async function writeBodyFile(filePath: string, body: string): Promise<void> {
   await fs.writeFile(filePath, body, "utf-8")
 }
 
-export function createGitHubAdapter(config: Record<string, unknown>): ForgeAdapter {
+function createGitHubAdapter(config: Record<string, unknown>): ForgeAdapter {
   return new GitHubAdapter({
     repo: typeof config.repo === "string" ? config.repo : undefined,
     owner: typeof config.owner === "string" ? config.owner : undefined,

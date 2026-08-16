@@ -21,7 +21,7 @@
 import fs from "fs"
 import path from "path"
 
-export const GOVERN_DEPTH_ENV = "SYNTH_GOVERN_DEPTH"
+const GOVERN_DEPTH_ENV = "SYNTH_GOVERN_DEPTH"
 
 const MAX_GOVERN_DEPTH = 1
 

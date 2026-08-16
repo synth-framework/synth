@@ -161,7 +161,7 @@ const LIFECYCLE_CAPABILITIES = new Set([
 ])
 
 /** Extract the expedition context from a capability invocation. */
-export function getExpeditionIdFromInvocation(intent: CapabilityInvocation): string | undefined {
+function getExpeditionIdFromInvocation(intent: CapabilityInvocation): string | undefined {
   const payload = (intent.payload ?? {}) as Record<string, unknown>
   if (payload.expeditionId) return String(payload.expeditionId)
   if (LIFECYCLE_CAPABILITIES.has(intent.capability) && payload.id) return String(payload.id)
@@ -169,7 +169,7 @@ export function getExpeditionIdFromInvocation(intent: CapabilityInvocation): str
 }
 
 /** Map a convergence certification decision to a gate status. */
-export function getCertificationGateStatus(
+function getCertificationGateStatus(
   certifications: Record<string, ConvergenceCertificationState>,
   expeditionId: string,
 ): GateStatus | undefined {
@@ -188,7 +188,7 @@ export function getCertificationGateStatus(
 }
 
 /** Convert a gate status into the dependency vocabulary. */
-export function gateStatusToDependencyStatus(gateStatus: GateStatus | undefined): DependencyStatus {
+function gateStatusToDependencyStatus(gateStatus: GateStatus | undefined): DependencyStatus {
   switch (gateStatus) {
     case "pass":
       return "resolved"
@@ -294,7 +294,7 @@ const GOVERNED_CAPABILITIES = [
 ]
 
 /** Create a dependency enforcement policy for the policy engine */
-export function createDependencyEnforcementPolicy(
+function createDependencyEnforcementPolicy(
   dependencyRecords: DependencyRecord[],
 ): Policy {
   return {
@@ -370,7 +370,7 @@ export function assertDependencyGateAllowed(
 }
 
 /** List downstream expeditions that would be blocked by an upstream gate status. */
-export function getBlockedDownstreamExpeditions(
+function getBlockedDownstreamExpeditions(
   upstreamExpeditionId: string,
   state: CanonicalState,
   dependencyRecords: DependencyRecord[],
@@ -386,7 +386,7 @@ export function getBlockedDownstreamExpeditions(
 }
 
 /** Build a status map for every expedition that declares dependencies. */
-export function buildDependencyStatusMap(
+function buildDependencyStatusMap(
   state: CanonicalState,
   dependencyRecords: DependencyRecord[],
   convergenceCertifications?: Record<string, ConvergenceCertificationState>,

@@ -2,45 +2,18 @@
 // MISSION STUDIO: Public Surface
 // ============================================================
 
-export { MissionStudio, createMissionStudio } from "./engine.js"
-export { MissionIntake, createMissionIntake } from "./intake.js"
+export { MissionStudio } from "./engine.js"
+export { MissionIntake } from "./intake.js"
 export {
-  mapObservationToPlanningObservation,
-  mapObservationsToPlanningObservations,
-} from "./adapter-mapper.js"
-export { collectPlanningObservations } from "./adapter-observation-collector.js"
-export {
-  InMemorySnapshotStore,
-  FileSystemSnapshotStore,
-  createInMemorySnapshotStore,
-  createFileSystemSnapshotStore,
-} from "./snapshot-store.js"
-export {
-  buildSnapshotLineage,
-  diffSnapshots,
-  reconstructSessionFromSnapshot,
-  getSnapshotLineage,
+  diffSnapshots
 } from "./snapshot-lineage.js"
-export { validateProposalGraph } from "./proposal-graph-validator.js"
 export {
-  tokenize,
   buildWeightedTokens,
   scoreWeightedJaccard,
-  findSimilarMissions,
-  findSimilarExpeditions,
-  SIMILARITY_THRESHOLD,
-  SIMILARITY_TOP_K,
   type SimilarityCandidate,
   type ComparableRecord,
   type SimilarMatch,
 } from "./duplicate-detection.js"
-export {
-  SNAPSHOT_SCHEMA_VERSION,
-  canonicalizeSnapshot,
-  signSnapshot,
-  certifySnapshot,
-  migrateStoredSnapshot,
-} from "./snapshot-integrity.js"
 export type {
   SnapshotDiff,
   NodeChange,
