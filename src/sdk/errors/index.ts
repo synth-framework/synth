@@ -1,5 +1,5 @@
 // ============================================================
-// CORE: Architectural Error Types
+// SDK: Architectural Error Types
 // ============================================================
 
 /** Error thrown when a mutation bypasses the ExecutionGate */

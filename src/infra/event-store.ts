@@ -5,7 +5,7 @@
 import { promises as fs } from "fs"
 import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
-import { IllegalMutationError } from "../core/errors.js"
+import { IllegalMutationError } from "../sdk/errors/index.js"
 import { dataDir } from "../sdk/paths/index.js"
 
 const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
