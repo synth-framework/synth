@@ -7,7 +7,7 @@ import path from "path"
 import type { CanonicalState, Transaction, CapabilityInvocation } from "../types/index.js"
 import { computeStateHash } from "../runtime/replay.js"
 import { dataDir } from "../sdk/paths/index.js"
-import { IllegalMutationError } from "../core/errors.js"
+import { IllegalMutationError } from "../sdk/errors/index.js"
 
 const STATE_FILE = path.join(dataDir(process.cwd()), "canonical-state.json")
 const SNAPSHOTS_DIR = path.join(dataDir(process.cwd()), "snapshots")
