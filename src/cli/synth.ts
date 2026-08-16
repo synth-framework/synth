@@ -365,6 +365,20 @@ type AutoCommitResult = {
   reason?: string
 }
 
+function isScratchFile(relPath: string): boolean {
+  const lowercase = relPath.toLowerCase()
+  return (
+    relPath.startsWith("scratch") ||
+    relPath.includes("/scratch") ||
+    lowercase.endsWith(".log") ||
+    lowercase.endsWith(".patch") ||
+    lowercase.endsWith(".diff") ||
+    lowercase.includes("evaluation") ||
+    lowercase.includes("benchmark") ||
+    lowercase.includes("audit-report")
+  )
+}
+
 function isDerivedStateFile(relPath: string): boolean {
   for (const pattern of DERIVED_STATE_PATTERNS) {
     if (pattern.endsWith("/")) {
@@ -373,7 +387,7 @@ function isDerivedStateFile(relPath: string): boolean {
       return true
     }
   }
-  return false
+  return isScratchFile(relPath)
 }
 
 /**
@@ -5737,6 +5751,36 @@ async function startOneExpedition(
       expeditionId,
       targetStatus: "executing",
     })
+  }
+
+  const initialState = await ctx.runtime.getState()
+  const initialRecord = initialState.expeditions?.[expeditionId]
+  let currentStatus = initialRecord?.status
+
+  if (!currentStatus) {
+    const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
+    const draftsDir = path.join(dataDir, "drafts")
+    const draftPath = path.join(draftsDir, `${expeditionId}.json`)
+    const draftExists = await fs.access(draftPath).then(() => true).catch(() => false)
+    if (draftExists) {
+      currentStatus = "draft"
+    }
+  }
+
+  if (currentStatus === "draft") {
+    const approveResult = await approveOneExpedition(ctx, expeditionId, dryRun)
+    if (approveResult.status !== "ok") {
+      return approveResult
+    }
+    currentStatus = "approved"
+  }
+
+  if (currentStatus === "approved") {
+    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun)
+    if (commitResult.status !== "ok") {
+      return commitResult
+    }
+    currentStatus = "committed"
   }
 
   const state = await ctx.runtime.getState()
