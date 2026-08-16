@@ -7,4 +7,3 @@
 export * from "./types.js"
 export * from "./engine.js"
 export * from "./confidence.js"
-export { RuleBasedIntentExtractionAdapter } from "./adapters/rule-based-adapter.js"

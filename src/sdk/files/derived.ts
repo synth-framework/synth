@@ -1,5 +1,5 @@
 // ============================================================
-// GOVERNANCE: Derived Files & Expedition Scope
+// SDK: Derived Files & Expedition Scope
 // ============================================================
 // Central catalog of paths that are derived from the event log and
 // therefore read-only outside the kernel mutation paths, plus a
@@ -7,13 +7,13 @@
 // ============================================================
 
 import path from "node:path"
-import { root } from "../sdk/workspace/index.js"
+import { root } from "../workspace/index.js"
 
 /** Paths that are derived from the authoritative event log.
  *  Direct writes through the public SDK are rejected; kernel stores
  *  (EventStore, StateStore, CheckpointStore) write these through their
  *  own module-private authorization tokens. */
-export const DERIVED_PATH_PATTERNS: readonly string[] = [
+const DERIVED_PATH_PATTERNS: readonly string[] = [
   ".synth/data/canonical-state.json",
   ".synth/data/event-log.jsonl",
   "AGENTS.md",

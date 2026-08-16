@@ -27,7 +27,7 @@ export function fingerprintPublicKey(publicKeyPem: string): string {
 }
 
 /** Generate a new Ed25519 signing key pair. */
-export function generateSigningKeyPair(): SigningKeyPair {
+function generateSigningKeyPair(): SigningKeyPair {
   const { privateKey, publicKey } = crypto.generateKeyPairSync("ed25519", {
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
     publicKeyEncoding: { type: "spki", format: "pem" },
@@ -78,7 +78,7 @@ export async function loadPublicKey(projectRoot: string, publicKeyPath?: string)
 }
 
 /** Return the fingerprint for a public key without loading the private key. */
-export async function loadPublicKeyFingerprint(projectRoot: string, publicKeyPath?: string): Promise<string | undefined> {
+async function loadPublicKeyFingerprint(projectRoot: string, publicKeyPath?: string): Promise<string | undefined> {
   const publicKey = await loadPublicKey(projectRoot, publicKeyPath)
   if (!publicKey) return undefined
   return fingerprintPublicKey(publicKey)

@@ -12,9 +12,9 @@
 // outputs are projections.
 // ============================================================
 
-export const DISCOVERY_EVIDENCE_SCHEMA_VERSION = "synth-discovery-evidence-v1"
+const DISCOVERY_EVIDENCE_SCHEMA_VERSION = "synth-discovery-evidence-v1"
 export const DISCOVERY_FINDINGS_SCHEMA_VERSION = "synth-discovery-findings-v1"
-export const DISCOVERY_SESSION_SCHEMA_VERSION = "synth-discovery-session-v1"
+const DISCOVERY_SESSION_SCHEMA_VERSION = "synth-discovery-session-v1"
 export const PROJECT_MODEL_SCHEMA_VERSION = "synth-project-model-v1"
 
 // ============================================================

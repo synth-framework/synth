@@ -61,7 +61,7 @@ export type AiInteractionManifest = {
   ownershipBoundaries: OwnershipBoundary[]
 }
 
-export function deriveInteractionManifest(
+function deriveInteractionManifest(
   state: CanonicalState,
   manifest: { name?: string; purpose?: string; governanceVersion?: string },
 ): AiInteractionManifest {
