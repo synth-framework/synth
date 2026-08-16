@@ -1,5 +1,5 @@
 // ============================================================
-// GOVERNANCE: Derived Files & Expedition Scope
+// SDK: Derived Files & Expedition Scope
 // ============================================================
 // Central catalog of paths that are derived from the event log and
 // therefore read-only outside the kernel mutation paths, plus a
@@ -7,7 +7,7 @@
 // ============================================================
 
 import path from "node:path"
-import { root } from "../sdk/workspace/index.js"
+import { root } from "../workspace/index.js"
 
 /** Paths that are derived from the authoritative event log.
  *  Direct writes through the public SDK are rejected; kernel stores
@@ -85,7 +85,7 @@ export function isDerivedPath(filePath: string): boolean {
 }
 
 /** Return the list of patterns that matched the path, for diagnostics. */
-function matchingDerivedPatterns(filePath: string): string[] {
+export function matchingDerivedPatterns(filePath: string): string[] {
   const relative = toProjectRelativePath(filePath)
   return DERIVED_PATH_PATTERNS.filter((pattern) => matchesScope(relative, pattern))
 }
