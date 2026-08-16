@@ -1,0 +1,35 @@
+{
+  "status": "ok",
+  "kind": "MissionApprovalDecision",
+  "decision": {
+    "approved": true,
+    "confidence": 0.715
+  },
+  "draftId": "570cdc23d7a0fc56",
+  "decisionRecorded": true,
+  "snapshotId": "12e08d765c57ef89",
+  "snapshotPersisted": true,
+  "runtime": {
+    "missionId": "4d0ad09b35c008be",
+    "created": true,
+    "approved": true
+  },
+  "proposals": [
+    {
+      "id": "2171f4a7e78c40d1",
+      "kind": "mission",
+      "name": "Stress Test Mission",
+      "description": "To stress test the system",
+      "purpose": "To stress test the system",
+      "evidenceRefs": [
+        "1de0dc425cf0ca99"
+      ],
+      "observationIds": [
+        "obs-mission-stress-test-mission"
+      ],
+      "confidence": 0.8,
+      "rationale": "Proposed from mission observation obs-mission-stress-test-mission"
+    }
+  ],
+  "nextStep": "synth mission snapshot 12e08d765c57ef89 to inspect the persisted snapshot"
+}

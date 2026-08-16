@@ -1,0 +1,40 @@
+{
+  "status": "ok",
+  "kind": "MissionDraft",
+  "draftId": "672004731f0236cc",
+  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/672004731f0236cc.json",
+  "integrity": "certified",
+  "subject": "Stress Test Mission",
+  "purpose": "To stress test the system",
+  "similar": [],
+  "confidence": {
+    "overall": 0.67,
+    "observationCoverage": 0.1,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "unknowns": [],
+  "questions": [],
+  "proposals": [
+    {
+      "id": "2171f4a7e78c40d1",
+      "kind": "mission",
+      "name": "Stress Test Mission",
+      "description": "To stress test the system",
+      "purpose": "To stress test the system",
+      "evidenceRefs": [
+        "1de0dc425cf0ca99"
+      ],
+      "observationIds": [
+        "obs-mission-stress-test-mission"
+      ],
+      "confidence": 0.8,
+      "rationale": "Proposed from mission observation obs-mission-stress-test-mission"
+    }
+  ],
+  "nextStep": "synth mission approve --draft-id 672004731f0236cc"
+}

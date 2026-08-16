@@ -1,0 +1,41 @@
+{
+  "status": "ok",
+  "kind": "ExpeditionDraft",
+  "draftId": "9187d6b8c180ad74",
+  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/9187d6b8c180ad74.json",
+  "integrity": "certified",
+  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
+  "expeditionSubject": "Expedition 2",
+  "goal": "Goal 2",
+  "similar": [
+    {
+      "id": "5efda3991e55708f",
+      "name": "Expedition 1",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "c7ad83c479825adf",
+      "kind": "expedition",
+      "name": "Expedition 2",
+      "description": "Goal 2",
+      "missionId": "27eec4be9af499b6",
+      "goal": "Goal 2",
+      "evidenceRefs": [
+        "2b34abdfbe42e76c"
+      ],
+      "observationIds": [
+        "obs-expedition-expedition-2"
+      ],
+      "confidence": 0.8,
+      "rationale": "Proposed from expedition observation obs-expedition-expedition-2"
+    }
+  ],
+  "nextStep": "synth expedition approve --draft-id 9187d6b8c180ad74"
+}

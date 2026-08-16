@@ -1,0 +1,51 @@
+{
+  "status": "ok",
+  "kind": "ExpeditionDraft",
+  "draftId": "05f132f5bb3caa3b",
+  "draftPath": "/Users/dev/Projects/synth-v2/synth-test-env/.synth/data/drafts/05f132f5bb3caa3b.json",
+  "integrity": "certified",
+  "missionSubject": "Stress Test Mission (4d0ad09b35c008be)",
+  "expeditionSubject": "Expedition 3",
+  "goal": "Goal 3",
+  "similar": [
+    {
+      "id": "5efda3991e55708f",
+      "name": "Expedition 1",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    },
+    {
+      "id": "9187d6b8c180ad74",
+      "name": "Expedition 2",
+      "kind": "expedition",
+      "score": 1,
+      "overlap": [
+        "expedition",
+        "goal"
+      ]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "2e199eb7f9e039c5",
+      "kind": "expedition",
+      "name": "Expedition 3",
+      "description": "Goal 3",
+      "missionId": "cbf96271c72716c1",
+      "goal": "Goal 3",
+      "evidenceRefs": [
+        "efc06df8b9bf0dcd"
+      ],
+      "observationIds": [
+        "obs-expedition-expedition-3"
+      ],
+      "confidence": 0.8,
+      "rationale": "Proposed from expedition observation obs-expedition-expedition-3"
+    }
+  ],
+  "nextStep": "synth expedition approve --draft-id 05f132f5bb3caa3b"
+}

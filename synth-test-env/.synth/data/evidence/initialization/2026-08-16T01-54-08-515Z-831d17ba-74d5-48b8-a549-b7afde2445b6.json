@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectId": "831d17ba-74d5-48b8-a549-b7afde2445b6",
+  "projectName": "Stress Test Project",
+  "collectedAt": "2026-08-16T01:54:08.515Z",
+  "evidence": {
+    "adapterId": "filesystem",
+    "adapterVersion": "1.0.0",
+    "sourceType": "filesystem",
+    "lifecycleStage": "unknown",
+    "intent": "unknown",
+    "domains": [],
+    "constraints": [],
+    "summary": "Filesystem scan of /Users/dev/Projects/synth-v2/synth-test-env: 0 file(s), 0 directory(s), extensions=[], inferred stage=unknown",
+    "confidence": {
+      "value": 0,
+      "label": "none"
+    }
+  },
+  "model": {
+    "schemaVersion": "1.0.0",
+    "identity": {
+      "id": "831d17ba-74d5-48b8-a549-b7afde2445b6",
+      "name": "Stress Test Project"
+    },
+    "intent": {
+      "statement": "unknown",
+      "targetOutcomes": []
+    },
+    "lifecycleStage": "unknown",
+    "domains": [],
+    "constraints": [],
+    "evidence": [],
+    "confidence": {
+      "value": 0,
+      "label": "none"
+    }
+  }
+}

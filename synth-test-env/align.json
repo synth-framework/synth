@@ -1,0 +1,8 @@
+{
+  "status": "ok",
+  "kind": "AlignmentPrepared",
+  "contractId": "alignment-contract-msv5jcp7-s3ejyx",
+  "intentModelId": "intent-model-msv5jcma-shbvt9",
+  "gateId": "divergence-gate-msv5jcs9-qqkfco",
+  "note": "This is a minimal aligned contract for CLI workflows. Production missions should run a full refinement session."
+}

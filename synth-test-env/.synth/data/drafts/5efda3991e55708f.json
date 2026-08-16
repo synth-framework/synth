@@ -1,0 +1,209 @@
+{
+  "id": "5efda3991e55708f",
+  "createdAt": 1786845279329,
+  "observations": [
+    {
+      "id": "obs-mission-stress-test-mission",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Stress Test Mission",
+        "name": "Stress Test Mission",
+        "id": "4d0ad09b35c008be",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Stress Test Mission",
+      "confidence": "high",
+      "timestamp": 1786845279329
+    },
+    {
+      "id": "obs-expedition-expedition-1",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Expedition 1",
+        "name": "Expedition 1",
+        "goal": "Goal 1",
+        "missionSubject": "4d0ad09b35c008be"
+      },
+      "evidenceReference": "evidence-expedition-Expedition 1",
+      "confidence": "high",
+      "timestamp": 1786845279329
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "1de0dc425cf0ca99",
+        "observationId": "obs-mission-stress-test-mission",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "7d6b0740f98411c9",
+        "immutable": true
+      },
+      {
+        "id": "f3a96beb3739676f",
+        "observationId": "obs-expedition-expedition-1",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
+        "fingerprint": "860f2e3b66061137",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-stress-test-mission",
+        {
+          "id": "1de0dc425cf0ca99",
+          "observationId": "obs-mission-stress-test-mission",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "7d6b0740f98411c9",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-expedition-1",
+        {
+          "id": "f3a96beb3739676f",
+          "observationId": "obs-expedition-expedition-1",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
+          "fingerprint": "860f2e3b66061137",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "9b9366a7731941c6",
+        {
+          "id": "9b9366a7731941c6",
+          "kind": "mission",
+          "name": "Stress Test Mission",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-stress-test-mission"
+          ],
+          "evidenceRefs": [
+            "1de0dc425cf0ca99"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "54ee7727c27aefb2",
+        {
+          "id": "54ee7727c27aefb2",
+          "kind": "expedition",
+          "name": "Expedition 1",
+          "description": "Goal 1",
+          "missionId": "9b9366a7731941c6",
+          "goal": "Goal 1",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-expedition-1"
+          ],
+          "evidenceRefs": [
+            "f3a96beb3739676f"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "cbebfe58b99d1573",
+        "source": "54ee7727c27aefb2",
+        "target": "9b9366a7731941c6",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-expedition-1"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "1de0dc425cf0ca99",
+          "observationId": "obs-mission-stress-test-mission",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "7d6b0740f98411c9",
+          "immutable": true
+        },
+        {
+          "id": "f3a96beb3739676f",
+          "observationId": "obs-expedition-expedition-1",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
+          "fingerprint": "860f2e3b66061137",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-stress-test-mission",
+          {
+            "id": "1de0dc425cf0ca99",
+            "observationId": "obs-mission-stress-test-mission",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Stress Test Mission\",\"name\":\"Stress Test Mission\",\"id\":\"4d0ad09b35c008be\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "7d6b0740f98411c9",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-expedition-1",
+          {
+            "id": "f3a96beb3739676f",
+            "observationId": "obs-expedition-expedition-1",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Expedition 1\",\"name\":\"Expedition 1\",\"goal\":\"Goal 1\",\"missionSubject\":\"4d0ad09b35c008be\"}",
+            "fingerprint": "860f2e3b66061137",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
