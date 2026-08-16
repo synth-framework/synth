@@ -42,7 +42,7 @@ export type ProjectGraph = {
 }
 
 /** Build a project graph from canonical state */
-export function buildGraph(state: CanonicalState): ProjectGraph {
+function buildGraph(state: CanonicalState): ProjectGraph {
   const nodes = new Map<string, GraphNode>()
   const edges: GraphEdge[] = []
 
@@ -94,23 +94,23 @@ function toGenericGraph(graph: ProjectGraph): GenericGraph<GraphNode> {
 }
 
 /** Find all reachable nodes from a starting node via BFS */
-export function findReachable(graph: ProjectGraph, startId: string): Set<string> {
+function findReachable(graph: ProjectGraph, startId: string): Set<string> {
   return genericReachableFrom(toGenericGraph(graph), startId)
 }
 
 /** Detect cycles in the dependency graph */
-export function detectCycles(graph: ProjectGraph): string[][] {
+function detectCycles(graph: ProjectGraph): string[][] {
   return genericDetectCycles(toGenericGraph(graph))
 }
 
 /** Check if graph contains any cycles */
-export function isGraphAcyclic(state: CanonicalState): boolean {
+function isGraphAcyclic(state: CanonicalState): boolean {
   const graph = buildGraph(state)
   return genericIsAcyclic(toGenericGraph(graph))
 }
 
 /** Check if all objects in state are reachable from their project */
-export function validateGraphConnectivity(state: CanonicalState): string[] {
+function validateGraphConnectivity(state: CanonicalState): string[] {
   const violations: string[] = []
   const graph = buildGraph(state)
 

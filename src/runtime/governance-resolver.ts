@@ -94,6 +94,9 @@ async function loadDrafts(fs: FilesystemProvider): Promise<DraftSummary[]> {
       const content = JSON.parse(text)
       const confidence = content.confidence?.overall ?? 0
       const unknowns = Array.isArray(content.unknowns) ? content.unknowns : []
+      const hasExpedition = Array.isArray(content.observations) &&
+        content.observations.some((obs: any) => obs.type === "expedition")
+      const kind = hasExpedition ? "expedition" : "mission"
       drafts.push({
         id: content.id || entry.replace(/\.json$/, ""),
         confidence: typeof confidence === "number" ? confidence : 0,
@@ -101,6 +104,7 @@ async function loadDrafts(fs: FilesystemProvider): Promise<DraftSummary[]> {
         blockingUnknowns: unknowns.filter((u: any) => u.blocking).length,
         approvalState: content.approvalState || "draft",
         createdAt: content.createdAt || 0,
+        kind,
       })
     } catch {
       // Ignore unreadable draft artifacts.

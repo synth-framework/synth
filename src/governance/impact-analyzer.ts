@@ -280,12 +280,12 @@ export function getWorkingTreeDiff(): string {
   return result.stdout || ""
 }
 
-export function getChangedFilesFromDiff(diffText?: string): string[] {
+function getChangedFilesFromDiff(diffText?: string): string[] {
   const text = diffText ?? getWorkingTreeDiff()
   return parseDiff(text)
 }
 
-export function analyzeDiff(diffText?: string): ImpactReport {
+function analyzeDiff(diffText?: string): ImpactReport {
   const files = getChangedFilesFromDiff(diffText)
   return analyzeFiles(files)
 }

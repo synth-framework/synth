@@ -48,7 +48,7 @@ function extractId(payload: unknown): string | undefined {
  * Derive a GovernanceRecord from a single event, or return undefined
  * when the event does not represent a governance transition.
  */
-export function deriveGovernanceRecord(event: SynthEvent): GovernanceRecord | undefined {
+function deriveGovernanceRecord(event: SynthEvent): GovernanceRecord | undefined {
   const payload = (event.payload ?? {}) as Record<string, any>
   const subjectId = extractId(payload)
   const subjectName = extractName(payload)

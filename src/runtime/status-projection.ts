@@ -41,11 +41,15 @@ function deriveActiveExpeditions(ctx: ResolvedGovernanceContext): ActiveExpediti
     }))
 }
 
-function findDraftId(ctx: ResolvedGovernanceContext): string | undefined {
-  return (
-    ctx.derived.latestDraft?.id ??
-    Object.values(ctx.authoritative.replayedState.missions || {}).find((m) => m.status === "draft")?.id
-  )
+function findDraftId(ctx: ResolvedGovernanceContext, kind: "mission" | "expedition"): string | undefined {
+  if (ctx.derived.latestDraft && ctx.derived.latestDraft.kind === kind) {
+    return ctx.derived.latestDraft.id
+  }
+  if (kind === "mission") {
+    return Object.values(ctx.authoritative.replayedState.missions || {}).find((m) => m.status === "draft")?.id
+  } else {
+    return Object.values(ctx.authoritative.replayedState.expeditions || {}).find((e) => e.status === "draft")?.id
+  }
 }
 
 function deriveCapabilityWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
@@ -187,7 +191,7 @@ function toNextAction(ctx: ResolvedGovernanceContext, transition: ValidTransitio
         priority: 1,
       }
     case "AddMissionEvidence": {
-      const evidenceDraftId = findDraftId(ctx) ?? "<draft-id>"
+      const evidenceDraftId = findDraftId(ctx, "mission") ?? "<draft-id>"
       return {
         command: `synth mission evidence add --draft-id ${evidenceDraftId} --subject "<evidence>" [--purpose "<context>"] [--confidence high]`,
         reason: transition.reason,
@@ -195,14 +199,39 @@ function toNextAction(ctx: ResolvedGovernanceContext, transition: ValidTransitio
       }
     }
     case "ApproveMission": {
-      const approveDraftId = findDraftId(ctx) ?? "<draft-id>"
+      const approveDraftId = findDraftId(ctx, "mission") ?? "<draft-id>"
       return {
         command: `synth mission approve --draft-id ${approveDraftId}`,
         reason: transition.reason,
         priority: 1,
       }
     }
-    case "CreateExpedition":
+    case "CreateExpedition": {
+      const expeditions = Object.values(ctx.authoritative.replayedState.expeditions || {})
+      const draft = expeditions.find((e) => e.status === "draft")
+      if (draft) {
+        return {
+          command: `synth expedition approve --draft-id ${draft.id}`,
+          reason: "An Expedition draft exists; approve it to proceed.",
+          priority: 1,
+        }
+      }
+      const approved = expeditions.find((e) => e.status === "approved")
+      if (approved) {
+        return {
+          command: `synth expedition commit --proposal-id ${approved.id}`,
+          reason: "An approved Expedition exists; commit it to version control.",
+          priority: 1,
+        }
+      }
+      const committed = expeditions.find((e) => e.status === "committed")
+      if (committed) {
+        return {
+          command: `synth expedition start --id ${committed.id}`,
+          reason: "A committed Expedition exists; start execution.",
+          priority: 1,
+        }
+      }
       return {
         command: activeMission
           ? `synth expedition create --mission ${activeMission.id} --subject "<expedition>" --goal "<goal>"`
@@ -210,6 +239,7 @@ function toNextAction(ctx: ResolvedGovernanceContext, transition: ValidTransitio
         reason: transition.reason,
         priority: 1,
       }
+    }
     case "InspectExecution":
       return {
         command: "synth explain status",

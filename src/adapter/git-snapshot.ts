@@ -276,7 +276,7 @@ function buildCommitMessage(options: SnapshotOptions, snapshotId: string): strin
   return lines.join("\n")
 }
 
-export function defaultSnapshotConfig(): SnapshotConfig {
+function defaultSnapshotConfig(): SnapshotConfig {
   return {
     snapshotPolicy: "tag-only",
     autoTagOnComplete: true,
@@ -506,6 +506,6 @@ export class GitSnapshotAdapter {
   }
 }
 
-export function createGitSnapshotAdapter(): GitSnapshotAdapter {
+function createGitSnapshotAdapter(): GitSnapshotAdapter {
   return new GitSnapshotAdapter()
 }

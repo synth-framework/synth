@@ -18,8 +18,8 @@ import { createGitObservationCapability } from "../capabilities/git-capability.j
 import { createFindingsProjectionCapability } from "../projections/findings.js"
 import { createProjectModelProjectionCapability } from "../projections/project-model-capability.js"
 
-export const REPLAY_CONSUMER_ID = "discovery:replay-consumer"
-export const REPLAY_CONSUMER_VERSION = "1.0.0"
+const REPLAY_CONSUMER_ID = "discovery:replay-consumer"
+const REPLAY_CONSUMER_VERSION = "1.0.0"
 
 function defaultObservationCapabilities() {
   return [
@@ -53,7 +53,7 @@ function defaultProjectionCapabilities(): ProjectionCapability[] {
  * Re-runs the Discovery compiler's correlation and projection stages
  * against the stored observations and returns a structured ReplayReport.
  */
-export function createReplayConsumer(): DiscoveryConsumer<unknown, ReplayReport> {
+function createReplayConsumer(): DiscoveryConsumer<unknown, ReplayReport> {
   return {
     id: REPLAY_CONSUMER_ID,
     version: REPLAY_CONSUMER_VERSION,

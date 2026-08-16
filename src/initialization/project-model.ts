@@ -11,7 +11,7 @@
 // initialization.
 // ============================================================
 
-export const PROJECT_MODEL_SCHEMA_VERSION = "1.0.0"
+const PROJECT_MODEL_SCHEMA_VERSION = "1.0.0"
 
 export type LifecycleStage =
   | "unknown"
@@ -194,7 +194,7 @@ function sorted<T>(items: T[]): T[] {
  * invariant: different input sources with the same intent must converge to
  * an equivalent model.
  */
-export function areProjectModelsEquivalent(
+function areProjectModelsEquivalent(
   a: ProjectModel,
   b: ProjectModel,
 ): boolean {
