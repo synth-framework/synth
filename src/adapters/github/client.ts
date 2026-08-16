@@ -65,6 +65,6 @@ export class GitHubClient {
   }
 }
 
-export function createGitHubClient(config: { baseUrl?: string; token: string }, fetchFn?: GitHubFetchFn): GitHubClient {
+function createGitHubClient(config: { baseUrl?: string; token: string }, fetchFn?: GitHubFetchFn): GitHubClient {
   return new GitHubClient(config, fetchFn)
 }

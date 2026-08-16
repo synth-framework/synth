@@ -258,7 +258,7 @@ export class ReviewGateError extends Error {
 import type { ConstructionContext } from "./intent-model.js"
 
 /** Generate an id from a prefix, timestamp, and random suffix. */
-export function makeId(prefix: string, timestamp: number = Date.now()): string {
+function makeId(prefix: string, timestamp: number = Date.now()): string {
   return `${prefix}-${timestamp.toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 }
 
@@ -272,7 +272,7 @@ export function createReviewGateExpedition(expeditionId: string): ReviewGateExpe
 }
 
 /** Create a gate instance. */
-export function createGate(
+function createGate(
   gateType: GateType,
   expeditionId: string,
   policy: GatePolicy,
@@ -702,7 +702,7 @@ export function approveRefinedIntent(
 }
 
 /** Mark a recorded decision as invalid or obsolete. */
-export function invalidateDecision(
+function invalidateDecision(
   expedition: ReviewGateExpedition,
   gateId: string,
   validity: Exclude<DecisionValidity, "valid">,

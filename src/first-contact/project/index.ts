@@ -6,4 +6,3 @@
 
 export * from "./types.js"
 export * from "./engine.js"
-export { RuleBasedArchitectureProjectionAdapter } from "./adapters/rule-based-adapter.js"

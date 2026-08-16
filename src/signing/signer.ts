@@ -39,7 +39,7 @@ function extractIdentityFromPayload(payload: unknown): Record<string, unknown> |
 }
 
 /** Sign an event with the configured Ed25519 private key. */
-export function signEvent(event: SynthEvent, privateKeyPem: string, fingerprint: string): SynthEvent {
+function signEvent(event: SynthEvent, privateKeyPem: string, fingerprint: string): SynthEvent {
   const identity = extractIdentityFromPayload(event.payload)
   const payload: EventSignaturePayload = {
     eventHash: event.eventHash,
@@ -75,7 +75,7 @@ export function computeMerkleRoot(eventHashes: string[]): string {
 }
 
 /** Build a Merkle root payload over a range of events. */
-export function buildMerkleRoot(events: SynthEvent[], startOffset: number, endOffset: number): MerkleRoot {
+function buildMerkleRoot(events: SynthEvent[], startOffset: number, endOffset: number): MerkleRoot {
   const hashes = events.map((e) => e.eventHash)
   return {
     root: computeMerkleRoot(hashes),
@@ -86,7 +86,7 @@ export function buildMerkleRoot(events: SynthEvent[], startOffset: number, endOf
 }
 
 /** Sign a Merkle root payload. */
-export function signMerkleRoot(root: MerkleRoot, privateKeyPem: string): string {
+function signMerkleRoot(root: MerkleRoot, privateKeyPem: string): string {
   const message = Buffer.from(stableStringify(root), "utf-8")
   return crypto.sign(null, message, privateKeyPem).toString("base64")
 }
@@ -95,7 +95,7 @@ export function signMerkleRoot(root: MerkleRoot, privateKeyPem: string): string 
  * Load the operator signing key and sign an event if configured.
  * Returns the event unchanged if no private key is available.
  */
-export async function maybeSignEvent(
+async function maybeSignEvent(
   event: SynthEvent,
   opts: SignEventBatchOptions = {},
 ): Promise<SynthEvent> {

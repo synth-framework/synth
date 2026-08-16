@@ -12,7 +12,7 @@ import { sortKeys, stableStringify } from "../sdk/json/index.js"
 import { operationIdForInvocation, type OperationFingerprintPayload } from "./types.js"
 
 /** Extract a stable target aggregate identifier from an invocation payload. */
-export function targetAggregateFromPayload(payload: unknown): string | undefined {
+function targetAggregateFromPayload(payload: unknown): string | undefined {
   const record = payload as Record<string, unknown> | undefined
   if (!record) return undefined
   if (typeof record.id === "string") return record.id
@@ -24,7 +24,7 @@ export function targetAggregateFromPayload(payload: unknown): string | undefined
 }
 
 /** Build the canonical fingerprint payload for an invocation. */
-export function buildOperationFingerprintPayload(
+function buildOperationFingerprintPayload(
   invocation: CapabilityInvocation,
   targetAggregate?: string,
 ): OperationFingerprintPayload {
@@ -37,7 +37,7 @@ export function buildOperationFingerprintPayload(
 }
 
 /** Compute a deterministic SHA-256 fingerprint for an invocation. */
-export function computeOperationFingerprint(invocation: CapabilityInvocation): string {
+function computeOperationFingerprint(invocation: CapabilityInvocation): string {
   const targetAggregate = targetAggregateFromPayload(invocation.payload)
   const payload = buildOperationFingerprintPayload(invocation, targetAggregate)
   return crypto.createHash("sha256").update(stableStringify(payload)).digest("hex")

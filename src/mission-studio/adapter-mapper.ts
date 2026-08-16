@@ -41,7 +41,7 @@ const VALID_PLANNING_TYPES: ReadonlySet<PlanningObservationType> = new Set([
  * Returns null if the observation is structurally invalid or its category
  * is not supported by the planning layer.
  */
-export function mapObservationToPlanningObservation(obs: Observation): PlanningObservation | null {
+function mapObservationToPlanningObservation(obs: Observation): PlanningObservation | null {
   if (!obs || typeof obs !== "object") return null
   if (typeof obs.id !== "string" || obs.id.length === 0) return null
   if (!obs.source || typeof obs.source.adapter !== "string" || obs.source.adapter.length === 0) return null

@@ -20,7 +20,7 @@ import type {
 } from "../../planning/observation.js"
 
 export const CLI_CONSUMER_ID = "discovery:cli-consumer"
-export const CLI_CONSUMER_VERSION = "1.0.0"
+const CLI_CONSUMER_VERSION = "1.0.0"
 
 export type CliConsumerOutput = {
   repositoryType: string
@@ -42,14 +42,14 @@ export type RepositoryType = "empty" | "node" | "python" | "polyglot" | "brownfi
 
 const CONFIG_LANGUAGES = new Set(["Markdown", "JSON", "YAML", "Shell"])
 
-export function mapConfidenceLabel(
+function mapConfidenceLabel(
   label: NamedConfidence["confidence"]["label"],
 ): PlanningObservationConfidence {
   if (label === "none") return "unknown"
   return label
 }
 
-export function classifyRepository(projectModel: ProjectModel): RepositoryType {
+function classifyRepository(projectModel: ProjectModel): RepositoryType {
   if (projectModel.fileCount === 0) {
     return "empty"
   }
