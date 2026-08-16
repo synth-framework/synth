@@ -475,7 +475,7 @@ interface OnboardPlan {
   repositoryAdapter: RepositoryAdapterSnapshot
 }
 
-export async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAdapterSnapshot> {
+async function detectRepositoryAdapter(targetDir: string): Promise<RepositoryAdapterSnapshot> {
   const selection = await detectRecommendedAdapters({ targetDir })
   const hasLocalGit = selection.selected.includes("integration:repository")
 
@@ -572,7 +572,7 @@ export async function detectRepositoryAdapter(targetDir: string): Promise<Reposi
   }
 }
 
-export async function detectOnboardState(targetDir: string): Promise<OnboardState> {
+async function detectOnboardState(targetDir: string): Promise<OnboardState> {
   const synthDir = sdk.paths.synthDir(targetDir)
   const manifestPath = sdk.paths.manifestPath(targetDir)
 
@@ -610,7 +610,7 @@ export async function detectOnboardState(targetDir: string): Promise<OnboardStat
   return { kind: "brownfield", hasPackageJson }
 }
 
-export function buildOnboardPlan(
+function buildOnboardPlan(
   state: OnboardState,
   targetDir: string,
   projectName: string,
@@ -688,7 +688,7 @@ export function buildOnboardPlan(
   return base
 }
 
-export async function initializeEmptyProject(targetDir: string, projectName: string) {
+async function initializeEmptyProject(targetDir: string, projectName: string) {
   const governanceVersion = "2.1"
   const projectId = sdk.identity.uuid()
 

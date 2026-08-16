@@ -22,7 +22,7 @@ const CATALOG: Record<string, WarningEntry> = {
   },
 }
 
-export function getWarningEntry(code: string): WarningEntry | undefined {
+function getWarningEntry(code: string): WarningEntry | undefined {
   return CATALOG[code]
 }
 

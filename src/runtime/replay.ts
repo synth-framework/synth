@@ -834,7 +834,7 @@ export function rebuildState(events: SynthEvent[]): CanonicalState {
   return state
 }
 
-export function rebuildStateFromOffset(events: SynthEvent[], startOffset: number = 0): CanonicalState {
+function rebuildStateFromOffset(events: SynthEvent[], startOffset: number = 0): CanonicalState {
   let state = createEmptyState()
   for (let i = startOffset; i < events.length; i++) {
     state = applyEvent(state, events[i])
@@ -940,7 +940,7 @@ export function computeStateHash(state: CanonicalState): string {
   return String(Math.abs(hash))
 }
 
-export function statesEqual(a: CanonicalState, b: CanonicalState): boolean {
+function statesEqual(a: CanonicalState, b: CanonicalState): boolean {
   return a.stateHash === b.stateHash
 }
 

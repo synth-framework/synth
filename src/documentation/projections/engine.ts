@@ -15,31 +15,31 @@ import {
   aiContextTemplate,
 } from "./templates.js"
 
-export function projectToReadme(graph: KnowledgeGraph): string {
+function projectToReadme(graph: KnowledgeGraph): string {
   return readmeTemplate(graph)
 }
 
-export function projectToArchitecture(graph: KnowledgeGraph): string {
+function projectToArchitecture(graph: KnowledgeGraph): string {
   return architectureTemplate(graph)
 }
 
-export function projectToApiReference(graph: KnowledgeGraph): string {
+function projectToApiReference(graph: KnowledgeGraph): string {
   return apiReferenceTemplate(graph)
 }
 
-export function projectToOperatorGuide(graph: KnowledgeGraph): string {
+function projectToOperatorGuide(graph: KnowledgeGraph): string {
   return operatorGuideTemplate(graph)
 }
 
-export function projectToDeveloperGuide(graph: KnowledgeGraph): string {
+function projectToDeveloperGuide(graph: KnowledgeGraph): string {
   return developerGuideTemplate(graph)
 }
 
-export function projectToArchitectGuide(graph: KnowledgeGraph): string {
+function projectToArchitectGuide(graph: KnowledgeGraph): string {
   return architectGuideTemplate(graph)
 }
 
-export function projectToAiContext(graph: KnowledgeGraph): string {
+function projectToAiContext(graph: KnowledgeGraph): string {
   return aiContextTemplate(graph)
 }
 

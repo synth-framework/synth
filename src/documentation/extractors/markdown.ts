@@ -110,7 +110,7 @@ function extractSummary(body: string): string | undefined {
  *   **Date:** 2026-07-12
  *   **Deciders:** Synth Architecture
  */
-export function extractADRMetadata(content: string): { status: string; date: string; deciders: string } | null {
+function extractADRMetadata(content: string): { status: string; date: string; deciders: string } | null {
   const statusMatch = content.match(/^\*\*Status:\*\*\s*(.+)$/m)
   const dateMatch = content.match(/^\*\*Date:\*\*\s*(.+)$/m)
   const decidersMatch = content.match(/^\*\*Deciders:\*\*\s*(.+)$/m)
@@ -130,7 +130,7 @@ export function extractADRMetadata(content: string): { status: string; date: str
  *   **Priority:** Critical
  *   **Program:** EXP-PROGRAM-008
  */
-export function extractExpeditionMetadata(content: string): { status: string; kind: string; priority: string; program: string } | null {
+function extractExpeditionMetadata(content: string): { status: string; kind: string; priority: string; program: string } | null {
   const statusMatch = content.match(/^\*\*Status:\*\*\s*(.+)$/m)
   const kindMatch = content.match(/^\*\*Kind:\*\*\s*(.+)$/m)
   const priorityMatch = content.match(/^\*\*Priority:\*\*\s*(.+)$/m)
@@ -147,7 +147,7 @@ export function extractExpeditionMetadata(content: string): { status: string; ki
 /**
  * Classify a document by its file path and content metadata.
  */
-export function classifyDocument(content: string, filePath: string): "adr" | "expedition" | "reference" | "other" {
+function classifyDocument(content: string, filePath: string): "adr" | "expedition" | "reference" | "other" {
   if (filePath.includes("adr/")) return "adr"
   if (filePath.includes("expeditions/")) return "expedition"
   if (filePath.includes("reference/")) return "reference"

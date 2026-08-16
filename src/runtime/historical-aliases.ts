@@ -16,8 +16,8 @@
 import type { FilesystemProvider } from "../infra/filesystem-provider.js"
 import type { AggregateGraphNode } from "./replay.js"
 
-export const HISTORICAL_ALIASES_SCHEMA_VERSION = "1.0.0"
-export const HISTORICAL_ALIASES_FILE = "governance/historical-aliases.json"
+const HISTORICAL_ALIASES_SCHEMA_VERSION = "1.0.0"
+const HISTORICAL_ALIASES_FILE = "governance/historical-aliases.json"
 
 export type AggregateKind = AggregateGraphNode["kind"]
 
@@ -97,7 +97,7 @@ export async function loadHistoricalAliasRegistry(
   }
 }
 
-export async function saveHistoricalAliasRegistry(
+async function saveHistoricalAliasRegistry(
   fs: FilesystemProvider,
   registry: HistoricalAliasRegistry,
 ): Promise<void> {

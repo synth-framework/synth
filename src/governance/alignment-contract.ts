@@ -266,7 +266,7 @@ export function supersedeAlignmentContract(
 }
 
 /** Derive a default Alignment Contract from an Intent Model. */
-export function deriveAlignmentContractFromIntentModel(
+function deriveAlignmentContractFromIntentModel(
   intentModel: IntentModel,
   refinedIntentId?: string,
   ctx: ConstructionContext = {}

@@ -47,7 +47,7 @@ export type DraftIntegrityRecord = {
 export type DraftIntegrityVerdict = { ok: true } | { ok: false; message: string }
 
 /** Fingerprint of a serialized draft's decision-relevant content. */
-export function fingerprintDraft(serializedDraft: Record<string, unknown>): string {
+function fingerprintDraft(serializedDraft: Record<string, unknown>): string {
   const subset: Record<string, unknown> = {}
   for (const field of FINGERPRINT_FIELDS) {
     subset[field] = serializedDraft[field]

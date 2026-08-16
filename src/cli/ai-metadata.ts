@@ -16,7 +16,7 @@ import * as sdk from "../sdk/index.js"
 import type { CanonicalState } from "../types/index.js"
 import { writeAiInteractionManifest } from "./ai-interaction-manifest.js"
 
-export const AI_METADATA_DIR = "ai"
+const AI_METADATA_DIR = "ai"
 
 export type RepositoryType = "greenfield" | "brownfield" | "hybrid" | "unknown"
 export type MutationPolicy = "READ_ONLY" | "PROPOSAL_ONLY" | "MUTATING"
@@ -171,17 +171,17 @@ export function deriveMutationPolicy(phase: LifecyclePhase): MutationPolicy {
   }
 }
 
-export function deriveActiveMission(state: CanonicalState): { id: string; name: string } | undefined {
+function deriveActiveMission(state: CanonicalState): { id: string; name: string } | undefined {
   const active = Object.values(state.missions).find((m) => m.status === "active")
   return active ? { id: active.id, name: active.name } : undefined
 }
 
-export function deriveActiveExpedition(state: CanonicalState): { id: string; name: string } | undefined {
+function deriveActiveExpedition(state: CanonicalState): { id: string; name: string } | undefined {
   const active = Object.values(state.expeditions).find((e) => e.status === "executing")
   return active ? { id: active.id, name: active.name } : undefined
 }
 
-export function deriveBlockers(state: CanonicalState): string[] {
+function deriveBlockers(state: CanonicalState): string[] {
   const blockers: string[] = []
   const phase = deriveLifecyclePhase(state)
   if (phase === "blocked") {
@@ -195,7 +195,7 @@ export function deriveBlockers(state: CanonicalState): string[] {
   return blockers
 }
 
-export async function deriveAiMetadata(
+async function deriveAiMetadata(
   state: CanonicalState,
   manifest: { name?: string; governanceVersion?: string },
   synthDir?: string,
