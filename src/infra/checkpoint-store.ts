@@ -6,7 +6,7 @@ import { promises as fs } from "fs"
 import path from "path"
 import type { ConsumerCheckpoint } from "../types/index.js"
 import { dataDir } from "../sdk/paths/index.js"
-import { IllegalMutationError } from "../core/errors.js"
+import { IllegalMutationError } from "../sdk/errors/index.js"
 
 const CHECKPOINT_FILE = path.join(dataDir(process.cwd()), "checkpoints.json")
 
