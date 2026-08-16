@@ -99,7 +99,7 @@ function extractLinks(lines: string[]): string[] {
   return links
 }
 
-export function parseExpeditionCharterDetails(content: string): CharterDetails {
+function parseExpeditionCharterDetails(content: string): CharterDetails {
   const lines = content.split("\n")
   const sections = new Map<string, string[]>()
   let currentKey = ""

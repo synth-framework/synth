@@ -127,7 +127,7 @@ export function validateInvocation(invocation: CapabilityInvocation): Validation
 }
 
 /** Check if payload matches expected schema (basic type checking) */
-export function validatePayloadSchema(
+function validatePayloadSchema(
   payload: Record<string, unknown>,
   schema: { required?: string[]; types?: Record<string, string> }
 ): ValidationResult {
@@ -170,7 +170,7 @@ export function validatePayloadSchema(
 }
 
 /** Compose multiple validators into one */
-export function composeValidators(
+function composeValidators(
   ...validators: ((req: IntentRequest) => ValidationResult)[]
 ): (req: IntentRequest) => ValidationResult {
   return (req: IntentRequest) => {

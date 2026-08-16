@@ -52,7 +52,7 @@ function isStringArray(value: unknown): value is string[] {
 /**
  * Validate an unknown object against the canonical task schema.
  */
-export function validateTask(task: unknown): TaskValidationResult {
+function validateTask(task: unknown): TaskValidationResult {
   const errors: TaskValidationError[] = []
 
   if (task === null || typeof task !== "object") {

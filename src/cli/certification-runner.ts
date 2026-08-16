@@ -315,7 +315,7 @@ async function runScenario(scenario: CertificationScenario, cliPath: string): Pr
   return result
 }
 
-export async function loadScenarios(libraryDir: string): Promise<CertificationScenario[]> {
+async function loadScenarios(libraryDir: string): Promise<CertificationScenario[]> {
   const scenarios: CertificationScenario[] = []
   let entries: string[] = []
   try {

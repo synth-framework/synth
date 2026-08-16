@@ -20,7 +20,7 @@ export interface ProtectedAsset {
  * deterministic execution contract and replay semantics, even though they
  * are not named individually in ADR-004.
  */
-export const PROTECTED_ASSETS: ProtectedAsset[] = [
+const PROTECTED_ASSETS: ProtectedAsset[] = [
   {
     name: "Mission Studio",
     description: "Planning cognition environment and mission approval authority.",
@@ -86,6 +86,6 @@ export function detectProtectedAssets(files: string[]): string[] {
 /**
  * Check whether a file path touches any Protected Asset.
  */
-export function isProtectedAssetPath(filePath: string): boolean {
+function isProtectedAssetPath(filePath: string): boolean {
   return detectProtectedAssets([filePath]).length > 0
 }

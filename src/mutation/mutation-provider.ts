@@ -14,7 +14,7 @@ export interface MutationProvider {
   mutate(request: MutationRequest): Promise<MutationResult>
 }
 
-export class MutationProviderRegistry {
+class MutationProviderRegistry {
   private providers = new Map<string, MutationProvider>()
 
   register(provider: MutationProvider): void {

@@ -120,6 +120,6 @@ export function findAffectedTasks(
  * Legacy compatibility: load tasks directly from directories and build a registry.
  * Prefer `loadTaskRegistry` for new code.
  */
-export async function loadTasks(dirs: string[]): Promise<TaskRegistry> {
+async function loadTasks(dirs: string[]): Promise<TaskRegistry> {
   return loadTaskRegistry({ dirs })
 }
