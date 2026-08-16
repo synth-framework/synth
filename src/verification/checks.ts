@@ -39,7 +39,7 @@ function result(
  * Verifies the cryptographic hash-chain and the equality of operational
  * state to replayed state. Also reports aggregate graph correctness.
  */
-export const checkReplayIntegrity: VerificationCheck = async (ctx) => {
+const checkReplayIntegrity: VerificationCheck = async (ctx) => {
   if (!ctx.hasEventLog) {
     return result("ReplayIntegrity", "pass", "No event log present; replay integrity is vacuously satisfied.")
   }
@@ -111,7 +111,7 @@ export const checkReplayIntegrity: VerificationCheck = async (ctx) => {
  * Verifies that cached projections are consistent with their source state
  * and carry required provenance. Also detects forbidden mutable status files.
  */
-export const checkProjectionConsistency: VerificationCheck = async (ctx) => {
+const checkProjectionConsistency: VerificationCheck = async (ctx) => {
   const violations: VerificationViolation[] = []
 
   if (ctx.hasEventLog && ctx.replayResult) {
@@ -188,7 +188,7 @@ export const checkProjectionConsistency: VerificationCheck = async (ctx) => {
  * Verifies that every durable decision points to an existing draft and,
  * for approvals, to an existing certified snapshot.
  */
-export const checkEvidenceReferentialIntegrity: VerificationCheck = async (ctx) => {
+const checkEvidenceReferentialIntegrity: VerificationCheck = async (ctx) => {
   const violations: VerificationViolation[] = []
 
   if (!ctx.decisions.chainValid) {
@@ -252,7 +252,7 @@ export const checkEvidenceReferentialIntegrity: VerificationCheck = async (ctx) 
  * Verifies that assertions (confidence values, approval reasons) are
  * traceable to durable evidence rather than hand-edited fields.
  */
-export const checkAssertionProvenance: VerificationCheck = async (ctx) => {
+const checkAssertionProvenance: VerificationCheck = async (ctx) => {
   const violations: VerificationViolation[] = []
 
   for (const decision of ctx.decisions.records) {
@@ -316,7 +316,7 @@ export const checkAssertionProvenance: VerificationCheck = async (ctx) => {
  * Programmable rules derived from the governance record, layer boundaries,
  * and projection model.
  */
-export const checkGovernanceInvariants: VerificationCheck = async (ctx) => {
+const checkGovernanceInvariants: VerificationCheck = async (ctx) => {
   const violations: VerificationViolation[] = []
 
   if (ctx.hasManifest) {
@@ -379,7 +379,7 @@ export const checkGovernanceInvariants: VerificationCheck = async (ctx) => {
  * Detects divergence between expected and actual state: checkpoints that
  * have moved past the event log, or canonical state that lags events.
  */
-export const checkDrift: VerificationCheck = async (ctx) => {
+const checkDrift: VerificationCheck = async (ctx) => {
   const violations: VerificationViolation[] = []
 
   let eventCount = 0

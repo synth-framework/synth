@@ -88,6 +88,6 @@ export function resolveIdentities(events: SynthEvent[]): IdentityResolutionResul
   return { registry, notices }
 }
 
-export function getCanonicalId(registry: IdentityRegistry, id: string): string | undefined {
+function getCanonicalId(registry: IdentityRegistry, id: string): string | undefined {
   return registry.has(id) ? id : undefined
 }

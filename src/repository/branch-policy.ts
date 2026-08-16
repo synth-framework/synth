@@ -44,7 +44,7 @@ export type ExecutionBranchResult = {
   reason?: string
 }
 
-export function defaultBranchPolicy(): BranchPolicy {
+function defaultBranchPolicy(): BranchPolicy {
   return {
     mode: "off",
     strategy: "featured",

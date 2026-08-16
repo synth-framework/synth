@@ -87,7 +87,7 @@ async function readRaw(fs: FilesystemProvider): Promise<MissionDecision[]> {
  * Verify chain continuity: exactly one genesis record, one successor
  * per record, and every record reachable from genesis.
  */
-export function verifyDecisionChain(records: MissionDecision[]): boolean {
+function verifyDecisionChain(records: MissionDecision[]): boolean {
   if (records.length === 0) return true
   const genesis = records.filter((r) => r.previousHash === "genesis")
   if (genesis.length !== 1) return false

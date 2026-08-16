@@ -55,7 +55,7 @@ export function buildDerivedState(events: SynthEvent[]): DerivedState {
 // Review / Acceptance / Gate state
 // ---------------------------------------------------------------------------
 
-export function buildReviewGateExpeditions(
+function buildReviewGateExpeditions(
   events: SynthEvent[],
 ): Record<string, ReviewGateExpeditionState> {
   const state: Record<string, ReviewGateExpeditionState> = {}
@@ -261,7 +261,7 @@ export function buildReviewGateExpeditions(
 // Genesis / Alignment state
 // ---------------------------------------------------------------------------
 
-export function buildIntentModels(events: SynthEvent[]): Record<string, IntentModelState> {
+function buildIntentModels(events: SynthEvent[]): Record<string, IntentModelState> {
   const state: Record<string, IntentModelState> = {}
 
   for (const event of events) {
@@ -295,7 +295,7 @@ export function buildIntentModels(events: SynthEvent[]): Record<string, IntentMo
   return state
 }
 
-export function buildRefinementSessions(events: SynthEvent[]): Record<string, RefinementSessionState> {
+function buildRefinementSessions(events: SynthEvent[]): Record<string, RefinementSessionState> {
   const state: Record<string, RefinementSessionState> = {}
 
   for (const event of events) {
@@ -332,7 +332,7 @@ export function buildRefinementSessions(events: SynthEvent[]): Record<string, Re
   return state
 }
 
-export function buildRefinementReports(events: SynthEvent[]): Record<string, RefinementReportState> {
+function buildRefinementReports(events: SynthEvent[]): Record<string, RefinementReportState> {
   const state: Record<string, RefinementReportState> = {}
 
   for (const event of events) {
@@ -360,7 +360,7 @@ export function buildRefinementReports(events: SynthEvent[]): Record<string, Ref
   return state
 }
 
-export function buildAlignmentContracts(events: SynthEvent[]): Record<string, AlignmentContractState> {
+function buildAlignmentContracts(events: SynthEvent[]): Record<string, AlignmentContractState> {
   const state: Record<string, AlignmentContractState> = {}
 
   for (const event of events) {
@@ -422,7 +422,7 @@ export function buildAlignmentContracts(events: SynthEvent[]): Record<string, Al
   return state
 }
 
-export function buildReferenceEvidence(events: SynthEvent[]): Record<string, ReferenceEvidenceState> {
+function buildReferenceEvidence(events: SynthEvent[]): Record<string, ReferenceEvidenceState> {
   const state: Record<string, ReferenceEvidenceState> = {}
 
   for (const event of events) {
@@ -438,7 +438,7 @@ export function buildReferenceEvidence(events: SynthEvent[]): Record<string, Ref
   return state
 }
 
-export function buildDivergenceGates(events: SynthEvent[]): Record<string, DivergenceGateState> {
+function buildDivergenceGates(events: SynthEvent[]): Record<string, DivergenceGateState> {
   const state: Record<string, DivergenceGateState> = {}
 
   for (const event of events) {
@@ -473,7 +473,7 @@ export function buildDivergenceGates(events: SynthEvent[]): Record<string, Diver
   return state
 }
 
-export function buildConvergenceCertifications(
+function buildConvergenceCertifications(
   events: SynthEvent[]
 ): Record<string, ConvergenceCertificationState> {
   const state: Record<string, ConvergenceCertificationState> = {}
@@ -590,7 +590,7 @@ function buildDependencyStatusMap(
 // Planning / Execution / Audit state
 // ---------------------------------------------------------------------------
 
-export function buildGeneratedWorkItems(events: SynthEvent[]): Record<string, GeneratedWorkItem> {
+function buildGeneratedWorkItems(events: SynthEvent[]): Record<string, GeneratedWorkItem> {
   const state: Record<string, GeneratedWorkItem> = {}
 
   for (const event of events) {
@@ -606,7 +606,7 @@ export function buildGeneratedWorkItems(events: SynthEvent[]): Record<string, Ge
   return state
 }
 
-export function buildExecutions(events: SynthEvent[]): Record<string, Execution> {
+function buildExecutions(events: SynthEvent[]): Record<string, Execution> {
   const state: Record<string, Execution> = {}
 
   for (const event of events) {
@@ -629,7 +629,7 @@ export function buildExecutions(events: SynthEvent[]): Record<string, Execution>
   return state
 }
 
-export function buildExecutionIntents(events: SynthEvent[]): Record<string, ExecutionIntentState> {
+function buildExecutionIntents(events: SynthEvent[]): Record<string, ExecutionIntentState> {
   const state: Record<string, ExecutionIntentState> = {}
 
   for (const event of events) {
@@ -696,7 +696,7 @@ export function buildExecutionIntents(events: SynthEvent[]): Record<string, Exec
   return state
 }
 
-export function buildExecutionGraphs(events: SynthEvent[]): Record<string, ExecutionGraphState> {
+function buildExecutionGraphs(events: SynthEvent[]): Record<string, ExecutionGraphState> {
   const state: Record<string, ExecutionGraphState> = {}
 
   for (const event of events) {

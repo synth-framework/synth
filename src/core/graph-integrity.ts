@@ -39,7 +39,7 @@ import { buildDerivedState } from "../state/derived/index.js"
 // ============================================================
 
 /** Validator schema version carried by every report and proof artifact. */
-export const GRAPH_INTEGRITY_VALIDATOR_VERSION = 1
+const GRAPH_INTEGRITY_VALIDATOR_VERSION = 1
 
 /** Aggregate kinds the graph integrity model recognizes. */
 export type GraphAggregateKind = "mission" | "expedition" | "objective" | "generatedWorkItem"
