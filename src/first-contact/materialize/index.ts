@@ -6,5 +6,4 @@
 
 export * from "./types.js"
 export { materialize } from "./engine.js"
-export { recommendAdapters, selectWorkflowTemplate, getAdapterVersion } from "./recommend.js"
-export { WORKFLOW_TEMPLATES } from "./templates/index.js"
+export { recommendAdapters, selectWorkflowTemplate } from "./recommend.js"

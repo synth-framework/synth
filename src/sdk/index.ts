@@ -11,4 +11,4 @@ export * as events from "./events/index.js"
 export * as state from "./state/index.js"
 
 // EXP-IDENTITY-001: transport-layer identity.
-export { captureIdentity, type AgentIdentity } from "./identity/index.js"
+export { type AgentIdentity } from "./identity/index.js"

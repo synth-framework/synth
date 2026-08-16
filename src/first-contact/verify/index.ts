@@ -6,4 +6,3 @@
 
 export * from "./types.js"
 export * from "./engine.js"
-export { RuleBasedCapabilityVerifier } from "./adapters/rule-based-verifier.js"

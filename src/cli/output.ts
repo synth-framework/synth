@@ -22,7 +22,7 @@ export function setHumanMode(enabled: boolean) {
   humanMode = enabled
 }
 
-export function isHumanMode(): boolean {
+function isHumanMode(): boolean {
   return humanMode
 }
 
@@ -33,7 +33,7 @@ export function setQuietMode(enabled: boolean) {
   }
 }
 
-export function isQuietMode(): boolean {
+function isQuietMode(): boolean {
   return quietMode || process.env.SYNTH_QUIET_LOGS === "1"
 }
 
@@ -41,7 +41,7 @@ export function setSummaryMode(enabled: boolean) {
   summaryMode = enabled
 }
 
-export function isSummaryMode(): boolean {
+function isSummaryMode(): boolean {
   return summaryMode
 }
 
@@ -68,7 +68,7 @@ export interface ErrorDetails {
  *
  * Governed projects:  .synth/data/cli-errors.jsonl
  */
-export function logCliError(record: Record<string, unknown>): void {
+function logCliError(record: Record<string, unknown>): void {
   try {
     const cwd = process.cwd()
     const targetDir = dataDir(cwd)

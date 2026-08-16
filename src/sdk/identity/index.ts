@@ -18,4 +18,4 @@ export function shortId(): string {
 }
 
 // EXP-IDENTITY-001: transport-layer identity capture.
-export { captureIdentity, identityEnvVars, type AgentIdentity } from "../../identity/index.js"
+export { type AgentIdentity } from "../../identity/index.js"
