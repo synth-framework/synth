@@ -1,0 +1,208 @@
+{
+  "id": "a3bb78ee95e7d2b7",
+  "createdAt": 1786828815295,
+  "observations": [
+    {
+      "id": "obs-mission-framework-audit-and-maturation",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Audit and Maturation",
+        "name": "Framework Audit and Maturation",
+        "purpose": "Auto-created from CLI"
+      },
+      "evidenceReference": "evidence-mission-Framework Audit and Maturation",
+      "confidence": "high",
+      "timestamp": 1786828815295
+    },
+    {
+      "id": "obs-expedition-initialize-audit-and-evidence-gathering",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Initialize Audit and Evidence Gathering",
+        "name": "Initialize Audit and Evidence Gathering",
+        "goal": "Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up expeditions based on findings.",
+        "missionSubject": "Framework Audit and Maturation"
+      },
+      "evidenceReference": "evidence-expedition-Initialize Audit and Evidence Gathering",
+      "confidence": "high",
+      "timestamp": 1786828815295
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "df7d9ca5fdb9968e",
+        "observationId": "obs-mission-framework-audit-and-maturation",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Auto-created from CLI\"}",
+        "fingerprint": "524e507e02f0b008",
+        "immutable": true
+      },
+      {
+        "id": "f0ca89a0f36e775c",
+        "observationId": "obs-expedition-initialize-audit-and-evidence-gathering",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Initialize Audit and Evidence Gathering\",\"name\":\"Initialize Audit and Evidence Gathering\",\"goal\":\"Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up",
+        "fingerprint": "79d25f66a00a6599",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-audit-and-maturation",
+        {
+          "id": "df7d9ca5fdb9968e",
+          "observationId": "obs-mission-framework-audit-and-maturation",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Auto-created from CLI\"}",
+          "fingerprint": "524e507e02f0b008",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-initialize-audit-and-evidence-gathering",
+        {
+          "id": "f0ca89a0f36e775c",
+          "observationId": "obs-expedition-initialize-audit-and-evidence-gathering",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Initialize Audit and Evidence Gathering\",\"name\":\"Initialize Audit and Evidence Gathering\",\"goal\":\"Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up",
+          "fingerprint": "79d25f66a00a6599",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "9b4684340f5b12b7",
+        {
+          "id": "9b4684340f5b12b7",
+          "kind": "mission",
+          "name": "Framework Audit and Maturation",
+          "description": "Auto-created from CLI",
+          "purpose": "Auto-created from CLI",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-audit-and-maturation"
+          ],
+          "evidenceRefs": [
+            "df7d9ca5fdb9968e"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "16d117d7c42271ab",
+        {
+          "id": "16d117d7c42271ab",
+          "kind": "expedition",
+          "name": "Initialize Audit and Evidence Gathering",
+          "description": "Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up expeditions based on findings.",
+          "missionId": "9b4684340f5b12b7",
+          "goal": "Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up expeditions based on findings.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-initialize-audit-and-evidence-gathering"
+          ],
+          "evidenceRefs": [
+            "f0ca89a0f36e775c"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "021b84da712ef5d6",
+        "source": "16d117d7c42271ab",
+        "target": "9b4684340f5b12b7",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-initialize-audit-and-evidence-gathering"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "df7d9ca5fdb9968e",
+          "observationId": "obs-mission-framework-audit-and-maturation",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Auto-created from CLI\"}",
+          "fingerprint": "524e507e02f0b008",
+          "immutable": true
+        },
+        {
+          "id": "f0ca89a0f36e775c",
+          "observationId": "obs-expedition-initialize-audit-and-evidence-gathering",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Initialize Audit and Evidence Gathering\",\"name\":\"Initialize Audit and Evidence Gathering\",\"goal\":\"Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up",
+          "fingerprint": "79d25f66a00a6599",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-audit-and-maturation",
+          {
+            "id": "df7d9ca5fdb9968e",
+            "observationId": "obs-mission-framework-audit-and-maturation",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Audit and Maturation\",\"name\":\"Framework Audit and Maturation\",\"purpose\":\"Auto-created from CLI\"}",
+            "fingerprint": "524e507e02f0b008",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-initialize-audit-and-evidence-gathering",
+          {
+            "id": "f0ca89a0f36e775c",
+            "observationId": "obs-expedition-initialize-audit-and-evidence-gathering",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Initialize Audit and Evidence Gathering\",\"name\":\"Initialize Audit and Evidence Gathering\",\"goal\":\"Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up",
+            "fingerprint": "79d25f66a00a6599",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

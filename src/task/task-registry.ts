@@ -109,7 +109,7 @@ export async function loadTaskRegistry(options: RegistryLoadOptions = {}): Promi
 /**
  * Return tasks in a specific group.
  */
-export function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
+function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
   const ids = registry.groups.get(group) ?? []
   return ids.map((id) => registry.tasks.get(id)!).filter(Boolean)
 }
@@ -117,7 +117,7 @@ export function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
 /**
  * Return tasks with a specific tag.
  */
-export function getTasksByTag(registry: TaskRegistry, tag: string): Task[] {
+function getTasksByTag(registry: TaskRegistry, tag: string): Task[] {
   const ids = registry.tags.get(tag) ?? []
   return ids.map((id) => registry.tasks.get(id)!).filter(Boolean)
 }
@@ -128,7 +128,7 @@ export function getTasksByTag(registry: TaskRegistry, tag: string): Task[] {
  * This helper lets the planning engine ask "which adapter can do X?" without
  * hardcoding adapter names. Results are ranked by catalog relevance scores.
  */
-export function findAdaptersForCapability(
+function findAdaptersForCapability(
   capability: string,
   runtime?: string,
   language?: string,
@@ -146,7 +146,7 @@ export function findAdaptersForCapability(
  * Validate that every adapter hint on every task resolves to a known catalog
  * descriptor. Returns a list of problems; empty means valid.
  */
-export function validateTaskAdapterHints(registry: TaskRegistry): string[] {
+function validateTaskAdapterHints(registry: TaskRegistry): string[] {
   const catalog = createDefaultAdapterCatalog()
   const problems: string[] = []
   for (const task of registry.tasks.values()) {

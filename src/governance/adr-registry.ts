@@ -87,6 +87,6 @@ export function loadAdrRegistry(): AdrRegistry {
 }
 
 /** Look up an ADR status by id (e.g. "ADR-046"). */
-export function getAdrStatus(id: string, registry: AdrRegistry): AdrStatus {
+function getAdrStatus(id: string, registry: AdrRegistry): AdrStatus {
   return registry[id] ?? "Unknown"
 }

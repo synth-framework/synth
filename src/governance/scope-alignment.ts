@@ -23,7 +23,7 @@ import {
  * with a target mission. Mirrors the duplicate-detection default so
  * the similarity semantics stay consistent across the CLI surface.
  */
-export const SCOPE_ALIGNMENT_THRESHOLD = 0.3
+const SCOPE_ALIGNMENT_THRESHOLD = 0.3
 
 export type ScopeAlignmentResult = {
   aligned: boolean

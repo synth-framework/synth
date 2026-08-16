@@ -1,0 +1,209 @@
+{
+  "id": "912a468ae9bf5bd6",
+  "createdAt": 1786862061162,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786862061162
+    },
+    {
+      "id": "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Remove Legacy Support for Previous Synth Projects",
+        "name": "Remove Legacy Support for Previous Synth Projects",
+        "goal": "Deprecate and remove backwards-compatibility layers and migrations designed for legacy Synth v1 projects, simplifying codebase maintenance since there are no active legacy installations in the wild.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Remove Legacy Support for Previous Synth Projects",
+      "confidence": "high",
+      "timestamp": 1786862061162
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "6b26aa32120942a1",
+        "immutable": true
+      },
+      {
+        "id": "675b859eab9a9291",
+        "observationId": "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Remove Legacy Support for Previous Synth Projects\",\"name\":\"Remove Legacy Support for Previous Synth Projects\",\"goal\":\"Deprecate and remove backwards-compatibility layers and migrations des",
+        "fingerprint": "59c0fe03f8e18155",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "6b26aa32120942a1",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+        {
+          "id": "675b859eab9a9291",
+          "observationId": "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Remove Legacy Support for Previous Synth Projects\",\"name\":\"Remove Legacy Support for Previous Synth Projects\",\"goal\":\"Deprecate and remove backwards-compatibility layers and migrations des",
+          "fingerprint": "59c0fe03f8e18155",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "7863365978b0aab7",
+        {
+          "id": "7863365978b0aab7",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "4996799990d90438",
+        {
+          "id": "4996799990d90438",
+          "kind": "expedition",
+          "name": "Remove Legacy Support for Previous Synth Projects",
+          "description": "Deprecate and remove backwards-compatibility layers and migrations designed for legacy Synth v1 projects, simplifying codebase maintenance since there are no active legacy installations in the wild.",
+          "missionId": "7863365978b0aab7",
+          "goal": "Deprecate and remove backwards-compatibility layers and migrations designed for legacy Synth v1 projects, simplifying codebase maintenance since there are no active legacy installations in the wild.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-remove-legacy-support-for-previous-synth-projects"
+          ],
+          "evidenceRefs": [
+            "675b859eab9a9291"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "936ef32647164674",
+        "source": "4996799990d90438",
+        "target": "7863365978b0aab7",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-remove-legacy-support-for-previous-synth-projects"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "6b26aa32120942a1",
+          "immutable": true
+        },
+        {
+          "id": "675b859eab9a9291",
+          "observationId": "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Remove Legacy Support for Previous Synth Projects\",\"name\":\"Remove Legacy Support for Previous Synth Projects\",\"goal\":\"Deprecate and remove backwards-compatibility layers and migrations des",
+          "fingerprint": "59c0fe03f8e18155",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "6b26aa32120942a1",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+          {
+            "id": "675b859eab9a9291",
+            "observationId": "obs-expedition-remove-legacy-support-for-previous-synth-projects",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Remove Legacy Support for Previous Synth Projects\",\"name\":\"Remove Legacy Support for Previous Synth Projects\",\"goal\":\"Deprecate and remove backwards-compatibility layers and migrations des",
+            "fingerprint": "59c0fe03f8e18155",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

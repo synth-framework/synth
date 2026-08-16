@@ -14,7 +14,7 @@ export function sha256(data: string): string {
   return crypto.createHash("sha256").update(data).digest("hex")
 }
 
-export function canonicalize(value: unknown): unknown {
+function canonicalize(value: unknown): unknown {
   if (value === null || typeof value !== "object") return value
   if (Array.isArray(value)) return value.map(canonicalize)
   const sorted: Record<string, unknown> = {}

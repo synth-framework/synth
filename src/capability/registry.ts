@@ -125,7 +125,7 @@ export function createCapabilityRegistry(): Registry {
   return registry
 }
 
-export function createDefaultCapabilities(): Capability[] {
+function createDefaultCapabilities(): Capability[] {
   return [
     // Canonical WorkItem capabilities
     {

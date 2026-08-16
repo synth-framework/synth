@@ -1,0 +1,332 @@
+{
+  "version": 92,
+  "stateHash": "481962764",
+  "lifecycle": "uninitialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {
+    "9861cf62476c90ae": {
+      "id": "9861cf62476c90ae",
+      "name": "Framework Audit and Maturation",
+      "purpose": "Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for future cleanup and optimization missions.",
+      "status": "completed",
+      "expeditions": [
+        "d0a701df55ef36d7"
+      ],
+      "metadata": {},
+      "createdAt": 9,
+      "updatedAt": 17,
+      "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
+    },
+    "4ab7e9d2cc7b1b66": {
+      "id": "4ab7e9d2cc7b1b66",
+      "name": "Framework Maturation v2",
+      "purpose": "Implement fixes for CLI next-command bugs, simplify expedition lifecycle, and optimize bootstrap performance based on the audit evaluation.",
+      "status": "active",
+      "expeditions": [
+        "3919441f53c3f36c",
+        "dac069e8cc375a6b",
+        "ceaa59bf74771ca0",
+        "247c03330b22eee0",
+        "59053ceb20c62203",
+        "d7abae63e9eedf10",
+        "3ea6dbc99dd69a09",
+        "4a3f7b93a4cc3e53",
+        "912a468ae9bf5bd6",
+        "0bd85610bca114c9"
+      ],
+      "metadata": {},
+      "createdAt": 20,
+      "updatedAt": 87,
+      "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
+    }
+  },
+  "expeditions": {
+    "d0a701df55ef36d7": {
+      "id": "d0a701df55ef36d7",
+      "missionId": "9861cf62476c90ae",
+      "name": "Initialize Audit and Evidence Gathering",
+      "goal": "Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up expeditions based on findings.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-44668",
+          "sessionId": "e75a25fd-a494-463b-b67a-12bd1d469019",
+          "approvalMode": "autonomous",
+          "issuedAt": 15
+        }
+      },
+      "createdAt": 11,
+      "updatedAt": 18,
+      "force": true,
+      "forceReason": "Working directory contains temporary audit scratch files"
+    },
+    "3919441f53c3f36c": {
+      "id": "3919441f53c3f36c",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Fix CLI Next-Command ID Resolution",
+      "goal": "Fix the bug where next command suggestions reference incorrect Mission/Expedition IDs when creating or managing drafts to improve robustness and ease of use.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-64587",
+          "sessionId": "ea7b4a1f-3cee-4a74-835f-d9e1dd3e5e41",
+          "approvalMode": "autonomous",
+          "issuedAt": 63
+        }
+      },
+      "createdAt": 22,
+      "updatedAt": 66,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/3919441f53c3f36c/git-diff.patch",
+          "hash": "8c424aeacb96943d5007d83f53f9f5ff80c08b5dd95d0aa0c6aef30eca1db728"
+        }
+      ],
+      "force": true,
+      "forceReason": "Working directory contains temporary audit reports and scratch files."
+    },
+    "dac069e8cc375a6b": {
+      "id": "dac069e8cc375a6b",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Simplify Expedition Lifecycle Operations",
+      "goal": "Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft to Executing, auto-ignoring untracked scratch files) to improve simplification and coherence.",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-65629",
+          "sessionId": "9856e909-edd6-4542-bf00-cf8fc6b1ce21",
+          "approvalMode": "autonomous",
+          "issuedAt": 75
+        }
+      },
+      "createdAt": 23,
+      "updatedAt": 75
+    },
+    "ceaa59bf74771ca0": {
+      "id": "ceaa59bf74771ca0",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Optimize CLI Bootstrap Performance",
+      "goal": "Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command latency.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-55408",
+          "sessionId": "71bcc33e-5d90-466c-aa41-273335d710b7",
+          "approvalMode": "autonomous",
+          "issuedAt": 41
+        }
+      },
+      "createdAt": 24,
+      "updatedAt": 48,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/ceaa59bf74771ca0/git-diff.patch",
+          "hash": "42f40084a8292aefa9d13471e16bc69f3b1ea0e4914ffd84e1d6dbf2edba3c2d"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/ceaa59bf74771ca0/git-diff.patch",
+          "hash": "94ba3b8ba88fb0da29e102acf04d1bd70ffc8c67e51e6e165244e7560b488244"
+        }
+      ],
+      "force": true,
+      "forceReason": "Working directory contains temporary audit reports and scratch files."
+    },
+    "247c03330b22eee0": {
+      "id": "247c03330b22eee0",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Dead Code Elimination (Exports)",
+      "goal": "Remove unused exported functions and types across the framework to reduce the API surface and overall codebase size.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-63784",
+          "sessionId": "9d77df6f-3a52-4178-b905-3990bca8fde4",
+          "approvalMode": "autonomous",
+          "issuedAt": 51
+        }
+      },
+      "createdAt": 25,
+      "updatedAt": 54,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/247c03330b22eee0/git-diff.patch",
+          "hash": "d3bcc464f29c9bd8659f02065eff9e661c670a00905ffe0ca71af9ff857137dd"
+        }
+      ],
+      "force": true,
+      "forceReason": "Working directory contains temporary audit reports and scratch files."
+    },
+    "59053ceb20c62203": {
+      "id": "59053ceb20c62203",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Dead Code Elimination (Files)",
+      "goal": "Delete orphaned files and modules that are no longer referenced in the dependency graph to reduce bloat.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-64197",
+          "sessionId": "6a3cfe9f-86e2-437d-abe0-66454907c417",
+          "approvalMode": "autonomous",
+          "issuedAt": 57
+        }
+      },
+      "createdAt": 26,
+      "updatedAt": 60,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/59053ceb20c62203/git-diff.patch",
+          "hash": "8c424aeacb96943d5007d83f53f9f5ff80c08b5dd95d0aa0c6aef30eca1db728"
+        }
+      ],
+      "force": true,
+      "forceReason": "Working directory contains temporary audit reports and scratch files."
+    },
+    "d7abae63e9eedf10": {
+      "id": "d7abae63e9eedf10",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Dependency Graph Hardening",
+      "goal": "Refactor and simplify the internal dependency graph to prevent circular dependencies and improve maintainability.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-65074",
+          "sessionId": "3ce7432d-126d-4582-a5c0-597a78d4e187",
+          "approvalMode": "autonomous",
+          "issuedAt": 69
+        }
+      },
+      "createdAt": 27,
+      "updatedAt": 72,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/d7abae63e9eedf10/git-diff.patch",
+          "hash": "8c424aeacb96943d5007d83f53f9f5ff80c08b5dd95d0aa0c6aef30eca1db728"
+        }
+      ],
+      "force": true,
+      "forceReason": "Working directory contains temporary audit reports and scratch files."
+    },
+    "3ea6dbc99dd69a09": {
+      "id": "3ea6dbc99dd69a09",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Address Monolithic State Files in .synth/data/",
+      "goal": "Analyze and implement a strategy (such as event log rotation, compaction, or state partitioning) to prevent state files from growing indefinitely and creating performance bottlenecks.",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-81431",
+          "sessionId": "ff1eb2f3-a15c-431d-9718-449e42e1cf40",
+          "approvalMode": "autonomous",
+          "issuedAt": 86
+        }
+      },
+      "createdAt": 76,
+      "updatedAt": 86
+    },
+    "4a3f7b93a4cc3e53": {
+      "id": "4a3f7b93a4cc3e53",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Validation Assertion Quiet Output Flag",
+      "goal": "Add a flag/option to the validation engine and CLI to suppress passing test details and only output errors or failing tests, reducing console output saturation.",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 77,
+      "updatedAt": 81
+    },
+    "912a468ae9bf5bd6": {
+      "id": "912a468ae9bf5bd6",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Remove Legacy Support for Previous Synth Projects",
+      "goal": "Deprecate and remove backwards-compatibility layers and migrations designed for legacy Synth v1 projects, simplifying codebase maintenance since there are no active legacy installations in the wild.",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 82,
+      "updatedAt": 84
+    },
+    "0bd85610bca114c9": {
+      "id": "0bd85610bca114c9",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Investigate 13 Event System Bureaucracy",
+      "goal": "Investigate and propose strategies to alleviate the bureaucracy of the 13-event system in Synth development",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-83020",
+          "sessionId": "f9fac1ff-7872-4d76-9d98-dc26eb59e474",
+          "approvalMode": "autonomous",
+          "issuedAt": 91
+        }
+      },
+      "createdAt": 87,
+      "updatedAt": 91
+    }
+  },
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-msuvn8lx-4eqb7j": {
+      "id": "evidence-msuvn8lx-4eqb7j",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1786828653141
+    }
+  },
+  "lastEventOffset": 92
+}
