@@ -58,7 +58,19 @@ export function parseDependencyRecord(expeditionId: string, charterContent: stri
 
 /** Parse all expedition charters from a directory into dependency records */
 export async function parseCharterDirectory(charterDir: string): Promise<DependencyRecord[]> {
-  const records: DependencyRecord[] = []
+  const cachePath = path.join(charterDir, "..", "..", ".synth", "data", "dependency-records-cache.json")
+  
+  let cache: {
+    mtimes: Record<string, number>
+    records: Record<string, DependencyRecord>
+  } = { mtimes: {}, records: {} }
+
+  try {
+    const cacheData = await fs.readFile(cachePath, "utf-8")
+    cache = JSON.parse(cacheData)
+  } catch {
+    // Cache missing or invalid
+  }
 
   let files: string[]
   try {
@@ -67,16 +79,59 @@ export async function parseCharterDirectory(charterDir: string): Promise<Depende
     return []
   }
 
-  for (const file of files) {
-    if (!file.endsWith(".md")) continue
-    const content = await fs.readFile(path.join(charterDir, file), "utf-8")
+  const records: DependencyRecord[] = []
+  const newMtimes: Record<string, number> = {}
+  const newRecords: Record<string, DependencyRecord> = {}
+  let cacheDirty = false
+
+  const parsePromises = files.map(async (file) => {
+    if (!file.endsWith(".md")) return null
+    const filePath = path.join(charterDir, file)
+    
+    let mtime = 0
+    try {
+      const stat = await fs.stat(filePath)
+      mtime = stat.mtimeMs
+    } catch {
+      // If stat fails, we can't cache
+    }
+
+    newMtimes[file] = mtime
+
+    if (cache.mtimes && cache.mtimes[file] === mtime && cache.records && cache.records[file]) {
+      newRecords[file] = cache.records[file]
+      return cache.records[file]
+    }
+
+    cacheDirty = true
+    const content = await fs.readFile(filePath, "utf-8")
 
     const subjectMatch = content.match(/^#\s+(.*)$/m)
     const expeditionId = subjectMatch
       ? subjectMatch[1].trim()
       : file.replace(/\.md$/, "")
 
-    records.push(parseDependencyRecord(expeditionId, content))
+    const record = parseDependencyRecord(expeditionId, content)
+    newRecords[file] = record
+    return record
+  })
+
+  const results = await Promise.all(parsePromises)
+  for (const result of results) {
+    if (result) records.push(result)
+  }
+
+  if (cacheDirty || Object.keys(cache.mtimes || {}).length !== Object.keys(newMtimes).length) {
+    try {
+      await fs.mkdir(path.dirname(cachePath), { recursive: true })
+      await fs.writeFile(
+        cachePath,
+        JSON.stringify({ mtimes: newMtimes, records: newRecords }, null, 2),
+        "utf-8"
+      )
+    } catch {
+      // Ignore write errors to degrade gracefully
+    }
   }
 
   return records
