@@ -1,0 +1,12 @@
+{
+  "expeditionId": "247c03330b22eee0",
+  "capturedAt": 1786857972823,
+  "note": "Removed 355 unused exports across the codebase to reduce framework API surface and memory footprint.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/247c03330b22eee0/git-diff.patch",
+      "hash": "d3bcc464f29c9bd8659f02065eff9e661c670a00905ffe0ca71af9ff857137dd"
+    }
+  ]
+}

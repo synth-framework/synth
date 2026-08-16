@@ -1,0 +1,235 @@
+{
+  "id": "9b4fbfe658066648",
+  "createdAt": 1786866438049,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "purpose": "Address recent governance errors and re‑open expedition"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1786865499772
+    },
+    {
+      "id": "obs-evidence-governance-error-resolution",
+      "sourceAdapter": "synth-cli",
+      "type": "evidence",
+      "payload": {
+        "subject": "Governance Error Resolution",
+        "name": "Governance Error Resolution",
+        "description": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+        "purpose": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows"
+      },
+      "evidenceReference": "evidence-evidence-Governance Error Resolution",
+      "confidence": "high",
+      "timestamp": 1786866431063
+    },
+    {
+      "id": "obs-evidence-expedition-lifecycle-consolidation",
+      "sourceAdapter": "synth-cli",
+      "type": "evidence",
+      "payload": {
+        "subject": "Expedition Lifecycle Consolidation",
+        "name": "Expedition Lifecycle Consolidation",
+        "description": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+        "purpose": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil"
+      },
+      "evidenceReference": "evidence-evidence-Expedition Lifecycle Consolidation",
+      "confidence": "high",
+      "timestamp": 1786866438049
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"purpose\":\"Address recent governance errors and re‑open expedition\"}",
+        "fingerprint": "eccdda6a3955edfb",
+        "immutable": true
+      },
+      {
+        "id": "17d17e406d542a73",
+        "observationId": "obs-evidence-governance-error-resolution",
+        "source": "synth-cli",
+        "description": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+        "snippet": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+        "fingerprint": "9d662cc34f1573f7",
+        "immutable": true
+      },
+      {
+        "id": "b8792a5f5df5b93c",
+        "observationId": "obs-evidence-expedition-lifecycle-consolidation",
+        "source": "synth-cli",
+        "description": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+        "snippet": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+        "fingerprint": "772e24f4ba8a844f",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"purpose\":\"Address recent governance errors and re‑open expedition\"}",
+          "fingerprint": "eccdda6a3955edfb",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-evidence-governance-error-resolution",
+        {
+          "id": "17d17e406d542a73",
+          "observationId": "obs-evidence-governance-error-resolution",
+          "source": "synth-cli",
+          "description": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+          "snippet": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+          "fingerprint": "9d662cc34f1573f7",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-evidence-expedition-lifecycle-consolidation",
+        {
+          "id": "b8792a5f5df5b93c",
+          "observationId": "obs-evidence-expedition-lifecycle-consolidation",
+          "source": "synth-cli",
+          "description": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+          "snippet": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+          "fingerprint": "772e24f4ba8a844f",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.71,
+    "observationCoverage": 0.3,
+    "evidenceQuality": 0.8000000000000002,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "1ab241b02005b750",
+        {
+          "id": "1ab241b02005b750",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Address recent governance errors and re‑open expedition",
+          "purpose": "Address recent governance errors and re‑open expedition",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"purpose\":\"Address recent governance errors and re‑open expedition\"}",
+          "fingerprint": "eccdda6a3955edfb",
+          "immutable": true
+        },
+        {
+          "id": "17d17e406d542a73",
+          "observationId": "obs-evidence-governance-error-resolution",
+          "source": "synth-cli",
+          "description": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+          "snippet": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+          "fingerprint": "9d662cc34f1573f7",
+          "immutable": true
+        },
+        {
+          "id": "b8792a5f5df5b93c",
+          "observationId": "obs-evidence-expedition-lifecycle-consolidation",
+          "source": "synth-cli",
+          "description": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+          "snippet": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+          "fingerprint": "772e24f4ba8a844f",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"purpose\":\"Address recent governance errors and re‑open expedition\"}",
+            "fingerprint": "eccdda6a3955edfb",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-evidence-governance-error-resolution",
+          {
+            "id": "17d17e406d542a73",
+            "observationId": "obs-evidence-governance-error-resolution",
+            "source": "synth-cli",
+            "description": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+            "snippet": "Address BranchPolicyDenied errors encountered during expedition lifecycle operations, consolidate CLI commands, and align mission/expedition workflows",
+            "fingerprint": "9d662cc34f1573f7",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-evidence-expedition-lifecycle-consolidation",
+          {
+            "id": "b8792a5f5df5b93c",
+            "observationId": "obs-evidence-expedition-lifecycle-consolidation",
+            "source": "synth-cli",
+            "description": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+            "snippet": "Implemented synth expedition run and synth expedition finish commands that compress the 7-step governance lifecycle into 2 commands, reducing operator toil",
+            "fingerprint": "772e24f4ba8a844f",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.71,
+      "observationCoverage": 0.3,
+      "evidenceQuality": 0.8000000000000002,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

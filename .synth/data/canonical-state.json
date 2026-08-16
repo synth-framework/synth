@@ -1,0 +1,86 @@
+{
+  "version": 27,
+  "stateHash": "1498456394",
+  "lifecycle": "uninitialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {
+    "1ab241b02005b750": {
+      "id": "1ab241b02005b750",
+      "name": "Framework Maturation v2",
+      "purpose": "Address recent governance errors and re‑open expedition",
+      "status": "active",
+      "expeditions": [
+        "05aba9066ea7d1d4",
+        "886b4cc325d768d2"
+      ],
+      "metadata": {},
+      "createdAt": 18,
+      "updatedAt": 21,
+      "alignmentContractId": "alignment-contract-msvhlayh-28bq60"
+    }
+  },
+  "expeditions": {
+    "05aba9066ea7d1d4": {
+      "id": "05aba9066ea7d1d4",
+      "missionId": "1ab241b02005b750",
+      "name": "Mission Lifecycle Alignment",
+      "goal": "Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, add constraints preventing mission amendments without operator permission, and ensure missions are properly discoverable in .synth state",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-89561",
+          "sessionId": "d0115a07-6533-4e25-a735-4919cbe1e72c",
+          "approvalMode": "autonomous",
+          "issuedAt": 26
+        }
+      },
+      "createdAt": 20,
+      "updatedAt": 26
+    },
+    "886b4cc325d768d2": {
+      "id": "886b4cc325d768d2",
+      "missionId": "1ab241b02005b750",
+      "name": "Expedition Lifecycle Alignment",
+      "goal": "Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching for expedition execution, enforce committed changes before finishing, streamline the run/finish two-command workflow, and ensure expeditions correctly capture git diff as evidence",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 21,
+      "updatedAt": 23
+    }
+  },
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-msvhl7eb-1n93rl": {
+      "id": "evidence-msvhl7eb-1n93rl",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1786865509811
+    },
+    "evidence-msvhlaxh-hy655r": {
+      "id": "evidence-msvhlaxh-hy655r",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1786865514389
+    }
+  },
+  "lastEventOffset": 27
+}

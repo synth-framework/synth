@@ -1,0 +1,12 @@
+{
+  "expeditionId": "ceaa59bf74771ca0",
+  "capturedAt": 1786857838954,
+  "note": "Optimized parseCharterDirectory bootstrap performance by adding an mtime-based caching layer for expedition dependency records.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/ceaa59bf74771ca0/git-diff.patch",
+      "hash": "94ba3b8ba88fb0da29e102acf04d1bd70ffc8c67e51e6e165244e7560b488244"
+    }
+  ]
+}

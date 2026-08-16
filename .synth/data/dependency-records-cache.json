@@ -1,0 +1,4035 @@
+{
+  "mtimes": {
+    "EXP-ADOPT-001.md": 1784929487978.1982,
+    "EXP-ADOPT-002.md": 1784929487979.3882,
+    "EXP-ADOPT-003.md": 1784929487980.6147,
+    "EXP-ADOPT-004.md": 1784929487982.3652,
+    "EXP-ADOPT-005.md": 1784929487983.6348,
+    "EXP-ADOPT-006.md": 1784929487984.984,
+    "EXP-ADOPT-007.md": 1784929487986.4885,
+    "EXP-ADOPT-008.md": 1784929487987.9993,
+    "EXP-ADOPT-009.md": 1784929487989.766,
+    "EXP-ADOPT-010.md": 1784929487990.8372,
+    "EXP-ADOPT-011.md": 1784929487991.8398,
+    "EXP-ADOPT-012.md": 1784929487992.879,
+    "EXP-ADOPT-013.md": 1784929487993.9482,
+    "EXP-ADOPT-014.md": 1784929487999.4011,
+    "EXP-ADOPT-015.md": 1784929488000.755,
+    "EXP-ADOPT-016.md": 1784929488005.2268,
+    "EXP-ADOPT-017.md": 1784929488013.4937,
+    "EXP-ADOPT-018.md": 1784929488014.985,
+    "EXP-ADOPT-019.md": 1784929488016.2708,
+    "EXP-ADOPT-020.md": 1784929488017.4688,
+    "EXP-ADOPT-021.md": 1784929488018.6343,
+    "EXP-ADP-000.md": 1784953150157.2039,
+    "EXP-ADP-001.md": 1785758397056.703,
+    "EXP-ADP-002.md": 1784623069976.9458,
+    "EXP-ADP-003.md": 1784623065390.7056,
+    "EXP-ADP-004.md": 1784623127836.2334,
+    "EXP-ADP-005.md": 1784623123178.4077,
+    "EXP-ADP-006.md": 1784623074092.3513,
+    "EXP-ADP-007.md": 1784623061285.627,
+    "EXP-ADP-008.md": 1784623086473.0571,
+    "EXP-ADP-009.md": 1784623082194.8784,
+    "EXP-ADP-010.md": 1784623132287.4639,
+    "EXP-ADP-011.md": 1784623115505.657,
+    "EXP-ADP-012.md": 1784623069594.3467,
+    "EXP-ADP-013.md": 1784623065010.0193,
+    "EXP-ADP-014.md": 1784623125487.1357,
+    "EXP-ADP-015.md": 1784623120448.5847,
+    "EXP-ADP-016.md": 1784623072739.8337,
+    "EXP-ADP-017.md": 1784623059918.5928,
+    "EXP-ADP-OBS-001.md": 1784623128435.6885,
+    "EXP-AGENTS-001.md": 1785520717631.7148,
+    "EXP-AI-001.md": 1784623083543.7446,
+    "EXP-AI-002.md": 1784623092198.4502,
+    "EXP-AI-003.md": 1784623107968.7544,
+    "EXP-AI-004.md": 1784623077009.7693,
+    "EXP-AI-005.md": 1784623088561.9111,
+    "EXP-AI-006.md": 1784623097141.5957,
+    "EXP-AI-007.md": 1784623101731.3787,
+    "EXP-AIFC-001.md": 1784467438597.4976,
+    "EXP-AIFC-002.md": 1784623066744.8618,
+    "EXP-AIFC-003.md": 1784623071148.396,
+    "EXP-AIFC-004.md": 1784623124643.9753,
+    "EXP-AIFC-005.md": 1784623130417.0842,
+    "EXP-AIFC-006.md": 1784623062865.4707,
+    "EXP-AIFC-007.md": 1784623075653.1438,
+    "EXP-AIFC-008.md": 1784623081356.4387,
+    "EXP-AIFC-009.md": 1784623085305.568,
+    "EXP-AIFC-010.md": 1784623114415.6504,
+    "EXP-AIFC-011.md": 1785760813953.7112,
+    "EXP-APPROVAL-001.md": 1785696484582.4187,
+    "EXP-AUD-002.md": 1784623129655.0803,
+    "EXP-AX-001.md": 1784623100340.2197,
+    "EXP-AX-002.md": 1784623090130.428,
+    "EXP-AX-003.md": 1784623078600.3655,
+    "EXP-AX-004.md": 1784623113291.874,
+    "EXP-AX-005.md": 1784623095949.2961,
+    "EXP-BOOTSTRAP-001.md": 1786803467712.4106,
+    "EXP-BOOTSTRAP-002.md": 1785788046203.3416,
+    "EXP-BROWNFIELD-001.md": 1784929488020.6917,
+    "EXP-BROWNFIELD-002.md": 1784953150146.0662,
+    "EXP-CAPABILITY-BOUNDARY-001-completion.md": 1784936695611.4863,
+    "EXP-CAPABILITY-BOUNDARY-001-evidence.md": 1784936695616.5254,
+    "EXP-CAPABILITY-BOUNDARY-001.md": 1784936695618.7505,
+    "EXP-CAPTRANS-001.md": 1785463522406.5288,
+    "EXP-CAPTRANS-002.md": 1785520678408.2412,
+    "EXP-CAPTRANS-003.md": 1785786457220.9507,
+    "EXP-CERT-001.md": 1784929488027.0361,
+    "EXP-CLI-001.md": 1784955223270.7905,
+    "EXP-CLI-002.md": 1785484032467.7778,
+    "EXP-CLI-003.md": 1785475307318.7195,
+    "EXP-CLI-004.md": 1785757928855.3367,
+    "EXP-CLI-005.md": 1785786457226.1655,
+    "EXP-COMPLEXITY-AUDIT-001-accidental-complexity.md": 1784936695621.8599,
+    "EXP-COMPLEXITY-AUDIT-001-completion.md": 1784936695624.159,
+    "EXP-COMPLEXITY-AUDIT-001-complexity-budget.md": 1784936695627.7793,
+    "EXP-COMPLEXITY-AUDIT-001-essential-core.md": 1784936695631.824,
+    "EXP-COMPLEXITY-AUDIT-001-kernel-boundary.md": 1784936695636.1992,
+    "EXP-COMPLEXITY-AUDIT-001-simplification-matrix.md": 1784936695641.6965,
+    "EXP-COMPLEXITY-AUDIT-001.md": 1784936695644.7102,
+    "EXP-CONT-001.md": 1784623098555.2346,
+    "EXP-CONT-002.md": 1784623089363.7002,
+    "EXP-CONT-003.md": 1784623077820.6128,
+    "EXP-CONVERGENCE-001.md": 1784953150160.4504,
+    "EXP-DET-001.md": 1784623077432.7295,
+    "EXP-DISC-001.md": 1784953150167.6147,
+    "EXP-DISC-002.md": 1785004597531.691,
+    "EXP-DISC-003.md": 1785004597554.8823,
+    "EXP-DISC-004.md": 1785004597561.9714,
+    "EXP-DISC-005.md": 1785004597567.8367,
+    "EXP-DISC-006.md": 1785004597574.9348,
+    "EXP-DISCOVERY-001.md": 1784929488267.8247,
+    "EXP-DISCOVERY-002.md": 1784623083352.7275,
+    "EXP-DISCOVERY-003.md": 1784623087300.5488,
+    "EXP-DISCOVERY-004.md": 1784623099871.7166,
+    "EXP-DISCOVERY-005.md": 1784623104965.212,
+    "EXP-DISCOVERY-006.md": 1784623078795.7764,
+    "EXP-DISCOVERY-007.md": 1784623090326.645,
+    "EXP-DISCOVERY-008.md": 1784623066158.9849,
+    "EXP-DIST-001.md": 1785008503535.419,
+    "EXP-DIST-002.md": 1785009583251.3254,
+    "EXP-DIST-003.md": 1785016868628.756,
+    "EXP-DIST-004.md": 1785020421537.9504,
+    "EXP-DIST-005.md": 1785010629825.5278,
+    "EXP-DIST-008.md": 1785766550049.1804,
+    "EXP-DOC-002.md": 1784959068135.6902,
+    "EXP-DOC-003.md": 1784930997997.7617,
+    "EXP-DOC-004.md": 1784930998010.91,
+    "EXP-DOC-005.md": 1784932022915.345,
+    "EXP-DOC-007.md": 1785463522409.9849,
+    "EXP-DOC-008.md": 1785787336308.5178,
+    "EXP-DOCS-001.md": 1784623126653.4019,
+    "EXP-DOCS-002.md": 1784623060109.4766,
+    "EXP-DOCS-003.md": 1784623073123.971,
+    "EXP-DOCS-004.md": 1784623114958.658,
+    "EXP-DOCS-005.md": 1784623131729.6692,
+    "EXP-DOCS-006.md": 1784623063652.1018,
+    "EXP-DRYRUN-001.md": 1785499767502.9485,
+    "EXP-ENV-001.md": 1784623059536.23,
+    "EXP-ENV-002.md": 1784623124920.9404,
+    "EXP-ENV-003.md": 1784623119492.9265,
+    "EXP-ENV-004.md": 1784623067960.5674,
+    "EXP-ENV-005.md": 1784623063458.711,
+    "EXP-ENV-006.md": 1784623130874.3674,
+    "EXP-ENV-007.md": 1784623114152.8557,
+    "EXP-ENV-008.md": 1784623103526.177,
+    "EXP-ENV-009.md": 1784623098334.6304,
+    "EXP-ENV-010.md": 1784623075061.5056,
+    "EXP-ENV-011.md": 1784623062270.3923,
+    "EXP-ENV-012.md": 1784623129049.9336,
+    "EXP-ENV-013.md": 1784623123486.7173,
+    "EXP-EVENTLOG-001.md": 1785499767504.7632,
+    "EXP-EVIDENCE-001.md": 1785520962129.6907,
+    "EXP-EXEC-001.md": 1784623131115.6907,
+    "EXP-EXEC-002.md": 1784623064038.5747,
+    "EXP-EXEC-003.md": 1784623068993.258,
+    "EXP-EXEC-004.md": 1784623121367.9326,
+    "EXP-EXEC-005.md": 1784623126342.7148,
+    "EXP-EXPLAIN-001.md": 1785484032473.5632,
+    "EXP-FIRSTCONTACT-001.md": 1784623081977.4634,
+    "EXP-FIRSTCONTACT-002.md": 1785004597583.6304,
+    "EXP-FIRSTCONTACT-003.md": 1784953150173.0703,
+    "EXP-FIRSTCONTACT-004.md": 1784623091512.5203,
+    "EXP-FIRSTCONTACT-005.md": 1784623079979.8643,
+    "EXP-FIRSTCONTACT-006.md": 1784623105697.437,
+    "EXP-FIRSTCONTACT-007.md": 1784623100544.7844,
+    "EXP-FIRSTCONTACT-008.md": 1784503685185.8882,
+    "EXP-FIRSTCONTACT-009.md": 1784623117281.638,
+    "EXP-FIRSTCONTACT-010.md": 1784953150218.2493,
+    "EXP-FIRSTCONTACT-011.md": 1784623080959.337,
+    "EXP-GATE-001.md": 1784931955137.672,
+    "EXP-GATE-002.md": 1784931955344.8525,
+    "EXP-GATE-003.md": 1784931955351.1685,
+    "EXP-GATE-004.md": 1784931955354.2163,
+    "EXP-GATE-005.md": 1784931955361.2964,
+    "EXP-GATE-006.md": 1784931955369.561,
+    "EXP-GATE-007.md": 1784931955372.9365,
+    "EXP-GATE-008.md": 1784931955375.731,
+    "EXP-GATE-009.md": 1784931955379.367,
+    "EXP-GATE-010.md": 1784931955386.5496,
+    "EXP-GATE-011.md": 1784931955388.4082,
+    "EXP-GATE-012.md": 1784931955391.775,
+    "EXP-GATE-013.md": 1784931972326.764,
+    "EXP-GATE-014.md": 1785759642395.6433,
+    "EXP-GENESIS-001.md": 1784953150058.575,
+    "EXP-GENESIS-002.md": 1784953150107.121,
+    "EXP-GENESIS-003.md": 1784623066549.9392,
+    "EXP-GIT-001.md": 1785738638806.8523,
+    "EXP-GOV-001.md": 1784623091712.6047,
+    "EXP-GOV-002.md": 1784623083736.9917,
+    "EXP-GOV-003.md": 1784623080377.1746,
+    "EXP-GOV-004.md": 1784623102124.1206,
+    "EXP-GOV-005.md": 1784623097648.76,
+    "EXP-GOV-006.md": 1784623088367.5154,
+    "EXP-GOV-007.md": 1784623076620.9072,
+    "EXP-GOV-008.md": 1784623068736.5,
+    "EXP-GOV-009.md": 1784623064248.0732,
+    "EXP-GOV-012.md": 1784623087064.2957,
+    "EXP-GOV-013.md": 1784623082961.1858,
+    "EXP-GOV-014.md": 1784949599120.9817,
+    "EXP-GOV-015.md": 1784951063160.2056,
+    "EXP-GOV-016.md": 1784623090524.7454,
+    "EXP-GOV-017.md": 1784623079197.8923,
+    "EXP-GOV-018.md": 1784623070560.1228,
+    "EXP-GOV-019.md": 1784623065967.7725,
+    "EXP-GOV-020.md": 1784623105974.9185,
+    "EXP-GOV-021.md": 1784623100937.5125,
+    "EXP-GOV-022.md": 1784623091310.7954,
+    "EXP-GOV-023.md": 1785769294971.8755,
+    "EXP-GOV-024.md": 1785463522413.6477,
+    "EXP-GOV-025.md": 1785791108304.847,
+    "EXP-GOVERN-001.md": 1784623106601.6187,
+    "EXP-GOVERN-002.md": 1784623079389.7563,
+    "EXP-GOVERN-003.md": 1784623090719.2441,
+    "EXP-GOVERN-004.md": 1784623095007.2642,
+    "EXP-GOVERN-005.md": 1784623112341.7515,
+    "EXP-GOVERN-006.md": 1784623081752.7603,
+    "EXP-GOVERNABILITY-001-regression-certification.md": 1784953150347.602,
+    "EXP-GOVERNABILITY-002-proposal-evaluation-capability.md": 1784953150363.2007,
+    "EXP-GOVERNABILITY-003-proposal-evaluation-implementation.md": 1784953150365.4282,
+    "EXP-GOVERNABILITY-004.md": 1784953150369.613,
+    "EXP-GOVERNABILITY-005.md": 1784953150372.7854,
+    "EXP-GOVERNABILITY-006B.md": 1784929488489.3682,
+    "EXP-GOVERNANCE-ENFORCEMENT-001.md": 1784939834487.0903,
+    "EXP-GOVERNANCE-ENFORCEMENT-002.md": 1786748512778.9697,
+    "EXP-GRAPH-001.md": 1785753953155.5115,
+    "EXP-GUARD-001.md": 1785476625273.6826,
+    "EXP-GUARD-002.md": 1785756922990.8633,
+    "EXP-HARDEN-001.md": 1784623118908.2002,
+    "EXP-HARDEN-002.md": 1784623071733.9397,
+    "EXP-HARDEN-003.md": 1784623067351.9143,
+    "EXP-HARDEN-004.md": 1784623129945.354,
+    "EXP-HARDEN-005.md": 1784623124054.5522,
+    "EXP-HARDEN-006.md": 1784623074677.247,
+    "EXP-HARDEN-007.md": 1784623061886.985,
+    "EXP-HOME-001.md": 1784929488494.3394,
+    "EXP-HOME-002.md": 1784929488498.2124,
+    "EXP-HOME-003.md": 1785004597586.7449,
+    "EXP-HOME-004.md": 1785004597589.0251,
+    "EXP-HOME-005.md": 1785004597592.4607,
+    "EXP-HOME-006.md": 1785004597597.073,
+    "EXP-HOME-007.md": 1785004597598.4692,
+    "EXP-HOME-008.md": 1785004597601.3186,
+    "EXP-HOME-009.md": 1785004597602.9048,
+    "EXP-HOME-010.md": 1785004597605.7488,
+    "EXP-HOME-011.md": 1785004597607.148,
+    "EXP-HOME-012.md": 1785004597608.2876,
+    "EXP-HOME-013.md": 1785004597612.0803,
+    "EXP-HOME-014.md": 1785004597613.1255,
+    "EXP-HOME-015.md": 1785004597615.0547,
+    "EXP-HOME-016.md": 1785004597618.625,
+    "EXP-HOME-017.md": 1785004597627.2512,
+    "EXP-HOME-018.md": 1785004597630.0767,
+    "EXP-HOME-019.md": 1785004597635.4016,
+    "EXP-HOME-020.md": 1785004597899.7722,
+    "EXP-HOME-021.md": 1785004597901.017,
+    "EXP-HOME-022.md": 1785004597903.9705,
+    "EXP-HOME-023.md": 1785004597905.0444,
+    "EXP-HOME-024.md": 1785004597906.0854,
+    "EXP-HOME-025.md": 1784929488641.695,
+    "EXP-HOME-026.md": 1784929488643.4412,
+    "EXP-HOME-027.md": 1784929488645.7505,
+    "EXP-HOME-028.md": 1784929488648.367,
+    "EXP-IDENTITY-001.md": 1785696484589.5205,
+    "EXP-INIT-001.md": 1784623088766.4026,
+    "EXP-INIT-002.md": 1784623097871.198,
+    "EXP-INSTALL-001.md": 1784623098980.2163,
+    "EXP-INSTALL-002.md": 1784623089941.9805,
+    "EXP-INSTALL-003.md": 1784623078400.377,
+    "EXP-INSTALL-004.md": 1784623109503.9788,
+    "EXP-INSTALL-005.md": 1784623093208.5085,
+    "EXP-INSTALL-006.md": 1784623084902.7043,
+    "EXP-INSTALL-007.md": 1784623081151.265,
+    "EXP-INSTALL-008.md": 1784623076034.474,
+    "EXP-INSTALL-009.md": 1784623063059.9368,
+    "EXP-INSTALL-010.md": 1784623102564.7698,
+    "EXP-INSTALL-011.md": 1784623098100.5552,
+    "EXP-INSTALL-012.md": 1784962533523.8896,
+    "EXP-KNOWLEDGE-001.md": 1784623072931.1262,
+    "EXP-KNOWLEDGE-002.md": 1784623120131.6553,
+    "EXP-MIGRATE-001.md": 1786803467718.5698,
+    "EXP-MST-001.md": 1784942735488.2397,
+    "EXP-MUTATION-LIFECYCLE-001-inventory.md": 1784942052342.568,
+    "EXP-MUTATION-LIFECYCLE-001.md": 1784941860566.8027,
+    "EXP-ONBOARD-001.md": 1785465096906.112,
+    "EXP-ONBOARD-002.md": 1785629904668.857,
+    "EXP-OUTPUT-001.md": 1785786457236.6548,
+    "EXP-PLATFORM-001-canonical-infrastructure-audit.md": 1784936695654.6536,
+    "EXP-PLATFORM-001-infrastructure-matrix.md": 1784936695656.6409,
+    "EXP-PLATFORM-002-deletion-list.md": 1784936695658.743,
+    "EXP-PLATFORM-002-duplication-map.md": 1784936695661.3093,
+    "EXP-PLATFORM-002-migration-order.md": 1784936695663.024,
+    "EXP-PLATFORM-002-responsibility-matrix.md": 1784936695664.806,
+    "EXP-PLATFORM-002-sdk-surface.md": 1784936695666.6753,
+    "EXP-PLATFORM-002.md": 1784936695668.4558,
+    "EXP-PLATFORM-003-construction-canonicalization.md": 1784936695670.864,
+    "EXP-PLATFORM-003-construction-matrix.md": 1784936695672.9688,
+    "EXP-PLATFORM-004-utility-extraction.md": 1784938744874.5894,
+    "EXP-PLATFORM-004-utility-matrix.md": 1784942742266.103,
+    "EXP-PROD-001.md": 1784623085499.7307,
+    "EXP-PROD-002.md": 1784623093449.889,
+    "EXP-PROD-003.md": 1784623110326.2146,
+    "EXP-PROD-004.md": 1784623078010.7573,
+    "EXP-PROD-005.md": 1784623089752.5007,
+    "EXP-PROGRAM-001.md": 1784623111029.2993,
+    "EXP-PROGRAM-002.md": 1784623082771.9841,
+    "EXP-PROGRAM-003.md": 1784623086667.552,
+    "EXP-PROGRAM-004.md": 1784929488794.4673,
+    "EXP-PROGRAM-005.md": 1784623106319.7224,
+    "EXP-PROGRAM-006.md": 1784623079784.2039,
+    "EXP-PROGRAM-007.md": 1784623091119.0212,
+    "EXP-PROGRAM-008.md": 1784623065581.4712,
+    "EXP-PROGRAM-009.md": 1785004657310.6204,
+    "EXP-PROGRAM-010.md": 1784623092703.1357,
+    "EXP-PROGRAM-011.md": 1784623108784.963,
+    "EXP-PROGRAM-012.md": 1784623080768.387,
+    "EXP-PROGRAM-013.md": 1784623084126.2913,
+    "EXP-PROGRAM-014.md": 1784623096671.3384,
+    "EXP-PROGRAM-015.md": 1784623101340.6897,
+    "EXP-PROGRAM-016.md": 1784623076230.1157,
+    "EXP-PROGRAM-017.md": 1784623087900.958,
+    "EXP-PROGRAM-018.md": 1784623064814.9841,
+    "EXP-PROGRAM-019.md": 1784623069194.4111,
+    "EXP-PROGRAM-020.md": 1784929488800.1638,
+    "EXP-PROGRAM-021.md": 1784623102321.9736,
+    "EXP-PROGRAM-022.md": 1784623076816.284,
+    "EXP-PROGRAM-023.md": 1784623088154.5864,
+    "EXP-PROGRAM-024.md": 1784623091962.0874,
+    "EXP-PROGRAM-025.md": 1784623107700.9578,
+    "EXP-PROGRAM-026.md": 1784623080180.8171,
+    "EXP-PROGRAM-027.md": 1784932304685.0989,
+    "EXP-PROGRAM-028.md": 1784623060512.8616,
+    "EXP-PROGRAM-029.md": 1785791322464.1702,
+    "EXP-PROGRAM-030.md": 1785769294974.0564,
+    "EXP-PROGRAM-031.md": 1785764328575.5398,
+    "EXP-PROGRAM-032.md": 1785463522421.2383,
+    "EXP-PROGRAM-034.md": 1785763892527.9075,
+    "EXP-PROGRAM-035.md": 1784931998776.7158,
+    "EXP-PROGRAM-036.md": 1784932010478.2236,
+    "EXP-PROGRAM-037.md": 1785463522426.0117,
+    "EXP-PROGRAM-038.md": 1784962589968.983,
+    "EXP-PROGRAM-039.md": 1784932327520.3792,
+    "EXP-PROGRAM-040.md": 1784941927509.7332,
+    "EXP-PROGRAM-041.md": 1784938772682.5925,
+    "EXP-PROGRAM-042.md": 1785004566155.3457,
+    "EXP-PROGRAM-043.md": 1786803467725.6177,
+    "EXP-PROGRAM-044.md": 1785791108306.612,
+    "EXP-REFINE-001.md": 1784931955394.3486,
+    "EXP-REFINE-002.md": 1784931955395.2842,
+    "EXP-REFINE-003.md": 1784931955396.9333,
+    "EXP-REFINE-004.md": 1784931955525.7744,
+    "EXP-REFINE-005.md": 1784931955527.9517,
+    "EXP-REFINE-006.md": 1784931955528.8105,
+    "EXP-REFINE-007.md": 1784931955537.2373,
+    "EXP-REFINE-008.md": 1784929488847.9448,
+    "EXP-REFINE-009.md": 1784931955538.231,
+    "EXP-REFINE-010.md": 1784931972513.6597,
+    "EXP-REFINE-011.md": 1784931955539.4248,
+    "EXP-REFINE-012.md": 1784931955550.7717,
+    "EXP-REFINE-013.md": 1784953150379.8875,
+    "EXP-REFINE-014.md": 1786167023341.2622,
+    "EXP-REFINE-015.md": 1784931972519.3115,
+    "EXP-REFINE-016.md": 1784931972520.8535,
+    "EXP-REL-001.md": 1784623121674.9463,
+    "EXP-REL-002.md": 1784623073317.072,
+    "EXP-REL-003.md": 1784623060306.8645,
+    "EXP-REL-004.md": 1784623132000.7986,
+    "EXP-REL-005.md": 1784623115218.6414,
+    "EXP-REL-006.md": 1784623068343.6707,
+    "EXP-REPO-001.md": 1784491981964.6125,
+    "EXP-REPO-002.md": 1784623066967.8167,
+    "EXP-REPO-003.md": 1784623071346.7402,
+    "EXP-REPO-004.md": 1784623124384.9653,
+    "EXP-REPO-005.md": 1784623130174.7383,
+    "EXP-REPO-006.md": 1784623063260.903,
+    "EXP-REPO-007.md": 1784623075841.3862,
+    "EXP-REVIEW-001.md": 1785752536306.077,
+    "EXP-REVIEW-002.md": 1785755551623.9038,
+    "EXP-REVIEW-003.md": 1785755551636.1177,
+    "EXP-RUNTIME-001.md": 1784623077238.3535,
+    "EXP-SEC-001.md": 1784944962528.3513,
+    "EXP-SEMANTIC-001.md": 1784623098757.5806,
+    "EXP-SEMANTIC-002.md": 1784623089170.1206,
+    "EXP-SIGN-001.md": 1785696484597.8599,
+    "EXP-SIMPLIFICATION-001-authority-resolver-design.md": 1784936695685.313,
+    "EXP-SIMPLIFICATION-001-completion.md": 1784936695689.0894,
+    "EXP-SIMPLIFICATION-001-derived-state-contract.md": 1784936695691.4263,
+    "EXP-SIMPLIFICATION-001.md": 1784936695694.0537,
+    "EXP-SIMPLIFICATION-002.md": 1784936695696.1956,
+    "EXP-SIMPLIFICATION-003-responsibility-matrix.md": 1784936695698.9895,
+    "EXP-SIMPLIFICATION-003.md": 1784936695703.0967,
+    "EXP-SIMPLIFICATION-ASSESSMENT-001-report.md": 1784929488895.0437,
+    "EXP-SIMPLIFICATION-ASSESSMENT-001.md": 1784936695709.715,
+    "EXP-SMA-001.md": 1784623085887.5935,
+    "EXP-TASK-001.md": 1785758397059.1262,
+    "EXP-TASK-002.md": 1785758397061.046,
+    "EXP-TASK-003.md": 1785758397062.7502,
+    "EXP-TASK-004.md": 1785758397064.879,
+    "EXP-TASK-005.md": 1785758397066.608,
+    "EXP-TASK-006.md": 1785758397068.262,
+    "EXP-TASK-012.md": 1785763487755.1873,
+    "EXP-TRUST-001.md": 1784623107121.9773,
+    "EXP-TRUST-002.md": 1784623079587.1208,
+    "EXP-TRUST-003.md": 1784623090920.8364,
+    "EXP-TRUST-004.md": 1784623095251.133,
+    "EXP-VAL-001.md": 1784623119206.8962,
+    "EXP-VAL-002.md": 1784623071541.4863,
+    "EXP-VAL-003.md": 1784623067162.743,
+    "EXP-VAL-004.md": 1784623129337.255,
+    "EXP-VAL-005.md": 1784623123766.684,
+    "EXP-VAL-006.md": 1784623074869.5261,
+    "EXP-VAL-007.md": 1784623062080.2341,
+    "EXP-VAL-008.md": 1784623085694.8499,
+    "EXP-VAL-009.md": 1784623081559.4988,
+    "EXP-VAL-010.md": 1784623130648.2808,
+    "EXP-VAL-011.md": 1784623113642.9292,
+    "EXP-VAL-012.md": 1784623068152.048,
+    "EXP-VCS-001.md": 1784623084715.0679,
+    "EXP-VCS-002.md": 1784623092963.9302,
+    "EXP-VCS-003.md": 1784623109275.5632,
+    "EXP-VCS-004.md": 1784623077623.5618,
+    "EXP-VCS-005.md": 1784623088969.0977,
+    "EXP-WARN-001.md": 1785760216743.0054,
+    "EXP-WEB-001.md": 1784929488900.861
+  },
+  "records": {
+    "EXP-ADOPT-001.md": {
+      "expeditionId": "EXP-ADOPT-001 — Brand Presence",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-002.md": {
+      "expeditionId": "EXP-ADOPT-002 — Repository Readiness",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-003.md": {
+      "expeditionId": "EXP-ADOPT-003 — Documentation Hub",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-004.md": {
+      "expeditionId": "EXP-ADOPT-004 — Homepage Launch",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-005.md": {
+      "expeditionId": "EXP-ADOPT-005 — Installation Experience",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-006.md": {
+      "expeditionId": "EXP-ADOPT-006 — Examples Library",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-007.md": {
+      "expeditionId": "EXP-ADOPT-007 — Video Library",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-008.md": {
+      "expeditionId": "EXP-ADOPT-008 — Documentation Articles",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-009.md": {
+      "expeditionId": "EXP-ADOPT-009 — Launch Campaign",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-010.md": {
+      "expeditionId": "EXP-ADOPT-010 — Developer Outreach",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-011.md": {
+      "expeditionId": "EXP-ADOPT-011 — Community Programs",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-012.md": {
+      "expeditionId": "EXP-ADOPT-012 — OSS Contribution Experience",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-013.md": {
+      "expeditionId": "EXP-ADOPT-013 — Conference Material",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-014.md": {
+      "expeditionId": "EXP-ADOPT-014 — Social Media Assets",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-015.md": {
+      "expeditionId": "EXP-ADOPT-015 — Content Calendar",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-016.md": {
+      "expeditionId": "EXP-ADOPT-016 — AI Discoverability",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-017.md": {
+      "expeditionId": "EXP-ADOPT-017 — Skill Ecosystem",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-018.md": {
+      "expeditionId": "EXP-ADOPT-018 — Integration Showcase",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-019.md": {
+      "expeditionId": "EXP-ADOPT-019 — Metrics",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-020.md": {
+      "expeditionId": "EXP-ADOPT-020 — Launch Certification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADOPT-021.md": {
+      "expeditionId": "EXP-ADOPT-021 — Community Listening & Feedback Loop",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADP-000.md": {
+      "expeditionId": "EXP-ADP-000 — Adapter Architecture Specification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ADP-001.md": {
+      "expeditionId": "EXP-ADP-001 — Surface Repository Adapter During Onboarding",
+      "dependsOn": [
+        "EXP-CAPTRANS-001 (`synth capabilities`)",
+        "EXP-CAPTRANS-002 (missing-capability handling)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-ADP-002.md": {
+      "expeditionId": "EXP-ADP-002 — GitHub Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-GOV-001"
+      ],
+      "blocks": [
+        "Future collaboration-platform adapters"
+      ]
+    },
+    "EXP-ADP-003.md": {
+      "expeditionId": "EXP-ADP-003 — TDD Adapter",
+      "dependsOn": [
+        "EXP-ADP-000"
+      ],
+      "blocks": [
+        "Future methodology adapters"
+      ]
+    },
+    "EXP-ADP-004.md": {
+      "expeditionId": "EXP-ADP-004 — BDD Adapter",
+      "dependsOn": [
+        "EXP-ADP-000"
+      ],
+      "blocks": [
+        "Future behavior-driven adapters"
+      ]
+    },
+    "EXP-ADP-005.md": {
+      "expeditionId": "EXP-ADP-005 — Conversation Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-ADP-OBS-001"
+      ],
+      "blocks": [
+        "Mission Studio operator input"
+      ]
+    },
+    "EXP-ADP-006.md": {
+      "expeditionId": "EXP-ADP-006 — Document Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-ADP-OBS-001"
+      ],
+      "blocks": [
+        "Mission Studio document input"
+      ]
+    },
+    "EXP-ADP-007.md": {
+      "expeditionId": "EXP-ADP-007 — Repository Adapter Observation Extension",
+      "dependsOn": [
+        "EXP-ADP-001",
+        "EXP-ADP-OBS-001"
+      ],
+      "blocks": [
+        "Mission Studio repository input"
+      ]
+    },
+    "EXP-ADP-008.md": {
+      "expeditionId": "EXP-ADP-008 — Filesystem Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-ADP-OBS-001"
+      ],
+      "blocks": [
+        "Mission Studio filesystem input"
+      ]
+    },
+    "EXP-ADP-009.md": {
+      "expeditionId": "EXP-ADP-009 — Specification Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-ADP-OBS-001"
+      ],
+      "blocks": [
+        "Mission Studio specification input"
+      ]
+    },
+    "EXP-ADP-010.md": {
+      "expeditionId": "EXP-ADP-010 — Knowledge Extraction Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-005",
+        "EXP-ADP-006",
+        "EXP-ADP-007",
+        "EXP-ADP-008",
+        "EXP-ADP-009"
+      ],
+      "blocks": [
+        "World Model construction"
+      ]
+    },
+    "EXP-ADP-011.md": {
+      "expeditionId": "EXP-ADP-011 — Confidence Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-010"
+      ],
+      "blocks": [
+        "World Model confidence scoring",
+        "Mission Studio question generation"
+      ]
+    },
+    "EXP-ADP-012.md": {
+      "expeditionId": "EXP-ADP-012 — Dependency Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-007",
+        "EXP-ADP-009"
+      ],
+      "blocks": [
+        "Architectural reconstruction",
+        "World Model enrichment"
+      ]
+    },
+    "EXP-ADP-013.md": {
+      "expeditionId": "EXP-ADP-013 — Architecture Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-007",
+        "EXP-ADP-008"
+      ],
+      "blocks": [
+        "Architectural reconstruction",
+        "World Model enrichment"
+      ]
+    },
+    "EXP-ADP-014.md": {
+      "expeditionId": "EXP-ADP-014 — Mission Builder Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-005",
+        "EXP-ADP-010"
+      ],
+      "blocks": [
+        "Mission Studio planning pipeline"
+      ]
+    },
+    "EXP-ADP-015.md": {
+      "expeditionId": "EXP-ADP-015 — Expedition Builder Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-014"
+      ],
+      "blocks": [
+        "Mission Studio planning pipeline"
+      ]
+    },
+    "EXP-ADP-016.md": {
+      "expeditionId": "EXP-ADP-016 — Objective Builder Adapter",
+      "dependsOn": [
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-015"
+      ],
+      "blocks": [
+        "Mission Studio planning pipeline"
+      ]
+    },
+    "EXP-ADP-017.md": {
+      "expeditionId": "EXP-ADP-017 — Wizard Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-ADP-OBS-001",
+        "EXP-ADP-016"
+      ],
+      "blocks": [
+        "Mission Studio interactive approval"
+      ]
+    },
+    "EXP-ADP-OBS-001.md": {
+      "expeditionId": "EXP-ADP-OBS-001 — Observation Adapter",
+      "dependsOn": [
+        "EXP-ADP-000",
+        "EXP-MST-001"
+      ],
+      "blocks": [
+        "EXP-ADP-005",
+        "EXP-ADP-006",
+        "EXP-ADP-007",
+        "EXP-ADP-008",
+        "EXP-ADP-009",
+        "EXP-ADP-010",
+        "EXP-ADP-011",
+        "EXP-ADP-012",
+        "EXP-ADP-013",
+        "EXP-ADP-014",
+        "EXP-ADP-015",
+        "EXP-ADP-016",
+        "EXP-ADP-017"
+      ]
+    },
+    "EXP-AGENTS-001.md": {
+      "expeditionId": "EXP-AGENTS-001 — AGENTS.md Synchronization Command",
+      "dependsOn": [
+        "EXP-GUARD-001",
+        "EXP-GUARD-002"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-AI-001.md": {
+      "expeditionId": "EXP-AI-001 — Genesis Protocol",
+      "dependsOn": [
+        "EXP-AIFC-001 (Discovery Lifecycle Specification)",
+        "EXP-RUNTIME-001 (Runtime Correctness and Recovery)"
+      ],
+      "blocks": [
+        "EXP-AI-002",
+        "EXP-AI-003",
+        "EXP-AI-005",
+        "EXP-AI-007"
+      ]
+    },
+    "EXP-AI-002.md": {
+      "expeditionId": "EXP-AI-002 — Agent Skill Catalog",
+      "dependsOn": [
+        "EXP-AI-001 (Genesis Protocol)"
+      ],
+      "blocks": [
+        "EXP-AI-007"
+      ]
+    },
+    "EXP-AI-003.md": {
+      "expeditionId": "EXP-AI-003 — Repository Semantic Metadata",
+      "dependsOn": [
+        "EXP-AI-001 (Genesis Protocol)"
+      ],
+      "blocks": [
+        "EXP-AI-004",
+        "EXP-AI-005",
+        "EXP-AI-007"
+      ]
+    },
+    "EXP-AI-004.md": {
+      "expeditionId": "EXP-AI-004 — AI Interaction Manifest",
+      "dependsOn": [
+        "EXP-AI-003 (Repository Semantic Metadata)"
+      ],
+      "blocks": [
+        "EXP-AI-005",
+        "EXP-AI-007"
+      ]
+    },
+    "EXP-AI-005.md": {
+      "expeditionId": "EXP-AI-005 — Interoperability SDK",
+      "dependsOn": [
+        "EXP-AI-001 (Genesis Protocol)",
+        "EXP-AI-003 (Repository Semantic Metadata)"
+      ],
+      "blocks": [
+        "EXP-AI-007"
+      ]
+    },
+    "EXP-AI-006.md": {
+      "expeditionId": "EXP-AI-006 — Multi-Agent Coordination",
+      "dependsOn": [
+        "EXP-AI-001 (Genesis Protocol)",
+        "EXP-AI-003 (Repository Semantic Metadata)"
+      ],
+      "blocks": [
+        "EXP-AI-007"
+      ]
+    },
+    "EXP-AI-007.md": {
+      "expeditionId": "EXP-AI-007 — Agent Certification",
+      "dependsOn": [
+        "EXP-AI-001 (Genesis Protocol)",
+        "EXP-AI-002 (Agent Skill Catalog)",
+        "EXP-AI-005 (Interoperability SDK)"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-AIFC-001.md": {
+      "expeditionId": "EXP-AIFC-001 — Discovery Lifecycle Specification",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-AIFC-002",
+        "EXP-AIFC-003",
+        "EXP-AIFC-004"
+      ]
+    },
+    "EXP-AIFC-002.md": {
+      "expeditionId": "EXP-AIFC-002 — Discovery Artifact Schema",
+      "dependsOn": [
+        "EXP-AIFC-001"
+      ],
+      "blocks": [
+        "EXP-AIFC-003",
+        "EXP-AIFC-004",
+        "EXP-AIFC-005"
+      ]
+    },
+    "EXP-AIFC-003.md": {
+      "expeditionId": "EXP-AIFC-003 — Intent Extraction Engine",
+      "dependsOn": [
+        "EXP-AIFC-002"
+      ],
+      "blocks": [
+        "EXP-AIFC-004"
+      ]
+    },
+    "EXP-AIFC-004.md": {
+      "expeditionId": "EXP-AIFC-004 — Clarification Strategy",
+      "dependsOn": [
+        "EXP-AIFC-003"
+      ],
+      "blocks": [
+        "EXP-AIFC-005"
+      ]
+    },
+    "EXP-AIFC-005.md": {
+      "expeditionId": "EXP-AIFC-005 — Architecture Projection Engine",
+      "dependsOn": [
+        "EXP-AIFC-004"
+      ],
+      "blocks": [
+        "EXP-AIFC-006"
+      ]
+    },
+    "EXP-AIFC-006.md": {
+      "expeditionId": "EXP-AIFC-006 — Capability Verification Framework",
+      "dependsOn": [
+        "EXP-AIFC-005"
+      ],
+      "blocks": [
+        "EXP-AIFC-007"
+      ]
+    },
+    "EXP-AIFC-007.md": {
+      "expeditionId": "EXP-AIFC-007 — Mission Materialization Pipeline",
+      "dependsOn": [
+        "EXP-AIFC-006"
+      ],
+      "blocks": [
+        "EXP-AIFC-008",
+        "EXP-AIFC-009"
+      ]
+    },
+    "EXP-AIFC-008.md": {
+      "expeditionId": "EXP-AIFC-008 — Greenfield Operator Experience",
+      "dependsOn": [
+        "EXP-AIFC-007"
+      ],
+      "blocks": [
+        "EXP-AIFC-009"
+      ]
+    },
+    "EXP-AIFC-009.md": {
+      "expeditionId": "EXP-AIFC-009 — Replay and Governance Integration",
+      "dependsOn": [
+        "EXP-AIFC-007",
+        "EXP-AIFC-008"
+      ],
+      "blocks": [
+        "EXP-AIFC-010"
+      ]
+    },
+    "EXP-AIFC-010.md": {
+      "expeditionId": "EXP-AIFC-010 — Certification and UX Validation",
+      "dependsOn": [
+        "EXP-AIFC-009"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-AIFC-011.md": {
+      "expeditionId": "EXP-AIFC-011 — Detected-Stack Adapter & Workflow Recommendation",
+      "dependsOn": [
+        "EXP-AIFC-007",
+        "EXP-AIFC-008",
+        "EXP-AIFC-009",
+        "EXP-ONBOARD-002"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-APPROVAL-001.md": {
+      "expeditionId": "EXP-APPROVAL-001 — Two-Party Approval for Destructive Operations",
+      "dependsOn": [
+        "EXP-IDENTITY-001",
+        "EXP-SIGN-001",
+        "ADR-039 Convergence Review outcome"
+      ],
+      "blocks": [
+        "EXP-GIT-001"
+      ]
+    },
+    "EXP-AUD-002.md": {
+      "expeditionId": "EXP-AUD-002 — Zero-Trust Architecture Verification",
+      "dependsOn": [
+        "`docs/architecture/constitution.md`",
+        "EXP-SMA-001",
+        "EXP-DET-001"
+      ],
+      "blocks": [
+        "EXP-GOV-001"
+      ]
+    },
+    "EXP-AX-001.md": {
+      "expeditionId": "EXP-AX-001 — Universal Distribution",
+      "dependsOn": [
+        "EXP-PROGRAM-004"
+      ],
+      "blocks": [
+        "EXP-AX-002",
+        "EXP-AX-003",
+        "EXP-AX-005"
+      ]
+    },
+    "EXP-AX-002.md": {
+      "expeditionId": "EXP-AX-002 — AI First Experience",
+      "dependsOn": [
+        "EXP-AX-001"
+      ],
+      "blocks": [
+        "EXP-AX-003",
+        "EXP-AX-005"
+      ]
+    },
+    "EXP-AX-003.md": {
+      "expeditionId": "EXP-AX-003 — README & Narrative Alignment",
+      "dependsOn": [
+        "EXP-AX-001",
+        "EXP-AX-002"
+      ],
+      "blocks": [
+        "EXP-AX-005"
+      ]
+    },
+    "EXP-AX-004.md": {
+      "expeditionId": "EXP-AX-004 — Documentation Synchronization",
+      "dependsOn": [
+        "EXP-AX-003"
+      ],
+      "blocks": [
+        "EXP-AX-005"
+      ]
+    },
+    "EXP-AX-005.md": {
+      "expeditionId": "EXP-AX-005 — Public Release Polish",
+      "dependsOn": [
+        "EXP-AX-003",
+        "EXP-AX-004"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-004 completion"
+      ]
+    },
+    "EXP-BOOTSTRAP-001.md": {
+      "expeditionId": "EXP-BOOTSTRAP-001 — Explain Bootstrap Stages and Emit Clean JSON Output",
+      "dependsOn": [
+        "EXP-ONBOARD-001",
+        "EXP-MIGRATE-001",
+        "EXP-OUTPUT-001"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-BOOTSTRAP-002.md": {
+      "expeditionId": "EXP-BOOTSTRAP-002 — Framework Self-Hosting",
+      "dependsOn": [
+        "EXP-PROGRAM-044 (Operational Readiness & Self-Hosting)"
+      ],
+      "blocks": [
+        "EXP-GOV-025 (Safe State Repair & Divergence Recovery)"
+      ]
+    },
+    "EXP-BROWNFIELD-001.md": {
+      "expeditionId": "EXP-BROWNFIELD-001 — Brownfield Bootstrap Hardening",
+      "dependsOn": [
+        "EXP-PROGRAM-006 (Discovery Platform)",
+        "EXP-DISCOVERY-005 (Brownfield Genesis Integration)"
+      ],
+      "blocks": []
+    },
+    "EXP-BROWNFIELD-002.md": {
+      "expeditionId": "EXP-BROWNFIELD-002 — Brownfield Discovery Completion",
+      "dependsOn": [
+        "EXP-BROWNFIELD-001 (Brownfield Bootstrap Hardening)",
+        "EXP-GOVERN-006 (Governance Completion)"
+      ],
+      "blocks": []
+    },
+    "EXP-CAPABILITY-BOUNDARY-001.md": {
+      "expeditionId": "EXP-CAPABILITY-BOUNDARY-001 — Single Mutation Execution Boundary",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-CAPTRANS-001.md": {
+      "expeditionId": "EXP-CAPTRANS-001 — Capability Transparency CLI",
+      "dependsOn": [
+        "EXP-CLI-001 (CLI consistency)",
+        "EXP-GOV-024 (Convergence Certification capability)"
+      ],
+      "blocks": [
+        "EXP-CAPTRANS-002 (graceful missing-capability handling)"
+      ]
+    },
+    "EXP-CAPTRANS-002.md": {
+      "expeditionId": "EXP-CAPTRANS-002 — Graceful Missing-Capability Handling",
+      "dependsOn": [
+        "EXP-CAPTRANS-001 (`synth capabilities`)",
+        "EXP-EVENTLOG-001",
+        "EXP-EVIDENCE-001"
+      ],
+      "blocks": [
+        "EXP-GATE-001 (mandatory verification gates before completion)"
+      ]
+    },
+    "EXP-CAPTRANS-003.md": {
+      "expeditionId": "EXP-CAPTRANS-003 — Capability Registry Accuracy",
+      "dependsOn": [
+        "EXP-CAPTRANS-001",
+        "EXP-CAPTRANS-002",
+        "EXP-EVENTLOG-001",
+        "EXP-DOCS-001"
+      ],
+      "blocks": [
+        "EXP-DIST-009 (skill/MCP manifests must advertise true capabilities)"
+      ]
+    },
+    "EXP-CERT-001.md": {
+      "expeditionId": "EXP-CERT-001 — Failure Certification Framework",
+      "dependsOn": [
+        "EXP-BROWNFIELD-001 (Brownfield Bootstrap Hardening)",
+        "EXP-RUNTIME-001 (Runtime Correctness and Recovery)",
+        "EXP-CLI-001 (CLI UX and Diagnostics Hardening)"
+      ],
+      "blocks": []
+    },
+    "EXP-CLI-001.md": {
+      "expeditionId": "EXP-CLI-001 — CLI as Deterministic Machine Interface",
+      "dependsOn": [
+        "None"
+      ],
+      "blocks": [
+        "EXP-INSTALL-012",
+        "Release Certification"
+      ]
+    },
+    "EXP-CLI-002.md": {
+      "expeditionId": "EXP-CLI-002 — Human-Readable CLI Output Mode",
+      "dependsOn": [
+        "EXP-CLI-001 (CLI consistency & AI portability)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-CLI-003.md": {
+      "expeditionId": "EXP-CLI-003 — Governance Inventory List Commands",
+      "dependsOn": [
+        "EXP-CLI-001 (CLI consistency & AI portability)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-CLI-004.md": {
+      "expeditionId": "EXP-CLI-004 — Weighted Governance Inventory & Next-Action Recommendation",
+      "dependsOn": [
+        "EXP-CLI-003 (Governance Inventory List Commands)",
+        "EXP-GRAPH-001 (Shared Dependency-Graph Primitive)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-CLI-005.md": {
+      "expeditionId": "EXP-CLI-005 — Governance Entity Show Commands",
+      "dependsOn": [
+        "EXP-CLI-001 (CLI consistency)",
+        "EXP-CLI-003 (list commands)",
+        "EXP-GRAPH-001 (shared dependency-graph primitive)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-CAPABILITY-BOUNDARY-001-evidence.md": {
+      "expeditionId": "EXP-CAPABILITY-BOUNDARY-001 — Pre-Change Evidence",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-CAPABILITY-BOUNDARY-001-completion.md": {
+      "expeditionId": "EXP-CAPABILITY-BOUNDARY-001 — Completion Evidence",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-COMPLEXITY-AUDIT-001-completion.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — Completion & Recommendation",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-COMPLEXITY-AUDIT-001-accidental-complexity.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — Accidental Complexity Report",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-COMPLEXITY-AUDIT-001-essential-core.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — Essential Core Report",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-COMPLEXITY-AUDIT-001-complexity-budget.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — Complexity Budget",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-COMPLEXITY-AUDIT-001.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — SYNTH Complexity Reduction Assessment",
+      "dependsOn": [
+        "`EXP-SIMPLIFICATION-001`"
+      ],
+      "blocks": [
+        "Decision on whether to proceed with `EXP-GOVERNANCE-ENFORCEMENT-001` or prioritize simplification"
+      ]
+    },
+    "EXP-COMPLEXITY-AUDIT-001-simplification-matrix.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — Simplification Candidate Matrix",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-COMPLEXITY-AUDIT-001-kernel-boundary.md": {
+      "expeditionId": "EXP-COMPLEXITY-AUDIT-001 — The Kernel Boundary",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-CONT-001.md": {
+      "expeditionId": "EXP-CONT-001 — Resume Briefing",
+      "dependsOn": [
+        "EXP-PROGRAM-012 (Runtime Self-Description)",
+        "EXP-TRUST-004 (Persisted Decision Log)"
+      ],
+      "blocks": []
+    },
+    "EXP-DET-001.md": {
+      "expeditionId": "EXP-DET-001 — Deterministic Execution",
+      "dependsOn": [
+        "`docs/architecture/constitution.md` Article II",
+        "`docs/EXP-AUD-002-zero-trust-architecture-verification.md` AUD-009",
+        "EXP-SMA-001"
+      ],
+      "blocks": [
+        "EXP-AUD-002",
+        "EXP-GOV-001"
+      ]
+    },
+    "EXP-CONVERGENCE-001.md": {
+      "expeditionId": "EXP-CONVERGENCE-001 — Convergence: Program 020 Website Experience into Program 027 Mission Studio Homepage",
+      "dependsOn": [
+        "EXP-PROGRAM-004",
+        "EXP-PROGRAM-009"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-027 implementation"
+      ]
+    },
+    "EXP-CONT-002.md": {
+      "expeditionId": "EXP-CONT-002 — Interruption Benchmark",
+      "dependsOn": [
+        "EXP-CONT-001 (Resume Briefing)"
+      ],
+      "blocks": []
+    },
+    "EXP-DISC-001.md": {
+      "expeditionId": "EXP-DISC-001 — Status That Answers",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": []
+    },
+    "EXP-CONT-003.md": {
+      "expeditionId": "EXP-CONT-003 — Regression Journey",
+      "dependsOn": [
+        "EXP-PROGRAM-011 (Operator Trust & CLI Integrity)",
+        "EXP-PROGRAM-012 (Runtime Self-Description)",
+        "EXP-CONT-001 (Resume Briefing)"
+      ],
+      "blocks": []
+    },
+    "EXP-DISC-002.md": {
+      "expeditionId": "EXP-DISC-002 — Extraction Reporting",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": []
+    },
+    "EXP-DISC-004.md": {
+      "expeditionId": "EXP-DISC-004 — Clean Machine Output",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": []
+    },
+    "EXP-DISC-005.md": {
+      "expeditionId": "EXP-DISC-005 — Runtime Integrity",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": []
+    },
+    "EXP-DISC-003.md": {
+      "expeditionId": "EXP-DISC-003 — Adapter Introspection",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": []
+    },
+    "EXP-DISC-006.md": {
+      "expeditionId": "EXP-DISC-006 — Repository Identity",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-001.md": {
+      "expeditionId": "EXP-DISCOVERY-001 — Repository Discovery & Brownfield Genesis",
+      "dependsOn": [
+        "EXP-AX-002",
+        "EXP-INIT-001"
+      ],
+      "blocks": [
+        "Brownfield Genesis missions"
+      ]
+    },
+    "EXP-DISCOVERY-002.md": {
+      "expeditionId": "EXP-DISCOVERY-002 — Discovery Engine",
+      "dependsOn": [
+        "EXP-DISCOVERY-001"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-003.md": {
+      "expeditionId": "EXP-DISCOVERY-003 — First Observation Capabilities",
+      "dependsOn": [
+        "EXP-DISCOVERY-001",
+        "EXP-DISCOVERY-002"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-005.md": {
+      "expeditionId": "EXP-DISCOVERY-005 — Brownfield Genesis Integration",
+      "dependsOn": [
+        "EXP-DISCOVERY-002",
+        "EXP-DISCOVERY-003",
+        "EXP-DISCOVERY-004"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-004.md": {
+      "expeditionId": "EXP-DISCOVERY-004 — Projection Capability Mechanism",
+      "dependsOn": [
+        "EXP-DISCOVERY-002",
+        "EXP-DISCOVERY-003"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-007.md": {
+      "expeditionId": "EXP-DISCOVERY-007 — IDE / MCP / Web Consumers",
+      "dependsOn": [
+        "EXP-DISCOVERY-002",
+        "EXP-DISCOVERY-003",
+        "EXP-DISCOVERY-004",
+        "EXP-DISCOVERY-005",
+        "EXP-DISCOVERY-006"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-006.md": {
+      "expeditionId": "EXP-DISCOVERY-006 — Replay Verification",
+      "dependsOn": [
+        "EXP-DISCOVERY-002",
+        "EXP-DISCOVERY-003",
+        "EXP-DISCOVERY-004",
+        "EXP-DISCOVERY-005"
+      ],
+      "blocks": []
+    },
+    "EXP-DISCOVERY-008.md": {
+      "expeditionId": "EXP-DISCOVERY-008 — Operational Discovery",
+      "dependsOn": [
+        "EXP-DISCOVERY-001 through EXP-DISCOVERY-007"
+      ],
+      "blocks": [
+        "Closure of EXP-PROGRAM-006"
+      ]
+    },
+    "EXP-DIST-001.md": {
+      "expeditionId": "EXP-DIST-001 — Canonical AI Capability Model",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-DIST-002.md": {
+      "expeditionId": "EXP-DIST-002 — Agent Skill Projection Pipeline",
+      "dependsOn": [
+        "EXP-DIST-001 — Canonical AI Capability Model"
+      ],
+      "blocks": [
+        "EXP-DIST-003 — SYNTH MCP Server"
+      ]
+    },
+    "EXP-DIST-003.md": {
+      "expeditionId": "EXP-DIST-003 — SYNTH MCP Server",
+      "dependsOn": [
+        "EXP-DIST-001 — Canonical AI Capability Model",
+        "EXP-DIST-002 — Agent Skill Projection Pipeline"
+      ],
+      "blocks": []
+    },
+    "EXP-DIST-004.md": {
+      "expeditionId": "EXP-DIST-004 — npm Package Distribution",
+      "dependsOn": [
+        "EXP-DIST-001 — Canonical AI Capability Model",
+        "EXP-DIST-003 — SYNTH MCP Server"
+      ],
+      "blocks": []
+    },
+    "EXP-DIST-005.md": {
+      "expeditionId": "EXP-DIST-005 — IDE Rules Projection",
+      "dependsOn": [
+        "EXP-DIST-001 — Canonical AI Capability Model",
+        "EXP-DIST-002 — Agent Skill Projection Pipeline"
+      ],
+      "blocks": []
+    },
+    "EXP-DIST-008.md": {
+      "expeditionId": "EXP-DIST-008 — Consume Program 043 Capability List in AI Projections",
+      "dependsOn": [
+        "- EXP-DIST-001 — Canonical AI Capability Model"
+      ],
+      "blocks": [
+        "Future distribution surfaces that advertise installed CLI capabilities (MCP registry",
+        "npm metadata",
+        "website)."
+      ]
+    },
+    "EXP-DOC-003.md": {
+      "expeditionId": "EXP-DOC-003 — Merge Program 027 Incident Review into Charter",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-DOC-002.md": {
+      "expeditionId": "EXP-DOC-002 — Deterministic Documentation Projections",
+      "dependsOn": [
+        "EXP-CLI-001"
+      ],
+      "blocks": [
+        "EXP-INSTALL-012",
+        "EXP-PROGRAM-042 — Release Certification"
+      ]
+    },
+    "EXP-DOC-004.md": {
+      "expeditionId": "EXP-DOC-004 — Update Program 027 Governability References",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-DOC-005.md": {
+      "expeditionId": "EXP-DOC-005 — Reconcile Expedition Statuses for Programs 035 and 036",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-DOC-007.md": {
+      "expeditionId": "EXP-DOC-007 — Generated Documentation Provenance",
+      "dependsOn": [
+        "EXP-DOCS-001 (Documentation Projection System)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-DOCS-001.md": {
+      "expeditionId": "EXP-DOCS-001 — Documentation Projection System",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-INSTALL-011"
+      ]
+    },
+    "EXP-DOC-008.md": {
+      "expeditionId": "EXP-DOC-008 — Generated Documentation Provenance",
+      "dependsOn": [
+        "EXP-DOC-007 (Generated Documentation Provenance)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-DOCS-002.md": {
+      "expeditionId": "EXP-DOCS-002 — Capability Model Documentation",
+      "dependsOn": [
+        "EXP-DOCS-001"
+      ],
+      "blocks": [
+        "EXP-DOCS-006"
+      ]
+    },
+    "EXP-DOCS-003.md": {
+      "expeditionId": "EXP-DOCS-003 — Agent Planning Guide Update",
+      "dependsOn": [
+        "EXP-DOCS-001"
+      ],
+      "blocks": [
+        "EXP-DOCS-006"
+      ]
+    },
+    "EXP-DOCS-004.md": {
+      "expeditionId": "EXP-DOCS-004 — Environment Layer Reference",
+      "dependsOn": [
+        "EXP-DOCS-001"
+      ],
+      "blocks": [
+        "EXP-DOCS-006"
+      ]
+    },
+    "EXP-DOCS-006.md": {
+      "expeditionId": "EXP-DOCS-006 — Website Projection Verification",
+      "dependsOn": [
+        "EXP-DOCS-002",
+        "EXP-DOCS-003",
+        "EXP-DOCS-004",
+        "EXP-DOCS-005"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-DRYRUN-001.md": {
+      "expeditionId": "EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands",
+      "dependsOn": [
+        "EXP-CLI-002 (clean output)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-ENV-001.md": {
+      "expeditionId": "EXP-ENV-001 — Environment Discovery Framework",
+      "dependsOn": [
+        "EXP-PROGRAM-007"
+      ],
+      "blocks": [
+        "EXP-ENV-002",
+        "EXP-ENV-003",
+        "EXP-ENV-004",
+        "EXP-ENV-005",
+        "EXP-ENV-006",
+        "EXP-ENV-007",
+        "EXP-ENV-008",
+        "EXP-ENV-009",
+        "EXP-ENV-010",
+        "EXP-ENV-011",
+        "EXP-ENV-012"
+      ]
+    },
+    "EXP-ENV-002.md": {
+      "expeditionId": "EXP-ENV-002 — Capability Graph Model",
+      "dependsOn": [
+        "EXP-ENV-001"
+      ],
+      "blocks": [
+        "EXP-ENV-003",
+        "EXP-ENV-004",
+        "EXP-ENV-005",
+        "EXP-ENV-006",
+        "EXP-ENV-007",
+        "EXP-ENV-008",
+        "EXP-ENV-009"
+      ]
+    },
+    "EXP-ENV-003.md": {
+      "expeditionId": "EXP-ENV-003 — Workspace Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-ENV-004.md": {
+      "expeditionId": "EXP-ENV-004 — Revision Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-ENV-005.md": {
+      "expeditionId": "EXP-ENV-005 — Filesystem Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-DOCS-005.md": {
+      "expeditionId": "EXP-DOCS-005 — Example Synchronization",
+      "dependsOn": [
+        "EXP-DOCS-001"
+      ],
+      "blocks": [
+        "EXP-DOCS-006"
+      ]
+    },
+    "EXP-ENV-008.md": {
+      "expeditionId": "EXP-ENV-008 — Forge Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-ENV-007.md": {
+      "expeditionId": "EXP-ENV-007 — Runtime & Package Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-ENV-009.md": {
+      "expeditionId": "EXP-ENV-009 — Secrets & Identity Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-ENV-010.md": {
+      "expeditionId": "EXP-ENV-010 — Discovery Evidence & Replay Integration",
+      "dependsOn": [
+        "EXP-ENV-003",
+        "EXP-ENV-004",
+        "EXP-ENV-005",
+        "EXP-ENV-006",
+        "EXP-ENV-007",
+        "EXP-ENV-008",
+        "EXP-ENV-009"
+      ],
+      "blocks": [
+        "EXP-ENV-011",
+        "EXP-ENV-012"
+      ]
+    },
+    "EXP-ENV-011.md": {
+      "expeditionId": "EXP-ENV-011 — AI Environment Planning",
+      "dependsOn": [
+        "EXP-ENV-010"
+      ],
+      "blocks": [
+        "EXP-ENV-012"
+      ]
+    },
+    "EXP-ENV-012.md": {
+      "expeditionId": "EXP-ENV-012 — Constitutional Compliance & Migration",
+      "dependsOn": [
+        "EXP-ENV-010",
+        "EXP-ENV-011"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-ENV-013.md": {
+      "expeditionId": "EXP-ENV-013 — Co-locate Runtime Data Under `.synth/`",
+      "dependsOn": [
+        "EXP-ENV-012"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-EVENTLOG-001.md": {
+      "expeditionId": "EXP-EVENTLOG-001 — Event-Log Query CLI",
+      "dependsOn": [
+        "EXP-CLI-002 (clean output)",
+        "EXP-CAPTRANS-001 (capability transparency)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-EVIDENCE-001.md": {
+      "expeditionId": "EXP-EVIDENCE-001 — Automatic Expedition Evidence Capture",
+      "dependsOn": [
+        "EXP-EVENTLOG-001 (event-log query CLI)",
+        "EXP-GUARD-001 (derived-state guardrails)"
+      ],
+      "blocks": [
+        "EXP-GATE-001 (mandatory verification gates before expedition completion)"
+      ]
+    },
+    "EXP-EXEC-002.md": {
+      "expeditionId": "EXP-EXEC-002 — Work Item Runtime",
+      "dependsOn": [
+        "EXP-EXEC-001 (Execution Intent Model)"
+      ],
+      "blocks": [
+        "EXP-EXEC-003",
+        "EXP-EXEC-004",
+        "EXP-EXEC-005"
+      ]
+    },
+    "EXP-EXEC-001.md": {
+      "expeditionId": "EXP-EXEC-001 — Execution Intent Model",
+      "dependsOn": [
+        "EXP-PROGRAM-015 (Repository Versioning Capability)"
+      ],
+      "blocks": [
+        "EXP-EXEC-002",
+        "EXP-EXEC-003",
+        "EXP-EXEC-004",
+        "EXP-EXEC-005"
+      ]
+    },
+    "EXP-EXEC-003.md": {
+      "expeditionId": "EXP-EXEC-003 — Branch-per-Expedition Workflow",
+      "dependsOn": [
+        "EXP-EXEC-001 (Execution Intent Model)",
+        "EXP-EXEC-002 (Work Item Runtime)",
+        "EXP-PROGRAM-015"
+      ],
+      "blocks": [
+        "EXP-EXEC-004",
+        "EXP-EXEC-005"
+      ]
+    },
+    "EXP-EXEC-004.md": {
+      "expeditionId": "EXP-EXEC-004 — Commit-as-Evidence",
+      "dependsOn": [
+        "EXP-EXEC-001 (Execution Intent Model)",
+        "EXP-EXEC-002 (Work Item Runtime)",
+        "EXP-EXEC-003 (Branch-per-Expedition)"
+      ],
+      "blocks": [
+        "EXP-EXEC-005"
+      ]
+    },
+    "EXP-EXEC-005.md": {
+      "expeditionId": "EXP-EXEC-005 — Pull Request Projection",
+      "dependsOn": [
+        "EXP-EXEC-001 (Execution Intent Model)",
+        "EXP-EXEC-002 (Work Item Runtime)",
+        "EXP-EXEC-003 (Branch-per-Expedition)",
+        "EXP-EXEC-004 (Commit-as-Evidence)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-EXPLAIN-001.md": {
+      "expeditionId": "EXP-EXPLAIN-001 — Actionable `synth explain status`",
+      "dependsOn": [
+        "EXP-CLI-002 (human-readable output mode)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-FIRSTCONTACT-001.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-001 — Public Narrative",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-002",
+        "EXP-FIRSTCONTACT-003",
+        "EXP-FIRSTCONTACT-004",
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-FIRSTCONTACT-002.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-002 — Canonical Journey Specification",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-001"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-003",
+        "EXP-FIRSTCONTACT-004",
+        "EXP-FIRSTCONTACT-005",
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-FIRSTCONTACT-003.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-003 — Canonical Recorded Journey",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-002"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-004",
+        "EXP-FIRSTCONTACT-005"
+      ]
+    },
+    "EXP-FIRSTCONTACT-004.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-004 — Experience Projection System",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-002",
+        "EXP-FIRSTCONTACT-003"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-005",
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-FIRSTCONTACT-005.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-005 — Interactive Replay Experience",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-003",
+        "EXP-FIRSTCONTACT-009"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-FIRSTCONTACT-006.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-006 — Comprehension Validation",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-005",
+        "EXP-FIRSTCONTACT-007",
+        "EXP-FIRSTCONTACT-008"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-FIRSTCONTACT-007.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-007 — Canonical Journey Documentation Projection",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-002",
+        "EXP-FIRSTCONTACT-003"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-008",
+        "EXP-FIRSTCONTACT-005",
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-FIRSTCONTACT-008.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-008 — Experience Projections",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-007",
+        "EXP-FIRSTCONTACT-009"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-ENV-006.md": {
+      "expeditionId": "EXP-ENV-006 — Process & Tool Capability",
+      "dependsOn": [
+        "EXP-ENV-002"
+      ],
+      "blocks": [
+        "EXP-ENV-010"
+      ]
+    },
+    "EXP-FIRSTCONTACT-009.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-009 — Canonical Journey Re-recording",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-003",
+        "EXP-PROGRAM-010"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-008",
+        "EXP-FIRSTCONTACT-005",
+        "EXP-FIRSTCONTACT-006"
+      ]
+    },
+    "EXP-FIRSTCONTACT-010.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-010 — Agent Ground Truth Discovery",
+      "dependsOn": [
+        "EXP-GOV-007",
+        "EXP-GOV-008"
+      ],
+      "blocks": [
+        "EXP-FIRSTCONTACT-011 — Agent First Contact Learning System"
+      ]
+    },
+    "EXP-FIRSTCONTACT-011.md": {
+      "expeditionId": "EXP-FIRSTCONTACT-011 — Agent First Contact Learning System",
+      "dependsOn": [
+        "EXP-FIRSTCONTACT-010"
+      ],
+      "blocks": [
+        "Future first-contact quick-start library and onboarding contract"
+      ]
+    },
+    "EXP-GATE-001.md": {
+      "expeditionId": "EXP-GATE-001 — Review Lifecycle",
+      "dependsOn": [
+        "EXP-PROGRAM-035 Phase 1 charter"
+      ],
+      "blocks": [
+        "EXP-GATE-002",
+        "EXP-GATE-004",
+        "EXP-GATE-005",
+        "EXP-GATE-008",
+        "EXP-GATE-010",
+        "EXP-GATE-011"
+      ]
+    },
+    "EXP-GATE-002.md": {
+      "expeditionId": "EXP-GATE-002 — Completion Policies",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-GATE-004",
+        "EXP-GATE-007",
+        "EXP-GATE-008"
+      ]
+    },
+    "EXP-GATE-003.md": {
+      "expeditionId": "EXP-GATE-003 — Refinement Lifecycle",
+      "dependsOn": [
+        "EXP-PROGRAM-035"
+      ],
+      "blocks": [
+        "EXP-GATE-004 — Decision Model",
+        "EXP-GATE-006 — Refined Intent Artifact"
+      ]
+    },
+    "EXP-GATE-004.md": {
+      "expeditionId": "EXP-GATE-004 — Decision Model",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-GATE-005",
+        "EXP-GATE-006",
+        "EXP-GATE-007",
+        "EXP-GATE-008",
+        "EXP-GATE-009",
+        "EXP-GATE-012"
+      ]
+    },
+    "EXP-GATE-005.md": {
+      "expeditionId": "EXP-GATE-005 — Review Gate Package",
+      "dependsOn": [
+        "EXP-GATE-001",
+        "EXP-GATE-002",
+        "EXP-GATE-003",
+        "EXP-GATE-004"
+      ],
+      "blocks": [
+        "EXP-GATE-006",
+        "EXP-GATE-007",
+        "EXP-GATE-008",
+        "EXP-GATE-009",
+        "EXP-GATE-010",
+        "EXP-GATE-011"
+      ]
+    },
+    "EXP-GATE-006.md": {
+      "expeditionId": "EXP-GATE-006 — Refined Intent Artifact",
+      "dependsOn": [
+        "EXP-GATE-001",
+        "EXP-GATE-003"
+      ],
+      "blocks": [
+        "EXP-GATE-008",
+        "EXP-GATE-010",
+        "EXP-GATE-011"
+      ]
+    },
+    "EXP-GATE-007.md": {
+      "expeditionId": "EXP-GATE-007 — Acceptance Policies",
+      "dependsOn": [
+        "EXP-GATE-001",
+        "EXP-GATE-003",
+        "EXP-GATE-004"
+      ],
+      "blocks": [
+        "EXP-GATE-008",
+        "EXP-GATE-009",
+        "EXP-GATE-012"
+      ]
+    },
+    "EXP-GATE-008.md": {
+      "expeditionId": "EXP-GATE-008 — Review Gate Engine",
+      "dependsOn": [
+        "EXP-GATE-004",
+        "EXP-GATE-005",
+        "EXP-GATE-007"
+      ],
+      "blocks": [
+        "EXP-GATE-009",
+        "EXP-GATE-010",
+        "EXP-GATE-011"
+      ]
+    },
+    "EXP-GATE-009.md": {
+      "expeditionId": "EXP-GATE-009 — Revision Governance",
+      "dependsOn": [
+        "EXP-GATE-001 — Review Lifecycle; EXP-GATE-004 — Decision Model; EXP-GATE-005 — Review Gate Package; EXP-GATE-008 — Review Gate Engine"
+      ],
+      "blocks": [
+        "EXP-GATE-010 — Mission Studio Integration; EXP-GATE-011 — Retrofit Program 027; EXP-GATE-012 — Certification"
+      ]
+    },
+    "EXP-GATE-010.md": {
+      "expeditionId": "EXP-GATE-010 — Mission Studio Integration: Visualize gate states in Mission Studio: Refinement Pending, Review Pending, Revision Required, Accepted, Closed.",
+      "dependsOn": [
+        "EXP-GATE-001",
+        "EXP-GATE-003",
+        "EXP-GATE-004",
+        "EXP-GATE-005",
+        "EXP-GATE-006",
+        "EXP-GATE-007",
+        "EXP-GATE-008",
+        "EXP-GATE-009"
+      ],
+      "blocks": [
+        "EXP-GATE-011",
+        "EXP-GATE-012"
+      ]
+    },
+    "EXP-GATE-011.md": {
+      "expeditionId": "EXP-GATE-011 — Retrofit Program 027",
+      "dependsOn": [
+        "EXP-GATE-001",
+        "EXP-GATE-002",
+        "EXP-GATE-003",
+        "EXP-GATE-004",
+        "EXP-GATE-005",
+        "EXP-GATE-006",
+        "EXP-GATE-007",
+        "EXP-GATE-008",
+        "EXP-GATE-009",
+        "EXP-GATE-010"
+      ],
+      "blocks": [
+        "EXP-GATE-012"
+      ]
+    },
+    "EXP-GATE-012.md": {
+      "expeditionId": "EXP-GATE-012 — Certification",
+      "dependsOn": [
+        "EXP-GATE-013",
+        "EXP-GOVERNABILITY-003",
+        "EXP-GOVERNABILITY-004",
+        "EXP-GOVERNABILITY-005",
+        "EXP-PROGRAM-027 Phase 1 baseline",
+        "EXP-HOME-026",
+        "EXP-HOME-027"
+      ],
+      "blocks": [
+        "Era IV — Testing & Stabilization"
+      ]
+    },
+    "EXP-GATE-013.md": {
+      "expeditionId": "EXP-GATE-013 — Gate State & Dependency Enforcement",
+      "dependsOn": [
+        "EXP-GOVERNABILITY-003",
+        "EXP-GOVERNABILITY-004",
+        "EXP-GOVERNABILITY-005"
+      ],
+      "blocks": [
+        "EXP-GATE-012",
+        "EXP-HOME-028"
+      ]
+    },
+    "EXP-GATE-014.md": {
+      "expeditionId": "EXP-GATE-014 — Mandatory Verification Gates Before Expedition Completion",
+      "dependsOn": [
+        "EXP-GUARD-001 (derived-state protection)",
+        "EXP-CAPTRANS-002 (missing-capability handling)",
+        "EXP-EVIDENCE-001 (automatic evidence capture)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-GENESIS-001.md": {
+      "expeditionId": "EXP-GENESIS-001 — Genesis Lifecycle & Artifact Schema",
+      "dependsOn": [
+        "EXP-GOVERN-006 (Governance Completion)"
+      ],
+      "blocks": []
+    },
+    "EXP-GENESIS-002.md": {
+      "expeditionId": "EXP-GENESIS-002 — Genesis Intent Capture & Classification",
+      "dependsOn": [
+        "EXP-GENESIS-001 (Genesis Lifecycle & Artifact Schema)"
+      ],
+      "blocks": []
+    },
+    "EXP-GENESIS-003.md": {
+      "expeditionId": "EXP-GENESIS-003 — Genesis Validation & Mission Materialization",
+      "dependsOn": [
+        "EXP-GENESIS-002 (Genesis Intent Capture & Classification)"
+      ],
+      "blocks": []
+    },
+    "EXP-GIT-001.md": {
+      "expeditionId": "EXP-GIT-001 — Git Integration for Governance State Snapshots",
+      "dependsOn": [
+        "EXP-IDENTITY-001",
+        "EXP-SIGN-001",
+        "ADR-039 Convergence Review outcome"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-GOV-001.md": {
+      "expeditionId": "EXP-GOV-001 — Continuous Governance",
+      "dependsOn": [
+        "EXP-SMA-001",
+        "EXP-DET-001",
+        "EXP-AUD-002"
+      ],
+      "blocks": [
+        "None (final foundational expedition)"
+      ]
+    },
+    "EXP-GOV-002.md": {
+      "expeditionId": "EXP-GOV-002 — Replay as the Constitutional Source of Truth",
+      "dependsOn": [
+        "EXP-PROGRAM-014"
+      ],
+      "blocks": []
+    },
+    "EXP-GOV-003.md": {
+      "expeditionId": "EXP-GOV-003 — Constitutional Layer Boundaries",
+      "dependsOn": [
+        "EXP-PROGRAM-014",
+        "EXP-GOV-002"
+      ],
+      "blocks": []
+    },
+    "EXP-GOV-004.md": {
+      "expeditionId": "EXP-GOV-004 — Projection Model",
+      "dependsOn": [
+        "EXP-PROGRAM-014",
+        "EXP-GOV-002",
+        "EXP-GOV-003"
+      ],
+      "blocks": []
+    },
+    "EXP-GOV-005.md": {
+      "expeditionId": "EXP-GOV-005 — Verification Engine",
+      "dependsOn": [
+        "EXP-PROGRAM-014",
+        "EXP-GOV-002",
+        "EXP-GOV-003",
+        "EXP-GOV-004"
+      ],
+      "blocks": []
+    },
+    "EXP-GOV-006.md": {
+      "expeditionId": "EXP-GOV-006 — Agent Lifecycle Enforcement",
+      "dependsOn": [
+        "EXP-PROGRAM-016",
+        "EXP-REL-006"
+      ],
+      "blocks": [
+        "EXP-GOV-007"
+      ]
+    },
+    "EXP-GOV-007.md": {
+      "expeditionId": "EXP-GOV-007 — Canonical State Resolution & Status Authority",
+      "dependsOn": [
+        "EXP-GOV-006",
+        "EXP-PROGRAM-016",
+        "EXP-INIT-001"
+      ],
+      "blocks": [
+        "EXP-INIT-002 — Initialization Evidence & Replay",
+        "future operator commands that depend on authoritative state"
+      ]
+    },
+    "EXP-GOV-008.md": {
+      "expeditionId": "EXP-GOV-008 — Initialization as a Governed State Transition",
+      "dependsOn": [
+        "EXP-GOV-007",
+        "EXP-PROGRAM-016"
+      ],
+      "blocks": [
+        "Future operator commands that depend on authoritative initialization state"
+      ]
+    },
+    "EXP-GOV-009.md": {
+      "expeditionId": "EXP-GOV-009 — Historical Event Normalization & Program Migration",
+      "dependsOn": [
+        "EXP-GOV-007 — Canonical State Resolution & Status Authority"
+      ],
+      "blocks": [
+        "Clean `npm run govern` baseline; future governance-dependent features"
+      ]
+    },
+    "EXP-GOV-012.md": {
+      "expeditionId": "EXP-GOV-012 — Repository Impact Model",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-013.md": {
+      "expeditionId": "EXP-GOV-013 — Governed Dependency Graph",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-014.md": {
+      "expeditionId": "EXP-GOV-014 — Governance Model & Engine Integrity",
+      "dependsOn": [
+        "None"
+      ],
+      "blocks": [
+        "EXP-GOV-015"
+      ]
+    },
+    "EXP-GOV-015.md": {
+      "expeditionId": "EXP-GOV-015 — Gate Decision Completeness",
+      "dependsOn": [
+        "EXP-GOV-014"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-GOV-016.md": {
+      "expeditionId": "EXP-GOV-016 — Validation Planner",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-017.md": {
+      "expeditionId": "EXP-GOV-017 — Incremental Validator Engine",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-018.md": {
+      "expeditionId": "EXP-GOV-018 — Governance Cache",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-019.md": {
+      "expeditionId": "EXP-GOV-019 — CI Orchestration",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-020.md": {
+      "expeditionId": "EXP-GOV-020 — Certification Profiles",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-021.md": {
+      "expeditionId": "EXP-GOV-021 — Validation Explanation",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-022.md": {
+      "expeditionId": "EXP-GOV-022 — Performance Benchmarking",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-023.md": {
+      "expeditionId": "EXP-GOV-023 — Agent Governance Adherence",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOV-024.md": {
+      "expeditionId": "EXP-GOV-024 — v2 Brownfield Migration Blockers",
+      "dependsOn": [
+        "EXP-GOV-015 (Gate Decision Completeness)",
+        "EXP-GOVERNABILITY-005 (Convergence Certification Implementation)",
+        "EXP-CLI-001 (CLI as Deterministic Machine Interface)"
+      ],
+      "blocks": [
+        "Brownfield re-governance of legacy Synth installations"
+      ]
+    },
+    "EXP-GOV-025.md": {
+      "expeditionId": "EXP-GOV-025 — Safe State Repair & Divergence Recovery",
+      "dependsOn": [
+        "EXP-BOOTSTRAP-002 (Framework Self-Hosting)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-GOVERN-001.md": {
+      "expeditionId": "EXP-GOVERN-001 — Governance Profiling",
+      "dependsOn": [
+        "EXP-CLI-001 (CLI UX and Diagnostics Hardening)"
+      ],
+      "blocks": []
+    },
+    "EXP-GOVERN-002.md": {
+      "expeditionId": "EXP-GOVERN-002 — Validation Dependency Graph",
+      "dependsOn": [
+        "EXP-GOVERN-001 (Governance Profiling)"
+      ],
+      "blocks": []
+    },
+    "EXP-GOVERN-003.md": {
+      "expeditionId": "EXP-GOVERN-003 — Proof Model and Fingerprint Store",
+      "dependsOn": [
+        "EXP-GOVERN-002 (Validation Dependency Graph)"
+      ],
+      "blocks": []
+    },
+    "EXP-GOVERN-004.md": {
+      "expeditionId": "EXP-GOVERN-004 — Incremental Scheduler",
+      "dependsOn": [
+        "EXP-GOVERN-003 (Fingerprint and Proof Cache)"
+      ],
+      "blocks": []
+    },
+    "EXP-GOVERN-005.md": {
+      "expeditionId": "EXP-GOVERN-005 — Advanced Optimization",
+      "dependsOn": [
+        "EXP-GOVERN-004 (Incremental Scheduler)"
+      ],
+      "blocks": []
+    },
+    "EXP-GOVERN-006.md": {
+      "expeditionId": "EXP-GOVERN-006 — Governance Completion",
+      "dependsOn": [
+        "EXP-PROGRAM-021 (Incremental Governance)"
+      ],
+      "blocks": []
+    },
+    "EXP-GOVERNABILITY-001-regression-certification.md": {
+      "expeditionId": "EXP-GOVERNABILITY-001 — Governability Regression Certification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOVERNABILITY-002-proposal-evaluation-capability.md": {
+      "expeditionId": "EXP-GOVERNABILITY-002 — Proposal Evaluation Capability Design",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOVERNABILITY-003-proposal-evaluation-implementation.md": {
+      "expeditionId": "EXP-GOVERNABILITY-003 — Proposal Evaluation Capability Implementation",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOVERNABILITY-004.md": {
+      "expeditionId": "EXP-GOVERNABILITY-004 — Convergence Certification Design",
+      "dependsOn": [
+        "EXP-GOVERNABILITY-003",
+        "EXP-HOME-026",
+        "EXP-HOME-027"
+      ],
+      "blocks": [
+        "EXP-GOVERNABILITY-005",
+        "EXP-GATE-012",
+        "EXP-GATE-013",
+        "EXP-REFINE-009"
+      ]
+    },
+    "EXP-GOVERNABILITY-005.md": {
+      "expeditionId": "EXP-GOVERNABILITY-005 — Convergence Certification Implementation",
+      "dependsOn": [
+        "EXP-GOVERNABILITY-004",
+        "EXP-GOVERNABILITY-003",
+        "EXP-HOME-026",
+        "EXP-HOME-027"
+      ],
+      "blocks": [
+        "EXP-REFINE-009",
+        "EXP-REFINE-015",
+        "EXP-GATE-012",
+        "EXP-GATE-013"
+      ]
+    },
+    "EXP-GOVERNABILITY-006B.md": {
+      "expeditionId": "EXP-GOVERNABILITY-006B — Deterministic Governance Replay & Certification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-GOVERNANCE-ENFORCEMENT-001.md": {
+      "expeditionId": "EXP-GOVERNANCE-ENFORCEMENT-001 — Implementation Authority Ordering Enforcement",
+      "dependsOn": [
+        "`EXP-CAPABILITY-BOUNDARY-001`"
+      ],
+      "blocks": [
+        "`EXP-MUTATION-LIFECYCLE-001` (clarifies priority)"
+      ]
+    },
+    "EXP-GOVERNANCE-ENFORCEMENT-002.md": {
+      "expeditionId": "EXP-GOVERNANCE-ENFORCEMENT-002 — Expedition Branch Workflow at Start",
+      "dependsOn": [
+        "`EXP-GOVERNANCE-ENFORCEMENT-001` (branch-policy enforcement inside `ExecutionGate`)",
+        "`EXP-REPO-006` (branch taxonomy / canonical naming)"
+      ],
+      "blocks": []
+    },
+    "EXP-GRAPH-001.md": {
+      "expeditionId": "EXP-GRAPH-001 — Implement Shared Dependency-Graph Primitive",
+      "dependsOn": [
+        "EXP-REVIEW-001",
+        "`docs/design/shared-dependency-graph.md`"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-034 implementation",
+        "EXP-CONVERGENCE-003 portfolio graph"
+      ]
+    },
+    "EXP-GUARD-001.md": {
+      "expeditionId": "EXP-GUARD-001 — Derived-State Protection & Expedition Scope",
+      "dependsOn": [
+        "EXP-PROGRAM-043 Workstream A (guided onboarding)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-GUARD-002.md": {
+      "expeditionId": "EXP-GUARD-002 — Stop Tracking Generated Documentation in Version Control",
+      "dependsOn": [
+        "EXP-GUARD-001"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-HARDEN-001.md": {
+      "expeditionId": "EXP-HARDEN-001 — Mission Studio Integrity",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-HARDEN-002",
+        "EXP-HARDEN-003",
+        "EXP-HARDEN-005"
+      ]
+    },
+    "EXP-HARDEN-002.md": {
+      "expeditionId": "EXP-HARDEN-002 — Snapshot Integrity",
+      "dependsOn": [
+        "EXP-HARDEN-001"
+      ],
+      "blocks": [
+        "EXP-HARDEN-003"
+      ]
+    },
+    "EXP-HARDEN-003.md": {
+      "expeditionId": "EXP-HARDEN-003 — Genesis Hardening",
+      "dependsOn": [
+        "EXP-HARDEN-001",
+        "EXP-HARDEN-002"
+      ],
+      "blocks": [
+        "EXP-HARDEN-004",
+        "EXP-HARDEN-005"
+      ]
+    },
+    "EXP-HARDEN-004.md": {
+      "expeditionId": "EXP-HARDEN-004 — Replay Hardening",
+      "dependsOn": [
+        "EXP-HARDEN-003"
+      ],
+      "blocks": [
+        "EXP-HARDEN-005",
+        "EXP-HARDEN-006"
+      ]
+    },
+    "EXP-HARDEN-005.md": {
+      "expeditionId": "EXP-HARDEN-005 — Graph Integrity",
+      "dependsOn": [
+        "EXP-HARDEN-003",
+        "EXP-HARDEN-004"
+      ],
+      "blocks": [
+        "EXP-HARDEN-006"
+      ]
+    },
+    "EXP-HARDEN-006.md": {
+      "expeditionId": "EXP-HARDEN-006 — Validation Expansion",
+      "dependsOn": [
+        "EXP-HARDEN-004",
+        "EXP-HARDEN-005"
+      ],
+      "blocks": [
+        "EXP-HARDEN-007"
+      ]
+    },
+    "EXP-HARDEN-007.md": {
+      "expeditionId": "EXP-HARDEN-007 — Observability",
+      "dependsOn": [
+        "EXP-HARDEN-006"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-HOME-001.md": {
+      "expeditionId": "EXP-HOME-001 — Mission Studio Design Language (v3)",
+      "dependsOn": [
+        "none"
+      ],
+      "blocks": [
+        "EXP-HOME-002",
+        "EXP-HOME-003",
+        "EXP-HOME-013"
+      ]
+    },
+    "EXP-HOME-002.md": {
+      "expeditionId": "EXP-HOME-002 — Mission Studio Component Catalog (v3)",
+      "dependsOn": [
+        "EXP-HOME-001 (Mission Studio Design Language)"
+      ],
+      "blocks": [
+        "EXP-HOME-003",
+        "EXP-HOME-004",
+        "EXP-HOME-005",
+        "EXP-HOME-006",
+        "EXP-HOME-007",
+        "EXP-HOME-008",
+        "EXP-HOME-009",
+        "EXP-HOME-013"
+      ]
+    },
+    "EXP-HOME-003.md": {
+      "expeditionId": "EXP-HOME-003 — Mission Studio UI Specification (v2)",
+      "dependsOn": [
+        "EXP-HOME-001 (Mission Studio Design Language)",
+        "EXP-HOME-002 (Mission Studio Component Catalog)"
+      ],
+      "blocks": [
+        "EXP-HOME-004",
+        "EXP-HOME-021"
+      ]
+    },
+    "EXP-HOME-004.md": {
+      "expeditionId": "EXP-HOME-004 — Homepage / Mission Studio Integration (v2)",
+      "dependsOn": [
+        "EXP-HOME-001 (Mission Studio Design Language)",
+        "EXP-HOME-002 (Mission Studio Component Catalog)",
+        "EXP-HOME-003 (Mission Studio UI Specification)"
+      ],
+      "blocks": [
+        "EXP-HOME-005",
+        "EXP-HOME-006",
+        "EXP-HOME-007",
+        "EXP-HOME-008",
+        "EXP-HOME-009",
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-005.md": {
+      "expeditionId": "EXP-HOME-005 — Intent Phase (v2)",
+      "dependsOn": [
+        "EXP-HOME-003 (Mission Studio UI Specification)",
+        "EXP-HOME-004 (Homepage / Mission Studio Integration)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-006.md": {
+      "expeditionId": "EXP-HOME-006 — Discovery Phase (v2)",
+      "dependsOn": [
+        "EXP-HOME-003 (Mission Studio UI Specification)",
+        "EXP-HOME-004 (Homepage / Mission Studio Integration)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-007.md": {
+      "expeditionId": "EXP-HOME-007 — Mission Phase (v2)",
+      "dependsOn": [
+        "EXP-HOME-003 (Mission Studio UI Specification)",
+        "EXP-HOME-004 (Homepage / Mission Studio Integration)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-008.md": {
+      "expeditionId": "EXP-HOME-008 — Expeditions Phase (v2)",
+      "dependsOn": [
+        "EXP-HOME-003 (Mission Studio UI Specification)",
+        "EXP-HOME-004 (Homepage / Mission Studio Integration)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-009.md": {
+      "expeditionId": "EXP-HOME-009 — Governance & Replay Phase (v2)",
+      "dependsOn": [
+        "EXP-HOME-003 (Mission Studio UI Specification)",
+        "EXP-HOME-004 (Homepage / Mission Studio Integration)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-010.md": {
+      "expeditionId": "EXP-HOME-010 — Responsive Implementation",
+      "dependsOn": [
+        "EXP-HOME-002 (Mission Workspace)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-011.md": {
+      "expeditionId": "EXP-HOME-011 — Accessibility",
+      "dependsOn": [
+        "EXP-HOME-002 (Mission Workspace)",
+        "EXP-HOME-004 (Artifact System)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-012.md": {
+      "expeditionId": "EXP-HOME-012 — Performance",
+      "dependsOn": [
+        "EXP-HOME-002 (Mission Workspace)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-013.md": {
+      "expeditionId": "EXP-HOME-013 — Motion System",
+      "dependsOn": [
+        "EXP-HOME-001 (Mission Studio Design Language)"
+      ],
+      "blocks": [
+        "EXP-HOME-003",
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-014.md": {
+      "expeditionId": "EXP-HOME-014 — Documentation Integration",
+      "dependsOn": [
+        "EXP-HOME-004 (Artifact System)",
+        "EXP-HOME-008 (Architecture Explorer)",
+        "EXP-HOME-009 (Capabilities Explorer)"
+      ],
+      "blocks": [
+        "EXP-HOME-015"
+      ]
+    },
+    "EXP-HOME-015.md": {
+      "expeditionId": "EXP-HOME-015 — Production Certification (v2)",
+      "dependsOn": [
+        "EXP-HOME-001 through EXP-HOME-014",
+        "EXP-HOME-016 through EXP-HOME-024"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-HOME-016.md": {
+      "expeditionId": "EXP-HOME-016 — Homepage Runtime",
+      "dependsOn": [
+        "EXP-HOME-002 (Mission Workspace)",
+        "EXP-HOME-004 (Artifact System)"
+      ],
+      "blocks": [
+        "EXP-HOME-017",
+        "EXP-HOME-018",
+        "EXP-HOME-019",
+        "EXP-HOME-021",
+        "EXP-HOME-024"
+      ]
+    },
+    "EXP-HOME-017.md": {
+      "expeditionId": "EXP-HOME-017 — Homepage Genesis Projection",
+      "dependsOn": [
+        "EXP-HOME-003 (Genesis Experience)",
+        "EXP-HOME-016 (Homepage Runtime)"
+      ],
+      "blocks": [
+        "EXP-HOME-019",
+        "EXP-HOME-021"
+      ]
+    },
+    "EXP-HOME-018.md": {
+      "expeditionId": "EXP-HOME-018 — Homepage Replay Projection",
+      "dependsOn": [
+        "EXP-HOME-007 (Replay Experience)",
+        "EXP-HOME-016 (Homepage Runtime)"
+      ],
+      "blocks": [
+        "EXP-HOME-019",
+        "EXP-HOME-021"
+      ]
+    },
+    "EXP-HOME-019.md": {
+      "expeditionId": "EXP-HOME-019 — Artifact Projection Layer",
+      "dependsOn": [
+        "EXP-HOME-004 (Artifact System)",
+        "EXP-HOME-017 (Homepage Genesis Projection)",
+        "EXP-HOME-018 (Homepage Replay Projection)"
+      ],
+      "blocks": [
+        "EXP-HOME-021",
+        "EXP-HOME-024"
+      ]
+    },
+    "EXP-HOME-020.md": {
+      "expeditionId": "EXP-HOME-020 — Curated Demonstration Library",
+      "dependsOn": [
+        "EXP-HOME-017 (Homepage Genesis Projection)"
+      ],
+      "blocks": [
+        "EXP-HOME-015 (Production Certification)"
+      ]
+    },
+    "EXP-HOME-021.md": {
+      "expeditionId": "EXP-HOME-021 — Mission Studio State Machine",
+      "dependsOn": [
+        "EXP-HOME-002 (Mission Workspace)",
+        "EXP-HOME-019 (Artifact Projection Layer)"
+      ],
+      "blocks": [
+        "EXP-HOME-015 (Production Certification)"
+      ]
+    },
+    "EXP-HOME-022.md": {
+      "expeditionId": "EXP-HOME-022 — Runtime Abstraction Layer",
+      "dependsOn": [
+        "EXP-HOME-016 (Homepage Runtime)",
+        "EXP-HOME-019 (Artifact Projection Layer)"
+      ],
+      "blocks": [
+        "EXP-HOME-024 (Projection Contract)"
+      ]
+    },
+    "EXP-HOME-023.md": {
+      "expeditionId": "EXP-HOME-023 — AI Operator Adapter",
+      "dependsOn": [
+        "EXP-HOME-017 (Homepage Genesis Projection)",
+        "EXP-HOME-022 (Runtime Abstraction Layer)"
+      ],
+      "blocks": [
+        "EXP-HOME-024 (Projection Contract)"
+      ]
+    },
+    "EXP-HOME-024.md": {
+      "expeditionId": "EXP-HOME-024 — Projection Contract",
+      "dependsOn": [
+        "EXP-HOME-019 (Artifact Projection Layer)",
+        "EXP-HOME-022 (Runtime Abstraction Layer)"
+      ],
+      "blocks": [
+        "EXP-HOME-015 (Production Certification)"
+      ]
+    },
+    "EXP-HOME-025.md": {
+      "expeditionId": "EXP-HOME-025 — Mission Studio Design Governance (v3)",
+      "dependsOn": [
+        "EXP-HOME-001 (Mission Studio Design Language v3)",
+        "EXP-HOME-002 (Mission Studio Component Catalog v3)"
+      ],
+      "blocks": [
+        "EXP-HOME-015 (Production Certification)"
+      ]
+    },
+    "EXP-HOME-026.md": {
+      "expeditionId": "EXP-HOME-026 — Workspace Shell Architecture",
+      "dependsOn": [
+        "EXP-HOME-001 (Design Language)",
+        "EXP-HOME-002 (Component Catalog)"
+      ],
+      "blocks": [
+        "EXP-HOME-027",
+        "EXP-HOME-028"
+      ]
+    },
+    "EXP-HOME-027.md": {
+      "expeditionId": "EXP-HOME-027 — Density & Layout System",
+      "dependsOn": [
+        "EXP-HOME-026 (Workspace Shell Architecture)"
+      ],
+      "blocks": [
+        "EXP-HOME-028 (Continuous Collapse Interaction)"
+      ]
+    },
+    "EXP-HOME-028.md": {
+      "expeditionId": "EXP-HOME-028 — Continuous Collapse Interaction",
+      "dependsOn": [
+        "EXP-HOME-026 (Workspace Shell)",
+        "EXP-HOME-027 (Density & Layout)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-IDENTITY-001.md": {
+      "expeditionId": "EXP-IDENTITY-001 — Agent/Session Identity in Events",
+      "dependsOn": [
+        "EXP-ONBOARD-002",
+        "EXP-EVENTLOG-001",
+        "EXP-GUARD-001",
+        "ADR-039 Convergence Review outcome"
+      ],
+      "blocks": [
+        "EXP-SIGN-001",
+        "EXP-APPROVAL-001",
+        "EXP-GIT-001"
+      ]
+    },
+    "EXP-INIT-001.md": {
+      "expeditionId": "EXP-INIT-001 — Adapter-based Project Bootstrap",
+      "dependsOn": [
+        "EXP-GOV-008 — Initialization as a Governed State Transition"
+      ],
+      "blocks": [
+        "EXP-INIT-002 — Initialization Evidence & Replay"
+      ]
+    },
+    "EXP-INIT-002.md": {
+      "expeditionId": "EXP-INIT-002 — Initialization Evidence & Replay",
+      "dependsOn": [
+        "EXP-INIT-001",
+        "EXP-GOV-007"
+      ],
+      "blocks": [
+        "Future initialization sources and replay-dependent features"
+      ]
+    },
+    "EXP-INSTALL-001.md": {
+      "expeditionId": "EXP-INSTALL-001 — Bootstrap Contract",
+      "dependsOn": [
+        "EXP-PROGRAM-006"
+      ],
+      "blocks": [
+        "EXP-INSTALL-002",
+        "EXP-INSTALL-003",
+        "EXP-INSTALL-004",
+        "EXP-INSTALL-005",
+        "EXP-INSTALL-006",
+        "EXP-INSTALL-008",
+        "EXP-INSTALL-009",
+        "EXP-INSTALL-010"
+      ]
+    },
+    "EXP-INSTALL-002.md": {
+      "expeditionId": "EXP-INSTALL-002 — Environment Detection",
+      "dependsOn": [
+        "EXP-INSTALL-001"
+      ],
+      "blocks": [
+        "EXP-INSTALL-004",
+        "EXP-INSTALL-005",
+        "EXP-INSTALL-009"
+      ]
+    },
+    "EXP-INSTALL-003.md": {
+      "expeditionId": "EXP-INSTALL-003 — Distribution Resolution",
+      "dependsOn": [
+        "EXP-INSTALL-001"
+      ],
+      "blocks": [
+        "EXP-INSTALL-004",
+        "EXP-INSTALL-007",
+        "EXP-INSTALL-008"
+      ]
+    },
+    "EXP-INSTALL-004.md": {
+      "expeditionId": "EXP-INSTALL-004 — Installation Engine",
+      "dependsOn": [
+        "EXP-INSTALL-002",
+        "EXP-INSTALL-003"
+      ],
+      "blocks": [
+        "EXP-INSTALL-005",
+        "EXP-INSTALL-009"
+      ]
+    },
+    "EXP-INSTALL-005.md": {
+      "expeditionId": "EXP-INSTALL-005 — Installation Verification",
+      "dependsOn": [
+        "EXP-INSTALL-004"
+      ],
+      "blocks": [
+        "EXP-INSTALL-009"
+      ]
+    },
+    "EXP-INSTALL-006.md": {
+      "expeditionId": "EXP-INSTALL-006 — Website Integration",
+      "dependsOn": [
+        "EXP-INSTALL-001"
+      ],
+      "blocks": [
+        "EXP-INSTALL-009",
+        "EXP-INSTALL-011"
+      ]
+    },
+    "EXP-INSTALL-007.md": {
+      "expeditionId": "EXP-INSTALL-007 — Version Manifest",
+      "dependsOn": [
+        "EXP-INSTALL-003"
+      ],
+      "blocks": [
+        "EXP-INSTALL-008"
+      ]
+    },
+    "EXP-INSTALL-008.md": {
+      "expeditionId": "EXP-INSTALL-008 — Upgrade Engine",
+      "dependsOn": [
+        "EXP-INSTALL-004",
+        "EXP-INSTALL-007"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-INSTALL-009.md": {
+      "expeditionId": "EXP-INSTALL-009 — Installation Certification",
+      "dependsOn": [
+        "EXP-INSTALL-005",
+        "EXP-INSTALL-006"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-INSTALL-010.md": {
+      "expeditionId": "EXP-INSTALL-010 — Documentation & Onboarding",
+      "dependsOn": [
+        "EXP-INSTALL-004",
+        "EXP-INSTALL-005"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-INSTALL-011.md": {
+      "expeditionId": "EXP-INSTALL-011 — Website Deployment Verification",
+      "dependsOn": [
+        "EXP-INSTALL-006",
+        "EXP-DOCS-001"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-INSTALL-012.md": {
+      "expeditionId": "EXP-INSTALL-012 — First Operator Experience Certification",
+      "dependsOn": [
+        "EXP-CLI-001"
+      ],
+      "blocks": [
+        "Release Certification"
+      ]
+    },
+    "EXP-KNOWLEDGE-001.md": {
+      "expeditionId": "EXP-KNOWLEDGE-001 — Canonical Knowledge Model",
+      "dependsOn": [
+        "EXP-SEMANTIC-002 (Domain Modeling Engine)"
+      ],
+      "blocks": []
+    },
+    "EXP-KNOWLEDGE-002.md": {
+      "expeditionId": "EXP-KNOWLEDGE-002 — Prototype-First Validation",
+      "dependsOn": [
+        "EXP-KNOWLEDGE-001 (Canonical Knowledge Model)"
+      ],
+      "blocks": []
+    },
+    "EXP-MIGRATE-001.md": {
+      "expeditionId": "EXP-MIGRATE-001 — Legacy Synth State Detection & Archive-or-Import",
+      "dependsOn": [
+        "EXP-ONBOARD-001",
+        "EXP-GUARD-001",
+        "EXP-APPROVAL-001",
+        "EXP-EVENTLOG-001"
+      ],
+      "blocks": [
+        "EXP-BOOTSTRAP-001"
+      ]
+    },
+    "EXP-MST-001.md": {
+      "expeditionId": "EXP-MST-001 — Mission Studio",
+      "dependsOn": [
+        "EXP-SMA-001",
+        "EXP-DET-001",
+        "EXP-AUD-002",
+        "EXP-GOV-001",
+        "EXP-ADP-000"
+      ],
+      "blocks": [
+        "Sample Projects",
+        "Agent UI",
+        "Project Templates"
+      ]
+    },
+    "EXP-MUTATION-LIFECYCLE-001.md": {
+      "expeditionId": "EXP-MUTATION-LIFECYCLE-001 — Mutation Boundary Integration and Genesis Policy",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-ONBOARD-001.md": {
+      "expeditionId": "EXP-ONBOARD-001 — Guided First-Contact Command",
+      "dependsOn": [
+        "EXP-GOV-024 (brownfield blockers fixed)",
+        "EXP-CLI-001 (CLI consistency)"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-043 Workstreams B",
+        "C",
+        "D"
+      ]
+    },
+    "EXP-ONBOARD-002.md": {
+      "expeditionId": "EXP-ONBOARD-002 — Migrate First-Contact Onboarding to the Task Engine",
+      "dependsOn": [
+        "EXP-ONBOARD-001",
+        "EXP-TASK-006",
+        "EXP-REVIEW-002",
+        "EXP-REVIEW-003"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-043 Phase 4 (Workstream F identity/trust layer)"
+      ]
+    },
+    "EXP-MUTATION-LIFECYCLE-001-inventory.md": {
+      "expeditionId": "EXP-MUTATION-LIFECYCLE-001 — Mutation Path Inventory",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-OUTPUT-001.md": {
+      "expeditionId": "EXP-OUTPUT-001 — Separate Structured stdout from Diagnostic Logs",
+      "dependsOn": [
+        "EXP-CLI-001 (CLI as Deterministic Machine Interface)"
+      ],
+      "blocks": [
+        "EXP-BOOTSTRAP-001"
+      ]
+    },
+    "EXP-PLATFORM-001-canonical-infrastructure-audit.md": {
+      "expeditionId": "EXP-PLATFORM-001 — Canonical Infrastructure Audit",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-001-infrastructure-matrix.md": {
+      "expeditionId": "EXP-PLATFORM-001 — Canonical Infrastructure Matrix",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-002-deletion-list.md": {
+      "expeditionId": "EXP-PLATFORM-002 — Deletion List",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-002-duplication-map.md": {
+      "expeditionId": "EXP-PLATFORM-002 — Duplication Map",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-002-migration-order.md": {
+      "expeditionId": "EXP-PLATFORM-002 — Migration Order",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-002-responsibility-matrix.md": {
+      "expeditionId": "EXP-PLATFORM-002 — Responsibility Matrix",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-002-sdk-surface.md": {
+      "expeditionId": "EXP-PLATFORM-002 — SDK Surface",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-002.md": {
+      "expeditionId": "EXP-PLATFORM-002 — Internal Platform SDK",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-003-construction-canonicalization.md": {
+      "expeditionId": "EXP-PLATFORM-003 — Construction Canonicalization",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-003-construction-matrix.md": {
+      "expeditionId": "EXP-PLATFORM-003 — Canonical Construction Matrix",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-004-utility-matrix.md": {
+      "expeditionId": "EXP-PLATFORM-004 — Utility Extraction Matrix",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PLATFORM-004-utility-extraction.md": {
+      "expeditionId": "EXP-PLATFORM-004 — Utility Extraction",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROD-001.md": {
+      "expeditionId": "EXP-PROD-001 — Mission Snapshot Lineage",
+      "dependsOn": [
+        "EXP-MST-001"
+      ],
+      "blocks": [
+        "EXP-PROD-002",
+        "EXP-PROD-005"
+      ]
+    },
+    "EXP-PROD-002.md": {
+      "expeditionId": "EXP-PROD-002 — Documentation Expedition",
+      "dependsOn": [
+        "EXP-PROD-001"
+      ],
+      "blocks": [
+        "EXP-PROD-004",
+        "EXP-PROD-005"
+      ]
+    },
+    "EXP-PROD-003.md": {
+      "expeditionId": "EXP-PROD-003 — Operator Journey Certification",
+      "dependsOn": [
+        "EXP-PROD-001"
+      ],
+      "blocks": [
+        "EXP-PROD-004",
+        "EXP-PROD-005"
+      ]
+    },
+    "EXP-PROD-004.md": {
+      "expeditionId": "EXP-PROD-004 — Mental Model Simplification",
+      "dependsOn": [
+        "EXP-PROD-002"
+      ],
+      "blocks": [
+        "EXP-PROD-005"
+      ]
+    },
+    "EXP-PROD-005.md": {
+      "expeditionId": "EXP-PROD-005 — Freeze Certification",
+      "dependsOn": [
+        "EXP-PROD-001",
+        "EXP-PROD-002",
+        "EXP-PROD-003",
+        "EXP-PROD-004"
+      ],
+      "blocks": [
+        "v2 Release"
+      ]
+    },
+    "EXP-PROGRAM-001.md": {
+      "expeditionId": "EXP-PROGRAM-001 — SYNTH Productization Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-002.md": {
+      "expeditionId": "EXP-PROGRAM-002 — SYNTH Public Release Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-003.md": {
+      "expeditionId": "EXP-PROGRAM-003 — SYNTH Validation Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-004.md": {
+      "expeditionId": "EXP-PROGRAM-004 — First Contact Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-005.md": {
+      "expeditionId": "EXP-PROGRAM-005 — Adaptive Validation Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-006.md": {
+      "expeditionId": "EXP-PROGRAM-006 — Discovery Platform",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-007.md": {
+      "expeditionId": "EXP-PROGRAM-007 — Environment Independence Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-008.md": {
+      "expeditionId": "EXP-PROGRAM-008 — Documentation & Projections",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-009.md": {
+      "expeditionId": "EXP-PROGRAM-009 — Canonical First Contact Experience",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-010.md": {
+      "expeditionId": "EXP-PROGRAM-010 — Constitutional Hardening Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-011.md": {
+      "expeditionId": "EXP-PROGRAM-011 — Operator Trust & CLI Integrity",
+      "dependsOn": [
+        "EXP-PROGRAM-010"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-012",
+        "EXP-PROGRAM-013"
+      ]
+    },
+    "EXP-PROGRAM-012.md": {
+      "expeditionId": "EXP-PROGRAM-012 — Runtime Self-Description",
+      "dependsOn": [
+        "EXP-PROGRAM-011"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-013"
+      ]
+    },
+    "EXP-PROGRAM-013.md": {
+      "expeditionId": "EXP-PROGRAM-013 — Cognitive Continuity",
+      "dependsOn": [
+        "EXP-PROGRAM-012"
+      ],
+      "blocks": []
+    },
+    "EXP-PROGRAM-014.md": {
+      "expeditionId": "EXP-PROGRAM-014 — Governance Maturation",
+      "dependsOn": [
+        "EXP-PROGRAM-011",
+        "EXP-PROGRAM-012"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-PROGRAM-015.md": {
+      "expeditionId": "EXP-PROGRAM-015 — Repository Versioning Capability",
+      "dependsOn": [
+        "EXP-PROGRAM-007",
+        "EXP-PROGRAM-014"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-PROGRAM-016.md": {
+      "expeditionId": "EXP-PROGRAM-016 — Governed Expedition Execution",
+      "dependsOn": [
+        "EXP-PROGRAM-015 (Repository Versioning Capability)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-PROGRAM-017.md": {
+      "expeditionId": "EXP-PROGRAM-017 — Project Runtime Boundary Hardening Program",
+      "dependsOn": [
+        "EXP-PROGRAM-007"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-PROGRAM-018.md": {
+      "expeditionId": "EXP-PROGRAM-018 — Foundation Architecture Program",
+      "dependsOn": [
+        "None"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-PROGRAM-019.md": {
+      "expeditionId": "EXP-PROGRAM-019 — Universal Initialization",
+      "dependsOn": [
+        "EXP-PROGRAM-009 — Canonical First Contact Experience",
+        "EXP-GOV-008 — Initialization as a Governed State Transition"
+      ],
+      "blocks": [
+        "EXP-INIT-001 — Adapter-based Project Bootstrap; future adoption programs that require deterministic initial project context"
+      ]
+    },
+    "EXP-PROGRAM-020.md": {
+      "expeditionId": "EXP-PROGRAM-020 — Website Experience",
+      "dependsOn": [
+        "EXP-PROGRAM-004",
+        "EXP-PROGRAM-009"
+      ],
+      "blocks": []
+    },
+    "EXP-PROGRAM-021.md": {
+      "expeditionId": "EXP-PROGRAM-021 — Incremental Governance",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-022.md": {
+      "expeditionId": "EXP-PROGRAM-022 — AI-Native First Contact",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-023.md": {
+      "expeditionId": "EXP-PROGRAM-023 — Genesis",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-024.md": {
+      "expeditionId": "EXP-PROGRAM-024 — Semantic Modeling",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-025.md": {
+      "expeditionId": "EXP-PROGRAM-025 — Canonical Knowledge & Validation",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-026.md": {
+      "expeditionId": "EXP-PROGRAM-026 — AI Agent Interoperability",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-027.md": {
+      "expeditionId": "EXP-PROGRAM-027 — Mission Studio Homepage",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-028.md": {
+      "expeditionId": "EXP-PROGRAM-028 — Repository & Release Governance",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-029.md": {
+      "expeditionId": "EXP-PROGRAM-029 — AI Ecosystem Distribution",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-030.md": {
+      "expeditionId": "EXP-PROGRAM-030 — Intelligent Governance Orchestration",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-031.md": {
+      "expeditionId": "EXP-PROGRAM-031 — Architectural Convergence",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-032.md": {
+      "expeditionId": "EXP-PROGRAM-032 — Operator Optimization Pipeline",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-034.md": {
+      "expeditionId": "EXP-PROGRAM-034 — Task Orchestration Engine",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-035.md": {
+      "expeditionId": "EXP-PROGRAM-035 — Intent Refinement & Review Governance",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-036.md": {
+      "expeditionId": "EXP-PROGRAM-036 — Intent Refinement & Alignment Governance",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-037.md": {
+      "expeditionId": "EXP-PROGRAM-037 — Ecosystem Adoption & Community Growth",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-038.md": {
+      "expeditionId": "EXP-PROGRAM-038 — Release Candidate",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-039.md": {
+      "expeditionId": "EXP-PROGRAM-039 — Documentation Remediation Program",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-040.md": {
+      "expeditionId": "EXP-PROGRAM-040 — Repository Simplification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-041.md": {
+      "expeditionId": "EXP-PROGRAM-041 — Platform Canonicalization",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-042.md": {
+      "expeditionId": "EXP-PROGRAM-042 — Release Certification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-043.md": {
+      "expeditionId": "EXP-PROGRAM-043 — Agent Onboarding & Operator Experience",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-PROGRAM-044.md": {
+      "expeditionId": "EXP-PROGRAM-044 — Operational Readiness & Self-Hosting",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-001.md": {
+      "expeditionId": "EXP-REFINE-001 — Refinement Layer Model",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-002.md": {
+      "expeditionId": "EXP-REFINE-002 — Alignment Contract",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-003.md": {
+      "expeditionId": "EXP-REFINE-003 — Divergence Gate",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-004.md": {
+      "expeditionId": "EXP-REFINE-004 — Refinement Questions Engine",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-005.md": {
+      "expeditionId": "EXP-REFINE-005 — Reference Evidence Binding",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-006.md": {
+      "expeditionId": "EXP-REFINE-006 — Convergence Certification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-007.md": {
+      "expeditionId": "EXP-REFINE-007 — Mission Studio Integration",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-008.md": {
+      "expeditionId": "EXP-REFINE-008 — Program 027 Retrofit",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-009.md": {
+      "expeditionId": "EXP-REFINE-009 — Certification",
+      "dependsOn": [
+        "EXP-REFINE-015",
+        "EXP-REFINE-016",
+        "EXP-GOVERNABILITY-001",
+        "EXP-GOVERNABILITY-003",
+        "EXP-GOVERNABILITY-005",
+        "EXP-HOME-026",
+        "EXP-HOME-027",
+        "EXP-REFINE-008"
+      ],
+      "blocks": []
+    },
+    "EXP-REFINE-010.md": {
+      "expeditionId": "EXP-REFINE-010 — Interactive Decision Acquisition",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-011.md": {
+      "expeditionId": "EXP-REFINE-011 — Intent Interpretation Model",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-012.md": {
+      "expeditionId": "EXP-REFINE-012 — Governance Lifecycle State Machine",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-013.md": {
+      "expeditionId": "EXP-REFINE-013 — Mission Projection & Derivation",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-014.md": {
+      "expeditionId": "EXP-REFINE-014 — Mission Projection Capability",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-REFINE-015.md": {
+      "expeditionId": "EXP-REFINE-015 — Evidence-Grounded Mission Drafting",
+      "dependsOn": [
+        "EXP-REFINE-013",
+        "EXP-GOVERNABILITY-005"
+      ],
+      "blocks": [
+        "EXP-HOME-028"
+      ]
+    },
+    "EXP-REFINE-016.md": {
+      "expeditionId": "EXP-REFINE-016 — Artifact Scope & Completion Validation",
+      "dependsOn": [
+        "EXP-REFINE-015"
+      ],
+      "blocks": [
+        "EXP-HOME-028"
+      ]
+    },
+    "EXP-REL-001.md": {
+      "expeditionId": "EXP-REL-001 — Repository Organization",
+      "dependsOn": [
+        "EXP-PROD-005"
+      ],
+      "blocks": [
+        "EXP-REL-002",
+        "EXP-REL-003",
+        "EXP-REL-004",
+        "EXP-REL-005"
+      ]
+    },
+    "EXP-REL-002.md": {
+      "expeditionId": "EXP-REL-002 — Public Documentation",
+      "dependsOn": [
+        "EXP-REL-001"
+      ],
+      "blocks": [
+        "EXP-REL-004"
+      ]
+    },
+    "EXP-REL-003.md": {
+      "expeditionId": "EXP-REL-003 — Example Certification",
+      "dependsOn": [
+        "EXP-REL-001"
+      ],
+      "blocks": [
+        "EXP-REL-002",
+        "EXP-REL-004"
+      ]
+    },
+    "EXP-REL-004.md": {
+      "expeditionId": "EXP-REL-004 — Website",
+      "dependsOn": [
+        "EXP-REL-002",
+        "EXP-REL-003"
+      ],
+      "blocks": [
+        "EXP-REL-005"
+      ]
+    },
+    "EXP-REL-005.md": {
+      "expeditionId": "EXP-REL-005 — Open Source Readiness",
+      "dependsOn": [
+        "EXP-REL-001",
+        "EXP-REL-002",
+        "EXP-REL-003",
+        "EXP-REL-004"
+      ],
+      "blocks": [
+        "Public release"
+      ]
+    },
+    "EXP-REL-006.md": {
+      "expeditionId": "EXP-REL-006 — v2.0.0 Release Certification",
+      "dependsOn": [
+        "EXP-PROGRAM-012",
+        "EXP-PROGRAM-013",
+        "EXP-PROGRAM-014",
+        "EXP-PROGRAM-015",
+        "EXP-PROGRAM-016"
+      ],
+      "blocks": [
+        "Public v2.0.0 release"
+      ]
+    },
+    "EXP-REPO-001.md": {
+      "expeditionId": "EXP-REPO-001 — Repository Governance Model",
+      "dependsOn": [
+        "EXP-RUNTIME-001 (Runtime Correctness and Recovery)"
+      ],
+      "blocks": [
+        "To be defined as downstream expeditions are chartered"
+      ]
+    },
+    "EXP-REPO-002.md": {
+      "expeditionId": "EXP-REPO-002 — Branch Taxonomy",
+      "dependsOn": [
+        "EXP-REPO-001"
+      ],
+      "blocks": [
+        "EXP-REPO-003"
+      ]
+    },
+    "EXP-REPO-003.md": {
+      "expeditionId": "EXP-REPO-003 — Promotion Pipeline",
+      "dependsOn": [
+        "EXP-REPO-002"
+      ],
+      "blocks": [
+        "EXP-REPO-007"
+      ]
+    },
+    "EXP-REPO-004.md": {
+      "expeditionId": "EXP-REPO-004 — Semantic Version Governance",
+      "dependsOn": [
+        "EXP-REPO-001"
+      ],
+      "blocks": [
+        "EXP-REPO-007"
+      ]
+    },
+    "EXP-REPO-005.md": {
+      "expeditionId": "EXP-REPO-005 — Forge Adapter Contract",
+      "dependsOn": [
+        "EXP-REPO-001"
+      ],
+      "blocks": [
+        "EXP-REPO-006"
+      ]
+    },
+    "EXP-REPO-006.md": {
+      "expeditionId": "EXP-REPO-006 — Pull Request Contract",
+      "dependsOn": [
+        "EXP-REPO-005"
+      ],
+      "blocks": [
+        "EXP-REPO-007"
+      ]
+    },
+    "EXP-REPO-007.md": {
+      "expeditionId": "EXP-REPO-007 — Release Governance",
+      "dependsOn": [
+        "EXP-REPO-003",
+        "EXP-REPO-004"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-REVIEW-001.md": {
+      "expeditionId": "EXP-REVIEW-001 — First Convergence Review of Program 043 and Program 034",
+      "dependsOn": [
+        "ADR-039",
+        "EXP-PROGRAM-043",
+        "EXP-PROGRAM-034"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-034 implementation",
+        "EXP-PROGRAM-043 Workstream F"
+      ]
+    },
+    "EXP-REVIEW-002.md": {
+      "expeditionId": "EXP-REVIEW-002 — Second Convergence Review of Program 034",
+      "dependsOn": [
+        "EXP-REVIEW-001",
+        "EXP-GRAPH-001",
+        "`EXP-PROGRAM-034` design-phase actions"
+      ],
+      "blocks": [
+        "`EXP-PROGRAM-034` leaving design phase"
+      ]
+    },
+    "EXP-REVIEW-003.md": {
+      "expeditionId": "EXP-REVIEW-003 — Third Convergence Review of Program 043",
+      "dependsOn": [
+        "EXP-REVIEW-001",
+        "EXP-REVIEW-002",
+        "EXP-PROGRAM-043 Workstreams A–E",
+        "EXP-PROGRAM-034 TASK-007"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-043 Phase 3 (task-engine migration)",
+        "EXP-PROGRAM-043 Workstream F"
+      ]
+    },
+    "EXP-RUNTIME-001.md": {
+      "expeditionId": "EXP-RUNTIME-001 — Runtime Correctness and Recovery",
+      "dependsOn": [
+        "EXP-BROWNFIELD-001 (Brownfield Bootstrap Hardening)",
+        "EXP-CLI-001 (CLI UX and Diagnostics Hardening)"
+      ],
+      "blocks": []
+    },
+    "EXP-SEC-001.md": {
+      "expeditionId": "EXP-SEC-001 — Execution Gate Bypass Hardening",
+      "dependsOn": [
+        "ADR-050"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-SEMANTIC-001.md": {
+      "expeditionId": "EXP-SEMANTIC-001 — Intent Modeling Engine",
+      "dependsOn": [
+        "EXP-GENESIS-003 (Genesis Validation & Mission Materialization)"
+      ],
+      "blocks": []
+    },
+    "EXP-SEMANTIC-002.md": {
+      "expeditionId": "EXP-SEMANTIC-002 — Domain Modeling Engine",
+      "dependsOn": [
+        "EXP-SEMANTIC-001 (Intent Modeling Engine)"
+      ],
+      "blocks": []
+    },
+    "EXP-SIGN-001.md": {
+      "expeditionId": "EXP-SIGN-001 — Event-Log Signing / Merkle Root",
+      "dependsOn": [
+        "EXP-IDENTITY-001",
+        "ADR-039 Convergence Review outcome"
+      ],
+      "blocks": [
+        "EXP-GIT-001"
+      ]
+    },
+    "EXP-SIMPLIFICATION-001-authority-resolver-design.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-001 — Authority Resolver Design",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-SIMPLIFICATION-001-completion.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-001 — Completion Evidence",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-SIMPLIFICATION-001.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-001 — Canonical State Simplification & Authority Restoration",
+      "dependsOn": [
+        "`EXP-SIMPLIFICATION-ASSESSMENT-001`"
+      ],
+      "blocks": [
+        "`EXP-GOVERNANCE-ENFORCEMENT-001`",
+        "implementation of `ADR-046`"
+      ]
+    },
+    "EXP-SIMPLIFICATION-001-derived-state-contract.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-001 — Derived State Contract",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-SIMPLIFICATION-002.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-002 — Test Infrastructure Unification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-SIMPLIFICATION-003.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-003 — Extension Model Unification",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-SIMPLIFICATION-ASSESSMENT-001.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-ASSESSMENT-001 — Complexity and Ownership Inventory",
+      "dependsOn": [
+        "Diagnostic conclusion that governance execution gaps may be symptoms of accumulated complexity"
+      ],
+      "blocks": [
+        "Decision to accept `ADR-046` and implement `EXP-GOVERNANCE-ENFORCEMENT-001`"
+      ]
+    },
+    "EXP-SIMPLIFICATION-003-responsibility-matrix.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-003 — Responsibility Matrix",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-SMA-001.md": {
+      "expeditionId": "EXP-SMA-001 — Complete Single Mutation Authority",
+      "dependsOn": [
+        "`docs/architecture/constitution.md` Article I",
+        "`docs/EXP-AUD-002-zero-trust-architecture-verification.md` AUD-001"
+      ],
+      "blocks": [
+        "EXP-DET-001",
+        "EXP-AUD-002",
+        "EXP-GOV-001"
+      ]
+    },
+    "EXP-SIMPLIFICATION-ASSESSMENT-001-report.md": {
+      "expeditionId": "EXP-SIMPLIFICATION-ASSESSMENT-001 — Complexity and Ownership Inventory Report",
+      "dependsOn": [],
+      "blocks": []
+    },
+    "EXP-TASK-001.md": {
+      "expeditionId": "EXP-TASK-001 — Task Schema and Registry",
+      "dependsOn": [
+        "EXP-GRAPH-001",
+        "EXP-REVIEW-002"
+      ],
+      "blocks": [
+        "`synth task` CLI implementation",
+        "Program 030 planner task consumption"
+      ]
+    },
+    "EXP-TASK-002.md": {
+      "expeditionId": "EXP-TASK-002 — Task CLI",
+      "dependsOn": [
+        "EXP-TASK-001",
+        "EXP-GRAPH-001",
+        "EXP-REVIEW-002"
+      ],
+      "blocks": [
+        "EXP-TASK-005 (impact-aware execution)",
+        "TASK-006 (npm adapter)",
+        "TASK-007 (CI adapter)"
+      ]
+    },
+    "EXP-TASK-003.md": {
+      "expeditionId": "EXP-TASK-003 — Task Execution CLI",
+      "dependsOn": [
+        "EXP-TASK-001",
+        "EXP-TASK-002",
+        "EXP-GRAPH-001",
+        "EXP-REVIEW-002"
+      ],
+      "blocks": [
+        "TASK-006 (npm adapter)",
+        "TASK-007 (CI adapter)",
+        "TASK-011 (npm-script migration)"
+      ]
+    },
+    "EXP-TASK-004.md": {
+      "expeditionId": "EXP-TASK-004 — npm Script Migration",
+      "dependsOn": [
+        "EXP-TASK-001",
+        "EXP-TASK-002",
+        "EXP-TASK-003",
+        "EXP-GRAPH-001",
+        "EXP-REVIEW-002"
+      ],
+      "blocks": [
+        "TASK-006 (npm adapter)",
+        "TASK-007 (CI adapter)"
+      ]
+    },
+    "EXP-TASK-005.md": {
+      "expeditionId": "EXP-TASK-005 — npm Adapter",
+      "dependsOn": [
+        "EXP-TASK-001",
+        "EXP-TASK-002",
+        "EXP-TASK-003",
+        "EXP-TASK-004",
+        "EXP-GRAPH-001",
+        "EXP-REVIEW-002"
+      ],
+      "blocks": [
+        "TASK-007 (CI adapter)"
+      ]
+    },
+    "EXP-TASK-006.md": {
+      "expeditionId": "EXP-TASK-006 — CI Orchestration Adapter",
+      "dependsOn": [
+        "EXP-TASK-001",
+        "EXP-TASK-002",
+        "EXP-TASK-003",
+        "EXP-TASK-004",
+        "EXP-TASK-005",
+        "EXP-GRAPH-001",
+        "EXP-REVIEW-002"
+      ],
+      "blocks": [
+        "TASK-011 acceptance (deprecation of legacy npm scripts)"
+      ]
+    },
+    "EXP-TASK-012.md": {
+      "expeditionId": "EXP-TASK-012 — Task Graph Planner Integration",
+      "dependsOn": [
+        "EXP-TASK-001",
+        "EXP-TASK-002",
+        "EXP-TASK-003",
+        "EXP-PROGRAM-030"
+      ],
+      "blocks": [
+        "Program 034 implementation-phase acceptance"
+      ]
+    },
+    "EXP-TRUST-001.md": {
+      "expeditionId": "EXP-TRUST-001 — Govern Recursion Guard",
+      "dependsOn": [
+        "EXP-PROGRAM-010"
+      ],
+      "blocks": []
+    },
+    "EXP-TRUST-002.md": {
+      "expeditionId": "EXP-TRUST-002 — Draft Integrity & Computed Confidence",
+      "dependsOn": [
+        "EXP-TRUST-001"
+      ],
+      "blocks": []
+    },
+    "EXP-TRUST-003.md": {
+      "expeditionId": "EXP-TRUST-003 — Evidence Path",
+      "dependsOn": [
+        "EXP-TRUST-002"
+      ],
+      "blocks": []
+    },
+    "EXP-TRUST-004.md": {
+      "expeditionId": "EXP-TRUST-004 — Decision Events",
+      "dependsOn": [
+        "EXP-TRUST-003"
+      ],
+      "blocks": []
+    },
+    "EXP-VAL-001.md": {
+      "expeditionId": "EXP-VAL-001 — Agent Onboarding",
+      "dependsOn": [
+        "EXP-PROGRAM-003"
+      ],
+      "blocks": [
+        "EXP-VAL-002",
+        "EXP-VAL-005",
+        "EXP-VAL-006"
+      ]
+    },
+    "EXP-VAL-002.md": {
+      "expeditionId": "EXP-VAL-002 — Repository Bootstrap",
+      "dependsOn": [
+        "EXP-VAL-001"
+      ],
+      "blocks": [
+        "EXP-VAL-003",
+        "EXP-VAL-005",
+        "EXP-VAL-006"
+      ]
+    },
+    "EXP-VAL-003.md": {
+      "expeditionId": "EXP-VAL-003 — Continuous Publication",
+      "dependsOn": [
+        "EXP-VAL-002"
+      ],
+      "blocks": [
+        "EXP-VAL-004",
+        "EXP-VAL-005"
+      ]
+    },
+    "EXP-VAL-004.md": {
+      "expeditionId": "EXP-VAL-004 — Documentation Integrity",
+      "dependsOn": [
+        "EXP-VAL-003"
+      ],
+      "blocks": [
+        "EXP-VAL-005"
+      ]
+    },
+    "EXP-VAL-005.md": {
+      "expeditionId": "EXP-VAL-005 — Adoption Validation",
+      "dependsOn": [
+        "EXP-VAL-001",
+        "EXP-VAL-002",
+        "EXP-VAL-003",
+        "EXP-VAL-004"
+      ],
+      "blocks": [
+        "EXP-VAL-006"
+      ]
+    },
+    "EXP-VAL-006.md": {
+      "expeditionId": "EXP-VAL-006 — AI Benchmark",
+      "dependsOn": [
+        "EXP-VAL-005"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-003 completion"
+      ]
+    },
+    "EXP-VAL-007.md": {
+      "expeditionId": "EXP-VAL-007 — Agentic Mission Lifecycle Correction",
+      "dependsOn": [
+        "EXP-VAL-006"
+      ],
+      "blocks": [
+        "EXP-PROGRAM-003 completion"
+      ]
+    },
+    "EXP-VAL-008.md": {
+      "expeditionId": "EXP-VAL-008 — Impact Analysis",
+      "dependsOn": [
+        "EXP-PROGRAM-005"
+      ],
+      "blocks": [
+        "EXP-VAL-009",
+        "EXP-VAL-010",
+        "EXP-VAL-011"
+      ]
+    },
+    "EXP-VAL-009.md": {
+      "expeditionId": "EXP-VAL-009 — Validation Planner",
+      "dependsOn": [
+        "EXP-VAL-008",
+        "EXP-VAL-010"
+      ],
+      "blocks": [
+        "EXP-VAL-012"
+      ]
+    },
+    "EXP-VAL-010.md": {
+      "expeditionId": "EXP-VAL-010 — Capability ↔ Test Mapping",
+      "dependsOn": [
+        "EXP-VAL-008"
+      ],
+      "blocks": [
+        "EXP-VAL-009",
+        "EXP-VAL-012"
+      ]
+    },
+    "EXP-VAL-011.md": {
+      "expeditionId": "EXP-VAL-011 — Protected Asset Escalation",
+      "dependsOn": [
+        "EXP-VAL-008"
+      ],
+      "blocks": [
+        "EXP-VAL-012"
+      ]
+    },
+    "EXP-VAL-012.md": {
+      "expeditionId": "EXP-VAL-012 — CI/Local Validation Integration",
+      "dependsOn": [
+        "EXP-VAL-009",
+        "EXP-VAL-010",
+        "EXP-VAL-011"
+      ],
+      "blocks": [
+        "none"
+      ]
+    },
+    "EXP-VCS-001.md": {
+      "expeditionId": "EXP-VCS-001 — Versioning Capability Contract",
+      "dependsOn": [
+        "EXP-PROGRAM-007 (Environment Independence)",
+        "EXP-PROGRAM-014 (Governance Maturation)"
+      ],
+      "blocks": [
+        "EXP-VCS-002",
+        "EXP-VCS-003",
+        "EXP-VCS-004",
+        "EXP-VCS-005"
+      ]
+    },
+    "EXP-VCS-002.md": {
+      "expeditionId": "EXP-VCS-002 — Git Versioning Adapter",
+      "dependsOn": [
+        "EXP-VCS-001 (Versioning Capability Contract)"
+      ],
+      "blocks": [
+        "EXP-VCS-004",
+        "EXP-VCS-005"
+      ]
+    },
+    "EXP-VCS-003.md": {
+      "expeditionId": "EXP-VCS-003 — GitHub Forge Adapter",
+      "dependsOn": [
+        "EXP-VCS-001 (Versioning Capability Contract)",
+        "EXP-VCS-002 (Git Versioning Adapter)"
+      ],
+      "blocks": [
+        "EXP-VCS-005"
+      ]
+    },
+    "EXP-VCS-004.md": {
+      "expeditionId": "EXP-VCS-004 — Repository State Observations",
+      "dependsOn": [
+        "EXP-VCS-001 (Versioning Capability Contract)",
+        "EXP-VCS-002 (Git Versioning Adapter)"
+      ],
+      "blocks": [
+        "EXP-VCS-005"
+      ]
+    },
+    "EXP-VCS-005.md": {
+      "expeditionId": "EXP-VCS-005 — Versioning Certification",
+      "dependsOn": [
+        "EXP-VCS-002",
+        "EXP-VCS-003",
+        "EXP-VCS-004"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-WARN-001.md": {
+      "expeditionId": "EXP-WARN-001 — Stable Warning IDs and Actionable Fixes",
+      "dependsOn": [
+        "EXP-CLI-002 (clean output)",
+        "EXP-EVENTLOG-001 (read-only tooling)"
+      ],
+      "blocks": [
+        "None"
+      ]
+    },
+    "EXP-WEB-001.md": {
+      "expeditionId": "EXP-WEB-001 — Homepage Hero: Intent to Deterministic Result",
+      "dependsOn": [
+        "EXP-PROGRAM-004",
+        "EXP-PROGRAM-009"
+      ],
+      "blocks": []
+    }
+  }
+}

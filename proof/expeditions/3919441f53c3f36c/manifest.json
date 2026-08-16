@@ -1,0 +1,12 @@
+{
+  "expeditionId": "3919441f53c3f36c",
+  "capturedAt": 1786858277392,
+  "note": "Fixed the bug where next command suggestions referenced incorrect Mission/Expedition IDs by adding kind field to DraftSummary and filtering drafts by kind (mission vs expedition) in findDraftId and toNextAction.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/3919441f53c3f36c/git-diff.patch",
+      "hash": "8c424aeacb96943d5007d83f53f9f5ff80c08b5dd95d0aa0c6aef30eca1db728"
+    }
+  ]
+}

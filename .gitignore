@@ -27,16 +27,16 @@ coverage/
 # Runtime
 # =============================================================================
 
-.synth/cache/
-.synth/data/
-.synth/ai/
-data/*
-!data/tasks/
-!data/tasks/*.task.json
+#.synth/cache/
+#.synth/data/
+#.synth/ai/
+#data/*
+#data/tasks/
+#data/tasks/*.task.json
 data-test/
 data-test-alignment/
 data-test-proposal-evaluation/
-proof/
+#proof/
 
 # =============================================================================
 # Environment
