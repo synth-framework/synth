@@ -19,7 +19,7 @@ export function getApprovalState(state: CanonicalState): ApprovalState {
 }
 
 /** Apply an approval-related event to the approval state. */
-export function applyApprovalEvent(state: ApprovalState, event: SynthEvent): ApprovalState {
+function applyApprovalEvent(state: ApprovalState, event: SynthEvent): ApprovalState {
   const payload = event.payload as Record<string, unknown> | undefined
   if (!payload) return state
 

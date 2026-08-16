@@ -49,7 +49,7 @@ function extractIdentityFromPayload(payload: unknown): Record<string, unknown> |
 }
 
 /** Verify an Ed25519 signature over the canonical event signature payload. */
-export function verifyEventSignature(
+function verifyEventSignature(
   event: SynthEvent,
   publicKeyPem: string,
 ): { status: "VALID" | "INVALID"; reason?: string } {
@@ -71,7 +71,7 @@ export function verifyEventSignature(
 }
 
 /** Verify a Merkle root against the public key and underlying event hashes. */
-export function verifyMerkleRoot(
+function verifyMerkleRoot(
   root: MerkleRoot,
   signature: string,
   fingerprint: string,
