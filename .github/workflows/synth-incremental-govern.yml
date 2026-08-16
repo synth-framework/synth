@@ -22,6 +22,8 @@ on:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    outputs:
+      changed-files: ${{ steps.compute.outputs.changed }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,10 +40,11 @@ jobs:
         run: npm ci
 
       - name: Compute validation plan
-        id: plan
+        id: compute
         run: |
           # Compute changed files relative to the base branch.
           changed=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | tr '\n' ',' | sed 's/,$//')
+          echo "changed=$changed" >> $GITHUB_OUTPUT
           node scripts/govern-profiler.js --dry-run --explain --profile ${{ inputs.profile || 'pull-request' }} --changes "$changed"
 
   execute:
@@ -75,7 +78,7 @@ jobs:
   full-govern:
     runs-on: ubuntu-latest
     if: github.base_ref == 'main'
-    needs: execute
+    needs: [execute, plan]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -93,5 +96,5 @@ jobs:
         run: |
           # Run incremental then full governance and ensure both succeed.
           # This proves the incremental orchestration does not weaken guarantees.
-          node scripts/govern-profiler.js --profile pull-request
-          node scripts/govern-profiler.js --full
+          node scripts/govern-profiler.js --profile pull-request --changes "${{ needs.plan.outputs.changed-files }}"
+          node scripts/govern-profiler.js --full --changes "${{ needs.plan.outputs.changed-files }}"
