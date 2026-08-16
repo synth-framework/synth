@@ -1,11 +1,54 @@
 {
-  "version": 27,
-  "stateHash": "1498456394",
+  "version": 11,
+  "stateHash": "1024196406",
   "lifecycle": "uninitialized",
-  "workItems": {},
+  "workItems": {
+    "W-1": {
+      "id": "W-1",
+      "name": "First Work Item",
+      "status": "complete",
+      "dependencies": [],
+      "metadata": {},
+      "createdAt": 1786867749445,
+      "updatedAt": 74
+    },
+    "W-2": {
+      "id": "W-2",
+      "name": "Second Work Item",
+      "status": "active",
+      "dependencies": [],
+      "metadata": {},
+      "createdAt": 1786867749445,
+      "updatedAt": 75
+    },
+    "W-3": {
+      "id": "W-3",
+      "status": "idle",
+      "dependencies": [],
+      "metadata": {},
+      "createdAt": 76,
+      "updatedAt": 76,
+      "name": "Dynamic Work Item"
+    }
+  },
   "plans": {},
   "milestones": {},
-  "projects": {},
+  "projects": {
+    "proj-1": {
+      "id": "proj-1",
+      "name": "Initial Project",
+      "goal": "Demonstrate Synth v2 system",
+      "plans": [],
+      "status": "active"
+    },
+    "proj-2": {
+      "id": "proj-2",
+      "name": "Second Project",
+      "goal": "Test",
+      "plans": [],
+      "status": "active"
+    }
+  },
   "missions": {
     "1ab241b02005b750": {
       "id": "1ab241b02005b750",
@@ -42,7 +85,14 @@
         }
       },
       "createdAt": 20,
-      "updatedAt": 26
+      "updatedAt": 78,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/05aba9066ea7d1d4/git-diff.patch",
+          "hash": "642f2b38d32f466d955aafe7e382ed3e3511c5bdde2694b9ff6d336ad7a3f21a"
+        }
+      ]
     },
     "886b4cc325d768d2": {
       "id": "886b4cc325d768d2",
@@ -82,5 +132,5 @@
       "capturedAt": 1786865514389
     }
   },
-  "lastEventOffset": 27
+  "lastEventOffset": 79
 }
