@@ -203,3 +203,5 @@ AI contributors should start with [`AGENTS.md`](AGENTS.md) before making any cha
 ## Status
 
 Synth v2 is frozen. The architecture, public vocabulary, and proof classes are stable. The project is now in Era II — Adoption, focused on documentation, examples, and community assets. See [ADR-004 — Synth Eras and Protected Assets](docs/adr/ADR-004-synth-eras-and-protected-assets.md).
+
+## Expedition placeholder change for evidence
