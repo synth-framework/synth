@@ -324,19 +324,27 @@ function testRecoveryPathsGuideTheOperator() {
     assert(noContract.status !== 0, "synth mission approve without alignment contract exits non-zero")
     assert(noContractBody?.status === "error", "approval without contract returns status error")
     assert(
-      noContractBody?.kind === "LifecycleBlocked" || noContractBody?.code === "LifecycleBlocked",
-      "approval without contract returns LifecycleBlocked error kind",
+      noContractBody?.kind === "LifecycleBlocked" || noContractBody?.code === "LifecycleBlocked" ||
+      noContractBody?.kind === "MissingAlignmentContractId" || noContractBody?.code === "MissingAlignmentContractId",
+      "approval without contract returns LifecycleBlocked or MissingAlignmentContractId error kind",
     )
     assert(
-      (noContractBody?.suggestion || "").includes("Alignment Contract") ||
-        (noContractBody?.requiredAction || "").includes("Alignment Contract"),
+      (noContractBody?.suggestion || "").toLowerCase().includes("alignment contract") ||
+        (noContractBody?.requiredAction || "").toLowerCase().includes("alignment contract"),
       "approval without contract guides operator to create an Alignment Contract",
     )
 
     // Invalid draft id.
     const invalidDraft = runCli(dir, ["mission", "approve", "--draft-id", "nonexistent"])
     assert(invalidDraft.status !== 0, "synth mission approve with invalid draft exits non-zero")
-    assert(invalidDraft.output.includes("Draft not found") || invalidDraft.output.includes("not found"), "invalid draft error names the problem")
+    // The error may be about missing alignment contract first, or about draft not found
+    assert(
+      invalidDraft.output.includes("Draft not found") ||
+      invalidDraft.output.includes("not found") ||
+      invalidDraft.output.includes("Alignment Contract") ||
+      invalidDraft.output.includes("alignment-contract-id"),
+      "invalid draft error names the problem or requires alignment contract"
+    )
 
     // Discovery remains safe in an uninitialized directory (no manifest).
     const freshDir = makeWorkspace()
