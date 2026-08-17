@@ -1,7 +1,14 @@
 {
-  "repository_type": "synth_governed_project",
-  "projectName": "Synth Framework",
-  "governance_required": true,
-  "lifecycle_version": "v2",
-  "generatedAt": "2026-08-03T20:08:04.907Z"
+  "schema": "synth-agent-context-v1",
+  "repositoryType": "brownfield-polyglot",
+  "phase": "architecture-discovery",
+  "implementationState": "complete",
+  "intent": "transform existing system under governance",
+  "sourceHistory": "AVAILABLE",
+  "classificationConfidence": "high",
+  "generatedAt": "2026-08-16T23:21:48.832Z",
+  "derivedFrom": {
+    "discoverySessionId": "session-89e92d23e55286d1",
+    "discoverySessionHash": "89e92d23e55286d1143e459b9d0a0ed3ac930099a80f29e8ff0ca1b42c71849d"
+  }
 }

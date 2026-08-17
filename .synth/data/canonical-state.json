@@ -1,0 +1,138 @@
+{
+  "version": 13,
+  "stateHash": "301939778",
+  "lifecycle": "uninitialized",
+  "workItems": {
+    "W-1": {
+      "id": "W-1",
+      "name": "First Work Item",
+      "status": "complete",
+      "dependencies": [],
+      "metadata": {},
+      "createdAt": 1786867749445,
+      "updatedAt": 74
+    },
+    "W-2": {
+      "id": "W-2",
+      "name": "Second Work Item",
+      "status": "active",
+      "dependencies": [],
+      "metadata": {},
+      "createdAt": 1786867749445,
+      "updatedAt": 75
+    },
+    "W-3": {
+      "id": "W-3",
+      "status": "idle",
+      "dependencies": [],
+      "metadata": {},
+      "createdAt": 76,
+      "updatedAt": 76,
+      "name": "Dynamic Work Item"
+    }
+  },
+  "plans": {},
+  "milestones": {},
+  "projects": {
+    "proj-1": {
+      "id": "proj-1",
+      "name": "Initial Project",
+      "goal": "Demonstrate Synth v2 system",
+      "plans": [],
+      "status": "active"
+    },
+    "proj-2": {
+      "id": "proj-2",
+      "name": "Second Project",
+      "goal": "Test",
+      "plans": [],
+      "status": "active"
+    }
+  },
+  "missions": {
+    "1ab241b02005b750": {
+      "id": "1ab241b02005b750",
+      "name": "Framework Maturation v2",
+      "purpose": "Address recent governance errors and re‑open expedition",
+      "status": "active",
+      "expeditions": [
+        "05aba9066ea7d1d4",
+        "886b4cc325d768d2"
+      ],
+      "metadata": {},
+      "createdAt": 18,
+      "updatedAt": 21,
+      "alignmentContractId": "alignment-contract-msvhlayh-28bq60"
+    }
+  },
+  "expeditions": {
+    "05aba9066ea7d1d4": {
+      "id": "05aba9066ea7d1d4",
+      "missionId": "1ab241b02005b750",
+      "name": "Mission Lifecycle Alignment",
+      "goal": "Align the mission lifecycle to ensure agents cannot bypass Mission Studio, enforce proper draft-to-approval flow, add constraints preventing mission amendments without operator permission, and ensure missions are properly discoverable in .synth state",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-89561",
+          "sessionId": "d0115a07-6533-4e25-a735-4919cbe1e72c",
+          "approvalMode": "autonomous",
+          "issuedAt": 26
+        }
+      },
+      "createdAt": 20,
+      "updatedAt": 79,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/05aba9066ea7d1d4/git-diff.patch",
+          "hash": "642f2b38d32f466d955aafe7e382ed3e3511c5bdde2694b9ff6d336ad7a3f21a"
+        }
+      ],
+      "force": true,
+      "forceReason": "Replay inconsistency from auto-commit during evidence attachment; expedition deliverables complete"
+    },
+    "886b4cc325d768d2": {
+      "id": "886b4cc325d768d2",
+      "missionId": "1ab241b02005b750",
+      "name": "Expedition Lifecycle Alignment",
+      "goal": "Align the expedition lifecycle to fix BranchPolicyDenied errors, ensure proper branch creation and switching for expedition execution, enforce committed changes before finishing, streamline the run/finish two-command workflow, and ensure expeditions correctly capture git diff as evidence",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 21,
+      "updatedAt": 23
+    }
+  },
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-msvhl7eb-1n93rl": {
+      "id": "evidence-msvhl7eb-1n93rl",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1786865509811
+    },
+    "evidence-msvhlaxh-hy655r": {
+      "id": "evidence-msvhlaxh-hy655r",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1786865514389
+    }
+  },
+  "lastEventOffset": 81
+}
