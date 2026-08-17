@@ -28,16 +28,9 @@ coverage/
 # =============================================================================
 
 .synth/cache/
-.synth/data/*
-!.synth/data/event-log.jsonl
-.synth/ai/
-data/*
-!data/tasks/
-!data/tasks/*.task.json
 data-test/
 data-test-alignment/
 data-test-proposal-evaluation/
-proof/
 
 # =============================================================================
 # Environment

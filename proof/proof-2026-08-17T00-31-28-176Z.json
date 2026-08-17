@@ -1,0 +1,80 @@
+{
+  "schema": "synth-proof-v1",
+  "generatedAt": "2026-08-17T00:31:28.176Z",
+  "trust": {
+    "level": "ATL-7",
+    "target": "ATL-7",
+    "assessmentDate": "2026-08-17T00:31:28.176Z"
+  },
+  "baseline": {
+    "constitutionVersion": "1.0",
+    "kernelVersion": "1.0",
+    "languageVersion": "1.0",
+    "proofSchema": "synth-proof-v1"
+  },
+  "repository": {
+    "commit": "7aa6a41acda158b847128604a0e9fb3f89bdec26",
+    "sourceHash": "69df4ca01a2f2845515500fdbf344d81ae42d2eec85ea66acdef8f30d86d98c4"
+  },
+  "build": {
+    "distHash": "17f5285f747199f98d328bdd33405512a3eec078d2273a90ae6ddcdaf0ad64b7"
+  },
+  "runtime": {
+    "eventCount": 82,
+    "replayHash": "1110597177",
+    "projections": {
+      "workItems": 3,
+      "plans": 0,
+      "milestones": 0,
+      "projects": 2,
+      "missions": 1,
+      "expeditions": 2,
+      "objectives": 0,
+      "discoveries": 0,
+      "decisions": 0
+    }
+  },
+  "proofs": {
+    "p1Structural": {
+      "passed": true,
+      "detail": "No mutation bypass paths detected"
+    },
+    "p2Replay": {
+      "passed": false,
+      "chainValid": false,
+      "replayHash": "1110597177",
+      "operationalHash": "301939778",
+      "eventCount": 82,
+      "detail": "Hash-chain broken at index 27: previousHash mismatch at index 27: expected 4851087fe8c25b38a4e97d252b0cf76d6b889155d777adc2be42bfc6899c0887, got genesis; State divergence detected (1 differences); first: stateHash"
+    },
+    "p2Determinism": {
+      "passed": true,
+      "detail": "Paired execution produced identical results"
+    },
+    "p6GraphIntegrity": {
+      "passed": true,
+      "detail": "Reference execution produced a fully valid aggregate graph"
+    },
+    "p4Adversarial": {
+      "passed": true,
+      "detail": "All attacks blocked"
+    }
+  },
+  "reproduction": {
+    "command": "npm run govern",
+    "expectedSourceHash": "69df4ca01a2f2845515500fdbf344d81ae42d2eec85ea66acdef8f30d86d98c4",
+    "expectedDistHash": "17f5285f747199f98d328bdd33405512a3eec078d2273a90ae6ddcdaf0ad64b7",
+    "expectedReplayHash": "1110597177",
+    "note": "Run from a clean checkout at the referenced commit. Timestamps and file paths are expected to differ; hashes must match."
+  },
+  "overall": {
+    "passed": false,
+    "summary": [
+      "P1 Structural: PASS",
+      "P2 Replay: FAIL",
+      "P2 Determinism: PASS",
+      "P6 Graph Integrity: PASS",
+      "P4 Adversarial: PASS"
+    ]
+  }
+}
