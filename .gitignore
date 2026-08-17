@@ -28,7 +28,8 @@ coverage/
 # =============================================================================
 
 .synth/cache/
-.synth/data/
+.synth/data/*
+!.synth/data/event-log.jsonl
 .synth/ai/
 data/*
 !data/tasks/
