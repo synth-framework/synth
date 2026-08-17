@@ -40,8 +40,8 @@ export interface DiscoverySessionProvider {
   discover(context: DiscoveryProviderContext): Promise<DiscoverySession>
 }
 
-const DEFAULT_DISCOVERY_SESSION_PROVIDER_ID = "discovery:default-session-provider"
-const DEFAULT_DISCOVERY_SESSION_PROVIDER_VERSION = "1.0.0"
+export const DEFAULT_DISCOVERY_SESSION_PROVIDER_ID = "discovery:default-session-provider"
+export const DEFAULT_DISCOVERY_SESSION_PROVIDER_VERSION = "1.0.0"
 
 /**
  * Create the default DiscoverySessionProvider.

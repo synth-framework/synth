@@ -80,7 +80,7 @@ export function snapshotToGenesisInput(snapshot: ApprovedMissionModelSnapshot): 
  * These events use the same payload shapes the domain expects, so they
  * replay cleanly through RuntimeEngine/ReplayVerifier.
  */
-function snapshotToSeedEvents(snapshot: ApprovedMissionModelSnapshot): Array<{
+export function snapshotToSeedEvents(snapshot: ApprovedMissionModelSnapshot): Array<{
   type: string
   payload: Record<string, unknown>
 }> {

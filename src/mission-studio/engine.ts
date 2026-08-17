@@ -911,6 +911,6 @@ export class MissionStudio {
   }
 }
 
-function createMissionStudio(config?: MissionStudioConfig, intake?: MissionIntake): MissionStudio {
+export function createMissionStudio(config?: MissionStudioConfig, intake?: MissionIntake): MissionStudio {
   return new MissionStudio(config, intake)
 }

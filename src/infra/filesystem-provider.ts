@@ -27,7 +27,7 @@ export interface FilesystemProvider {
 }
 
 /** POSIX filesystem provider using Node.js fs/promises */
-class PosixFilesystemProvider implements FilesystemProvider {
+export class PosixFilesystemProvider implements FilesystemProvider {
   readonly name = "posix-filesystem"
   readonly version = "1.0.0"
   readonly root: string
@@ -82,7 +82,7 @@ class PosixFilesystemProvider implements FilesystemProvider {
 }
 
 /** In-memory filesystem provider for testing */
-class InMemoryFilesystemProvider implements FilesystemProvider {
+export class InMemoryFilesystemProvider implements FilesystemProvider {
   readonly name = "in-memory-filesystem"
   readonly version = "1.0.0"
   readonly root = "/"
@@ -174,6 +174,6 @@ export function createPosixFilesystemProvider(root: string, writeToken?: symbol)
   return new PosixFilesystemProvider(root, writeToken)
 }
 
-function createInMemoryFilesystemProvider(initialFiles?: Record<string, string>, writeToken?: symbol): FilesystemProvider {
+export function createInMemoryFilesystemProvider(initialFiles?: Record<string, string>, writeToken?: symbol): FilesystemProvider {
   return new InMemoryFilesystemProvider(initialFiles, writeToken)
 }

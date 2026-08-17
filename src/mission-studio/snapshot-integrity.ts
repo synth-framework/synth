@@ -27,7 +27,7 @@ export const SNAPSHOT_SCHEMA_VERSION = "1.0.0"
  * sorted, Maps are encoded as tagged entry lists sorted by key, and
  * undefined values are dropped (matching JSON storage semantics).
  */
-function canonicalizeSnapshot(value: unknown): string {
+export function canonicalizeSnapshot(value: unknown): string {
   return JSON.stringify(canonicalValue(value))
 }
 

@@ -21,7 +21,7 @@ import { createHash } from "crypto"
  * Object keys are sorted lexicographically. Arrays are preserved but their
  * elements are canonicalized. Primitives are returned unchanged.
  */
-function canonicalize(value: unknown): unknown {
+export function canonicalize(value: unknown): unknown {
   if (value === null || typeof value !== "object") {
     return value
   }

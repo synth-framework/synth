@@ -4,6 +4,7 @@
   "currentPhase": "uninitialized",
   "governanceVersion": "2.1",
   "mutationPolicy": "MUTATING",
-  "activeMissionId": "1ab241b02005b750",
+  "activeMissionId": "4ab7e9d2cc7b1b66",
+  "activeExpeditionId": "dac069e8cc375a6b",
   "blockers": []
 }

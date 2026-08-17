@@ -79,7 +79,7 @@ function sortByName<T extends { name: string }>(items: T[]): T[] {
 /**
  * In-memory GitProvider for testing.
  */
-function createInMemoryGitProvider(
+export function createInMemoryGitProvider(
   repositoryState: Record<string, GitRepositoryState | undefined> = {},
   remotes: Record<string, GitRemote[]> = {},
   branches: Record<string, GitBranch[]> = {},

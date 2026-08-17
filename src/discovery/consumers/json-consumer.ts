@@ -9,8 +9,8 @@
 import type { DiscoveryConsumer, DiscoverySession } from "../types.js"
 import { serializeCanonical } from "../canonical.js"
 
-const JSON_CONSUMER_ID = "discovery:json-consumer"
-const JSON_CONSUMER_VERSION = "1.0.0"
+export const JSON_CONSUMER_ID = "discovery:json-consumer"
+export const JSON_CONSUMER_VERSION = "1.0.0"
 
 export interface JsonConsumerContext {
   /** Projection type keys to include. If omitted, all projections are included. */
@@ -43,7 +43,7 @@ function pickProjections(
  * The output is deterministic: object keys are sorted, arrays are
  * preserved, and whitespace is controlled by the context.
  */
-function createJsonConsumer(): DiscoveryConsumer<JsonConsumerContext, string> {
+export function createJsonConsumer(): DiscoveryConsumer<JsonConsumerContext, string> {
   return {
     id: JSON_CONSUMER_ID,
     version: JSON_CONSUMER_VERSION,

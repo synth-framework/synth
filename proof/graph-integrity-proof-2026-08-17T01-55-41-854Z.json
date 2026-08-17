@@ -1,0 +1,114 @@
+{
+  "schema": "synth-graph-integrity-proof-v1",
+  "generatedAt": "2026-08-17T01:55:41.854Z",
+  "validator": {
+    "name": "graph-integrity",
+    "version": 1
+  },
+  "repository": {
+    "commit": "47bdb0b3236329f052b77bf343c9c54a778abeec",
+    "sourceHash": "e4e92f5a941bcb4f43f5e36a4ece3789c62b8601b1f1c9e3c523140f09d06423"
+  },
+  "build": {
+    "distHash": "4685efc3653a16a8fd0420577071e3814cc9508a3ff74a4205299cd58727abfd"
+  },
+  "referenceExecution": {
+    "sandbox": "/var/folders/x9/fl9xtm69597860rxq9d4208c0000gp/T/synth-graph-integrity-proof-qzDHh5",
+    "snapshotId": "cbe01497fc6022f5",
+    "eventCount": 7,
+    "chainDigest": "ffb4cfb9f033544b256809527d724fccb3bf89d87c4d00b603050cf8dc1539af",
+    "replayHash": "1698170868",
+    "projections": {
+      "workItems": 2,
+      "plans": 1,
+      "milestones": 0,
+      "projects": 0,
+      "missions": 1,
+      "expeditions": 1,
+      "objectives": 2,
+      "discoveries": 0,
+      "decisions": 0
+    }
+  },
+  "graph": {
+    "missions": 1,
+    "expeditions": 1,
+    "objectives": 2,
+    "workItems": 2,
+    "generatedWorkItems": 0,
+    "nodes": 4,
+    "edges": 3,
+    "roots": 1
+  },
+  "invariants": [
+    {
+      "invariant": "well-formed-creation",
+      "status": "pass",
+      "detail": "Every creation event carries a well-formed aggregate payload id.",
+      "violations": []
+    },
+    {
+      "invariant": "unique-identity",
+      "status": "pass",
+      "detail": "No aggregate identity is created more than once or shared across kinds.",
+      "violations": []
+    },
+    {
+      "invariant": "parent-presence",
+      "status": "pass",
+      "detail": "Every expedition has a mission parent; every objective has an expedition parent (exactly-one-parent semantics).",
+      "violations": []
+    },
+    {
+      "invariant": "parent-resolution",
+      "status": "pass",
+      "detail": "Every parent reference resolves to an aggregate of the expected kind in the log.",
+      "violations": []
+    },
+    {
+      "invariant": "acyclicity",
+      "status": "pass",
+      "detail": "Parent chains never loop.",
+      "violations": []
+    },
+    {
+      "invariant": "connectivity",
+      "status": "pass",
+      "detail": "Every aggregate is reachable from a mission root; no orphan nodes exist.",
+      "violations": []
+    },
+    {
+      "invariant": "navigation",
+      "status": "pass",
+      "detail": "Post-replay navigation resolves: state.missions[expedition.missionId] and state.expeditions[objective.expeditionId] exist.",
+      "violations": []
+    },
+    {
+      "invariant": "generated-work-item-membership",
+      "status": "pass",
+      "detail": "Every WORK_ITEM_GENERATED work item belongs to exactly one objective (objectiveId resolves; expeditionId resolves when present).",
+      "violations": []
+    },
+    {
+      "invariant": "work-item-objective-membership",
+      "status": "not-event-provable",
+      "detail": "Canonical WORK_ITEM_CREATED payloads carry no objective reference (the objectiveId edge exists only on GeneratedWorkItem/WORK_ITEM_GENERATED, which nothing emits today), so this invariant cannot be proven from events. Documented model gap — candidate for a future ADR; the event model is a Protected Asset.",
+      "violations": []
+    }
+  ],
+  "violations": [],
+  "overall": {
+    "passed": true,
+    "summary": [
+      "well-formed-creation: PASS",
+      "unique-identity: PASS",
+      "parent-presence: PASS",
+      "parent-resolution: PASS",
+      "acyclicity: PASS",
+      "connectivity: PASS",
+      "navigation: PASS",
+      "generated-work-item-membership: PASS",
+      "work-item-objective-membership: NOT-EVENT-PROVABLE"
+    ]
+  }
+}

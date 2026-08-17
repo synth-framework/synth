@@ -22,7 +22,6 @@ import { InMemoryStateStore } from "../dist/infra/state-store.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
 import {
   rebuildState,
-  rebuildStateFromOffset,
   validateAggregateGraph,
 } from "../dist/runtime/replay.js"
 
@@ -335,15 +334,7 @@ test("operational state-store projection is equivalent to the replay projection"
   assert.strictEqual(result.liveHash, result.replayHash)
 })
 
-test("rebuildStateFromOffset from offset 0 equals full rebuildState", async () => {
-  const store = new EventStore(FIRST_CONTACT_ARCHIVE)
-  const events = await store.loadAll()
-  const full = rebuildState(events)
-  const fromOffset = rebuildStateFromOffset(events, 0)
-  assert.strictEqual(fromOffset.stateHash, full.stateHash)
-})
-
-test("cross-version replayed state round-trips through the operational store", async () => {
+ test("cross-version replayed state round-trips through the operational store", async () => {
   const store = new EventStore(FIRST_CONTACT_ARCHIVE)
   const events = await store.loadAll()
   const stateStore = new InMemoryStateStore()

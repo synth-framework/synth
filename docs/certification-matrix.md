@@ -15,9 +15,9 @@ This matrix is generated automatically by `synth certify`.
 
 | Scenario | Level | Status |
 | --- | --- | --- |
-| Alignment Governance Constitutional Invariants | 2 | ✅ PASS |
+| Alignment Governance Constitutional Invariants | 2 | ❌ FAIL |
 | Mutating command rejected during Discovery | 2 | ✅ PASS |
 | Expedition create rejects a missing mission | 2 | ✅ PASS |
 | Mission approval blocked by low confidence | 2 | ✅ PASS |
 
-_Generated at 2026-07-31T00:10:28.512Z_
+_Generated at 2026-08-17T04:30:44.381Z_

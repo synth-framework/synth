@@ -29,7 +29,7 @@ export type DiscoveryAdapterRegistryOptions = {
  * When no adapters are supplied, the registry is empty. Consumers are
  * expected to register the adapters they need.
  */
-function createAdapterRegistry(
+export function createAdapterRegistry(
   options: DiscoveryAdapterRegistryOptions = {},
 ): DiscoveryAdapterRegistry {
   const adapters = options.adapters ?? []

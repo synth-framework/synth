@@ -8,8 +8,8 @@
 import type { DiscoveryConsumer, DiscoverySession } from "../types.js"
 import { serializeCanonical } from "../canonical.js"
 
-const DRIFT_CONSUMER_ID = "discovery:drift-consumer"
-const DRIFT_CONSUMER_VERSION = "1.0.0"
+export const DRIFT_CONSUMER_ID = "discovery:drift-consumer"
+export const DRIFT_CONSUMER_VERSION = "1.0.0"
 
 export type DriftFinding = {
   kind: "added" | "removed" | "changed" | "unchanged"
@@ -117,7 +117,7 @@ function compareFindings(
  * Compares the canonical projections and findings of two DiscoverySessions
  * and reports added, removed, changed, and unchanged entries.
  */
-function createDriftConsumer(): DiscoveryConsumer<DriftConsumerContext, DriftReport> {
+export function createDriftConsumer(): DiscoveryConsumer<DriftConsumerContext, DriftReport> {
   return {
     id: DRIFT_CONSUMER_ID,
     version: DRIFT_CONSUMER_VERSION,

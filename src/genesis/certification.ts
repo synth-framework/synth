@@ -99,7 +99,7 @@ export type GenesisIntegrityProof = {
  *   - invalid parent references and duplicate identities
  *     (via the Mission Studio proposal graph validator)
  */
-function validateSnapshotAcceptance(snapshot: ApprovedMissionModelSnapshot): string[] {
+export function validateSnapshotAcceptance(snapshot: ApprovedMissionModelSnapshot): string[] {
   const violations: string[] = []
 
   if (!snapshot || typeof snapshot !== "object") {
@@ -268,7 +268,7 @@ function addGraphNode(nodes: Map<string, SeedGraphNode>, node: SeedGraphNode, vi
  * present in the same graph, every node must be reachable from a
  * mission root, and the graph must be acyclic.
  */
-function certifySeedEventGraph(seedEvents: SeedEventLike[]): {
+export function certifySeedEventGraph(seedEvents: SeedEventLike[]): {
   violations: string[]
   graph: SeedEventGraphSummary
 } {

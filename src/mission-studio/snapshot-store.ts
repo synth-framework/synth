@@ -32,7 +32,7 @@ export interface SnapshotStore {
 // In-Memory Implementation
 // ============================================================
 
-class InMemorySnapshotStore implements SnapshotStore {
+export class InMemorySnapshotStore implements SnapshotStore {
   private snapshots = new Map<string, StoredSnapshot>()
 
   async save(stored: StoredSnapshot): Promise<void> {
@@ -60,7 +60,7 @@ class InMemorySnapshotStore implements SnapshotStore {
   }
 }
 
-function createInMemorySnapshotStore(): SnapshotStore {
+export function createInMemorySnapshotStore(): SnapshotStore {
   return new InMemorySnapshotStore()
 }
 
@@ -68,7 +68,7 @@ function createInMemorySnapshotStore(): SnapshotStore {
 // Filesystem Implementation
 // ============================================================
 
-class FileSystemSnapshotStore implements SnapshotStore {
+export class FileSystemSnapshotStore implements SnapshotStore {
   private readonly fs: FilesystemProvider
 
   constructor(private dir: string, fsProvider?: FilesystemProvider) {

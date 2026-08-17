@@ -117,6 +117,6 @@ export class MissionIntake {
   }
 }
 
-function createMissionIntake(): MissionIntake {
+export function createMissionIntake(): MissionIntake {
   return new MissionIntake()
 }

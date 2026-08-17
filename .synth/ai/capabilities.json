@@ -34,7 +34,7 @@
     {
       "name": "Execution",
       "description": "Perform execution mutations",
-      "availability": "requires_expedition"
+      "availability": "available"
     }
   ]
 }

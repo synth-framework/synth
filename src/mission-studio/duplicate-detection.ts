@@ -22,17 +22,17 @@ const SCOPE_WEIGHT = 2
 const INTENT_WEIGHT = 3
 
 /** Default similarity threshold above which a record is reported. */
-const SIMILARITY_THRESHOLD = 0.35
+export const SIMILARITY_THRESHOLD = 0.35
 
 /** Default number of similar records surfaced. */
-const SIMILARITY_TOP_K = 5
+export const SIMILARITY_TOP_K = 5
 
 /**
  * Lexically tokenize text into a normalized, deduplicated token list.
  * Lowercases, splits camelCase and non-word boundaries, drops
  * stopwords, and keeps tokens of length >= 3.
  */
-function tokenize(text: string): string[] {
+export function tokenize(text: string): string[] {
   const normal = String(text ?? "")
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
