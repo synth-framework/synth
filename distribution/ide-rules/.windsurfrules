@@ -123,4 +123,4 @@ You are a SYNTH-aware coding assistant. Follow these rules when working in a SYN
 
 ## Source
 
-Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json` (version 1.0.0)
+Canonical model: `src/distribution/ai-capability-model.json` (version 1.0.0)

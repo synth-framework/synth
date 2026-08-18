@@ -198,7 +198,7 @@ Greenfield onboarding workflow for new projects.
 
 ## Source
 
-- Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json`
-- Capability list: `/Users/dev/Projects/synth-v2/docs/reference/capability-list.json`
+- Canonical model: `src/distribution/ai-capability-model.json`
+- Capability list: `docs/reference/capability-list.json`
 - Model version: `1.0.0`
 - Model hash: `1efbcbfadc0689db6516702167859febb9eabcca70a73ba659fc10e9bf781aa3`

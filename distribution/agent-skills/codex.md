@@ -81,4 +81,4 @@ draft → approved → committed → executing → completed
 
 ## Source
 
-Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json` (version 1.0.0)
+Canonical model: `src/distribution/ai-capability-model.json` (version 1.0.0)

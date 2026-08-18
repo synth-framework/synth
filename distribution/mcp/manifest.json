@@ -71,7 +71,7 @@
   "schema_version": "1.0",
   "source": {
     "hash": "1efbcbfadc0689db6516702167859febb9eabcca70a73ba659fc10e9bf781aa3",
-    "path": "/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json",
+    "path": "src/distribution/ai-capability-model.json",
     "version": "1.0.0"
   },
   "tools": [
