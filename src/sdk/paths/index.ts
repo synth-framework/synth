@@ -10,6 +10,8 @@ export {
   stateFile,
   eventLogFile,
   snapshotsDir,
-  checkpointsFile
+  checkpointsFile,
+  isRuntimeDataPath,
+  projectRootFromDataDir
 } from "./runtime.js"
 export { discoveryDir, firstContactDir, proposalsDir, initializationEvidenceDir } from "./artifacts.js"

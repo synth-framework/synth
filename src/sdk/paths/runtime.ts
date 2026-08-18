@@ -5,6 +5,7 @@
 // ============================================================
 
 import path from "node:path"
+import os from "node:os"
 import { ensureDirectory } from "../files/index.js"
 
 /**
@@ -68,6 +69,54 @@ export function snapshotsDir(root: string): string {
  */
 export function checkpointsFile(root: string): string {
   return path.join(dataDir(root), "checkpoints.json")
+}
+
+/**
+ * Determine whether a filesystem target is a runtime data path.
+ *
+ * Writes to these paths are the bright-line mutation boundary: they require
+ * an expedition at executing status and explicit operator approval. This
+ * logic lives in the SDK (outside the audited Core directories) so the
+ * ExecutionGate can enforce the boundary without importing environment
+ * modules directly (ADR-006 §7, ADR-017).
+ */
+export function isRuntimeDataPath(target: string, rootDir: string): boolean {
+  const absolute = path.resolve(target)
+  const runtimeDir = path.resolve(dataDir(rootDir))
+  const eventLogPath = path.resolve(eventLogFile(rootDir))
+  const stateFilePath = path.resolve(stateFile(rootDir))
+
+  if (absolute === eventLogPath || absolute === stateFilePath) {
+    return true
+  }
+  const withSep = runtimeDir.endsWith(path.sep) ? runtimeDir : `${runtimeDir}${path.sep}`
+  return absolute.startsWith(withSep)
+}
+
+/**
+ * Infer the governed project root from an event store's data directory.
+ *
+ * Governed projects keep the event log at `<root>/.synth/data/event-log.jsonl`,
+ * so the data directory's parent-of-parent is the project root. When the data
+ * directory does not follow that layout (isolated test data dirs, custom
+ * layouts), the data directory itself is treated as the project root. If no
+ * data directory exists, a non-git tmp directory is returned so callers can
+ * degrade gracefully outside a governed project.
+ *
+ * Lives in the SDK so the ExecutionGate resolves the project root without
+ * importing environment modules directly (ADR-006 §7, ADR-017).
+ */
+export function projectRootFromDataDir(dataDirPath: string | null | undefined): string {
+  if (!dataDirPath) {
+    return path.join(os.tmpdir(), "synth-anonymous-project")
+  }
+  const normalized = path.resolve(dataDirPath)
+  const base = path.basename(normalized)
+  const parent = path.basename(path.dirname(normalized))
+  if (parent === ".synth" && base === "data") {
+    return path.dirname(path.dirname(normalized))
+  }
+  return normalized
 }
 
 /**
