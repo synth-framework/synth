@@ -1,0 +1,47 @@
+{
+  "decision": "aligned",
+  "confidence": 0.9,
+  "matchedRules": [],
+  "violatedRules": [
+    {
+      "ruleId": "drift-check",
+      "ruleName": "Drift Check",
+      "outcome": "fail",
+      "severity": "blocking",
+      "contractClauses": [
+        {
+          "field": "successCriteria",
+          "requirement": "Verify output matches target",
+          "values": ["target-val"]
+        }
+      ]
+    }
+  ],
+  "matchedDriftClasses": ["outcome_drift"],
+  "evidence": {
+    "summary": "Diverged evaluation",
+    "matchedDriftClasses": ["outcome_drift"],
+    "violatedContractFields": ["successCriteria"],
+    "violatedIntentClauses": ["successCriteria: target-val"],
+    "matchedContractFields": [],
+    "ruleResults": [
+      {
+        "ruleId": "drift-check",
+        "ruleName": "Drift Check",
+        "outcome": "fail",
+        "severity": "blocking",
+        "contractClauses": [
+          {
+            "field": "successCriteria",
+            "requirement": "Verify output matches target",
+            "values": ["target-val"]
+          }
+        ]
+      }
+    ]
+  },
+  "reasoning": [
+    "Diverged"
+  ],
+  "deterministic": true
+}
