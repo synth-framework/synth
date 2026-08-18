@@ -45,7 +45,7 @@ steps:
     expect:
       status: "non-zero"
       stdoutContains:
-        - "Alignment Contract"
+        - "MissingAlignmentContractId"
 
   - name: prepare alignment package
     command: ["alignment", "prepare"]
