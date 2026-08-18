@@ -209,26 +209,21 @@ async function testInvalidTransitions(projectDir, missionId, gateCtx, contractId
   assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
   const draftId = parseJson(createResult.stdout).draftId
 
-  // Cannot start before commit.
+  // Starting a draft auto-approves and auto-commits it, then begins execution.
   const startResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
-  assert(startResult.status !== 0, "expedition start should fail before commit")
+  assert(startResult.status === 0, `expedition start should auto-commit a draft and begin execution:\n${startResult.stderr}`)
   const startOutput = parseJson(startResult.stdout)
-  assert(startOutput.status === "error", "start failure should report error status")
-  assert(startOutput.error && startOutput.error.includes("committed"), `start failure should explain that only committed expeditions can be started, got ${JSON.stringify(startOutput)}`)
-  assert(startOutput.requiredAction && startOutput.requiredAction.includes("commit"), `start failure should suggest committing first, got ${JSON.stringify(startOutput)}`)
+  assert(startOutput.kind === "ExpeditionStarted", `start on a draft should return ExpeditionStarted, got ${startOutput.kind}`)
+  assert(startOutput.result?.status === "executing", `started expedition should be executing, got ${JSON.stringify(startOutput.result)}`)
 
-  // Approve and commit, then try to approve again.
-  runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
-  runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
-
+  // Once executing, approve must be rejected.
   const reapproveResult = runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
   assert(reapproveResult.status !== 0, "expedition approve should fail when not draft")
   const reapproveOutput = parseJson(reapproveResult.stdout)
   assert(reapproveOutput.status === "error", "re-approve failure should report error status")
   assert(reapproveOutput.error && reapproveOutput.error.includes("draft"), `re-approve failure should explain draft requirement, got ${JSON.stringify(reapproveOutput)}`)
 
-  // Start and complete, then try to start again.
-  runSynth(["expedition", "start", "--id", draftId], projectDir)
+  // Complete, then try to start again.
   await certifyConvergence(gateCtx, missionId, draftId, contractId)
 
   const evidenceFile2 = path.join(projectDir, "evidence.txt")
