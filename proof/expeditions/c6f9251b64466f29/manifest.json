@@ -1,0 +1,12 @@
+{
+  "expeditionId": "c6f9251b64466f29",
+  "capturedAt": 1787138720900,
+  "note": "Auto-attached by synth expedition finish",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/c6f9251b64466f29/git-diff.patch",
+      "hash": "45ff2af7f9bfb79572ac2d26e2b6ff3984d5d087d85f5903825309d7949ce002"
+    }
+  ]
+}

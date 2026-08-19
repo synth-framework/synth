@@ -1,6 +1,6 @@
 {
-  "version": 107,
-  "stateHash": "1735308433",
+  "version": 113,
+  "stateHash": "1865485771",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -345,7 +345,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Human-Readable Expedition Branch Naming",
       "goal": "Replace cryptic raw-ID branch names with slug-based names (expedition/<mission-slug>/<expedition-slug>-<expId[0:7]>) while preserving determinism, uniqueness, and traceability so checkpoint and branch-policy enforcement still resolve correctly.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -359,7 +359,19 @@
         }
       },
       "createdAt": 102,
-      "updatedAt": 106
+      "updatedAt": 111,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/c6f9251b64466f29/git-diff.patch",
+          "hash": "e3cd23f2294354b6db07e000eb41accb284f7937d2382ca6de7fdd07ab759cf4"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/c6f9251b64466f29/git-diff.patch",
+          "hash": "45ff2af7f9bfb79572ac2d26e2b6ff3984d5d087d85f5903825309d7949ce002"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -376,5 +388,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 107
+  "lastEventOffset": 113
 }
