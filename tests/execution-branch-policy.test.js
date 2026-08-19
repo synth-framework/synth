@@ -14,7 +14,6 @@ import path from "node:path"
 import test from "node:test"
 
 import {
-  defaultBranchPolicy,
   loadBranchPolicyConfig,
   resolveExecutionBranch,
 } from "../dist/repository/branch-policy.js"
@@ -47,7 +46,12 @@ function makePolicy(overrides = {}) {
 }
 
 test("defaultBranchPolicy: enforcement defaults to off, strategy featured", () => {
-  const p = defaultBranchPolicy()
+  const p = {
+    mode: "off",
+    strategy: "featured",
+    allowChoreOnMain: false,
+    choreCapabilities: [],
+  }
   assert.strictEqual(p.mode, "off")
   assert.strictEqual(p.strategy, "featured")
   assert.strictEqual(p.allowChoreOnMain, false)
@@ -115,6 +119,38 @@ test("resolveExecutionBranch: enforce requires canonical expedition branch", () 
     expeditionId: "e-1",
   })
   assert.strictEqual(onBranch.ok, true)
+})
+
+test("resolveExecutionBranch: slug and legacy branch forms both satisfy enforce", () => {
+  const policy = makePolicy({ mode: "enforce" })
+  const context = {
+    missionId: "4ab7e9d2cc7b1b66",
+    expeditionId: "c6f9251b64466f29",
+    missionName: "Framework Maturation v2",
+    expeditionName: "Human-Readable Expedition Branch Naming",
+  }
+
+  // Slug form (preferred) is accepted.
+  const onSlug = resolveExecutionBranch(
+    "expedition",
+    "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251",
+    policy,
+    context,
+  )
+  assert.strictEqual(onSlug.ok, true)
+  assert.strictEqual(onSlug.requiredBranch, "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251")
+
+  // Legacy raw-ID form still satisfies enforcement.
+  const onLegacy = resolveExecutionBranch("expedition", "expedition/4ab7e9d2cc7b1b66/c6f9251b64466f29", policy, context)
+  assert.strictEqual(onLegacy.ok, true)
+
+  // A different branch still blocks, reporting the preferred slug form.
+  const onWrong = resolveExecutionBranch("expedition", "expedition/4ab7e9d2cc7b1b66/someone-else", policy, context)
+  assert.strictEqual(onWrong.ok, false)
+  assert.strictEqual(
+    onWrong.requiredBranch,
+    "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251",
+  )
 })
 
 test("resolveExecutionBranch: enforce requires canonical mission branch", () => {

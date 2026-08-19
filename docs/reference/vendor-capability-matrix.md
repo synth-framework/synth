@@ -51,7 +51,11 @@ contract in `docs/reference/forge-adapter-contract.md`).
 `RepositoryAdapter.validateExecutionBranch(role, context)`:
 
 - `mission` → canonical `mission/<missionId>`
-- `expedition` → canonical `expedition/<missionId>/<expeditionId>`
+- `expedition` → canonical `expedition/<mission-slug>/<expedition-slug>-<expeditionId[0:7]>`
+  when mission and expedition names are available (human-readable form).
+  Legacy form `expedition/<missionId>/<expeditionId>` is still accepted by
+  `branch-policy`/`branch-taxonomy` so pre-existing expedition branches resolve
+  correctly (`canonicalBranchCandidates`).
 - `chore` → permitted on `main` only when `allowChoreOnMain` is enabled AND the
   capability is allowlisted in `choreCapabilities`
 - strategy `trunk` → `main` is always canonical for governed work
