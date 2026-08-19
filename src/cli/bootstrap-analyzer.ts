@@ -71,7 +71,7 @@ const SOURCE_HISTORY_SEARCH_DEPTH = 3
  * Classify whether version-control history is available in the target
  * repository, missing, or lives in an external (parent) repository.
  */
-export async function classifySourceHistory(targetDir: string): Promise<AgentContext["sourceHistory"]> {
+async function classifySourceHistory(targetDir: string): Promise<AgentContext["sourceHistory"]> {
   try {
     const gitPath = path.join(targetDir, ".git")
     const stat = await fs.stat(gitPath)

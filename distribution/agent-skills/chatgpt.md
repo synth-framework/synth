@@ -86,4 +86,4 @@ Any change to a Protected Asset requires an Architecture Expedition and a new AD
 
 ## Source
 
-Canonical model: `/Users/dev/Projects/synth-v2/src/distribution/ai-capability-model.json` (version 1.0.0, hash 1efbcbfadc0689db6516702167859febb9eabcca70a73ba659fc10e9bf781aa3)
+Canonical model: `src/distribution/ai-capability-model.json` (version 1.0.0, hash 1efbcbfadc0689db6516702167859febb9eabcca70a73ba659fc10e9bf781aa3)

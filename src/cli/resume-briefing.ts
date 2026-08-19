@@ -23,7 +23,7 @@ import { printJson, printError } from "./print.js"
 import type { SynthEvent, CanonicalState } from "../types/index.js"
 import type { StoredSnapshot, WorldModelNode } from "../mission-studio/types.js"
 
-export const RESUME_BRIEFING_VERSION = 1
+const RESUME_BRIEFING_VERSION = 1
 
 export type TimelineEntry = {
   at: number
@@ -260,7 +260,7 @@ function detectWarnings(ctx: import("../runtime/governance-types.js").ResolvedGo
  * the Governance Resolver. No mutable status file or hand-authored
  * narrative is consulted.
  */
-export async function buildResumeBriefing(
+async function buildResumeBriefing(
   cwd: string,
   overrides?: { logPath?: string; statePath?: string; snapshotsDir?: string },
 ): Promise<ResumeBriefing> {

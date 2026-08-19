@@ -116,7 +116,7 @@ export function createInitializationEngine(
  * Normalize a ProjectModel into a JSON-serializable plain object suitable
  * for event payloads and evidence artifacts.
  */
-export function projectModelToRecord(model: ProjectModel): Record<string, unknown> {
+function projectModelToRecord(model: ProjectModel): Record<string, unknown> {
   return {
     schemaVersion: model.schemaVersion,
     identity: model.identity,

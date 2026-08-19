@@ -26,6 +26,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, "..")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
 const CAPABILITY_LIST_PATH = path.resolve(PROJECT_ROOT, "docs", "reference", "capability-list.json")
+const MODEL_REF = path.relative(PROJECT_ROOT, MODEL_PATH)
+const CAPABILITY_LIST_REF = path.relative(PROJECT_ROOT, CAPABILITY_LIST_PATH)
 const OUTPUT_ROOT = path.resolve(PROJECT_ROOT, "distribution")
 
 function assert(condition, message) {
@@ -166,8 +168,8 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-- Canonical model: \`${MODEL_PATH}\`
-- Capability list: \`${CAPABILITY_LIST_PATH}\`
+- Canonical model: \`${MODEL_REF}\`
+- Capability list: \`${CAPABILITY_LIST_REF}\`
 - Model version: \`${model.version}\`
 - Model hash: \`${modelHash(model)}\`
 `
@@ -209,7 +211,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -250,7 +252,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version}, hash ${modelHash(model)})
+Canonical model: \`${MODEL_REF}\` (version ${model.version}, hash ${modelHash(model)})
 `
 }
 
@@ -289,7 +291,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -321,7 +323,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -354,7 +356,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -395,7 +397,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -436,7 +438,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -473,7 +475,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -509,7 +511,7 @@ ${formatCapabilities(capabilities)}
 
 ## Source
 
-Canonical model: \`${MODEL_PATH}\` (version ${model.version})
+Canonical model: \`${MODEL_REF}\` (version ${model.version})
 `
 }
 
@@ -545,7 +547,7 @@ function mcpManifest(model, capabilities = []) {
     protected_assets: model.protectedAssets.assets.map((a) => a.name),
     governance_lifecycle: model.governanceLifecycle.phases.map((p) => p.name),
     source: {
-      path: MODEL_PATH,
+      path: MODEL_REF,
       version: model.version,
       hash: modelHash(model),
     },

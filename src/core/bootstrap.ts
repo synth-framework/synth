@@ -26,7 +26,7 @@ import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { GenesisIntake } from "../genesis/index.js"
 import { Registry } from "../capability/registry.js"
 import { snapshotsDir } from "../sdk/paths/index.js"
-import { root } from "../sdk/workspace/index.js"
+import { root, resolve } from "../sdk/workspace/index.js"
 import { ExecutionGate } from "../control/execution-gate.js"
 import { FilesystemMutationProvider } from "../mutation/filesystem-provider.js"
 import { Tracer, Logger } from "../observability/tracer.js"
@@ -36,7 +36,6 @@ import { PlanningEngine, PlanningCoordinator } from "../planning/index.js"
 import { MissionStudio, MissionIntake } from "../mission-studio/index.js"
 import { WorkspaceCognitionEnvironment, createStateReader } from "../workspace/index.js"
 import { parseCharterDirectory, registerDependencyPolicy } from "../governance/dependency-graph.js"
-import path from "path"
 
 import type { InfraConfig } from "../infra/index.js"
 import type { RuntimeConfig } from "../runtime/engine.js"
@@ -103,7 +102,7 @@ export async function bootstrap(config: BootstrapConfig = {}): Promise<SynthCont
 
   // EXP-GATE-013: Load expedition dependency graph from charters and register
   // the dependency enforcement policy before the engine is frozen.
-  const charterDir = path.join(root(), "docs", "expeditions")
+  const charterDir = resolve(root(), "docs", "expeditions")
   const dependencyRecords = await parseCharterDirectory(charterDir)
   registerDependencyPolicy(policyEngine, dependencyRecords)
 

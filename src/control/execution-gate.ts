@@ -15,8 +15,6 @@
 // ============================================================
 
 import crypto from "crypto"
-import os from "os"
-import path from "path"
 import type {
   CapabilityInvocation,
   CanonicalState,
@@ -26,8 +24,11 @@ import type {
   MutationRequest,
   MutationProvider,
 } from "../types/index.js"
-import { isDerivedPath, matchesScope, toProjectRelativePath } from "../governance/derived-files.js"
-import { dataDir, eventLogFile, stateFile } from "../sdk/paths/index.js"
+import { isDerivedPath, matchesScope, toProjectRelativePath } from "../sdk/files/derived.js"
+import {
+  isRuntimeDataPath as sdkIsRuntimeDataPath,
+  projectRootFromDataDir
+} from "../sdk/paths/index.js"
 import type { ValidationResult } from "../types/index.js"
 import { computeEventHash } from "../core/hash.js"
 import { signEventBatch } from "../signing/index.js"
@@ -77,21 +78,11 @@ function deterministicCommandId(
 
 /**
  * Determine whether a filesystem target is a runtime data path.
- * Writes to these paths are the bright-line mutation boundary: they require
- * an expedition at executing status and explicit operator approval.
+ * Implementation lives in the SDK (see sdk/paths/runtime.ts) so this core
+ * control component never imports environment modules directly (ADR-006 §7).
  */
-function isRuntimeDataPath(target: string): boolean {
-  const absolute = path.resolve(target)
-  const runtimeDir = path.resolve(dataDir(process.cwd()))
-  const eventLogPath = path.resolve(eventLogFile(process.cwd()))
-  const stateFilePath = path.resolve(stateFile(process.cwd()))
-
-  if (absolute === eventLogPath || absolute === stateFilePath) {
-    return true
-  }
-  const withSep = runtimeDir.endsWith(path.sep) ? runtimeDir : `${runtimeDir}${path.sep}`
-  return absolute.startsWith(withSep)
-}
+const isRuntimeDataPath = (target: string): boolean =>
+  sdkIsRuntimeDataPath(target, process.cwd())
 
 /** Internal error indicating a specific execution phase failed */
 class PhaseFailedError extends Error {
@@ -139,29 +130,7 @@ export class ExecutionGate {
    * that create isolated data directories inside the SYNTH source tree.
    */
   private resolveProjectRoot(): string {
-    const dataDir = this.eventStore.getDataDir()
-    if (!dataDir) {
-      // In-memory event stores have no file-system project root. Using
-      // process.cwd() would bind the repository adapter to the shell's working
-      // directory and break tests that run inside the SYNTH source tree while
-      // it has uncommitted changes. Use a non-git directory so the adapter
-      // skips VCS-specific readiness checks.
-      return path.join(os.tmpdir(), "synth-anonymous-project")
-    }
-
-    const normalized = path.resolve(dataDir)
-    const base = path.basename(normalized)
-    const parent = path.basename(path.dirname(normalized))
-
-    // Governed projects: event log lives at <root>/.synth/data/event-log.jsonl
-    if (parent === ".synth" && base === "data") {
-      return path.dirname(path.dirname(normalized))
-    }
-
-    // Isolated test data directories or custom layouts: treat the data
-    // directory itself as the project root. If it is not a git repository,
-    // the repository adapter will simply skip the completion-readiness check.
-    return normalized
+    return projectRootFromDataDir(this.eventStore.getDataDir())
   }
 
   // ===== PUBLIC API: The only mutation entry points =====

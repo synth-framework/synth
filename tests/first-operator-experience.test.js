@@ -324,17 +324,17 @@ function testRecoveryPathsGuideTheOperator() {
     assert(noContract.status !== 0, "synth mission approve without alignment contract exits non-zero")
     assert(noContractBody?.status === "error", "approval without contract returns status error")
     assert(
-      noContractBody?.kind === "LifecycleBlocked" || noContractBody?.code === "LifecycleBlocked",
-      "approval without contract returns LifecycleBlocked error kind",
+      noContractBody?.kind === "MissingAlignmentContractId" || noContractBody?.code === "MissingAlignmentContractId",
+      "approval without contract returns MissingAlignmentContractId error kind",
     )
     assert(
-      (noContractBody?.suggestion || "").includes("Alignment Contract") ||
-        (noContractBody?.requiredAction || "").includes("Alignment Contract"),
+      /alignment contract/i.test(noContractBody?.suggestion || "") ||
+        /alignment contract/i.test(noContractBody?.requiredAction || ""),
       "approval without contract guides operator to create an Alignment Contract",
     )
 
     // Invalid draft id.
-    const invalidDraft = runCli(dir, ["mission", "approve", "--draft-id", "nonexistent"])
+    const invalidDraft = runCli(dir, ["mission", "approve", "--draft-id", "nonexistent", "--alignment-contract-id", "contract-1"])
     assert(invalidDraft.status !== 0, "synth mission approve with invalid draft exits non-zero")
     assert(invalidDraft.output.includes("Draft not found") || invalidDraft.output.includes("not found"), "invalid draft error names the problem")
 

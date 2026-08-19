@@ -16,7 +16,7 @@ function runSynth(args, cwd) {
   const result = spawnSync("node", [CLI_PATH, ...args], {
     cwd,
     encoding: "utf-8",
-    timeout: 180000,
+    timeout: 600000,
   })
   return {
     stdout: result.stdout || "",

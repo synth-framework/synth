@@ -365,6 +365,20 @@ type AutoCommitResult = {
   reason?: string
 }
 
+function isScratchFile(relPath: string): boolean {
+  const lowercase = relPath.toLowerCase()
+  return (
+    relPath.startsWith("scratch") ||
+    relPath.includes("/scratch") ||
+    lowercase.endsWith(".log") ||
+    lowercase.endsWith(".patch") ||
+    lowercase.endsWith(".diff") ||
+    lowercase.includes("evaluation") ||
+    lowercase.includes("benchmark") ||
+    lowercase.includes("audit-report")
+  )
+}
+
 function isDerivedStateFile(relPath: string): boolean {
   for (const pattern of DERIVED_STATE_PATTERNS) {
     if (pattern.endsWith("/")) {
@@ -373,7 +387,7 @@ function isDerivedStateFile(relPath: string): boolean {
       return true
     }
   }
-  return false
+  return isScratchFile(relPath)
 }
 
 /**
@@ -3021,6 +3035,17 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
     flags.full === true ||
     flags.full === "true"
 
+  // EXP-TRUST-001: refuse cyclic/marker govern delegations at the command
+  // boundary, before any routing, so a project whose "govern" script
+  // re-enters the SYNTH pipeline fails prescriptively instead of recursing
+  // or silently routing away.
+  const boundaryVerdict = checkGovernDelegation(process.cwd())
+  if (!boundaryVerdict.allowed) {
+    if (boundaryVerdict.condition === "cyclic-script" || boundaryVerdict.condition === "depth-marker") {
+      return printError(boundaryVerdict.message)
+    }
+  }
+
   if (pipelineMode) {
     const verdict = checkGovernDelegation(process.cwd())
     if (!verdict.allowed) {
@@ -3047,6 +3072,23 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
       process.exit(result.status)
     }
     return
+  }
+
+  // A legitimate "govern" script exists (the guard allowed delegation to it).
+  // Run it regardless of project initialization state so project validation
+  // output is preserved and the delegation marker propagates (EXP-TRUST-001).
+  if (boundaryVerdict.allowed && boundaryVerdict.condition === "delegated") {
+    const result = await runNpmScript(["run", "govern"], boundaryVerdict.childEnv, process.cwd())
+    printJson({
+      status: result.status === 0 ? "ok" : "error",
+      kind: "GovernResult",
+      delegated: true,
+      condition: "delegated",
+      exitCode: result.status,
+      output: result.stdout,
+      errors: result.stderr,
+    })
+    process.exit(result.status)
   }
 
   // Unified onboarding invocation: detect project state and route to the
@@ -5737,6 +5779,36 @@ async function startOneExpedition(
       expeditionId,
       targetStatus: "executing",
     })
+  }
+
+  const initialState = await ctx.runtime.getState()
+  const initialRecord = initialState.expeditions?.[expeditionId]
+  let currentStatus = initialRecord?.status
+
+  if (!currentStatus) {
+    const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
+    const draftsDir = path.join(dataDir, "drafts")
+    const draftPath = path.join(draftsDir, `${expeditionId}.json`)
+    const draftExists = await fs.access(draftPath).then(() => true).catch(() => false)
+    if (draftExists) {
+      currentStatus = "draft"
+    }
+  }
+
+  if (currentStatus === "draft") {
+    const approveResult = await approveOneExpedition(ctx, expeditionId, dryRun)
+    if (approveResult.status !== "ok") {
+      return approveResult
+    }
+    currentStatus = "approved"
+  }
+
+  if (currentStatus === "approved") {
+    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun)
+    if (commitResult.status !== "ok") {
+      return commitResult
+    }
+    currentStatus = "committed"
   }
 
   const state = await ctx.runtime.getState()

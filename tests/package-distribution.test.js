@@ -33,6 +33,23 @@ function runNpm(args, cwd = PROJECT_ROOT) {
   }
 }
 
+// npm reports informational file listings with an "npm notice" prefix in
+// stderr. Only lines that npm actually classifies as warnings ("npm warn" /
+// "npm WARN") indicate a publish problem. Matching on the bare substring
+// "warning" is a false positive when a packed file is named *-catalog.js,
+// since the filename itself contains the substring.
+function findNpmWarnings(stderr) {
+  return stderr
+    .split("\n")
+    .filter((line) => /^\s*npm\s+(warn|WARN)\b/.test(line))
+    .join("\n")
+}
+
+function assertNoNpmWarnings(stderr, message) {
+  const warnings = findNpmWarnings(stderr)
+  assert(warnings.length === 0, `${message}:\n${warnings || stderr}`)
+}
+
 async function testMainPackageHasMcpBinary() {
   const content = await fs.readFile(MAIN_PACKAGE, "utf-8")
   const pkg = JSON.parse(content)
@@ -61,14 +78,14 @@ async function testAgentSdkPackageMetadata() {
 async function testAgentSdkNpmPackDryRun() {
   const result = runNpm(["pack", "--dry-run"], AGENT_SDK_DIR)
   assert(result.status === 0, `npm pack --dry-run must succeed:\n${result.stdout}\n${result.stderr}`)
-  assert(!result.stderr.includes("warning"), `npm pack --dry-run should produce no warnings:\n${result.stderr}`)
+  assertNoNpmWarnings(result.stderr, "npm pack --dry-run should produce no warnings")
   console.log("[PASS] Agent SDK npm pack --dry-run succeeds without warnings")
 }
 
 async function testMainPackageNpmPackDryRun() {
   const result = runNpm(["pack", "--dry-run"], PROJECT_ROOT)
   assert(result.status === 0, `npm pack --dry-run must succeed:\n${result.stdout}\n${result.stderr}`)
-  assert(!result.stderr.includes("warning"), `npm pack --dry-run should produce no warnings:\n${result.stderr}`)
+  assertNoNpmWarnings(result.stderr, "npm pack --dry-run should produce no warnings")
   console.log("[PASS] Main package npm pack --dry-run succeeds without warnings")
 }
 

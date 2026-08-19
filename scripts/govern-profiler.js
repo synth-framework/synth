@@ -187,6 +187,10 @@ export async function runGovernProfile(options = {}) {
       buildDecision.reason = "upstream"
       buildDecision.proof = null
     }
+    // Reorder so build executes before any check that depends on dist/ outputs.
+    if (buildDecision && decisions[0].checkId !== "build") {
+      decisions = [buildDecision, ...decisions.filter((d) => d.checkId !== "build")]
+    }
   }
 
   const executor = options.executor ?? ((command, args, cwd) => runCommand(command, args, cwd, options.timeoutMs))

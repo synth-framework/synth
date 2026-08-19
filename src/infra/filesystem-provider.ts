@@ -8,7 +8,7 @@
 
 import { resolve, dirname } from "node:path"
 import * as sdkFiles from "../sdk/files/index.js"
-import { IllegalMutationError } from "../core/errors.js"
+import { IllegalMutationError } from "../sdk/errors/index.js"
 
 export const FILESYSTEM_WRITE_TOKEN = Symbol("FILESYSTEM_WRITE_TOKEN")
 

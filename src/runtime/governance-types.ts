@@ -18,6 +18,7 @@ export type DraftSummary = {
   blockingUnknowns: number
   approvalState: string
   createdAt: number
+  kind: "mission" | "expedition"
 }
 
 export type GovernancePhase =

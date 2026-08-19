@@ -14,7 +14,7 @@
 
 import type { EventStore } from "./event-store.js"
 import { EVENT_STORE_WRITE_TOKEN } from "./event-store.js"
-import { IllegalMutationError } from "../core/errors.js"
+import { IllegalMutationError } from "../sdk/errors/index.js"
 
 /** Wrap an EventStore with the mutation guard */
 export function createGuardedEventStore(store: EventStore): EventStore {

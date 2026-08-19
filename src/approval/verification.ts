@@ -19,7 +19,7 @@ export type ApprovalCheckResult =
   | { required: true; satisfied: false; reason: string }
 
 /** Determine whether two-party approval is required for an invocation. */
-export function isApprovalRequired(
+function isApprovalRequired(
   invocation: CapabilityInvocation,
   config?: ApprovalPolicyConfig,
 ): boolean {
@@ -33,7 +33,7 @@ export function isApprovalRequired(
 }
 
 /** Find a valid approval request matching the invocation fingerprint. */
-export function findValidApproval(
+function findValidApproval(
   invocation: CapabilityInvocation,
   state: CanonicalState,
 ): ApprovalRequest | undefined {
@@ -66,7 +66,7 @@ export function isApprovalSatisfied(
 }
 
 /** Resolve the current status of an approval request from state. */
-export function approvalStatusForRequest(
+function approvalStatusForRequest(
   requestId: string,
   state: CanonicalState,
 ): ApprovalRequest["status"] | "unknown" {

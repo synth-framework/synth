@@ -3,7 +3,7 @@
   "description": "npm script migration: test:agent-sdk",
   "command": "node tests/agent-sdk.test.js",
   "group": "runtime",
-  "dependsOn": [],
+  "dependsOn": ["build:agent-sdk"],
   "tags": [
     "runtime",
     "test"

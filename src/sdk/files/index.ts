@@ -24,8 +24,8 @@ import {
   mkdirSync as nodeMkdirSync,
 } from "node:fs"
 import path from "node:path"
-import { isDerivedPath } from "../../governance/derived-files.js"
-import { IllegalMutationError } from "../../core/errors.js"
+import { isDerivedPath } from "./derived.js"
+import { IllegalMutationError } from "../errors/index.js"
 
 const DERIVED_STATE_ERROR = "This is derived state. Modify source events or evidence instead."
 
