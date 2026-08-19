@@ -2,9 +2,12 @@
   "kind": "GovernSummary",
   "schemaVersion": "1.0.0",
   "mode": "full",
-  "changedFiles": [],
-  "totalDurationMs": 197680,
-  "executedDurationMs": 197680,
+  "changedFiles": [
+    "src/planning/index.ts",
+    "tests/synth.test.js"
+  ],
+  "totalDurationMs": 194474,
+  "executedDurationMs": 194474,
   "checkCount": 2,
   "skippedCount": 0,
   "checks": [
@@ -13,10 +16,10 @@
       "status": "passed",
       "action": "run",
       "reason": "full-run",
-      "durationMs": 48010,
-      "percentage": 24.3,
-      "startTime": "2026-08-17T01:52:32.302Z",
-      "endTime": "2026-08-17T01:53:20.312Z",
+      "durationMs": 53940,
+      "percentage": 27.7,
+      "startTime": "2026-08-18T02:46:38.084Z",
+      "endTime": "2026-08-18T02:47:32.024Z",
       "module": "kernel",
       "inputs": [
         "src/**",
@@ -29,17 +32,17 @@
       "dependencies": [],
       "cacheability": "deterministic",
       "protectedAssets": [],
-      "fingerprint": "0de2f2ed3ff11feaf1dcdd92a8d85fff69882ddfae9d25db90824367233c3879"
+      "fingerprint": "39355ab0f357e49667bdd1cfbfdb8b3c8fe6caa14d9c929968e411f3525edaf7"
     },
     {
       "checkId": "proof",
       "status": "passed",
       "action": "run",
       "reason": "full-run",
-      "durationMs": 149670,
-      "percentage": 75.7,
-      "startTime": "2026-08-17T01:53:20.329Z",
-      "endTime": "2026-08-17T01:55:49.999Z",
+      "durationMs": 140534,
+      "percentage": 72.3,
+      "startTime": "2026-08-18T02:47:32.047Z",
+      "endTime": "2026-08-18T02:49:52.581Z",
       "module": "governance",
       "inputs": [
         "dist/**",
@@ -56,7 +59,7 @@
         "Genesis",
         "Replay"
       ],
-      "fingerprint": "7b72653971cbb9648e1243d8ad696cdf336fa9baceb1c3abeba17e0b41dac918"
+      "fingerprint": "236adf2bb4ef029d6d097330064b812c4bdd3dfa117615c9cc1ae6b9357a401b"
     }
   ]
 }
