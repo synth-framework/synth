@@ -1,6 +1,6 @@
 {
-  "version": 113,
-  "stateHash": "1865485771",
+  "version": 118,
+  "stateHash": "177977462",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -36,11 +36,12 @@
         "4a3f7b93a4cc3e53",
         "912a468ae9bf5bd6",
         "0bd85610bca114c9",
-        "c6f9251b64466f29"
+        "c6f9251b64466f29",
+        "190a72e71fbe3c14"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 102,
+      "updatedAt": 113,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -372,6 +373,27 @@
           "hash": "45ff2af7f9bfb79572ac2d26e2b6ff3984d5d087d85f5903825309d7949ce002"
         }
       ]
+    },
+    "190a72e71fbe3c14": {
+      "id": "190a72e71fbe3c14",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Single-Source Branch Naming",
+      "goal": "Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names through a single source of truth; remove redundant legacy/candidate helpers if unneeded; align checkpoint types.",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-67457",
+          "sessionId": "0025dd84-cf89-4a22-80b1-40b67af5fa3d",
+          "approvalMode": "autonomous",
+          "issuedAt": 117
+        }
+      },
+      "createdAt": 113,
+      "updatedAt": 117
     }
   },
   "objectives": {},
@@ -388,5 +410,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 113
+  "lastEventOffset": 118
 }
