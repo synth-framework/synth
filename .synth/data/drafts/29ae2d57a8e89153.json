@@ -1,0 +1,123 @@
+{
+  "id": "29ae2d57a8e89153",
+  "createdAt": 1787108880857,
+  "observations": [
+    {
+      "id": "obs-mission-architecture-consolidation-&-dry-(v3)",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Architecture Consolidation & DRY (v3)",
+        "name": "Architecture Consolidation & DRY (v3)",
+        "purpose": "Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capability/feature inventory so coding agents know what exists and what to reuse (DRY as a core principle), eliminate duplicated feature implementations across persistence, domain models, adapters and testing, and tier the test suite so it warns instead of blocking. Consolidates the redundancy audit, the broken capability-report/inventory, and the accumulated brain proposals into governed expeditions."
+      },
+      "evidenceReference": "evidence-mission-Architecture Consolidation & DRY (v3)",
+      "confidence": "high",
+      "timestamp": 1787108880857
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "ec74e41fe50c0ca4",
+        "observationId": "obs-mission-architecture-consolidation-&-dry-(v3)",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Architecture Consolidation & DRY (v3)\",\"name\":\"Architecture Consolidation & DRY (v3)\",\"purpose\":\"Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capabil",
+        "fingerprint": "02b4f92d612db4c1",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-architecture-consolidation-&-dry-(v3)",
+        {
+          "id": "ec74e41fe50c0ca4",
+          "observationId": "obs-mission-architecture-consolidation-&-dry-(v3)",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Architecture Consolidation & DRY (v3)\",\"name\":\"Architecture Consolidation & DRY (v3)\",\"purpose\":\"Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capabil",
+          "fingerprint": "02b4f92d612db4c1",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.67,
+    "observationCoverage": 0.1,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "8042c36560e13341",
+        {
+          "id": "8042c36560e13341",
+          "kind": "mission",
+          "name": "Architecture Consolidation & DRY (v3)",
+          "description": "Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capability/feature inventory so coding agents know what exists and what to reuse (DRY as a core principle), eliminate duplicated feature implementations across persistence, domain models, adapters and testing, and tier the test suite so it warns instead of blocking. Consolidates the redundancy audit, the broken capability-report/inventory, and the accumulated brain proposals into governed expeditions.",
+          "purpose": "Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capability/feature inventory so coding agents know what exists and what to reuse (DRY as a core principle), eliminate duplicated feature implementations across persistence, domain models, adapters and testing, and tier the test suite so it warns instead of blocking. Consolidates the redundancy audit, the broken capability-report/inventory, and the accumulated brain proposals into governed expeditions.",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-architecture-consolidation-&-dry-(v3)"
+          ],
+          "evidenceRefs": [
+            "ec74e41fe50c0ca4"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "ec74e41fe50c0ca4",
+          "observationId": "obs-mission-architecture-consolidation-&-dry-(v3)",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Architecture Consolidation & DRY (v3)\",\"name\":\"Architecture Consolidation & DRY (v3)\",\"purpose\":\"Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capabil",
+          "fingerprint": "02b4f92d612db4c1",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-architecture-consolidation-&-dry-(v3)",
+          {
+            "id": "ec74e41fe50c0ca4",
+            "observationId": "obs-mission-architecture-consolidation-&-dry-(v3)",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Architecture Consolidation & DRY (v3)\",\"name\":\"Architecture Consolidation & DRY (v3)\",\"purpose\":\"Declutter the CLI (lazy bootstrap, namespace modularization), build an agent-facing capabil",
+            "fingerprint": "02b4f92d612db4c1",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.67,
+      "observationCoverage": 0.1,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

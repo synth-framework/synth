@@ -1,6 +1,6 @@
 {
-  "version": 100,
-  "stateHash": "372688871",
+  "version": 102,
+  "stateHash": "1817441198",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -102,7 +102,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Simplify Expedition Lifecycle Operations",
       "goal": "Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft to Executing, auto-ignoring untracked scratch files) to improve simplification and coherence.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -116,7 +116,7 @@
         }
       },
       "createdAt": 23,
-      "updatedAt": 98,
+      "updatedAt": 100,
       "attachments": [
         {
           "kind": "git-diff",
@@ -133,7 +133,9 @@
           "path": "proof/expeditions/dac069e8cc375a6b/git-diff.patch",
           "hash": "2af7041b9d6aff62dbb634bae560d6f60571167c8c786803a39e7a60d8a1d4fe"
         }
-      ]
+      ],
+      "force": true,
+      "forceReason": "PR #302 full-govern green; dirty tree is only derived artifacts (certification-matrix.md, proof/*) which are intentionally not committed per derived-file policy. Expedition work (Simplify Expedition Lifecycle Operations) is merged-ready."
     },
     "ceaa59bf74771ca0": {
       "id": "ceaa59bf74771ca0",
@@ -352,5 +354,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 100
+  "lastEventOffset": 102
 }
