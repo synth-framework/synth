@@ -16,7 +16,7 @@
 import fs from "fs"
 import path from "path"
 import { load as loadYaml } from "js-yaml"
-import { classifyBranch, generateBranchName, validateBranchName } from "./branch-taxonomy.js"
+import { canonicalBranchCandidates, classifyBranch, validateBranchName } from "./branch-taxonomy.js"
 
 export type BranchPolicyMode = "off" | "enforce"
 export type BranchStrategy = "featured" | "trunk" | "observed"
@@ -33,6 +33,8 @@ export type ExecutionRole = "mission" | "expedition" | "chore" | "internal"
 export type ExecutionBranchContext = {
   missionId?: string
   expeditionId?: string
+  missionName?: string
+  expeditionName?: string
   capability?: string
 }
 
@@ -138,13 +140,21 @@ export function resolveExecutionBranch(
 
   // Mission/expedition roles require a canonical branch matching their id.
   const branchType = classifyBranch(currentBranch)
-  const requiredBranch = generateBranchName(role === "mission" ? "mission" : "expedition", {
+  const canonicalNames = canonicalBranchCandidates(role === "mission" ? "mission" : "expedition", {
     missionId: context.missionId,
+    missionName: context.missionName,
     expeditionId: role === "expedition" ? context.expeditionId : undefined,
+    expeditionName: role === "expedition" ? context.expeditionName : undefined,
   })
+  const requiredBranch = canonicalNames[0]
 
-  if (branchType === role && currentBranch === requiredBranch) {
-    return { ...base, reason: `On canonical ${role} branch ${requiredBranch}` }
+  if (branchType === role && canonicalNames.includes(currentBranch)) {
+    return {
+      ...base,
+      ok: true,
+      requiredBranch,
+      reason: `On canonical ${role} branch ${currentBranch}`,
+    }
   }
 
   const ruleValidation = validateBranchName(requiredBranch, {

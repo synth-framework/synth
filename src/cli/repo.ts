@@ -127,16 +127,19 @@ export async function cmdRepoBranchCreate(flags: Record<string, string | boolean
     printError(`Unknown branch type "${branchType}". Valid: ${BRANCH_TYPES.join(", ")}`)
   }
 
-  const finalBranchName = branchName || generateBranchName(branchType, { missionId, expeditionId })
-  const validation = validateBranchName(finalBranchName, { missionId, expeditionId })
-  if (!validation.valid) {
-    printError(`Invalid branch name: ${validation.errors.join("; ")}`)
-  }
-
   const ctx = await bootstrapWithCapabilities()
   const state = await ctx.runtime.getState()
   if (!state.repository) {
     printError("Repository governance is not initialized. Run 'synth repo init' first.")
+  }
+
+  const missionName = missionId ? state.missions?.[missionId]?.name : undefined
+  const expeditionName = expeditionId ? state.expeditions?.[expeditionId]?.name : undefined
+  const finalBranchName =
+    branchName || generateBranchName(branchType, { missionId, expeditionId, missionName, expeditionName })
+  const validation = validateBranchName(finalBranchName, { missionId, expeditionId })
+  if (!validation.valid) {
+    printError(`Invalid branch name: ${validation.errors.join("; ")}`)
   }
 
   const result = await ctx.api.handleIntent({
