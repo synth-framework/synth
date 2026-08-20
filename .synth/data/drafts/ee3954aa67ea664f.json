@@ -1,0 +1,209 @@
+{
+  "id": "ee3954aa67ea664f",
+  "createdAt": 1787199533961,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787199533961
+    },
+    {
+      "id": "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "DRY Self-Review Report Format for Expedition Changes",
+        "name": "DRY Self-Review Report Format for Expedition Changes",
+        "goal": "Codify the DRY self-review report format and checklist used during Single-Source Branch Naming (expedition 190a72e71fbe3c14) so every expedition verifies its own changes for DRY compliance before PR: (1) enumerate every file changed by the expedition, (2) audit each change for duplication/dead code/redundant helpers, (3) confirm all call sites funnel through a single source of truth, (4) verify removal of parallel implementations, (5) run tsc + affected tests, (6) produce the per-file DRY report table as evidence. Evidence-gathering / process expedition — output is a documented review format, not new framework features.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-DRY Self-Review Report Format for Expedition Changes",
+      "confidence": "high",
+      "timestamp": 1787199533961
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "11b3ae029916adee",
+        "immutable": true
+      },
+      {
+        "id": "41b1ae5eab7430be",
+        "observationId": "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"DRY Self-Review Report Format for Expedition Changes\",\"name\":\"DRY Self-Review Report Format for Expedition Changes\",\"goal\":\"Codify the DRY self-review report format and checklist used duri",
+        "fingerprint": "f6999b371d376efb",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "11b3ae029916adee",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+        {
+          "id": "41b1ae5eab7430be",
+          "observationId": "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"DRY Self-Review Report Format for Expedition Changes\",\"name\":\"DRY Self-Review Report Format for Expedition Changes\",\"goal\":\"Codify the DRY self-review report format and checklist used duri",
+          "fingerprint": "f6999b371d376efb",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "a5d606fff7eeb7b0",
+        {
+          "id": "a5d606fff7eeb7b0",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "b1704f620e2d18db",
+        {
+          "id": "b1704f620e2d18db",
+          "kind": "expedition",
+          "name": "DRY Self-Review Report Format for Expedition Changes",
+          "description": "Codify the DRY self-review report format and checklist used during Single-Source Branch Naming (expedition 190a72e71fbe3c14) so every expedition verifies its own changes for DRY compliance before PR: (1) enumerate every file changed by the expedition, (2) audit each change for duplication/dead code/redundant helpers, (3) confirm all call sites funnel through a single source of truth, (4) verify removal of parallel implementations, (5) run tsc + affected tests, (6) produce the per-file DRY report table as evidence. Evidence-gathering / process expedition — output is a documented review format, not new framework features.",
+          "missionId": "a5d606fff7eeb7b0",
+          "goal": "Codify the DRY self-review report format and checklist used during Single-Source Branch Naming (expedition 190a72e71fbe3c14) so every expedition verifies its own changes for DRY compliance before PR: (1) enumerate every file changed by the expedition, (2) audit each change for duplication/dead code/redundant helpers, (3) confirm all call sites funnel through a single source of truth, (4) verify removal of parallel implementations, (5) run tsc + affected tests, (6) produce the per-file DRY report table as evidence. Evidence-gathering / process expedition — output is a documented review format, not new framework features.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-dry-self-review-report-format-for-expedition-changes"
+          ],
+          "evidenceRefs": [
+            "41b1ae5eab7430be"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "351a02488802ccfb",
+        "source": "b1704f620e2d18db",
+        "target": "a5d606fff7eeb7b0",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-dry-self-review-report-format-for-expedition-changes"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "11b3ae029916adee",
+          "immutable": true
+        },
+        {
+          "id": "41b1ae5eab7430be",
+          "observationId": "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"DRY Self-Review Report Format for Expedition Changes\",\"name\":\"DRY Self-Review Report Format for Expedition Changes\",\"goal\":\"Codify the DRY self-review report format and checklist used duri",
+          "fingerprint": "f6999b371d376efb",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "11b3ae029916adee",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+          {
+            "id": "41b1ae5eab7430be",
+            "observationId": "obs-expedition-dry-self-review-report-format-for-expedition-changes",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"DRY Self-Review Report Format for Expedition Changes\",\"name\":\"DRY Self-Review Report Format for Expedition Changes\",\"goal\":\"Codify the DRY self-review report format and checklist used duri",
+            "fingerprint": "f6999b371d376efb",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

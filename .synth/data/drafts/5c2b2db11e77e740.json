@@ -1,0 +1,209 @@
+{
+  "id": "5c2b2db11e77e740",
+  "createdAt": 1787200664438,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787200664438
+    },
+    {
+      "id": "obs-expedition-fix---dry-run-persisting-state-mutations",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Fix --dry-run persisting state mutations",
+        "name": "Fix --dry-run persisting state mutations",
+        "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Fix --dry-run persisting state mutations",
+      "confidence": "high",
+      "timestamp": 1787200664438
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "10603cfbcedff6fe",
+        "immutable": true
+      },
+      {
+        "id": "d430860df49b9320",
+        "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+        "fingerprint": "63dd2bb59b663caf",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "10603cfbcedff6fe",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-fix---dry-run-persisting-state-mutations",
+        {
+          "id": "d430860df49b9320",
+          "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+          "fingerprint": "63dd2bb59b663caf",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "17b4994fe4f4c74b",
+        {
+          "id": "17b4994fe4f4c74b",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "c64b9ae0415b3e41",
+        {
+          "id": "c64b9ae0415b3e41",
+          "kind": "expedition",
+          "name": "Fix --dry-run persisting state mutations",
+          "description": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+          "missionId": "17b4994fe4f4c74b",
+          "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-fix---dry-run-persisting-state-mutations"
+          ],
+          "evidenceRefs": [
+            "d430860df49b9320"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "2a4ed440b0ff4b84",
+        "source": "c64b9ae0415b3e41",
+        "target": "17b4994fe4f4c74b",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-fix---dry-run-persisting-state-mutations"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "10603cfbcedff6fe",
+          "immutable": true
+        },
+        {
+          "id": "d430860df49b9320",
+          "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+          "fingerprint": "63dd2bb59b663caf",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "10603cfbcedff6fe",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-fix---dry-run-persisting-state-mutations",
+          {
+            "id": "d430860df49b9320",
+            "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+            "fingerprint": "63dd2bb59b663caf",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
