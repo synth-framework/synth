@@ -9,8 +9,8 @@ import {
   classifyBranch,
   validateBranchName,
   generateBranchName,
-  generateLegacyBranchName,
   canonicalBranchCandidates,
+  branchNameCandidates,
   slugify,
 } from "../dist/repository/branch-taxonomy.js"
 import {
@@ -260,12 +260,44 @@ function testBranchGenerationSlugForm() {
 }
 
 function testBranchGenerationLegacyForm() {
-  const legacy = generateLegacyBranchName("expedition", {
+  // The legacy raw-ID form is the same generator invoked without names;
+  // the options-based canonical generator covers it deterministically.
+  const legacy = generateBranchName("expedition", {
     missionId: "4ab7e9d2cc7b1b66",
     expeditionId: "c6f9251b64466f29",
   })
   assert(legacy === "expedition/4ab7e9d2cc7b1b66/c6f9251b64466f29", `expected legacy expedition branch, got ${legacy}`)
   console.log("[PASS] legacy raw-ID branch generation is preserved")
+}
+
+function testBranchNameCandidatesFromRecords() {
+  // Record-based single source: names compose the slug form first.
+  const withNames = branchNameCandidates("expedition", {
+    mission: { id: "4ab7e9d2cc7b1b66", name: "Framework Maturation v2" },
+    expedition: { id: "c6f9251b64466f29", name: "Human-Readable Expedition Branch Naming" },
+  })
+  assert(
+    withNames[0] === "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251",
+    `expected slug form first, got ${withNames[0]}`,
+  )
+  assert(
+    withNames[1] === "expedition/4ab7e9d2cc7b1b66/c6f9251b64466f29",
+    `expected legacy fallback retained, got ${withNames[1]}`,
+  )
+
+  // Without names: single legacy candidate, no duplication.
+  const noNames = branchNameCandidates("expedition", {
+    mission: { id: "m-1" },
+    expedition: { id: "e-1" },
+  })
+  assert(noNames.length === 1, `expected 1 candidate without names, got ${noNames.length}`)
+  assert(noNames[0] === "expedition/m-1/e-1")
+
+  // Mission branch type composes the mission segment only.
+  const mission = branchNameCandidates("mission", { mission: { id: "m-1", name: "My Mission" } })
+  assert(mission[0] === "mission/my-mission-m-1", `expected mission slug form, got ${mission[0]}`)
+
+  console.log("[PASS] branchNameCandidates is the record-based single source of truth")
 }
 
 function testCanonicalBranchCandidates() {
@@ -410,6 +442,7 @@ async function main() {
   testBranchGenerationSlugForm()
   testBranchGenerationLegacyForm()
   testCanonicalBranchCandidates()
+  testBranchNameCandidatesFromRecords()
   testVersionInference()
   testNextSemanticVersion()
   testPromotionValidation()

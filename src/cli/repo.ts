@@ -15,7 +15,7 @@ import crypto from "crypto"
 import { bootstrap } from "../core/bootstrap.js"
 import { injectIdentityContext } from "./identity-context.js"
 import {
-  generateBranchName,
+  branchNameCandidates,
   validateBranchName,
   type BranchType,
   createForgeAdapter,
@@ -133,10 +133,12 @@ export async function cmdRepoBranchCreate(flags: Record<string, string | boolean
     printError("Repository governance is not initialized. Run 'synth repo init' first.")
   }
 
-  const missionName = missionId ? state.missions?.[missionId]?.name : undefined
-  const expeditionName = expeditionId ? state.expeditions?.[expeditionId]?.name : undefined
   const finalBranchName =
-    branchName || generateBranchName(branchType, { missionId, expeditionId, missionName, expeditionName })
+    branchName ||
+    branchNameCandidates(branchType, {
+      mission: missionId ? state.missions?.[missionId] : undefined,
+      expedition: expeditionId ? state.expeditions?.[expeditionId] : undefined,
+    })[0]
   const validation = validateBranchName(finalBranchName, { missionId, expeditionId })
   if (!validation.valid) {
     printError(`Invalid branch name: ${validation.errors.join("; ")}`)

@@ -125,39 +125,57 @@ export type BranchNameOptions = {
 
 /**
  * All canonical names a governed branch of this type may take for the
- * given context. The slug form is preferred (first); the legacy raw-ID
- * form is retained for compatibility with branches created before the
- * human-readable naming strategy. Enforcement matches against any of them.
+ * given context. The slug form is preferred (first). The legacy raw-ID form
+ * is the same generator invoked without names — it is retained as a distinct
+ * candidate only for branches created before the human-readable naming
+ * strategy. Enforcement matches against any of them.
  */
 export function canonicalBranchCandidates(
   type: BranchType,
   options: BranchNameOptions = {},
 ): string[] {
-  const rule = BRANCH_RULES[type]
-  const candidates: string[] = []
-
   const slugName = generateBranchName(type, options)
-  if (slugName) candidates.push(slugName)
-
-  const legacyName = generateLegacyBranchName(type, options)
-  if (legacyName && slugName !== legacyName) candidates.push(legacyName)
-
+  const legacyName = generateBranchName(type, {
+    missionId: options.missionId,
+    expeditionId: options.expeditionId,
+    suffix: options.suffix,
+  })
+  const candidates = [slugName]
+  if (legacyName && legacyName !== slugName) candidates.push(legacyName)
   return candidates
 }
 
-/** Legacy raw-ID naming form, preserved for compatibility. */
-export function generateLegacyBranchName(
+/**
+ * Named mission/expedition records as the single branch-name source. Clients
+ * that hold these records (from canonical state) compose branch names through
+ * this entry point; branch creation receives the name and never re-composes.
+ */
+export type BranchNameSource = {
+  mission?: { id?: string; name?: string }
+  expedition?: { id?: string; name?: string }
+}
+
+/**
+ * Single source of truth for a governed branch name. Composes the canonical
+ * slug form from the mission/expedition records; when names are unavailable
+ * it falls back to the legacy raw-ID form. Guaranteed non-empty.
+ */
+export function branchNameCandidates(
   type: BranchType,
-  options: BranchNameOptions = {},
-): string {
-  const rule = BRANCH_RULES[type]
-  const parts = [rule.prefix]
+  source: BranchNameSource = {},
+): string[] {
+  return canonicalBranchCandidates(type, {
+    missionId: source.mission?.id,
+    missionName: source.mission?.name,
+    expeditionId: source.expedition?.id,
+    expeditionName: source.expedition?.name,
+  })
+}
 
-  if (options.missionId) parts.push(options.missionId)
-  if (options.expeditionId) parts.push(options.expeditionId)
-  if (options.suffix) parts.push(options.suffix)
-
-  return type === "main" ? rule.prefix : parts.join("/")
+function segment(id: string, name?: string): string {
+  return typeof name === "string" && name.length > 0
+    ? `${slugify(name)}-${id.slice(0, ID_SUFFIX_LENGTH)}`
+    : id
 }
 
 export function generateBranchName(
@@ -170,21 +188,10 @@ export function generateBranchName(
   if (type === "main") return rule.prefix
 
   if (options.expeditionId && options.missionId && rule.type === "expedition") {
-    const missionPart =
-      typeof options.missionName === "string" && options.missionName.length > 0
-        ? `${slugify(options.missionName)}-${options.missionId.slice(0, ID_SUFFIX_LENGTH)}`
-        : options.missionId
-    const expeditionPart =
-      typeof options.expeditionName === "string" && options.expeditionName.length > 0
-        ? `${slugify(options.expeditionName)}-${options.expeditionId.slice(0, ID_SUFFIX_LENGTH)}`
-        : options.expeditionId
-    parts.push(missionPart, expeditionPart)
+    parts.push(segment(options.missionId, options.missionName))
+    parts.push(segment(options.expeditionId, options.expeditionName))
   } else if (options.missionId && rule.type === "mission") {
-    const missionPart =
-      typeof options.missionName === "string" && options.missionName.length > 0
-        ? `${slugify(options.missionName)}-${options.missionId.slice(0, ID_SUFFIX_LENGTH)}`
-        : options.missionId
-    parts.push(missionPart)
+    parts.push(segment(options.missionId, options.missionName))
   } else {
     if (options.missionId) parts.push(options.missionId)
     if (options.expeditionId) parts.push(options.expeditionId)

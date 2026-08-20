@@ -98,7 +98,7 @@ import {
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
-import { canonicalBranchCandidates, generateBranchName } from "../repository/branch-taxonomy.js"
+import { branchNameCandidates } from "../repository/branch-taxonomy.js"
 import { loadBranchPolicyConfig } from "../repository/branch-policy.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap, type ValidationPlan } from "../validation/planner.js"
@@ -854,11 +854,9 @@ async function resolveCheckpointBranch(
   const match =
     executingExpeditions.find((e) => {
       try {
-        const names = canonicalBranchCandidates("expedition", {
-          missionId: e.missionId,
-          expeditionId: e.id,
-          missionName: (e as { missionName?: string }).missionName,
-          expeditionName: e.name,
+        const names = branchNameCandidates("expedition", {
+          mission: { id: e.missionId, name: e.missionName },
+          expedition: { id: e.id, name: e.name },
         })
         return names.includes(status.branch)
       } catch {
@@ -5718,22 +5716,18 @@ async function ensureExpeditionBranch(
     return { branch: "", created: false }
   }
   const state = await ctx.runtime.getState()
-  const expeditionName = state.expeditions?.[expeditionId]?.name
-  const missionName = state.missions?.[missionId]?.name
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
   const status = await adapter.status()
   if (!status.initialized) {
     return { branch: "", created: false }
   }
-  const canonical = generateBranchName("expedition", { missionId, expeditionId, missionName, expeditionName })
-  if (status.branch === canonical) {
-    return { branch: canonical, created: false }
-  }
-  // Stay on a pre-existing legacy branch created under the old raw-ID
-  // scheme so in-flight work is not silently moved onto a new branch.
-  const legacy = generateBranchName("expedition", { missionId, expeditionId })
-  if (status.branch === legacy) {
+  const candidates = branchNameCandidates("expedition", {
+    mission: { id: missionId, name: state.missions?.[missionId]?.name },
+    expedition: { id: expeditionId, name: state.expeditions?.[expeditionId]?.name },
+  })
+  const canonical = candidates[0]
+  if (candidates.includes(status.branch)) {
     return { branch: status.branch, created: false }
   }
   const baseCommit = getCurrentGitCommit()
