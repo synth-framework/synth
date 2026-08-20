@@ -1,0 +1,80 @@
+{
+  "schema": "synth-proof-v1",
+  "generatedAt": "2026-08-19T21:21:54.970Z",
+  "trust": {
+    "level": "ATL-7",
+    "target": "ATL-7",
+    "assessmentDate": "2026-08-19T21:21:54.970Z"
+  },
+  "baseline": {
+    "constitutionVersion": "1.0",
+    "kernelVersion": "1.0",
+    "languageVersion": "1.0",
+    "proofSchema": "synth-proof-v1"
+  },
+  "repository": {
+    "commit": "4f0c55586e13eb75ce57dae45c05b9778bb3d71e",
+    "sourceHash": "075b244eb092be04e4e99ea19ba342e6f16fd6027e87982616656fb1962c6db3"
+  },
+  "build": {
+    "distHash": "9fcb7628eb4b02c739ec735b7e821357e2d4829feafd01b2d799d55444544daa"
+  },
+  "runtime": {
+    "eventCount": 102,
+    "replayHash": "1817441198",
+    "projections": {
+      "workItems": 0,
+      "plans": 0,
+      "milestones": 0,
+      "projects": 0,
+      "missions": 2,
+      "expeditions": 11,
+      "objectives": 0,
+      "discoveries": 0,
+      "decisions": 0
+    }
+  },
+  "proofs": {
+    "p1Structural": {
+      "passed": true,
+      "detail": "No mutation bypass paths detected"
+    },
+    "p2Replay": {
+      "passed": true,
+      "chainValid": true,
+      "replayHash": "1817441198",
+      "operationalHash": "1817441198",
+      "eventCount": 102,
+      "detail": "Operational state is bit-for-bit identical to replayed state."
+    },
+    "p2Determinism": {
+      "passed": true,
+      "detail": "Paired execution produced identical results"
+    },
+    "p6GraphIntegrity": {
+      "passed": true,
+      "detail": "Reference execution produced a fully valid aggregate graph"
+    },
+    "p4Adversarial": {
+      "passed": true,
+      "detail": "All attacks blocked"
+    }
+  },
+  "reproduction": {
+    "command": "npm run govern",
+    "expectedSourceHash": "075b244eb092be04e4e99ea19ba342e6f16fd6027e87982616656fb1962c6db3",
+    "expectedDistHash": "9fcb7628eb4b02c739ec735b7e821357e2d4829feafd01b2d799d55444544daa",
+    "expectedReplayHash": "1817441198",
+    "note": "Run from a clean checkout at the referenced commit. Timestamps and file paths are expected to differ; hashes must match."
+  },
+  "overall": {
+    "passed": true,
+    "summary": [
+      "P1 Structural: PASS",
+      "P2 Replay: PASS",
+      "P2 Determinism: PASS",
+      "P6 Graph Integrity: PASS",
+      "P4 Adversarial: PASS"
+    ]
+  }
+}

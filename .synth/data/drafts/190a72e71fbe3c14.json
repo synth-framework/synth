@@ -1,0 +1,209 @@
+{
+  "id": "190a72e71fbe3c14",
+  "createdAt": 1787176083899,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787176083899
+    },
+    {
+      "id": "obs-expedition-single-source-branch-naming",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Single-Source Branch Naming",
+        "name": "Single-Source Branch Naming",
+        "goal": "Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names through a single source of truth; remove redundant legacy/candidate helpers if unneeded; align checkpoint types.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Single-Source Branch Naming",
+      "confidence": "high",
+      "timestamp": 1787176083899
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "9cc0e28c472770c1",
+        "immutable": true
+      },
+      {
+        "id": "839904acba3cd8da",
+        "observationId": "obs-expedition-single-source-branch-naming",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Single-Source Branch Naming\",\"name\":\"Single-Source Branch Naming\",\"goal\":\"Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names thr",
+        "fingerprint": "0ed8fe98d147e60c",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "9cc0e28c472770c1",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-single-source-branch-naming",
+        {
+          "id": "839904acba3cd8da",
+          "observationId": "obs-expedition-single-source-branch-naming",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Single-Source Branch Naming\",\"name\":\"Single-Source Branch Naming\",\"goal\":\"Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names thr",
+          "fingerprint": "0ed8fe98d147e60c",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "649bd9ad08c9d5bc",
+        {
+          "id": "649bd9ad08c9d5bc",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "9c43dfe61992298d",
+        {
+          "id": "9c43dfe61992298d",
+          "kind": "expedition",
+          "name": "Single-Source Branch Naming",
+          "description": "Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names through a single source of truth; remove redundant legacy/candidate helpers if unneeded; align checkpoint types.",
+          "missionId": "649bd9ad08c9d5bc",
+          "goal": "Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names through a single source of truth; remove redundant legacy/candidate helpers if unneeded; align checkpoint types.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-single-source-branch-naming"
+          ],
+          "evidenceRefs": [
+            "839904acba3cd8da"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "09045ae34ff461e1",
+        "source": "9c43dfe61992298d",
+        "target": "649bd9ad08c9d5bc",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-single-source-branch-naming"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "9cc0e28c472770c1",
+          "immutable": true
+        },
+        {
+          "id": "839904acba3cd8da",
+          "observationId": "obs-expedition-single-source-branch-naming",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Single-Source Branch Naming\",\"name\":\"Single-Source Branch Naming\",\"goal\":\"Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names thr",
+          "fingerprint": "0ed8fe98d147e60c",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "9cc0e28c472770c1",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-single-source-branch-naming",
+          {
+            "id": "839904acba3cd8da",
+            "observationId": "obs-expedition-single-source-branch-naming",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Single-Source Branch Naming\",\"name\":\"Single-Source Branch Naming\",\"goal\":\"Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names thr",
+            "fingerprint": "0ed8fe98d147e60c",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

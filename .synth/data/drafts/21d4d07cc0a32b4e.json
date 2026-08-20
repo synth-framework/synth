@@ -1,0 +1,209 @@
+{
+  "id": "21d4d07cc0a32b4e",
+  "createdAt": 1787186683614,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787186683614
+    },
+    {
+      "id": "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Resolve ExecutionGate legacy-only branch enforcement conflict",
+        "name": "Resolve ExecutionGate legacy-only branch enforcement conflict",
+        "goal": "Document and resolve the pre-existing test failure where the ExecutionGate enforces only the legacy branch form while the CLI auto-creates the slug form, causing tests/execution-branch-gate.test.js testCliAutoCreatesCanonicalBranchOnMainUnderEnforce to fail on a fresh dist rebuild",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Resolve ExecutionGate legacy-only branch enforcement conflict",
+      "confidence": "high",
+      "timestamp": 1787186683614
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "7a5c5a3b8fe8c8b4",
+        "immutable": true
+      },
+      {
+        "id": "13400d2c0152ac62",
+        "observationId": "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"name\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"goal\":\"Document and resolve the pre-existing test fai",
+        "fingerprint": "157be2846dca5232",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "7a5c5a3b8fe8c8b4",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+        {
+          "id": "13400d2c0152ac62",
+          "observationId": "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"name\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"goal\":\"Document and resolve the pre-existing test fai",
+          "fingerprint": "157be2846dca5232",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "9493ce93fa060c46",
+        {
+          "id": "9493ce93fa060c46",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "cf0ae07e5931bde3",
+        {
+          "id": "cf0ae07e5931bde3",
+          "kind": "expedition",
+          "name": "Resolve ExecutionGate legacy-only branch enforcement conflict",
+          "description": "Document and resolve the pre-existing test failure where the ExecutionGate enforces only the legacy branch form while the CLI auto-creates the slug form, causing tests/execution-branch-gate.test.js testCliAutoCreatesCanonicalBranchOnMainUnderEnforce to fail on a fresh dist rebuild",
+          "missionId": "9493ce93fa060c46",
+          "goal": "Document and resolve the pre-existing test failure where the ExecutionGate enforces only the legacy branch form while the CLI auto-creates the slug form, causing tests/execution-branch-gate.test.js testCliAutoCreatesCanonicalBranchOnMainUnderEnforce to fail on a fresh dist rebuild",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict"
+          ],
+          "evidenceRefs": [
+            "13400d2c0152ac62"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "706841a8971d76f9",
+        "source": "cf0ae07e5931bde3",
+        "target": "9493ce93fa060c46",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "7a5c5a3b8fe8c8b4",
+          "immutable": true
+        },
+        {
+          "id": "13400d2c0152ac62",
+          "observationId": "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"name\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"goal\":\"Document and resolve the pre-existing test fai",
+          "fingerprint": "157be2846dca5232",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "7a5c5a3b8fe8c8b4",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+          {
+            "id": "13400d2c0152ac62",
+            "observationId": "obs-expedition-resolve-executiongate-legacy-only-branch-enforcement-conflict",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"name\":\"Resolve ExecutionGate legacy-only branch enforcement conflict\",\"goal\":\"Document and resolve the pre-existing test fai",
+            "fingerprint": "157be2846dca5232",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

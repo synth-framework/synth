@@ -1,6 +1,6 @@
 {
-  "version": 102,
-  "stateHash": "1817441198",
+  "version": 124,
+  "stateHash": "2096610362",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -35,11 +35,17 @@
         "3ea6dbc99dd69a09",
         "4a3f7b93a4cc3e53",
         "912a468ae9bf5bd6",
-        "0bd85610bca114c9"
+        "0bd85610bca114c9",
+        "c6f9251b64466f29",
+        "190a72e71fbe3c14",
+        "21d4d07cc0a32b4e",
+        "05803a68c1a4f631",
+        "ee3954aa67ea664f",
+        "5c2b2db11e77e740"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 87,
+      "updatedAt": 123,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -338,6 +344,143 @@
           "hash": "8669c3795d235a9b8741ac3b2cd02f3bbf36c478e7b8b340f13efa39273a00d9"
         }
       ]
+    },
+    "c6f9251b64466f29": {
+      "id": "c6f9251b64466f29",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Human-Readable Expedition Branch Naming",
+      "goal": "Replace cryptic raw-ID branch names with slug-based names (expedition/<mission-slug>/<expedition-slug>-<expId[0:7]>) while preserving determinism, uniqueness, and traceability so checkpoint and branch-policy enforcement still resolve correctly.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-53449",
+          "sessionId": "e787f850-62b9-454e-909f-c4c5f552b183",
+          "approvalMode": "autonomous",
+          "issuedAt": 106
+        }
+      },
+      "createdAt": 102,
+      "updatedAt": 111,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/c6f9251b64466f29/git-diff.patch",
+          "hash": "e3cd23f2294354b6db07e000eb41accb284f7937d2382ca6de7fdd07ab759cf4"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/c6f9251b64466f29/git-diff.patch",
+          "hash": "45ff2af7f9bfb79572ac2d26e2b6ff3984d5d087d85f5903825309d7949ce002"
+        }
+      ]
+    },
+    "190a72e71fbe3c14": {
+      "id": "190a72e71fbe3c14",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Single-Source Branch Naming",
+      "goal": "Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names through a single source of truth; remove redundant legacy/candidate helpers if unneeded; align checkpoint types.",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-67457",
+          "sessionId": "0025dd84-cf89-4a22-80b1-40b67af5fa3d",
+          "approvalMode": "autonomous",
+          "issuedAt": 117
+        }
+      },
+      "createdAt": 113,
+      "updatedAt": 117
+    },
+    "21d4d07cc0a32b4e": {
+      "id": "21d4d07cc0a32b4e",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Resolve ExecutionGate legacy-only branch enforcement conflict",
+      "goal": "Document and resolve the pre-existing test failure where the ExecutionGate enforces only the legacy branch form while the CLI auto-creates the slug form, causing tests/execution-branch-gate.test.js testCliAutoCreatesCanonicalBranchOnMainUnderEnforce to fail on a fresh dist rebuild",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "tests/execution-branch-gate.test.js",
+          "src/control/execution-gate.ts",
+          "src/repository/branch-policy.ts",
+          "src/cli/synth.ts"
+        ]
+      },
+      "createdAt": 119,
+      "updatedAt": 119
+    },
+    "05803a68c1a4f631": {
+      "id": "05803a68c1a4f631",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity",
+      "goal": "Evidence-gathering / investigation expedition. Sincere audit of SYNTH as an internal development platform: audit CLI discoverability, agent friendliness, and development continuity; assess what measures are needed to mature into a first-world development platform. Explicitly NOT a feature/tool-producing expedition — output is findings, evidence, and recommendations discussed with the operator.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "docs/guides",
+          "docs/reference",
+          "src/cli",
+          "src/control",
+          "AGENTS.md"
+        ]
+      },
+      "createdAt": 120,
+      "updatedAt": 120
+    },
+    "ee3954aa67ea664f": {
+      "id": "ee3954aa67ea664f",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "DRY Self-Review Report Format for Expedition Changes",
+      "goal": "Codify the DRY self-review report format and checklist used during Single-Source Branch Naming (expedition 190a72e71fbe3c14) so every expedition verifies its own changes for DRY compliance before PR: (1) enumerate every file changed by the expedition, (2) audit each change for duplication/dead code/redundant helpers, (3) confirm all call sites funnel through a single source of truth, (4) verify removal of parallel implementations, (5) run tsc + affected tests, (6) produce the per-file DRY report table as evidence. Evidence-gathering / process expedition — output is a documented review format, not new framework features.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "docs/guides/agents",
+          "AGENTS.md"
+        ]
+      },
+      "createdAt": 121,
+      "updatedAt": 121
+    },
+    "5c2b2db11e77e740": {
+      "id": "5c2b2db11e77e740",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Fix --dry-run persisting state mutations",
+      "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli",
+          "src/control",
+          "src/runtime",
+          "src/api"
+        ]
+      },
+      "createdAt": 123,
+      "updatedAt": 123
     }
   },
   "objectives": {},
@@ -354,5 +497,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 102
+  "lastEventOffset": 124
 }

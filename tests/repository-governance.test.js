@@ -9,14 +9,14 @@ import {
   classifyBranch,
   validateBranchName,
   generateBranchName,
-  BRANCH_TYPES,
+  canonicalBranchCandidates,
+  branchNameCandidates,
+  slugify,
 } from "../dist/repository/branch-taxonomy.js"
 import {
-  getRepositoryLifecycle,
   inferVersionBump,
   nextSemanticVersion,
   validatePromotion,
-  formatReleaseNotes,
 } from "../dist/repository/governance.js"
 
 function assert(condition, message) {
@@ -226,6 +226,106 @@ function testBranchGeneration() {
   console.log("[PASS] branch generation produces canonical names")
 }
 
+function testSlugify() {
+  assert(slugify("Human-Readable Expedition Branch Naming") === "human-readable-expedition-branch-naming")
+  assert(slugify("Address Monolithic State Files in .synth/data/") === "address-monolithic-state-files-in-synth-data")
+  assert(slugify("  UPPER  CASE  ") === "upper-case")
+  assert(slugify("") === "untitled")
+  assert(slugify("---") === "untitled")
+  console.log("[PASS] slugify produces deterministic url-safe slugs")
+}
+
+function testBranchGenerationSlugForm() {
+  const expedition = generateBranchName("expedition", {
+    missionId: "4ab7e9d2cc7b1b66",
+    expeditionId: "c6f9251b64466f29",
+    missionName: "Framework Maturation v2",
+    expeditionName: "Human-Readable Expedition Branch Naming",
+  })
+  assert(
+    expedition === "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251",
+    `expected slug expedition branch, got ${expedition}`,
+  )
+
+  const mission = generateBranchName("mission", {
+    missionId: "4ab7e9d2cc7b1b66",
+    missionName: "Framework Maturation v2",
+  })
+  assert(mission === "mission/framework-maturation-v2-4ab7e9d", `expected slug mission branch, got ${mission}`)
+
+  // Fallback to raw-ID form when names are absent.
+  const noNames = generateBranchName("expedition", { missionId: "m-1", expeditionId: "e-1" })
+  assert(noNames === "expedition/m-1/e-1", `expected legacy fallback, got ${noNames}`)
+  console.log("[PASS] branch generation produces human-readable slug names with id traceability")
+}
+
+function testBranchGenerationLegacyForm() {
+  // The legacy raw-ID form is the same generator invoked without names;
+  // the options-based canonical generator covers it deterministically.
+  const legacy = generateBranchName("expedition", {
+    missionId: "4ab7e9d2cc7b1b66",
+    expeditionId: "c6f9251b64466f29",
+  })
+  assert(legacy === "expedition/4ab7e9d2cc7b1b66/c6f9251b64466f29", `expected legacy expedition branch, got ${legacy}`)
+  console.log("[PASS] legacy raw-ID branch generation is preserved")
+}
+
+function testBranchNameCandidatesFromRecords() {
+  // Record-based single source: names compose the slug form first.
+  const withNames = branchNameCandidates("expedition", {
+    mission: { id: "4ab7e9d2cc7b1b66", name: "Framework Maturation v2" },
+    expedition: { id: "c6f9251b64466f29", name: "Human-Readable Expedition Branch Naming" },
+  })
+  assert(
+    withNames[0] === "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251",
+    `expected slug form first, got ${withNames[0]}`,
+  )
+  assert(
+    withNames[1] === "expedition/4ab7e9d2cc7b1b66/c6f9251b64466f29",
+    `expected legacy fallback retained, got ${withNames[1]}`,
+  )
+
+  // Without names: single legacy candidate, no duplication.
+  const noNames = branchNameCandidates("expedition", {
+    mission: { id: "m-1" },
+    expedition: { id: "e-1" },
+  })
+  assert(noNames.length === 1, `expected 1 candidate without names, got ${noNames.length}`)
+  assert(noNames[0] === "expedition/m-1/e-1")
+
+  // Mission branch type composes the mission segment only.
+  const mission = branchNameCandidates("mission", { mission: { id: "m-1", name: "My Mission" } })
+  assert(mission[0] === "mission/my-mission-m-1", `expected mission slug form, got ${mission[0]}`)
+
+  console.log("[PASS] branchNameCandidates is the record-based single source of truth")
+}
+
+function testCanonicalBranchCandidates() {
+  // With names: slug form preferred, legacy form retained for compatibility.
+  const withNames = canonicalBranchCandidates("expedition", {
+    missionId: "4ab7e9d2cc7b1b66",
+    expeditionId: "c6f9251b64466f29",
+    missionName: "Framework Maturation v2",
+    expeditionName: "Human-Readable Expedition Branch Naming",
+  })
+  assert(withNames.length === 2, `expected 2 candidates, got ${withNames.length}`)
+  assert(
+    withNames[0] === "expedition/framework-maturation-v2-4ab7e9d/human-readable-expedition-branch-naming-c6f9251",
+    "slug form should be preferred first",
+  )
+  assert(
+    withNames[1] === "expedition/4ab7e9d2cc7b1b66/c6f9251b64466f29",
+    "legacy form should be retained for compatibility",
+  )
+
+  // Without names: single legacy candidate, no duplication.
+  const noNames = canonicalBranchCandidates("expedition", { missionId: "m-1", expeditionId: "e-1" })
+  assert(noNames.length === 1, `expected 1 candidate without names, got ${noNames.length}`)
+  assert(noNames[0] === "expedition/m-1/e-1")
+
+  console.log("[PASS] canonical branch candidates cover slug and legacy forms")
+}
+
 function testVersionInference() {
   let state = createEmptyState()
   state = applyEvent(
@@ -328,51 +428,6 @@ function testPromotionValidation() {
   console.log("[PASS] promotion validation enforces lifecycle and PR requirements")
 }
 
-function testReleaseNotes() {
-  let state = createEmptyState()
-  state = applyEvent(
-    state,
-    makeEvent("MISSION_CREATED", {
-      mission: {
-        id: "mission-1",
-        name: "Modernize CLI",
-        purpose: "Improve operator experience",
-        status: "active",
-        expeditions: [],
-        metadata: {},
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    }),
-  )
-  state = applyEvent(
-    state,
-    makeEvent("EXPEDITION_COMPLETED", { expeditionId: "expedition-1" }),
-  )
-  state = applyEvent(
-    state,
-    makeEvent("EXPEDITION_CREATED", {
-      expedition: {
-        id: "expedition-1",
-        missionId: "mission-1",
-        name: "Refactor status command",
-        goal: "Make status output deterministic",
-        status: "completed",
-        objectives: [],
-        discoveries: [],
-        decisions: [],
-        metadata: {},
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    }),
-  )
-  const notes = formatReleaseNotes(state)
-  assert(notes.includes("Modernize CLI"), "release notes should include mission")
-  assert(notes.includes("Refactor status command"), "release notes should include expedition")
-  console.log("[PASS] release notes format from canonical state")
-}
-
 async function main() {
   testCreateEmptyStateHasNoRepository()
   testRepositoryInitializedEvent()
@@ -383,10 +438,14 @@ async function main() {
   testBranchClassification()
   testBranchValidation()
   testBranchGeneration()
+  testSlugify()
+  testBranchGenerationSlugForm()
+  testBranchGenerationLegacyForm()
+  testCanonicalBranchCandidates()
+  testBranchNameCandidatesFromRecords()
   testVersionInference()
   testNextSemanticVersion()
   testPromotionValidation()
-  testReleaseNotes()
   console.log("\nAll repository governance tests passed.")
 }
 

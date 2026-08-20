@@ -98,7 +98,7 @@ import {
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
-import { generateBranchName } from "../repository/branch-taxonomy.js"
+import { branchNameCandidates } from "../repository/branch-taxonomy.js"
 import { loadBranchPolicyConfig } from "../repository/branch-policy.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap, type ValidationPlan } from "../validation/planner.js"
@@ -838,7 +838,7 @@ async function cmdDoctor() {
 // branch concept, this degrades to observation and never blocks.
 async function resolveCheckpointBranch(
   rootDir: string,
-  executingExpeditions: Array<{ id: string; missionId: string }>,
+  executingExpeditions: Array<{ id: string; missionId: string; name?: string; missionName?: string }>,
 ): Promise<{ ok: boolean; detail: string; currentBranch?: string; requiredBranch?: string; nextStep?: string }> {
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: rootDir })
@@ -854,7 +854,11 @@ async function resolveCheckpointBranch(
   const match =
     executingExpeditions.find((e) => {
       try {
-        return generateBranchName("expedition", { missionId: e.missionId, expeditionId: e.id }) === status.branch
+        const names = branchNameCandidates("expedition", {
+          mission: { id: e.missionId, name: e.missionName },
+          expedition: { id: e.id, name: e.name },
+        })
+        return names.includes(status.branch)
       } catch {
         return false
       }
@@ -892,7 +896,12 @@ async function cmdCheckpoint() {
   // Step 3: active executing expedition.
   const executingExpeditions =
     briefing.status === "ok"
-      ? briefing.activeExpeditions.filter((e) => e.status === "executing")
+      ? briefing.activeExpeditions
+          .filter((e) => e.status === "executing")
+          .map((e) => ({
+            ...e,
+            missionName: briefing.missions.find((m) => m.id === e.missionId)?.name,
+          }))
       : []
   const hasExecutingExpedition = executingExpeditions.length > 0
 
@@ -5706,15 +5715,20 @@ async function ensureExpeditionBranch(
   if (policy.mode !== "enforce" || policy.strategy !== "featured") {
     return { branch: "", created: false }
   }
+  const state = await ctx.runtime.getState()
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
   const status = await adapter.status()
   if (!status.initialized) {
     return { branch: "", created: false }
   }
-  const canonical = generateBranchName("expedition", { missionId, expeditionId })
-  if (status.branch === canonical) {
-    return { branch: canonical, created: false }
+  const candidates = branchNameCandidates("expedition", {
+    mission: { id: missionId, name: state.missions?.[missionId]?.name },
+    expedition: { id: expeditionId, name: state.expeditions?.[expeditionId]?.name },
+  })
+  const canonical = candidates[0]
+  if (candidates.includes(status.branch)) {
+    return { branch: status.branch, created: false }
   }
   const baseCommit = getCurrentGitCommit()
   const exists = typeof adapter.branchExists === "function" ? await adapter.branchExists(canonical) : false
@@ -5741,11 +5755,24 @@ async function ensureExpeditionBranch(
 async function assertExecutionBranch(
   capability: string,
   role: "mission" | "expedition" | "chore",
-  context: { missionId?: string; expeditionId?: string; capability?: string },
+  context: { missionId?: string; expeditionId?: string; missionName?: string; expeditionName?: string; capability?: string },
 ): Promise<void> {
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
-  const result = await adapter.validateExecutionBranch(role, context)
+  const enriched = { ...context }
+  if (role !== "chore" && (enriched.missionId || enriched.expeditionId)) {
+    try {
+      const state = await sdk.state.readState(process.cwd())
+      const mission = enriched.missionId && state ? state.missions?.[enriched.missionId] : undefined
+      const expedition = enriched.expeditionId && state ? state.expeditions?.[enriched.expeditionId] : undefined
+      if (!enriched.missionName && mission) enriched.missionName = mission.name
+      if (!enriched.expeditionName && expedition) enriched.expeditionName = expedition.name
+    } catch {
+      // State unreadable: fall back to ID-only naming (legacy form) rather
+      // than blocking. The ExecutionGate still enforces at the boundary.
+    }
+  }
+  const result = await adapter.validateExecutionBranch(role, enriched)
   if (result.ok) return
   printError(
     `BRANCH_POLICY_DENIED for ${capability}: ${result.reason || "Execution branch policy violated"}` +

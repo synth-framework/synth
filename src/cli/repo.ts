@@ -15,7 +15,7 @@ import crypto from "crypto"
 import { bootstrap } from "../core/bootstrap.js"
 import { injectIdentityContext } from "./identity-context.js"
 import {
-  generateBranchName,
+  branchNameCandidates,
   validateBranchName,
   type BranchType,
   createForgeAdapter,
@@ -127,16 +127,21 @@ export async function cmdRepoBranchCreate(flags: Record<string, string | boolean
     printError(`Unknown branch type "${branchType}". Valid: ${BRANCH_TYPES.join(", ")}`)
   }
 
-  const finalBranchName = branchName || generateBranchName(branchType, { missionId, expeditionId })
-  const validation = validateBranchName(finalBranchName, { missionId, expeditionId })
-  if (!validation.valid) {
-    printError(`Invalid branch name: ${validation.errors.join("; ")}`)
-  }
-
   const ctx = await bootstrapWithCapabilities()
   const state = await ctx.runtime.getState()
   if (!state.repository) {
     printError("Repository governance is not initialized. Run 'synth repo init' first.")
+  }
+
+  const finalBranchName =
+    branchName ||
+    branchNameCandidates(branchType, {
+      mission: missionId ? state.missions?.[missionId] : undefined,
+      expedition: expeditionId ? state.expeditions?.[expeditionId] : undefined,
+    })[0]
+  const validation = validateBranchName(finalBranchName, { missionId, expeditionId })
+  if (!validation.valid) {
+    printError(`Invalid branch name: ${validation.errors.join("; ")}`)
   }
 
   const result = await ctx.api.handleIntent({

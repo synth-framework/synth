@@ -48,6 +48,9 @@ data-test-proposal-evaluation/
 opencode.json
 opencode.jsonc
 
+# agent session notes are machine-local and not part of the governance snapshot.
+.agents/
+
 # =============================================================================
 # IDE
 # =============================================================================
