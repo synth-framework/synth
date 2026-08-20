@@ -1,6 +1,6 @@
 {
-  "version": 124,
-  "stateHash": "2096610362",
+  "version": 128,
+  "stateHash": "2078779260",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -383,7 +383,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Single-Source Branch Naming",
       "goal": "Move branch-name composition out of branch-creation methods into mission/expedition composition; resolve names through a single source of truth; remove redundant legacy/candidate helpers if unneeded; align checkpoint types.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -397,7 +397,14 @@
         }
       },
       "createdAt": 113,
-      "updatedAt": 117
+      "updatedAt": 126,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/190a72e71fbe3c14/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "21d4d07cc0a32b4e": {
       "id": "21d4d07cc0a32b4e",
@@ -497,5 +504,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 124
+  "lastEventOffset": 128
 }
