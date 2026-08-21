@@ -3,8 +3,8 @@
   "schemaVersion": "1.0.0",
   "mode": "full",
   "changedFiles": [],
-  "totalDurationMs": 703748,
-  "executedDurationMs": 703748,
+  "totalDurationMs": 305633,
+  "executedDurationMs": 305633,
   "checkCount": 2,
   "skippedCount": 0,
   "checks": [
@@ -13,10 +13,10 @@
       "status": "passed",
       "action": "run",
       "reason": "full-run",
-      "durationMs": 335476,
-      "percentage": 47.7,
-      "startTime": "2026-08-20T04:33:14.194Z",
-      "endTime": "2026-08-20T04:38:49.670Z",
+      "durationMs": 116623,
+      "percentage": 38.2,
+      "startTime": "2026-08-21T11:25:28.146Z",
+      "endTime": "2026-08-21T11:27:24.769Z",
       "module": "kernel",
       "inputs": [
         "src/**",
@@ -29,17 +29,17 @@
       "dependencies": [],
       "cacheability": "deterministic",
       "protectedAssets": [],
-      "fingerprint": "2ae15b7f3360eb85b7778b325613cb1bbe80a26ca7d2fb0dc5c084f110f25de2"
+      "fingerprint": "6225ca6a66e57df54ae3892389a5941858342b1d55011f9a179bd079ba5c382d"
     },
     {
       "checkId": "proof",
       "status": "passed",
       "action": "run",
       "reason": "full-run",
-      "durationMs": 368272,
-      "percentage": 52.3,
-      "startTime": "2026-08-20T04:38:49.707Z",
-      "endTime": "2026-08-20T04:44:57.979Z",
+      "durationMs": 189010,
+      "percentage": 61.8,
+      "startTime": "2026-08-21T11:27:24.792Z",
+      "endTime": "2026-08-21T11:30:33.802Z",
       "module": "governance",
       "inputs": [
         "dist/**",
@@ -56,7 +56,7 @@
         "Genesis",
         "Replay"
       ],
-      "fingerprint": "2e781fa99eeb5d12f155cbe9d9d2815c02e02fa06469e493e55e71b63e5937a7"
+      "fingerprint": "4acea702dd8c01c89867ccbe5e22559dc86b1af1003660890a4fc2c10082afe0"
     }
   ]
 }
