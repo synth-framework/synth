@@ -1,0 +1,208 @@
+{
+  "id": "36251908281671ab",
+  "createdAt": 1787262271808,
+  "observations": [
+    {
+      "id": "obs-mission-draft-centric-governance",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Draft-Centric Governance",
+        "name": "Draft-Centric Governance",
+        "purpose": "Auto-created from CLI"
+      },
+      "evidenceReference": "evidence-mission-Draft-Centric Governance",
+      "confidence": "high",
+      "timestamp": 1787262271808
+    },
+    {
+      "id": "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately",
+        "name": "Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately",
+        "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files, all removal via CLI; (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation; (3) fix --dry-run create bug that leaked draft file writes to disk; (4) approved drafts are committed to the execution gate immediately rather than left as loose drafts",
+        "missionSubject": "Draft-Centric Governance"
+      },
+      "evidenceReference": "evidence-expedition-Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately",
+      "confidence": "high",
+      "timestamp": 1787262271808
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "fceea647f6a30968",
+        "observationId": "obs-mission-draft-centric-governance",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Draft-Centric Governance\",\"name\":\"Draft-Centric Governance\",\"purpose\":\"Auto-created from CLI\"}",
+        "fingerprint": "b37b3cacc0373b9b",
+        "immutable": true
+      },
+      {
+        "id": "5260e717b14169ff",
+        "observationId": "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately\",\"name\":\"Harden draft lifecycle integrity: no manual dra",
+        "fingerprint": "ebee5ebefbded162",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-draft-centric-governance",
+        {
+          "id": "fceea647f6a30968",
+          "observationId": "obs-mission-draft-centric-governance",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Draft-Centric Governance\",\"name\":\"Draft-Centric Governance\",\"purpose\":\"Auto-created from CLI\"}",
+          "fingerprint": "b37b3cacc0373b9b",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+        {
+          "id": "5260e717b14169ff",
+          "observationId": "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately\",\"name\":\"Harden draft lifecycle integrity: no manual dra",
+          "fingerprint": "ebee5ebefbded162",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "852516bf76d1f2ae",
+        {
+          "id": "852516bf76d1f2ae",
+          "kind": "mission",
+          "name": "Draft-Centric Governance",
+          "description": "Auto-created from CLI",
+          "purpose": "Auto-created from CLI",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-draft-centric-governance"
+          ],
+          "evidenceRefs": [
+            "fceea647f6a30968"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "511c15cdb4889e3c",
+        {
+          "id": "511c15cdb4889e3c",
+          "kind": "expedition",
+          "name": "Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately",
+          "description": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files, all removal via CLI; (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation; (3) fix --dry-run create bug that leaked draft file writes to disk; (4) approved drafts are committed to the execution gate immediately rather than left as loose drafts",
+          "missionId": "852516bf76d1f2ae",
+          "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files, all removal via CLI; (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation; (3) fix --dry-run create bug that leaked draft file writes to disk; (4) approved drafts are committed to the execution gate immediately rather than left as loose drafts",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately"
+          ],
+          "evidenceRefs": [
+            "5260e717b14169ff"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "e2ff98e2664c2169",
+        "source": "511c15cdb4889e3c",
+        "target": "852516bf76d1f2ae",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "fceea647f6a30968",
+          "observationId": "obs-mission-draft-centric-governance",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Draft-Centric Governance\",\"name\":\"Draft-Centric Governance\",\"purpose\":\"Auto-created from CLI\"}",
+          "fingerprint": "b37b3cacc0373b9b",
+          "immutable": true
+        },
+        {
+          "id": "5260e717b14169ff",
+          "observationId": "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately\",\"name\":\"Harden draft lifecycle integrity: no manual dra",
+          "fingerprint": "ebee5ebefbded162",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-draft-centric-governance",
+          {
+            "id": "fceea647f6a30968",
+            "observationId": "obs-mission-draft-centric-governance",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Draft-Centric Governance\",\"name\":\"Draft-Centric Governance\",\"purpose\":\"Auto-created from CLI\"}",
+            "fingerprint": "b37b3cacc0373b9b",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+          {
+            "id": "5260e717b14169ff",
+            "observationId": "obs-expedition-harden-draft-lifecycle-integrity:-no-manual-draft-edits,-delete-cleans-up-files,-fix-dry-run-create-leak,-commit-drafts-immediately",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Harden draft lifecycle integrity: no manual draft edits, delete cleans up files, fix dry-run create leak, commit drafts immediately\",\"name\":\"Harden draft lifecycle integrity: no manual dra",
+            "fingerprint": "ebee5ebefbded162",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

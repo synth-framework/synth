@@ -1,6 +1,6 @@
 {
-  "version": 128,
-  "stateHash": "2078779260",
+  "version": 136,
+  "stateHash": "9996466",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -38,14 +38,12 @@
         "0bd85610bca114c9",
         "c6f9251b64466f29",
         "190a72e71fbe3c14",
-        "21d4d07cc0a32b4e",
-        "05803a68c1a4f631",
-        "ee3954aa67ea664f",
-        "5c2b2db11e77e740"
+        "5c2b2db11e77e740",
+        "d8a555db237507e5"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 123,
+      "updatedAt": 131,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -406,68 +404,6 @@
         }
       ]
     },
-    "21d4d07cc0a32b4e": {
-      "id": "21d4d07cc0a32b4e",
-      "missionId": "4ab7e9d2cc7b1b66",
-      "name": "Resolve ExecutionGate legacy-only branch enforcement conflict",
-      "goal": "Document and resolve the pre-existing test failure where the ExecutionGate enforces only the legacy branch form while the CLI auto-creates the slug form, causing tests/execution-branch-gate.test.js testCliAutoCreatesCanonicalBranchOnMainUnderEnforce to fail on a fresh dist rebuild",
-      "status": "draft",
-      "objectives": [],
-      "discoveries": [],
-      "decisions": [],
-      "dependsOn": [],
-      "metadata": {
-        "scope": [
-          "tests/execution-branch-gate.test.js",
-          "src/control/execution-gate.ts",
-          "src/repository/branch-policy.ts",
-          "src/cli/synth.ts"
-        ]
-      },
-      "createdAt": 119,
-      "updatedAt": 119
-    },
-    "05803a68c1a4f631": {
-      "id": "05803a68c1a4f631",
-      "missionId": "4ab7e9d2cc7b1b66",
-      "name": "Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity",
-      "goal": "Evidence-gathering / investigation expedition. Sincere audit of SYNTH as an internal development platform: audit CLI discoverability, agent friendliness, and development continuity; assess what measures are needed to mature into a first-world development platform. Explicitly NOT a feature/tool-producing expedition — output is findings, evidence, and recommendations discussed with the operator.",
-      "status": "draft",
-      "objectives": [],
-      "discoveries": [],
-      "decisions": [],
-      "dependsOn": [],
-      "metadata": {
-        "scope": [
-          "docs/guides",
-          "docs/reference",
-          "src/cli",
-          "src/control",
-          "AGENTS.md"
-        ]
-      },
-      "createdAt": 120,
-      "updatedAt": 120
-    },
-    "ee3954aa67ea664f": {
-      "id": "ee3954aa67ea664f",
-      "missionId": "4ab7e9d2cc7b1b66",
-      "name": "DRY Self-Review Report Format for Expedition Changes",
-      "goal": "Codify the DRY self-review report format and checklist used during Single-Source Branch Naming (expedition 190a72e71fbe3c14) so every expedition verifies its own changes for DRY compliance before PR: (1) enumerate every file changed by the expedition, (2) audit each change for duplication/dead code/redundant helpers, (3) confirm all call sites funnel through a single source of truth, (4) verify removal of parallel implementations, (5) run tsc + affected tests, (6) produce the per-file DRY report table as evidence. Evidence-gathering / process expedition — output is a documented review format, not new framework features.",
-      "status": "draft",
-      "objectives": [],
-      "discoveries": [],
-      "decisions": [],
-      "dependsOn": [],
-      "metadata": {
-        "scope": [
-          "docs/guides/agents",
-          "AGENTS.md"
-        ]
-      },
-      "createdAt": 121,
-      "updatedAt": 121
-    },
     "5c2b2db11e77e740": {
       "id": "5c2b2db11e77e740",
       "missionId": "4ab7e9d2cc7b1b66",
@@ -488,6 +424,27 @@
       },
       "createdAt": 123,
       "updatedAt": 123
+    },
+    "d8a555db237507e5": {
+      "id": "d8a555db237507e5",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Harden draft lifecycle integrity",
+      "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-81354",
+          "sessionId": "4b7fe368-381c-47da-ab27-7bff87d08a93",
+          "approvalMode": "autonomous",
+          "issuedAt": 135
+        }
+      },
+      "createdAt": 131,
+      "updatedAt": 135
     }
   },
   "objectives": {},
@@ -504,5 +461,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 128
+  "lastEventOffset": 136
 }
