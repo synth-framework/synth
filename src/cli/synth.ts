@@ -26,7 +26,7 @@ import { detectRecommendedAdapters } from "./detect-adapters.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
-import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
+import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
   findSimilarMissions,
@@ -5361,6 +5361,28 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     params: { observations, timestamp },
   })) as { status: string; proposals?: unknown; error?: string }
 
+  // Dry-run (draft lifecycle integrity): planning is observed, nothing is
+  // persisted — no draft files, no integrity record, no runtime entity.
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    printJson({
+      status: "ok",
+      kind: "ExpeditionDraftDryRun",
+      draftId: session.id,
+      wouldCreate: {
+        missionId: resolvedMissionId,
+        missionName: resolvedMissionName,
+        name: subject,
+        goal,
+        metadata: scope.length > 0 ? { scope } : {},
+      },
+      similar,
+      proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
+      note: "No draft files written and no runtime entity created",
+      nextStep: `synth expedition create --mission ${missionSubject} --subject "${subject}" --goal "${goal}"`,
+    })
+    return
+  }
+
   // Persist the expedition draft and create a runtime entity in draft state.
   const draftsDir = await ensureDraftsDir()
   const draftPath = path.join(draftsDir, `${session.id}.json`)
@@ -5571,11 +5593,24 @@ async function commitOneExpedition(
     return { status: "error", proposalId, code: "ExpeditionCommitFailed", error: result.error || "Unknown execution gate error" }
   }
 
+  // Draft lifecycle integrity: once committed, the execution gate owns the
+  // record — the loose planning artifact retires instead of lingering.
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
+  let draftRetired: Awaited<ReturnType<typeof retireDraftArtifacts>> | undefined
+  let draftRetirementError: string | undefined
+  try {
+    draftRetired = await retireDraftArtifacts(path.join(dataDir, "drafts"), proposalId)
+  } catch (err) {
+    draftRetirementError = err instanceof Error ? err.message : String(err)
+  }
+
   return {
     status: "ok",
     kind: "ExpeditionCommitted",
     proposalId,
     result: result.result,
+    ...(draftRetired ? { draftRetired } : {}),
+    ...(draftRetirementError ? { draftRetirementError } : {}),
     nextStep: `synth expedition start --id ${proposalId}`,
   }
 }
@@ -6441,11 +6476,25 @@ async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
     printError(result.error || "Unknown execution gate error", "ExpeditionDeleteFailed")
   }
 
+  // Draft lifecycle integrity: deletion cleans up the draft json and its
+  // integrity record in the same command as the state mutation. Records
+  // chained to by live successors are retained (chain-safe) and reported.
+  const dataDir = await sdk.paths.ensureDataDir(sdk.workspace.root())
+  let draftRetired: Awaited<ReturnType<typeof retireDraftArtifacts>> | undefined
+  let draftRetirementError: string | undefined
+  try {
+    draftRetired = await retireDraftArtifacts(path.join(dataDir, "drafts"), expeditionId)
+  } catch (err) {
+    draftRetirementError = err instanceof Error ? err.message : String(err)
+  }
+
   printJson({
     status: "ok",
     kind: "ExpeditionDeleted",
     expeditionId,
     result: result.result,
+    ...(draftRetired ? { draftRetired } : {}),
+    ...(draftRetirementError ? { draftRetirementError } : {}),
   })
 }
 
