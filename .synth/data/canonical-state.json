@@ -1,6 +1,6 @@
 {
-  "version": 136,
-  "stateHash": "9996466",
+  "version": 137,
+  "stateHash": "267035876",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -441,10 +441,13 @@
           "sessionId": "4b7fe368-381c-47da-ab27-7bff87d08a93",
           "approvalMode": "autonomous",
           "issuedAt": 135
-        }
+        },
+        "refinementId": "cf00caa7283aafc8",
+        "refinementNote": "Deliverables implemented: dry-run create no longer persists; delete and commit retire draft artifacts chain-safely (retireDraftArtifacts GC). Also raised reuse-and-templates spawn timeout 60s->240s: bootstrap takes ~44s on this machine, 3/3 false failures at 60s pre-change.",
+        "refinementAt": 136
       },
       "createdAt": 131,
-      "updatedAt": 135
+      "updatedAt": 136
     }
   },
   "objectives": {},
@@ -461,5 +464,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 136
+  "lastEventOffset": 137
 }
