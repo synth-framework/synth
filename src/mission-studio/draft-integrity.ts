@@ -125,6 +125,55 @@ export async function writeDraftIntegrityRecord(
   return record
 }
 
+export type DraftRetirementResult = {
+  draftId: string
+  jsonRemoved: boolean
+  recordsRemoved: string[]
+  recordsRetained: Array<{ draftId: string; reason: string }>
+}
+
+/**
+ * Retire a draft's planning artifacts after the execution gate has
+ * absorbed it (commit or delete). Removes the draft json and then
+ * garbage-collects integrity records from the chain tip while their
+ * planning artifact is gone. A record chained to by a live successor
+ * (json still present) is retained, so certification paths for live
+ * drafts stay intact — removal never breaks the chain.
+ */
+export async function retireDraftArtifacts(
+  draftsDir: string,
+  draftId: string,
+  fsProvider?: FilesystemProvider,
+): Promise<DraftRetirementResult> {
+  const fs = fsProvider ?? createPosixFilesystemProvider(draftsDir, FILESYSTEM_WRITE_TOKEN)
+  const result: DraftRetirementResult = { draftId, jsonRemoved: false, recordsRemoved: [], recordsRetained: [] }
+
+  const draftName = `${draftId}.json`
+  if (await fs.pathExists(draftName)) {
+    await fs.deleteFile(draftName)
+    result.jsonRemoved = true
+  }
+
+  let records = await loadRecords(fs)
+  for (;;) {
+    const referenced = new Set(records.map((r) => r.previousHash))
+    const tip = records.filter((r) => !referenced.has(hashRecord(r))).sort((a, b) => a.draftId.localeCompare(b.draftId))[0]
+    if (!tip) break
+    if (await fs.pathExists(`${tip.draftId}.json`)) break
+    await fs.deleteFile(recordName(tip.draftId))
+    result.recordsRemoved.push(tip.draftId)
+    records = records.filter((r) => r.draftId !== tip.draftId)
+  }
+
+  if (records.some((r) => r.draftId === draftId)) {
+    result.recordsRetained.push({
+      draftId,
+      reason: "integrity record is chained to by a live successor draft; it retires when the successor retires",
+    })
+  }
+  return result
+}
+
 /**
  * Certify a draft against its integrity record before approval.
  * Fails closed: missing record, content divergence, or a broken

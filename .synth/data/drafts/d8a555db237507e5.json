@@ -1,6 +1,6 @@
 {
-  "id": "05803a68c1a4f631",
-  "createdAt": 1787187779304,
+  "id": "d8a555db237507e5",
+  "createdAt": 1787262411574,
   "observations": [
     {
       "id": "obs-mission-framework-maturation-v2",
@@ -14,21 +14,21 @@
       },
       "evidenceReference": "evidence-mission-Framework Maturation v2",
       "confidence": "high",
-      "timestamp": 1787187779304
+      "timestamp": 1787262411574
     },
     {
-      "id": "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+      "id": "obs-expedition-harden-draft-lifecycle-integrity",
       "sourceAdapter": "synth-cli",
       "type": "expedition",
       "payload": {
-        "subject": "Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity",
-        "name": "Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity",
-        "goal": "Evidence-gathering / investigation expedition. Sincere audit of SYNTH as an internal development platform: audit CLI discoverability, agent friendliness, and development continuity; assess what measures are needed to mature into a first-world development platform. Explicitly NOT a feature/tool-producing expedition — output is findings, evidence, and recommendations discussed with the operator.",
+        "subject": "Harden draft lifecycle integrity",
+        "name": "Harden draft lifecycle integrity",
+        "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
         "missionSubject": "4ab7e9d2cc7b1b66"
       },
-      "evidenceReference": "evidence-expedition-Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity",
+      "evidenceReference": "evidence-expedition-Harden draft lifecycle integrity",
       "confidence": "high",
-      "timestamp": 1787187779304
+      "timestamp": 1787262411574
     }
   ],
   "evidence": {
@@ -39,16 +39,16 @@
         "source": "synth-cli",
         "description": "mission observation from synth-cli",
         "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
-        "fingerprint": "39119d6de4423ad9",
+        "fingerprint": "173094d082064d4c",
         "immutable": true
       },
       {
-        "id": "d5a0f2d5d96fd498",
-        "observationId": "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+        "id": "cc72256ffcaa4cef",
+        "observationId": "obs-expedition-harden-draft-lifecycle-integrity",
         "source": "synth-cli",
         "description": "expedition observation from synth-cli",
-        "snippet": "{\"subject\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"name\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"goal\":\"Evidence-g",
-        "fingerprint": "fbd179e9fe7de287",
+        "snippet": "{\"subject\":\"Harden draft lifecycle integrity\",\"name\":\"Harden draft lifecycle integrity\",\"goal\":\"Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) ",
+        "fingerprint": "d58a05ba61cec2c0",
         "immutable": true
       }
     ],
@@ -61,19 +61,19 @@
           "source": "synth-cli",
           "description": "mission observation from synth-cli",
           "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
-          "fingerprint": "39119d6de4423ad9",
+          "fingerprint": "173094d082064d4c",
           "immutable": true
         }
       ],
       [
-        "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+        "obs-expedition-harden-draft-lifecycle-integrity",
         {
-          "id": "d5a0f2d5d96fd498",
-          "observationId": "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+          "id": "cc72256ffcaa4cef",
+          "observationId": "obs-expedition-harden-draft-lifecycle-integrity",
           "source": "synth-cli",
           "description": "expedition observation from synth-cli",
-          "snippet": "{\"subject\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"name\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"goal\":\"Evidence-g",
-          "fingerprint": "fbd179e9fe7de287",
+          "snippet": "{\"subject\":\"Harden draft lifecycle integrity\",\"name\":\"Harden draft lifecycle integrity\",\"goal\":\"Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) ",
+          "fingerprint": "d58a05ba61cec2c0",
           "immutable": true
         }
       ]
@@ -95,9 +95,9 @@
     "version": 1,
     "nodes": [
       [
-        "5db6598041ec665b",
+        "dd212cd7b4bc2a48",
         {
-          "id": "5db6598041ec665b",
+          "id": "dd212cd7b4bc2a48",
           "kind": "mission",
           "name": "Framework Maturation v2",
           "description": "Referenced existing mission",
@@ -113,20 +113,20 @@
         }
       ],
       [
-        "4426655121760d7e",
+        "ab299a625abc916e",
         {
-          "id": "4426655121760d7e",
+          "id": "ab299a625abc916e",
           "kind": "expedition",
-          "name": "Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity",
-          "description": "Evidence-gathering / investigation expedition. Sincere audit of SYNTH as an internal development platform: audit CLI discoverability, agent friendliness, and development continuity; assess what measures are needed to mature into a first-world development platform. Explicitly NOT a feature/tool-producing expedition — output is findings, evidence, and recommendations discussed with the operator.",
-          "missionId": "5db6598041ec665b",
-          "goal": "Evidence-gathering / investigation expedition. Sincere audit of SYNTH as an internal development platform: audit CLI discoverability, agent friendliness, and development continuity; assess what measures are needed to mature into a first-world development platform. Explicitly NOT a feature/tool-producing expedition — output is findings, evidence, and recommendations discussed with the operator.",
+          "name": "Harden draft lifecycle integrity",
+          "description": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
+          "missionId": "dd212cd7b4bc2a48",
+          "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
           "objectiveIds": [],
           "observationIds": [
-            "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity"
+            "obs-expedition-harden-draft-lifecycle-integrity"
           ],
           "evidenceRefs": [
-            "d5a0f2d5d96fd498"
+            "cc72256ffcaa4cef"
           ],
           "confidence": 0.8
         }
@@ -134,12 +134,12 @@
     ],
     "edges": [
       {
-        "id": "efe1674475cf297f",
-        "source": "4426655121760d7e",
-        "target": "5db6598041ec665b",
+        "id": "d09a92c9cad7269a",
+        "source": "ab299a625abc916e",
+        "target": "dd212cd7b4bc2a48",
         "relation": "parent_of",
         "observationIds": [
-          "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity"
+          "obs-expedition-harden-draft-lifecycle-integrity"
         ]
       }
     ],
@@ -151,16 +151,16 @@
           "source": "synth-cli",
           "description": "mission observation from synth-cli",
           "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
-          "fingerprint": "39119d6de4423ad9",
+          "fingerprint": "173094d082064d4c",
           "immutable": true
         },
         {
-          "id": "d5a0f2d5d96fd498",
-          "observationId": "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+          "id": "cc72256ffcaa4cef",
+          "observationId": "obs-expedition-harden-draft-lifecycle-integrity",
           "source": "synth-cli",
           "description": "expedition observation from synth-cli",
-          "snippet": "{\"subject\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"name\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"goal\":\"Evidence-g",
-          "fingerprint": "fbd179e9fe7de287",
+          "snippet": "{\"subject\":\"Harden draft lifecycle integrity\",\"name\":\"Harden draft lifecycle integrity\",\"goal\":\"Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) ",
+          "fingerprint": "d58a05ba61cec2c0",
           "immutable": true
         }
       ],
@@ -173,19 +173,19 @@
             "source": "synth-cli",
             "description": "mission observation from synth-cli",
             "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
-            "fingerprint": "39119d6de4423ad9",
+            "fingerprint": "173094d082064d4c",
             "immutable": true
           }
         ],
         [
-          "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+          "obs-expedition-harden-draft-lifecycle-integrity",
           {
-            "id": "d5a0f2d5d96fd498",
-            "observationId": "obs-expedition-development-platform-audit:-cli-discoverability,-agent-friendliness,-continuity",
+            "id": "cc72256ffcaa4cef",
+            "observationId": "obs-expedition-harden-draft-lifecycle-integrity",
             "source": "synth-cli",
             "description": "expedition observation from synth-cli",
-            "snippet": "{\"subject\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"name\":\"Development Platform Audit: CLI Discoverability, Agent Friendliness, Continuity\",\"goal\":\"Evidence-g",
-            "fingerprint": "fbd179e9fe7de287",
+            "snippet": "{\"subject\":\"Harden draft lifecycle integrity\",\"name\":\"Harden draft lifecycle integrity\",\"goal\":\"Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) ",
+            "fingerprint": "d58a05ba61cec2c0",
             "immutable": true
           }
         ]
