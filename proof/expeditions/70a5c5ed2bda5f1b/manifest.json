@@ -1,12 +1,12 @@
 {
   "expeditionId": "70a5c5ed2bda5f1b",
-  "capturedAt": 1787397603236,
-  "note": "CLI verb-surface audit census + minimal-set proposal",
+  "capturedAt": 1787398915044,
+  "note": "Finalized command set + lazy loader design",
   "attachments": [
     {
       "kind": "attachment",
-      "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/audit-cli.md",
-      "hash": "500c6c2f64edbd9b94010e3ca105d0a943f7ec5b72e2d05ec81ed8fca0c40f8e"
+      "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/refined-cli.md",
+      "hash": "2b92ccb1ccaabb3cd7ee962b8aa93f874b5843f66703a97044954c2311a39a50"
     }
   ]
 }

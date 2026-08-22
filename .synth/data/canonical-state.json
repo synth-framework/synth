@@ -1,6 +1,6 @@
 {
-  "version": 192,
-  "stateHash": "33830794",
+  "version": 193,
+  "stateHash": "1186473825",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -657,12 +657,17 @@
         }
       },
       "createdAt": 184,
-      "updatedAt": 189,
+      "updatedAt": 192,
       "attachments": [
         {
           "kind": "attachment",
           "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/audit-cli.md",
           "hash": "500c6c2f64edbd9b94010e3ca105d0a943f7ec5b72e2d05ec81ed8fca0c40f8e"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/refined-cli.md",
+          "hash": "2b92ccb1ccaabb3cd7ee962b8aa93f874b5843f66703a97044954c2311a39a50"
         }
       ]
     },
@@ -709,5 +714,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 192
+  "lastEventOffset": 193
 }
