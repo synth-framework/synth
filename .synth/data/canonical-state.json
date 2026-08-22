@@ -1,6 +1,6 @@
 {
-  "version": 167,
-  "stateHash": "592726894",
+  "version": 169,
+  "stateHash": "222974757",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -556,7 +556,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Investigate cross-branch event-log linearity during expedition closure",
       "goal": "Formalize the fast-forward-before-finish closure pattern proven live on d8a555db237507e5 and 20d934325ee30c1a: finishing on a canonical branch whose tip is a strict ancestor of main kept the derived event log linear across three branches and avoided replay divergence on later merges. Investigate (1) when lifecycle-event-bearing branches diverge from main and what replay and merge hazards follow, including interaction with existing repair tooling, (2) whether fast-forward reconciliation is always safe and how to detect mechanically when it is not, (3) what the CLI owes operators here: pre-finish ancestry verification, warnings, or automatic reconciliation. Deliverable: evidence-based findings plus zero or more follow-up expedition proposals for automation or documentation",
-      "status": "committed",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -565,10 +565,16 @@
         "scope": [
           "investigation",
           "no-source-changes"
-        ]
+        ],
+        "identity": {
+          "agentId": "synth-cli-7469",
+          "sessionId": "e3b1fb43-3cc3-44e0-9e92-9aa84a1638f7",
+          "approvalMode": "autonomous",
+          "issuedAt": 168
+        }
       },
       "createdAt": 157,
-      "updatedAt": 159
+      "updatedAt": 168
     },
     "e617ccd0ac6d60b8": {
       "id": "e617ccd0ac6d60b8",
@@ -604,5 +610,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 167
+  "lastEventOffset": 169
 }
