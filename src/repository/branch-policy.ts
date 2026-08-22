@@ -46,6 +46,41 @@ export type ExecutionBranchResult = {
   reason?: string
 }
 
+// Canonical-state records consulted when enriching a branch context with
+// human-readable names. Structural subset — any canonical state satisfies it.
+export type ExecutionNameRecords = {
+  missions?: Record<string, { name?: string } | undefined>
+  expeditions?: Record<string, { name?: string; missionId?: string } | undefined>
+}
+
+// Single source of name enrichment for candidate resolution: fills missing
+// mission/expedition names from canonical state records so every layer —
+// the ExecutionGate phase and the CLI fail-fast guard alike — resolves an
+// identical candidate set (preferred slug form + legacy raw-ID form).
+export function enrichExecutionBranchContext(
+  role: "mission" | "expedition",
+  requestId: string,
+  records: ExecutionNameRecords | null | undefined,
+  base?: ExecutionBranchContext,
+): ExecutionBranchContext {
+  if (role === "mission") {
+    return {
+      ...base,
+      missionId: requestId,
+      missionName: base?.missionName ?? records?.missions?.[requestId]?.name,
+    }
+  }
+  const expedition = records?.expeditions?.[requestId]
+  const missionId = base?.missionId ?? String(expedition?.missionId ?? "")
+  return {
+    ...base,
+    expeditionId: requestId,
+    missionId: missionId || undefined,
+    expeditionName: base?.expeditionName ?? expedition?.name,
+    missionName: base?.missionName ?? (missionId ? records?.missions?.[missionId]?.name : undefined),
+  }
+}
+
 function defaultBranchPolicy(): BranchPolicy {
   return {
     mode: "off",

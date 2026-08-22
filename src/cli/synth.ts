@@ -99,7 +99,12 @@ import {
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import { branchNameCandidates } from "../repository/branch-taxonomy.js"
-import { loadBranchPolicyConfig } from "../repository/branch-policy.js"
+import {
+  enrichExecutionBranchContext,
+  loadBranchPolicyConfig,
+  type ExecutionBranchContext,
+  type ExecutionNameRecords,
+} from "../repository/branch-policy.js"
 import * as sdk from "../sdk/index.js"
 import { buildValidationPlan, type CapabilityValidationMap, type ValidationPlan } from "../validation/planner.js"
 import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
@@ -5796,17 +5801,17 @@ async function assertExecutionBranch(
 ): Promise<void> {
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
-  const enriched = { ...context }
-  if (role !== "chore" && (enriched.missionId || enriched.expeditionId)) {
-    try {
-      const state = await sdk.state.readState(process.cwd())
-      const mission = enriched.missionId && state ? state.missions?.[enriched.missionId] : undefined
-      const expedition = enriched.expeditionId && state ? state.expeditions?.[enriched.expeditionId] : undefined
-      if (!enriched.missionName && mission) enriched.missionName = mission.name
-      if (!enriched.expeditionName && expedition) enriched.expeditionName = expedition.name
-    } catch {
-      // State unreadable: fall back to ID-only naming (legacy form) rather
-      // than blocking. The ExecutionGate still enforces at the boundary.
+  const enriched: ExecutionBranchContext = { ...context }
+  if (role !== "chore") {
+    const requestId = role === "mission" ? enriched.missionId : enriched.expeditionId
+    if (requestId) {
+      try {
+        const state = await sdk.state.readState(process.cwd())
+        Object.assign(enriched, enrichExecutionBranchContext(role, requestId, state as ExecutionNameRecords, enriched))
+      } catch {
+        // State unreadable: fall back to ID-only naming (legacy form) rather
+        // than blocking. The ExecutionGate still enforces at the boundary.
+      }
     }
   }
   const result = await adapter.validateExecutionBranch(role, enriched)
@@ -6115,14 +6120,10 @@ async function completeExpedition(
   const state = await ctx.runtime.getState()
   const expedition = state.expeditions[expeditionId]
 
-  // ECOSYSTEM-001: fail fast when the current branch cannot host this
-  // expedition's completion. The ExecutionGate re-enforces inside handleIntent.
-  if (expedition?.missionId) {
-    await assertExecutionBranch("CompleteExpedition", "expedition", {
-      expeditionId,
-      missionId: expedition.missionId,
-    })
-  }
+  // Completion is deliberately not branch-gated (debranching expedition
+  // 4b5694ab06ccb652): it records governance state, not source work, and
+  // the canonical branch may be gone by conclusion time. The ExecutionGate
+  // no longer enforces a branch for CompleteExpedition either.
 
   // Hard lifecycle gate first: Convergence Certification must be present
   // before we even consider evidence or verification. This keeps the error
