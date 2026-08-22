@@ -99,6 +99,7 @@ import {
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import { branchNameCandidates } from "../repository/branch-taxonomy.js"
+import { analyzeEventLogLineage } from "./event-log-lineage.js"
 import {
   enrichExecutionBranchContext,
   loadBranchPolicyConfig,
@@ -6112,6 +6113,58 @@ async function cmdExpeditionCancel(flags: Record<string, string | boolean>) {
   })
 }
 
+// Event-log lineage pre-flight guard (expedition e617ccd0ac6d60b8): block
+// lifecycle mutations that would fork the derived event log across branches.
+// The current working-tree log is compared against every ref's committed log;
+// we accept strict prefixes (stale-but-safe) and supersets (ahead), and block
+// when another ref carries events this log lacks. CLI-layer only — the
+// ExecutionGate stays untouched.
+async function guardEventLogLineage(flags: Record<string, string | boolean>) {
+  if (flags["no-lineage-check"] === true || flags["no-lineage-check"] === "true") return
+  const cwd = process.cwd()
+  let fsMod: typeof import("fs")
+  let pathMod: typeof import("path")
+  let cp: typeof import("child_process")
+  try {
+    fsMod = await import("fs")
+    pathMod = await import("path")
+    cp = await import("child_process")
+  } catch {
+    return
+  }
+  const logRel = pathMod.join(".synth", "data", "event-log.jsonl")
+  if (!fsMod.existsSync(pathMod.join(cwd, logRel))) return
+  let currentLines: string[]
+  try {
+    currentLines = fsMod.readFileSync(pathMod.join(cwd, logRel), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean)
+  } catch {
+    return
+  }
+  let refs: string[]
+  try {
+    refs = cp.execFileSync("git", ["for-each-ref", "--format=%(refname)"], { cwd, encoding: "utf-8" }).trim().split("\n").filter(Boolean)
+  } catch {
+    return
+  }
+  const refLogs: Record<string, string[]> = {}
+  for (const ref of refs) {
+    try {
+      const blob = cp.execFileSync("git", ["show", `${ref}:${logRel}`], { cwd, encoding: "utf-8" })
+      refLogs[ref] = blob.split("\n").map((l) => l.trim()).filter(Boolean)
+    } catch {
+      // Ref does not track the derived state file yet.
+    }
+  }
+  const analysis = analyzeEventLogLineage(currentLines, refLogs)
+  if (analysis.diverged) {
+    printError(`EVENT_LOG_DIVERGENCE: ${analysis.guidance}`, {
+      code: "EventLogDivergence",
+      category: "governance",
+      suggestion: analysis.guidance,
+    })
+  }
+}
+
 async function completeExpedition(
   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   expeditionId: string,
@@ -7658,6 +7711,9 @@ async function main() {
 
     case "expedition": {
       const sub = positional[1]
+      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel"].includes(sub)) {
+        await guardEventLogLineage(flags)
+      }
       if (sub === "create") await cmdExpeditionCreate(flags)
       else if (sub === "approve") await cmdExpeditionApprove(flags)
       else if (sub === "commit") await cmdExpeditionCommit(flags)
