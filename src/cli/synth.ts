@@ -6142,12 +6142,33 @@ async function guardEventLogLineage(flags: Record<string, string | boolean>) {
   } catch {
     return
   }
-  let refs: string[]
+  // Scope the comparison to the SAME expedition's lifecycle branches only.
+  // Branch naming embeds the expedition short-id:
+  //   expedition/<mission-slug>-<missionId>/<subject-slug>-<expeditionId>
+  // Comparing against the entire ref space (esp. hundreds of remote branches)
+  // both false-blocks on unrelated branches and is pathologically slow. We
+  // only compare sibling branches that carry this expedition's id.
+  let currentRef: string
+  let shortId = ""
   try {
-    refs = cp.execFileSync("git", ["for-each-ref", "--format=%(refname)"], { cwd, encoding: "utf-8" }).trim().split("\n").filter(Boolean)
+    currentRef = cp.execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd, encoding: "utf-8" }).trim()
   } catch {
     return
   }
+  if (currentRef === "HEAD") return
+  const lastSeg = (currentRef.split("/").pop() || "").split("-").pop() || ""
+  if (/^[0-9a-f]{7,}$/.test(lastSeg)) shortId = lastSeg
+  if (!shortId) return
+  const currentFull = currentRef.startsWith("refs/heads/") ? currentRef : `refs/heads/${currentRef}`
+  let refs: string[]
+  try {
+    refs = cp.execFileSync("git", ["for-each-ref", "--format=%(refname)", "refs/heads"], { cwd, encoding: "utf-8" })
+      .trim().split("\n").filter(Boolean)
+      .filter((r) => r !== currentFull && r.includes(shortId))
+  } catch {
+    return
+  }
+  if (refs.length === 0) return
   const refLogs: Record<string, string[]> = {}
   for (const ref of refs) {
     try {
