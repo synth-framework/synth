@@ -1,6 +1,6 @@
 {
-  "version": 183,
-  "stateHash": "1131181655",
+  "version": 187,
+  "stateHash": "294315122",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -44,11 +44,13 @@
         "4b5694ab06ccb652",
         "bc9c51e0674ec0ef",
         "3c84f699a7c932fc",
-        "e617ccd0ac6d60b8"
+        "e617ccd0ac6d60b8",
+        "71ce984c9d3dd48f",
+        "70a5c5ed2bda5f1b"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 160,
+      "updatedAt": 184,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -619,6 +621,34 @@
       },
       "createdAt": 160,
       "updatedAt": 182
+    },
+    "71ce984c9d3dd48f": {
+      "id": "71ce984c9d3dd48f",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
+      "goal": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 183,
+      "updatedAt": 183
+    },
+    "70a5c5ed2bda5f1b": {
+      "id": "70a5c5ed2bda5f1b",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Audit CLI command surface and decouple synth.js",
+      "goal": "INVESTIGATION. Survey every CLI verb/subcommand (mission, expedition, evidence, validate, explain, docs, bootstrap, etc.) and quantify redundancy: overlapping procedures that can collapse into a smaller, memorable command set, reducing the operator 'knowledge quorum'. Map findings against existing related expeditions so the audit extends rather than duplicates them: bc9c51e0 (termination-model unification), dac069e8 (lifecycle simplification), ceaa59bf (bootstrap-performance). Identify where synth.js loads the full machinery (13-step bootstrap, all adapters, Mission Studio, Planning Cognition) on every invocation, and propose decoupling: lazy/deferred per-command loading, command-group entry points, and a thinner default path. Deliverable: a written audit plus follow-up expedition drafts minted from concrete findings (e.g. verb consolidation, lazy CLI loader).",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 184,
+      "updatedAt": 186
     }
   },
   "objectives": {},
@@ -635,5 +665,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 183
+  "lastEventOffset": 187
 }
