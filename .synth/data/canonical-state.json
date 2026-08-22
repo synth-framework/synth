@@ -1,6 +1,6 @@
 {
-  "version": 187,
-  "stateHash": "294315122",
+  "version": 195,
+  "stateHash": "1209330862",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -46,11 +46,13 @@
         "3c84f699a7c932fc",
         "e617ccd0ac6d60b8",
         "71ce984c9d3dd48f",
-        "70a5c5ed2bda5f1b"
+        "70a5c5ed2bda5f1b",
+        "e5fdf75656be46bb",
+        "68b59f0e6029b7ac"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 184,
+      "updatedAt": 191,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -641,14 +643,69 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Audit CLI command surface and decouple synth.js",
       "goal": "INVESTIGATION. Survey every CLI verb/subcommand (mission, expedition, evidence, validate, explain, docs, bootstrap, etc.) and quantify redundancy: overlapping procedures that can collapse into a smaller, memorable command set, reducing the operator 'knowledge quorum'. Map findings against existing related expeditions so the audit extends rather than duplicates them: bc9c51e0 (termination-model unification), dac069e8 (lifecycle simplification), ceaa59bf (bootstrap-performance). Identify where synth.js loads the full machinery (13-step bootstrap, all adapters, Mission Studio, Planning Cognition) on every invocation, and propose decoupling: lazy/deferred per-command loading, command-group entry points, and a thinner default path. Deliverable: a written audit plus follow-up expedition drafts minted from concrete findings (e.g. verb consolidation, lazy CLI loader).",
-      "status": "committed",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-25481",
+          "sessionId": "075dc769-e93e-4327-9646-8dc86d19236b",
+          "approvalMode": "autonomous",
+          "issuedAt": 188
+        }
+      },
       "createdAt": 184,
-      "updatedAt": 186
+      "updatedAt": 192,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/audit-cli.md",
+          "hash": "500c6c2f64edbd9b94010e3ca105d0a943f7ec5b72e2d05ec81ed8fca0c40f8e"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/refined-cli.md",
+          "hash": "2b92ccb1ccaabb3cd7ee962b8aa93f874b5843f66703a97044954c2311a39a50"
+        }
+      ]
+    },
+    "e5fdf75656be46bb": {
+      "id": "e5fdf75656be46bb",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Decouple synth.js: lazy-load command groups and thin CLI entrypoint",
+      "goal": "Refactor src/cli/synth.ts so the top-level entrypoint performs only argument parsing + dispatch. Each command group (expedition, mission, program, explain, verify, docs, etc.) is loaded lazily on first invocation; the 13-step bootstrap, all adapters, Mission Studio, and Planning Cognition are imported only by commands that need them. Measurable target: cold-start of 'synth version' / 'synth status' must not load adapters or Mission Studio. Deliverable: lazy loader + per-group entrypoints + a cold-start benchmark.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "refinementId": "ad6eefeda2124ac6",
+        "refinementNote": "FINAL DESIGN: thin entrypoint parses argv[2] then dynamic import('./groups/<group>.js'); Mission Studio/Planning Cognition/adapters load only inside the group that needs them. Command-weight gate: light groups (version/help/status/explain/docs) SKIP the 13-step bootstrap; heavy groups run it inside their module. Benchmark: version/help <100ms, status/explain <300ms cold. Implement BEFORE verb consolidation (restructures dispatch first).",
+        "refinementAt": 193
+      },
+      "createdAt": 190,
+      "updatedAt": 193
+    },
+    "68b59f0e6029b7ac": {
+      "id": "68b59f0e6029b7ac",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Consolidate CLI verbs into a minimal, memorable command set",
+      "goal": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "refinementId": "279e3a7297796b46",
+        "refinementNote": "FINAL DESIGN: one shared verb vocabulary across mission+expedition (create->approve->start->finish --disposition complete|archive|cancel; evidence/show/list/report/move/delete explicit). check=validate; check --full absorbs validate --full + verify(no-sub) + govern validation; check --repair=repair. govern=release gate (build+test+audit+proof). verify=signatures only. status absorbs checkpoint; explain=deep; init/--import absorbs discover+migrate. doctor absorbs support verbs. Implement AFTER loader lands.",
+        "refinementAt": 194
+      },
+      "createdAt": 191,
+      "updatedAt": 194
     }
   },
   "objectives": {},
@@ -665,5 +722,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 187
+  "lastEventOffset": 195
 }

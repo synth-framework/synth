@@ -1,0 +1,12 @@
+{
+  "expeditionId": "70a5c5ed2bda5f1b",
+  "capturedAt": 1787398915044,
+  "note": "Finalized command set + lazy loader design",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/refined-cli.md",
+      "hash": "2b92ccb1ccaabb3cd7ee962b8aa93f874b5843f66703a97044954c2311a39a50"
+    }
+  ]
+}
