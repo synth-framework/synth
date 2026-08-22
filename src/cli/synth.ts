@@ -7500,7 +7500,7 @@ async function cmdMissionVerifyCharter(flags: Record<string, string | boolean>) 
   })
 }
 
-async function main() {
+export async function main() {
   const rawArgs = process.argv.slice(2)
 
   if (rawArgs.length === 0) {
@@ -7908,6 +7908,15 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  printError(err instanceof Error ? err.message : String(err))
-})
+// SYNTH-LOADER-001: only run when executed directly (not when imported lazily by
+// the thin entrypoint). The entrypoint calls main() itself after dynamic import.
+const isMainModule = (): boolean => {
+  if (!process.argv[1]) return false
+  return path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+}
+
+if (isMainModule()) {
+  main().catch((err) => {
+    printError(err instanceof Error ? err.message : String(err))
+  })
+}
