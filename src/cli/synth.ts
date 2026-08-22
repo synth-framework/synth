@@ -99,6 +99,7 @@ import {
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
 import { branchNameCandidates } from "../repository/branch-taxonomy.js"
+import { analyzeEventLogLineage } from "./event-log-lineage.js"
 import {
   enrichExecutionBranchContext,
   loadBranchPolicyConfig,
@@ -6112,6 +6113,87 @@ async function cmdExpeditionCancel(flags: Record<string, string | boolean>) {
   })
 }
 
+// Event-log lineage pre-flight guard (expedition e617ccd0ac6d60b8): block
+// lifecycle mutations that would fork the derived event log across branches.
+// The current working-tree log is compared against every ref's committed log;
+// we accept strict prefixes (stale-but-safe) and supersets (ahead), and block
+// when another ref carries events this log lacks. CLI-layer only — the
+// ExecutionGate stays untouched.
+async function guardEventLogLineage(flags: Record<string, string | boolean>) {
+  if (flags["no-lineage-check"] === true || flags["no-lineage-check"] === "true") return
+  const cwd = process.cwd()
+  let fsMod: typeof import("fs")
+  let pathMod: typeof import("path")
+  let cp: typeof import("child_process")
+  try {
+    fsMod = await import("fs")
+    pathMod = await import("path")
+    cp = await import("child_process")
+  } catch {
+    return
+  }
+  const logRel = pathMod.join(".synth", "data", "event-log.jsonl")
+  // Current branch: read through the SDK's read-only event accessor
+  // (never the raw file — SDK state/events are the sanctioned read path).
+  let currentLines: string[]
+  try {
+    const events = await sdk.events.readEvents(cwd)
+    currentLines = events.map((e) => JSON.stringify(e))
+  } catch {
+    return
+  }
+  // Scope the comparison to the SAME expedition's lifecycle branches only.
+  // Branch naming embeds the expedition short-id:
+  //   expedition/<mission-slug>-<missionId>/<subject-slug>-<expeditionId>
+  // Comparing against the entire ref space (esp. hundreds of remote branches)
+  // both false-blocks on unrelated branches and is pathologically slow. We
+  // only compare sibling branches that carry this expedition's id.
+  let currentRef: string
+  let shortId = ""
+  try {
+    currentRef = cp.execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd, encoding: "utf-8" }).trim()
+  } catch {
+    return
+  }
+  if (currentRef === "HEAD") return
+  const lastSeg = (currentRef.split("/").pop() || "").split("-").pop() || ""
+  if (/^[0-9a-f]{7,}$/.test(lastSeg)) shortId = lastSeg
+  if (!shortId) return
+  const currentFull = currentRef.startsWith("refs/heads/") ? currentRef : `refs/heads/${currentRef}`
+  let refs: string[]
+  try {
+    refs = cp.execFileSync("git", ["for-each-ref", "--format=%(refname)", "refs/heads"], { cwd, encoding: "utf-8" })
+      .trim().split("\n").filter(Boolean)
+      .filter((r) => r !== currentFull && r.includes(shortId))
+  } catch {
+    return
+  }
+  if (refs.length === 0) return
+  const refLogs: Record<string, string[]> = {}
+  for (const ref of refs) {
+    try {
+      const blob = cp.execFileSync("git", ["show", `${ref}:${logRel}`], { cwd, encoding: "utf-8" })
+      refLogs[ref] = blob
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+        // Canonicalize so comparison is independent of on-disk whitespace:
+        // the SDK side above is JSON.stringify'd identically.
+        .map((l) => JSON.stringify(JSON.parse(l)))
+    } catch {
+      // Ref does not track the derived state file yet, or cannot be read.
+    }
+  }
+  const analysis = analyzeEventLogLineage(currentLines, refLogs)
+  if (analysis.diverged) {
+    printError(`EVENT_LOG_DIVERGENCE: ${analysis.guidance}`, {
+      code: "EventLogDivergence",
+      category: "governance",
+      suggestion: analysis.guidance,
+    })
+  }
+}
+
 async function completeExpedition(
   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   expeditionId: string,
@@ -7658,6 +7740,9 @@ async function main() {
 
     case "expedition": {
       const sub = positional[1]
+      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel"].includes(sub)) {
+        await guardEventLogLineage(flags)
+      }
       if (sub === "create") await cmdExpeditionCreate(flags)
       else if (sub === "approve") await cmdExpeditionApprove(flags)
       else if (sub === "commit") await cmdExpeditionCommit(flags)
