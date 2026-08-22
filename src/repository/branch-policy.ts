@@ -161,8 +161,10 @@ export function resolveExecutionBranch(
     missionId: context.missionId,
     expeditionId: role === "expedition" ? context.expeditionId : undefined,
   })
+  // Cite every accepted canonical form so the operator can land on any
+  // of them; the first candidate remains the preferred checkout target.
   const reason = ruleValidation.valid
-    ? `${role} execution must run on ${requiredBranch}; current branch is ${currentBranch}`
+    ? `${role} execution must run on ${canonicalNames.join(" or ")}; current branch is ${currentBranch}`
     : `Cannot derive canonical branch: ${ruleValidation.errors.join("; ")}`
 
   return { ...base, ok: false, requiredBranch, reason }

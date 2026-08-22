@@ -265,14 +265,22 @@ export class ExecutionGate {
       if (branchGateRole) {
         const branchCheck = await this.runPhase("EXECUTION_BRANCH_CHECK", async () => {
           const requestId = String(invocation.payload.id ?? invocation.payload.missionId ?? invocation.payload.expeditionId ?? "")
-          const roleId: { missionId?: string; expeditionId?: string; capability?: string } =
+          // Enrich the role context with the mission/expedition names from
+          // canonical state so candidate resolution matches the CLI layer:
+          // both must accept every canonical form (slug + legacy raw-ID).
+          const expeditionName = currentState.expeditions?.[requestId]?.name
+          const expeditionMissionId = String(currentState.expeditions?.[requestId]?.missionId ?? "")
+          const missionName = currentState.missions?.[expeditionMissionId || requestId]?.name
+          const roleId: { missionId?: string; expeditionId?: string; missionName?: string; expeditionName?: string; capability?: string } =
             branchGateRole === "mission"
-              ? { missionId: requestId }
+              ? { missionId: requestId, missionName }
               : branchGateRole === "chore"
                 ? { capability: invocation.capability }
                 : {
                     expeditionId: requestId,
-                    missionId: String(currentState.expeditions?.[requestId]?.missionId ?? ""),
+                    missionId: expeditionMissionId,
+                    expeditionName,
+                    missionName,
                   }
           const validateExecutionBranch = this.repositoryAdapter.validateExecutionBranch?.bind(this.repositoryAdapter)
           if (!validateExecutionBranch) {
