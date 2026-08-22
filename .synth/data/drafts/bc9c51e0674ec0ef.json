@@ -1,0 +1,209 @@
+{
+  "id": "bc9c51e0674ec0ef",
+  "createdAt": 1787360421328,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787360421328
+    },
+    {
+      "id": "obs-expedition-unify-expedition-and-mission-termination-commands",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Unify expedition and mission termination commands",
+        "name": "Unify expedition and mission termination commands",
+        "goal": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Unify expedition and mission termination commands",
+      "confidence": "high",
+      "timestamp": 1787360421328
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "139e7bbbcb094382",
+        "immutable": true
+      },
+      {
+        "id": "64d024fc59a8c98c",
+        "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+        "fingerprint": "ad28733bbaef3436",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "139e7bbbcb094382",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-unify-expedition-and-mission-termination-commands",
+        {
+          "id": "64d024fc59a8c98c",
+          "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+          "fingerprint": "ad28733bbaef3436",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "641eeb4236953b89",
+        {
+          "id": "641eeb4236953b89",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "89433f71a415870e",
+        {
+          "id": "89433f71a415870e",
+          "kind": "expedition",
+          "name": "Unify expedition and mission termination commands",
+          "description": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+          "missionId": "641eeb4236953b89",
+          "goal": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-unify-expedition-and-mission-termination-commands"
+          ],
+          "evidenceRefs": [
+            "64d024fc59a8c98c"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "c2b4264b64a9646d",
+        "source": "89433f71a415870e",
+        "target": "641eeb4236953b89",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-unify-expedition-and-mission-termination-commands"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "139e7bbbcb094382",
+          "immutable": true
+        },
+        {
+          "id": "64d024fc59a8c98c",
+          "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+          "fingerprint": "ad28733bbaef3436",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "139e7bbbcb094382",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-unify-expedition-and-mission-termination-commands",
+          {
+            "id": "64d024fc59a8c98c",
+            "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+            "fingerprint": "ad28733bbaef3436",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
