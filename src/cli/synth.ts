@@ -6133,10 +6133,12 @@ async function guardEventLogLineage(flags: Record<string, string | boolean>) {
     return
   }
   const logRel = pathMod.join(".synth", "data", "event-log.jsonl")
-  if (!fsMod.existsSync(pathMod.join(cwd, logRel))) return
+  // Current branch: read through the SDK's read-only event accessor
+  // (never the raw file — SDK state/events are the sanctioned read path).
   let currentLines: string[]
   try {
-    currentLines = fsMod.readFileSync(pathMod.join(cwd, logRel), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean)
+    const events = await sdk.events.readEvents(cwd)
+    currentLines = events.map((e) => JSON.stringify(e))
   } catch {
     return
   }
@@ -6150,9 +6152,15 @@ async function guardEventLogLineage(flags: Record<string, string | boolean>) {
   for (const ref of refs) {
     try {
       const blob = cp.execFileSync("git", ["show", `${ref}:${logRel}`], { cwd, encoding: "utf-8" })
-      refLogs[ref] = blob.split("\n").map((l) => l.trim()).filter(Boolean)
+      refLogs[ref] = blob
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+        // Canonicalize so comparison is independent of on-disk whitespace:
+        // the SDK side above is JSON.stringify'd identically.
+        .map((l) => JSON.stringify(JSON.parse(l)))
     } catch {
-      // Ref does not track the derived state file yet.
+      // Ref does not track the derived state file yet, or cannot be read.
     }
   }
   const analysis = analyzeEventLogLineage(currentLines, refLogs)
