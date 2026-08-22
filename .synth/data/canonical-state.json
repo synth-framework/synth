@@ -1,6 +1,6 @@
 {
-  "version": 199,
-  "stateHash": "1496028618",
+  "version": 203,
+  "stateHash": "197483166",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -604,7 +604,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Verify event-log lineage before lifecycle mutations",
       "goal": "Guard every lifecycle mutation (expedition approve, commit, start, finish, complete, archive, cancel) against forking the derived event log across branches: before mutating, compare the current branch's .synth/data/event-log.jsonl against the richest known log among local refs and origin/main; accept when it is a strict prefix (stale-but-safe, matching the proven fast-forward-before-finish protocol from investigation 3c84f699a7c932fc), block or warn when other refs carry exclusive events the current log lacks, and print reconciliation guidance (fast-forward when ancestor, explicit merge order otherwise). Implement in the CLI pre-flight layer, not inside the ExecutionGate, which stays untouched",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -622,7 +622,14 @@
         }
       },
       "createdAt": 160,
-      "updatedAt": 182
+      "updatedAt": 201,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/e617ccd0ac6d60b8/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "71ce984c9d3dd48f": {
       "id": "71ce984c9d3dd48f",
@@ -727,5 +734,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 199
+  "lastEventOffset": 203
 }
