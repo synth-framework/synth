@@ -5764,9 +5764,10 @@ async function ensureExpeditionBranch(
   if (!status.initialized) {
     return { branch: "", created: false }
   }
+  const roleContext = enrichExecutionBranchContext("expedition", expeditionId, state, { missionId })
   const candidates = branchNameCandidates("expedition", {
-    mission: { id: missionId, name: state.missions?.[missionId]?.name },
-    expedition: { id: expeditionId, name: state.expeditions?.[expeditionId]?.name },
+    mission: { id: missionId, name: roleContext.missionName },
+    expedition: { id: expeditionId, name: roleContext.expeditionName },
   })
   const canonical = candidates[0]
   if (candidates.includes(status.branch)) {
@@ -5801,13 +5802,13 @@ async function assertExecutionBranch(
 ): Promise<void> {
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
-  const enriched: ExecutionBranchContext = { ...context }
+  let enriched: ExecutionBranchContext = { ...context }
   if (role !== "chore") {
     const requestId = role === "mission" ? enriched.missionId : enriched.expeditionId
     if (requestId) {
       try {
         const state = await sdk.state.readState(process.cwd())
-        Object.assign(enriched, enrichExecutionBranchContext(role, requestId, state as ExecutionNameRecords, enriched))
+        enriched = enrichExecutionBranchContext(role, requestId, state as ExecutionNameRecords, enriched)
       } catch {
         // State unreadable: fall back to ID-only naming (legacy form) rather
         // than blocking. The ExecutionGate still enforces at the boundary.
