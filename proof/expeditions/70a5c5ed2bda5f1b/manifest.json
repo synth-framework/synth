@@ -1,12 +1,12 @@
 {
   "expeditionId": "70a5c5ed2bda5f1b",
-  "capturedAt": 1787398915044,
-  "note": "Finalized command set + lazy loader design",
+  "capturedAt": 1787400807549,
+  "note": "Auto-attached by synth expedition finish",
   "attachments": [
     {
-      "kind": "attachment",
-      "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/refined-cli.md",
-      "hash": "2b92ccb1ccaabb3cd7ee962b8aa93f874b5843f66703a97044954c2311a39a50"
+      "kind": "git-diff",
+      "path": "proof/expeditions/70a5c5ed2bda5f1b/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ]
 }
