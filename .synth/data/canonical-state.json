@@ -1,6 +1,6 @@
 {
-  "version": 177,
-  "stateHash": "251044073",
+  "version": 181,
+  "stateHash": "842020199",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -332,7 +332,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Investigate 13 Event System Bureaucracy",
       "goal": "Investigate and propose strategies to alleviate the bureaucracy of the 13-event system in Synth development",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -346,12 +346,17 @@
         }
       },
       "createdAt": 87,
-      "updatedAt": 94,
+      "updatedAt": 179,
       "attachments": [
         {
           "kind": "git-diff",
           "path": "proof/expeditions/0bd85610bca114c9/git-diff.patch",
           "hash": "8669c3795d235a9b8741ac3b2cd02f3bbf36c478e7b8b340f13efa39273a00d9"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/0bd85610bca114c9/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       ]
     },
@@ -624,5 +629,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 177
+  "lastEventOffset": 181
 }
