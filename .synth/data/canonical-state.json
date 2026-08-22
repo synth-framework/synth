@@ -1,6 +1,6 @@
 {
-  "version": 146,
-  "stateHash": "706264939",
+  "version": 157,
+  "stateHash": "1301109810",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -433,7 +433,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Harden draft lifecycle integrity",
       "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -450,14 +450,21 @@
         "refinementAt": 136
       },
       "createdAt": 131,
-      "updatedAt": 136
+      "updatedAt": 148,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/d8a555db237507e5/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "20d934325ee30c1a": {
       "id": "20d934325ee30c1a",
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Resolve ExecutionGate legacy-only branch enforcement",
       "goal": "Prove that execution branch enforcement accepts every canonical branch form the CLI generates: the EXECUTION_BRANCH_CHECK phase computes candidates without mission/expedition names and demands only the legacy raw-ID form (expedition/<missionId>/<expeditionId>), while ensureExpeditionBranch and assertExecutionBranch accept the preferred slug form — so starting any expedition on its slug-form branch is rejected by the gate that the CLI itself satisfied. Enrich the gate check with names from canonical state so both layers resolve identical candidate sets; cover with tests/execution-branch-gate.test.js",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -477,14 +484,21 @@
         }
       },
       "createdAt": 137,
-      "updatedAt": 141
+      "updatedAt": 152,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/20d934325ee30c1a/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "4b5694ab06ccb652": {
       "id": "4b5694ab06ccb652",
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Debranch expedition completion",
       "goal": "Prove that concluding an expedition never requires its canonical branch to exist: CompleteExpedition leaves the branch-gated set (only StartExpedition remains gated, since its branch exists by construction at start time) because a completion-time branch may already be merged and deleted, may never have existed, or may be unavailable on another checkout. Align the CLI guard, ExecutionGate phase, and checkpoint step; update tests/execution-branch-gate.test.js",
-      "status": "approved",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -494,10 +508,16 @@
           "src/control/execution-gate.ts",
           "src/cli/synth.ts",
           "tests/execution-branch-gate.test.js"
-        ]
+        ],
+        "identity": {
+          "agentId": "synth-cli-96098",
+          "sessionId": "c2cd82d5-8e33-4bfa-b22e-d7e2cd4462f4",
+          "approvalMode": "autonomous",
+          "issuedAt": 156
+        }
       },
       "createdAt": 142,
-      "updatedAt": 144
+      "updatedAt": 156
     },
     "bc9c51e0674ec0ef": {
       "id": "bc9c51e0674ec0ef",
@@ -537,5 +557,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 146
+  "lastEventOffset": 157
 }

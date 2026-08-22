@@ -26,6 +26,11 @@ import type {
 } from "../types/index.js"
 import { isDerivedPath, matchesScope, toProjectRelativePath } from "../sdk/files/derived.js"
 import {
+  enrichExecutionBranchContext,
+  type ExecutionBranchContext,
+  type ExecutionNameRecords,
+} from "../repository/branch-policy.js"
+import {
   isRuntimeDataPath as sdkIsRuntimeDataPath,
   projectRootFromDataDir
 } from "../sdk/paths/index.js"
@@ -243,11 +248,15 @@ export class ExecutionGate {
       // the current branch against the canonical branch for the operation.
       // Only operations that authorize execution of governed work are gated:
       //   - ApproveMission (mission role) -> must run on mission/<missionId>
-      //   - StartExpedition / CompleteExpedition (expedition role)
+      //   - StartExpedition (expedition role)
       //     -> must run on expedition/<missionId>/<expeditionId>
       //   - chore invocations (chore role) -> permitted on main only when the
       //     operator enabled allowChoreOnMain and the capability is allowlisted.
       // Creation and commit are planning steps and remain branch-agnostic.
+      // Completion is deliberately NOT gated: it records governance state,
+      // not source work, and by conclusion time the canonical branch may be
+      // merged and deleted, may never have existed, or may be unavailable
+      // on another checkout.
       // When the policy is off (default), the adapter returns ok and this
       // phase always passes. Non-git projects degrade to observation.
       const isChoreInvocation =
@@ -259,29 +268,18 @@ export class ExecutionGate {
         ? ("chore" as const)
         : invocation.capability === "ApproveMission"
           ? ("mission" as const)
-          : invocation.capability === "StartExpedition" || invocation.capability === "CompleteExpedition"
+          : invocation.capability === "StartExpedition"
             ? ("expedition" as const)
             : undefined
       if (branchGateRole) {
         const branchCheck = await this.runPhase("EXECUTION_BRANCH_CHECK", async () => {
           const requestId = String(invocation.payload.id ?? invocation.payload.missionId ?? invocation.payload.expeditionId ?? "")
-          // Enrich the role context with the mission/expedition names from
-          // canonical state so candidate resolution matches the CLI layer:
-          // both must accept every canonical form (slug + legacy raw-ID).
-          const expeditionName = currentState.expeditions?.[requestId]?.name
-          const expeditionMissionId = String(currentState.expeditions?.[requestId]?.missionId ?? "")
-          const missionName = currentState.missions?.[expeditionMissionId || requestId]?.name
-          const roleId: { missionId?: string; expeditionId?: string; missionName?: string; expeditionName?: string; capability?: string } =
-            branchGateRole === "mission"
-              ? { missionId: requestId, missionName }
-              : branchGateRole === "chore"
-                ? { capability: invocation.capability }
-                : {
-                    expeditionId: requestId,
-                    missionId: expeditionMissionId,
-                    expeditionName,
-                    missionName,
-                  }
+          // Enrich via the shared branch-policy helper so this phase and the
+          // CLI guard resolve an identical candidate set (slug + legacy).
+          const roleId: ExecutionBranchContext =
+            branchGateRole === "chore"
+              ? { capability: invocation.capability }
+              : enrichExecutionBranchContext(branchGateRole, requestId, currentState as ExecutionNameRecords)
           const validateExecutionBranch = this.repositoryAdapter.validateExecutionBranch?.bind(this.repositoryAdapter)
           if (!validateExecutionBranch) {
             return { passed: true, role: branchGateRole, strategy: "observed" }

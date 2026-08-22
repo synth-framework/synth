@@ -199,6 +199,37 @@ async function testEnforceAcceptsLegacyCanonicalBranchForm() {
   console.log("[PASS] enforce still accepts the legacy raw-ID canonical branch form")
 }
 
+async function testCompleteExpeditionIsNotBranchGated() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-complete-"))
+  gitInit(root)
+  readConfig(root)
+  const ctx = await makeCtx(root)
+
+  const missionId = "m-complete-debranch"
+  const expeditionId = "e-complete-debranch-01"
+  await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
+  const names = expeditionBranchNames(missionId, `Mission ${missionId}`, expeditionId, `Expedition ${expeditionId}`)
+
+  // Starting remains branch-gated: run it on the canonical slug branch.
+  checkout(root, names.slug)
+  const started = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
+  assert.equal(started.status, "ok", `StartExpedition should pass on canonical branch: ${started.error}`)
+
+  // Completion records governance state, not source work. By the time an
+  // expedition concludes, its canonical branch may be merged and deleted,
+  // may never have existed (trunk-based work), or may be unavailable on
+  // another checkout. The gate must not demand its presence here. The
+  // separate clean-tree readiness gate still applies, so satisfy it first.
+  switchToMain(root)
+  execFileSync("git", ["add", "-A"], { cwd: root, stdio: "pipe" })
+  execFileSync("git", ["commit", "-m", "state"], { cwd: root, stdio: "pipe" })
+  const completed = await ctx.api.handleIntent({ actor: "test", capability: "CompleteExpedition", payload: { id: expeditionId } })
+  assert.equal(completed.status, "ok", `CompleteExpedition must not be branch-gated on main: ${completed.error}`)
+
+  fs.rmSync(root, { recursive: true, force: true })
+  console.log("[PASS] completion is accepted off the canonical expedition branch")
+}
+
 async function testEnforceApproveMissionBlocksOnMain() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-mission-"))
   gitInit(root)
@@ -442,6 +473,7 @@ async function testCliStartOnCanonicalBranchDoesNotRecreate() {
 async function main() {
   await testEnforceStartExpeditionBlocksOnMain()
   await testEnforceAcceptsLegacyCanonicalBranchForm()
+  await testCompleteExpeditionIsNotBranchGated()
   await testEnforceApproveMissionBlocksOnMain()
   await testDefaultPolicyNeverBlocks()
   await testChoreLaneAllowsAllowlistedCapabilityOnMain()
