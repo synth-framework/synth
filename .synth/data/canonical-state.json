@@ -1,6 +1,6 @@
 {
-  "version": 140,
-  "stateHash": "1943192452",
+  "version": 142,
+  "stateHash": "1256546551",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -455,7 +455,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Resolve ExecutionGate legacy-only branch enforcement",
       "goal": "Prove that execution branch enforcement accepts every canonical branch form the CLI generates: the EXECUTION_BRANCH_CHECK phase computes candidates without mission/expedition names and demands only the legacy raw-ID form (expedition/<missionId>/<expeditionId>), while ensureExpeditionBranch and assertExecutionBranch accept the preferred slug form — so starting any expedition on its slug-form branch is rejected by the gate that the CLI itself satisfied. Enrich the gate check with names from canonical state so both layers resolve identical candidate sets; cover with tests/execution-branch-gate.test.js",
-      "status": "committed",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -466,10 +466,16 @@
           "src/repository/branch-policy.ts",
           "src/cli/synth.ts",
           "tests/execution-branch-gate.test.js"
-        ]
+        ],
+        "identity": {
+          "agentId": "synth-cli-94222",
+          "sessionId": "8c92056c-c4b0-46c8-8b6c-df27dbc1022a",
+          "approvalMode": "autonomous",
+          "issuedAt": 141
+        }
       },
       "createdAt": 137,
-      "updatedAt": 139
+      "updatedAt": 141
     }
   },
   "objectives": {},
@@ -486,5 +492,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 140
+  "lastEventOffset": 142
 }
