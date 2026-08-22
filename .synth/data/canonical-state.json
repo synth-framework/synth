@@ -1,6 +1,6 @@
 {
-  "version": 189,
-  "stateHash": "167809702",
+  "version": 190,
+  "stateHash": "1888267396",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -655,7 +655,14 @@
         }
       },
       "createdAt": 184,
-      "updatedAt": 188
+      "updatedAt": 189,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/audit-cli.md",
+          "hash": "500c6c2f64edbd9b94010e3ca105d0a943f7ec5b72e2d05ec81ed8fca0c40f8e"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -672,5 +679,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 189
+  "lastEventOffset": 190
 }
