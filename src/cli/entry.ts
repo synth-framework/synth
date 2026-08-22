@@ -8,8 +8,9 @@
 import { readFileSync } from "fs"
 import { fileURLToPath } from "url"
 import path from "path"
+import { runStatus } from "./status-light.js"
 
-const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h"])
+const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
 
 function projectVersion(): string {
   const pkgPath = fileURLToPath(new URL("../../package.json", import.meta.url))
@@ -32,6 +33,10 @@ export async function run(): Promise<void> {
   const command = process.argv[2] ?? "help"
 
   if (LIGHT_COMMANDS.has(command)) {
+    if (command === "status") {
+      await runStatus()
+      return
+    }
     if (command === "help" || command === "--help" || command === "-h") {
       printHelp()
     } else {
