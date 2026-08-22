@@ -1,0 +1,209 @@
+{
+  "id": "68b59f0e6029b7ac",
+  "createdAt": 1787397632539,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787397632539
+    },
+    {
+      "id": "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Consolidate CLI verbs into a minimal, memorable command set",
+        "name": "Consolidate CLI verbs into a minimal, memorable command set",
+        "goal": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Consolidate CLI verbs into a minimal, memorable command set",
+      "confidence": "high",
+      "timestamp": 1787397632539
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "14a4bf51954576de",
+        "immutable": true
+      },
+      {
+        "id": "75b6ebb3dcf15ba7",
+        "observationId": "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"name\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"goal\":\"Propose and implement a reduced command vocabulary",
+        "fingerprint": "4284aeacaee20443",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "14a4bf51954576de",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+        {
+          "id": "75b6ebb3dcf15ba7",
+          "observationId": "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"name\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"goal\":\"Propose and implement a reduced command vocabulary",
+          "fingerprint": "4284aeacaee20443",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "c1c8acca00ca499e",
+        {
+          "id": "c1c8acca00ca499e",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "1dbf5dab407cf774",
+        {
+          "id": "1dbf5dab407cf774",
+          "kind": "expedition",
+          "name": "Consolidate CLI verbs into a minimal, memorable command set",
+          "description": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
+          "missionId": "c1c8acca00ca499e",
+          "goal": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set"
+          ],
+          "evidenceRefs": [
+            "75b6ebb3dcf15ba7"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "f42d99013bab009f",
+        "source": "1dbf5dab407cf774",
+        "target": "c1c8acca00ca499e",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "14a4bf51954576de",
+          "immutable": true
+        },
+        {
+          "id": "75b6ebb3dcf15ba7",
+          "observationId": "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"name\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"goal\":\"Propose and implement a reduced command vocabulary",
+          "fingerprint": "4284aeacaee20443",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "14a4bf51954576de",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+          {
+            "id": "75b6ebb3dcf15ba7",
+            "observationId": "obs-expedition-consolidate-cli-verbs-into-a-minimal,-memorable-command-set",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"name\":\"Consolidate CLI verbs into a minimal, memorable command set\",\"goal\":\"Propose and implement a reduced command vocabulary",
+            "fingerprint": "4284aeacaee20443",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

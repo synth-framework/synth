@@ -1,6 +1,6 @@
 {
-  "version": 190,
-  "stateHash": "1888267396",
+  "version": 192,
+  "stateHash": "33830794",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -46,11 +46,13 @@
         "3c84f699a7c932fc",
         "e617ccd0ac6d60b8",
         "71ce984c9d3dd48f",
-        "70a5c5ed2bda5f1b"
+        "70a5c5ed2bda5f1b",
+        "e5fdf75656be46bb",
+        "68b59f0e6029b7ac"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 184,
+      "updatedAt": 191,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -663,6 +665,34 @@
           "hash": "500c6c2f64edbd9b94010e3ca105d0a943f7ec5b72e2d05ec81ed8fca0c40f8e"
         }
       ]
+    },
+    "e5fdf75656be46bb": {
+      "id": "e5fdf75656be46bb",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Decouple synth.js: lazy-load command groups and thin CLI entrypoint",
+      "goal": "Refactor src/cli/synth.ts so the top-level entrypoint performs only argument parsing + dispatch. Each command group (expedition, mission, program, explain, verify, docs, etc.) is loaded lazily on first invocation; the 13-step bootstrap, all adapters, Mission Studio, and Planning Cognition are imported only by commands that need them. Measurable target: cold-start of 'synth version' / 'synth status' must not load adapters or Mission Studio. Deliverable: lazy loader + per-group entrypoints + a cold-start benchmark.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 190,
+      "updatedAt": 190
+    },
+    "68b59f0e6029b7ac": {
+      "id": "68b59f0e6029b7ac",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Consolidate CLI verbs into a minimal, memorable command set",
+      "goal": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 191,
+      "updatedAt": 191
     }
   },
   "objectives": {},
@@ -679,5 +709,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 190
+  "lastEventOffset": 192
 }
