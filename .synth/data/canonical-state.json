@@ -1,6 +1,6 @@
 {
-  "version": 146,
-  "stateHash": "706264939",
+  "version": 150,
+  "stateHash": "553811387",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -433,7 +433,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Harden draft lifecycle integrity",
       "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -450,7 +450,14 @@
         "refinementAt": 136
       },
       "createdAt": 131,
-      "updatedAt": 136
+      "updatedAt": 148,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/d8a555db237507e5/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "20d934325ee30c1a": {
       "id": "20d934325ee30c1a",
@@ -537,5 +544,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 146
+  "lastEventOffset": 150
 }
