@@ -1,6 +1,6 @@
 {
-  "version": 139,
-  "stateHash": "1722413709",
+  "version": 146,
+  "stateHash": "706264939",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -40,11 +40,13 @@
         "190a72e71fbe3c14",
         "5c2b2db11e77e740",
         "d8a555db237507e5",
-        "20d934325ee30c1a"
+        "20d934325ee30c1a",
+        "4b5694ab06ccb652",
+        "bc9c51e0674ec0ef"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 137,
+      "updatedAt": 143,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -455,7 +457,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Resolve ExecutionGate legacy-only branch enforcement",
       "goal": "Prove that execution branch enforcement accepts every canonical branch form the CLI generates: the EXECUTION_BRANCH_CHECK phase computes candidates without mission/expedition names and demands only the legacy raw-ID form (expedition/<missionId>/<expeditionId>), while ensureExpeditionBranch and assertExecutionBranch accept the preferred slug form — so starting any expedition on its slug-form branch is rejected by the gate that the CLI itself satisfied. Enrich the gate check with names from canonical state so both layers resolve identical candidate sets; cover with tests/execution-branch-gate.test.js",
-      "status": "approved",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -466,10 +468,59 @@
           "src/repository/branch-policy.ts",
           "src/cli/synth.ts",
           "tests/execution-branch-gate.test.js"
-        ]
+        ],
+        "identity": {
+          "agentId": "synth-cli-94222",
+          "sessionId": "8c92056c-c4b0-46c8-8b6c-df27dbc1022a",
+          "approvalMode": "autonomous",
+          "issuedAt": 141
+        }
       },
       "createdAt": 137,
-      "updatedAt": 138
+      "updatedAt": 141
+    },
+    "4b5694ab06ccb652": {
+      "id": "4b5694ab06ccb652",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Debranch expedition completion",
+      "goal": "Prove that concluding an expedition never requires its canonical branch to exist: CompleteExpedition leaves the branch-gated set (only StartExpedition remains gated, since its branch exists by construction at start time) because a completion-time branch may already be merged and deleted, may never have existed, or may be unavailable on another checkout. Align the CLI guard, ExecutionGate phase, and checkpoint step; update tests/execution-branch-gate.test.js",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/control/execution-gate.ts",
+          "src/cli/synth.ts",
+          "tests/execution-branch-gate.test.js"
+        ]
+      },
+      "createdAt": 142,
+      "updatedAt": 144
+    },
+    "bc9c51e0674ec0ef": {
+      "id": "bc9c51e0674ec0ef",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Unify expedition and mission termination commands",
+      "goal": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli/synth.ts",
+          "src/capability/registry.ts",
+          "src/domain/execution.ts",
+          "src/control/execution-gate.ts",
+          "src/mission-studio/draft-integrity.ts",
+          "tests/"
+        ]
+      },
+      "createdAt": 143,
+      "updatedAt": 145
     }
   },
   "objectives": {},
@@ -486,5 +537,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 139
+  "lastEventOffset": 146
 }

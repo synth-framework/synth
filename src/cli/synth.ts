@@ -867,6 +867,8 @@ async function resolveCheckpointBranch(
   const result = await adapter.validateExecutionBranch("expedition", {
     expeditionId: match.id,
     missionId: match.missionId,
+    expeditionName: match.name,
+    missionName: match.missionName,
   })
   return {
     ok: result.ok,

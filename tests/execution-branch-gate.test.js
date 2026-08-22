@@ -5,7 +5,10 @@
 //   - StartExpedition is blocked off the canonical expedition branch
 //     when git.branchPolicy.mode is enforce.
 //   - ApproveMission is blocked off the canonical mission branch.
-//   - Moving onto the canonical branch unblocks the same operation.
+//   - Canonical branches resolve to a candidate set: the preferred
+//     slug form (expedition/<mission-slug>/<expedition-slug>-<id7>)
+//     and the legacy raw-ID form. Enforcement accepts BOTH; denial
+//     reasons cite every accepted form.
 //   - Default policy (off) never blocks.
 //   - The chore lane (chore:true) lets allowlisted capabilities run on main
 //     under enforce, and blocks non-allowlisted ones.
@@ -19,6 +22,25 @@ import path from "path"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { generateBranchName } from "../dist/repository/branch-taxonomy.js"
+
+// Canonical names for the seeded fixtures: the preferred slug form and
+// the legacy raw-ID form. Enforcement must accept BOTH; reporting cites
+// the slug form.
+function expeditionBranchNames(missionId, missionName, expeditionId, expeditionName) {
+  const options = { missionId, missionName, expeditionId, expeditionName }
+  return {
+    slug: generateBranchName("expedition", options),
+    legacy: generateBranchName("expedition", { missionId, expeditionId }),
+  }
+}
+
+function missionBranchNames(missionId, missionName) {
+  return {
+    slug: generateBranchName("mission", { missionId, missionName }),
+    legacy: generateBranchName("mission", { missionId }),
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const CLI_PATH = path.resolve(__dirname, "..", "dist", "cli", "synth.js")
@@ -127,6 +149,7 @@ async function testEnforceStartExpeditionBlocksOnMain() {
   const missionId = "m-branch-gate"
   const expeditionId = "e-branch-gate-001"
   await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
+  const names = expeditionBranchNames(missionId, `Mission ${missionId}`, expeditionId, `Expedition ${expeditionId}`)
   // Seed leaves us on the mission branch; prove the block from main.
   switchToMain(root)
 
@@ -138,20 +161,42 @@ async function testEnforceStartExpeditionBlocksOnMain() {
       `expected branch denial, got: ${blocked.error}`,
     )
     assert.ok(
-      blocked.error.includes(`expedition/${missionId}/${expeditionId}`),
-      `denial must cite canonical branch: ${blocked.error}`,
+      blocked.error.includes(names.slug) && blocked.error.includes(names.legacy),
+      `denial must cite every canonical form (slug + legacy), got: ${blocked.error}`,
     )
   } catch (err) {
     assert.fail(`unexpected throw instead of error response: ${err.message}`)
   }
 
-  // On the canonical expedition branch the same operation succeeds.
-  checkout(root, `expedition/${missionId}/${expeditionId}`)
+  // On the preferred slug-form canonical branch the same operation succeeds.
+  checkout(root, names.slug)
   const result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `StartExpedition should pass on canonical branch: ${result.error}`)
+  assert.equal(result.status, "ok", `StartExpedition should pass on slug-form canonical branch: ${result.error}`)
 
   fs.rmSync(root, { recursive: true, force: true })
-  console.log("[PASS] enforce blocks StartExpedition off-branch and allows it on-branch")
+  console.log("[PASS] enforce blocks StartExpedition off-branch and allows it on the slug-form branch")
+}
+
+async function testEnforceAcceptsLegacyCanonicalBranchForm() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-legacy-"))
+  gitInit(root)
+  readConfig(root)
+  const ctx = await makeCtx(root)
+
+  const missionId = "m-legacy-form"
+  const expeditionId = "e-legacy-form-001"
+  await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
+  const names = expeditionBranchNames(missionId, `Mission ${missionId}`, expeditionId, `Expedition ${expeditionId}`)
+  assert.notStrictEqual(names.slug, names.legacy, "fixture must produce distinct slug and legacy forms")
+
+  // Branches created before human-readable naming use the raw-ID form; the
+  // gate must keep accepting them.
+  checkout(root, names.legacy)
+  const result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
+  assert.equal(result.status, "ok", `StartExpedition should pass on the legacy-form canonical branch: ${result.error}`)
+
+  fs.rmSync(root, { recursive: true, force: true })
+  console.log("[PASS] enforce still accepts the legacy raw-ID canonical branch form")
 }
 
 async function testEnforceApproveMissionBlocksOnMain() {
@@ -169,6 +214,7 @@ async function testEnforceApproveMissionBlocksOnMain() {
   assert.equal(result.status, "ok", `CreateMission should succeed: ${result.error}`)
   assert.strictEqual(currentBranch(root), "main", "precondition: on main")
 
+  const mNames = missionBranchNames(missionId, `Mission ${missionId}`)
   // ApproveMission is branch-gated as a mission role.
   const { contractId } = await createAlignedContract(ctx)
   const blocked = await ctx.api.handleIntent({
@@ -178,11 +224,12 @@ async function testEnforceApproveMissionBlocksOnMain() {
   })
   assert.equal(blocked.status, "error", "ApproveMission must be blocked on main under enforce")
   assert.ok(
-    blocked.error.includes(`mission/${missionId}`),
-    `denial must cite canonical mission branch: ${blocked.error}`,
+    blocked.error.includes(mNames.slug) && blocked.error.includes(mNames.legacy),
+    `denial must cite every canonical mission branch form, got: ${blocked.error}`,
   )
 
-  checkout(root, `mission/${missionId}`)
+  // The legacy raw-ID mission branch remains accepted.
+  checkout(root, mNames.legacy)
   result = await ctx.api.handleIntent({
     actor: "test",
     capability: "ApproveMission",
@@ -303,7 +350,8 @@ async function testCheckpointBranchStepBlocksOnMainUnderEnforce() {
   const expeditionId = "e-checkpoint-001"
   await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
   // Start the expedition on its canonical branch so it is executing.
-  checkout(root, `expedition/${missionId}/${expeditionId}`)
+  const names = expeditionBranchNames(missionId, `Mission ${missionId}`, expeditionId, `Expedition ${expeditionId}`)
+  checkout(root, names.slug)
   const start = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
   assert.equal(start.status, "ok", `StartExpedition should succeed on canonical branch: ${start.error}`)
   switchToMain(root)
@@ -313,8 +361,8 @@ async function testCheckpointBranchStepBlocksOnMainUnderEnforce() {
   assert.equal(proc.status, 1, "checkpoint should exit non-zero on the wrong branch under enforce")
   assert.equal(output.steps.executionBranch.ok, false, "executionBranch step should be blocked on main")
   assert.ok(
-    output.steps.executionBranch.requiredBranch === `expedition/${missionId}/${expeditionId}`,
-    `required branch should be expedition/${missionId}/${expeditionId}: ${JSON.stringify(output.steps.executionBranch)}`,
+    output.steps.executionBranch.requiredBranch === names.slug,
+    `required branch should cite the slug form ${names.slug}: ${JSON.stringify(output.steps.executionBranch)}`,
   )
   assert.strictEqual(output.currentBranch, "main", "checkpoint should report the current branch")
 
@@ -333,6 +381,9 @@ async function testCliAutoCreatesCanonicalBranchOnMainUnderEnforce() {
   await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
   switchToMain(root)
 
+  // The CLI composes the preferred slug form from the mission/expedition
+  // records; the gate must accept the branch it just created.
+  const names = expeditionBranchNames(missionId, `Mission ${missionId}`, expeditionId, `Expedition ${expeditionId}`)
   const proc = spawnSync("node", [CLI_PATH, "expedition", "start", "--id", expeditionId], {
     cwd: root,
     encoding: "utf-8",
@@ -340,16 +391,16 @@ async function testCliAutoCreatesCanonicalBranchOnMainUnderEnforce() {
   })
   const output = JSON.parse(proc.stdout.trim())
   assert.equal(proc.status, 0, `expedition start should auto-create the branch on main under enforce: ${output.error || JSON.stringify(output)}`)
-  assert.strictEqual(currentBranch(root), `expedition/${missionId}/${expeditionId}`, "CLI should switch to the canonical expedition branch")
+  assert.strictEqual(currentBranch(root), names.slug, "CLI should switch to the slug-form canonical expedition branch")
   assert.ok(
-    output.executionBranch && output.executionBranch.branch === `expedition/${missionId}/${expeditionId}` && output.executionBranch.created === true,
+    output.executionBranch && output.executionBranch.branch === names.slug && output.executionBranch.created === true,
     `CLI should report the auto-created execution branch: ${JSON.stringify(output.executionBranch)}`,
   )
 
   const logPath = path.join(root, ".synth", "data", "event-log.jsonl")
   const log = fs.readFileSync(logPath, "utf-8").trim().split("\n").map((l) => JSON.parse(l))
   assert.ok(
-    log.some((e) => e.type === "EXPEDITION_BRANCH_CREATED" && e.payload?.expeditionId === expeditionId && e.payload?.branch === `expedition/${missionId}/${expeditionId}`),
+    log.some((e) => e.type === "EXPEDITION_BRANCH_CREATED" && e.payload?.expeditionId === expeditionId && e.payload?.branch === names.slug),
     "EXPEDITION_BRANCH_CREATED should be recorded for the auto-created branch",
   )
 
@@ -390,6 +441,7 @@ async function testCliStartOnCanonicalBranchDoesNotRecreate() {
 
 async function main() {
   await testEnforceStartExpeditionBlocksOnMain()
+  await testEnforceAcceptsLegacyCanonicalBranchForm()
   await testEnforceApproveMissionBlocksOnMain()
   await testDefaultPolicyNeverBlocks()
   await testChoreLaneAllowsAllowlistedCapabilityOnMain()
