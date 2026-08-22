@@ -1,6 +1,6 @@
 {
-  "version": 150,
-  "stateHash": "553811387",
+  "version": 154,
+  "stateHash": "826818464",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -464,7 +464,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Resolve ExecutionGate legacy-only branch enforcement",
       "goal": "Prove that execution branch enforcement accepts every canonical branch form the CLI generates: the EXECUTION_BRANCH_CHECK phase computes candidates without mission/expedition names and demands only the legacy raw-ID form (expedition/<missionId>/<expeditionId>), while ensureExpeditionBranch and assertExecutionBranch accept the preferred slug form — so starting any expedition on its slug-form branch is rejected by the gate that the CLI itself satisfied. Enrich the gate check with names from canonical state so both layers resolve identical candidate sets; cover with tests/execution-branch-gate.test.js",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -484,7 +484,14 @@
         }
       },
       "createdAt": 137,
-      "updatedAt": 141
+      "updatedAt": 152,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/20d934325ee30c1a/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "4b5694ab06ccb652": {
       "id": "4b5694ab06ccb652",
@@ -544,5 +551,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 150
+  "lastEventOffset": 154
 }
