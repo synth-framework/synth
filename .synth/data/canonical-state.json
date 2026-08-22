@@ -1,6 +1,6 @@
 {
-  "version": 157,
-  "stateHash": "1301109810",
+  "version": 163,
+  "stateHash": "1033541807",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -42,11 +42,13 @@
         "d8a555db237507e5",
         "20d934325ee30c1a",
         "4b5694ab06ccb652",
-        "bc9c51e0674ec0ef"
+        "bc9c51e0674ec0ef",
+        "3c84f699a7c932fc",
+        "e617ccd0ac6d60b8"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 143,
+      "updatedAt": 160,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -541,6 +543,44 @@
       },
       "createdAt": 143,
       "updatedAt": 145
+    },
+    "3c84f699a7c932fc": {
+      "id": "3c84f699a7c932fc",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Investigate cross-branch event-log linearity during expedition closure",
+      "goal": "Formalize the fast-forward-before-finish closure pattern proven live on d8a555db237507e5 and 20d934325ee30c1a: finishing on a canonical branch whose tip is a strict ancestor of main kept the derived event log linear across three branches and avoided replay divergence on later merges. Investigate (1) when lifecycle-event-bearing branches diverge from main and what replay and merge hazards follow, including interaction with existing repair tooling, (2) whether fast-forward reconciliation is always safe and how to detect mechanically when it is not, (3) what the CLI owes operators here: pre-finish ancestry verification, warnings, or automatic reconciliation. Deliverable: evidence-based findings plus zero or more follow-up expedition proposals for automation or documentation",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "investigation",
+          "no-source-changes"
+        ]
+      },
+      "createdAt": 157,
+      "updatedAt": 159
+    },
+    "e617ccd0ac6d60b8": {
+      "id": "e617ccd0ac6d60b8",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Verify event-log lineage before lifecycle mutations",
+      "goal": "Guard every lifecycle mutation (expedition approve, commit, start, finish, complete, archive, cancel) against forking the derived event log across branches: before mutating, compare the current branch's .synth/data/event-log.jsonl against the richest known log among local refs and origin/main; accept when it is a strict prefix (stale-but-safe, matching the proven fast-forward-before-finish protocol from investigation 3c84f699a7c932fc), block or warn when other refs carry exclusive events the current log lacks, and print reconciliation guidance (fast-forward when ancestor, explicit merge order otherwise). Implement in the CLI pre-flight layer, not inside the ExecutionGate, which stays untouched",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli/synth.ts",
+          "tests/"
+        ]
+      },
+      "createdAt": 160,
+      "updatedAt": 162
     }
   },
   "objectives": {},
@@ -557,5 +597,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 157
+  "lastEventOffset": 163
 }
