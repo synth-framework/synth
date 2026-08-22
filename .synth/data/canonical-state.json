@@ -1,6 +1,6 @@
 {
-  "version": 154,
-  "stateHash": "826818464",
+  "version": 157,
+  "stateHash": "1301109810",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -498,7 +498,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Debranch expedition completion",
       "goal": "Prove that concluding an expedition never requires its canonical branch to exist: CompleteExpedition leaves the branch-gated set (only StartExpedition remains gated, since its branch exists by construction at start time) because a completion-time branch may already be merged and deleted, may never have existed, or may be unavailable on another checkout. Align the CLI guard, ExecutionGate phase, and checkpoint step; update tests/execution-branch-gate.test.js",
-      "status": "approved",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -508,10 +508,16 @@
           "src/control/execution-gate.ts",
           "src/cli/synth.ts",
           "tests/execution-branch-gate.test.js"
-        ]
+        ],
+        "identity": {
+          "agentId": "synth-cli-96098",
+          "sessionId": "c2cd82d5-8e33-4bfa-b22e-d7e2cd4462f4",
+          "approvalMode": "autonomous",
+          "issuedAt": 156
+        }
       },
       "createdAt": 142,
-      "updatedAt": 144
+      "updatedAt": 156
     },
     "bc9c51e0674ec0ef": {
       "id": "bc9c51e0674ec0ef",
@@ -551,5 +557,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 154
+  "lastEventOffset": 157
 }
