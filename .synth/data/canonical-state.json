@@ -1,6 +1,6 @@
 {
-  "version": 194,
-  "stateHash": "1477135258",
+  "version": 195,
+  "stateHash": "1209330862",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -699,9 +699,13 @@
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "refinementId": "279e3a7297796b46",
+        "refinementNote": "FINAL DESIGN: one shared verb vocabulary across mission+expedition (create->approve->start->finish --disposition complete|archive|cancel; evidence/show/list/report/move/delete explicit). check=validate; check --full absorbs validate --full + verify(no-sub) + govern validation; check --repair=repair. govern=release gate (build+test+audit+proof). verify=signatures only. status absorbs checkpoint; explain=deep; init/--import absorbs discover+migrate. doctor absorbs support verbs. Implement AFTER loader lands.",
+        "refinementAt": 194
+      },
       "createdAt": 191,
-      "updatedAt": 191
+      "updatedAt": 194
     }
   },
   "objectives": {},
@@ -718,5 +722,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 194
+  "lastEventOffset": 195
 }
