@@ -10,6 +10,7 @@ import { fileURLToPath } from "url"
 import path from "path"
 import { runStatus } from "./status-light.js"
 import { runExplainReplay, parseReplayFlags } from "./explain-replay-light.js"
+import { parseExplainFlags } from "./explain-flags.js"
 
 const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
 
@@ -33,12 +34,30 @@ function printHelp(): void {
 export async function run(): Promise<void> {
   const command = process.argv[2] ?? "help"
 
-  // `explain replay` is bootstrap-free: it builds event/state stores directly
-  // via createInfra + createReplayVerifier, so it is served without loading
-  // the heavy synth.js graph. Other `explain` subcommands stay heavy.
-  if (command === "explain" && process.argv[3] === "replay") {
-    await runExplainReplay(parseReplayFlags(process.argv))
-    return
+  // `explain replay` and the read-only `explain identity|resume|governance`
+  // subcommands are bootstrap-free, so they are served without loading the
+  // heavy synth.js graph. Other `explain` subcommands stay heavy.
+  if (command === "explain") {
+    const sub = process.argv[3]
+    if (sub === "replay") {
+      await runExplainReplay(parseReplayFlags(process.argv))
+      return
+    }
+    if (sub === "identity") {
+      const { cmdExplainIdentity } = await import("./repository-identity.js")
+      await cmdExplainIdentity(parseExplainFlags(process.argv))
+      return
+    }
+    if (sub === "resume") {
+      const { cmdExplainResume } = await import("./resume-briefing.js")
+      await cmdExplainResume(parseExplainFlags(process.argv))
+      return
+    }
+    if (sub === "governance") {
+      const { cmdExplainGovernance } = await import("./explain-governance.js")
+      await cmdExplainGovernance(parseExplainFlags(process.argv))
+      return
+    }
   }
 
   if (LIGHT_COMMANDS.has(command)) {
