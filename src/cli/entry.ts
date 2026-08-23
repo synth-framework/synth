@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+// SYNTH-LOADER-001: thin CLI entrypoint.
+//
+// Light commands (version / help) are served inline so they never load the
+// heavy synth.js module graph (which eagerly imports core/bootstrap.js and runs
+// the 13-step bootstrap on every invocation). Every other command is lazily
+// imported, so the heavy machinery only loads when actually needed.
+import { readFileSync } from "fs"
+import { fileURLToPath } from "url"
+import path from "path"
+import { runStatus } from "./status-light.js"
+import { runExplainReplay, parseReplayFlags } from "./explain-replay-light.js"
+import { parseExplainFlags } from "./explain-flags.js"
+
+const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
+
+function projectVersion(): string {
+  const pkgPath = fileURLToPath(new URL("../../package.json", import.meta.url))
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string }
+  return pkg.version ?? "0.0.0"
+}
+
+function printHelp(): void {
+  const version = projectVersion()
+  console.log(
+    `synth v${version}\n` +
+      `AI-Native Operator CLI.\n\n` +
+      `Usage: synth <command> [options]\n\n` +
+      `Run 'synth <command> --help' for command-specific usage.\n` +
+      `Use 'synth status' to inspect the current mission / expedition state.\n`,
+  )
+}
+
+export async function run(): Promise<void> {
+  const command = process.argv[2] ?? "help"
+
+  // `explain replay` and the read-only `explain identity|resume|governance`
+  // subcommands are bootstrap-free, so they are served without loading the
+  // heavy synth.js graph. Other `explain` subcommands stay heavy.
+  if (command === "explain") {
+    const sub = process.argv[3]
+    if (sub === "replay") {
+      await runExplainReplay(parseReplayFlags(process.argv))
+      return
+    }
+    if (sub === "identity") {
+      const { cmdExplainIdentity } = await import("./repository-identity.js")
+      await cmdExplainIdentity(parseExplainFlags(process.argv))
+      return
+    }
+    if (sub === "resume") {
+      const { cmdExplainResume } = await import("./resume-briefing.js")
+      await cmdExplainResume(parseExplainFlags(process.argv))
+      return
+    }
+    if (sub === "governance") {
+      const { cmdExplainGovernance } = await import("./explain-governance.js")
+      await cmdExplainGovernance(parseExplainFlags(process.argv))
+      return
+    }
+  }
+
+  if (LIGHT_COMMANDS.has(command)) {
+    if (command === "status") {
+      await runStatus()
+      return
+    }
+    if (command === "help" || command === "--help" || command === "-h") {
+      printHelp()
+    } else {
+      console.log(projectVersion())
+    }
+    return
+  }
+
+  // Heavy path: lazily load the full CLI only when actually needed.
+  const { main } = await import("./synth.js")
+  await main()
+}
+
+// SYNTH-LOADER-001: only auto-run when executed directly; tests import { run }.
+const isMainModule = (): boolean => {
+  if (!process.argv[1]) return false
+  return path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+}
+
+if (isMainModule()) {
+  run().catch((err: unknown) => {
+    console.error(err instanceof Error ? err.message : String(err))
+    process.exit(1)
+  })
+}

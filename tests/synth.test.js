@@ -1796,6 +1796,7 @@ test("SDK Event/State Ownership: CLI/workspace do not construct canonical artifa
   const forbiddenDirs = ["cli", "workspace"]
   const allowedFiles = [
     "cli/explain-observability.ts",
+    "cli/explain-paths.ts",
     "cli/resume-briefing.ts",
   ]
   const violations = []
