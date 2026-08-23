@@ -22,7 +22,7 @@ function projectVersion(): string {
 
 function printHelp(): void {
   const version = projectVersion()
-  process.stdout.write(
+  console.log(
     `synth v${version}\n` +
       `AI-Native Operator CLI.\n\n` +
       `Usage: synth <command> [options]\n\n` +
@@ -68,7 +68,7 @@ export async function run(): Promise<void> {
     if (command === "help" || command === "--help" || command === "-h") {
       printHelp()
     } else {
-      process.stdout.write(`${projectVersion()}\n`)
+      console.log(projectVersion())
     }
     return
   }
@@ -86,7 +86,7 @@ const isMainModule = (): boolean => {
 
 if (isMainModule()) {
   run().catch((err: unknown) => {
-    process.stderr.write(err instanceof Error ? err.message : String(err))
+    console.error(err instanceof Error ? err.message : String(err))
     process.exit(1)
   })
 }
