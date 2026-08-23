@@ -1,6 +1,6 @@
 {
-  "version": 207,
-  "stateHash": "607892079",
+  "version": 219,
+  "stateHash": "2092495219",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -48,11 +48,14 @@
         "71ce984c9d3dd48f",
         "70a5c5ed2bda5f1b",
         "e5fdf75656be46bb",
-        "68b59f0e6029b7ac"
+        "68b59f0e6029b7ac",
+        "ff268079bb596ef3",
+        "97ddb728c5250c96",
+        "f4e4850f5929a111"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 191,
+      "updatedAt": 214,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -430,7 +433,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Fix --dry-run persisting state mutations",
       "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
-      "status": "draft",
+      "status": "approved",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -444,7 +447,7 @@
         ]
       },
       "createdAt": 123,
-      "updatedAt": 123
+      "updatedAt": 211
     },
     "d8a555db237507e5": {
       "id": "d8a555db237507e5",
@@ -636,14 +639,14 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
       "goal": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
-      "status": "draft",
+      "status": "approved",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
       "metadata": {},
       "createdAt": 183,
-      "updatedAt": 183
+      "updatedAt": 212
     },
     "70a5c5ed2bda5f1b": {
       "id": "70a5c5ed2bda5f1b",
@@ -712,7 +715,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Consolidate CLI verbs into a minimal, memorable command set",
       "goal": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
-      "status": "draft",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -720,10 +723,58 @@
       "metadata": {
         "refinementId": "279e3a7297796b46",
         "refinementNote": "FINAL DESIGN: one shared verb vocabulary across mission+expedition (create->approve->start->finish --disposition complete|archive|cancel; evidence/show/list/report/move/delete explicit). check=validate; check --full absorbs validate --full + verify(no-sub) + govern validation; check --repair=repair. govern=release gate (build+test+audit+proof). verify=signatures only. status absorbs checkpoint; explain=deep; init/--import absorbs discover+migrate. doctor absorbs support verbs. Implement AFTER loader lands.",
-        "refinementAt": 194
+        "refinementAt": 194,
+        "identity": {
+          "agentId": "synth-cli-40510",
+          "sessionId": "6f594562-db4b-4edd-9407-9e5c2902030f",
+          "approvalMode": "autonomous",
+          "issuedAt": 218
+        }
       },
       "createdAt": 191,
-      "updatedAt": 194
+      "updatedAt": 218
+    },
+    "ff268079bb596ef3": {
+      "id": "ff268079bb596ef3",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "CLI Lazy-Load Strategy",
+      "goal": "Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading model (shared bootstrap vs deferred domain graph), and define benchmarks and acceptance criteria so light commands stay bootstrap-free and heavy commands load only their group.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 207,
+      "updatedAt": 209
+    },
+    "97ddb728c5250c96": {
+      "id": "97ddb728c5250c96",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Migrate synth.js to Lazy-Load Model",
+      "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 208,
+      "updatedAt": 210
+    },
+    "f4e4850f5929a111": {
+      "id": "f4e4850f5929a111",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Audit expedition model: dependsOn enforcement and keep/remove decision",
+      "goal": "Determine whether the expedition model enforces the dependsOn property. Current evidence: checkUpstreamDependencies (lifecycle-completion based) is advisory-only (reported as a warning in expedition check/doctor), while isBlockedByUpstreamGate (review-gate based) blocks execution in domain/execution.ts and governance/intake.ts. Decide which dependency mechanisms to keep, harden (e.g., enforce lifecycle completion at start), or remove, and recommend the target model.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 214,
+      "updatedAt": 215
     }
   },
   "objectives": {},
@@ -740,5 +791,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 207
+  "lastEventOffset": 219
 }
