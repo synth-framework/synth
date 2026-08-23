@@ -51,16 +51,10 @@ import type { ReplayAttributionReport } from "../core/replay-attribution.js"
 import type { StoredSnapshot } from "../mission-studio/types.js"
 import type { CanonicalState, DerivedState, SynthEvent } from "../types/index.js"
 import { buildDerivedState } from "../state/derived/index.js"
-import {
-  dataDir,
-  ensureDataDir,
-  eventLogFile,
-  stateFile,
-  checkpointsFile,
-  snapshotsDir,
-} from "../sdk/paths/index.js"
+import { ensureDataDir } from "../sdk/paths/index.js"
 import { root } from "../sdk/workspace/index.js"
 import { printJson, printError } from "./print.js"
+import { resolveExplainPaths, type ExplainPaths } from "./explain-paths.js"
 import { buildOperatorBriefing, type OperatorBriefing } from "./status-briefing.js"
 import {
   EXPECTED_CAPABILITIES,
@@ -71,11 +65,6 @@ import { createCapabilityRegistry } from "../capability/index.js"
 import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 
 const EXPLAIN_OBSERVABILITY_VERSION = 1
-
-const DEFAULT_LOG_DISPLAY = path.posix.join(
-  path.relative(root(), dataDir(root())).replace(/\\/g, "/") || ".",
-  "event-log.jsonl",
-)
 
 function flagOn(flags: Record<string, string | boolean>, name: string): boolean {
   return flags[name] === true || flags[name] === "true"
@@ -93,54 +82,6 @@ async function pathExists(target: string): Promise<boolean> {
 // ============================================================
 // Explain context: one read-only bootstrap shared by all sections
 // ============================================================
-
-export type ExplainPaths = {
-  /** Absolute path used for IO. */
-  logPath: string
-  /** Path as shown to the operator (flag value or default). */
-  logDisplay: string
-  logDir: string
-  statePath: string
-  checkpointPath: string
-  snapshotsDir: string
-}
-
-/**
- * Resolve the log under inspection and derive its project paths.
- * With no --log this is exactly the cmdExplainReplay path set
- * (<runtime-data-dir>/event-log.jsonl + <runtime-data-dir>/canonical-state.json +
- * <runtime-data-dir>/checkpoint.json); with --log the same files are derived next
- * to the given log, so any example or project directory works.
- */
-export function resolveExplainPaths(flags: Record<string, string | boolean>): ExplainPaths {
-  const logFlag = flags.log
-  if (logFlag !== undefined && typeof logFlag !== "string") {
-    printError("--log requires a path")
-  }
-  const cwd = process.cwd()
-  if (logFlag) {
-    const logPath = path.resolve(cwd, logFlag)
-    const logDir = path.dirname(logPath)
-    return {
-      logPath,
-      logDisplay: logFlag,
-      logDir,
-      statePath: path.join(logDir, "canonical-state.json"),
-      checkpointPath: path.join(logDir, "checkpoint.json"),
-      snapshotsDir: path.join(logDir, "snapshots"),
-    }
-  }
-
-  const projectRoot = root()
-  return {
-    logPath: eventLogFile(projectRoot),
-    logDisplay: DEFAULT_LOG_DISPLAY,
-    logDir: dataDir(projectRoot),
-    statePath: stateFile(projectRoot),
-    checkpointPath: checkpointsFile(projectRoot),
-    snapshotsDir: snapshotsDir(projectRoot),
-  }
-}
 
 type ExplainContext = {
   paths: ExplainPaths

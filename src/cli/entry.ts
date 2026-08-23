@@ -9,6 +9,7 @@ import { readFileSync } from "fs"
 import { fileURLToPath } from "url"
 import path from "path"
 import { runStatus } from "./status-light.js"
+import { runExplainReplay, parseReplayFlags } from "./explain-replay-light.js"
 
 const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
 
@@ -31,6 +32,14 @@ function printHelp(): void {
 
 export async function run(): Promise<void> {
   const command = process.argv[2] ?? "help"
+
+  // `explain replay` is bootstrap-free: it builds event/state stores directly
+  // via createInfra + createReplayVerifier, so it is served without loading
+  // the heavy synth.js graph. Other `explain` subcommands stay heavy.
+  if (command === "explain" && process.argv[3] === "replay") {
+    await runExplainReplay(parseReplayFlags(process.argv))
+    return
+  }
 
   if (LIGHT_COMMANDS.has(command)) {
     if (command === "status") {

@@ -33,7 +33,8 @@ import {
   findSimilarExpeditions,
   type SimilarMatch,
 } from "../mission-studio/duplicate-detection.js"
-import { cmdExplainObservability, resolveExplainPaths } from "./explain-observability.js"
+import { cmdExplainObservability } from "./explain-observability.js"
+import { resolveExplainPaths } from "./explain-paths.js"
 import { EXPECTED_CAPABILITIES, buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
 import { cmdExplainIdentity } from "./repository-identity.js"
