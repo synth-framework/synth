@@ -39,11 +39,17 @@ export async function cmdExplainGovernance(flags: Record<string, string | boolea
   const defaultLogPath = eventLogFile(cwd)
   const logPath = logFlag ? path.resolve(cwd, logFlag) : defaultLogPath
 
-  if (!(await sdk.files.exists(logPath))) {
-    printError(`event log not found: ${logFlag ?? path.relative(cwd, defaultLogPath)}`)
+  let events: SynthEvent[]
+  if (logFlag) {
+    events = (await readEventLogFromPath(logPath)) as SynthEvent[]
+  } else {
+    events = await sdk.events.readEvents(cwd)
   }
 
-  const events = (logFlag ? await readEventLogFromPath(logPath) : await sdk.events.readEvents(cwd)) as SynthEvent[]
+  if (events.length === 0) {
+    printError(`event log not found or empty: ${logFlag ?? path.relative(cwd, defaultLogPath)}`)
+  }
+
   const lineage = deriveGovernanceRecords(events)
 
   printJson(lineage)

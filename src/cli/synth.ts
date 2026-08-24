@@ -165,6 +165,7 @@ const COMMANDS = [
   { name: "intent", description: "Intent model operations (create)" },
   { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, archive, list)" },
+  { name: "archive", description: "Alias for 'synth expedition archive' — move an expedition to .synth/data/expeditions/archived/<id>.json" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
@@ -452,9 +453,12 @@ function isAutoCommitEnabled(flags?: Record<string, string | boolean>): boolean 
 
 async function collectDerivedStateFiles(cwd: string): Promise<string[]> {
   const files: string[] = []
-  const dirs = [sdk.paths.dataDir(cwd), path.join(cwd, "proof", "expeditions")]
+  const dirs = [
+    sdk.paths.dataDir(cwd),
+    path.join(cwd, "proof", "expeditions"),
+    path.join(sdk.paths.dataDir(cwd), "event-stream"),
+  ]
   const rootFiles = [
-    sdk.paths.eventLogFile(cwd),
     sdk.paths.stateFile(cwd),
     path.join(cwd, "AGENTS.md"),
   ]
@@ -663,8 +667,8 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
   try {
     const root = sdk.workspace.root()
     await sdk.paths.ensureDataDir(root)
-    const logPath = sdk.paths.eventLogFile(root)
-    if (!(await sdk.files.exists(logPath))) {
+    const events = await sdk.events.readEvents(root)
+    if (events.length === 0) {
       return { ok: true, detail: "No event log present; replay skipped" }
     }
     const ctx = await bootstrap({
@@ -698,13 +702,9 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
   try {
     const root = sdk.workspace.root()
     await sdk.paths.ensureDataDir(root)
-    const logPath = sdk.paths.eventLogFile(root)
-    if (!(await sdk.files.exists(logPath))) {
-      return { ok: true, detail: "No event log present; chain skipped" }
-    }
     const events = await sdk.events.readEvents(root)
     if (events.length === 0) {
-      return { ok: true, detail: "Event log is empty" }
+      return { ok: true, detail: "No event log present; chain skipped" }
     }
     let previousHash = "genesis"
     for (let i = 0; i < events.length; i++) {
@@ -2515,21 +2515,15 @@ async function cmdLogHelp() {
 }
 
 async function cmdLog(flags: Record<string, string | boolean>) {
-  const logPath = sdk.paths.eventLogFile(process.cwd())
-  let raw = ""
-  try {
-    raw = await fs.readFile(logPath, "utf-8")
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code
-    if (code === "ENOENT") {
-      printError(
-        `No event log found at ${logPath}. Run 'synth init' or 'synth bootstrap' first.`,
-        { nextStep: "synth bootstrap . --approve" },
-      )
-      return
-    }
-    throw err
+  const loadedEvents = await sdk.events.readEvents(process.cwd())
+  if (loadedEvents.length === 0) {
+    printError(
+      `No event log found. Run 'synth init' or 'synth bootstrap' first.`,
+      { nextStep: "synth bootstrap . --approve" },
+    )
+    return
   }
+  const raw = loadedEvents.map((e) => JSON.stringify(e)).join("\n")
 
   const expeditionId = typeof flags.expedition === "string" ? flags.expedition : typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : undefined
   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
@@ -6840,6 +6834,12 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   const note = typeof flags.note === "string" ? flags.note : ""
   if (!note) printError("--note is required")
 
+  const dependsOnRaw = flags["depends-on"]
+  const dependsOn =
+    typeof dependsOnRaw === "string" && dependsOnRaw.trim()
+      ? dependsOnRaw.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined
+
   if (flags["dry-run"] === true || flags["dry-run"] === "true") {
     const ctx = await bootstrapWithCapabilities({
       skipGenesis: true,
@@ -6847,7 +6847,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
     })
     const dryRun = await runLifecycleDryRun(ctx, {
       capability: "RefineExpedition",
-      payload: { id: expeditionId, note },
+      payload: { id: expeditionId, note, dependsOn },
       eventType: "EXPEDITION_REFINED",
       expeditionId,
       targetStatus: undefined,
@@ -6870,7 +6870,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "RefineExpedition",
-    payload: { id: expeditionId, note },
+    payload: { id: expeditionId, note, dependsOn },
   })
 
   if (result.status !== "ok") {
@@ -6888,6 +6888,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
     kind: "ExpeditionRefined",
     expeditionId,
     note,
+    dependsOn,
     refinementId: refined?.metadata?.refinementId,
     result: refined,
   }
@@ -7167,7 +7168,7 @@ async function cmdExplainReplay(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: paths.logPath,
+      eventLogPath: paths.legacyLogPath,
       statePath: paths.statePath,
       checkpointPath: paths.checkpointPath,
     },
@@ -7723,6 +7724,10 @@ export async function main() {
         printError("Usage: synth alignment create --intent-model-id <id> | synth alignment submit --contract-id <id> | synth alignment approve --contract-id <id> | synth alignment prepare")
       break
     }
+
+    case "archive":
+      await cmdExpeditionArchive(flags)
+      break
 
     case "expedition": {
       const sub = positional[1]

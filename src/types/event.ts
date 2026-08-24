@@ -75,7 +75,7 @@ export type StateEvent =
   | { type: "EXPEDITION_COMPLETED"; expeditionId: string }
   | { type: "EXPEDITION_ARCHIVED"; expeditionId: string; reason?: string }
   | { type: "EXPEDITION_CANCELLED"; expeditionId: string; reason?: string }
-  | { type: "EXPEDITION_REFINED"; expeditionId: string; note: string; refinementId: string }
+  | { type: "EXPEDITION_REFINED"; expeditionId: string; note: string; refinementId: string; dependsOn?: string[] }
   | { type: "EXPEDITION_DELETED"; expeditionId: string; missionId: string; reason?: string }
   | { type: "EXPEDITION_MOVED"; expeditionId: string; fromMissionId: string; toMissionId: string; verification: string; reason?: string }
   | { type: "EVIDENCE_ATTACHED"; expeditionId: string; attachments: unknown[]; note?: string }

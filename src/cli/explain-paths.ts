@@ -18,6 +18,7 @@ import { printError } from "./print.js"
 
 export type ExplainPaths = {
   logPath: string
+  legacyLogPath: string
   logDisplay: string
   logDir: string
   statePath: string
@@ -27,7 +28,7 @@ export type ExplainPaths = {
 
 const DEFAULT_LOG_DISPLAY = path.posix.join(
   path.relative(root(), dataDir(root())).replace(/\\/g, "/") || ".",
-  "event-log.jsonl",
+  "event-stream",
 )
 
 export function resolveExplainPaths(flags: Record<string, string | boolean>): ExplainPaths {
@@ -41,6 +42,7 @@ export function resolveExplainPaths(flags: Record<string, string | boolean>): Ex
     const logDir = path.dirname(logPath)
     return {
       logPath,
+      legacyLogPath: logPath,
       logDisplay: logFlag,
       logDir,
       statePath: path.join(logDir, "canonical-state.json"),
@@ -51,7 +53,8 @@ export function resolveExplainPaths(flags: Record<string, string | boolean>): Ex
 
   const projectRoot = root()
   return {
-    logPath: eventLogFile(projectRoot),
+    logPath: path.join(dataDir(projectRoot), "event-stream"),
+    legacyLogPath: eventLogFile(projectRoot),
     logDisplay: DEFAULT_LOG_DISPLAY,
     logDir: dataDir(projectRoot),
     statePath: stateFile(projectRoot),
