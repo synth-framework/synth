@@ -1,0 +1,12 @@
+{
+  "expeditionId": "beb71bb77cb510e3",
+  "capturedAt": 1787517950953,
+  "note": "F.1+F.2: gitignore derived .synth paths (keep event-log+canonical-state tracked); reconcile contract to call them durable replay source.",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/beb71bb77cb510e3/attachments/f-mechanical-fix.md",
+      "hash": "7f7e8ba24e1402b019cb33ffb75287cd9275d9cf50e1af1f9de5f2f256ac5e0c"
+    }
+  ]
+}

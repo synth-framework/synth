@@ -1,0 +1,12 @@
+{
+  "expeditionId": "0daac4fc9df96606",
+  "capturedAt": 1787530611774,
+  "note": "gate scoping defect finding",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/0daac4fc9df96606/attachments/gate-bug-evidence.md",
+      "hash": "5b9a9174cabce0ab6918df1d69f495cc3f0422a29432e2242cb8d5456886ca82"
+    }
+  ]
+}

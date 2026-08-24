@@ -1,0 +1,12 @@
+{
+  "expeditionId": "68b59f0e6029b7ac",
+  "capturedAt": 1787517955650,
+  "note": "Preparation plan: single-source middleware, target mapping table, TDD gate, DRY/SDK cert per phase, phased DoD. Prevents DRY/no-op regressions.",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/68b59f0e6029b7ac/attachments/prep-plan.md",
+      "hash": "f073112e0b64abf9aeb0d0e3d673df477c8fe5e7249f4ca1cc3150ab57142835"
+    }
+  ]
+}
