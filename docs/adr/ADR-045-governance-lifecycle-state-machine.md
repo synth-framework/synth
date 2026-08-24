@@ -18,6 +18,12 @@ This ADR establishes a single source of truth for the governance lifecycle: ever
 
 ---
 
+## Implementation Status
+
+**Target governance architecture — partially implemented; do not treat the Synthesis-layer Mission/Expedition states as the runtime contract.** The Genesis-layer and Governance-layer *record types* described here (intent model, refinement session, alignment contract, divergence gate, review/acceptance/convergence records) exist in `src/types/state.ts`. However, the **Synthesis-layer Mission/Expedition states** (`proposed → approved → executing → implementation_complete → awaiting_review → … → closed`) are **NOT** the implemented runtime lifecycle. The execution engine emits ADR-026's states (`draft/active/completed/archived` for Missions; `draft/approved/committed/executing/completed/cancelled` for Expeditions). Reconcile the two via ADR-039 (Convergence Review) and ADR-046 (Implementation Authority Ordering) before this ADR's Synthesis states are treated as enforced. Until then, ADR-026 governs runtime Mission/Expedition states.
+
+---
+
 ## Decision
 
 Adopt a canonical **Governance Lifecycle State Machine** that spans three layers: Genesis, Synthesis, and Governance. Every state transition is an event. Every gate is a decision point. Every decision produces an artifact. No transition may occur without the required artifact and an authorized satisfier.
