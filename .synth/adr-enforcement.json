@@ -1,0 +1,9 @@
+{
+  "citation": "ADR-051",
+  "sourceOfTruth": ".synth/data/event-log.jsonl",
+  "protectedDerivedPaths": [
+    ".synth/data/canonical-state.json",
+    "docs/generated/"
+  ],
+  "note": "canonical-state.json is a committed, regenerable snapshot derived from event-log.jsonl (the sole source of truth). The enforcement rule is CONSISTENCY (derived must equal replay of the event log), not a blind 'never touch'. Hand-edits that desync canonical-state from event-log are rejected. AGENTS.md is protected by the SDK guard (ADR-051 §1); it is excluded here to avoid false positives from legitimate `synth project AGENTS.md` regeneration."
+}
