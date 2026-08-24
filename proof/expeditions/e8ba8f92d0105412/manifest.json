@@ -1,0 +1,12 @@
+{
+  "expeditionId": "e8ba8f92d0105412",
+  "capturedAt": 1787532910193,
+  "note": "auto-commit derived-state gitignored-path bug",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e8ba8f92d0105412/attachments/autocommit-bug-evidence.md",
+      "hash": "416a48d413d729e2283bf850dc33575e1301e5c4ccf7670b249f2ea95e3fd468"
+    }
+  ]
+}

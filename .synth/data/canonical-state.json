@@ -1,6 +1,6 @@
 {
-  "version": 246,
-  "stateHash": "524706151",
+  "version": 248,
+  "stateHash": "1954410553",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -63,11 +63,12 @@
         "17a5c207277389ae",
         "eb5e0740225fdb11",
         "0daac4fc9df96606",
-        "3d9f5d0df805e15f"
+        "3d9f5d0df805e15f",
+        "e8ba8f92d0105412"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 239,
+      "updatedAt": 246,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -1010,6 +1011,27 @@
           "hash": "06766e7bdf0157c2435aee4d0db0925b1f345e0ef3eb374c12ab052abaf71c92"
         }
       ]
+    },
+    "e8ba8f92d0105412": {
+      "id": "e8ba8f92d0105412",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Fix derived-state auto-commit (EXP-AUTO-COMMIT-001) to skip gitignored paths",
+      "goal": "autoCommitDerivedState (src/cli/synth.ts ~351) builds an explicit git add path list that includes .synth/data/drafts/ (gitignored), causing the whole git add to error and the derived-state commit to abort, leaving event-log.jsonl/canonical-state.json staged-but-uncommitted after lifecycle transitions. Fix: exclude gitignored/derived-excluded paths before git add (filter via git check-ignore, or use git add -A which skips ignored). See attached finding.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 246,
+      "updatedAt": 247,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/e8ba8f92d0105412/attachments/autocommit-bug-evidence.md",
+          "hash": "416a48d413d729e2283bf850dc33575e1301e5c4ccf7670b249f2ea95e3fd468"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -1026,5 +1048,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 246
+  "lastEventOffset": 248
 }
