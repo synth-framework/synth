@@ -368,6 +368,7 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
         state.expeditions[expeditionId] = {
           ...state.expeditions[expeditionId],
           updatedAt: event.timestamp,
+          dependsOn: Array.isArray(payload.dependsOn) ? payload.dependsOn : state.expeditions[expeditionId].dependsOn,
           metadata: {
             ...state.expeditions[expeditionId].metadata,
             refinementId: typeof payload.refinementId === "string" ? payload.refinementId : undefined,

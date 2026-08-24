@@ -6840,6 +6840,12 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   const note = typeof flags.note === "string" ? flags.note : ""
   if (!note) printError("--note is required")
 
+  const dependsOnRaw = flags["depends-on"]
+  const dependsOn =
+    typeof dependsOnRaw === "string" && dependsOnRaw.trim()
+      ? dependsOnRaw.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined
+
   if (flags["dry-run"] === true || flags["dry-run"] === "true") {
     const ctx = await bootstrapWithCapabilities({
       skipGenesis: true,
@@ -6847,7 +6853,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
     })
     const dryRun = await runLifecycleDryRun(ctx, {
       capability: "RefineExpedition",
-      payload: { id: expeditionId, note },
+      payload: { id: expeditionId, note, dependsOn },
       eventType: "EXPEDITION_REFINED",
       expeditionId,
       targetStatus: undefined,
@@ -6870,7 +6876,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "RefineExpedition",
-    payload: { id: expeditionId, note },
+    payload: { id: expeditionId, note, dependsOn },
   })
 
   if (result.status !== "ok") {
@@ -6888,6 +6894,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
     kind: "ExpeditionRefined",
     expeditionId,
     note,
+    dependsOn,
     refinementId: refined?.metadata?.refinementId,
     result: refined,
   }

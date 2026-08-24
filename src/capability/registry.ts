@@ -932,7 +932,7 @@ function createDefaultCapabilities(): Capability[] {
     {
       name: "RefineExpedition",
       description: "Record a charter refinement on a committed or executing expedition",
-      inputSchema: { required: ["id", "note"], types: { id: "string", note: "string", refinementId: "string" } },
+      inputSchema: { required: ["id", "note"], types: { id: "string", note: "string", refinementId: "string", dependsOn: "string[]" } },
       outputSchema: { events: ["EXPEDITION_REFINED"], resultType: "Expedition" },
       preconditions: [
         {
@@ -960,12 +960,14 @@ function createDefaultCapabilities(): Capability[] {
         if (!existing) {
           const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
           const payload: Record<string, unknown> = { expeditionId: id, note, refinementId }
+          if (Array.isArray(intent.payload.dependsOn)) payload.dependsOn = intent.payload.dependsOn
           if (metadata) payload.metadata = metadata
           return { events: [{ type: "EXPEDITION_REFINED", payload }] }
         }
-        const updated = refineExpedition(existing, executionCtx, note, refinementId)
+        const updated = refineExpedition(existing, executionCtx, note, refinementId, Array.isArray(intent.payload.dependsOn) ? (intent.payload.dependsOn as string[]) : undefined)
         const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
         const payload: Record<string, unknown> = { expeditionId: id, id: updated.id, status: updated.status, note, refinementId, refinedAt: executionCtx.timestamp }
+        if (Array.isArray(intent.payload.dependsOn)) payload.dependsOn = intent.payload.dependsOn
         if (metadata) payload.metadata = metadata
         return {
           events: [{ type: "EXPEDITION_REFINED", payload }],
