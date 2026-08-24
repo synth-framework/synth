@@ -1,6 +1,6 @@
 {
-  "version": 207,
-  "stateHash": "607892079",
+  "version": 248,
+  "stateHash": "1954410553",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -48,11 +48,27 @@
         "71ce984c9d3dd48f",
         "70a5c5ed2bda5f1b",
         "e5fdf75656be46bb",
-        "68b59f0e6029b7ac"
+        "68b59f0e6029b7ac",
+        "ff268079bb596ef3",
+        "97ddb728c5250c96",
+        "f4e4850f5929a111",
+        "beb71bb77cb510e3",
+        "4ce3c7bcef3a00d5",
+        "29b9a3704eb1287c",
+        "729e4e2c17add703",
+        "0463c2cae71ac727",
+        "761c9be33f165253",
+        "8ed4c9240f9997f0",
+        "424e13e73c362f3b",
+        "17a5c207277389ae",
+        "eb5e0740225fdb11",
+        "0daac4fc9df96606",
+        "3d9f5d0df805e15f",
+        "e8ba8f92d0105412"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 191,
+      "updatedAt": 246,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -430,7 +446,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Fix --dry-run persisting state mutations",
       "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
-      "status": "draft",
+      "status": "approved",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -444,7 +460,7 @@
         ]
       },
       "createdAt": 123,
-      "updatedAt": 123
+      "updatedAt": 211
     },
     "d8a555db237507e5": {
       "id": "d8a555db237507e5",
@@ -636,14 +652,14 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
       "goal": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
-      "status": "draft",
+      "status": "approved",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
       "metadata": {},
       "createdAt": 183,
-      "updatedAt": 183
+      "updatedAt": 212
     },
     "70a5c5ed2bda5f1b": {
       "id": "70a5c5ed2bda5f1b",
@@ -712,7 +728,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Consolidate CLI verbs into a minimal, memorable command set",
       "goal": "Propose and implement a reduced command vocabulary that collapses redundant verbs while preserving capability. Coordinate with bc9c51e0 (termination unification): adopt a single lifecycle create->approve->start->finish with --disposition for expedition/mission; unify validate/verify/govern into 'check' (--dry-run|--full, --repair); unify status/checkpoint/explain status/report into 'status'; unify init/bootstrap/genesis/discover/migrate into 'init'. Deliverable: command-map migration plan + deprecated-alias shims + docs update.",
-      "status": "draft",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -720,10 +736,302 @@
       "metadata": {
         "refinementId": "279e3a7297796b46",
         "refinementNote": "FINAL DESIGN: one shared verb vocabulary across mission+expedition (create->approve->start->finish --disposition complete|archive|cancel; evidence/show/list/report/move/delete explicit). check=validate; check --full absorbs validate --full + verify(no-sub) + govern validation; check --repair=repair. govern=release gate (build+test+audit+proof). verify=signatures only. status absorbs checkpoint; explain=deep; init/--import absorbs discover+migrate. doctor absorbs support verbs. Implement AFTER loader lands.",
-        "refinementAt": 194
+        "refinementAt": 194,
+        "identity": {
+          "agentId": "synth-cli-40510",
+          "sessionId": "6f594562-db4b-4edd-9407-9e5c2902030f",
+          "approvalMode": "autonomous",
+          "issuedAt": 218
+        }
       },
       "createdAt": 191,
-      "updatedAt": 194
+      "updatedAt": 244,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/68b59f0e6029b7ac/attachments/friction-patterns.md",
+          "hash": "71f89806f2e0c7d61426340eb5f7b6877f19774a0e9a762436decfde7248785c"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/68b59f0e6029b7ac/attachments/redundancy-plan.md",
+          "hash": "868f3317e192edb66d8e240e47583ee1eaff9de60dc4fec785bdcab6852c3733"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/68b59f0e6029b7ac/attachments/consolidation-solutions.md",
+          "hash": "994031f7be596c012174a34e82834afe94b565fb6f614bc171df3086c96ddaa3"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/68b59f0e6029b7ac/attachments/ratified-plan.md",
+          "hash": "f66ad3b9321a3543aef82943fa688307642c6c45b75c2dad9f2526a59137127a"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/68b59f0e6029b7ac/attachments/prep-plan.md",
+          "hash": "f073112e0b64abf9aeb0d0e3d673df477c8fe5e7249f4ca1cc3150ab57142835"
+        }
+      ]
+    },
+    "ff268079bb596ef3": {
+      "id": "ff268079bb596ef3",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "CLI Lazy-Load Strategy",
+      "goal": "Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading model (shared bootstrap vs deferred domain graph), and define benchmarks and acceptance criteria so light commands stay bootstrap-free and heavy commands load only their group.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 207,
+      "updatedAt": 209
+    },
+    "97ddb728c5250c96": {
+      "id": "97ddb728c5250c96",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Migrate synth.js to Lazy-Load Model",
+      "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 208,
+      "updatedAt": 210
+    },
+    "f4e4850f5929a111": {
+      "id": "f4e4850f5929a111",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Audit expedition model: dependsOn enforcement and keep/remove decision",
+      "goal": "Determine whether the expedition model enforces the dependsOn property. Current evidence: checkUpstreamDependencies (lifecycle-completion based) is advisory-only (reported as a warning in expedition check/doctor), while isBlockedByUpstreamGate (review-gate based) blocks execution in domain/execution.ts and governance/intake.ts. Decide which dependency mechanisms to keep, harden (e.g., enforce lifecycle completion at start), or remove, and recommend the target model.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 214,
+      "updatedAt": 215
+    },
+    "beb71bb77cb510e3": {
+      "id": "beb71bb77cb510e3",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Canonicalize and standardize logs",
+      "goal": "Establish one canonical logging model for SYNTH: consolidate CLI error logs (cli-errors.jsonl), runtime diagnostics, event logs, and proof/temp artifacts into a single location, consistent schema, and rotation policy. Eliminate ad-hoc/duplicate logs (e.g., cli-errors.jsonl vs a referenced cli-errors.log, per-test temp logs under /var/folders) and standardize structured stdout vs diagnostic streams so operators and tooling depend on one shape.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 219,
+      "updatedAt": 226,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/beb71bb77cb510e3/attachments/f-mechanical-fix.md",
+          "hash": "7f7e8ba24e1402b019cb33ffb75287cd9275d9cf50e1af1f9de5f2f256ac5e0c"
+        }
+      ]
+    },
+    "4ce3c7bcef3a00d5": {
+      "id": "4ce3c7bcef3a00d5",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Event schema versioning and migration registry",
+      "goal": "Add schemaVersion to every event and a MigrationRegistry so replay survives event-shape evolution; version canonical-state by schema.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 225,
+      "updatedAt": 228
+    },
+    "29b9a3704eb1287c": {
+      "id": "29b9a3704eb1287c",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Fold legacy CLI verbs into the canonical command set",
+      "goal": "Consolidate redundant verbs via deprecated-alias shims and a unified 'init' entrypoint, preserving first-contact/genesis/bootstrap/discover/governance subsystems and their tests. Canonical targets: status (was report/explain status), validate verify (was verify), docs agents (was project AGENTS.md), init --brownfield/--analyze/--greenfield (was bootstrap/discover/first-contact/genesis). Deprecate intent + migrate as load-bearing-for-alignment legacy verbs.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 229,
+      "updatedAt": 230,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/29b9a3704eb1287c/attachments/phase3-plan.md",
+          "hash": "680428aa3f6b2d33672423d52f678cee59c74cc9a3ecd8d7e016799259f99229"
+        }
+      ]
+    },
+    "729e4e2c17add703": {
+      "id": "729e4e2c17add703",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Allow archiving completed expeditions",
+      "goal": "The 'expedition archive' lifecycle rule is inverted: it rejects archiving a COMPLETED expedition ('Only active or paused expeditions can be archived') while archiving is conceptually for finished/superseded work. Fix so a completed expedition can be archived (e.g., to retire a superseded duplicate). Scope: (1) intake.ts expedition.archive gate — add 'completed' to allowed source statuses (keep 'cancelled'/'archived' terminal, keep 'active'/'paused' allowed); (2) domain/planning.ts archiveExpedition — remove the 'cannot archive a completed expedition' invariant; (3) update the lifecycle comment at intake.ts:10-11; (4) add a regression test. Consider whether a dedicated 'superseded' disposition is cleaner than completed->archived and recommend in the plan.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 231,
+      "updatedAt": 231
+    },
+    "0463c2cae71ac727": {
+      "id": "0463c2cae71ac727",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Pointer-based evidence and derived-artifact exclusion from completion gate",
+      "goal": "Reduce SYNTH's content redundancy and the commit-then-complete friction by (1) making evidence pointer-based: event-log/evidence records reference external artifacts by git SHA / content hash / URL instead of embedding content copies or full git diffs; completion records 'gitHead' as the realized-state pointer; (2) excluding derived/generated paths (proof/, dist/, *.integrity.json, canonical-state.json) from the DirtyWorkingTreeBlocksCompletion gate so only uncommitted IN-SCOPE SOURCE blocks completion; (3) keeping the event log as the authoritative provenance ledger while git remains the content store. Scope: locate the completion dirty-tree enforcement (cmdExpeditionComplete / CompleteExpedition capability) and the evidence-attach path; add a derived-path allowlist; record gitHead on EXPEDITION_COMPLETED. Preserve replay independence by keeping event-log.jsonl as the durable core. Add tests. Consider a short ADR noting the provenance-vs-content split.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 232,
+      "updatedAt": 232
+    },
+    "761c9be33f165253": {
+      "id": "761c9be33f165253",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Stage 0: Audit governance-cluster verbs & blast radius",
+      "goal": "Map governance-cluster verbs (validate, verify, govern, checkpoint, approval, certify): every CLI invocation site, CI/script references (npm run govern), documentation mentions, and operator muscle-memory dependencies. Produce a blast-radius report identifying which renames break CI vs which are safe. Read-only research; no source changes.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 233,
+      "updatedAt": 233
+    },
+    "8ed4c9240f9997f0": {
+      "id": "8ed4c9240f9997f0",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Stage 1: Design target governance verb model (ADR)",
+      "goal": "Decide the governance-cluster end-state: minimal (keep govern/validate/approval/certify; fold verify->validate verify + checkpoint->status) vs alias (add check deprecated shim for govern) vs full rename (govern->check). Produce an ADR with chosen model, rationale, and affected command/CI/doc graph. No source changes.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 234,
+      "updatedAt": 234
+    },
+    "424e13e73c362f3b": {
+      "id": "424e13e73c362f3b",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Stage 2: Implement safe governance folds (verify->validate verify, checkpoint->status)",
+      "goal": "Low-risk deprecated-alias shims: verify->validate verify, checkpoint->status (pre-flight as a status mode). Add emitDeprecation notices, command-safety classification, help text. Keep govern/validate/approval/certify canonical. Build + verify.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 235,
+      "updatedAt": 235
+    },
+    "17a5c207277389ae": {
+      "id": "17a5c207277389ae",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Stage 3: Migrate CI/docs/scripts for any govern rename (gated, optional)",
+      "goal": "ONLY if Stage 1 selects rename. Update npm run govern scripts, CI workflows, docs, operator refs from govern/validate to new verb. High blast radius; isolate from safe folds; requires Stage 1 sign-off. Build + full govern pipeline.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 236,
+      "updatedAt": 236
+    },
+    "eb5e0740225fdb11": {
+      "id": "eb5e0740225fdb11",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Stage 4: Verify govern-evolution (full pipeline + replay)",
+      "goal": "After governance-cluster changes, run full govern pipeline and confirm replay consistency (synth explain replay) with no CI regression and operator flows intact.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 237,
+      "updatedAt": 237
+    },
+    "0daac4fc9df96606": {
+      "id": "0daac4fc9df96606",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Fix mission.approve gate scoping (checks active mission instead of target mission)",
+      "goal": "intake.ts mission.approve resolves missionId = action.missionId || activeMission?.id; CLI passes no missionId, so it inspects the ACTIVE mission's executing expeditions, wrongly blocking approval of an UNRELATED mission. Fix: resolve the target mission from the approved draft/snapshot and check THAT mission for executing expeditions, so a mission with no executing expeditions can be approved even when another mission has a live expedition. See attached finding.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 238,
+      "updatedAt": 242,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/0daac4fc9df96606/attachments/gate-bug-evidence.md",
+          "hash": "5b9a9174cabce0ab6918df1d69f495cc3f0422a29432e2242cb8d5456886ca82"
+        }
+      ]
+    },
+    "3d9f5d0df805e15f": {
+      "id": "3d9f5d0df805e15f",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Implement mission new / expedition new commands (replace over-complicated mission create)",
+      "goal": "Replace the draft-proposal mission create flow with a single canonicalizing 'mission new' (and 'expedition new') command, per the verb-consolidation plan. The new command should canonicalize a draft mission (emit MISSION_CREATED draft) so expeditions can be planned immediately, subsuming the 'mission create canonicalize draft' structural fix. See attached evidence.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 239,
+      "updatedAt": 243,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/3d9f5d0df805e15f/attachments/mission-new-evidence.md",
+          "hash": "06766e7bdf0157c2435aee4d0db0925b1f345e0ef3eb374c12ab052abaf71c92"
+        }
+      ]
+    },
+    "e8ba8f92d0105412": {
+      "id": "e8ba8f92d0105412",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Fix derived-state auto-commit (EXP-AUTO-COMMIT-001) to skip gitignored paths",
+      "goal": "autoCommitDerivedState (src/cli/synth.ts ~351) builds an explicit git add path list that includes .synth/data/drafts/ (gitignored), causing the whole git add to error and the derived-state commit to abort, leaving event-log.jsonl/canonical-state.json staged-but-uncommitted after lifecycle transitions. Fix: exclude gitignored/derived-excluded paths before git add (filter via git check-ignore, or use git add -A which skips ignored). See attached finding.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 246,
+      "updatedAt": 247,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/e8ba8f92d0105412/attachments/autocommit-bug-evidence.md",
+          "hash": "416a48d413d729e2283bf850dc33575e1301e5c4ccf7670b249f2ea95e3fd468"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -740,5 +1048,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 207
+  "lastEventOffset": 248
 }

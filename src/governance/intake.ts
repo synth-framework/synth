@@ -88,8 +88,8 @@ export function validateAgentAction(action: AgentAction, state: CanonicalState, 
         if (executingInMission) {
           return {
             decision: "BLOCK",
-            reason: `Mission approval is blocked while expedition ${executingInMission.id} is executing in the same mission.`,
-            requiredAction: `Complete the active expedition first: synth expedition complete --expedition-id ${executingInMission.id}`,
+            reason: `Mission approval is blocked: expedition ${executingInMission.id} (${executingInMission.name}) is ${executingInMission.status} in the same mission.`,
+            requiredAction: `Close the active expedition first (synth expedition complete --id ${executingInMission.id}), or approve with --complete-first to close it automatically before approving the mission.`,
           }
         }
       }

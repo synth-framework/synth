@@ -1,0 +1,209 @@
+{
+  "id": "97ddb728c5250c96",
+  "createdAt": 1787510848585,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1787510848585
+    },
+    {
+      "id": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Migrate synth.js to Lazy-Load Model",
+        "name": "Migrate synth.js to Lazy-Load Model",
+        "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Migrate synth.js to Lazy-Load Model",
+      "confidence": "high",
+      "timestamp": 1787510848585
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "9d348b6a637a0e29",
+        "immutable": true
+      },
+      {
+        "id": "2098b139780e4247",
+        "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+        "fingerprint": "d91dbfc7c7c8912d",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "9d348b6a637a0e29",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-migrate-synth.js-to-lazy-load-model",
+        {
+          "id": "2098b139780e4247",
+          "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+          "fingerprint": "d91dbfc7c7c8912d",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "d951da41be5b661c",
+        {
+          "id": "d951da41be5b661c",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "aa1fb48ffa53d8c4",
+        {
+          "id": "aa1fb48ffa53d8c4",
+          "kind": "expedition",
+          "name": "Migrate synth.js to Lazy-Load Model",
+          "description": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+          "missionId": "d951da41be5b661c",
+          "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-migrate-synth.js-to-lazy-load-model"
+          ],
+          "evidenceRefs": [
+            "2098b139780e4247"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "d223be75616ee25d",
+        "source": "aa1fb48ffa53d8c4",
+        "target": "d951da41be5b661c",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-migrate-synth.js-to-lazy-load-model"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "9d348b6a637a0e29",
+          "immutable": true
+        },
+        {
+          "id": "2098b139780e4247",
+          "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+          "fingerprint": "d91dbfc7c7c8912d",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "9d348b6a637a0e29",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-migrate-synth.js-to-lazy-load-model",
+          {
+            "id": "2098b139780e4247",
+            "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+            "fingerprint": "d91dbfc7c7c8912d",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

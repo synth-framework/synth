@@ -20,12 +20,47 @@ function projectVersion(): string {
   return pkg.version ?? "0.0.0"
 }
 
+const COMMAND_LIST: ReadonlyArray<readonly [string, string]> = [
+  ["init", "Initialize a repository as a Synth project"],
+  ["status", "Inspect current mission / expedition state"],
+  ["explain", "Explain operations (replay, lineage, proposals, snapshots, graph)"],
+  ["log", "Query the governance event log (read-only)"],
+  ["doctor", "Verify installation and project health"],
+  ["capabilities", "Expose what the installed CLI can and cannot do"],
+  ["validate", "Analyze changes, plan, and run validations"],
+  ["govern", "Run the full governance pipeline"],
+  ["mission", "Mission Studio operations"],
+  ["expedition", "Expedition lifecycle and inventory operations"],
+  ["program", "Governance program inventory"],
+  ["project", "Project-level derived artifacts (AGENTS.md)"],
+  ["alignment", "Intent alignment and divergence governance"],
+  ["intent", "Intent model operations"],
+  ["discover", "Produce a read-only analysis of a repository"],
+  ["bootstrap", "Transform a repository into a Synth project"],
+  ["first-contact", "Guided onboarding entry point"],
+  ["genesis", "Alias of first-contact"],
+  ["adapter", "Delegate to the adapter management CLI"],
+  ["ai", "AI agent interoperability"],
+  ["repo", "Repository release and branch operations"],
+  ["snapshot", "Git-anchored governance state snapshots"],
+  ["docs", "Documentation operations"],
+  ["repair", "Runtime repair operations"],
+  ["certify", "Run failure and recovery certification scenarios"],
+  ["approval", "Two-party approval operations"],
+  ["checkpoint", "Run pre-flight checkpoint before implementation"],
+  ["migrate", "Legacy migration subsystem"],
+  ["help", "Show this help"],
+  ["version", "Print the installed Synth version"],
+]
+
 function printHelp(): void {
   const version = projectVersion()
+  const lines = COMMAND_LIST.map(([name, desc]) => `  ${name.padEnd(14)} ${desc}`)
   console.log(
     `synth v${version}\n` +
       `AI-Native Operator CLI.\n\n` +
       `Usage: synth <command> [options]\n\n` +
+      `Commands:\n${lines.join("\n")}\n\n` +
       `Run 'synth <command> --help' for command-specific usage.\n` +
       `Use 'synth status' to inspect the current mission / expedition state.\n`,
   )
@@ -39,7 +74,7 @@ export async function run(): Promise<void> {
   // heavy synth.js graph. Other `explain` subcommands stay heavy.
   if (command === "explain") {
     const sub = process.argv[3]
-    if (sub === "replay") {
+    if (!sub || sub === "replay") {
       await runExplainReplay(parseReplayFlags(process.argv))
       return
     }

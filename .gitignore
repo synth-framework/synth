@@ -28,6 +28,16 @@ coverage/
 # =============================================================================
 
 .synth/cache/
+# SYNTH derived runtime artifacts (NOT the durable replay source)
+.synth/data/cli-errors.jsonl
+.synth/data/drafts/
+*.integrity.json
+.synth/ai/
+.synth/context.json
+.synth/discovery/
+# Durable replay source stays tracked:
+!.synth/data/event-log.jsonl
+!.synth/data/canonical-state.json
 data-test/
 data-test-alignment/
 data-test-proposal-evaluation/

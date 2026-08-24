@@ -28,6 +28,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { command: "mission approve", safety: "MUTATING", description: "Approve a Mission draft", requiresApproval: true },
   { command: "mission delete", safety: "MUTATING", description: "Delete an empty Mission", requiresApproval: true },
   { command: "expedition create", safety: "PROPOSAL_ONLY", description: "Create an Expedition proposal" },
+  { command: "expedition new", safety: "PROPOSAL_ONLY", description: "Create an Expedition draft, inferring the active mission" },
   { command: "expedition approve", safety: "MUTATING", description: "Approve an Expedition draft", requiresApproval: true },
   { command: "expedition commit", safety: "MUTATING", description: "Commit approved Expedition intent to runtime", requiresApproval: true },
   { command: "expedition start", safety: "MUTATING", description: "Start executing a committed Expedition", requiresApproval: true },
@@ -203,16 +204,19 @@ export function assertSafeForDiscovery(command: string): void {
   const meta = getCommandSafety(command)
   if (!meta) {
     throw new Error(
-      `Unknown command "${command}" cannot run during Discovery. ` +
-        "Complete Discovery with a read-only command first.",
+      `Unknown command "${command}" cannot run during the Discovery phase. ` +
+        "Discovery permits only read-only introspection (status, explain, doctor, capabilities, verify, certify, validate, report, help). " +
+        "Complete Discovery (synth bootstrap --approve) or pass --discovery-ok to mutate.",
     )
   }
   if (meta.safety === "READ_ONLY" || meta.safety === "PROPOSAL_ONLY") {
     return
   }
   throw new Error(
-    `${command} is a ${meta.safety} command and cannot run during Discovery. ` +
-      `Run 'synth bootstrap --approve' or complete Discovery before ${suggestionForCommand(command)}.`,
+    `${command} is a ${meta.safety} command and cannot run during the Discovery phase. ` +
+      "Discovery permits only read-only introspection (status, explain, doctor, capabilities, verify, certify, etc.). " +
+      "To mutate now, pass --discovery-ok (or set SYNTH_DISCOVERY_OK=1). " +
+      `Otherwise complete Discovery first: ${suggestionForCommand(command)}.`,
   )
 }
 
@@ -344,6 +348,7 @@ export function classifyInvocation(
   }
   if (namespace === "expedition") {
     if (sub === "create") return "expedition create"
+    if (sub === "new") return "expedition new"
     if (sub === "approve") return "expedition approve"
     if (sub === "commit") return "expedition commit"
     if (sub === "start") return "expedition start"

@@ -1,0 +1,12 @@
+{
+  "expeditionId": "3d9f5d0df805e15f",
+  "capturedAt": 1787530745330,
+  "note": "mission create friction + mission new rationale",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/3d9f5d0df805e15f/attachments/mission-new-evidence.md",
+      "hash": "06766e7bdf0157c2435aee4d0db0925b1f345e0ef3eb374c12ab052abaf71c92"
+    }
+  ]
+}

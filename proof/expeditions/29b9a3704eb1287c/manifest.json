@@ -1,0 +1,12 @@
+{
+  "expeditionId": "29b9a3704eb1287c",
+  "capturedAt": 1787525020054,
+  "note": "Phase 3 design plan: deprecated-alias shims + unified init",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/29b9a3704eb1287c/attachments/phase3-plan.md",
+      "hash": "680428aa3f6b2d33672423d52f678cee59c74cc9a3ecd8d7e016799259f99229"
+    }
+  ]
+}
