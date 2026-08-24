@@ -1,6 +1,6 @@
 {
-  "version": 252,
-  "stateHash": "1617257566",
+  "version": 256,
+  "stateHash": "555189389",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1057,14 +1057,18 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
       "goal": "Resolve the monolithic-state problem at both layers. (1) EVENT LOG: implement the already-designed PartitionedEvent chunking (src/infra/event-store.ts append(partition,event)/readPartition/readSegment) into .synth/data/event-stream/<partition>/<segment>.jsonl with an offset-ordered manifest, preserving deterministic replay. (2) PROJECTION: change StateStore.save (src/infra/state-store.ts:66) to write per-entity derived files (.synth/data/expeditions/<id>.json, .synth/data/missions/<id>.json) instead of one canonical-state.json; canonical-state.json becomes a generated aggregate (amend contract tracking rule). (3) dependsOn: make it a settable canonical attribute via expedition refine --depends-on (writes event, materialized into per-entity file). (4) Archive: relocate per-entity file to .synth/data/expeditions/archived/<id>.json (status marker), not a monolith shuffle. Single source of truth (event log) preserved; merge/review/scale improved.",
-      "status": "draft",
+      "status": "committed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "refinementId": "0d18e0aa2e0251fa",
+        "refinementNote": "SCOPE EXPANSION: also remove the dead promote() method in src/adapters/repository/git.ts (approx lines 368-430) and its synchronous full-governance-pipeline execSync calls (npm run test:audit at :383, test:determinism at :390, npm run proof at :410). promote() is never invoked anywhere (dead code) and would block the event loop for minutes if ever wired into a command path. This is governance-pipeline invocation hygiene folded into this state-storage expedition.",
+        "refinementAt": 255
+      },
       "createdAt": 251,
-      "updatedAt": 251
+      "updatedAt": 255
     }
   },
   "objectives": {},
@@ -1081,5 +1085,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 252
+  "lastEventOffset": 256
 }
