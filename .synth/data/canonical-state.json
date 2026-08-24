@@ -1,6 +1,6 @@
 {
-  "version": 249,
-  "stateHash": "1443056341",
+  "version": 252,
+  "stateHash": "1617257566",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -64,11 +64,13 @@
         "eb5e0740225fdb11",
         "0daac4fc9df96606",
         "3d9f5d0df805e15f",
-        "e8ba8f92d0105412"
+        "e8ba8f92d0105412",
+        "1ad8b22eace9855a",
+        "01604a3df9d2785d"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 246,
+      "updatedAt": 251,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -1033,6 +1035,36 @@
           "hash": "416a48d413d729e2283bf850dc33575e1301e5c4ccf7670b249f2ea95e3fd468"
         }
       ]
+    },
+    "1ad8b22eace9855a": {
+      "id": "1ad8b22eace9855a",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Make expedition charters the primary enforced dependency source",
+      "goal": "Make docs/expeditions/<id>.md charter **Depends On:** / **Blocks:** the single source of truth for expedition dependencies, eliminating the need for a --depends-on flag. (1) Ensure target 4ab7e9d2 expeditions have charters (generate if missing). (2) Make isBlockedByUpstreamGate (intake.ts:233, execution.ts:325) charter-aware so declared dependencies block downstream CLI commands/intents. (3) Wire the linear sequence by editing each charter Depends On to reference the previous expedition. Lifecycle (change/remove/reparent/edit) is a charter edit only - no dual source, no flag soup.",
+      "status": "cancelled",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "cancelReason": "Superseded by broader architecture expedition: chunk event log (PartitionedEvent) + decouple monolithic canonical-state into per-entity derived files; dependsOn settable via refine; archive as file relocation."
+      },
+      "createdAt": 249,
+      "updatedAt": 250
+    },
+    "01604a3df9d2785d": {
+      "id": "01604a3df9d2785d",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
+      "goal": "Resolve the monolithic-state problem at both layers. (1) EVENT LOG: implement the already-designed PartitionedEvent chunking (src/infra/event-store.ts append(partition,event)/readPartition/readSegment) into .synth/data/event-stream/<partition>/<segment>.jsonl with an offset-ordered manifest, preserving deterministic replay. (2) PROJECTION: change StateStore.save (src/infra/state-store.ts:66) to write per-entity derived files (.synth/data/expeditions/<id>.json, .synth/data/missions/<id>.json) instead of one canonical-state.json; canonical-state.json becomes a generated aggregate (amend contract tracking rule). (3) dependsOn: make it a settable canonical attribute via expedition refine --depends-on (writes event, materialized into per-entity file). (4) Archive: relocate per-entity file to .synth/data/expeditions/archived/<id>.json (status marker), not a monolith shuffle. Single source of truth (event log) preserved; merge/review/scale improved.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 251,
+      "updatedAt": 251
     }
   },
   "objectives": {},
@@ -1049,5 +1081,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 249
+  "lastEventOffset": 252
 }
