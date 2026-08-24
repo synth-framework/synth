@@ -60,7 +60,14 @@ export function runCommand(command, args, cwd, timeoutMs = 0) {
   return new Promise((resolve) => {
     const startTime = Date.now()
     const startIso = new Date(startTime).toISOString()
-    const child = spawn(command, args, { cwd, stdio: "inherit" })
+    // Surface captured task stdout/stderr (telemetry) for failing CI checks so the
+  // real error is visible instead of an opaque non-zero exit. The task runner
+  // enables verbose output when SYNTH_TASK_VERBOSE is set.
+  const child = spawn(command, args, {
+    cwd,
+    stdio: "inherit",
+    env: { ...process.env, SYNTH_TASK_VERBOSE: process.env.SYNTH_TASK_VERBOSE || "1" },
+  })
     let timedOut = false
 
     if (timeoutMs > 0) {

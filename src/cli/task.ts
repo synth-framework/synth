@@ -313,6 +313,11 @@ async function cmdTaskRun(args: string[], flags: Record<string, string | boolean
       ? await runTaskGroup(registry, target, { dryRun })
       : await runTasks(registry, [target], { dryRun })
 
+    // Surface captured task output so CI failures are diagnosable. The runner
+    // already captures stdout/stderr per task; when SYNTH_TASK_VERBOSE is set
+    // (the governance profiler enables this for CI) we always inline it, and we
+    // always inline it for failing tasks.
+    const verbose = process.env.SYNTH_TASK_VERBOSE === "1"
     printJson({
       status: report.status,
       kind: "TaskRunReport",
@@ -323,12 +328,18 @@ async function cmdTaskRun(args: string[], flags: Record<string, string | boolean
         taskId: r.taskId,
         status: r.status,
         durationMs: r.durationMs,
+        ...(verbose || r.status !== 0 ? { stdout: r.stdout, stderr: r.stderr } : {}),
       })),
       failedTaskId: report.failedTaskId,
       totalDurationMs: report.totalDurationMs,
     })
 
     if (report.status === "error") {
+      const failed = report.results.find((r) => r.taskId === report.failedTaskId)
+      if (failed) {
+        if (failed.stderr) process.stderr.write(`\n--- ${failed.taskId} stderr ---\n${failed.stderr}\n`)
+        if (failed.stdout) process.stderr.write(`--- ${failed.taskId} stdout ---\n${failed.stdout}\n`)
+      }
       process.exit(1)
     }
   } catch (err) {
