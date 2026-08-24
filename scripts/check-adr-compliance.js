@@ -1,21 +1,19 @@
 // ============================================================
 // ADR COMPLIANCE CHECK (ADR-051 / ADR-053)
 // ============================================================
-// Enforces the CORRECTED model: canonical-state.json is a committed,
-// regenerable snapshot of the immutable event log (the sole source of
-// truth). The rule is CONSISTENCY, not a blind "never touch derived files":
-//   - a protected derived path may change ONLY when the event log changes
-//     in the same changeset (state flows from events), and
-//   - canonical-state.lastEventOffset must equal the event-log line count
-//     (the derived snapshot is in sync with its source).
-// This catches hand-edits (SDK / raw fs / shell / git) regardless of how
-// the file was written, because it inspects the outcome, not the write call.
+// canonical-state.json is a committed, regenerable snapshot of the
+// immutable event log (the sole source of truth). The enforcement rule
+// is a single, safe CONSISTENCY invariant:
+//     canonical-state.lastEventOffset === event-log line count
+// This catches hand-edits / desyncs without ever false-positiving on a
+// legitimate SYNTH regeneration (which keeps the two in sync). It does
+// NOT require canonical-state and event-log to change in the same commit,
+// because regeneration commonly rewrites canonical-state alone.
 // ============================================================
 
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { execFileSync } from "child_process"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -24,7 +22,7 @@ const REPO_ROOT = path.resolve(__dirname, "..")
 const DEFAULT_ENFORCEMENT = {
   citation: "ADR-051",
   sourceOfTruth: ".synth/data/event-log.jsonl",
-  protectedDerivedPaths: [".synth/data/canonical-state.json", "docs/generated/"],
+  invariant: "canonical-state.lastEventOffset === event-log line count",
 }
 
 function loadEnforcement(root) {
@@ -36,23 +34,9 @@ function loadEnforcement(root) {
   }
 }
 
-export function evaluate({ repoRoot, stagedFiles, canonicalState, eventLogLineCount }) {
+export function evaluate({ repoRoot, canonicalState, eventLogLineCount }) {
   const enf = loadEnforcement(repoRoot)
   const violations = []
-  const staged = new Set(stagedFiles)
-  const src = enf.sourceOfTruth
-
-  for (const p of enf.protectedDerivedPaths) {
-    const matched = p.endsWith("/")
-      ? [...staged].some((f) => f.startsWith(p))
-      : staged.has(p)
-    if (matched && !staged.has(src)) {
-      violations.push(
-        `${p} is modified without ${src} in the same changeset (${enf.citation}: derived state must equal replay of the event log)`,
-      )
-    }
-  }
-
   if (canonicalState && typeof canonicalState.lastEventOffset === "number") {
     if (canonicalState.lastEventOffset !== eventLogLineCount) {
       violations.push(
@@ -60,42 +44,33 @@ export function evaluate({ repoRoot, stagedFiles, canonicalState, eventLogLineCo
       )
     }
   }
-
   return { ok: violations.length === 0, violations }
 }
 
-function getStagedFiles(root) {
+function readCanonicalState(root) {
   try {
-    const out = execFileSync("git", ["diff", "--cached", "--name-only", "--diff-filter=ACMR"], {
-      cwd: root,
-      encoding: "utf-8",
-    })
-    return out.split("\n").map((s) => s.trim()).filter(Boolean)
+    return JSON.parse(fs.readFileSync(path.join(root, ".synth/data/canonical-state.json"), "utf-8"))
   } catch {
-    return []
+    return null
+  }
+}
+
+function readEventLogLineCount(root, enf) {
+  try {
+    const raw = fs.readFileSync(path.join(root, enf.sourceOfTruth), "utf-8")
+    return raw.split("\n").filter(Boolean).length
+  } catch {
+    return 0
   }
 }
 
 function main() {
   const root = REPO_ROOT
   const enf = loadEnforcement(root)
-  const staged = getStagedFiles(root)
+  const canonicalState = readCanonicalState(root)
+  const eventLogLineCount = readEventLogLineCount(root, enf)
 
-  let canonicalState = null
-  let eventLogLineCount = 0
-  try {
-    canonicalState = JSON.parse(fs.readFileSync(path.join(root, ".synth/data/canonical-state.json"), "utf-8"))
-  } catch {
-    // missing canonical-state is not our concern here
-  }
-  try {
-    const raw = fs.readFileSync(path.join(root, enf.sourceOfTruth), "utf-8")
-    eventLogLineCount = raw.split("\n").filter(Boolean).length
-  } catch {
-    // missing event log is not our concern here
-  }
-
-  const { ok, violations } = evaluate({ repoRoot: root, stagedFiles: staged, canonicalState, eventLogLineCount })
+  const { ok, violations } = evaluate({ repoRoot: root, canonicalState, eventLogLineCount })
 
   if (!ok) {
     console.error("[ADR-COMPLIANCE] Violations found:")

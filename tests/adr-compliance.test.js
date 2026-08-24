@@ -1,5 +1,5 @@
 // ADR-compliance regression test (ADR-051 / ADR-053).
-// Validates the consistency rule without depending on git state.
+// Validates the consistency invariant without depending on git state.
 
 import fs from "fs"
 import path from "path"
@@ -27,39 +27,39 @@ const ev = fs
   .filter(Boolean).length
 
 // 1. Clean tree with consistent derived state passes.
-{
-  const r = evaluate({ repoRoot: REPO_ROOT, stagedFiles: [], canonicalState: cs, eventLogLineCount: ev })
-  assert(r.ok, "clean tree with consistent derived state passes")
-}
+assert(
+  evaluate({ repoRoot: REPO_ROOT, canonicalState: cs, eventLogLineCount: ev }).ok,
+  "clean tree with consistent derived state passes",
+)
 
-// 2. canonical-state staged without event-log in the same changeset fails.
-{
-  const r = evaluate({
+// 2. A standalone canonical-state regeneration (offset still in sync) must NOT
+//    false-positive. This guards against blocking legitimate SYNTH regeneration
+//    during normal development.
+assert(
+  evaluate({
     repoRoot: REPO_ROOT,
     stagedFiles: [".synth/data/canonical-state.json"],
     canonicalState: cs,
     eventLogLineCount: ev,
-  })
-  assert(!r.ok, "canonical-state staged without event-log fails")
-}
+  }).ok,
+  "canonical-state staged alone with consistent offset does not false-positive",
+)
 
 // 3. lastEventOffset mismatch fails (derived out of sync with source).
-{
-  const bad = { ...cs, lastEventOffset: cs.lastEventOffset + 1 }
-  const r = evaluate({ repoRoot: REPO_ROOT, stagedFiles: [], canonicalState: bad, eventLogLineCount: ev })
-  assert(!r.ok, "lastEventOffset mismatch fails")
-}
-
-// 4. canonical-state AND event-log changed together passes.
-{
-  const r = evaluate({
+assert(
+  !evaluate({
     repoRoot: REPO_ROOT,
-    stagedFiles: [".synth/data/canonical-state.json", ".synth/data/event-log.jsonl"],
-    canonicalState: cs,
+    canonicalState: { ...cs, lastEventOffset: cs.lastEventOffset + 1 },
     eventLogLineCount: ev,
-  })
-  assert(r.ok, "canonical-state + event-log together passes")
-}
+  }).ok,
+  "lastEventOffset mismatch fails",
+)
+
+// 4. Unrelated file changes never trigger the check.
+assert(
+  evaluate({ repoRoot: REPO_ROOT, stagedFiles: ["src/foo.ts"], canonicalState: cs, eventLogLineCount: ev }).ok,
+  "unrelated changes pass",
+)
 
 console.log(failures === 0 ? "All ADR-compliance tests passed." : `${failures} ADR-compliance test(s) failed.`)
 process.exit(failures === 0 ? 0 : 1)

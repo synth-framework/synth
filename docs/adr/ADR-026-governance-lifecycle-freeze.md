@@ -12,6 +12,16 @@ SYNTH has demonstrated that Mission and Expedition governance work in practice. 
 
 If Genesis builds on moving governance semantics, every Genesis artifact risks becoming incompatible with future governance changes. Freezing the lifecycle now creates a reliable foundation.
 
+## Implementation Status
+
+**Authoritative runtime contract (verified against the current implementation).** The Mission and Expedition states defined here are exactly what the execution engine emits:
+
+- Mission (`src/types/state.ts`): `draft → active → completed → archived` (an internal `deprecated` state also exists).
+- Expedition (`src/types/state.ts`): `draft → approved → committed → executing → completed` (plus `paused`, `cancelled`, `archived`).
+- Events (`src/types/event.ts`): `MISSION_CREATED / MISSION_APPROVED / MISSION_COMPLETED / MISSION_ARCHIVED` and `EXPEDITION_CREATED / EXPEDITION_APPROVED / EXPEDITION_COMMITTED / EXPEDITION_STARTED / EXPEDITION_COMPLETED`.
+
+This ADR — not ADR-045's Synthesis-layer states — is the source of truth for *runtime* Mission/Expedition states. See ADR-045's Implementation Status note for the reconciliation.
+
 ## Decision
 
 The following governance semantics are frozen as of this ADR:
