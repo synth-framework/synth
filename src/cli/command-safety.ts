@@ -204,7 +204,7 @@ export function assertSafeForDiscovery(command: string): void {
   const meta = getCommandSafety(command)
   if (!meta) {
     throw new Error(
-      `Unknown command "${command}" cannot run during the Discovery phase. ` +
+      `Unknown command "${command}" cannot run during Discovery. ` +
         "Discovery permits only read-only introspection (status, explain, doctor, capabilities, verify, certify, validate, report, help). " +
         "Complete Discovery (synth bootstrap --approve) or pass --discovery-ok to mutate.",
     )
@@ -213,7 +213,7 @@ export function assertSafeForDiscovery(command: string): void {
     return
   }
   throw new Error(
-    `${command} is a ${meta.safety} command and cannot run during the Discovery phase. ` +
+    `${command} is a ${meta.safety} command and cannot run during Discovery. ` +
       "Discovery permits only read-only introspection (status, explain, doctor, capabilities, verify, certify, etc.). " +
       "To mutate now, pass --discovery-ok (or set SYNTH_DISCOVERY_OK=1). " +
       `Otherwise complete Discovery first: ${suggestionForCommand(command)}.`,
