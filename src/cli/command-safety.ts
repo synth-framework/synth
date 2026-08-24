@@ -241,6 +241,8 @@ export function classifyInvocation(
 
   if (namespace === "report") return "report"
 
+  if (namespace === "archive") return "expedition archive"
+
   if (namespace === "bootstrap") {
     if (flags.approve === true) return "bootstrap --approve"
     if (flags["dry-run"] === true) return "bootstrap --dry-run"

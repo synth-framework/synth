@@ -165,6 +165,7 @@ const COMMANDS = [
   { name: "intent", description: "Intent model operations (create)" },
   { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
   { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, archive, list)" },
+  { name: "archive", description: "Alias for 'synth expedition archive' — move an expedition to .synth/data/expeditions/archived/<id>.json" },
   { name: "docs", description: "Documentation operations (generate)" },
   { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
   { name: "repair", description: "Repair operations (replay)" },
@@ -7723,6 +7724,10 @@ export async function main() {
         printError("Usage: synth alignment create --intent-model-id <id> | synth alignment submit --contract-id <id> | synth alignment approve --contract-id <id> | synth alignment prepare")
       break
     }
+
+    case "archive":
+      await cmdExpeditionArchive(flags)
+      break
 
     case "expedition": {
       const sub = positional[1]
