@@ -1,0 +1,6 @@
+#!/bin/sh
+# ADR-051 / ADR-053 enforcement hook.
+# Blocks commits that desync derived state (canonical-state.json) from the
+# event log. Run `npm run check:adr` manually; this hook runs it pre-commit.
+# Override locally with ADR_ENFORCE=skip (logged).
+node "$(git rev-parse --show-toplevel)/scripts/check-adr-compliance.js"

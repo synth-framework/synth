@@ -12,11 +12,12 @@ import os from "os"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function runSynth(args, cwd) {
+function runSynth(args, cwd, env = {}) {
   const result = spawnSync("node", [CLI_PATH, ...args], {
     cwd,
     encoding: "utf-8",
     timeout: 60000,
+    env: { ...process.env, ...env },
   })
   return {
     stdout: result.stdout || "",
@@ -44,7 +45,9 @@ async function main() {
   const projectDir = await setupProject()
   try {
     // Default status emits JSON with diagnostic INFO logs to stderr.
-    const defaultResult = runSynth(["status"], projectDir)
+    // Force verbose even when CI sets SYNTH_QUIET_LOGS=1, so this test
+    // still validates the default-verbose contract independently of env.
+    const defaultResult = runSynth(["status"], projectDir, { SYNTH_QUIET_LOGS: "0" })
     assert(defaultResult.status === 0, `default status must exit 0: ${defaultResult.stderr}`)
     assert(defaultResult.stdout.trim().startsWith("{"), "default status should emit JSON to stdout")
     assert(defaultResult.stderr.includes('"level":"INFO"'), "default status should emit INFO logs to stderr")

@@ -131,7 +131,7 @@ async function testMutatingCommandRejectedDuringDiscovery(repoDir) {
   const output = parseJson(result.stdout)
   assert(output.status === "error", "rejection should report error status")
   assert(output.error.includes("MUTATING"), "rejection error should include MUTATING")
-  assert(output.error.includes("cannot run during Discovery"), "rejection error should mention Discovery")
+  assert(output.error.includes("cannot run during Discovery"), `rejection error should mention Discovery; got: ${output.error}`)
   console.log("[PASS] Mutating command is rejected during discovery")
 }
 

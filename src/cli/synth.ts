@@ -7770,7 +7770,11 @@ export async function main() {
 
     case "explain": {
       const sub = positional[1]
-      if (!sub || sub === "replay") await cmdExplainReplay(flags)
+      const usage = "Usage: synth explain <replay|lineage|proposals|snapshots|graph|diagnostics|status|all>"
+      const valid = ["replay", "lineage", "proposals", "snapshots", "graph", "diagnostics", "status", "all", "identity", "resume", "governance", "agents"]
+      if (!sub || !valid.includes(sub)) {
+        printError(usage)
+      } else if (sub === "replay") await cmdExplainReplay(flags)
       else if (sub === "identity") await cmdExplainIdentity(flags)
       else if (sub === "resume") await cmdExplainResume(flags)
       else if (sub === "governance") await cmdExplainGovernance(flags)

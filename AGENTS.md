@@ -50,7 +50,9 @@ When in doubt, ask the operator: "Should I create an expedition for this, or is 
 
 `.synth/data/event-log.jsonl` and `.synth/data/canonical-state.json` are the
 committed, authoritative replay source of truth. They MUST be tracked in version
-control so state can be reconstructed from the event history.
+control so state can be reconstructed from the event history. `canonical-state.json`
+is a regenerable snapshot derived from `event-log.jsonl` (the sole source of truth);
+SYNTH regenerates and commits it, so never hand-edit it.
 
 ## Derived artifacts (regenerated; still committed)
 

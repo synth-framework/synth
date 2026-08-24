@@ -8,6 +8,10 @@
 
 ---
 
+## Implementation Status
+
+**Proposed — NOT YET ACTIVE.** Per ADR-046 (Implementation Authority Ordering), an expedition may not depend on a Proposed ADR and runtime representation must not precede architectural authority. The dependency enforcement described here is pending acceptance of this ADR **and** completion of EXP-GATE-013, after which it is re-frozen (see Re-freeze certification). Until then, do not treat the dependency-enforcement behavior as enforced.
+
 ## Context
 
 EXP-PROGRAM-035 (Intent Refinement & Review Governance) established three gate types (Refinement, Review, Acceptance) and the stop condition that *"no dependent expedition may begin while an upstream expedition is awaiting any gate decision."* This condition is currently documented but not enforced at runtime — it relies on operator discipline and manual charter review.

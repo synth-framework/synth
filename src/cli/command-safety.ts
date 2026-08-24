@@ -174,28 +174,6 @@ export function isSafeForDiscovery(command: string): boolean {
   return meta.safety === "READ_ONLY" || meta.safety === "PROPOSAL_ONLY"
 }
 
-function suggestionForCommand(command: string): string {
-  if (command.startsWith("docs")) {
-    return "generating documentation"
-  }
-  if (command.startsWith("init")) {
-    return "initializing a project"
-  }
-  if (command.startsWith("govern")) {
-    return "running governance"
-  }
-  if (command.startsWith("mission")) {
-    return "managing missions"
-  }
-  if (command.startsWith("expedition")) {
-    return "managing expeditions"
-  }
-  if (command.startsWith("first-contact") || command.startsWith("genesis")) {
-    return "running first-contact onboarding"
-  }
-  return "running this command"
-}
-
 /**
  * Assert that a command is safe for Discovery, throwing a clear
  * phase-boundary error when it is not.
@@ -204,7 +182,7 @@ export function assertSafeForDiscovery(command: string): void {
   const meta = getCommandSafety(command)
   if (!meta) {
     throw new Error(
-      `Unknown command "${command}" cannot run during the Discovery phase. ` +
+      `Unknown command "${command}" cannot run during Discovery. ` +
         "Discovery permits only read-only introspection (status, explain, doctor, capabilities, verify, certify, validate, report, help). " +
         "Complete Discovery (synth bootstrap --approve) or pass --discovery-ok to mutate.",
     )
@@ -213,10 +191,10 @@ export function assertSafeForDiscovery(command: string): void {
     return
   }
   throw new Error(
-    `${command} is a ${meta.safety} command and cannot run during the Discovery phase. ` +
+    `${command} is a ${meta.safety} command and cannot run during Discovery. ` +
       "Discovery permits only read-only introspection (status, explain, doctor, capabilities, verify, certify, etc.). " +
       "To mutate now, pass --discovery-ok (or set SYNTH_DISCOVERY_OK=1). " +
-      `Otherwise complete Discovery first: ${suggestionForCommand(command)}.`,
+      "Otherwise complete Discovery first: run `synth bootstrap --approve`.",
   )
 }
 
