@@ -1,6 +1,6 @@
 {
-  "version": 241,
-  "stateHash": "383591016",
+  "version": 244,
+  "stateHash": "245616098",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -981,7 +981,7 @@
       "dependsOn": [],
       "metadata": {},
       "createdAt": 238,
-      "updatedAt": 240,
+      "updatedAt": 242,
       "attachments": [
         {
           "kind": "attachment",
@@ -1002,7 +1002,14 @@
       "dependsOn": [],
       "metadata": {},
       "createdAt": 239,
-      "updatedAt": 239
+      "updatedAt": 243,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/3d9f5d0df805e15f/attachments/mission-new-evidence.md",
+          "hash": "06766e7bdf0157c2435aee4d0db0925b1f345e0ef3eb374c12ab052abaf71c92"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -1019,5 +1026,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 241
+  "lastEventOffset": 244
 }

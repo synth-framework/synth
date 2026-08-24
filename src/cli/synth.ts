@@ -127,6 +127,7 @@ import { validateAgentAction, type AgentAction } from "../governance/intake.js"
 import { validateEvaluationResult, formatEvaluationErrors } from "../domain/evaluation.js"
 import { generateConvergenceEvaluation } from "../governance/convergence-certification/auto-evaluation.js"
 import { buildDerivedState } from "../state/derived/index.js"
+import { isStrictContext, echoResolution, resolveInferredMissionId, resolveInferredDraftId, resolveInferredAlignmentContractId } from "./context.js"
 import { findExpeditionTemplate, EXPEDITION_TEMPLATES } from "../governance/expedition-templates.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
@@ -2346,6 +2347,7 @@ async function cmdAlignmentPrepare() {
 async function cmdExpeditionHelp() {
   printJson(namespaceHelp("expedition", "Expedition lifecycle and inventory operations", [
     { name: "synth expedition create --mission <mission> --subject <subject> --goal <goal> [--scope <glob>] [--intent <tokens>] [--dry-run]", description: "Create an Expedition proposal (Draft) with an optional file-scope boundary; --intent adds explicit tokens for duplicate-aware advisory matching against existing expeditions" },
+    { name: "synth expedition new --subject <subject> --goal <goal> [--mission <mission>] [--scope <glob>]", description: "Create an Expedition draft, inferring the active mission when --mission is omitted" },
     { name: "synth expedition create --mission <mission> --template <id> [--subject <subject>] [--dry-run]", description: "Create an Expedition from a named template (ci, deployment, observability, documentation)" },
     { name: "synth expedition approve --draft-id <id> [--dry-run]", description: "Approve an Expedition draft (Draft → Approved)" },
     { name: "synth expedition approve --all-drafts --mission <id> [--dry-run]", description: "Approve all draft Expeditions for a Mission" },
@@ -3379,24 +3381,33 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
       (c) => c.status === "approved"
     )
 
-    let suggestion: string
-    if (approvedContracts.length > 0) {
-      const list = approvedContracts
-        .map((c) => `  - ${c.id}: ${c.intentSummary || "(no summary)"}`)
-        .join("\n")
-      suggestion = `Approved alignment contracts available for reuse:\n${list}\n\nCreate a new contract with:\n  synth alignment prepare\nOr approve with an existing contract:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>`
-    } else {
-      suggestion = "No approved alignment contracts found.\nCreate one with:\n  synth alignment prepare\nThen approve the mission with:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>"
+    if (!isStrictContext() && approvedContracts.length >= 1) {
+      alignmentContractId = resolveInferredAlignmentContractId(derived)
+      if (alignmentContractId) {
+        echoResolution("alignment-contract-id", alignmentContractId, "latest approved alignment contract")
+      }
     }
 
-    printError(
-      "Mission approval requires --alignment-contract-id.",
-      {
-        code: "MissingAlignmentContractId",
-        category: "governance",
-        suggestion,
-      },
-    )
+    if (!alignmentContractId) {
+      let suggestion: string
+      if (approvedContracts.length > 0) {
+        const list = approvedContracts
+          .map((c) => `  - ${c.id}: ${c.intentSummary || "(no summary)"}`)
+          .join("\n")
+        suggestion = `Approved alignment contracts available for reuse:\n${list}\n\nCreate a new contract with:\n  synth alignment prepare\nOr approve with an existing contract:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>`
+      } else {
+        suggestion = "No approved alignment contracts found.\nCreate one with:\n  synth alignment prepare\nThen approve the mission with:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>"
+      }
+
+      printError(
+        "Mission approval requires --alignment-contract-id.",
+        {
+          code: "MissingAlignmentContractId",
+          category: "governance",
+          suggestion,
+        },
+      )
+    }
   }
 
   // Validate the draft exists before running the approval gate. This gives the
@@ -3420,7 +3431,38 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const state = await gateCtx.runtime.getState()
   const intake = await gateDecision({ kind: "mission.approve" }, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
-    printGateBlock(intake)
+    // E (a+b): an explicit --complete-first closes the blocking executing
+    // expedition in the same mission, then re-evaluates the approval gate.
+    const completeFirst = flags["complete-first"] === true || flags["complete-first"] === "true"
+    if (completeFirst) {
+      const activeMission = Object.values(state.missions).find((m) => m.status === "active")
+      const blocking =
+        activeMission &&
+        Object.values(state.expeditions).find((e) => e.missionId === activeMission.id && e.status === "executing")
+      if (blocking) {
+        console.error(
+          `[mission approve --complete-first] closing executing expedition ${blocking.id} (${blocking.name}) before approving the mission.`,
+        )
+        await cmdExpeditionComplete({
+          id: blocking.id,
+          force: true,
+          reason: "closed automatically via mission approve --complete-first",
+        })
+        const gateCtx2 = await bootstrapWithCapabilities({
+          skipGenesis: true,
+          infra: { persistence: "file" },
+        })
+        const state2 = await gateCtx2.runtime.getState()
+        const intake2 = await gateDecision({ kind: "mission.approve" }, state2, gateCtx2.runtime)
+        if (intake2.decision === "BLOCK") {
+          printGateBlock(intake2)
+        }
+      } else {
+        printGateBlock(intake)
+      }
+    } else {
+      printGateBlock(intake)
+    }
   }
 
   // Drafts are editable artifacts; certify before trusting anything (EXP-TRUST-002).
@@ -5167,7 +5209,7 @@ async function cmdRepairStateHelp() {
 }
 
 async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
-  const missionSubject = typeof flags.mission === "string" ? flags.mission : ""
+  let missionSubject = typeof flags.mission === "string" ? flags.mission : ""
   let subject = typeof flags.subject === "string" ? flags.subject : ""
   let goal = typeof flags.goal === "string" ? flags.goal : ""
   let scope: string[] = []
@@ -5199,15 +5241,23 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     scope = explicitScope
   }
 
-  if (!missionSubject || !subject) printError("--mission and --subject are required (or use --template)")
-
-  // Resolve the project's actual governance state before allowing expedition
-  // proposal. Planning itself remains in-memory.
+  // Resolve governance state early so we can infer --mission from the executing
+  // expedition / active mission when it is not supplied (context inference).
   const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
+
+  if (!missionSubject && !isStrictContext()) {
+    const inferred = resolveInferredMissionId(state)
+    if (inferred) {
+      missionSubject = inferred
+      echoResolution("mission", inferred, "executing expedition / active mission")
+    }
+  }
+
+  if (!missionSubject || !subject) printError("--mission and --subject are required (or use --template)")
 
   // EXP-CLI-00x: --mission may be an existing mission id or name. Resolve it
   // before planning so Mission Studio does not fabricate a duplicate mission.
@@ -5398,8 +5448,34 @@ async function approveOneExpedition(
   }
 }
 
+async function cmdExpeditionNew(flags: Record<string, string | boolean>) {
+  const gateCtx = await bootstrapWithCapabilities({
+    skipGenesis: true,
+    infra: { persistence: "file" },
+  })
+  const state = await gateCtx.runtime.getState()
+  if (!flags.mission && !isStrictContext()) {
+    const inferred = resolveInferredMissionId(state)
+    if (inferred) {
+      flags.mission = inferred
+      echoResolution("mission", inferred, "executing expedition / active mission")
+    } else {
+      printError(
+        "expedition new requires --mission (no executing expedition or active mission to infer from)",
+        {
+          code: "MissingMissionForExpeditionNew",
+          category: "cli",
+          suggestion: "Pass --mission <id> or start an expedition with 'synth expedition start --id <id>'.",
+        },
+      )
+      return
+    }
+  }
+  return cmdExpeditionCreate(flags)
+}
+
 async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
-  const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
+  let draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
   const allDrafts = flags["all-drafts"] === true || flags["all-drafts"] === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
@@ -5448,6 +5524,15 @@ async function cmdExpeditionApprove(flags: Record<string, string | boolean>) {
     return
   }
 
+  if (!draftId && !isStrictContext()) {
+    const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+    const state = await ctx.runtime.getState()
+    const inferred = resolveInferredDraftId(state, missionId)
+    if (inferred) {
+      draftId = inferred
+      echoResolution("draft-id", inferred, missionId ? `drafts in mission ${missionId}` : "all drafts")
+    }
+  }
   if (!draftId) printError("--draft-id is required")
 
   const ctx = await bootstrapWithCapabilities({
@@ -7488,12 +7573,18 @@ export async function main() {
   const command = positional[0]
 
   // EXP-BROWNFIELD-001: Discovery Safety Model. When --discovery-mode is set
-  // or SYNTH_DISCOVERY_MODE is active, reject mutating commands.
+  // or SYNTH_DISCOVERY_MODE is active, reject mutating commands. The operator
+  // may opt in to mutation with --discovery-ok (or SYNTH_DISCOVERY_OK=1).
+  // Read-only introspection (status, explain, doctor, capabilities, verify,
+  // certify, validate, report, help) is always permitted during Discovery.
   const discoveryMode = discoveryModeFlag || process.env.SYNTH_DISCOVERY_MODE === "1"
   if (discoveryMode) {
-    const invokedCommand = classifyInvocation(rawArgs, positional, flags)
-    if (!isSafeForDiscovery(invokedCommand)) {
-      assertSafeForDiscovery(invokedCommand)
+    const discoveryOk = flags["discovery-ok"] === true || process.env.SYNTH_DISCOVERY_OK === "1"
+    if (!discoveryOk) {
+      const invokedCommand = classifyInvocation(rawArgs, positional, flags)
+      if (!isSafeForDiscovery(invokedCommand)) {
+        assertSafeForDiscovery(invokedCommand)
+      }
     }
   }
 
@@ -7657,6 +7748,7 @@ export async function main() {
       else if (sub === "explain") await cmdExpeditionShow(flags)
       else if (sub === "rank") await cmdExpeditionRank(flags)
       else if (sub === "report") await cmdExpeditionReport(flags)
+      else if (sub === "new") await cmdExpeditionNew(flags)
       else
         printError(
           `Unknown subcommand '${sub}' for 'synth expedition'. Did you mean 'synth expedition show --id <expedition-id>'?`,
@@ -7678,7 +7770,7 @@ export async function main() {
 
     case "explain": {
       const sub = positional[1]
-      if (sub === "replay") await cmdExplainReplay(flags)
+      if (!sub || sub === "replay") await cmdExplainReplay(flags)
       else if (sub === "identity") await cmdExplainIdentity(flags)
       else if (sub === "resume") await cmdExplainResume(flags)
       else if (sub === "governance") await cmdExplainGovernance(flags)
