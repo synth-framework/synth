@@ -42,7 +42,11 @@ async function testJsonFlagBeforeCommand() {
 async function testWithoutJsonFlagLogsRemain() {
   await withTempDir("synth-clean-logs-", async (tmpDir) => {
     runSynth(["init", "--name", "Clean Output Test"], tmpDir)
-    const { stdout, stderr, status } = runSynth(["status"], tmpDir)
+    // Force verbose output: CI sets SYNTH_QUIET_LOGS=1 globally to keep
+    // logs quiet, but this test verifies the default (non-quiet) contract.
+    const { stdout, stderr, status } = runSynth(["status"], tmpDir, {
+      env: { ...process.env, SYNTH_QUIET_LOGS: "0" },
+    })
     assert(status === 0, "status should exit 0")
     assert(stdout.trim().startsWith("{"), "stdout should be JSON object")
     assert(hasDiagnosticLog(stderr), `stderr should still contain INFO/WARN/DEBUG logs without --json: ${stderr}`)
