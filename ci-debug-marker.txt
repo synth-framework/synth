@@ -1,1 +1,1 @@
-trivial change to trigger baseline CI observation
+trivial change #2 to observe baseline CI (hook now skips on main)
