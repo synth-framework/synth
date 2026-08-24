@@ -11,7 +11,7 @@
 
 The TaskPRO brownfield migration showed that agents will hand-edit derived files when the boundary is not explicit. Incidents included direct edits to `.synth/data/canonical-state.json` and `AGENTS.md`, and expeditions touching files far outside their stated intent (e.g. a mobile-defect expedition modifying `.synth/` or `knowledge/`).
 
-Derived files are projections of the immutable event log. If they can be edited directly, replay no longer proves state, and the system loses its root of trust. Expedition scope is the operational contract that bounds what a governed engineering objective may touch.
+Derived files are projections of the immutable event log. `canonical-state.json` in particular is a *committed, regenerable* snapshot — it is tracked for clone fidelity and rewritten by SYNTH on every operation; it must never be **hand-edited**, but it is legitimately modified by the system. The enforcement rule is therefore CONSISTENCY (the snapshot stays in sync with the event log), not a blind ban on touching the file. Expedition scope is the operational contract that bounds what a governed engineering objective may touch.
 
 ## Decision
 
@@ -32,9 +32,12 @@ Derived files are projections of the immutable event log. If they can be edited 
 
 4. **Auditable out-of-scope override.** When a mutation is allowed because `context.authorizeOutOfScope` is present, an `OUT_OF_SCOPE_AUTHORIZED` event is appended to the event log recording the expedition, target, and reason.
 
+5. **Consistency enforcement (offset invariant), not a blind edit ban.** `canonical-state.json` is a committed, regenerable snapshot of the event log (the sole source of truth). The enforcement rule is a single safe invariant: `canonical-state.lastEventOffset` must equal the event-log line count. This catches hand-edits and desyncs without ever blocking a legitimate SYNTH regeneration (which keeps the two in sync), and it does not require both files to change in the same commit. The check lives in `scripts/check-adr-compliance.js` and is wired into `npm run test:adr` and the pre-commit hook.
+
 ## Consequences
 
 - Agents can no longer accidentally edit canonical state or generated docs through the SDK.
+- `canonical-state.json` remains a committed, regenerated snapshot; the consistency check ensures it stays in sync with the event log without false-positiving on legitimate regeneration.
 - Every file mutation that passes through the ExecutionGate is bounded by expedition scope unless explicitly overridden and logged.
 - The kernel stores retain their existing write tokens; no new runtime path is created for derived-file writes.
 - Out-of-scope writes become audit events, making them visible to `synth explain diagnostics` and replay.
