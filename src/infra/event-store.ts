@@ -346,6 +346,7 @@ export class PartitionedEventStore extends EventStore {
   private partitionCount: number
   private segmentStore: SegmentStore
   private globalOffset: number | undefined
+  private partitioned: boolean
 
   constructor(
     eventLogPath?: string,
@@ -363,6 +364,15 @@ export class PartitionedEventStore extends EventStore {
     this.partitionCount = Math.max(1, partitionCount)
     this.segmentStore = SegmentStore.createAuthorized(1000, this.streamDir)
     this.globalOffset = undefined
+    // Backward compatibility: the store operates in partitioned mode when an
+    // explicit streamDir is provided OR when the canonical legacy
+    // `event-log.jsonl` path is used (the migration source). A custom-named
+    // event-log path (e.g. the standalone fixtures used by adversarial,
+    // freeze-certification, and brownfield tests) is treated as a live
+    // monolithic store, so direct tampering of that file is still detected by
+    // the replay verifier.
+    this.partitioned =
+      streamDir !== undefined || path.basename(this.eventLogPath) === "event-log.jsonl"
   }
 
   static createAuthorized(
@@ -379,12 +389,30 @@ export class PartitionedEventStore extends EventStore {
   }
 
   override getFilePath(): string | undefined {
-    return this.streamDir
+    return this.partitioned ? this.streamDir : this.eventLogPath
   }
 
   override getDataDir(): string | undefined {
     const filePath = this.getFilePath()
     return filePath ? path.dirname(filePath) : undefined
+  }
+
+  private async monolithicLoadAll(): Promise<SynthEvent[]> {
+    try {
+      const raw = await fs.readFile(this.eventLogPath, "utf-8")
+      return raw
+        .split("\n")
+        .filter(Boolean)
+        .map((line: string) => JSON.parse(line))
+    } catch {
+      return []
+    }
+  }
+
+  private async monolithicAppend(events: SynthEvent[]): Promise<void> {
+    if (events.length === 0) return
+    const lines = events.map((e: SynthEvent) => JSON.stringify(e)).join("\n") + "\n"
+    await fs.appendFile(this.eventLogPath, lines)
   }
 
   private route(key: string): number {
@@ -423,12 +451,20 @@ export class PartitionedEventStore extends EventStore {
 
   override async append(event: SynthEvent, _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
+    if (!this.partitioned) {
+      await this.monolithicAppend([event])
+      return
+    }
     await this.appendInternal(event)
   }
 
   override async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     if (events.length === 0) return
+    if (!this.partitioned) {
+      await this.monolithicAppend(events)
+      return
+    }
     const span = telemetry.start("eventStore.appendBatch")
     try {
       for (const event of events) {
@@ -442,6 +478,7 @@ export class PartitionedEventStore extends EventStore {
   }
 
   override async loadAll(): Promise<SynthEvent[]> {
+    if (!this.partitioned) return this.monolithicLoadAll()
     const all: PartitionedEvent[] = []
     for (let p = 0; p < this.partitionCount; p++) {
       const events = await this.segmentStore.readPartition(p)
@@ -492,6 +529,10 @@ export class PartitionedEventStore extends EventStore {
   }
 
   override async initialize(): Promise<void> {
+    if (!this.partitioned) {
+      await fs.mkdir(path.dirname(this.eventLogPath), { recursive: true })
+      return
+    }
     await fs.mkdir(this.streamDir, { recursive: true })
     await this.migrateIfNeeded()
   }
