@@ -45,7 +45,7 @@ export async function runExplainReplay(flags: Record<string, string | boolean>):
 
   const ctx = await createInfra({
     persistence: "file",
-    eventLogPath: paths.logPath,
+    eventLogPath: paths.legacyLogPath,
     statePath: paths.statePath,
     checkpointPath: paths.checkpointPath,
   })

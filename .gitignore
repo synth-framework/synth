@@ -35,8 +35,8 @@ coverage/
 .synth/ai/
 .synth/context.json
 .synth/discovery/
-# Durable replay source stays tracked:
-!.synth/data/event-log.jsonl
+# Durable replay source stays tracked (chunked event stream + derived state):
+!.synth/data/event-stream/
 !.synth/data/canonical-state.json
 data-test/
 data-test-alignment/

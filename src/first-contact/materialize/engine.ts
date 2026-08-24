@@ -18,6 +18,7 @@ import type {
 import { recommendAdapters, selectWorkflowTemplate, getAdapterVersion } from "./recommend.js"
 import { hashArtifact } from "../artifact/canonical.js"
 import { computeEventHash } from "../../core/hash.js"
+import { PartitionedEventStore } from "../../infra/event-store.js"
 import { createEmptyState, applyEvent, computeStateHash } from "../../runtime/replay.js"
 
 function nowTimestamp(): number {
@@ -219,10 +220,10 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
   const expeditionProposalsPath = path.join(sdk.paths.proposalsDir(root), "expedition-proposals.json")
 
   await sdk.json.writeJsonNewline(manifestPath, manifest)
-  await fs.writeFile(
-    eventLogPath,
-    events.map((e) => JSON.stringify(e)).join("\n") + "\n",
-  )
+  const streamDir = path.join(sdk.paths.dataDir(root), "event-stream")
+  const eventStore = PartitionedEventStore.createAuthorized(eventLogPath, streamDir, 4)
+  await eventStore.initialize()
+  await eventStore.appendBatch(events)
   await fs.writeFile(statePath, JSON.stringify(state, null, 2) + "\n")
   await sdk.json.writeJsonNewline(artifactPath, enrichedArtifact)
   await sdk.files.writeFile(

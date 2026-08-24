@@ -9,7 +9,7 @@ export * from "./git-adapter.js"
 export * from "./filesystem.js"
 export * from "./event-store.guard.js"
 
-import { EventStore, InMemoryEventStore, PartitionStore, SegmentStore } from "./event-store.js"
+import { EventStore, InMemoryEventStore, PartitionStore, SegmentStore, PartitionedEventStore } from "./event-store.js"
 import { StateStore, InMemoryStateStore, type IStateStore } from "./state-store.js"
 import { CheckpointStore, InMemoryCheckpointStore, type ICheckpointStore } from "./checkpoint-store.js"
 import { GitAdapterImpl, GitAdapterStub } from "./git-adapter.js"
@@ -47,7 +47,7 @@ export async function createInfra(config: InfraConfig = {}): Promise<Infra> {
   // genuinely in-memory when persistence is not "file".
   const eventStore = createGuardedEventStore(
     isFile
-      ? EventStore.createAuthorized(config.eventLogPath)
+      ? PartitionedEventStore.createAuthorized(config.eventLogPath, config.streamDir, partitionCount)
       : new InMemoryEventStore()
   )
   const partitionStore = PartitionStore.createAuthorized(partitionCount, config.streamDir)
