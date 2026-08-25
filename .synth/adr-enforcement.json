@@ -1,0 +1,6 @@
+{
+  "citation": "ADR-051",
+  "sourceOfTruth": ".synth/data/event-log.jsonl",
+  "invariant": "canonical-state.lastEventOffset === event-log line count",
+  "note": "canonical-state.json is a committed, regenerable snapshot derived from event-log.jsonl (the sole source of truth). Enforcement is the CONSISTENCY invariant only, so a SYNTH regeneration that keeps them in sync never false-positives. Agents must not hand-edit canonical-state (SDK guard, ADR-051 §1); the system regenerates and commits it. AGENTS.md is excluded from this check to avoid false positives from legitimate `synth project AGENTS.md` regeneration."
+}

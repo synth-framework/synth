@@ -82,7 +82,7 @@ function testAssertSafeForDiscoveryErrorMessage() {
   } catch (err) {
     threw = true
     assert(err.message.includes("MUTATING"), "error should include MUTATING")
-    assert(err.message.includes("cannot run during Discovery"), "error should mention Discovery")
+    assert(err.message.includes("cannot run during Discovery"), `error should mention Discovery; got: ${err.message}`)
     assert(err.message.includes("synth bootstrap --approve"), "error should suggest bootstrap --approve")
   }
   assert(threw, "assertSafeForDiscovery should throw for mutating commands")

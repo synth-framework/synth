@@ -15,6 +15,8 @@ import { strict as assert } from "assert"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
+process.env.SYNTH_STRICT_CONTEXT = "1"
+
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
 function runSynth(args, cwd) {
