@@ -434,8 +434,16 @@ export class PartitionedEventStore extends EventStore {
   }
 
   private async nextOffset(): Promise<number> {
-    if (this.globalOffset === undefined) {
-      this.globalOffset = await this.computeMaxOffset()
+    // The event-stream is shared on disk and may be appended by other
+    // processes (separate CLI invocations) between two appends made by this
+    // instance. A purely in-memory cached offset would then collide with
+    // offsets assigned by those external writers, producing duplicate offsets
+    // and breaking the hash-chain. Always reconcile the cached cursor with the
+    // authoritative on-disk maximum so every assigned offset is strictly
+    // greater than any event already persisted.
+    const diskMax = await this.computeMaxOffset()
+    if (this.globalOffset === undefined || this.globalOffset < diskMax) {
+      this.globalOffset = diskMax
     }
     this.globalOffset += 1
     return this.globalOffset
