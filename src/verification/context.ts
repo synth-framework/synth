@@ -6,9 +6,7 @@
 
 import fs from "fs/promises"
 import path from "path"
-import { EventStore } from "../infra/event-store.js"
-import { StateStore } from "../infra/state-store.js"
-import { CheckpointStore } from "../infra/checkpoint-store.js"
+import { createInfra } from "../infra/index.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
@@ -51,14 +49,17 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
   const manifest = manifestPath(cwd)
 
   const hasManifest = await pathExists(manifest)
-  const hasEventLog = await pathExists(eventLogPath)
 
-  // Read-only instances: no write token provided, so
-  // ensureAuthorized() will throw on any write attempt.
-  const eventStore = new EventStore(eventLogPath)
-  const stateStore = new StateStore(statePath)
-  const checkpointStore = new CheckpointStore(checkpointPath)
-  await checkpointStore.initialize()
+  // Canonical, partition-aware stores. initialize() migrates the legacy
+  // monolithic log into the chunked store exactly once (idempotent), so
+  // verification always reads the authoritative event source.
+  const infra = await createInfra({ eventLogPath, statePath, checkpointPath })
+  const eventStore = infra.eventStore
+  const stateStore = infra.stateStore
+  const checkpointStore = infra.checkpointStore
+
+  const migratedEvents = await eventStore.loadAll()
+  const hasEventLog = migratedEvents.length > 0 || (await pathExists(eventLogPath))
 
   const verifier = createReplayVerifier(eventStore, stateStore)
 
