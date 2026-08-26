@@ -24,6 +24,7 @@ export type InfraConfig = {
   statePath?: string
   checkpointPath?: string
   streamDir?: string
+  readOnly?: boolean
 }
 
 export type Infra = {
@@ -47,7 +48,7 @@ export async function createInfra(config: InfraConfig = {}): Promise<Infra> {
   // genuinely in-memory when persistence is not "file".
   const eventStore = createGuardedEventStore(
     isFile
-      ? PartitionedEventStore.createAuthorized(config.eventLogPath, config.streamDir, partitionCount)
+      ? PartitionedEventStore.createAuthorized(config.eventLogPath, config.streamDir, partitionCount, config.readOnly)
       : new InMemoryEventStore()
   )
   const partitionStore = PartitionStore.createAuthorized(partitionCount, config.streamDir)

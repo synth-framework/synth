@@ -347,12 +347,14 @@ export class PartitionedEventStore extends EventStore {
   private segmentStore: SegmentStore
   private globalOffset: number | undefined
   private partitioned: boolean
+  private readOnly: boolean
 
   constructor(
     eventLogPath?: string,
     streamDir?: string,
     partitionCount: number = 4,
     authToken?: symbol,
+    readOnly: boolean = false,
   ) {
     super(streamDir ?? EVENT_LOG_FILE, authToken)
     this.eventLogPath = eventLogPath ?? EVENT_LOG_FILE
@@ -364,6 +366,7 @@ export class PartitionedEventStore extends EventStore {
     this.partitionCount = Math.max(1, partitionCount)
     this.segmentStore = SegmentStore.createAuthorized(1000, this.streamDir)
     this.globalOffset = undefined
+    this.readOnly = readOnly
     // Backward compatibility: the store operates in partitioned mode when an
     // explicit streamDir is provided OR when the canonical legacy
     // `event-log.jsonl` path is used (the migration source). A custom-named
@@ -379,12 +382,14 @@ export class PartitionedEventStore extends EventStore {
     eventLogPath?: string,
     streamDir?: string,
     partitionCount?: number,
+    readOnly: boolean = false,
   ): PartitionedEventStore {
     return new PartitionedEventStore(
       eventLogPath,
       streamDir,
       partitionCount,
       EVENT_STORE_WRITE_TOKEN,
+      readOnly,
     )
   }
 
@@ -406,6 +411,15 @@ export class PartitionedEventStore extends EventStore {
         .map((line: string) => JSON.parse(line))
     } catch {
       return []
+    }
+  }
+
+  private async monolithicHasData(): Promise<boolean> {
+    try {
+      const raw = await fs.readFile(this.eventLogPath, "utf-8")
+      return raw.split("\n").filter(Boolean).length > 0
+    } catch {
+      return false
     }
   }
 
@@ -493,6 +507,13 @@ export class PartitionedEventStore extends EventStore {
       all.push(...events)
     }
     all.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
+    // Read-only mode (used by read-only consumers such as `synth explain`):
+    // never migrate or write. If the partitioned stream is empty but the
+    // legacy monolith still holds events, read it directly instead of
+    // materializing the stream (which would be a write).
+    if (this.readOnly && all.length === 0 && (await this.monolithicHasData())) {
+      return this.monolithicLoadAll()
+    }
     return all as SynthEvent[]
   }
 
@@ -537,6 +558,7 @@ export class PartitionedEventStore extends EventStore {
   }
 
   override async initialize(): Promise<void> {
+    if (this.readOnly) return
     if (!this.partitioned) {
       await fs.mkdir(path.dirname(this.eventLogPath), { recursive: true })
       return

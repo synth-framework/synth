@@ -109,6 +109,7 @@ async function loadExplainContext(flags: Record<string, string | boolean>): Prom
       eventLogPath: paths.legacyLogPath,
       statePath: paths.statePath,
       checkpointPath: paths.checkpointPath,
+      readOnly: true,
     },
   })
 

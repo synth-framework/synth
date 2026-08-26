@@ -7170,6 +7170,7 @@ async function cmdExplainReplay(flags: Record<string, string | boolean>) {
       eventLogPath: paths.logPath,
       statePath: paths.statePath,
       checkpointPath: paths.checkpointPath,
+      readOnly: true,
     },
   })
 

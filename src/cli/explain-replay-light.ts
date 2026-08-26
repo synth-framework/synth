@@ -48,6 +48,7 @@ export async function runExplainReplay(flags: Record<string, string | boolean>):
     eventLogPath: paths.legacyLogPath,
     statePath: paths.statePath,
     checkpointPath: paths.checkpointPath,
+    readOnly: true,
   })
 
   const verifier = createReplayVerifier(ctx.eventStore, ctx.stateStore)
