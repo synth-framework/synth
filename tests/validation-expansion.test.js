@@ -245,6 +245,7 @@ test("memory mode creates no event-log file in an empty working directory", () =
 test("file persistence with an explicit path still writes the log", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-file-"))
   const eventLogPath = path.join(dir, "event-log.jsonl")
+  const streamDir = path.join(dir, "event-stream")
   const ctx = await bootstrap({
     skipGenesis: true,
     infra: {
@@ -252,7 +253,7 @@ test("file persistence with an explicit path still writes the log", async () => 
       eventLogPath,
       statePath: path.join(dir, "canonical-state.json"),
       checkpointPath: path.join(dir, "checkpoint.json"),
-      streamDir: path.join(dir, "event-stream"),
+      streamDir,
       gitEnabled: false,
     },
   })
@@ -260,9 +261,17 @@ test("file persistence with an explicit path still writes the log", async () => 
   await approveAndGenesis(ctx)
 
   assert.ok(!(ctx.infra.eventStore instanceof InMemoryEventStore), "file persistence must keep the file-backed store")
-  assert.ok(fs.existsSync(eventLogPath), "file mode must write the explicit log path")
-  const lines = fs.readFileSync(eventLogPath, "utf-8").split("\n").filter(Boolean)
-  assert.strictEqual(lines.length, await ctx.infra.eventStore.count())
+  assert.ok(fs.existsSync(streamDir), "file mode must write the partitioned event-stream log")
+  const segmentEvents = []
+  for (const part of fs.readdirSync(streamDir)) {
+    const partDir = path.join(streamDir, part)
+    if (!fs.statSync(partDir).isDirectory()) continue
+    for (const file of fs.readdirSync(partDir)) {
+      if (!file.endsWith(".jsonl")) continue
+      segmentEvents.push(...fs.readFileSync(path.join(partDir, file), "utf-8").split("\n").filter(Boolean))
+    }
+  }
+  assert.strictEqual(segmentEvents.length, await ctx.infra.eventStore.count())
 })
 
 // ============================================================
