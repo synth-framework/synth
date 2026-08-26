@@ -104,3 +104,17 @@ jobs:
           # This proves the incremental orchestration does not weaken guarantees.
           node scripts/govern-profiler.js --profile pull-request --changes "${{ needs.plan.outputs.changed-files }}"
           node scripts/govern-profiler.js --full --changes "${{ needs.plan.outputs.changed-files }}"
+
+      - name: Upload full governance baseline
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-govern-baseline
+          path: proof/govern-baseline.json
+
+      - name: Upload proof object
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-govern-proof
+          path: proof/proof-*.json
