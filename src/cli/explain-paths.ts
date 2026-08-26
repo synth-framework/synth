@@ -53,7 +53,10 @@ export function resolveExplainPaths(flags: Record<string, string | boolean>): Ex
 
   const projectRoot = root()
   return {
-    logPath: path.join(dataDir(projectRoot), "event-stream"),
+    // The canonical event-log path is the store's entry point; the partitioned
+    // store routes it to event-stream internally. Pointing this at the
+    // event-stream directory directly breaks the partition routing.
+    logPath: eventLogFile(projectRoot),
     legacyLogPath: eventLogFile(projectRoot),
     logDisplay: DEFAULT_LOG_DISPLAY,
     logDir: dataDir(projectRoot),

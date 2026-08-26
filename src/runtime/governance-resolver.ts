@@ -86,7 +86,7 @@ async function readEventLog(fs: FilesystemProvider, logPath: string): Promise<Sy
  * canonical source of truth, so this loader prefers them and falls back to the
  * monolithic file only for pre-partition repositories.
  */
-async function readAuthoritativeEventLog(fs: FilesystemProvider): Promise<SynthEvent[]> {
+export async function readAuthoritativeEventLog(fs: FilesystemProvider): Promise<SynthEvent[]> {
   if (await fs.pathExists("event-stream")) {
     try {
       const partitions = (await fs.listDirectory("event-stream")).filter((p) => p.startsWith("partition-"))
