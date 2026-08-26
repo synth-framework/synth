@@ -1,0 +1,40 @@
+{
+  "id": "dac069e8cc375a6b",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Simplify Expedition Lifecycle Operations",
+  "goal": "Consolidate CLI commands to reduce operator toil (e.g. smoother transitions from Draft to Executing, auto-ignoring untracked scratch files) to improve simplification and coherence.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-65629",
+      "sessionId": "9856e909-edd6-4542-bf00-cf8fc6b1ce21",
+      "approvalMode": "autonomous",
+      "issuedAt": 75
+    }
+  },
+  "createdAt": 23,
+  "updatedAt": 100,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/dac069e8cc375a6b/git-diff.patch",
+      "hash": "ea23cc3cd4f627ee14f21922ebc3acb913e76e5dad18c4e1362718fd42c20232"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/dac069e8cc375a6b/git-diff.patch",
+      "hash": "278a219749f6cace149e8d2d78cf04a61bfc7122b0388ed3ec0938797fd2a4c0"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/dac069e8cc375a6b/git-diff.patch",
+      "hash": "2af7041b9d6aff62dbb634bae560d6f60571167c8c786803a39e7a60d8a1d4fe"
+    }
+  ],
+  "force": true,
+  "forceReason": "PR #302 full-govern green; dirty tree is only derived artifacts (certification-matrix.md, proof/*) which are intentionally not committed per derived-file policy. Expedition work (Simplify Expedition Lifecycle Operations) is merged-ready."
+}

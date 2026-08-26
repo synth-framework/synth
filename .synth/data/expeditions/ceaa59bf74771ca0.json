@@ -1,0 +1,35 @@
+{
+  "id": "ceaa59bf74771ca0",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Optimize CLI Bootstrap Performance",
+  "goal": "Profile and optimize the 13-step infrastructure bootstrap and event replay to reduce CLI command latency.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-55408",
+      "sessionId": "71bcc33e-5d90-466c-aa41-273335d710b7",
+      "approvalMode": "autonomous",
+      "issuedAt": 41
+    }
+  },
+  "createdAt": 24,
+  "updatedAt": 48,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/ceaa59bf74771ca0/git-diff.patch",
+      "hash": "42f40084a8292aefa9d13471e16bc69f3b1ea0e4914ffd84e1d6dbf2edba3c2d"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/ceaa59bf74771ca0/git-diff.patch",
+      "hash": "94ba3b8ba88fb0da29e102acf04d1bd70ffc8c67e51e6e165244e7560b488244"
+    }
+  ],
+  "force": true,
+  "forceReason": "Working directory contains temporary audit reports and scratch files."
+}

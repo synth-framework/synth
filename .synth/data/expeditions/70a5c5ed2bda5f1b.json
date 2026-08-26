@@ -1,0 +1,38 @@
+{
+  "id": "70a5c5ed2bda5f1b",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Audit CLI command surface and decouple synth.js",
+  "goal": "INVESTIGATION. Survey every CLI verb/subcommand (mission, expedition, evidence, validate, explain, docs, bootstrap, etc.) and quantify redundancy: overlapping procedures that can collapse into a smaller, memorable command set, reducing the operator 'knowledge quorum'. Map findings against existing related expeditions so the audit extends rather than duplicates them: bc9c51e0 (termination-model unification), dac069e8 (lifecycle simplification), ceaa59bf (bootstrap-performance). Identify where synth.js loads the full machinery (13-step bootstrap, all adapters, Mission Studio, Planning Cognition) on every invocation, and propose decoupling: lazy/deferred per-command loading, command-group entry points, and a thinner default path. Deliverable: a written audit plus follow-up expedition drafts minted from concrete findings (e.g. verb consolidation, lazy CLI loader).",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-25481",
+      "sessionId": "075dc769-e93e-4327-9646-8dc86d19236b",
+      "approvalMode": "autonomous",
+      "issuedAt": 188
+    }
+  },
+  "createdAt": 184,
+  "updatedAt": 197,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/audit-cli.md",
+      "hash": "500c6c2f64edbd9b94010e3ca105d0a943f7ec5b72e2d05ec81ed8fca0c40f8e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/70a5c5ed2bda5f1b/attachments/refined-cli.md",
+      "hash": "2b92ccb1ccaabb3cd7ee962b8aa93f874b5843f66703a97044954c2311a39a50"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/70a5c5ed2bda5f1b/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

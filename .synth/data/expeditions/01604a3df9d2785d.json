@@ -1,0 +1,14 @@
+{
+  "id": "01604a3df9d2785d",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
+  "goal": "Resolve the monolithic-state problem at both layers. (1) EVENT LOG: implement the already-designed PartitionedEvent chunking (src/infra/event-store.ts append(partition,event)/readPartition/readSegment) into .synth/data/event-stream/<partition>/<segment>.jsonl with an offset-ordered manifest, preserving deterministic replay. (2) PROJECTION: change StateStore.save (src/infra/state-store.ts:66) to write per-entity derived files (.synth/data/expeditions/<id>.json, .synth/data/missions/<id>.json) instead of one canonical-state.json; canonical-state.json becomes a generated aggregate (amend contract tracking rule). (3) dependsOn: make it a settable canonical attribute via expedition refine --depends-on (writes event, materialized into per-entity file). (4) Archive: relocate per-entity file to .synth/data/expeditions/archived/<id>.json (status marker), not a monolith shuffle. Single source of truth (event log) preserved; merge/review/scale improved.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 251,
+  "updatedAt": 251
+}

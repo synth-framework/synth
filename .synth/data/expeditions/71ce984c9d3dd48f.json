@@ -1,0 +1,14 @@
+{
+  "id": "71ce984c9d3dd48f",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
+  "goal": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 183,
+  "updatedAt": 212
+}

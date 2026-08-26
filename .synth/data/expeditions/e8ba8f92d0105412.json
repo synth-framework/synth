@@ -1,0 +1,21 @@
+{
+  "id": "e8ba8f92d0105412",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Fix derived-state auto-commit (EXP-AUTO-COMMIT-001) to skip gitignored paths",
+  "goal": "autoCommitDerivedState (src/cli/synth.ts ~351) builds an explicit git add path list that includes .synth/data/drafts/ (gitignored), causing the whole git add to error and the derived-state commit to abort, leaving event-log.jsonl/canonical-state.json staged-but-uncommitted after lifecycle transitions. Fix: exclude gitignored/derived-excluded paths before git add (filter via git check-ignore, or use git add -A which skips ignored). See attached finding.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 246,
+  "updatedAt": 247,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e8ba8f92d0105412/attachments/autocommit-bug-evidence.md",
+      "hash": "416a48d413d729e2283bf850dc33575e1301e5c4ccf7670b249f2ea95e3fd468"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "beb71bb77cb510e3",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Canonicalize and standardize logs",
+  "goal": "Establish one canonical logging model for SYNTH: consolidate CLI error logs (cli-errors.jsonl), runtime diagnostics, event logs, and proof/temp artifacts into a single location, consistent schema, and rotation policy. Eliminate ad-hoc/duplicate logs (e.g., cli-errors.jsonl vs a referenced cli-errors.log, per-test temp logs under /var/folders) and standardize structured stdout vs diagnostic streams so operators and tooling depend on one shape.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 219,
+  "updatedAt": 226,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/beb71bb77cb510e3/attachments/f-mechanical-fix.md",
+      "hash": "7f7e8ba24e1402b019cb33ffb75287cd9275d9cf50e1af1f9de5f2f256ac5e0c"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "0daac4fc9df96606",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Fix mission.approve gate scoping (checks active mission instead of target mission)",
+  "goal": "intake.ts mission.approve resolves missionId = action.missionId || activeMission?.id; CLI passes no missionId, so it inspects the ACTIVE mission's executing expeditions, wrongly blocking approval of an UNRELATED mission. Fix: resolve the target mission from the approved draft/snapshot and check THAT mission for executing expeditions, so a mission with no executing expeditions can be approved even when another mission has a live expedition. See attached finding.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 238,
+  "updatedAt": 242,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/0daac4fc9df96606/attachments/gate-bug-evidence.md",
+      "hash": "5b9a9174cabce0ab6918df1d69f495cc3f0422a29432e2242cb8d5456886ca82"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "d0a701df55ef36d7",
+  "missionId": "9861cf62476c90ae",
+  "name": "Initialize Audit and Evidence Gathering",
+  "goal": "Audit the codebase, identify architectural gaps, evaluate usability, and propose follow-up expeditions based on findings.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-44668",
+      "sessionId": "e75a25fd-a494-463b-b67a-12bd1d469019",
+      "approvalMode": "autonomous",
+      "issuedAt": 15
+    }
+  },
+  "createdAt": 11,
+  "updatedAt": 18,
+  "force": true,
+  "forceReason": "Working directory contains temporary audit scratch files"
+}

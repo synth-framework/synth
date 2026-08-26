@@ -1,0 +1,14 @@
+{
+  "id": "4ce3c7bcef3a00d5",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Event schema versioning and migration registry",
+  "goal": "Add schemaVersion to every event and a MigrationRegistry so replay survives event-shape evolution; version canonical-state by schema.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 225,
+  "updatedAt": 228
+}

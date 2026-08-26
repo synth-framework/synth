@@ -1,0 +1,13 @@
+{
+  "id": "9861cf62476c90ae",
+  "name": "Framework Audit and Maturation",
+  "purpose": "Fully audit the SYNTH framework, assess maturity and usability, identify gaps, and gather evidence for future cleanup and optimization missions.",
+  "status": "completed",
+  "expeditions": [
+    "d0a701df55ef36d7"
+  ],
+  "metadata": {},
+  "createdAt": 9,
+  "updatedAt": 17,
+  "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
+}

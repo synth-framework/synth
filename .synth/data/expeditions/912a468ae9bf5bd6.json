@@ -1,0 +1,14 @@
+{
+  "id": "912a468ae9bf5bd6",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Remove Legacy Support for Previous Synth Projects",
+  "goal": "Deprecate and remove backwards-compatibility layers and migrations designed for legacy Synth v1 projects, simplifying codebase maintenance since there are no active legacy installations in the wild.",
+  "status": "committed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 82,
+  "updatedAt": 84
+}

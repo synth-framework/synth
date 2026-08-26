@@ -1,0 +1,14 @@
+{
+  "id": "f4e4850f5929a111",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Audit expedition model: dependsOn enforcement and keep/remove decision",
+  "goal": "Determine whether the expedition model enforces the dependsOn property. Current evidence: checkUpstreamDependencies (lifecycle-completion based) is advisory-only (reported as a warning in expedition check/doctor), while isBlockedByUpstreamGate (review-gate based) blocks execution in domain/execution.ts and governance/intake.ts. Decide which dependency mechanisms to keep, harden (e.g., enforce lifecycle completion at start), or remove, and recommend the target model.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 214,
+  "updatedAt": 215
+}

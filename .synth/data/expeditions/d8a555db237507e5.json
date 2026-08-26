@@ -1,0 +1,31 @@
+{
+  "id": "d8a555db237507e5",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Harden draft lifecycle integrity",
+  "goal": "Prove that draft creation/deletion is atomic, chain-safe, and approved without manual file surgery: (1) never manually rm/edit .synth/data/drafts/ files; all removal via CLI. (2) 'expedition delete' cleans up draft json+integrity files in the same transaction as the state mutation. (3) Fix --dry-run create bug that leaked draft file writes to disk. (4) Approved drafts are committed to the execution gate immediately rather than left as loose drafts.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-81354",
+      "sessionId": "4b7fe368-381c-47da-ab27-7bff87d08a93",
+      "approvalMode": "autonomous",
+      "issuedAt": 135
+    },
+    "refinementId": "cf00caa7283aafc8",
+    "refinementNote": "Deliverables implemented: dry-run create no longer persists; delete and commit retire draft artifacts chain-safely (retireDraftArtifacts GC). Also raised reuse-and-templates spawn timeout 60s->240s: bootstrap takes ~44s on this machine, 3/3 false failures at 60s pre-change.",
+    "refinementAt": 136
+  },
+  "createdAt": 131,
+  "updatedAt": 148,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/d8a555db237507e5/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
