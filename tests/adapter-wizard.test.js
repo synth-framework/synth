@@ -6,18 +6,8 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { createWizardAdapter } from "../dist/adapters/wizard/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
+import { makeObservation } from "./helpers/adapter.js"
 
-function makeObservation(category, subject, snippet = "") {
-  return {
-    id: `obs-${category}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    source: { adapter: "test", locator: "test" },
-    category,
-    subject,
-    evidence: [{ description: "test evidence", snippet, fingerprint: "abc" }],
-    confidence: "high",
-    timestamp: Date.now(),
-  }
-}
 
 test("AdapterRegistry lists wizard adapter", () => {
   const registry = createAdapterRegistry()
