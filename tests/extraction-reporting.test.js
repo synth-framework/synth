@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Extraction Reporting Tests
 // ============================================================
@@ -20,7 +21,7 @@ function assert(condition, message) {
 }
 
 async function testNormalExtractionReportsOk() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-extraction-ok-"))
+  const tmpDir = await makeTempDir("synth-extraction-ok-")
   try {
     const initResult = runSynth(["init", "--name", "Extraction OK Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -51,7 +52,7 @@ async function testNormalExtractionReportsOk() {
 }
 
 async function testEmptyMarkdownWarns() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-extraction-warning-"))
+  const tmpDir = await makeTempDir("synth-extraction-warning-")
   try {
     const initResult = runSynth(["init", "--name", "Extraction Warning Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")

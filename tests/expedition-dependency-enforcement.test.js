@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GATE-013 — Expedition Dependency Enforcement Tests
 // ============================================================
@@ -15,11 +16,6 @@ import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-dependency-enforcement", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-dependency-enforcement")
@@ -27,7 +23,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-dependency-enforcement")
   const ctx = await bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

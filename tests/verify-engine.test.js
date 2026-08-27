@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // VERIFICATION ENGINE TESTS
 // ============================================================
@@ -32,7 +33,7 @@ async function writeEventLog(cwd, events) {
 }
 
 async function testVerifyUninitializedProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-verify-uninitialized-"))
+  const tmpDir = await makeTempDir("synth-verify-uninitialized-")
   try {
     const { stdout, status } = runSynth(["verify"], tmpDir)
     assert(status === 0, "verify on uninitialized project should exit 0")
@@ -47,7 +48,7 @@ async function testVerifyUninitializedProject() {
 }
 
 async function testVerifyInitializedNoEvents() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-verify-init-noevents-"))
+  const tmpDir = await makeTempDir("synth-verify-init-noevents-")
   try {
     const initResult = runSynth(["init", "--name", "Verify Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -64,7 +65,7 @@ async function testVerifyInitializedNoEvents() {
 }
 
 async function testVerifyValidGraph() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-verify-valid-"))
+  const tmpDir = await makeTempDir("synth-verify-valid-")
   try {
     const initResult = runSynth(["init", "--name", "Verify Valid"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -138,7 +139,7 @@ async function testVerifyValidGraph() {
 }
 
 async function testVerifyBrokenGraph() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-verify-broken-"))
+  const tmpDir = await makeTempDir("synth-verify-broken-")
   try {
     const initResult = runSynth(["init", "--name", "Verify Broken"], tmpDir)
     assert(initResult.status === 0, "init should succeed")

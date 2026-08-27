@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Continuous Publication Tests
 // ============================================================
@@ -43,7 +44,7 @@ async function testDocsGenerateScriptExists() {
 }
 
 async function testDocsGenerateProducesProjections() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-gen-"))
+  const tmpDir = await makeTempDir("synth-docs-gen-")
   try {
     const docsDir = path.join(tmpDir, "docs")
     const generatedDir = path.join(tmpDir, "docs", "generated")

@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // Regression guards for EXP-GOV-006 — Agent Lifecycle Enforcement.
 //
 // These tests verify the intake gate: the runtime boundary that decides
@@ -10,11 +11,6 @@ import { bootstrap } from "../dist/core/bootstrap.js"
 import { validateAgentAction } from "../dist/governance/intake.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-lifecycle", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-lifecycle")
@@ -22,7 +18,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-lifecycle")
   return bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

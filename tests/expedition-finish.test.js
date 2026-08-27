@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Expedition Finish Tests
 // ============================================================
@@ -33,7 +34,7 @@ function assert(condition, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-expedition-finish-"))
+  const tmpDir = await makeTempDir("synth-expedition-finish-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
 
   // Initialize git so finish can capture git-diff evidence.

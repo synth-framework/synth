@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Transition Engine Tests
 // ============================================================
@@ -87,7 +88,7 @@ async function transition(dir) {
 // Fixture: uninitialized -> InitializeProject
 // ------------------------------------------------------------
 async function testUninitialized() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-uninit-"))
+  const tmpDir = await makeTempDir("synth-transition-uninit-")
   try {
     const { transition: t } = await transition(tmpDir)
     assert(t.kind === "InitializeProject", `expected InitializeProject, got ${t.kind}`)
@@ -101,7 +102,7 @@ async function testUninitialized() {
 // Fixture: planning + no draft -> CreateMission
 // ------------------------------------------------------------
 async function testPlanningNoDraft() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-nodraft-"))
+  const tmpDir = await makeTempDir("synth-transition-nodraft-")
   try {
     await writeManifest(tmpDir)
     const { transition: t } = await transition(tmpDir)
@@ -116,7 +117,7 @@ async function testPlanningNoDraft() {
 // Fixture: planning + draft below threshold -> AddMissionEvidence
 // ------------------------------------------------------------
 async function testPlanningDraftBelowThreshold() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-lowconf-"))
+  const tmpDir = await makeTempDir("synth-transition-lowconf-")
   try {
     await writeManifest(tmpDir)
     await writeDraft(tmpDir, {
@@ -140,7 +141,7 @@ async function testPlanningDraftBelowThreshold() {
 // Fixture: planning + draft ready -> ApproveMission
 // ------------------------------------------------------------
 async function testPlanningDraftReady() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-ready-"))
+  const tmpDir = await makeTempDir("synth-transition-ready-")
   try {
     await writeManifest(tmpDir)
     await writeDraft(tmpDir, {
@@ -162,7 +163,7 @@ async function testPlanningDraftReady() {
 // Fixture: approved + no expedition -> CreateExpedition
 // ------------------------------------------------------------
 async function testApprovedNoExpedition() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-approved-"))
+  const tmpDir = await makeTempDir("synth-transition-approved-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -220,7 +221,7 @@ async function testApprovedNoExpedition() {
 // Fixture: executing -> InspectExecution
 // ------------------------------------------------------------
 async function testExecuting() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-executing-"))
+  const tmpDir = await makeTempDir("synth-transition-executing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -310,7 +311,7 @@ async function testExecuting() {
 // Fixture: blocked work item -> DiagnoseBlocker
 // ------------------------------------------------------------
 async function testBlocked() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-blocked-"))
+  const tmpDir = await makeTempDir("synth-transition-blocked-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -355,7 +356,7 @@ async function testBlocked() {
 // Fixture: complete -> ArchiveMission
 // ------------------------------------------------------------
 async function testComplete() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-complete-"))
+  const tmpDir = await makeTempDir("synth-transition-complete-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()

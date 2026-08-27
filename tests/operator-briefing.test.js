@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Operator Briefing Tests
 // ============================================================
@@ -62,7 +63,7 @@ async function writeManifest(dir, projectName = "Operator Briefing Test") {
 // Fixture: uninitialized directory
 // ------------------------------------------------------------
 async function testUninitialized() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-status-uninit-"))
+  const tmpDir = await makeTempDir("synth-status-uninit-")
   try {
     const { stdout, status } = runSynth(["status"], tmpDir)
     assert(status === 0, "status should exit 0 in uninitialized dir")
@@ -84,7 +85,7 @@ async function testUninitialized() {
 // Fixture: initialized, no mission yet
 // ------------------------------------------------------------
 async function testInitializedNoMission() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-status-init-"))
+  const tmpDir = await makeTempDir("synth-status-init-")
   try {
     const initResult = runSynth(["init", "--name", "Briefing Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -106,7 +107,7 @@ async function testInitializedNoMission() {
 // Fixture: mission draft below approval threshold
 // ------------------------------------------------------------
 async function testPlanningDraftBelowThreshold() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-status-planning-"))
+  const tmpDir = await makeTempDir("synth-status-planning-")
   try {
     runSynth(["init", "--name", "Planning Test"], tmpDir)
     const createResult = runSynth(
@@ -137,7 +138,7 @@ async function testPlanningDraftBelowThreshold() {
 // Fixture: approved mission, no expeditions (seeded event log)
 // ------------------------------------------------------------
 async function testApprovedNoExpeditions() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-status-approved-"))
+  const tmpDir = await makeTempDir("synth-status-approved-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -200,7 +201,7 @@ async function testApprovedNoExpeditions() {
 // Fixture: executing expedition (seeded event log)
 // ------------------------------------------------------------
 async function testExecuting() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-status-executing-"))
+  const tmpDir = await makeTempDir("synth-status-executing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -295,7 +296,7 @@ async function testExecuting() {
 // Fixture: blocked work item (seeded event log)
 // ------------------------------------------------------------
 async function testBlocked() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-status-blocked-"))
+  const tmpDir = await makeTempDir("synth-status-blocked-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()

@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXPLAIN STATUS ACTIONABLE TESTS (EXP-EXPLAIN-001)
 // ============================================================
@@ -94,7 +95,7 @@ function parseJson(stdout) {
 }
 
 function makeProject(events, options = {}) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "explain-status-"))
+  const dir = makeTempDirSync("explain-status-")
   const synthDir = path.join(dir, ".synth")
   const dataDir = path.join(synthDir, "data")
   fs.mkdirSync(dataDir, { recursive: true })

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Repository Identity Tests
 // ============================================================
@@ -36,7 +37,7 @@ async function testRootRepositoryIdentity() {
 }
 
 async function testFreshProjectIdentity() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-identity-"))
+  const tmpDir = await makeTempDir("synth-identity-")
   try {
     const initResult = runSynth(["init", "--name", "Identity Test Project"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -58,7 +59,7 @@ async function testFreshProjectIdentity() {
 }
 
 async function testUnknownDirectoryIdentity() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-identity-unknown-"))
+  const tmpDir = await makeTempDir("synth-identity-unknown-")
   try {
     const { stdout, status } = runSynth(["explain", "identity"], tmpDir)
     assert(status === 0, "explain identity should exit 0")

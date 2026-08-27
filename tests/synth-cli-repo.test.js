@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH CLI Repository Governance Tests
 // ============================================================
@@ -18,7 +19,7 @@ function assert(condition, message) {
 }
 
 async function withTempDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-repo-test-"))
+  const tmpDir = await makeTempDir("synth-cli-repo-test-")
   try {
     return await fn(tmpDir)
   } finally {

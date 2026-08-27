@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // VALIDATION EXPANSION TESTS (EXP-HARDEN-006)
 // ============================================================
@@ -173,7 +174,7 @@ function sha256File(file) {
 }
 
 function writeTmpLog(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-"))
+  const dir = makeTempDirSync("validation-expansion-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return logPath
@@ -215,7 +216,7 @@ test("memory-mode bootstrap keeps writes in memory and leaves the canonical log 
 })
 
 test("memory mode creates no event-log file in an empty working directory", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-cwd-"))
+  const dir = makeTempDirSync("validation-expansion-cwd-")
   const bootstrapUrl = pathToFileURL(path.join(process.cwd(), "dist", "core", "bootstrap.js")).href
   const script = `
     const { bootstrap } = await import(${JSON.stringify(bootstrapUrl)})
@@ -243,7 +244,7 @@ test("memory mode creates no event-log file in an empty working directory", () =
 })
 
 test("file persistence with an explicit path still writes the log", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-file-"))
+  const dir = makeTempDirSync("validation-expansion-file-")
   const eventLogPath = path.join(dir, "event-log.jsonl")
   const streamDir = path.join(dir, "event-stream")
   const ctx = await bootstrap({

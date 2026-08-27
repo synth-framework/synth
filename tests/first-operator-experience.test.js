@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // First Operator Experience Certification
 // ============================================================
@@ -32,7 +33,7 @@ function assert(condition, message) {
 }
 
 function makeWorkspace() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-first-operator-"))
+  return makeTempDirSync("synth-first-operator-")
 }
 
 function cleanup(dir) {

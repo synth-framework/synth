@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 import assert from "node:assert"
 import { describe, it } from "node:test"
 import fs from "node:fs/promises"
@@ -64,7 +65,7 @@ describe("First Contact quick-start projections", () => {
   })
 
   it("--check fails when a projection is drifted", async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-quickstart-"))
+    const tmpDir = await makeTempDir("synth-quickstart-")
     await fs.cp(PATTERNS_DIR, path.join(tmpDir, "first-contact", "conversation-patterns"), {
       recursive: true,
       force: true,

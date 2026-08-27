@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOVERNABILITY-003 — Governance Evaluation Enforcement Tests
 // ============================================================
@@ -19,11 +20,6 @@ import { buildProposal } from "../dist/governance/proposal-evaluation/rules/prog
 import { mapToAcceptanceDecision } from "../dist/governance/proposal-evaluation/decision-mapping.js"
 
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-governance-evaluation", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-governance-evaluation")
@@ -31,7 +27,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-governance-evaluation")
   return bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

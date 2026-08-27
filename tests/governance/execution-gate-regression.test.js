@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // ExecutionGate Mutation Boundary Regression Test
 // ============================================================
@@ -171,7 +172,7 @@ async function testBlockedWithoutAuthority() {
   const ctx = await bootstrap({ infra: { persistence: "memory" }, skipGenesis: true })
   await registerRuntimeCapabilities(ctx)
 
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "synth-boundary-blocked-"))
+  const tempRoot = await makeTempDir("synth-boundary-blocked-")
   const target = path.join(tempRoot, "website", "index.html")
 
   try {
@@ -240,7 +241,7 @@ async function testAllowedWithAuthority() {
   const expeditionId = "exp-boundary-001"
   await seedAuthority(ctx, computeEventHash, { missionId, expeditionId })
 
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "synth-boundary-allowed-"))
+  const tempRoot = await makeTempDir("synth-boundary-allowed-")
   const target = path.join(tempRoot, "website", "index.html")
   const content = "<html>Mutation boundary works</html>"
 
@@ -278,7 +279,7 @@ async function testScopeBoundary() {
 
   const missionId = "mission-scope"
   const expeditionId = "exp-scope-001"
-  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "synth-boundary-scope-"))
+  const tempRoot = await makeTempDir("synth-boundary-scope-")
   const scopeRoot = path.join(tempRoot, "website", "hero") + path.sep
   await fs.mkdir(scopeRoot, { recursive: true })
 
@@ -335,7 +336,7 @@ async function testStateStoreGuard() {
   const { StateStore } = await import(STATE_STORE_PATH)
   const { IllegalMutationError } = await import(ERRORS_PATH)
 
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-state-guard-"))
+  const tmpDir = await makeTempDir("synth-state-guard-")
   const statePath = path.join(tmpDir, "canonical-state.json")
   const minimalState = {
     stateHash: "test-hash",

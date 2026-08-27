@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // Certification tests for EXP-RUNTIME-001 — Runtime Correctness and Recovery.
 //
 // These tests certify that Mission approval is atomic (runtime events precede
@@ -27,7 +28,7 @@ function assert(condition, message) {
 }
 
 function makeWorkspace() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-runtime-"))
+  return makeTempDirSync("synth-runtime-")
 }
 
 function cleanup(dir) {

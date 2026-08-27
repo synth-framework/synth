@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-REFINE-014 — Mission Projection Capability
 // ============================================================
@@ -15,11 +16,6 @@ import {
   approveAlignmentContract,
 } from "./helpers/alignment-fixture.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-projection", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-projection")
@@ -27,7 +23,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-projection")
   return bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

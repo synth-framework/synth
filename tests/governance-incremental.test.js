@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // GOVERNANCE INCREMENTAL ENGINE TESTS (EXP-GOVERN-003)
 // ============================================================
@@ -15,7 +16,7 @@ import { computeFingerprint } from "../scripts/governance/fingerprint.js"
 import { registerCheck, resolveCheck } from "../scripts/governance/check-registry.js"
 
 async function withTempStore(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-proof-"))
+  const tmpDir = await makeTempDir("synth-govern-proof-")
   const store = new ProofStore({ cacheDir: path.join(tmpDir, "cache") })
   try {
     return await fn(store, tmpDir)

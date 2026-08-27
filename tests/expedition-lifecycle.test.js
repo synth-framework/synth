@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Expedition Lifecycle Tests
 // ============================================================
@@ -32,7 +33,7 @@ function assert(condition, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-expedition-lifecycle-"))
+  const tmpDir = await makeTempDir("synth-expedition-lifecycle-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
   // Bootstrap the project so expedition runtime entities can be created.
   const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())

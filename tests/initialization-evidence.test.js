@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Initialization Evidence Tests
 // ============================================================
@@ -43,7 +44,7 @@ async function listEvidenceArtifacts(evidenceDir) {
 // Fixture: synth init with explicit source produces evidence
 // ------------------------------------------------------------
 async function testExplicitSourceProducesEvidenceArtifact() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-evidence-"))
+  const tmpDir = await makeTempDir("synth-init-evidence-")
   try {
     const knowledgeDir = path.join(tmpDir, "knowledge")
     await fs.mkdir(knowledgeDir, { recursive: true })
@@ -98,7 +99,7 @@ async function testExplicitSourceProducesEvidenceArtifact() {
 // Fixture: default synth init uses filesystem adapter and evidence
 // ------------------------------------------------------------
 async function testDefaultInitUsesFilesystemAdapter() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-default-evidence-"))
+  const tmpDir = await makeTempDir("synth-init-default-evidence-")
   try {
     await fs.mkdir(path.join(tmpDir, "src"), { recursive: true })
     await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test" }), "utf-8")
@@ -130,7 +131,7 @@ async function testDefaultInitUsesFilesystemAdapter() {
 // Fixture: unknown source type fails with a clear diagnostic
 // ------------------------------------------------------------
 async function testUnknownSourceTypeFails() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-unknown-source-"))
+  const tmpDir = await makeTempDir("synth-init-unknown-source-")
   try {
     const initResult = runSynth(
       ["init", "--name", "Unknown Source Test", "--source", "nonexistent"],

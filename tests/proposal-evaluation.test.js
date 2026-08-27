@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOVERNABILITY-003 — Proposal Evaluation Capability Tests
 // ============================================================
@@ -18,11 +19,6 @@ import { buildDerivedState } from "../dist/state/derived/index.js"
 import { buildProposal } from "../dist/governance/proposal-evaluation/rules/program-027.js"
 import { evaluateProposal, program027RuleSet } from "../dist/governance/proposal-evaluation/index.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-proposal-evaluation", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-proposal-evaluation")
@@ -30,7 +26,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-proposal-evaluation")
   return bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH v2 — Full Test Suite
 // ============================================================
@@ -710,7 +711,7 @@ test("P0: event store guard blocks direct writes after seal", async () => {
 })
 
 test("P0: checkpoint store blocks direct writes without authorization", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-checkpoints-"))
+  const tmpDir = await makeTempDir("synth-test-checkpoints-")
   const store = new CheckpointStore(path.join(tmpDir, "checkpoints.json"))
   await store.initialize()
   try {
@@ -723,7 +724,7 @@ test("P0: checkpoint store blocks direct writes without authorization", async ()
 })
 
 test("P0: partition store blocks direct writes without authorization", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-partitions-"))
+  const tmpDir = await makeTempDir("synth-test-partitions-")
   const store = new PartitionStore(1, tmpDir)
   await store.initialize()
   try {

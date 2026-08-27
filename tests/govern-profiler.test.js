@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // GOVERNANCE PROFILER TESTS (EXP-GOVERN-001 → EXP-GOVERN-004)
 // ============================================================
@@ -20,7 +21,7 @@ import { computeFingerprint } from "../scripts/governance/fingerprint.js"
 import { mapFileToModule } from "../scripts/governance/module-mapper.js"
 
 async function withTempPackage(testAll, fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-profiler-"))
+  const tmpDir = await makeTempDir("synth-govern-profiler-")
   const pkgPath = path.join(tmpDir, "package.json")
   await fs.writeFile(
     pkgPath,
@@ -35,7 +36,7 @@ async function withTempPackage(testAll, fn) {
 }
 
 async function withTempGovernRoot(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-root-"))
+  const tmpDir = await makeTempDir("synth-govern-root-")
   const pkgPath = path.join(tmpDir, "package.json")
   await fs.writeFile(
     pkgPath,

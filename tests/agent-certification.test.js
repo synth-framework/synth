@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Agent Certification Tests
 // ============================================================
@@ -21,7 +22,7 @@ function assert(condition, message) {
 }
 
 async function withTempProject(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-agent-cert-"))
+  const tmpDir = await makeTempDir("synth-agent-cert-")
   try {
     const initResult = runSynth(["init", "--name", "AgentCertProject"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)

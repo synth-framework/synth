@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH MCP Server Tests (EXP-DIST-003)
 // ============================================================
@@ -146,7 +147,7 @@ async function testToolsList() {
 }
 
 async function testReadOnlyToolCall() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-mcp-"))
+  const tmpDir = await makeTempDir("synth-mcp-")
   const server = startServer(tmpDir)
   try {
     await server.send("initialize", {

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-REUSE-001 — Alignment Contract Reuse and Expedition Templates
 // ============================================================
@@ -40,7 +41,7 @@ function assertOk(result, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-reuse-templates-"))
+  const tmpDir = await makeTempDir("synth-reuse-templates-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
 
   runGit(["init"], tmpDir)

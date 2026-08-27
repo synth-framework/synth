@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Synth Installer Manifest Tests
 // ============================================================
@@ -15,7 +16,7 @@ const VALIDATOR_PATH = path.resolve(process.cwd(), "scripts", "verify-installer-
 const PACKAGE_JSON_PATH = path.resolve(process.cwd(), "package.json")
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-installer-manifest-"))
+  return makeTempDirSync("synth-installer-manifest-")
 }
 
 function assert(condition, message) {

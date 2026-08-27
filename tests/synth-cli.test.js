@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH CLI Tests
 // ============================================================
@@ -121,7 +122,7 @@ async function testValidateFullDryRun() {
 }
 
 async function testInit() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-test-"))
+  const tmpDir = await makeTempDir("synth-cli-test-")
   try {
     const { stdout, status } = runSynth(["init", "--name", "CLI Test Project"], tmpDir)
     assert(status === 0, "init command should exit 0")
@@ -169,7 +170,7 @@ function countJsonObjects(stdout) {
 }
 
 async function withTempDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-test-"))
+  const tmpDir = await makeTempDir("synth-cli-test-")
   try {
     return await fn(tmpDir)
   } finally {

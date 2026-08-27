@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Governance Resolver Tests
 // ============================================================
@@ -90,7 +91,7 @@ async function writeBrokenDecisionLog(dir) {
 // Fixture: uninitialized directory
 // ------------------------------------------------------------
 async function testUninitialized() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-uninit-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-uninit-")
   try {
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
     const result = await resolveGovernanceContext(tmpDir)
@@ -111,7 +112,7 @@ async function testUninitialized() {
 // Fixture: initialized, no mission yet
 // ------------------------------------------------------------
 async function testInitializedNoMission() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-init-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-init-")
   try {
     await writeManifest(tmpDir)
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
@@ -130,7 +131,7 @@ async function testInitializedNoMission() {
 // Fixture: approved mission, no expeditions
 // ------------------------------------------------------------
 async function testApprovedNoExpeditions() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-approved-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-approved-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -193,7 +194,7 @@ async function testApprovedNoExpeditions() {
 // Fixture: executing expedition
 // ------------------------------------------------------------
 async function testExecuting() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-executing-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-executing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -288,7 +289,7 @@ async function testExecuting() {
 // Fixture: broken decision log surfaces as warning divergence
 // ------------------------------------------------------------
 async function testBrokenDecisionLogWarning() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-decision-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-decision-")
   try {
     await writeManifest(tmpDir)
     await writeBrokenDecisionLog(tmpDir)

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Brownfield Certification Test Suite
 // ============================================================
@@ -37,7 +38,7 @@ async function getDirectoryMtime(dir) {
 }
 
 async function setupTempRepo() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-brownfield-cert-"))
+  const tmpDir = await makeTempDir("synth-brownfield-cert-")
   await fs.writeFile(
     path.join(tmpDir, "package.json"),
     JSON.stringify({ name: "brownfield-cert", version: "1.0.0" }, null, 2),

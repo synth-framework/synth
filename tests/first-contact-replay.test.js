@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // First Contact Replay Integration Tests
 // ============================================================
@@ -24,7 +25,7 @@ function assert(condition, message) {
 }
 
 async function testReplayVerifiesMaterializedProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-replay-"))
+  const tmpDir = await makeTempDir("synth-first-contact-replay-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)
@@ -59,7 +60,7 @@ async function testReplayVerifiesMaterializedProject() {
 }
 
 async function testReplayDetectsArtifactTampering() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-replay-"))
+  const tmpDir = await makeTempDir("synth-first-contact-replay-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)
@@ -92,7 +93,7 @@ async function testReplayDetectsArtifactTampering() {
 }
 
 async function testReplayDetectsMissingArtifact() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-replay-"))
+  const tmpDir = await makeTempDir("synth-first-contact-replay-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)

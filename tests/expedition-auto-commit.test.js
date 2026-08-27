@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-AUTO-COMMIT-001 — Auto-commit derived SYNTH state
 // ============================================================
@@ -34,7 +35,7 @@ function assert(condition, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-auto-commit-"))
+  const tmpDir = await makeTempDir("synth-auto-commit-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
 
   runGit(["init"], tmpDir)

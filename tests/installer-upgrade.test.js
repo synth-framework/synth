@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Synth Installer Upgrade Tests
 // ============================================================
@@ -13,7 +14,7 @@ import path from "path"
 const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-installer-upgrade-"))
+  return makeTempDirSync("synth-installer-upgrade-")
 }
 
 function writeFile(filePath, content) {

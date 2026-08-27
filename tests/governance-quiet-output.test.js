@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-QUIET-001 — Quiet and Summary Output Modes
 // ============================================================
@@ -14,7 +15,7 @@ import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-quiet-output-"))
+  const tmpDir = await makeTempDir("synth-quiet-output-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
   const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
   if (bootstrapResult.status !== 0) {

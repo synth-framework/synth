@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GATE-014 — Verification Gates Before Completion
 // ============================================================
@@ -38,7 +39,7 @@ function commitAll(projectDir, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gate-014-"))
+  const tmpDir = await makeTempDir("synth-gate-014-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
   const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
   assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)

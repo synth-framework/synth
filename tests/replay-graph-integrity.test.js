@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // REPLAY GRAPH INTEGRITY TESTS (EXP-HARDEN-004)
 // ============================================================
@@ -115,7 +116,7 @@ function validLog() {
 }
 
 function writeTmpLog(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "replay-graph-integrity-"))
+  const dir = makeTempDirSync("replay-graph-integrity-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return logPath

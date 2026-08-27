@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Governance Record Tests
 // ============================================================
@@ -113,7 +114,7 @@ async function testProjectionModule() {
 }
 
 async function testExplainGovernanceCli() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-governance-cli-"))
+  const tmpDir = await makeTempDir("synth-governance-cli-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -153,7 +154,7 @@ async function testExplainGovernanceCli() {
 }
 
 async function testEmptyLog() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-governance-empty-"))
+  const tmpDir = await makeTempDir("synth-governance-empty-")
   try {
     await writeManifest(tmpDir)
     await fs.mkdir(path.join(tmpDir, ".synth", "data"), { recursive: true })

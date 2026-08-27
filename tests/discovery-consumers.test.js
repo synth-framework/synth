@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // DISCOVERY CONSUMERS CONTRACT TESTS
 // ============================================================
@@ -42,7 +43,7 @@ async function discoverExample(example) {
 }
 
 async function createMinimalSession(files = {}) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "discovery-consumer-"))
+  const tmpDir = await makeTempDir("discovery-consumer-")
 
   for (const [relativePath, content] of Object.entries(files)) {
     const filePath = path.join(tmpDir, relativePath)

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // GOVERNANCE OPTIMIZATION TESTS (EXP-GOVERN-005)
 // ============================================================
@@ -18,7 +19,7 @@ import {
 import { runGovernProfile } from "../scripts/govern-profiler.js"
 
 async function withTempDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-opt-"))
+  const tmpDir = await makeTempDir("synth-govern-opt-")
   try {
     return await fn(tmpDir)
   } finally {

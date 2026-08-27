@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // Regression guards for EXP-TRUST-003 (Evidence Path).
 //
 // The confidence gate must offer a legitimate path through it:
@@ -28,7 +29,7 @@ function assert(condition, message) {
 }
 
 function makeWorkspace() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-evidence-"))
+  return makeTempDirSync("synth-evidence-")
 }
 
 function cleanup(dir) {

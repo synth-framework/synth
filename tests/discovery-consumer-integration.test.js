@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // DISCOVERY CONSUMER INTEGRATION TESTS
 // ============================================================
@@ -113,7 +114,7 @@ test("analyzeRepository does not modify the target directory", async () => {
 })
 
 test("polyglot fixture with Node.js and Python source files is classified as polyglot", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "discovery-polyglot-"))
+  const tmpDir = await makeTempDir("discovery-polyglot-")
   await fs.writeFile(
     path.join(tmpDir, "package.json"),
     JSON.stringify({ name: "polyglot-example" }),

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // First Contact Experiment Tests
 // ============================================================
@@ -36,7 +37,7 @@ function assert(condition, message) {
 // Fixture: CLI includes telemetry when agent flags are provided
 // ------------------------------------------------------------
 async function testCliTelemetryFlags() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-telemetry-"))
+  const tmpDir = await makeTempDir("synth-telemetry-")
   try {
     runSynth(["init", "--name", "Telemetry Test"], tmpDir)
 
@@ -71,7 +72,7 @@ async function testCliTelemetryFlags() {
 // Fixture: runner produces a session artifact for one scenario
 // ------------------------------------------------------------
 async function testRunnerProducesSessionArtifact() {
-  const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-output-"))
+  const outputDir = await makeTempDir("synth-first-contact-output-")
   try {
     const result = spawnSync(
       "node",
@@ -113,7 +114,7 @@ async function testRunnerProducesSessionArtifact() {
 // Fixture: all canonical scenarios run without error
 // ------------------------------------------------------------
 async function testAllScenariosRun() {
-  const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-all-"))
+  const outputDir = await makeTempDir("synth-first-contact-all-")
   try {
     const result = spawnSync("node", [RUNNER_PATH, "--all", "--output", outputDir], {
       cwd: process.cwd(),

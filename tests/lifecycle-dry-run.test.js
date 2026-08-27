@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands
 // ============================================================
@@ -16,7 +17,7 @@ import { bootstrap } from "../dist/core/bootstrap.js"
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
 function makeTempProjectRoot() {
-  return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "dry-run-test-")))
+  return fs.realpathSync.native(makeTempDirSync("dry-run-test-"))
 }
 
 function seedEvents(projectRoot, overrides = {}) {

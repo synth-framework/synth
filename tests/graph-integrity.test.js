@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // GRAPH INTEGRITY TESTS (EXP-HARDEN-005)
 // ============================================================
@@ -269,7 +270,7 @@ test("first-contact archive fails graph integrity with the documented violation 
 // ============================================================
 
 test("verify-graph-integrity.js certifies the fresh reference execution and writes the proof artifact", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "graph-integrity-test-"))
+  const dir = makeTempDirSync("graph-integrity-test-")
   const outPath = path.join(dir, "graph-integrity-proof.json")
 
   const run = runProofScript(outPath)
@@ -327,7 +328,7 @@ test("proof generation with --out leaves data/ and proof/ byte-identical", () =>
   const proofDirExisted = fs.existsSync(REPO_PROOF_DIR)
   const proofListingBefore = proofDirExisted ? fs.readdirSync(REPO_PROOF_DIR).sort() : null
 
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "graph-integrity-ci-safety-"))
+  const dir = makeTempDirSync("graph-integrity-ci-safety-")
   const outPath = path.join(dir, "proof.json")
   const run = runProofScript(outPath)
   assert.strictEqual(run.status, 0, run.stderr)

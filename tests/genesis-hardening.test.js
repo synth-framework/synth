@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // GENESIS HARDENING TESTS (EXP-HARDEN-003)
 // ============================================================
@@ -175,7 +176,7 @@ function makeSeedEventGraph() {
 }
 
 async function bootIsolated() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-genesis-hardening-"))
+  const dir = makeTempDirSync("synth-genesis-hardening-")
   return bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory", eventLogPath: path.join(dir, "event-log.jsonl") },

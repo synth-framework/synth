@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Initialization Lifecycle Tests
 // ============================================================
@@ -49,7 +50,7 @@ async function readEventLog(dataDir) {
 // Fixture: synth init emits PROJECT_INITIALIZED event
 // ------------------------------------------------------------
 async function testInitEmitsProjectInitializedEvent() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-event-"))
+  const tmpDir = await makeTempDir("synth-init-event-")
   try {
     const initResult = runSynth(["init", "--name", "Lifecycle Test"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
@@ -75,7 +76,7 @@ async function testInitEmitsProjectInitializedEvent() {
 // Fixture: synth init is idempotent
 // ------------------------------------------------------------
 async function testInitIsIdempotent() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-idempotent-"))
+  const tmpDir = await makeTempDir("synth-init-idempotent-")
   try {
     const first = runSynth(["init", "--name", "Idempotent Test"], tmpDir)
     assert(first.status === 0, "first init should succeed")
@@ -96,7 +97,7 @@ async function testInitIsIdempotent() {
 // Fixture: manifest includes governanceVersion
 // ------------------------------------------------------------
 async function testManifestIncludesGovernanceVersion() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-manifest-"))
+  const tmpDir = await makeTempDir("synth-init-manifest-")
   try {
     const initResult = runSynth(["init", "--name", "Manifest Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -116,7 +117,7 @@ async function testManifestIncludesGovernanceVersion() {
 // Fixture: resolver reports initialized phase
 // ------------------------------------------------------------
 async function testResolverReportsInitializedPhase() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-phase-"))
+  const tmpDir = await makeTempDir("synth-init-phase-")
   try {
     const initResult = runSynth(["init", "--name", "Phase Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -136,7 +137,7 @@ async function testResolverReportsInitializedPhase() {
 // Fixture: synth bootstrap --approve emits PROJECT_INITIALIZED event
 // ------------------------------------------------------------
 async function testBootstrapApproveEmitsProjectInitializedEvent() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-event-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-event-")
   try {
     // Create a minimal package.json so bootstrap can run govern if needed.
     await fs.writeFile(

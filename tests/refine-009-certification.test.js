@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-REFINE-009 — Program 036 Alignment Governance Certification
 // ============================================================
@@ -16,11 +17,6 @@ import { evaluateProposal } from "../dist/governance/proposal-evaluation/index.j
 import { program027RuleSet } from "../dist/governance/proposal-evaluation/rules/program-027.js"
 import { certifyConvergence, buildObservedFeatures } from "../dist/governance/convergence-certification/index.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-refine-009", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-refine-009")
@@ -28,7 +24,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-refine-009")
   return bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

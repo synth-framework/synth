@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GIT-001 — Governance Git Snapshot Tests
 // ============================================================
@@ -24,7 +25,7 @@ function git(cwd, args) {
 }
 
 async function createTempProject() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-git-snapshot-"))
+  const dir = await makeTempDir("synth-git-snapshot-")
   await fs.writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
   const bootstrapResult = runSynth(["bootstrap", dir, "--approve"], process.cwd())
   assert.strictEqual(bootstrapResult.status, 0, `bootstrap must succeed: ${bootstrapResult.stderr}`)

@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GUARD-001 — Derived-State Protection & Expedition Scope
 // ============================================================
@@ -25,7 +26,7 @@ const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 function makeTempProjectRoot() {
   // Resolve the real path so process.cwd() after chdir and path.resolve()
   // agree on macOS (/var/folders vs /private/var/folders).
-  return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "derived-state-guard-")))
+  return fs.realpathSync.native(makeTempDirSync("derived-state-guard-"))
 }
 
 async function seedEvents(projectRoot, overrides = {}) {

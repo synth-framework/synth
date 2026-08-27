@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // ECOSYSTEM-001 (R) — ExecutionGate Branch Enforcement Tests
 // ============================================================
@@ -141,7 +142,7 @@ function writeConfig(root, yaml) {
 }
 
 async function testEnforceStartExpeditionBlocksOnMain() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-enforce-"))
+  const root = makeTempDirSync("synth-bg-enforce-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)
@@ -178,7 +179,7 @@ async function testEnforceStartExpeditionBlocksOnMain() {
 }
 
 async function testEnforceAcceptsLegacyCanonicalBranchForm() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-legacy-"))
+  const root = makeTempDirSync("synth-bg-legacy-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)
@@ -200,7 +201,7 @@ async function testEnforceAcceptsLegacyCanonicalBranchForm() {
 }
 
 async function testCompleteExpeditionIsNotBranchGated() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-complete-"))
+  const root = makeTempDirSync("synth-bg-complete-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)
@@ -231,7 +232,7 @@ async function testCompleteExpeditionIsNotBranchGated() {
 }
 
 async function testEnforceApproveMissionBlocksOnMain() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-mission-"))
+  const root = makeTempDirSync("synth-bg-mission-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)
@@ -273,7 +274,7 @@ async function testEnforceApproveMissionBlocksOnMain() {
 }
 
 async function testDefaultPolicyNeverBlocks() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-default-"))
+  const root = makeTempDirSync("synth-bg-default-")
   gitInit(root)
   const ctx = await makeCtx(root)
 
@@ -291,7 +292,7 @@ async function testDefaultPolicyNeverBlocks() {
 }
 
 async function testChoreLaneAllowsAllowlistedCapabilityOnMain() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-chore-"))
+  const root = makeTempDirSync("synth-bg-chore-")
   gitInit(root)
   writeConfig(
     root,
@@ -337,7 +338,7 @@ async function testChoreLaneAllowsAllowlistedCapabilityOnMain() {
 }
 
 async function testChoreLaneBlocksWhenAllowChoreOnMainDisabled() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-chore2-"))
+  const root = makeTempDirSync("synth-bg-chore2-")
   gitInit(root)
   writeConfig(
     root,
@@ -372,7 +373,7 @@ async function testChoreLaneBlocksWhenAllowChoreOnMainDisabled() {
 }
 
 async function testCheckpointBranchStepBlocksOnMainUnderEnforce() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-checkpoint-"))
+  const root = makeTempDirSync("synth-bg-checkpoint-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)
@@ -402,7 +403,7 @@ async function testCheckpointBranchStepBlocksOnMainUnderEnforce() {
 }
 
 async function testCliAutoCreatesCanonicalBranchOnMainUnderEnforce() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-cli-"))
+  const root = makeTempDirSync("synth-bg-cli-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)
@@ -440,7 +441,7 @@ async function testCliAutoCreatesCanonicalBranchOnMainUnderEnforce() {
 }
 
 async function testCliStartOnCanonicalBranchDoesNotRecreate() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bg-cli2-"))
+  const root = makeTempDirSync("synth-bg-cli2-")
   gitInit(root)
   readConfig(root)
   const ctx = await makeCtx(root)

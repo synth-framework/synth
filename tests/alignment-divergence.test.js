@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-PROGRAM-036 Phase 2 — Alignment Contract & Divergence Gate
 // ============================================================
@@ -11,11 +12,6 @@ import { bootstrap } from "../dist/core/bootstrap.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { createAlignedContract, createAlignmentContract, createIntentModel, approveAlignmentContract } from "./helpers/alignment-fixture.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-alignment", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-alignment")
@@ -23,7 +19,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-alignment")
   return bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // MISSION STUDIO SNAPSHOT LINEAGE TESTS
 // ============================================================
@@ -136,7 +137,7 @@ test("reconstructSessionFromSnapshot walks lineage to root", async () => {
 })
 
 test("FileSystemSnapshotStore persists snapshots across instances", async () => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-snapshot-"))
+  const dir = await makeTempDir("synth-snapshot-")
   const store1 = createFileSystemSnapshotStore(dir)
   const { snapshot, session } = makeApprovedSnapshot()
   await store1.save({ snapshot, session })

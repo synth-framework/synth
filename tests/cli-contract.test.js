@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH CLI Contract Tests
 // ============================================================
@@ -19,7 +20,7 @@ function assert(condition, message) {
 }
 
 async function withTempDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-contract-"))
+  const tmpDir = await makeTempDir("synth-cli-contract-")
   try {
     return await fn(tmpDir)
   } finally {

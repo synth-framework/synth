@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Bootstrap Tests
 // ============================================================
@@ -57,7 +58,7 @@ async function setupPolyglotDir(tmpDir) {
 }
 
 async function testBootstrapEmptyDryRun() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-empty-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-empty-")
   try {
     const { stdout, status } = runSynth(["bootstrap", "--dry-run"], tmpDir)
     assert(status === 0, "empty dry-run should exit 0")
@@ -72,7 +73,7 @@ async function testBootstrapEmptyDryRun() {
 }
 
 async function testBootstrapEmptyApprove() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-empty-approve-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-empty-approve-")
   try {
     const { stdout, status } = runSynth(["bootstrap", "--approve", "--name", "Empty Test"], tmpDir)
     assert(status === 0, "empty approve should exit 0")
@@ -101,7 +102,7 @@ async function testBootstrapEmptyApprove() {
 }
 
 async function testBootstrapNode() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-node-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-node-")
   try {
     await setupNodeDir(tmpDir)
     const { stdout, status } = runSynth(["bootstrap", "--dry-run"], tmpDir)
@@ -116,7 +117,7 @@ async function testBootstrapNode() {
 }
 
 async function testBootstrapBrownfield() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-brownfield-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-brownfield-")
   try {
     await setupBrownfieldDir(tmpDir)
     const { stdout, status } = runSynth(["bootstrap", "--dry-run"], tmpDir)
@@ -130,7 +131,7 @@ async function testBootstrapBrownfield() {
 }
 
 async function testBootstrapPolyglot() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-polyglot-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-polyglot-")
   try {
     await setupPolyglotDir(tmpDir)
     const { stdout, status } = runSynth(["bootstrap", "--dry-run"], tmpDir)
@@ -146,7 +147,7 @@ async function testBootstrapPolyglot() {
 }
 
 async function testBootstrapDoesNotMutateWithoutApprove() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-no-mutate-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-no-mutate-")
   try {
     await setupNodeDir(tmpDir)
     runSynth(["bootstrap"], tmpDir) // no --approve, no --dry-run
@@ -163,7 +164,7 @@ async function testBootstrapDoesNotMutateWithoutApprove() {
 }
 
 async function testBootstrapWritesGovernScriptFromExistingScripts() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-govern-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-govern-")
   try {
     await fs.writeFile(
       path.join(tmpDir, "package.json"),
@@ -196,7 +197,7 @@ async function testBootstrapWritesGovernScriptFromExistingScripts() {
 }
 
 async function testBootstrapGovernScriptIsInformativeWhenNoScriptsExist() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-govern-empty-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-govern-empty-")
   try {
     await fs.writeFile(
       path.join(tmpDir, "package.json"),
@@ -217,7 +218,7 @@ async function testBootstrapGovernScriptIsInformativeWhenNoScriptsExist() {
 }
 
 async function testBootstrapGeneratesRichBrownfieldMap() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-brownfield-map-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-brownfield-map-")
   try {
     await fs.writeFile(
       path.join(tmpDir, "package.json"),

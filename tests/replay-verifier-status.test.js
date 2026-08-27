@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOV-024 — Replay Verifier Status Enum
 // ============================================================
@@ -27,7 +28,7 @@ function makeEvent(type, payload) {
 }
 
 function writeTmpLog(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "replay-verifier-status-"))
+  const dir = makeTempDirSync("replay-verifier-status-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return logPath

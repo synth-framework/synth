@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Branch Policy & Execution Branch Checks (ECOSYSTEM-001 R)
 // ============================================================
@@ -20,7 +21,7 @@ import {
 import { createGitRepositoryAdapter } from "../dist/adapters/repository/git.js"
 
 function makeProject(withConfig = false, configYaml = "") {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bp-"))
+  const root = makeTempDirSync("synth-bp-")
   fs.mkdirSync(path.join(root, ".synth"), { recursive: true })
   if (withConfig) {
     fs.writeFileSync(path.join(root, ".synth", "config.yaml"), configYaml, "utf-8")

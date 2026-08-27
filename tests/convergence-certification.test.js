@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOVERNABILITY-005 — Convergence Certification Tests
 // ============================================================
@@ -20,11 +21,6 @@ import { evaluateProposal } from "../dist/governance/proposal-evaluation/index.j
 import { validateEvaluationResult } from "../dist/domain/evaluation.js"
 import { program027RuleSet } from "../dist/governance/proposal-evaluation/rules/program-027.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-convergence-certification", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-convergence-certification")
@@ -32,7 +28,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-convergence-certification")
   const ctx = await bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),

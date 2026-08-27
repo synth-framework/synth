@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXPLAIN OBSERVABILITY TESTS (EXP-HARDEN-007)
 // ============================================================
@@ -168,7 +169,7 @@ function warnLog() {
 }
 
 function makeFixture(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "explain-observability-"))
+  const dir = makeTempDirSync("explain-observability-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return { dir, logPath }

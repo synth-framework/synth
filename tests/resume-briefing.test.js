@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Resume Briefing Tests
 // ============================================================
@@ -68,7 +69,7 @@ async function writeManifest(dir, projectName = "Resume Briefing Test") {
 // Fixture: uninitialized directory
 // ------------------------------------------------------------
 async function testUninitialized() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-uninit-"))
+  const tmpDir = await makeTempDir("synth-resume-uninit-")
   try {
     const { stdout, status } = runSynth(["explain", "resume"], tmpDir)
     assert(status === 0, "explain resume should exit 0 in uninitialized dir")
@@ -90,7 +91,7 @@ async function testUninitialized() {
 // Fixture: initialized, no mission yet
 // ------------------------------------------------------------
 async function testInitializedNoMission() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-init-"))
+  const tmpDir = await makeTempDir("synth-resume-init-")
   try {
     const initResult = runSynth(["init", "--name", "Resume Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -111,7 +112,7 @@ async function testInitializedNoMission() {
 // Fixture: approved mission with decision log
 // ------------------------------------------------------------
 async function testApprovedMission() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-approved-"))
+  const tmpDir = await makeTempDir("synth-resume-approved-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -191,7 +192,7 @@ async function testApprovedMission() {
 // Fixture: executing expedition
 // ------------------------------------------------------------
 async function testExecutingExpedition() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-executing-"))
+  const tmpDir = await makeTempDir("synth-resume-executing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -292,7 +293,7 @@ async function testExecutingExpedition() {
 // Fixture: determinism
 // ------------------------------------------------------------
 async function testDeterminism() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-determinism-"))
+  const tmpDir = await makeTempDir("synth-resume-determinism-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -354,7 +355,7 @@ async function testDeterminism() {
 // Fixture: broken decision log emits warning
 // ------------------------------------------------------------
 async function testBrokenDecisionLogWarning() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-resume-decision-warning-"))
+  const tmpDir = await makeTempDir("synth-resume-decision-warning-")
   try {
     await writeManifest(tmpDir, "Decision Warning Test")
     const dataDir = path.join(tmpDir, ".synth", "data")

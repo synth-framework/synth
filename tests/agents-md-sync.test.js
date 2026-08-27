@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-AGENTS-001 — AGENTS.md Synchronization
 // ============================================================
@@ -12,7 +13,7 @@ import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
 
 function makeTempProjectRoot() {
-  return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "agents-sync-test-")))
+  return fs.realpathSync.native(makeTempDirSync("agents-sync-test-"))
 }
 
 

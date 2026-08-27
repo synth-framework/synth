@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // Regression guards for EXP-TRUST-004 (Decision Events).
 //
 // Approval decisions must be durable: every approval outcome is
@@ -30,7 +31,7 @@ function assert(condition, message) {
 }
 
 function makeWorkspace() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-decisions-"))
+  const dir = makeTempDirSync("synth-decisions-")
   const init = runCli(dir, ["init", "--name", "Decision Events Test"])
   if (init.status !== 0) {
     throw new Error(`synth init failed in test workspace: ${init.output}`)

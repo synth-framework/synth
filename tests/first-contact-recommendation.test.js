@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // First Contact Recommendation Tests
 // ============================================================
@@ -25,7 +26,7 @@ function assert(condition, message) {
 
 
 async function withTempDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-recommendation-test-"))
+  const tmpDir = await makeTempDir("synth-recommendation-test-")
   try {
     return await fn(tmpDir)
   } finally {

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Documentation Integrity Tests
 // ============================================================
@@ -41,7 +42,7 @@ async function testCheckLinksAcceptsProject() {
 }
 
 async function testCheckLinksDetectsBrokenInternalLink() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-links-"))
+  const tmpDir = await makeTempDir("synth-links-")
   try {
     await fs.mkdir(path.join(tmpDir, "website"), { recursive: true })
     await fs.writeFile(
@@ -79,7 +80,7 @@ async function testWebsiteSyncPasses() {
 }
 
 async function testWebsiteSyncDetectsNonCanonicalRepoUrl() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-site-"))
+  const tmpDir = await makeTempDir("synth-site-")
   try {
     await fs.mkdir(path.join(tmpDir, "website"), { recursive: true })
     await fs.writeFile(path.join(tmpDir, "README.md"), "> **Tagline**\n", "utf-8")

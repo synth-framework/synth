@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-EVIDENCE-001 — Automatic Expedition Evidence Capture
 // ============================================================
@@ -12,7 +13,7 @@ import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
 
 function makeTempProjectRoot() {
-  return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "evidence-test-")))
+  return fs.realpathSync.native(makeTempDirSync("evidence-test-"))
 }
 
 function seedEvents(projectRoot, opts = {}) {

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Stale State Tests
 // ============================================================
@@ -178,7 +179,7 @@ function baseState() {
 // Fixture: persisted state lags event log (warning)
 // ------------------------------------------------------------
 async function testStateLagsEventsWarning() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-lag-"))
+  const tmpDir = await makeTempDir("synth-stale-lag-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -235,7 +236,7 @@ async function testStateLagsEventsWarning() {
 // Fixture: persisted state hash differs from replay (failure)
 // ------------------------------------------------------------
 async function testReplayedStateMismatchFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-mismatch-"))
+  const tmpDir = await makeTempDir("synth-stale-mismatch-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -288,7 +289,7 @@ async function testReplayedStateMismatchFailure() {
 // Fixture: persisted state references missing events (failure)
 // ------------------------------------------------------------
 async function testMissingEventsFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-missing-"))
+  const tmpDir = await makeTempDir("synth-stale-missing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -321,7 +322,7 @@ async function testMissingEventsFailure() {
 // Fixture: divergent replay (failure)
 // ------------------------------------------------------------
 async function testDivergentReplayFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-divergent-"))
+  const tmpDir = await makeTempDir("synth-stale-divergent-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -368,7 +369,7 @@ async function testDivergentReplayFailure() {
 // Fixture: snapshot conflicts with replayed state (failure)
 // ------------------------------------------------------------
 async function testSnapshotStateConflictFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-snapshot-"))
+  const tmpDir = await makeTempDir("synth-stale-snapshot-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -425,7 +426,7 @@ async function testSnapshotStateConflictFailure() {
 // Fixture: snapshot-approved mission later completed (no conflict)
 // ------------------------------------------------------------
 async function testSnapshotApprovedMissionCompletedNoConflict() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-completed-"))
+  const tmpDir = await makeTempDir("synth-stale-completed-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -498,7 +499,7 @@ async function testSnapshotApprovedMissionCompletedNoConflict() {
 // Fixture: snapshot-approved mission later archived (conflict)
 // ------------------------------------------------------------
 async function testSnapshotApprovedMissionArchivedConflict() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-archived-"))
+  const tmpDir = await makeTempDir("synth-stale-archived-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -569,7 +570,7 @@ async function testSnapshotApprovedMissionArchivedConflict() {
 }
 
 async function testExpeditionCompletionDoesNotLagState() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-state-lag-regression-"))
+  const tmpDir = await makeTempDir("synth-state-lag-regression-")
   try {
     await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
 

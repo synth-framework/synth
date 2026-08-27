@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Initialization Replay Tests
 // ============================================================
@@ -34,7 +35,7 @@ async function readEventLog(dataDir) {
 // Fixture: replay from event log matches persisted canonical state
 // ------------------------------------------------------------
 async function testReplayMatchesCanonicalState() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-replay-"))
+  const tmpDir = await makeTempDir("synth-init-replay-")
   try {
     const knowledgeDir = path.join(tmpDir, "knowledge")
     await fs.mkdir(knowledgeDir, { recursive: true })
@@ -80,7 +81,7 @@ async function testReplayMatchesCanonicalState() {
 // Fixture: replay is stable across repeated runs
 // ------------------------------------------------------------
 async function testReplayIsStable() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-replay-stable-"))
+  const tmpDir = await makeTempDir("synth-init-replay-stable-")
   try {
     const docsDir = path.join(tmpDir, "docs")
     await fs.mkdir(docsDir, { recursive: true })

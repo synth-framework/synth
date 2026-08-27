@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // MISSION STUDIO SNAPSHOT INTEGRITY TESTS (EXP-HARDEN-002)
 // ============================================================
@@ -54,7 +55,7 @@ function makeApprovedSnapshot(name = "Build CRM", parentSnapshot) {
 }
 
 async function makeTmpStore() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-snapshot-integrity-"))
+  const dir = await makeTempDir("synth-snapshot-integrity-")
   return { dir, store: createFileSystemSnapshotStore(dir) }
 }
 
@@ -365,7 +366,7 @@ test("An approved Mission is reconstructed from its persisted snapshot with a va
 // ============================================================
 
 test("synth mission snapshot inspects, verifies, and lists persisted snapshots", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-snapshot-"))
+  const tmpDir = await makeTempDir("synth-cli-snapshot-")
   try {
     const init = runSynth(["init", "--name", "Snapshot CLI Test"], tmpDir)
     assert.strictEqual(init.status, 0, init.stderr)

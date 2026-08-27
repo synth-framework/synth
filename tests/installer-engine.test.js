@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Synth Installer Engine Tests
 // ============================================================
@@ -14,7 +15,7 @@ import path from "path"
 const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-installer-engine-"))
+  return makeTempDirSync("synth-installer-engine-")
 }
 
 function writeFile(filePath, content) {

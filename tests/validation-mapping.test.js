@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Capability ↔ Test Mapping Tests
 // ============================================================
@@ -104,7 +105,7 @@ async function testProtectedAssetsHaveStrongValidation() {
 }
 
 async function testInvalidSchemaFails() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-validation-map-"))
+  const tmpDir = await makeTempDir("synth-validation-map-")
   const invalidMapPath = path.join(tmpDir, "invalid-map.json")
 
   const map = await loadJson(MAP_PATH)
@@ -121,7 +122,7 @@ async function testInvalidSchemaFails() {
 }
 
 async function testMissingScriptsFail() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-validation-map-"))
+  const tmpDir = await makeTempDir("synth-validation-map-")
   const invalidMapPath = path.join(tmpDir, "invalid-map.json")
 
   const map = await loadJson(MAP_PATH)
@@ -142,7 +143,7 @@ async function testMissingScriptsFail() {
 }
 
 async function testEmptyCapabilityValidationFails() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-validation-map-"))
+  const tmpDir = await makeTempDir("synth-validation-map-")
   const invalidMapPath = path.join(tmpDir, "invalid-map.json")
 
   const map = await loadJson(MAP_PATH)

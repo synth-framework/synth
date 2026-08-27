@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Release CLI Tests
 // ============================================================
@@ -48,7 +49,7 @@ function assert(condition, message) {
 }
 
 function createTempRepo() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-release-test-"))
+  const dir = makeTempDirSync("synth-release-test-")
   runGit(["init"], dir)
   runGit(["config", "user.email", "test@synth.local"], dir)
   runGit(["config", "user.name", "Synth Test"], dir)

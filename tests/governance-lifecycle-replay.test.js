@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOVERNABILITY-006B — Deterministic Governance Lifecycle Replay
 // ============================================================
@@ -19,11 +20,6 @@ import { bootstrap } from "../dist/core/bootstrap.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { rebuildState } from "../dist/runtime/replay.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-governance-lifecycle-replay", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-governance-lifecycle-replay")
@@ -31,7 +27,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-governance-lifecycle-replay")
   const ctx = await bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),
