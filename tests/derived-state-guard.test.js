@@ -17,6 +17,8 @@ import path from "node:path"
 import { spawnSync } from "child_process"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import * as sdkFiles from "../dist/sdk/files/index.js"
+import { seedEventLog } from "./helpers/seed-event-log.js"
+import { readEvents } from "../dist/sdk/events/index.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
@@ -26,7 +28,7 @@ function makeTempProjectRoot() {
   return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "derived-state-guard-")))
 }
 
-function seedEvents(projectRoot, overrides = {}) {
+async function seedEvents(projectRoot, overrides = {}) {
   const dataDir = path.join(projectRoot, ".synth", "data")
   fs.mkdirSync(dataDir, { recursive: true })
   fs.writeFileSync(path.join(projectRoot, ".synth", "manifest.json"), "{}\n")
@@ -99,18 +101,15 @@ function seedEvents(projectRoot, overrides = {}) {
     { id: "evt-6", type: "EXPEDITION_APPROVED", timestamp: 6, transactionId: "tx-6", capability: "test", actor: "test", payload: { id: "e1" } },
   ]
 
-  fs.writeFileSync(
-    path.join(dataDir, "event-log.jsonl"),
-    events.map((e) => JSON.stringify(e)).join("\n") + "\n",
-  )
+  await seedEventLog(projectRoot, events)
 }
 
 async function makeCtx(projectRoot, overrides = {}) {
-  seedEvents(projectRoot, overrides)
+  await seedEvents(projectRoot, overrides)
   const dataDir = path.join(projectRoot, ".synth", "data")
   const ctx = await bootstrap({
     infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
+      streamDir: path.join(dataDir, "event-stream"),
       statePath: path.join(dataDir, "canonical-state.json"),
       checkpointPath: path.join(dataDir, "checkpoint.json"),
     },
@@ -298,7 +297,7 @@ test("derived-state and expedition scope protection", { concurrency: false }, as
 
   await t.test("CLI expedition create --scope stores scope in metadata", async () => {
     const dir = makeTempProjectRoot()
-    seedEvents(dir)
+    await seedEvents(dir)
 
     const run = runSynth(
       ["expedition", "create", "--mission", "m1", "--subject", "Mobile fixes", "--goal", "Fix mobile", "--scope", "apps/mobile/**", "--scope", "supabase/config.toml"],
@@ -306,11 +305,8 @@ test("derived-state and expedition scope protection", { concurrency: false }, as
     )
     assert.strictEqual(run.status, 0, run.stderr)
 
-    const logPath = path.join(dir, ".synth", "data", "event-log.jsonl")
-    const logLines = fs.readFileSync(logPath, "utf-8").trim().split("\n")
-    const createEvents = logLines
-      .map((line) => JSON.parse(line))
-      .filter((e) => e.type === "EXPEDITION_CREATED")
+    const events = await readEvents(dir)
+    const createEvents = events.filter((e) => e.type === "EXPEDITION_CREATED")
     assert.ok(createEvents.length > 0, "expected EXPEDITION_CREATED event")
     const createEvent = createEvents[createEvents.length - 1]
     assert.deepStrictEqual(createEvent.payload.expedition.metadata.scope, ["apps/mobile/**", "supabase/config.toml"])

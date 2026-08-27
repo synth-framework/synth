@@ -1,0 +1,14 @@
+{
+  "id": "4a3f7b93a4cc3e53",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Validation Assertion Quiet Output Flag",
+  "goal": "Add a flag/option to the validation engine and CLI to suppress passing test details and only output errors or failing tests, reducing console output saturation.",
+  "status": "committed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 77,
+  "updatedAt": 81
+}

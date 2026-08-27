@@ -1,0 +1,21 @@
+{
+  "id": "5c2b2db11e77e740",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Fix --dry-run persisting state mutations",
+  "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/cli",
+      "src/control",
+      "src/runtime",
+      "src/api"
+    ]
+  },
+  "createdAt": 123,
+  "updatedAt": 211
+}

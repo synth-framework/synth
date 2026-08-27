@@ -1,0 +1,14 @@
+{
+  "id": "729e4e2c17add703",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Allow archiving completed expeditions",
+  "goal": "The 'expedition archive' lifecycle rule is inverted: it rejects archiving a COMPLETED expedition ('Only active or paused expeditions can be archived') while archiving is conceptually for finished/superseded work. Fix so a completed expedition can be archived (e.g., to retire a superseded duplicate). Scope: (1) intake.ts expedition.archive gate — add 'completed' to allowed source statuses (keep 'cancelled'/'archived' terminal, keep 'active'/'paused' allowed); (2) domain/planning.ts archiveExpedition — remove the 'cannot archive a completed expedition' invariant; (3) update the lifecycle comment at intake.ts:10-11; (4) add a regression test. Consider whether a dedicated 'superseded' disposition is cleaner than completed->archived and recommend in the plan.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 231,
+  "updatedAt": 231
+}

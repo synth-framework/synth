@@ -1,0 +1,21 @@
+{
+  "id": "3d9f5d0df805e15f",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Implement mission new / expedition new commands (replace over-complicated mission create)",
+  "goal": "Replace the draft-proposal mission create flow with a single canonicalizing 'mission new' (and 'expedition new') command, per the verb-consolidation plan. The new command should canonicalize a draft mission (emit MISSION_CREATED draft) so expeditions can be planned immediately, subsuming the 'mission create canonicalize draft' structural fix. See attached evidence.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 239,
+  "updatedAt": 243,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/3d9f5d0df805e15f/attachments/mission-new-evidence.md",
+      "hash": "06766e7bdf0157c2435aee4d0db0925b1f345e0ef3eb374c12ab052abaf71c92"
+    }
+  ]
+}

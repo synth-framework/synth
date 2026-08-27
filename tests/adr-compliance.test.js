@@ -5,6 +5,7 @@ import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 import { evaluate } from "../scripts/check-adr-compliance.js"
+import { countEvents } from "../dist/sdk/events/index.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -21,10 +22,7 @@ function assert(cond, msg) {
 }
 
 const cs = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, ".synth/data/canonical-state.json"), "utf-8"))
-const ev = fs
-  .readFileSync(path.join(REPO_ROOT, ".synth/data/event-log.jsonl"), "utf-8")
-  .split("\n")
-  .filter(Boolean).length
+const ev = await countEvents(REPO_ROOT)
 
 // 1. Clean tree with consistent derived state passes.
 assert(

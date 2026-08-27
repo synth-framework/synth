@@ -1,0 +1,21 @@
+{
+  "id": "29b9a3704eb1287c",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Fold legacy CLI verbs into the canonical command set",
+  "goal": "Consolidate redundant verbs via deprecated-alias shims and a unified 'init' entrypoint, preserving first-contact/genesis/bootstrap/discover/governance subsystems and their tests. Canonical targets: status (was report/explain status), validate verify (was verify), docs agents (was project AGENTS.md), init --brownfield/--analyze/--greenfield (was bootstrap/discover/first-contact/genesis). Deprecate intent + migrate as load-bearing-for-alignment legacy verbs.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 229,
+  "updatedAt": 230,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/29b9a3704eb1287c/attachments/phase3-plan.md",
+      "hash": "680428aa3f6b2d33672423d52f678cee59c74cc9a3ecd8d7e016799259f99229"
+    }
+  ]
+}

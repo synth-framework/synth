@@ -1,0 +1,30 @@
+{
+  "id": "247c03330b22eee0",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Dead Code Elimination (Exports)",
+  "goal": "Remove unused exported functions and types across the framework to reduce the API surface and overall codebase size.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-63784",
+      "sessionId": "9d77df6f-3a52-4178-b905-3990bca8fde4",
+      "approvalMode": "autonomous",
+      "issuedAt": 51
+    }
+  },
+  "createdAt": 25,
+  "updatedAt": 54,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/247c03330b22eee0/git-diff.patch",
+      "hash": "d3bcc464f29c9bd8659f02065eff9e661c670a00905ffe0ca71af9ff857137dd"
+    }
+  ],
+  "force": true,
+  "forceReason": "Working directory contains temporary audit reports and scratch files."
+}

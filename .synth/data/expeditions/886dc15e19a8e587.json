@@ -1,0 +1,41 @@
+{
+  "id": "886dc15e19a8e587",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
+  "goal": "Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved.",
+  "status": "executing",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/infra/**",
+      "src/runtime/**",
+      "src/verification/**",
+      "src/types/event.ts",
+      "src/control/**",
+      "src/domain/**",
+      "src/sdk/events/**",
+      "src/capability/**",
+      "src/first-contact/**",
+      "src/cli/explain-*",
+      "src/cli/entry.ts",
+      "src/cli/signatures.ts",
+      "tests/partitioned-event-store.test.ts",
+      "tests/per-entity-state-store.test.ts",
+      "tests/event-store-monolithic-compat.test.ts",
+      "tests/expedition-refine-dependson.test.js",
+      "scripts/system-graph.mjs",
+      ".gitignore"
+    ],
+    "identity": {
+      "agentId": "synth-cli-75199",
+      "sessionId": "99445cab-6771-47ee-8751-64ccac557336",
+      "approvalMode": "autonomous",
+      "issuedAt": 261
+    }
+  },
+  "createdAt": 257,
+  "updatedAt": 261
+}

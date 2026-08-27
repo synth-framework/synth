@@ -78,6 +78,58 @@ async function readEventLog(fs: FilesystemProvider, logPath: string): Promise<Sy
   }
 }
 
+/**
+ * Read the authoritative event log. The partitioned event store (expedition
+ * 01604a3) persists events as `PartitionedEvent`s under
+ * `<dataDir>/event-stream/partition-<n>/segment-*.jsonl` and does NOT keep the
+ * legacy monolithic `event-log.jsonl` in sync. The partitioned segments are the
+ * canonical source of truth, so this loader prefers them and falls back to the
+ * monolithic file only for pre-partition repositories.
+ */
+export async function readAuthoritativeEventLog(fs: FilesystemProvider): Promise<SynthEvent[]> {
+  if (await fs.pathExists("event-stream")) {
+    try {
+      const partitions = (await fs.listDirectory("event-stream")).filter((p) => p.startsWith("partition-"))
+      const partitioned: SynthEvent[] = []
+      for (const partition of partitions) {
+        const files = (await fs.listDirectory(`event-stream/${partition}`))
+          .filter((f) => f.endsWith(".jsonl"))
+          .sort()
+        for (const file of files) {
+          const text = await fs.readFile(`event-stream/${partition}/${file}`)
+          if (text === undefined) continue
+          for (const line of text.split("\n")) {
+            if (!line.trim()) continue
+            try {
+              const raw = JSON.parse(line) as Record<string, unknown>
+              partitioned.push(raw as unknown as SynthEvent)
+            } catch {
+              // Malformed lines are surfaced as replay/graph violations.
+            }
+          }
+        }
+      }
+      if (partitioned.length > 0) {
+        partitioned.sort(
+          (a, b) =>
+            ((a as unknown as { offset?: number }).offset ?? 0) -
+            ((b as unknown as { offset?: number }).offset ?? 0),
+        )
+        // Strip partitioned-store metadata now that ordering is settled.
+        for (const e of partitioned) {
+          delete (e as unknown as { partitionKey?: unknown }).partitionKey
+          delete (e as unknown as { partition?: unknown }).partition
+          delete (e as unknown as { offset?: unknown }).offset
+        }
+        return partitioned
+      }
+    } catch {
+      // Fall through to the monolithic file.
+    }
+  }
+  return readEventLog(fs, "event-log.jsonl")
+}
+
 async function loadDrafts(fs: FilesystemProvider): Promise<DraftSummary[]> {
   const draftsDir = "drafts"
   if (!(await fs.pathExists(draftsDir))) return []
@@ -265,7 +317,7 @@ export async function resolveGovernanceContext(
   const rootFs = createPosixFilesystemProvider(rootDir)
   const dataFs = createPosixFilesystemProvider(resolvedDataDir)
 
-  const events = await readEventLog(dataFs, "event-log.jsonl")
+  const events = await readAuthoritativeEventLog(dataFs)
   const persistedState = (await readJsonMaybe<CanonicalState>(dataFs, "canonical-state.json")) ?? null
   const decisions = await listDecisions(resolvedDataDir, undefined, dataFs)
   const historicalAliases = await loadHistoricalAliasRegistry(dataFs)

@@ -1,0 +1,14 @@
+{
+  "id": "8ed4c9240f9997f0",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Stage 1: Design target governance verb model (ADR)",
+  "goal": "Decide the governance-cluster end-state: minimal (keep govern/validate/approval/certify; fold verify->validate verify + checkpoint->status) vs alias (add check deprecated shim for govern) vs full rename (govern->check). Produce an ADR with chosen model, rationale, and affected command/CI/doc graph. No source changes.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 234,
+  "updatedAt": 234
+}

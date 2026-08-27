@@ -1,0 +1,14 @@
+{
+  "id": "97ddb728c5250c96",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Migrate synth.js to Lazy-Load Model",
+  "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 208,
+  "updatedAt": 210
+}

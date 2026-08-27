@@ -38,16 +38,30 @@ function assert(condition, message) {
 }
 
 async function readEventLog(dataDir) {
-  const logPath = path.join(dataDir, "event-log.jsonl")
-  try {
-    const raw = await fs.readFile(logPath, "utf-8")
-    return raw
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-  } catch {
-    return []
+  const streamDir = path.join(dataDir, "event-stream")
+  const events = []
+  const walk = async (d) => {
+    let entries
+    try {
+      entries = await fs.readdir(d, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      const p = path.join(d, entry.name)
+      if (entry.isDirectory()) await walk(p)
+      else if (entry.name.endsWith(".jsonl")) {
+        const raw = await fs.readFile(p, "utf-8")
+        for (const line of raw.split("\n")) {
+          if (!line.trim()) continue
+          events.push(JSON.parse(line))
+        }
+      }
+    }
   }
+  await walk(streamDir)
+  events.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
+  return events
 }
 
 // ------------------------------------------------------------

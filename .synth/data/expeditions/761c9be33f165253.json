@@ -1,0 +1,14 @@
+{
+  "id": "761c9be33f165253",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Stage 0: Audit governance-cluster verbs & blast radius",
+  "goal": "Map governance-cluster verbs (validate, verify, govern, checkpoint, approval, certify): every CLI invocation site, CI/script references (npm run govern), documentation mentions, and operator muscle-memory dependencies. Produce a blast-radius report identifying which renames break CI vs which are safe. Read-only research; no source changes.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 233,
+  "updatedAt": 233
+}

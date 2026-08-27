@@ -3,10 +3,12 @@
 // ============================================================
 
 import { promises as fs } from "fs"
+import os from "os"
 import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
 import { dataDir } from "../sdk/paths/index.js"
+import { telemetry } from "./telemetry.js"
 
 const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
 const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
@@ -64,8 +66,15 @@ export class EventStore {
   async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     if (events.length === 0) return
+    const span = telemetry.start("eventStore.appendBatch")
     const lines = events.map((e: SynthEvent) => JSON.stringify(e)).join("\n") + "\n"
-    await fs.appendFile(this.filePath, lines)
+    try {
+      await fs.appendFile(this.filePath, lines)
+      telemetry.end(span)
+    } catch (err) {
+      telemetry.end(span, err)
+      throw err
+    }
   }
 
   async loadAll(): Promise<SynthEvent[]> {
@@ -312,5 +321,177 @@ export class SegmentStore {
     } catch {
       return []
     }
+  }
+}
+
+// ============================================================
+// PartitionedEventStore — chunked event log (expedition 01604a3)
+// ============================================================
+// Implements the same EventStore contract as the abstract base, but routes
+// each event to a partition (by event.type) and persists it as a
+// PartitionedEvent { ...event, partition, offset } into
+// event-stream/<partition>/segment-XXXX.jsonl via SegmentStore.
+//
+// A single GLOBAL monotonic offset (assigned at append time) preserves the
+// original global commit ordering, so loadAll() reconstructs events in the
+// exact sequence they were committed — deterministic replay is unchanged.
+//
+// The event-stream is the sole authority for the event log. There is no
+// monolithic event-log.jsonl and no migration path: partitioned segments are
+// canonical and read directly.
+// ============================================================
+
+export class PartitionedEventStore extends EventStore {
+  private streamDir: string
+  private partitionCount: number
+  private segmentStore: SegmentStore
+  private globalOffset: number | undefined
+  private readOnly: boolean
+
+  constructor(
+    streamDir: string,
+    partitionCount: number = 4,
+    authToken?: symbol,
+    readOnly: boolean = false,
+  ) {
+    super(streamDir, authToken)
+    this.streamDir = streamDir
+    this.partitionCount = Math.max(1, partitionCount)
+    this.segmentStore = SegmentStore.createAuthorized(1000, this.streamDir)
+    this.globalOffset = undefined
+    this.readOnly = readOnly
+  }
+
+  static createAuthorized(
+    streamDir: string,
+    partitionCount?: number,
+    readOnly: boolean = false,
+  ): PartitionedEventStore {
+    return new PartitionedEventStore(
+      streamDir,
+      partitionCount,
+      EVENT_STORE_WRITE_TOKEN,
+      readOnly,
+    )
+  }
+
+  override getFilePath(): string | undefined {
+    return this.streamDir
+  }
+
+  override getDataDir(): string | undefined {
+    return path.dirname(this.streamDir)
+  }
+
+  private route(key: string): number {
+    let hash = 0
+    for (let i = 0; i < key.length; i++) {
+      const char = key.charCodeAt(i)
+      hash = ((hash << 5) - hash + char) | 0
+    }
+    return Math.abs(hash) % this.partitionCount
+  }
+
+  private async computeMaxOffset(): Promise<number> {
+    let max = 0
+    for (let p = 0; p < this.partitionCount; p++) {
+      const events = await this.segmentStore.readPartition(p)
+      for (const e of events) max = Math.max(max, e.offset ?? 0)
+    }
+    return max
+  }
+
+  private async nextOffset(): Promise<number> {
+    // The event-stream is shared on disk and may be appended by other
+    // processes (separate CLI invocations) between two appends made by this
+    // instance. A purely in-memory cached offset would then collide with
+    // offsets assigned by those external writers, producing duplicate offsets
+    // and breaking the hash-chain. Always reconcile the cached cursor with the
+    // authoritative on-disk maximum so every assigned offset is strictly
+    // greater than any event already persisted.
+    const diskMax = await this.computeMaxOffset()
+    if (this.globalOffset === undefined || this.globalOffset < diskMax) {
+      this.globalOffset = diskMax
+    }
+    this.globalOffset += 1
+    return this.globalOffset
+  }
+
+  private async appendInternal(event: SynthEvent): Promise<void> {
+    const partitionKey = event.type
+    const partition = this.route(partitionKey)
+    const offset = await this.nextOffset()
+    const partitioned: PartitionedEvent = { ...event, partitionKey, partition, offset }
+    await this.segmentStore.append(partition, partitioned)
+  }
+
+  override async append(event: SynthEvent, _authToken?: symbol): Promise<void> {
+    this.ensureAuthorized()
+    await this.appendInternal(event)
+  }
+
+  override async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
+    this.ensureAuthorized()
+    if (events.length === 0) return
+    const span = telemetry.start("eventStore.appendBatch")
+    try {
+      for (const event of events) {
+        await this.appendInternal(event)
+      }
+      telemetry.end(span)
+    } catch (err) {
+      telemetry.end(span, err)
+      throw err
+    }
+  }
+
+  override async loadAll(): Promise<SynthEvent[]> {
+    const all: PartitionedEvent[] = []
+    for (let p = 0; p < this.partitionCount; p++) {
+      const events = await this.segmentStore.readPartition(p)
+      all.push(...events)
+    }
+    all.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
+    return all as SynthEvent[]
+  }
+
+  override async count(): Promise<number> {
+    const events = await this.loadAll()
+    return events.length
+  }
+
+  override async getLastEvent(): Promise<SynthEvent | null> {
+    const events = await this.loadAll()
+    return events.length > 0 ? events[events.length - 1] : null
+  }
+
+  override async initialize(): Promise<void> {
+    if (this.readOnly) return
+    await fs.mkdir(this.streamDir, { recursive: true })
+  }
+
+  /**
+   * Load events from an explicitly-named standalone log file (e.g. an evidence
+   * archive passed via `--log path/events.jsonl`). This is input reading, not
+   * canonical-state migration: the monolithic event-stream remains the sole
+   * authority, and no `.synth/data/event-log.jsonl` is ever read or migrated.
+   * The file is materialised into a throwaway event-stream so the standard
+   * partition/offset replay path applies unchanged.
+   */
+  static async createFromFile(
+    filePath: string,
+    authToken: symbol = EVENT_STORE_WRITE_TOKEN,
+  ): Promise<PartitionedEventStore> {
+    const raw = await fs.readFile(filePath, "utf-8")
+    const events: SynthEvent[] = raw
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line))
+    const tmpRoot = path.join(os.tmpdir(), `synth-log-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    await fs.mkdir(tmpRoot, { recursive: true })
+    const streamDir = path.join(tmpRoot, "event-stream")
+    const eventStore = new PartitionedEventStore(streamDir, 4, authToken, true)
+    await eventStore.appendBatch(events)
+    return eventStore
   }
 }

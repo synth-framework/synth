@@ -9,6 +9,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { seedEventLog } from "./helpers/seed-event-log.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const PROJECTION_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "governance-record-projection.js")
@@ -50,7 +51,7 @@ async function writeEventLog(dir, rawEvents) {
   }
   const dataDir = path.join(dir, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
-  await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
+  await seedEventLog(dataDir, events)
 }
 
 async function writeManifest(dir, projectName = "Governance Record Test") {
@@ -175,7 +176,6 @@ async function testEmptyLog() {
   try {
     await writeManifest(tmpDir)
     await fs.mkdir(path.join(tmpDir, ".synth", "data"), { recursive: true })
-    await fs.writeFile(path.join(tmpDir, ".synth", "data", "event-log.jsonl"), "")
     const { stdout, status } = runSynth(["explain", "governance"], tmpDir)
     assert(status === 0, "explain governance should exit 0 on empty log")
     const output = parseJson(stdout)

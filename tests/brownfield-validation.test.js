@@ -6,9 +6,9 @@
 // observations and proposals for each one.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
+import { createPerfRunner } from "./helpers/perf-runner.js"
 
 const PROJECT_ROOT = process.cwd()
 const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
@@ -22,18 +22,10 @@ const EXAMPLES = [
   { name: "blog", dir: "examples/blog", type: "node" },
 ]
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
+const { runSynth } = createPerfRunner({
+  cliPath: CLI_PATH,
+  logPath: process.env.SYNTH_PERF_LOG || "/tmp/synth-perf-brownfield-validation.log",
+})
 
 function parseJson(stdout) {
   // CLI logs go to stderr; stdout contains only the final JSON object.

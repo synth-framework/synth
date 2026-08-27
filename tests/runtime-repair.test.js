@@ -76,15 +76,60 @@ function approve(dir, draftId, contractId) {
 }
 
 function readEventLog(dir) {
-  const file = path.join(dir, ".synth", "data", "event-log.jsonl")
-  try {
-    return fs
-      .readFileSync(file, "utf8")
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-  } catch {
-    return []
+  const streamDir = path.join(dir, ".synth", "data", "event-stream")
+  const events = []
+  const walk = (d) => {
+    let entries
+    try {
+      entries = fs.readdirSync(d, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      const p = path.join(d, entry.name)
+      if (entry.isDirectory()) walk(p)
+      else if (entry.name.endsWith(".jsonl")) {
+        const raw = fs.readFileSync(p, "utf8")
+        for (const line of raw.split("\n")) {
+          if (!line.trim()) continue
+          events.push(JSON.parse(line))
+        }
+      }
+    }
+  }
+  walk(streamDir)
+  events.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
+  return events
+}
+
+// Replace the event-stream contents with the given events (used to simulate a
+// runtime-side loss of specific events before running `synth repair replay`).
+function writeEventStream(dir, events) {
+  const streamDir = path.join(dir, ".synth", "data", "event-stream")
+  fs.rmSync(streamDir, { recursive: true, force: true })
+  fs.mkdirSync(streamDir, { recursive: true })
+  const buckets = new Map()
+  let offset = 0
+  for (const e of events) {
+    offset += 1
+    const clean = { ...e }
+    delete clean.partition
+    delete clean.offset
+    delete clean.partitionKey
+    let h = 0
+    for (let i = 0; i < clean.type.length; i++) {
+      h = ((h << 5) - h + clean.type.charCodeAt(i)) | 0
+    }
+    const partition = Math.abs(h) % 4
+    const partitioned = { ...clean, partitionKey: clean.type, partition, offset }
+    if (!buckets.has(partition)) buckets.set(partition, [])
+    buckets.get(partition).push(partitioned)
+  }
+  for (const [partition, evs] of buckets) {
+    const segDir = path.join(streamDir, `partition-${partition}`)
+    fs.mkdirSync(segDir, { recursive: true })
+    const content = evs.map((e) => JSON.stringify(e)).join("\n") + "\n"
+    fs.writeFileSync(path.join(segDir, "segment-0001.jsonl"), content)
   }
 }
 
@@ -146,7 +191,7 @@ function main() {
       const surviving = readEventLog(dir).filter(
         (e) => e.type !== "MISSION_CREATED" && e.type !== "MISSION_APPROVED",
       )
-      fs.writeFileSync(logFile, surviving.map((e) => JSON.stringify(e)).join("\n") + "\n")
+      writeEventStream(dir, surviving)
 
       const dryRun = runCli(dir, ["repair", "replay"])
       assert(dryRun.status === 0, "Repair dry-run: exits successfully")
@@ -174,7 +219,7 @@ function main() {
       const surviving = readEventLog(dir).filter(
         (e) => e.type !== "MISSION_CREATED" && e.type !== "MISSION_APPROVED",
       )
-      fs.writeFileSync(logFile, surviving.map((e) => JSON.stringify(e)).join("\n") + "\n")
+      writeEventStream(dir, surviving)
 
       const apply = runCli(dir, ["repair", "replay", "--approve"])
       assert(apply.status === 0, "Repair apply: exits successfully")

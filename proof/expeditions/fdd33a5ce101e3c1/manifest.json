@@ -1,0 +1,12 @@
+{
+  "expeditionId": "fdd33a5ce101e3c1",
+  "capturedAt": 1787706271681,
+  "note": "synth.ts deep audit & lazy-load decomposition findings (2026-08-26): 7913 LOC god-module, 60 bootstrap call sites, divergent cmdExplainReplay duplicate, perf telemetry (85-95% per-command cold-start), explain-replay path-routing bug root cause + fix.",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/fdd33a5ce101e3c1/attachments/synth-ts-audit.md",
+      "hash": "34ddbf7f58352fe00e6d5a9a0e1935ea915e1cfdb2d220e81041f61acb2f092d"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "bfe9b21ecfd8074d",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Land validated code-fix batch: brownfield opacity, explain exit-code, quiet CI",
+  "goal": "Merge the code changes validated on debug PR #331 (brownfield proof-opacity/bypass hardening, synth explain unknown-subcommand exit-code fix, CI log-noise reduction via SYNTH_QUIET_LOGS + dot reporter) into main under a single executing expedition via PR.",
+  "status": "executing",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-72579",
+      "sessionId": "cd9509d9-b56f-48f8-93ae-556bb15ad662",
+      "approvalMode": "autonomous",
+      "issuedAt": 256
+    }
+  },
+  "createdAt": 252,
+  "updatedAt": 256
+}

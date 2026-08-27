@@ -1,0 +1,14 @@
+{
+  "id": "0463c2cae71ac727",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Pointer-based evidence and derived-artifact exclusion from completion gate",
+  "goal": "Reduce SYNTH's content redundancy and the commit-then-complete friction by (1) making evidence pointer-based: event-log/evidence records reference external artifacts by git SHA / content hash / URL instead of embedding content copies or full git diffs; completion records 'gitHead' as the realized-state pointer; (2) excluding derived/generated paths (proof/, dist/, *.integrity.json, canonical-state.json) from the DirtyWorkingTreeBlocksCompletion gate so only uncommitted IN-SCOPE SOURCE blocks completion; (3) keeping the event log as the authoritative provenance ledger while git remains the content store. Scope: locate the completion dirty-tree enforcement (cmdExpeditionComplete / CompleteExpedition capability) and the evidence-attach path; add a derived-path allowlist; record gitHead on EXPEDITION_COMPLETED. Preserve replay independence by keeping event-log.jsonl as the durable core. Add tests. Consider a short ADR noting the provenance-vs-content split.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 232,
+  "updatedAt": 232
+}

@@ -45,9 +45,11 @@ export async function runExplainReplay(flags: Record<string, string | boolean>):
 
   const ctx = await createInfra({
     persistence: "file",
-    eventLogPath: paths.logPath,
+    streamDir: paths.streamDir,
+    eventLogFile: paths.eventLogFile,
     statePath: paths.statePath,
     checkpointPath: paths.checkpointPath,
+    readOnly: true,
   })
 
   const verifier = createReplayVerifier(ctx.eventStore, ctx.stateStore)

@@ -9,6 +9,7 @@ export {
   ensureDataDir,
   stateFile,
   eventLogFile,
+  eventsDir,
   snapshotsDir,
   checkpointsFile,
   isRuntimeDataPath,

@@ -29,12 +29,25 @@ export type EventLogLineage = {
 }
 
 function relationOf(current: string[], other: string[]): BranchRelation {
-  const same = current.length === other.length
-  if (same) return current.every((line, i) => line === other[i]) ? "equal" : "diverged"
-  if (other.length > current.length) {
-    return current.every((line, i) => line === other[i]) ? "prefix" : "diverged"
+  // The event log is an event-stream partitioned across segments, so the
+  // on-disk order is NOT the canonical append order. Lineage comparison must
+  // therefore be order-independent: we compare the multiset of canonicalized
+  // events. "prefix" means the current log is a subset (stale-but-safe, can be
+  // fast-forwarded), "superset" means it already carries every sibling event,
+  // and any symmetric difference is a genuine fork (diverged).
+  const count = (arr: string[]) => {
+    const m = new Map<string, number>()
+    for (const line of arr) m.set(line, (m.get(line) || 0) + 1)
+    return m
   }
-  return other.every((line, i) => line === current[i]) ? "superset" : "diverged"
+  const c = count(current)
+  const o = count(other)
+  const cSubO = [...c].every(([k, v]) => (o.get(k) || 0) >= v)
+  const oSubC = [...o].every(([k, v]) => (c.get(k) || 0) >= v)
+  if (cSubO && oSubC) return "equal"
+  if (cSubO) return "prefix"
+  if (oSubC) return "superset"
+  return "diverged"
 }
 
 export function analyzeEventLogLineage(

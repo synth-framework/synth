@@ -12,7 +12,7 @@ import * as sdk from "../sdk/index.js"
 import { deriveGovernanceRecords } from "../core/governance-record-projection.js"
 import type { GovernanceRecordLineage } from "../types/governance-record.js"
 import type { SynthEvent } from "../types/index.js"
-import { ensureDataDir, eventLogFile } from "../sdk/paths/index.js"
+import { ensureDataDir, eventsDir } from "../sdk/paths/index.js"
 import { root } from "../sdk/workspace/index.js"
 import { printJson, printError } from "./print.js"
 
@@ -36,14 +36,16 @@ export async function cmdExplainGovernance(flags: Record<string, string | boolea
 
   const cwd = root()
   await ensureDataDir(cwd)
-  const defaultLogPath = eventLogFile(cwd)
+  const defaultLogPath = eventsDir(cwd)
   const logPath = logFlag ? path.resolve(cwd, logFlag) : defaultLogPath
 
-  if (!(await sdk.files.exists(logPath))) {
-    printError(`event log not found: ${logFlag ?? path.relative(cwd, defaultLogPath)}`)
+  let events: SynthEvent[]
+  if (logFlag) {
+    events = (await readEventLogFromPath(logPath)) as SynthEvent[]
+  } else {
+    events = await sdk.events.readEvents(cwd)
   }
 
-  const events = (logFlag ? await readEventLogFromPath(logPath) : await sdk.events.readEvents(cwd)) as SynthEvent[]
   const lineage = deriveGovernanceRecords(events)
 
   printJson(lineage)

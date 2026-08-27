@@ -239,6 +239,7 @@ export function refineExpedition(
   ctx: DomainContext,
   note: string,
   refinementId: string,
+  dependsOn?: string[],
 ): Expedition {
   if (expedition.status === "completed" || expedition.status === "cancelled" || expedition.status === "archived") {
     throw new Error("INVARIANT_VIOLATION: cannot refine a terminal expedition")
@@ -246,6 +247,7 @@ export function refineExpedition(
   return {
     ...expedition,
     updatedAt: ctx.timestamp,
+    dependsOn: Array.isArray(dependsOn) ? dependsOn : expedition.dependsOn,
     metadata: {
       ...expedition.metadata,
       refinementId,

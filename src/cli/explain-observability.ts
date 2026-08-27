@@ -106,9 +106,11 @@ async function loadExplainContext(flags: Record<string, string | boolean>): Prom
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: paths.logPath,
+      streamDir: paths.streamDir,
+      eventLogFile: paths.eventLogFile,
       statePath: paths.statePath,
       checkpointPath: paths.checkpointPath,
+      readOnly: true,
     },
   })
 

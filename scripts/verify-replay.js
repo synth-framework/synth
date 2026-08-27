@@ -46,7 +46,7 @@ async function main() {
 
   const ctx = await bootstrap({
     infra: eventLogPath
-      ? { persistence: "file", eventLogPath, statePath }
+      ? { persistence: "file", eventLogFile: eventLogPath, statePath }
       : { persistence: "file" },
     skipGenesis: true,
   })

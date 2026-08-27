@@ -5,27 +5,19 @@
 // Draft → Approved → Committed → Executing → Completed
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { createPerfRunner } from "./helpers/perf-runner.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
+const { runSynth } = createPerfRunner({
+  cliPath: CLI_PATH,
+  logPath: process.env.SYNTH_PERF_LOG || "/tmp/synth-perf-expedition.log",
+})
 
 function parseJson(stdout) {
   try {

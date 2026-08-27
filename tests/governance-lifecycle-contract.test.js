@@ -9,27 +9,21 @@
 // It does not depend on runtime internals.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { createPerfRunner } from "./helpers/perf-runner.js"
+import { readAuthoritativeEventLog } from "../dist/runtime/governance-resolver.js"
+import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
+const { runSynth } = createPerfRunner({
+  cliPath: CLI_PATH,
+  logPath: process.env.SYNTH_PERF_LOG || "/tmp/synth-perf-governance.log",
+})
 
 function parseJson(stdout) {
   try {
@@ -44,13 +38,13 @@ function assert(condition, message) {
 }
 
 async function readEventLog(projectDir) {
-  const eventLogPath = path.join(projectDir, ".synth", "data", "event-log.jsonl")
-  const content = await fs.readFile(eventLogPath, "utf-8")
-  return content
-    .trim()
-    .split("\n")
-    .filter((line) => line.length > 0)
-    .map((line) => JSON.parse(line))
+  // The partitioned event store is authoritative; read it through the
+  // canonical reader rather than the vestigial monolithic event-log.jsonl.
+  const dataFs = createPosixFilesystemProvider(
+    path.join(projectDir, ".synth", "data"),
+    FILESYSTEM_WRITE_TOKEN,
+  )
+  return readAuthoritativeEventLog(dataFs)
 }
 
 async function setupProject() {

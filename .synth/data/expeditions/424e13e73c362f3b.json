@@ -1,0 +1,14 @@
+{
+  "id": "424e13e73c362f3b",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Stage 2: Implement safe governance folds (verify->validate verify, checkpoint->status)",
+  "goal": "Low-risk deprecated-alias shims: verify->validate verify, checkpoint->status (pre-flight as a status mode). Add emitDeprecation notices, command-safety classification, help text. Keep govern/validate/approval/certify canonical. Build + verify.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 235,
+  "updatedAt": 235
+}

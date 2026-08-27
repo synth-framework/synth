@@ -1,0 +1,16 @@
+{
+  "id": "1ad8b22eace9855a",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Make expedition charters the primary enforced dependency source",
+  "goal": "Make docs/expeditions/<id>.md charter **Depends On:** / **Blocks:** the single source of truth for expedition dependencies, eliminating the need for a --depends-on flag. (1) Ensure target 4ab7e9d2 expeditions have charters (generate if missing). (2) Make isBlockedByUpstreamGate (intake.ts:233, execution.ts:325) charter-aware so declared dependencies block downstream CLI commands/intents. (3) Wire the linear sequence by editing each charter Depends On to reference the previous expedition. Lifecycle (change/remove/reparent/edit) is a charter edit only - no dual source, no flag soup.",
+  "status": "cancelled",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "cancelReason": "Superseded by broader architecture expedition: chunk event log (PartitionedEvent) + decouple monolithic canonical-state into per-entity derived files; dependsOn settable via refine; archive as file relocation."
+  },
+  "createdAt": 249,
+  "updatedAt": 250
+}

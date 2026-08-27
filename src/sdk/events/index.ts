@@ -6,18 +6,14 @@
 // ============================================================
 
 import type { SynthEvent } from "../../types/index.js"
-import { eventLogFile } from "../paths/index.js"
-import { readFileMaybe } from "../files/index.js"
+import { PartitionedEventStore } from "../../infra/event-store.js"
+import { eventsDir } from "../paths/index.js"
 
 export async function readEvents(root: string): Promise<SynthEvent[]> {
-  const text = await readFileMaybe(eventLogFile(root))
-  if (text === undefined) {
-    return []
-  }
-  return text
-    .split("\n")
-    .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as SynthEvent)
+  const streamDir = eventsDir(root)
+  const store = PartitionedEventStore.createAuthorized(streamDir, 4)
+  await store.initialize()
+  return store.loadAll()
 }
 
 export async function countEvents(root: string): Promise<number> {

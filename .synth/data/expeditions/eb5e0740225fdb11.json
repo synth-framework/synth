@@ -1,0 +1,14 @@
+{
+  "id": "eb5e0740225fdb11",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Stage 4: Verify govern-evolution (full pipeline + replay)",
+  "goal": "After governance-cluster changes, run full govern pipeline and confirm replay consistency (synth explain replay) with no CI regression and operator flows intact.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 237,
+  "updatedAt": 237
+}

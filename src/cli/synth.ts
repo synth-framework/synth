@@ -6112,13 +6112,19 @@ async function guardEventLogLineage(flags: Record<string, string | boolean>) {
   } catch {
     return
   }
-  const logRel = pathMod.join(".synth", "data", "event-log.jsonl")
+  const streamRel = pathMod.join(".synth", "data", "event-stream")
   // Current branch: read through the SDK's read-only event accessor
   // (never the raw file — SDK state/events are the sanctioned read path).
   let currentLines: string[]
   try {
     const events = await sdk.events.readEvents(cwd)
-    currentLines = events.map((e) => JSON.stringify(e))
+    // Canonicalize on the logical event only: the event-stream stores
+    // partitioned metadata (partition/offset/partitionKey) that must not
+    // participate in lineage comparison.
+    currentLines = events.map((e) => {
+      const { partition, offset, partitionKey, ...rest } = e as Record<string, unknown>
+      return JSON.stringify(rest)
+    })
   } catch {
     return
   }
@@ -6152,14 +6158,33 @@ async function guardEventLogLineage(flags: Record<string, string | boolean>) {
   const refLogs: Record<string, string[]> = {}
   for (const ref of refs) {
     try {
-      const blob = cp.execFileSync("git", ["show", `${ref}:${logRel}`], { cwd, encoding: "utf-8" })
-      refLogs[ref] = blob
+      // The event log is an event-stream directory (partitioned segments),
+      // so read every committed segment file under it and canonicalize.
+      const files = cp
+        .execFileSync("git", ["ls-tree", "-r", "--name-only", ref, "--", streamRel], { cwd, encoding: "utf-8" })
+        .trim()
         .split("\n")
-        .map((l) => l.trim())
         .filter(Boolean)
-        // Canonicalize so comparison is independent of on-disk whitespace:
-        // the SDK side above is JSON.stringify'd identically.
-        .map((l) => JSON.stringify(JSON.parse(l)))
+      const lines: string[] = []
+      for (const f of files) {
+        const blob = cp.execFileSync("git", ["show", `${ref}:${f}`], { cwd, encoding: "utf-8" })
+        for (const l of blob.split("\n")) {
+          const t = l.trim()
+          if (!t) continue
+          try {
+            const outer = JSON.parse(t) as Record<string, unknown>
+            // The event-stream stores an envelope `{ event, partition, offset,
+            // partitionKey, ... }`; readEvents returns the inner `event`, so we
+            // canonicalize the same way here.
+            const inner = (outer.event ?? outer) as Record<string, unknown>
+            const { partition, offset, partitionKey, ...rest } = inner
+            lines.push(JSON.stringify(rest))
+          } catch {
+            // skip malformed line
+          }
+        }
+      }
+      refLogs[ref] = lines
     } catch {
       // Ref does not track the derived state file yet, or cannot be read.
     }
@@ -7167,9 +7192,11 @@ async function cmdExplainReplay(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: {
       persistence: "file",
-      eventLogPath: paths.logPath,
+      streamDir: paths.streamDir,
+      eventLogFile: paths.eventLogFile,
       statePath: paths.statePath,
       checkpointPath: paths.checkpointPath,
+      readOnly: true,
     },
   })
 

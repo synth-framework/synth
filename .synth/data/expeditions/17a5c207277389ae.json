@@ -1,0 +1,14 @@
+{
+  "id": "17a5c207277389ae",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Stage 3: Migrate CI/docs/scripts for any govern rename (gated, optional)",
+  "goal": "ONLY if Stage 1 selects rename. Update npm run govern scripts, CI workflows, docs, operator refs from govern/validate to new verb. High blast radius; isolate from safe folds; requires Stage 1 sign-off. Build + full govern pipeline.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 236,
+  "updatedAt": 236
+}

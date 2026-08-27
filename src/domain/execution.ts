@@ -446,8 +446,10 @@ export function applyDomain(
         if (metadata) payload.metadata = metadata
         return { events: [{ type: "EXPEDITION_REFINED", payload }] }
       }
-      const updated = planningLogic.refineExpedition(existing, ctx, note, refinementId)
+      const dependsOn = Array.isArray(intent.payload.dependsOn) ? (intent.payload.dependsOn as string[]) : undefined
+      const updated = planningLogic.refineExpedition(existing, ctx, note, refinementId, dependsOn)
       const payload: Record<string, unknown> = { id: updated.id, status: updated.status, note, refinementId }
+      if (dependsOn) payload.dependsOn = dependsOn
       if (metadata) payload.metadata = metadata
       return { events: [{ type: "EXPEDITION_REFINED", payload }] }
     }
