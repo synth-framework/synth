@@ -8,8 +8,8 @@ import fs from "node:fs"
 import os from "os"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
 function makeTempProjectRoot() {
   return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "evidence-test-")))
@@ -88,17 +88,7 @@ function seedEvents(projectRoot, opts = {}) {
   fs.writeFileSync(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
 }
 
-function runSynth(args, cwd) {
-  return spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    env: { ...process.env, NODE_ENV: "test" },
-  })
-}
 
-function parseJson(stdout) {
-  return JSON.parse(stdout.trim())
-}
 
 function eventLog(projectRoot) {
   const logPath = path.join(projectRoot, ".synth", "data", "event-log.jsonl")

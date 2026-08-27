@@ -8,58 +8,14 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
 function makeTempProjectRoot() {
   return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "govern-router-test-")))
 }
 
-function runSynth(args, cwd) {
-  return spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    env: { ...process.env, NODE_ENV: "test" },
-  })
-}
 
-function parseJson(stdout) {
-  const objects = []
-  let start = -1
-  let depth = 0
-  let inString = false
-  let escape = false
-  for (let i = 0; i < stdout.length; i++) {
-    const ch = stdout[i]
-    if (inString) {
-      if (escape) {
-        escape = false
-      } else if (ch === "\\") {
-        escape = true
-      } else if (ch === '"') {
-        inString = false
-      }
-      continue
-    }
-    if (ch === '"') {
-      inString = true
-    } else if (ch === "{") {
-      if (depth === 0) start = i
-      depth++
-    } else if (ch === "}") {
-      depth--
-      if (depth === 0 && start !== -1) {
-        try {
-          objects.push(JSON.parse(stdout.slice(start, i + 1)))
-        } catch {
-          // Ignore malformed JSON segments.
-        }
-        start = -1
-      }
-    }
-  }
-  return objects
-}
 
 test("synth govern routes uninitialized project without intent to first-contact onboard:detect", { concurrency: false }, async () => {
   const dir = makeTempProjectRoot()

@@ -14,8 +14,8 @@ import { seedEventLog } from "./helpers/seed-event-log.js"
 import { spawnSync } from "child_process"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 const SNAPSHOT_STORE_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "snapshot-store.js")
@@ -83,26 +83,7 @@ function baseConfidence() {
   }
 }
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
 
 function emptyEvidence() {
   return {

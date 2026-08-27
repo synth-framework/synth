@@ -7,22 +7,10 @@
 
 import { spawnSync } from "child_process"
 import path from "path"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
 const PROJECT_ROOT = process.cwd()
-const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
 
-function runSynth(args) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd: PROJECT_ROOT,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
 
 function findJsonObject(stdout) {
   const trimmed = stdout.trim()

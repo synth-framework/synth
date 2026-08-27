@@ -23,22 +23,10 @@ import {
 } from "../dist/first-contact/experiment.js"
 import { extractFirstContactEvidence } from "../dist/first-contact/evidence.js"
 import { repositoryIntroductionScenario } from "../dist/first-contact/scenarios.js"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const RUNNER_PATH = path.resolve(process.cwd(), "scripts", "first-contact-experiment.js")
 
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    status: result.status,
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-  }
-}
 
 function assert(condition, message) {
   if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)

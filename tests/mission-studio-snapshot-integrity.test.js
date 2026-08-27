@@ -28,8 +28,8 @@ import {
   migrateStoredSnapshot,
 } from "../dist/mission-studio/index.js"
 import { createAPI } from "../dist/api/index.js"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
 function makeObservation(type, subject, overrides = {}) {
   return {
@@ -65,10 +65,6 @@ async function rewriteSnapshotFile(dir, snapshotId, mutate) {
   await fs.writeFile(file, JSON.stringify(parsed, null, 2), "utf-8")
 }
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], { cwd, encoding: "utf-8", timeout: 60000 })
-  return { stdout: result.stdout || "", stderr: result.stderr || "", status: result.status }
-}
 
 // ============================================================
 // Persistence via the approval flow

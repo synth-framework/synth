@@ -38,6 +38,7 @@ export function runSynth(args, cwd = process.cwd(), options = {}) {
     env: options.env,
   })
   return {
+    ...result,
     stdout: result.stdout || "",
     stderr: result.stderr || "",
     status: result.status,

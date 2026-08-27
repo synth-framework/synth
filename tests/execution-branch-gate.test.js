@@ -23,6 +23,7 @@ import { fileURLToPath } from "url"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { generateBranchName } from "../dist/repository/branch-taxonomy.js"
+import { CLI_PATH } from "./helpers/cli-harness.js"
 
 // Canonical names for the seeded fixtures: the preferred slug form and
 // the legacy raw-ID form. Enforcement must accept BOTH; reporting cites
@@ -43,7 +44,6 @@ function missionBranchNames(missionId, missionName) {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLI_PATH = path.resolve(__dirname, "..", "dist", "cli", "synth.js")
 
 function gitInit(root, branch = "main") {
   execFileSync("git", ["init", "-b", branch], { cwd: root, stdio: "pipe" })

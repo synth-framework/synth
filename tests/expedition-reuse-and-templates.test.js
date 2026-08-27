@@ -14,23 +14,11 @@ import os from "os"
 import { strict as assert } from "assert"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
 process.env.SYNTH_STRICT_CONTEXT = "1"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 240000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
 
 function runGit(args, cwd) {
   const result = spawnSync("git", args, {
@@ -44,13 +32,6 @@ function runGit(args, cwd) {
   return result.stdout.trim()
 }
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
 
 function assertOk(result, message) {
   if (result.status !== 0) {
