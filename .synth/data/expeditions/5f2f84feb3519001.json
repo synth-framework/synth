@@ -1,0 +1,14 @@
+{
+  "id": "5f2f84feb3519001",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Resolve pre-existing test:all failures blocking green CI",
+  "goal": "Investigate and plan resolution for the wired (test:all) test failures unrelated to monolith removal: decision-events, expedition-auto-commit, first-contact-project, first-contact-projection, installer-contract, installer-environment, installer-manifest, migration, package-distribution, synth-cli. Inventory the 39 non-wired (orphaned) failing tests. Deliverable: root-cause analysis + per-failure remediation plan.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 262,
+  "updatedAt": 262
+}

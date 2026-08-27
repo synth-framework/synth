@@ -12,28 +12,10 @@ import { strict as assert } from "assert"
 import { CanonicalLanguageAuditor } from "../../dist/workspace/index.js"
 import { translateCapability } from "../../dist/capability/registry.js"
 
-// ---- Test harness ----
-const TESTS = []
-let passed = 0, failed = 0
+import { createSuite } from "../helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n  ─── SKR-001: Compatibility Tests ───")
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-  console.log(`  ${passed} passed, ${failed} failed\n`)
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 // ---- Tests ----
 
@@ -259,4 +241,4 @@ test("unknown version produces warning but does not fail validation", () => {
 })
 
 // ---- Run ----
-run().catch((err) => { console.error("Test runner error:", err); process.exit(1) })
+suite.run("SKR-001: Compatibility Tests").catch((err) => { console.error("Test runner error:", err); process.exit(1) })

@@ -1,0 +1,14 @@
+{
+  "id": "9ab1218c6f872c60",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Reduce code duplication (DRY) in scripts/",
+  "goal": "Follow-up to the tests dedupe expedition. Reduce code duplication in scripts/ using .jscpd/tests/html/jscpd-report.json plus a fresh scripts scan. Extract shared build/verify helpers, consolidate repeated logic. Deliverable: consolidated scripts with materially lower jscpd duplication.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 265,
+  "updatedAt": 265
+}

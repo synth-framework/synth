@@ -155,35 +155,10 @@ function assertEvaluationShape(evaluation) {
   assert.equal(evaluation.deterministic, true, "Evaluation should be deterministic")
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GOVERNABILITY-003 — Governance Evaluation Enforcement")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 // ------------------------------------------------------------------
 // Automatic rejection of drifted proposals at Review Gate
@@ -712,7 +687,7 @@ test("manual Review Gate capabilities still work", async () => {
 
 await cleanData()
 try {
-  await run()
+  await suite.run("governance-evaluation-enforcement")
 } finally {
   await cleanData()
 }

@@ -1,6 +1,6 @@
 {
-  "version": 262,
-  "stateHash": "1239653762",
+  "version": 270,
+  "stateHash": "283039981",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -68,11 +68,15 @@
         "1ad8b22eace9855a",
         "01604a3df9d2785d",
         "bfe9b21ecfd8074d",
-        "886dc15e19a8e587"
+        "886dc15e19a8e587",
+        "5f2f84feb3519001",
+        "7a79e79b9c873733",
+        "e38aa99f7f2593af",
+        "9ab1218c6f872c60"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 257,
+      "updatedAt": 265,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     }
   },
@@ -1129,6 +1133,69 @@
       },
       "createdAt": 257,
       "updatedAt": 261
+    },
+    "5f2f84feb3519001": {
+      "id": "5f2f84feb3519001",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Resolve pre-existing test:all failures blocking green CI",
+      "goal": "Investigate and plan resolution for the wired (test:all) test failures unrelated to monolith removal: decision-events, expedition-auto-commit, first-contact-project, first-contact-projection, installer-contract, installer-environment, installer-manifest, migration, package-distribution, synth-cli. Inventory the 39 non-wired (orphaned) failing tests. Deliverable: root-cause analysis + per-failure remediation plan.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 262,
+      "updatedAt": 262
+    },
+    "7a79e79b9c873733": {
+      "id": "7a79e79b9c873733",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Reduce test code duplication (DRY) in tests/",
+      "goal": "Reduce test code duplication in tests/ using evidence .jscpd/tests/html/jscpd-report.json (273 clones, 5,629 duplicated lines). Discard duplicated boilerplate that does not belong (e.g. per-file test-runner loops), extract reusable fixtures/helpers, drive tests through the SDK, mock where needed, to lower DRY blocks. Scope: tests/ only. Deliverable: shared fixtures/helpers layer + migrated tests with materially lower jscpd duplication. src/ and scripts/ deferred to follow-up expeditions.",
+      "status": "executing",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-63536",
+          "sessionId": "54bdf920-756b-49d4-aeb4-42d1b2ededc7",
+          "approvalMode": "autonomous",
+          "issuedAt": 269
+        }
+      },
+      "createdAt": 263,
+      "updatedAt": 269
+    },
+    "e38aa99f7f2593af": {
+      "id": "e38aa99f7f2593af",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Reduce code duplication (DRY) in src/",
+      "goal": "Follow-up to the tests dedupe expedition. Reduce code duplication in src/ using .jscpd/tests/html/jscpd-report.json plus a fresh src scan. Extract shared modules/helpers, consolidate repeated patterns, mock where sensible. Deliverable: consolidated src modules with materially lower jscpd duplication.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 264,
+      "updatedAt": 264
+    },
+    "9ab1218c6f872c60": {
+      "id": "9ab1218c6f872c60",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Reduce code duplication (DRY) in scripts/",
+      "goal": "Follow-up to the tests dedupe expedition. Reduce code duplication in scripts/ using .jscpd/tests/html/jscpd-report.json plus a fresh scripts scan. Extract shared build/verify helpers, consolidate repeated logic. Deliverable: consolidated scripts with materially lower jscpd duplication.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 265,
+      "updatedAt": 265
     }
   },
   "objectives": {},
@@ -1145,5 +1212,5 @@
       "capturedAt": 1786828653141
     }
   },
-  "lastEventOffset": 262
+  "lastEventOffset": 270
 }

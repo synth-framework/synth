@@ -588,35 +588,10 @@ async function assertDeterminism(name, executor, ids) {
   return runs[0]
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GOVERNABILITY-006B — Governance Lifecycle Replay")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 const evidence = {
   expedition: "EXP-GOVERNABILITY-006B",
@@ -723,7 +698,7 @@ async function writeEvidenceIfChanged(evidencePath, evidence) {
 
 await cleanData()
 try {
-  await run()
+  await suite.run("governance-lifecycle-replay")
   const evidencePath = path.join(process.cwd(), "docs/governance/program-027/lifecycle-replay-evidence.json")
   await writeEvidenceIfChanged(evidencePath, evidence)
 } finally {

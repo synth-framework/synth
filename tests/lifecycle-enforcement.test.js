@@ -48,35 +48,10 @@ async function approveMission(ctx, id) {
   assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GOV-006 — Lifecycle Enforcement Tests")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 test("mission.create is always allowed on empty state", async () => {
   const ctx = await makeCtx()
@@ -203,7 +178,7 @@ test("completing an expedition unlocks creating the next expedition", async () =
 
 await cleanData()
 try {
-  await run()
+  await suite.run("lifecycle-enforcement")
 } finally {
   await cleanData()
 }

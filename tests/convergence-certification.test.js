@@ -135,35 +135,10 @@ function assertConvergenceResultShape(result) {
   assert.equal(result.deterministic, true, "Convergence result should be deterministic")
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GOVERNABILITY-005 — Convergence Certification")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 // ------------------------------------------------------------------
 // Negative certification: drifted outcomes diverge
@@ -398,7 +373,7 @@ test("OKEng evaluation file validates and certifies without schema crash", async
 
 await cleanData()
 try {
-  await run()
+  await suite.run("convergence-certification")
 } finally {
   await cleanData()
 }

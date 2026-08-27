@@ -1,0 +1,14 @@
+{
+  "id": "e38aa99f7f2593af",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Reduce code duplication (DRY) in src/",
+  "goal": "Follow-up to the tests dedupe expedition. Reduce code duplication in src/ using .jscpd/tests/html/jscpd-report.json plus a fresh src scan. Extract shared modules/helpers, consolidate repeated patterns, mock where sensible. Deliverable: consolidated src modules with materially lower jscpd duplication.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 264,
+  "updatedAt": 264
+}

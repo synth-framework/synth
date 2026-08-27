@@ -123,36 +123,10 @@ async function createApprovedAlignmentContractWithReport(ctx, overrides = {}) {
   return { intentModelId, contractId, evidenceId }
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-REFINE-014 — Mission Projection Capability")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  await cleanData()
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 test("ProjectMission succeeds with approved contract and refinement report", async () => {
   const ctx = await makeCtx()
@@ -312,4 +286,4 @@ test("Projected Mission preserves constraints and forbidden interpretations", as
   }
 })
 
-await run()
+await suite.run("project-mission")

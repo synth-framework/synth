@@ -35,35 +35,10 @@ async function makeCtx() {
   })
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-PROGRAM-036 Phase 2 — Alignment & Divergence")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 test("Mission approval succeeds with aligned contract", async () => {
   const ctx = await makeCtx()
@@ -203,4 +178,4 @@ test("Divergence gate events are replayable", async () => {
   assert.equal(derived.divergenceGates[gateId].status, "aligned", "Gate should be aligned in derived state")
 })
 
-await run()
+await suite.run("alignment-divergence")

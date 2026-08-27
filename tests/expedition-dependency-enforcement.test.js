@@ -122,35 +122,10 @@ async function certifyConvergence(ctx, missionId, expeditionId, contractId, deci
   assert.equal(result.result?.decision, decision, `Expected ${decision}, got ${result.result?.decision}`)
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GATE-013 — Dependency Enforcement")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 // ------------------------------------------------------------------
 // Status propagation
@@ -242,4 +217,4 @@ test("derived state dependencyStatusMap reflects upstream certification", async 
 
 // ------------------------------------------------------------------
 
-cleanData().then(run)
+cleanData().then(() => suite.run("expedition-dependency-enforcement"))

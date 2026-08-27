@@ -1,0 +1,21 @@
+{
+  "id": "7a79e79b9c873733",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Reduce test code duplication (DRY) in tests/",
+  "goal": "Reduce test code duplication in tests/ using evidence .jscpd/tests/html/jscpd-report.json (273 clones, 5,629 duplicated lines). Discard duplicated boilerplate that does not belong (e.g. per-file test-runner loops), extract reusable fixtures/helpers, drive tests through the SDK, mock where needed, to lower DRY blocks. Scope: tests/ only. Deliverable: shared fixtures/helpers layer + migrated tests with materially lower jscpd duplication. src/ and scripts/ deferred to follow-up expeditions.",
+  "status": "executing",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "identity": {
+      "agentId": "synth-cli-63536",
+      "sessionId": "54bdf920-756b-49d4-aeb4-42d1b2ededc7",
+      "approvalMode": "autonomous",
+      "issuedAt": 269
+    }
+  },
+  "createdAt": 263,
+  "updatedAt": 269
+}
