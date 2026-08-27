@@ -17,6 +17,7 @@ import { spawnSync, execFileSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { seedEventLog } from "./helpers/seed-event-log.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const EID = "e1a2b3c" // hex expedition short-id embedded in branch names
@@ -45,7 +46,7 @@ async function setupProject() {
   return dir
 }
 function writeLog(dir, lines) {
-  return fs.writeFile(path.join(dir, ".synth", "data", "event-log.jsonl"), lines.join("\n") + "\n", "utf-8")
+  return seedEventLog(dir, lines.map((l) => JSON.parse(l)))
 }
 function commitLog(dir, msg) {
   // Force-add: the project may carry a gitignore for .synth/data.

@@ -15,6 +15,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { seedEventLog } from "./seed-event-log.js"
 
 export const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
@@ -69,9 +70,9 @@ export async function loadComputeEventHash() {
 }
 
 /**
- * Write a hash-chained event log to `.synth/data/event-log.jsonl`.
- * Computes event hashes using the production hash function.
- * Returns the generated events for optional further assertions.
+ * Write a hash-chained event log to the partitioned event-stream
+ * (.synth/data/event-stream). Computes event hashes using the production hash
+ * function. Returns the generated events for optional further assertions.
  */
 export async function writeEventLog(dir, rawEvents) {
   const computeEventHash = await loadComputeEventHash()
@@ -83,9 +84,7 @@ export async function writeEventLog(dir, rawEvents) {
     previousHash = event.eventHash
     events.push(event)
   }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
+  await seedEventLog(dir, events)
   return events
 }
 

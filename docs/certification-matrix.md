@@ -20,4 +20,4 @@ This matrix is generated automatically by `synth certify`.
 | Expedition create rejects a missing mission | 2 | ✅ PASS |
 | Mission approval blocked by low confidence | 2 | ✅ PASS |
 
-_Generated at 2026-08-19T01:44:01.066Z_
+_Generated at 2026-08-26T21:18:00.341Z_

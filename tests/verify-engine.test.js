@@ -8,6 +8,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { seedEventLog } from "./helpers/seed-event-log.js"
 import { rebuildState } from "../dist/runtime/replay.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
@@ -43,7 +44,8 @@ async function writeEventLog(cwd, events) {
   const dataDir = path.join(cwd, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
   const lines = events.map((e) => JSON.stringify(e)).join("\n") + "\n"
-  await fs.writeFile(path.join(dataDir, "event-log.jsonl"), lines, "utf-8")
+  const seededEvents = lines.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l))
+  await seedEventLog(dataDir, seededEvents)
   const state = rebuildState(events)
   await fs.writeFile(path.join(dataDir, "canonical-state.json"), JSON.stringify(state, null, 2), "utf-8")
 }

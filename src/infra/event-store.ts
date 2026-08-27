@@ -3,6 +3,7 @@
 // ============================================================
 
 import { promises as fs } from "fs"
+import os from "os"
 import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
@@ -326,66 +327,47 @@ export class SegmentStore {
 // ============================================================
 // PartitionedEventStore — chunked event log (expedition 01604a3)
 // ============================================================
-// Implements the same EventStore contract as the monolithic EventStore,
-// but routes each event to a partition (by event.type) and persists it
-// as a PartitionedEvent { ...event, partition, offset } into
+// Implements the same EventStore contract as the abstract base, but routes
+// each event to a partition (by event.type) and persists it as a
+// PartitionedEvent { ...event, partition, offset } into
 // event-stream/<partition>/segment-XXXX.jsonl via SegmentStore.
 //
 // A single GLOBAL monotonic offset (assigned at append time) preserves the
 // original global commit ordering, so loadAll() reconstructs events in the
 // exact sequence they were committed — deterministic replay is unchanged.
 //
-// On initialize(), an existing monolithic event-log.jsonl is migrated into
-// partitions exactly once (idempotent: skipped when partitions already hold
-// data). This keeps the replay source backward-compatible during transition.
+// The event-stream is the sole authority for the event log. There is no
+// monolithic event-log.jsonl and no migration path: partitioned segments are
+// canonical and read directly.
 // ============================================================
 
 export class PartitionedEventStore extends EventStore {
-  private eventLogPath: string
   private streamDir: string
   private partitionCount: number
   private segmentStore: SegmentStore
   private globalOffset: number | undefined
-  private partitioned: boolean
   private readOnly: boolean
 
   constructor(
-    eventLogPath?: string,
-    streamDir?: string,
+    streamDir: string,
     partitionCount: number = 4,
     authToken?: symbol,
     readOnly: boolean = false,
   ) {
-    super(streamDir ?? EVENT_LOG_FILE, authToken)
-    this.eventLogPath = eventLogPath ?? EVENT_LOG_FILE
-    this.streamDir =
-      streamDir ??
-      (eventLogPath
-        ? path.join(path.dirname(eventLogPath), "event-stream")
-        : EVENT_STREAM_DIR)
+    super(streamDir, authToken)
+    this.streamDir = streamDir
     this.partitionCount = Math.max(1, partitionCount)
     this.segmentStore = SegmentStore.createAuthorized(1000, this.streamDir)
     this.globalOffset = undefined
     this.readOnly = readOnly
-    // Backward compatibility: the store operates in partitioned mode when an
-    // explicit streamDir is provided OR when the canonical legacy
-    // `event-log.jsonl` path is used (the migration source). A custom-named
-    // event-log path (e.g. the standalone fixtures used by adversarial,
-    // freeze-certification, and brownfield tests) is treated as a live
-    // monolithic store, so direct tampering of that file is still detected by
-    // the replay verifier.
-    this.partitioned =
-      streamDir !== undefined || path.basename(this.eventLogPath) === "event-log.jsonl"
   }
 
   static createAuthorized(
-    eventLogPath?: string,
-    streamDir?: string,
+    streamDir: string,
     partitionCount?: number,
     readOnly: boolean = false,
   ): PartitionedEventStore {
     return new PartitionedEventStore(
-      eventLogPath,
       streamDir,
       partitionCount,
       EVENT_STORE_WRITE_TOKEN,
@@ -394,39 +376,11 @@ export class PartitionedEventStore extends EventStore {
   }
 
   override getFilePath(): string | undefined {
-    return this.partitioned ? this.streamDir : this.eventLogPath
+    return this.streamDir
   }
 
   override getDataDir(): string | undefined {
-    const filePath = this.getFilePath()
-    return filePath ? path.dirname(filePath) : undefined
-  }
-
-  private async monolithicLoadAll(): Promise<SynthEvent[]> {
-    try {
-      const raw = await fs.readFile(this.eventLogPath, "utf-8")
-      return raw
-        .split("\n")
-        .filter(Boolean)
-        .map((line: string) => JSON.parse(line))
-    } catch {
-      return []
-    }
-  }
-
-  private async monolithicHasData(): Promise<boolean> {
-    try {
-      const raw = await fs.readFile(this.eventLogPath, "utf-8")
-      return raw.split("\n").filter(Boolean).length > 0
-    } catch {
-      return false
-    }
-  }
-
-  private async monolithicAppend(events: SynthEvent[]): Promise<void> {
-    if (events.length === 0) return
-    const lines = events.map((e: SynthEvent) => JSON.stringify(e)).join("\n") + "\n"
-    await fs.appendFile(this.eventLogPath, lines)
+    return path.dirname(this.streamDir)
   }
 
   private route(key: string): number {
@@ -473,20 +427,12 @@ export class PartitionedEventStore extends EventStore {
 
   override async append(event: SynthEvent, _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
-    if (!this.partitioned) {
-      await this.monolithicAppend([event])
-      return
-    }
     await this.appendInternal(event)
   }
 
   override async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     if (events.length === 0) return
-    if (!this.partitioned) {
-      await this.monolithicAppend(events)
-      return
-    }
     const span = telemetry.start("eventStore.appendBatch")
     try {
       for (const event of events) {
@@ -500,20 +446,12 @@ export class PartitionedEventStore extends EventStore {
   }
 
   override async loadAll(): Promise<SynthEvent[]> {
-    if (!this.partitioned) return this.monolithicLoadAll()
     const all: PartitionedEvent[] = []
     for (let p = 0; p < this.partitionCount; p++) {
       const events = await this.segmentStore.readPartition(p)
       all.push(...events)
     }
     all.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
-    // Read-only mode (used by read-only consumers such as `synth explain`):
-    // never migrate or write. If the partitioned stream is empty but the
-    // legacy monolith still holds events, read it directly instead of
-    // materializing the stream (which would be a write).
-    if (this.readOnly && all.length === 0 && (await this.monolithicHasData())) {
-      return this.monolithicLoadAll()
-    }
     return all as SynthEvent[]
   }
 
@@ -527,43 +465,33 @@ export class PartitionedEventStore extends EventStore {
     return events.length > 0 ? events[events.length - 1] : null
   }
 
-  private async streamHasData(): Promise<boolean> {
-    try {
-      const entries = await fs.readdir(this.streamDir)
-      return entries.some((e: string) => e.startsWith("partition-"))
-    } catch {
-      return false
-    }
-  }
-
-  private async migrateIfNeeded(): Promise<void> {
-    if (await this.streamHasData()) return
-    let raw = ""
-    try {
-      raw = await fs.readFile(this.eventLogPath, "utf-8")
-    } catch {
-      return
-    }
-    const lines = raw.split("\n").filter(Boolean)
-    if (lines.length === 0) return
-    for (const line of lines) {
-      let event: SynthEvent
-      try {
-        event = JSON.parse(line)
-      } catch {
-        continue
-      }
-      await this.appendInternal(event)
-    }
-  }
-
   override async initialize(): Promise<void> {
     if (this.readOnly) return
-    if (!this.partitioned) {
-      await fs.mkdir(path.dirname(this.eventLogPath), { recursive: true })
-      return
-    }
     await fs.mkdir(this.streamDir, { recursive: true })
-    await this.migrateIfNeeded()
+  }
+
+  /**
+   * Load events from an explicitly-named standalone log file (e.g. an evidence
+   * archive passed via `--log path/events.jsonl`). This is input reading, not
+   * canonical-state migration: the monolithic event-stream remains the sole
+   * authority, and no `.synth/data/event-log.jsonl` is ever read or migrated.
+   * The file is materialised into a throwaway event-stream so the standard
+   * partition/offset replay path applies unchanged.
+   */
+  static async createFromFile(
+    filePath: string,
+    authToken: symbol = EVENT_STORE_WRITE_TOKEN,
+  ): Promise<PartitionedEventStore> {
+    const raw = await fs.readFile(filePath, "utf-8")
+    const events: SynthEvent[] = raw
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line))
+    const tmpRoot = path.join(os.tmpdir(), `synth-log-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    await fs.mkdir(tmpRoot, { recursive: true })
+    const streamDir = path.join(tmpRoot, "event-stream")
+    const eventStore = new PartitionedEventStore(streamDir, 4, authToken, true)
+    await eventStore.appendBatch(events)
+    return eventStore
   }
 }

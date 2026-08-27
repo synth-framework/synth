@@ -6,10 +6,11 @@
 // explain-observability.ts (which imports core/bootstrap.js) to keep the thin
 // entrypoint's light `explain replay` path bootstrap-free.
 import path from "path"
+import fs from "fs"
 import { root } from "../sdk/workspace/index.js"
 import {
   dataDir,
-  eventLogFile,
+  eventsDir,
   stateFile,
   checkpointsFile,
   snapshotsDir,
@@ -18,7 +19,8 @@ import { printError } from "./print.js"
 
 export type ExplainPaths = {
   logPath: string
-  legacyLogPath: string
+  streamDir: string
+  eventLogFile?: string
   logDisplay: string
   logDir: string
   statePath: string
@@ -40,9 +42,30 @@ export function resolveExplainPaths(flags: Record<string, string | boolean>): Ex
   if (logFlag) {
     const logPath = path.resolve(cwd, logFlag)
     const logDir = path.dirname(logPath)
+    let isFile = false
+    try {
+      isFile = fs.statSync(logPath).isFile()
+    } catch {
+      isFile = false
+    }
+    if (isFile) {
+      // An explicitly-named standalone log file (e.g. an evidence archive).
+      // Read it directly; no monolithic canonical migration is performed.
+      return {
+        logPath,
+        streamDir: logDir,
+        eventLogFile: logPath,
+        logDisplay: logFlag,
+        logDir,
+        statePath: path.join(logDir, "canonical-state.json"),
+        checkpointPath: path.join(logDir, "checkpoint.json"),
+        snapshotsDir: path.join(logDir, "snapshots"),
+      }
+    }
+    // A directory is treated as the event-stream directory itself.
     return {
       logPath,
-      legacyLogPath: logPath,
+      streamDir: logPath,
       logDisplay: logFlag,
       logDir,
       statePath: path.join(logDir, "canonical-state.json"),
@@ -52,12 +75,10 @@ export function resolveExplainPaths(flags: Record<string, string | boolean>): Ex
   }
 
   const projectRoot = root()
+  const streamDir = eventsDir(projectRoot)
   return {
-    // The canonical event-log path is the store's entry point; the partitioned
-    // store routes it to event-stream internally. Pointing this at the
-    // event-stream directory directly breaks the partition routing.
-    logPath: eventLogFile(projectRoot),
-    legacyLogPath: eventLogFile(projectRoot),
+    logPath: streamDir,
+    streamDir,
     logDisplay: DEFAULT_LOG_DISPLAY,
     logDir: dataDir(projectRoot),
     statePath: stateFile(projectRoot),

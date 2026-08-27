@@ -9,18 +9,27 @@ export * from "./git-adapter.js"
 export * from "./filesystem.js"
 export * from "./event-store.guard.js"
 
+import path from "path"
 import { EventStore, InMemoryEventStore, PartitionStore, SegmentStore, PartitionedEventStore } from "./event-store.js"
 import { StateStore, InMemoryStateStore, type IStateStore } from "./state-store.js"
 import { CheckpointStore, InMemoryCheckpointStore, type ICheckpointStore } from "./checkpoint-store.js"
 import { GitAdapterImpl, GitAdapterStub } from "./git-adapter.js"
 import { NodeFilesystemAdapter, InMemoryFilesystemAdapter } from "./filesystem.js"
 import { createGuardedEventStore } from "./event-store.guard.js"
+import { eventsDir } from "../sdk/paths/index.js"
+
+function resolveEventStreamDir(config: InfraConfig): string {
+  if (config.streamDir) return config.streamDir
+  if (config.eventLogPath) return path.join(path.dirname(config.eventLogPath), "event-stream")
+  return eventsDir(process.cwd())
+}
 
 export type InfraConfig = {
   persistence?: "file" | "memory"
   partitionCount?: number
   gitEnabled?: boolean
   eventLogPath?: string
+  eventLogFile?: string
   statePath?: string
   checkpointPath?: string
   streamDir?: string
@@ -48,7 +57,9 @@ export async function createInfra(config: InfraConfig = {}): Promise<Infra> {
   // genuinely in-memory when persistence is not "file".
   const eventStore = createGuardedEventStore(
     isFile
-      ? PartitionedEventStore.createAuthorized(config.eventLogPath, config.streamDir, partitionCount, config.readOnly)
+      ? config.eventLogFile
+        ? await PartitionedEventStore.createFromFile(config.eventLogFile)
+        : PartitionedEventStore.createAuthorized(resolveEventStreamDir(config), partitionCount, config.readOnly)
       : new InMemoryEventStore()
   )
   const partitionStore = PartitionStore.createAuthorized(partitionCount, config.streamDir)

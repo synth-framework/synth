@@ -9,6 +9,7 @@
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { seedEventLog } from "./helpers/seed-event-log.js"
 
 const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
@@ -38,7 +39,7 @@ async function writeEventLog(dir, rawEvents) {
   }
   const dataDir = path.join(dir, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
-  await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
+  await seedEventLog(dataDir, events)
 }
 
 async function writeManifest(dir, projectName = "Governance Resolver Test") {

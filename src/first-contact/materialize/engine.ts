@@ -221,7 +221,7 @@ export async function materialize(options: MaterializationOptions): Promise<Mate
 
   await sdk.json.writeJsonNewline(manifestPath, manifest)
   const streamDir = path.join(sdk.paths.dataDir(root), "event-stream")
-  const eventStore = PartitionedEventStore.createAuthorized(eventLogPath, streamDir, 4)
+  const eventStore = PartitionedEventStore.createAuthorized(streamDir, 4)
   await eventStore.initialize()
   await eventStore.appendBatch(events)
   await fs.writeFile(statePath, JSON.stringify(state, null, 2) + "\n")

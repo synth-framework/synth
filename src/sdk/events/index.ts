@@ -5,14 +5,13 @@
 // exclusive responsibility of the ExecutionGate → EventStore path.
 // ============================================================
 
-import path from "path"
 import type { SynthEvent } from "../../types/index.js"
 import { PartitionedEventStore } from "../../infra/event-store.js"
-import { dataDir, eventLogFile } from "../paths/index.js"
+import { eventsDir } from "../paths/index.js"
 
 export async function readEvents(root: string): Promise<SynthEvent[]> {
-  const streamDir = path.join(dataDir(root), "event-stream")
-  const store = PartitionedEventStore.createAuthorized(eventLogFile(root), streamDir, 4)
+  const streamDir = eventsDir(root)
+  const store = PartitionedEventStore.createAuthorized(streamDir, 4)
   await store.initialize()
   return store.loadAll()
 }
