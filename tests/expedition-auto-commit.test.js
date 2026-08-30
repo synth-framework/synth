@@ -14,8 +14,7 @@ import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
+import { assert } from "./helpers/assert.js"
 
 function runGit(args, cwd) {
   const result = spawnSync("git", args, {
@@ -27,11 +26,6 @@ function runGit(args, cwd) {
     throw new Error(`git ${args.join(" ")} failed: ${result.stderr}`)
   }
   return result.stdout.trim()
-}
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function setupProject() {

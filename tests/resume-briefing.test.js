@@ -6,63 +6,18 @@ import { makeTempDir } from "./helpers/workspace.js"
 // ResumeBriefing derived from replayable evidence.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import os from "os"
 import { seedEventLog } from "./helpers/seed-event-log.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
+import { makeTestDir, makeManifest, makeEventLog } from "./helpers/test-fixtures.js"
 
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 const DECISION_LOG_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "decision-log.js")
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
 
 async function appendDecision(dataDir, input) {
   const mod = await import(DECISION_LOG_MODULE_PATH)
   return mod.appendDecision(dataDir, input)
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-}
-
-async function writeManifest(dir, projectName = "Resume Briefing Test") {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName,
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "resume", description: "Resume briefing" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))
 }
 
 // ------------------------------------------------------------
@@ -114,10 +69,10 @@ async function testInitializedNoMission() {
 async function testApprovedMission() {
   const tmpDir = await makeTempDir("synth-resume-approved-")
   try {
-    await writeManifest(tmpDir)
+    await makeManifest(tmpDir, { projectName: "Approved Test" })
     const now = Date.now()
     const missionId = "M-RESUME-1"
-    await writeEventLog(tmpDir, [
+    await makeEventLog(tmpDir, [
       {
         id: "GENESIS",
         type: "SYSTEM_GENESIS",
@@ -194,11 +149,11 @@ async function testApprovedMission() {
 async function testExecutingExpedition() {
   const tmpDir = await makeTempDir("synth-resume-executing-")
   try {
-    await writeManifest(tmpDir)
+    await makeManifest(tmpDir, { projectName: "Executing Test" })
     const now = Date.now()
     const missionId = "M-RESUME-2"
     const expeditionId = "E-RESUME-2"
-    await writeEventLog(tmpDir, [
+    await makeEventLog(tmpDir, [
       {
         id: "GENESIS",
         type: "SYSTEM_GENESIS",
@@ -295,10 +250,10 @@ async function testExecutingExpedition() {
 async function testDeterminism() {
   const tmpDir = await makeTempDir("synth-resume-determinism-")
   try {
-    await writeManifest(tmpDir)
+    await makeManifest(tmpDir, { projectName: "Determinism Test" })
     const now = Date.now()
     const missionId = "M-RESUME-3"
-    await writeEventLog(tmpDir, [
+    await makeEventLog(tmpDir, [
       {
         id: "GENESIS",
         type: "SYSTEM_GENESIS",
@@ -357,7 +312,7 @@ async function testDeterminism() {
 async function testBrokenDecisionLogWarning() {
   const tmpDir = await makeTempDir("synth-resume-decision-warning-")
   try {
-    await writeManifest(tmpDir, "Decision Warning Test")
+    await makeManifest(tmpDir, { projectName: "Decision Warning Test" })
     const dataDir = path.join(tmpDir, ".synth", "data")
     await fs.mkdir(dataDir, { recursive: true })
     // Write a decision log with two genesis records, which breaks the chain.

@@ -8,9 +8,9 @@
 import { spawnSync } from "child_process"
 import path from "path"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
-
 
 function findJsonObject(stdout) {
   const trimmed = stdout.trim()
@@ -31,10 +31,6 @@ function findJsonObject(stdout) {
     }
   }
   throw new Error(`No JSON object found in stdout:\n${stdout}`)
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testAgentGuideJson() {

@@ -8,76 +8,22 @@ import { makeTempDir } from "./helpers/workspace.js"
 // with the candidate's scope/intent.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import os from "os"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
+import { bootstrapProject, createAndApproveMission } from "./helpers/mission-lifecycle.js"
 
 async function setupProject() {
   const tmpDir = await makeTempDir("synth-cli-duplicate-")
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  return tmpDir
+  return await bootstrapProject(tmpDir)
 }
 
-async function createAndApproveMission(projectDir) {
-  const createResult = runSynth(
-    ["mission", "create", "--subject", "Test Mission", "--purpose", "Test purpose"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  let draftId = parseJson(createResult.stdout).draftId
-
-  const evidenceResult = runSynth(
-    [
-      "mission",
-      "evidence",
-      "add",
-      "--draft-id",
-      draftId,
-      "--subject",
-      "Supporting evidence",
-      "--purpose",
-      "Raises confidence above approval threshold",
-      "--confidence",
-      "certain",
-    ],
-    projectDir,
-  )
-  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
-  draftId = parseJson(evidenceResult.stdout).draftId
-
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
+async function createAndApproveMissionLocal(projectDir) {
+  return await createAndApproveMission(projectDir, {
+    subject: "Test Mission",
+    purpose: "Test purpose",
   })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const approveOutput = parseJson(approveResult.stdout)
-  assert(approveOutput.decision?.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
-  const missionId = approveOutput.runtime?.missionId
-  assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
-  return missionId
 }
 
 async function testMissionCreateEmitsSimilarAdvisory(projectDir) {
@@ -169,7 +115,7 @@ let failed = 0
 async function main() {
   try {
     const projectDir = await setupProject()
-    const missionId = await createAndApproveMission(projectDir)
+    const missionId = await createAndApproveMissionLocal(projectDir)
 
     await testMissionCreateEmitsSimilarAdvisory(projectDir)
     passed++

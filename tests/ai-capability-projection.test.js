@@ -12,16 +12,13 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import crypto from "crypto"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const PROJECTION_SCRIPT = path.resolve(PROJECT_ROOT, "scripts", "project-ai-capabilities.js")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
 const CAPABILITY_LIST_PATH = path.resolve(PROJECT_ROOT, "docs", "reference", "capability-list.json")
 const DISTRIBUTION_DIR = path.resolve(PROJECT_ROOT, "distribution")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 function hashString(input) {
   return crypto.createHash("sha256").update(input, "utf-8").digest("hex")

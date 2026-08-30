@@ -10,7 +10,7 @@ import { makeCwdDataDir } from "./helpers/workspace.js"
 import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
-import { bootstrap } from "../dist/core/bootstrap.js"
+import { makeCtx as makeTestCtx } from "./helpers/context.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { rebuildState } from "../dist/runtime/replay.js"
 import { evaluateProposal } from "../dist/governance/proposal-evaluation/index.js"
@@ -25,13 +25,10 @@ async function cleanData() {
 
 async function makeCtx() {
   const dataDir = makeCwdDataDir("data-test-refine-009")
-  return bootstrap({
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-      checkpointPath: path.join(dataDir, "checkpoint.json"),
-    },
-    genesis: { projectName: "REFINE-009", systemId: "refine-009-test", partitions: 1 },
+  return makeTestCtx(dataDir, {
+    projectName: "REFINE-009",
+    systemId: "refine-009-test",
+    partitions: 1,
     skipGenesis: false,
   })
 }

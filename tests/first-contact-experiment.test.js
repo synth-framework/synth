@@ -25,13 +25,9 @@ import {
 import { extractFirstContactEvidence } from "../dist/first-contact/evidence.js"
 import { repositoryIntroductionScenario } from "../dist/first-contact/scenarios.js"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const RUNNER_PATH = path.resolve(process.cwd(), "scripts", "first-contact-experiment.js")
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 // ------------------------------------------------------------
 // Fixture: CLI includes telemetry when agent flags are provided

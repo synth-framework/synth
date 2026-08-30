@@ -12,14 +12,9 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const SDK_PATH = path.resolve(process.cwd(), "packages", "synth-agent-sdk", "dist", "index.js")
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function withTempProject(fn) {
   const tmpDir = await makeTempDir("synth-agent-cert-")

@@ -11,14 +11,11 @@ import { spawn } from "child_process"
 import path from "path"
 import fs from "fs/promises"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const SERVER_PATH = path.resolve(PROJECT_ROOT, "dist", "distribution", "mcp-server.js")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function readModel() {
   const content = await fs.readFile(MODEL_PATH, "utf-8")

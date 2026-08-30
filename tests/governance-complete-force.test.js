@@ -14,13 +14,7 @@ import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function readEventLog(projectDir) {
   const eventLogPath = path.join(projectDir, ".synth", "data", "event-log.jsonl")

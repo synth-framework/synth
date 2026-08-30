@@ -9,6 +9,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { createPerfRunner } from "./helpers/perf-runner.js"
+import { assert, parseJson } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
@@ -26,19 +27,6 @@ const { runSynth } = createPerfRunner({
   cliPath: CLI_PATH,
   logPath: process.env.SYNTH_PERF_LOG || "/tmp/synth-perf-brownfield-validation.log",
 })
-
-function parseJson(stdout) {
-  // CLI logs go to stderr; stdout contains only the final JSON object.
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function testExample(example) {
   const exampleDir = path.resolve(PROJECT_ROOT, example.dir)

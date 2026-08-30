@@ -11,13 +11,10 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { seedEventLog } from "./helpers/seed-event-log.js"
+import { assert } from "./helpers/assert.js"
 
 const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function loadResolver() {
   return await import(RESOLVER_MODULE_PATH)

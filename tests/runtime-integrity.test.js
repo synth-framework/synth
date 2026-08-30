@@ -8,12 +8,9 @@
 import fs from "fs/promises"
 import path from "path"
 import { runSynth, parseJson, assertCliBuilt } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const DIST_MANIFEST_PATH = path.resolve(process.cwd(), "dist", "dist-manifest.json")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function testDoctorVerifiesDistIntegrity() {
   const { stdout, status } = runSynth(["doctor"])

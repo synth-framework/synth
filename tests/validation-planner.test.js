@@ -8,6 +8,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
+import { assert } from "./helpers/assert.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PLANNER_PATH = path.resolve(__dirname, "..", "dist", "validation", "planner.js")
@@ -21,10 +22,6 @@ async function loadJson(filePath) {
 
 async function loadPlanner() {
   return await import(PLANNER_PATH)
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testProtectedAssetEscalation() {

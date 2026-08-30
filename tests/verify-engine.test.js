@@ -12,13 +12,7 @@ import os from "os"
 import { seedEventLog } from "./helpers/seed-event-log.js"
 import { rebuildState } from "../dist/runtime/replay.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function writeEventLog(cwd, events) {
   // Governed projects created by `synth init` store runtime data under

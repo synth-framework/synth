@@ -1,4 +1,6 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
+import { makeEvent, missionCreated, expeditionCreated, workItemCreated } from "./helpers/kernel-event-fixtures.js"
+import { parseJson } from "./helpers/assert.js"
 // ============================================================
 // EXPLAIN STATUS ACTIONABLE TESTS (EXP-EXPLAIN-001)
 // ============================================================
@@ -18,60 +20,6 @@ import { spawnSync } from "child_process"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-let seq = 0
-function makeEvent(type, payload) {
-  seq += 1
-  return {
-    id: `evt-${seq}`,
-    type,
-    timestamp: seq,
-    transactionId: "tx-test",
-    capability: "test",
-    actor: "test",
-    payload,
-  }
-}
-
-function missionCreated(id, overrides = {}) {
-  return makeEvent("MISSION_CREATED", {
-    mission: {
-      id,
-      name: `Mission ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      expeditions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-    },
-  })
-}
-
-function expeditionCreated(id, missionId, overrides = {}) {
-  return makeEvent("EXPEDITION_CREATED", {
-    expedition: {
-      id,
-      name: `Expedition ${id}`,
-      goal: "goal",
-      status: "draft",
-      objectives: [],
-      discoveries: [],
-      decisions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      missionId,
-      ...overrides,
-    },
-  })
-}
-
-function workItemCreated(id) {
-  return makeEvent("WORK_ITEM_CREATED", {
-    workItem: { id, status: "idle", dependencies: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-  })
-}
 
 function runExplainStatus(cwd) {
   const result = spawnSync(process.execPath, [CLI_PATH, "explain", "status", "--json"], {
@@ -86,13 +34,7 @@ function runExplainStatus(cwd) {
   }
 }
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
+
 
 function makeProject(events, options = {}) {
   const dir = makeTempDirSync("explain-status-")

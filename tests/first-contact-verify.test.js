@@ -10,10 +10,7 @@
 import { extractIntent } from "../dist/first-contact/extract/index.js"
 import { projectArchitecture } from "../dist/first-contact/project/index.js"
 import { verifyCapabilities, RuleBasedCapabilityVerifier } from "../dist/first-contact/verify/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function testVerifiesNodeCapability() {
   const artifact = extractIntent("Create a CLI tool in TypeScript that validates event schemas.")

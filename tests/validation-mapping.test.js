@@ -10,6 +10,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const VALIDATOR_PATH = path.resolve(process.cwd(), "scripts", "verify-capability-validation-map.js")
 const MAP_PATH = path.resolve(process.cwd(), "docs", "reference", "capability-validation-map.json")
@@ -32,10 +33,6 @@ async function runValidatorWithMap(mapPath) {
     encoding: "utf-8",
     env: { ...process.env, SYNTH_CAPABILITY_MAP_PATH: mapPath },
   })
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testValidMapPasses() {

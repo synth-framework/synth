@@ -1,17 +1,4 @@
-// ============================================================
-// TEST HELPERS — Execution Fixtures
-// ============================================================
-// Shared fixtures for execution/intent tests.
-//
-// Replaces duplicated makeWorkItem / makeExpedition / makeObjective helpers
-// across execution-*.test.js files.
-//
-// Usage:
-//   import { makeWorkItem, makeExpedition, makeObjective } from "./helpers/execution-fixtures.js"
-// ============================================================
-
-/** Build a work item fixture for execution tests. */
-export function makeWorkItem(id, metadata = {}) {
+export function makeWorkItem(id, metadata) {
   return {
     id,
     expeditionId: "EXP-1",
@@ -23,8 +10,7 @@ export function makeWorkItem(id, metadata = {}) {
   }
 }
 
-/** Build an expedition fixture for execution tests. */
-export function makeExpedition(id, overrides = {}) {
+export function makeExpedition(id) {
   return {
     id,
     missionId: "M-1",
@@ -37,12 +23,10 @@ export function makeExpedition(id, overrides = {}) {
     metadata: {},
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    ...overrides,
   }
 }
 
-/** Build an objective fixture for execution tests. */
-export function makeObjective(id, expeditionId = "EXP-1", overrides = {}) {
+export function makeObjective(id, expeditionId) {
   return {
     id,
     expeditionId,
@@ -52,6 +36,11 @@ export function makeObjective(id, expeditionId = "EXP-1", overrides = {}) {
     metadata: {},
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    ...overrides,
   }
+}
+
+export const EXEC_OPTIONS = {
+  actor: "test",
+  transactionId: "tx-1",
+  timestamp: 1,
 }

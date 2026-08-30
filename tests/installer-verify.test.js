@@ -11,6 +11,7 @@ import { spawnSync } from "child_process"
 import fs from "fs"
 import os from "os"
 import path from "path"
+import { assert } from "./helpers/assert.js"
 
 const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
 
@@ -109,10 +110,6 @@ function runInstaller(args = [], env = {}) {
     status: result.status,
     error: result.error,
   }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testVerifyOnlyFailsWhenSynthMissing() {

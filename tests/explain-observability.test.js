@@ -1,4 +1,6 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
+import { parseJson } from "./helpers/assert.js"
+import { makeEvent, missionCreated, expeditionCreated, objectiveAdded, workItemCreated } from "./helpers/kernel-event-fixtures.js"
 // ============================================================
 // EXPLAIN OBSERVABILITY TESTS (EXP-HARDEN-007)
 // ============================================================
@@ -52,90 +54,12 @@ function runExplain(args) {
   }
 }
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
+
 
 // ============================================================
 // Fixtures
 // ============================================================
 
-let seq = 0
-function makeEvent(type, payload) {
-  seq += 1
-  // No hash-chain fields: the chain verifier tolerates pre-chain logs,
-  // keeping these fixtures focused on observability.
-  return {
-    id: `evt-${seq}`,
-    type,
-    timestamp: seq,
-    transactionId: "tx-test",
-    capability: "test",
-    actor: "test",
-    payload,
-  }
-}
-
-function missionCreated(id, overrides = {}) {
-  return makeEvent("MISSION_CREATED", {
-    mission: {
-      id,
-      name: `Mission ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      expeditions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-    },
-  })
-}
-
-function expeditionCreated(id, missionId, overrides = {}) {
-  return makeEvent("EXPEDITION_CREATED", {
-    expedition: {
-      id,
-      name: `Expedition ${id}`,
-      goal: "goal",
-      status: "draft",
-      objectives: [],
-      discoveries: [],
-      decisions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(missionId === undefined ? {} : { missionId }),
-    },
-  })
-}
-
-function objectiveAdded(id, expeditionId, overrides = {}) {
-  return makeEvent("OBJECTIVE_ADDED", {
-    objective: {
-      id,
-      title: `Objective ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
-
-function workItemCreated(id) {
-  return makeEvent("WORK_ITEM_CREATED", {
-    workItem: { id, status: "idle", dependencies: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-  })
-}
 
 function validLog() {
   return [

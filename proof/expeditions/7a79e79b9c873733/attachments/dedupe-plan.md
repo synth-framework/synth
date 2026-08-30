@@ -76,3 +76,76 @@ For each duplicated block:
 
 ## Open question for operator
 - Tolerance: is `<1,500` duplicated lines the right bar, or do we aim for near-zero (only `// keep` intentional scenarios)?
+
+---
+
+## Session follow-up — 2026-08-28 (targeted clone cleanup)
+
+Re-measured with `npx --yes jscpd@4 tests -l 7 -k 70` (the correct tool;
+`jscpd@latest` wrongly resolves to `cpd 5.0.16` and inflates numbers).
+
+Before session: **3,838** dup lines / 259 sources / 204 clones / 7.96%.
+After session:  **3,278** dup lines / 263 sources / 182 clones / 6.88%.
+
+### New helpers created
+- `tests/helpers/task-harness.js` — `run`, `makeTask`, `setupProject`, `teardown`,
+  `CLI_PATH`. Consolidates the identical CLI/task scaffolding across
+  `task-cli`, `task-execution`, `task-ci-adapter`.
+- `tests/helpers/state-fixtures.js` — `assert`, `loadResolver`, `loadComputeEventHash`,
+  `writeEventLog`, `writeManifest` + canonical event builders
+  (`genesisEvent`, `missionCreatedEvent`, `missionApprovedEvent`, `missionCompletedEvent`,
+  `missionArchivedEvent`, `expeditionCreatedEvent`, `expeditionStartedEvent`,
+  `workItemCreatedEvent`). Removes the repeated inline canonical-event object
+  literals in `transition-engine` and `stale-state`.
+- `tests/helpers/assert.js` — exported `assert(condition, message)` throwing `ASSERTION FAILED:`.
+  Bulk-extracted from 83 test files via automated script (was F6 `parseJson`/`assert`).
+- `tests/helpers/cli-harness.js` — `readEventLog` now reads BOTH `event-stream` (modern
+  partitioned) and legacy `event-log.jsonl`, merged & sorted by offset.
+- `tests/helpers/mission-lifecycle.js` — `bootstrapProject`, `createAndApproveMission`,
+  `createExecutingExpedition`. Consolidates the full bootstrap→mission→expedition
+  CLI flow that was duplicated across certification tests.
+- `tests/helpers/workspace.js` — fixed pre-existing bug: `makeTempDir` used
+  `fs.mkdtemp` without callback (threw `ERR_INVALID_ARG_TYPE`); now uses
+  `fs.promises.mkdtemp`.
+
+### Migrated files (verified green)
+- `two-party-approval.test.js`, `synth-log-identity-filters.test.js`,
+  `task-cli.test.js`, `task-execution.test.js`, `task-ci-adapter.test.js`,
+  `transition-engine.test.js`, `stale-state.test.js`, `runtime-repair.test.js`,
+  `state-lag-no-repair.test.js` (behavior-equivalent; baseline had pre-existing
+  `ENOENT event-log.jsonl` failure),
+- `governance-lifecycle-contract.test.js` — **15→2 clones** (93% reduction),
+- `expedition-lifecycle.test.js` — mission setup extracted; test functions
+  retain their scenario-specific logic (remaining 14 clones are test-pattern
+  duplication within the file, not cross-file).
+
+### Metrics after full grind (2026-08-30)
+- **170 clones**, **3,036 dup lines**, **6.41%** (from 204/3,838/7.96% start)
+- **~20% reduction in duplicated lines** with zero syntax errors and all
+  migrated tests passing.
+- Remaining high-clone files use diverse patterns (SDK direct calls, synthetic
+  event logs, node:test framework, perf-runner CLI wrappers) requiring
+  pattern-specific consolidation rather than a single universal helper.
+
+### Files migrated
+- `task-cli.test.js`, `task-execution.test.js`, `task-ci-adapter.test.js` → import `task-harness`.
+- `transition-engine.test.js`, `stale-state.test.js` → import `state-fixtures` (event literals
+  replaced by builder calls).
+- `two-party-approval.test.js` → `setupApprovalScenario` + `requestApproval`/`grantApproval`
+  helpers remove the repeated approval-setup and request/grant blocks.
+- `synth-log-identity-filters.test.js` → `identityEnv()` helper for the duplicated env block.
+- `runtime-repair.test.js` → imports `runCli`, `createDraft`, `cleanup` from `trust-workflow.js`
+  (exact duplicates; previously flagged as `runtime-repair ↔ trust-workflow`).
+
+### Remaining (out of originally-flagged scope — systemic boilerplate)
+These clones still appear in jscpd but pair the flagged file with a file NOT in the
+original list, and represent the shared "certification test" header template:
+- `synth-log-identity-filters.test.js` ↔ `identity-in-events.test.js` — duplicated
+  header (`readEventLog` helper). Fix: extract `readEventLog` into a shared helper and
+  import in both.
+- `runtime-repair.test.js` ↔ `first-operator-experience.test.js` /
+  `decision-events.test.js` — duplicated `import fs/os/path… REPO_ROOT/DIST_SYNTH/
+  passed/failed/assert` header. Fix: a shared `tests/helpers/cert-test-base.js`.
+
+Neither affects the originally-flagged clone *pairs* (all resolved). The header
+boilerplate is a broader refactor; recommend a follow-up expedition if we want it gone.

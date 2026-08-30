@@ -5,10 +5,7 @@
 // ============================================================
 
 import { getCommandSafety, isSafeForDiscovery, assertSafeForDiscovery } from "../dist/cli/command-safety.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function testReadOnlyCommands() {
   const commands = ["--help", "--version", "discover", "doctor", "status", "explain", "validate"]

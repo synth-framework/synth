@@ -16,58 +16,20 @@ import { spawnSync } from "child_process"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import {
+  assert,
+  loadResolver,
+  writeEventLog,
+  writeManifest,
+  genesisEvent,
+  missionCreatedEvent,
+  missionApprovedEvent,
+  missionCompletedEvent,
+  missionArchivedEvent,
+} from "./helpers/state-fixtures.js"
 
-const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 const SNAPSHOT_STORE_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "snapshot-store.js")
 const SNAPSHOT_INTEGRITY_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "snapshot-integrity.js")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function loadResolver() {
-  return await import(RESOLVER_MODULE_PATH)
-}
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-  return events
-}
-
-async function writeManifest(dir, projectName = "Stale State Test") {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName,
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "status", description: "Report state" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))
-}
 
 async function writeCanonicalState(dir, state) {
   const dataDir = path.join(dir, ".synth", "data")
@@ -185,35 +147,8 @@ async function testStateLagsEventsWarning() {
     const now = Date.now()
     const missionId = "M-STALE-LAG"
     const events = await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Lag Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Lag Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Lag Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Lag Mission"),
     ])
 
     // Persisted state only knows about genesis.
@@ -242,35 +177,8 @@ async function testReplayedStateMismatchFailure() {
     const now = Date.now()
     const missionId = "M-STALE-MISMATCH"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Mismatch Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Mismatch Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Mismatch Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Mismatch Mission"),
     ])
 
     await writeCanonicalState(tmpDir, { ...baseState(), stateHash: "stale-hash", lastEventOffset: 2 })
@@ -294,15 +202,7 @@ async function testMissingEventsFailure() {
     await writeManifest(tmpDir)
     const now = Date.now()
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Missing Test", systemId: "stale-test", partitions: 1 },
-      },
+      genesisEvent(now, { projectName: "Missing Test", systemId: "stale-test" }),
     ])
 
     // Persisted state claims it was rebuilt from 5 events but only 1 exists.
@@ -327,15 +227,7 @@ async function testDivergentReplayFailure() {
     await writeManifest(tmpDir)
     const now = Date.now()
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Divergent Test", systemId: "stale-test", partitions: 1 },
-      },
+      genesisEvent(now, { projectName: "Divergent Test", systemId: "stale-test" }),
     ])
 
     // Persisted state contains a mission that never appeared in the event log.
@@ -375,35 +267,8 @@ async function testSnapshotStateConflictFailure() {
     const now = Date.now()
     const missionId = "M-SNAPSHOT"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Snapshot Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Snapshot Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Snapshot Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Snapshot Mission"),
     ])
 
     // Snapshot claims the mission is approved while the event log says draft.
@@ -432,53 +297,10 @@ async function testSnapshotApprovedMissionCompletedNoConflict() {
     const now = Date.now()
     const missionId = "M-SNAPSHOT-COMPLETED"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Completed Snapshot Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Completed Snapshot Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-COMPLETE",
-        type: "MISSION_COMPLETED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CompleteMission",
-        actor: "system",
-        payload: { id: missionId, status: "completed" },
-      },
+      genesisEvent(now, { projectName: "Completed Snapshot Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Completed Snapshot Mission"),
+      missionApprovedEvent(now, missionId),
+      missionCompletedEvent(now, missionId),
     ])
 
     // Snapshot records the mission as approved before the completion event.
@@ -505,53 +327,10 @@ async function testSnapshotApprovedMissionArchivedConflict() {
     const now = Date.now()
     const missionId = "M-SNAPSHOT-ARCHIVED"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Archived Snapshot Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Archived Snapshot Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-ARCHIVE",
-        type: "MISSION_ARCHIVED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "ArchiveMission",
-        actor: "system",
-        payload: { id: missionId, status: "archived" },
-      },
+      genesisEvent(now, { projectName: "Archived Snapshot Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Archived Snapshot Mission"),
+      missionApprovedEvent(now, missionId),
+      missionArchivedEvent(now, missionId),
     ])
 
     await writeCertifiedSnapshot(tmpDir, missionId, "Archived Snapshot Mission")

@@ -1,4 +1,5 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
+import { parseJson } from "./helpers/assert.js"
 // ============================================================
 // EXP-GUARD-001 — Derived-State Protection & Expedition Scope
 // ============================================================
@@ -155,13 +156,7 @@ function runSynth(args, cwd) {
   }
 }
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
+
 
 test("derived-state and expedition scope protection", { concurrency: false }, async (t) => {
   const originalCwd = process.cwd()

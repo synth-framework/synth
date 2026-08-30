@@ -1,4 +1,5 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
+import { makeEvent, missionCreated, expeditionCreated, objectiveAdded, workItemGenerated } from "./helpers/kernel-event-fixtures.js"
 // ============================================================
 // VALIDATION EXPANSION TESTS (EXP-HARDEN-006)
 // ============================================================
@@ -46,87 +47,6 @@ import { createMissionStudio } from "../dist/mission-studio/index.js"
 
 const LEGACY_LOG = path.join(process.cwd(), ".synth", "data", "event-log.jsonl")
 
-let seq = 0
-function makeEvent(type, payload) {
-  seq += 1
-  // No hash-chain fields: the chain verifier tolerates pre-chain logs,
-  // keeping these fixtures focused on the checks under test.
-  return {
-    id: `evt-${seq}`,
-    type,
-    timestamp: seq,
-    transactionId: "tx-test",
-    capability: "test",
-    actor: "test",
-    payload,
-  }
-}
-
-function missionCreated(id, overrides = {}) {
-  return makeEvent("MISSION_CREATED", {
-    mission: {
-      id,
-      name: `Mission ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      expeditions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-    },
-  })
-}
-
-function expeditionCreated(id, missionId, overrides = {}) {
-  return makeEvent("EXPEDITION_CREATED", {
-    expedition: {
-      id,
-      name: `Expedition ${id}`,
-      goal: "goal",
-      status: "draft",
-      objectives: [],
-      discoveries: [],
-      decisions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(missionId === undefined ? {} : { missionId }),
-    },
-  })
-}
-
-function objectiveAdded(id, expeditionId, overrides = {}) {
-  return makeEvent("OBJECTIVE_ADDED", {
-    objective: {
-      id,
-      title: `Objective ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
-
-function workItemGenerated(id, objectiveId, expeditionId, overrides = {}) {
-  return makeEvent("WORK_ITEM_GENERATED", {
-    workItem: {
-      id,
-      title: `Work Item ${id}`,
-      status: "generated",
-      metadata: {},
-      createdAt: 1,
-      ...overrides,
-      ...(objectiveId === undefined ? {} : { objectiveId }),
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
 
 function validLog() {
   return [

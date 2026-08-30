@@ -7,47 +7,7 @@ import {
 } from "../dist/execution/index.js"
 import assert from "node:assert"
 import test from "node:test"
-
-function makeWorkItem(id, metadata) {
-  return {
-    id,
-    expeditionId: "EXP-1",
-    objectiveId: "OBJ-1",
-    title: "work item",
-    status: "generated",
-    metadata,
-    createdAt: Date.now(),
-  }
-}
-
-function makeExpedition(id) {
-  return {
-    id,
-    missionId: "M-1",
-    name: "execution expedition",
-    goal: "execute",
-    status: "approved",
-    objectives: ["OBJ-1"],
-    discoveries: [],
-    decisions: [],
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
-
-function makeObjective(id, expeditionId) {
-  return {
-    id,
-    expeditionId,
-    title: "objective",
-    purpose: "purpose",
-    status: "draft",
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
+import { makeWorkItem, makeExpedition, makeObjective, EXEC_OPTIONS } from "./helpers/execution-fixtures.js"
 
 test("executeGraph: commits expedition changes after intents complete", async () => {
   const intents = synthesizeIntents({
@@ -118,9 +78,7 @@ test("executeGraph: commit message includes multiple objectives", async () => {
         throw new Error(`Unexpected versioning operation: ${intent.operation}`)
       },
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   assert.ok(events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED"))
@@ -153,9 +111,7 @@ test("executeGraph: halts when commit fails", async () => {
         throw new Error(`Unexpected versioning operation: ${intent.operation}`)
       },
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   const committed = events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED")
@@ -180,9 +136,7 @@ test("executeGraph: skips commit when no versioning handler is provided", async 
     handlers: {
       filesystem: async () => ({ success: true }),
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   const committed = events.find((e) => e.type === "EXPEDITION_EXECUTION_COMMITTED")

@@ -12,13 +12,7 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testNormalExtractionReportsOk() {
   const tmpDir = await makeTempDir("synth-extraction-ok-")

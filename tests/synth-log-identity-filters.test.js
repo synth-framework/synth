@@ -26,14 +26,18 @@ async function readEventLog(targetDir) {
     .filter(Boolean)
 }
 
+function identityEnv() {
+  return {
+    ...process.env,
+    SYNTH_AGENT_ID: "test-agent",
+    SYNTH_SESSION_ID: "test-session",
+    SYNTH_APPROVAL_MODE: "human-approved",
+  }
+}
+
 async function testSynthLogSessionIdFilter() {
   await withTempDir("synth-log-session-id-", async (targetDir) => {
-    const env = {
-      ...process.env,
-      SYNTH_AGENT_ID: "test-agent",
-      SYNTH_SESSION_ID: "test-session",
-      SYNTH_APPROVAL_MODE: "human-approved",
-    }
+    const env = identityEnv()
 
     const runResult = runSynth(["first-contact", "--approve"], targetDir, { env, timeout: 120000 })
     assert.equal(runResult.status, 0, `first-contact --approve failed: ${runResult.stderr}`)
@@ -51,12 +55,7 @@ async function testSynthLogSessionIdFilter() {
 
 async function testSynthLogApprovalModeFilter() {
   await withTempDir("synth-log-approval-mode-", async (targetDir) => {
-    const env = {
-      ...process.env,
-      SYNTH_AGENT_ID: "test-agent",
-      SYNTH_SESSION_ID: "test-session",
-      SYNTH_APPROVAL_MODE: "human-approved",
-    }
+    const env = identityEnv()
 
     const runResult = runSynth(["first-contact", "--approve"], targetDir, { env, timeout: 120000 })
     assert.equal(runResult.status, 0, `first-contact --approve failed: ${runResult.stderr}`)
@@ -74,12 +73,7 @@ async function testSynthLogApprovalModeFilter() {
 
 async function testSynthLogExpeditionIdFilter() {
   await withTempDir("synth-log-expedition-id-", async (targetDir) => {
-    const env = {
-      ...process.env,
-      SYNTH_AGENT_ID: "test-agent",
-      SYNTH_SESSION_ID: "test-session",
-      SYNTH_APPROVAL_MODE: "human-approved",
-    }
+    const env = identityEnv()
 
     const runResult = runSynth(["first-contact", "--approve"], targetDir, { env, timeout: 120000 })
     assert.equal(runResult.status, 0, `first-contact --approve failed: ${runResult.stderr}`)

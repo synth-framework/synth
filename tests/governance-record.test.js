@@ -12,14 +12,9 @@ import path from "path"
 import os from "os"
 import { seedEventLog } from "./helpers/seed-event-log.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const PROJECTION_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "governance-record-projection.js")
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function writeEventLog(dir, rawEvents) {
   const { computeEventHash } = await import(path.resolve(process.cwd(), "dist", "core", "hash.js"))

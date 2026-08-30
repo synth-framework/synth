@@ -12,9 +12,9 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
-
 
 function runGit(args, cwd) {
   const result = spawnSync("git", args, { cwd, encoding: "utf-8" })
@@ -42,10 +42,6 @@ function findJsonObject(stdout) {
     }
   }
   throw new Error(`No JSON object found in stdout:\n${stdout}`)
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 function createTempRepo() {

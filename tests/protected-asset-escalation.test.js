@@ -8,6 +8,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
+import { assert } from "./helpers/assert.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROTECTED_ASSETS_PATH = path.resolve(__dirname, "..", "dist", "governance", "protected-assets.js")
@@ -19,10 +20,6 @@ const PACKAGE_PATH = path.resolve(__dirname, "..", "package.json")
 async function loadJson(filePath) {
   const content = await fs.readFile(filePath, "utf-8")
   return JSON.parse(content)
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testCatalogMatchesAdr004() {

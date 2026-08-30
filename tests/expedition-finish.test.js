@@ -10,11 +10,9 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { bootstrapProject, createAndApproveMission, createExecutingExpedition } from "./helpers/mission-lifecycle.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
+import { assert } from "./helpers/assert.js"
 
 function runGit(args, cwd) {
   const result = spawnSync("git", args, {
@@ -28,11 +26,6 @@ function runGit(args, cwd) {
   return result
 }
 
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
 async function setupProject() {
   const tmpDir = await makeTempDir("synth-expedition-finish-")
   await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
@@ -44,8 +37,7 @@ async function setupProject() {
   runGit(["add", "package.json"], tmpDir)
   runGit(["commit", "-m", "initial"], tmpDir)
 
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
+  await bootstrapProject(tmpDir)
 
   // Commit bootstrap artifacts so the working tree is clean for finish.
   runGit(["add", "-A"], tmpDir)
@@ -54,75 +46,12 @@ async function setupProject() {
   return tmpDir
 }
 
-async function createAndApproveMission(projectDir) {
-  const createResult = runSynth(
-    ["mission", "create", "--subject", "Finish Test Mission", "--purpose", "Test atomic finish"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  const draftId1 = parseJson(createResult.stdout).draftId
-
-  const evidenceResult = runSynth(
-    [
-      "mission",
-      "evidence",
-      "add",
-      "--draft-id",
-      draftId1,
-      "--subject",
-      "Supporting evidence",
-      "--purpose",
-      "Raises confidence above approval threshold",
-      "--confidence",
-      "certain",
-    ],
-    projectDir,
-  )
-  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
-  const draftId2 = parseJson(evidenceResult.stdout).draftId
-
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
-  })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId2, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const approveOutput = parseJson(approveResult.stdout)
-  assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
-  assert(approveOutput.decision?.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
-  const missionId = approveOutput.runtime?.missionId
-  assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
-  return { missionId, contractId }
-}
-
 async function testFinishCommand(projectDir, missionId) {
-  const createResult = runSynth(
-    ["expedition", "create", "--mission", missionId, "--subject", "Finish Test Expedition", "--goal", "Test atomic finish flow"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
-  const draftId = parseJson(createResult.stdout).draftId
-
-  const approveResult = runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
-  assert(approveResult.status === 0, `expedition approve must exit 0:\n${approveResult.stderr}`)
-
-  const commitResult = runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
-  assert(commitResult.status === 0, `expedition commit must exit 0:\n${commitResult.stderr}`)
-
-  const startResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
-  assert(startResult.status === 0, `expedition start must exit 0:\n${startResult.stderr}`)
-  const startOutput = parseJson(startResult.stdout)
-  assert(startOutput.kind === "ExpeditionStarted", `expedition start should return ExpeditionStarted, got ${startOutput.kind}`)
-  assert(startOutput.result.status === "executing", `expedition should be executing, got ${startOutput.result.status}`)
+  const draftId = await createExecutingExpedition(projectDir, missionId, {
+    subject: "Finish Test Expedition",
+    goal: "Test atomic finish flow",
+    attachEvidence: false,
+  })
 
   // Make and commit a source change after starting so finish has a diff to capture.
   await fs.writeFile(path.join(projectDir, "feature.txt"), "new capability", "utf-8")
@@ -168,9 +97,15 @@ async function main() {
   console.log("Running expedition finish tests...")
   const projectDir = await setupProject()
   try {
-    const { missionId } = await createAndApproveMission(projectDir)
+    const { missionId } = await createAndApproveMission(projectDir, {
+      subject: "Finish Test Mission",
+      purpose: "Test atomic finish",
+    })
     await testFinishCommand(projectDir, missionId)
-    const { missionId: missionId2 } = await createAndApproveMission(projectDir)
+    const { missionId: missionId2 } = await createAndApproveMission(projectDir, {
+      subject: "Finish Test Mission 2",
+      purpose: "Test atomic finish",
+    })
     await testFinishRequiresExecuting(projectDir, missionId2)
     console.log("\nAll expedition finish tests passed.")
   } finally {

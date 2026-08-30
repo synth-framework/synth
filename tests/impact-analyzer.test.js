@@ -9,15 +9,12 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const ANALYZER_PATH = path.resolve(process.cwd(), "dist", "governance", "impact-analyzer.js")
 
 async function loadAnalyzer() {
   return await import(ANALYZER_PATH)
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testAnalyzeFiles() {

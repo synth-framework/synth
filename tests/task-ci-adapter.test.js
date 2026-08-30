@@ -6,37 +6,15 @@
 // ============================================================
 
 import { strict as assert } from "assert"
-import { spawn } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
+import { run, CLI_PATH } from "./helpers/task-harness.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKFLOWS_DIR = path.resolve(__dirname, "..", ".github", "workflows")
-const CLI_PATH = path.resolve(__dirname, "..", "dist", "cli", "synth.js")
 
 const ALLOWED_NPM_SCRIPTS = new Set(["build", "ci"])
-
-function run(args, cwd) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [CLI_PATH, ...args], {
-      cwd: cwd ?? process.cwd(),
-      stdio: ["ignore", "pipe", "pipe"],
-    })
-    let stdout = ""
-    let stderr = ""
-    child.stdout.on("data", (data) => {
-      stdout += data
-    })
-    child.stderr.on("data", (data) => {
-      stderr += data
-    })
-    child.on("close", (code) => {
-      resolve({ code: code ?? 1, stdout, stderr })
-    })
-    child.on("error", reject)
-  })
-}
 
 async function loadWorkflowFiles() {
   const entries = await fs.readdir(WORKFLOWS_DIR)

@@ -6,62 +6,7 @@
 // ============================================================
 
 import { strict as assert } from "assert"
-import { spawn } from "child_process"
-import fs from "fs/promises"
-import path from "path"
-import { fileURLToPath } from "url"
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLI_PATH = path.resolve(__dirname, "..", "dist", "cli", "synth.js")
-
-function run(args, cwd) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [CLI_PATH, ...args], {
-      cwd: cwd ?? process.cwd(),
-      stdio: ["ignore", "pipe", "pipe"],
-    })
-    let stdout = ""
-    let stderr = ""
-    child.stdout.on("data", (data) => {
-      stdout += data
-    })
-    child.stderr.on("data", (data) => {
-      stderr += data
-    })
-    child.on("close", (code) => {
-      resolve({ code: code ?? 1, stdout, stderr })
-    })
-    child.on("error", reject)
-  })
-}
-
-function makeTask(overrides = {}) {
-  return {
-    id: "task",
-    description: "A task",
-    command: "echo ok",
-    group: "test",
-    dependsOn: [],
-    tags: [],
-    estimatedDurationMs: 1000,
-    capabilities: [],
-    ...overrides,
-  }
-}
-
-async function setupProject(tasks) {
-  const tmpDir = path.join("tests", "fixtures", `task-exec-${Date.now()}`)
-  const tasksDir = path.join(tmpDir, "data", "tasks")
-  await fs.mkdir(tasksDir, { recursive: true })
-  for (const [filename, task] of Object.entries(tasks)) {
-    await fs.writeFile(path.join(tasksDir, filename), JSON.stringify(task, null, 2))
-  }
-  return tmpDir
-}
-
-async function teardown(tmpDir) {
-  await fs.rm(tmpDir, { recursive: true, force: true })
-}
+import { run, makeTask, setupProject, teardown, CLI_PATH } from "./helpers/task-harness.js"
 
 async function testTaskRunExecutesCommand() {
   const tmpDir = await setupProject({

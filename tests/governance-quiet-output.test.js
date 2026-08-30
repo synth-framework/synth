@@ -11,8 +11,7 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
-
-
+import { assert } from "./helpers/assert.js"
 
 async function setupProject() {
   const tmpDir = await makeTempDir("synth-quiet-output-")
@@ -22,10 +21,6 @@ async function setupProject() {
     throw new Error(`bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
   }
   return tmpDir
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function main() {

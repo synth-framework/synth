@@ -1,4 +1,5 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
+import { parseJson } from "./helpers/assert.js"
 // ============================================================
 // EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands
 // ============================================================
@@ -120,9 +121,7 @@ function runSynth(args, cwd) {
   }
 }
 
-function parseJson(stdout) {
-  return JSON.parse(stdout.trim())
-}
+
 
 function eventCount(projectRoot) {
   const logPath = path.join(projectRoot, ".synth", "data", "event-log.jsonl")

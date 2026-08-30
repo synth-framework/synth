@@ -11,6 +11,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const CHECK_LINKS_PATH = path.resolve(PROJECT_ROOT, "scripts", "check-links.js")
@@ -29,10 +30,6 @@ function runScript(scriptPath, cwd = PROJECT_ROOT) {
     stderr: result.stderr || "",
     status: result.status,
   }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testCheckLinksAcceptsProject() {

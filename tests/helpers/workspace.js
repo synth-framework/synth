@@ -16,7 +16,7 @@ import path from "path"
 
 /** Create a temp directory under os.tmpdir() and return its path. */
 export function makeTempDir(prefix) {
-  return fs.mkdtemp(path.join(os.tmpdir(), prefix))
+  return fs.promises.mkdtemp(path.join(os.tmpdir(), prefix))
 }
 
 /** Synchronously create a temp directory under os.tmpdir(). */

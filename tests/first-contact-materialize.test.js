@@ -16,10 +16,7 @@ import { extractIntent } from "../dist/first-contact/extract/index.js"
 import { projectArchitecture } from "../dist/first-contact/project/index.js"
 import { verifyCapabilities } from "../dist/first-contact/verify/index.js"
 import { materialize } from "../dist/first-contact/materialize/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testMaterializesProject() {
   const tmpDir = await makeTempDir("synth-materialize-")

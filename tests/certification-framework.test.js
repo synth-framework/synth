@@ -10,13 +10,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
-
-
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testCertifyRunsAllScenarios() {
   const result = runSynth(["certify"], process.cwd())

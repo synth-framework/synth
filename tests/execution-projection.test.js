@@ -7,47 +7,7 @@ import {
 } from "../dist/execution/index.js"
 import assert from "node:assert"
 import test from "node:test"
-
-function makeWorkItem(id, metadata) {
-  return {
-    id,
-    expeditionId: "EXP-1",
-    objectiveId: "OBJ-1",
-    title: "work item",
-    status: "generated",
-    metadata,
-    createdAt: Date.now(),
-  }
-}
-
-function makeExpedition(id) {
-  return {
-    id,
-    missionId: "M-1",
-    name: "execution expedition",
-    goal: "execute",
-    status: "approved",
-    objectives: ["OBJ-1"],
-    discoveries: [],
-    decisions: [],
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
-
-function makeObjective(id, expeditionId) {
-  return {
-    id,
-    expeditionId,
-    title: "objective",
-    purpose: "purpose",
-    status: "draft",
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
+import { makeWorkItem, makeExpedition, makeObjective, EXEC_OPTIONS } from "./helpers/execution-fixtures.js"
 
 function makeVersioningHandler() {
   return async (intent) => {
@@ -122,9 +82,7 @@ test("executeGraph: PR title and body correlate expedition and objectives", asyn
         return { success: true, result: { number: 43, title: String(intent.payload.title) } }
       },
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   assert.ok(events.find((e) => e.type === "EXPEDITION_EXECUTION_PROJECTED"))
@@ -152,9 +110,7 @@ test("executeGraph: halts when pull request creation fails", async () => {
       versioning: makeVersioningHandler(),
       forge: async () => ({ success: false, error: "no fork permission" }),
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   const projected = events.find((e) => e.type === "EXPEDITION_EXECUTION_PROJECTED")
@@ -180,9 +136,7 @@ test("executeGraph: skips PR projection when no forge handler is provided", asyn
       filesystem: async () => ({ success: true }),
       versioning: makeVersioningHandler(),
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   const projected = events.find((e) => e.type === "EXPEDITION_EXECUTION_PROJECTED")

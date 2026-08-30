@@ -8,10 +8,7 @@
 
 import { loadTaskRegistry } from "../dist/task/task-registry.js"
 import { detectTaskCycles, taskExecutionOrder } from "../dist/task/task-graph.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testOnboardingTasksDiscovered() {
   const registry = await loadTaskRegistry()

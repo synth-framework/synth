@@ -8,47 +8,7 @@ import {
 } from "../dist/execution/index.js"
 import assert from "node:assert"
 import test from "node:test"
-
-function makeWorkItem(id, metadata) {
-  return {
-    id,
-    expeditionId: "EXP-1",
-    objectiveId: "OBJ-1",
-    title: "work item",
-    status: "generated",
-    metadata,
-    createdAt: Date.now(),
-  }
-}
-
-function makeExpedition(id) {
-  return {
-    id,
-    missionId: "M-1",
-    name: "execution expedition",
-    goal: "execute",
-    status: "approved",
-    objectives: ["OBJ-1"],
-    discoveries: [],
-    decisions: [],
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
-
-function makeObjective(id, expeditionId) {
-  return {
-    id,
-    expeditionId,
-    title: "objective",
-    purpose: "purpose",
-    status: "draft",
-    metadata: {},
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  }
-}
+import { makeWorkItem, makeExpedition, makeObjective, EXEC_OPTIONS } from "./helpers/execution-fixtures.js"
 
 test("deriveExpeditionBranch: produces deterministic branch name", () => {
   assert.strictEqual(deriveExpeditionBranch("EXP-1"), "exp/EXP-1")
@@ -115,9 +75,7 @@ test("executeGraph: halts when branch creation fails", async () => {
       filesystem: async () => ({ success: true }),
       versioning: async () => ({ success: false, error: "branch already exists" }),
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   const branchCreated = events.find((e) => e.type === "EXPEDITION_BRANCH_CREATED")
@@ -145,9 +103,7 @@ test("executeGraph: skips branch creation when no versioning handler is provided
     handlers: {
       filesystem: async () => ({ success: true }),
     },
-    actor: "test",
-    transactionId: "tx-1",
-    timestamp: 1,
+    ...EXEC_OPTIONS,
   })
 
   const branchCreated = events.find((e) => e.type === "EXPEDITION_BRANCH_CREATED")

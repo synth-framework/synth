@@ -19,10 +19,7 @@ import { materialize } from "../dist/first-contact/materialize/index.js"
 import { EventStore } from "../dist/infra/event-store.js"
 import { StateStore } from "../dist/infra/state-store.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testReplayVerifiesMaterializedProject() {
   const tmpDir = await makeTempDir("synth-first-contact-replay-")

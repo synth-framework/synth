@@ -9,7 +9,7 @@ import { makeCwdDataDir } from "./helpers/workspace.js"
 import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
-import { bootstrap } from "../dist/core/bootstrap.js"
+import { makeCtx as makeTestCtx } from "./helpers/context.js"
 import {
   createIntentModel,
   createAlignmentContract,
@@ -27,13 +27,10 @@ async function cleanData() {
 
 async function makeCtx() {
   const dataDir = makeCwdDataDir("data-test-proposal-evaluation")
-  return bootstrap({
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-      checkpointPath: path.join(dataDir, "checkpoint.json"),
-    },
-    genesis: { projectName: "Proposal Evaluation Test", systemId: "proposal-eval-test", partitions: 1 },
+  return makeTestCtx(dataDir, {
+    projectName: "Proposal Evaluation Test",
+    systemId: "proposal-eval-test",
+    partitions: 1,
     skipGenesis: false,
   })
 }

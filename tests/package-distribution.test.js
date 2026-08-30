@@ -9,15 +9,12 @@
 import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const MAIN_PACKAGE = path.resolve(PROJECT_ROOT, "package.json")
 const AGENT_SDK_DIR = path.resolve(PROJECT_ROOT, "packages", "synth-agent-sdk")
 const AGENT_SDK_PACKAGE = path.resolve(AGENT_SDK_DIR, "package.json")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 function runNpm(args, cwd = PROJECT_ROOT) {
   const result = spawnSync("npm", args, {

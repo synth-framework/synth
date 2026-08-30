@@ -11,6 +11,7 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const PACKAGE_PATH = path.resolve(PROJECT_ROOT, "package.json")
@@ -27,11 +28,6 @@ function runNpm(script, cwd) {
     stderr: result.stderr || "",
     status: result.status,
   }
-}
-
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testDocsGenerateScriptExists() {

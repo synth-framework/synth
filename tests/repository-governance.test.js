@@ -13,15 +13,12 @@ import {
   branchNameCandidates,
   slugify,
 } from "../dist/repository/branch-taxonomy.js"
+import { assert } from "./helpers/assert.js"
 import {
   inferVersionBump,
   nextSemanticVersion,
   validatePromotion,
 } from "../dist/repository/governance.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 function makeEvent(type, payload) {
   return {

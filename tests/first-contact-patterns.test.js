@@ -7,10 +7,7 @@
 // ============================================================
 
 import { extractConversationPattern, promoteConversationPattern } from "../dist/first-contact/patterns.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function buildEvidence(overrides = {}) {
   return {
