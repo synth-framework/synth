@@ -12,6 +12,7 @@ import { seedEventLog } from "./helpers/seed-event-log.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
 import { makeTestDir, makeManifest, makeEventLog } from "./helpers/test-fixtures.js"
+import { makeApprovedMissionEvents, makeExecutingExpeditionEvents, makeBrokenDecisionRecords } from "./helpers/event-fixtures.js"
 
 const DECISION_LOG_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "decision-log.js")
 
@@ -70,48 +71,8 @@ async function testApprovedMission() {
   const tmpDir = await makeTempDir("synth-resume-approved-")
   try {
     await makeManifest(tmpDir, { projectName: "Approved Test" })
-    const now = Date.now()
     const missionId = "M-RESUME-1"
-    await makeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Approved Test", systemId: "resume-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-1",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Approved Mission",
-            purpose: "Test approved phase",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-1",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-    ])
+    await makeEventLog(tmpDir, makeApprovedMissionEvents({ systemId: "resume-test", missionId }))
 
     const dataDir = path.join(tmpDir, ".synth", "data")
     await appendDecision(dataDir, {
@@ -150,81 +111,9 @@ async function testExecutingExpedition() {
   const tmpDir = await makeTempDir("synth-resume-executing-")
   try {
     await makeManifest(tmpDir, { projectName: "Executing Test" })
-    const now = Date.now()
     const missionId = "M-RESUME-2"
     const expeditionId = "E-RESUME-2"
-    await makeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Executing Test", systemId: "resume-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-2",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Executing Mission",
-            purpose: "Test executing phase",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-2",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-EXP-2",
-        type: "EXPEDITION_CREATED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CreateExpedition",
-        actor: "system",
-        payload: {
-          expedition: {
-            id: expeditionId,
-            missionId,
-            name: "Executing Expedition",
-            goal: "Test execution",
-            status: "approved",
-            objectives: [],
-            discoveries: [],
-            decisions: [],
-            metadata: {},
-            createdAt: now + 3,
-            updatedAt: now + 3,
-          },
-        },
-      },
-      {
-        id: "E-START-2",
-        type: "EXPEDITION_STARTED",
-        timestamp: now + 4,
-        transactionId: "tx-4",
-        capability: "StartExpedition",
-        actor: "system",
-        payload: { id: expeditionId, status: "executing" },
-      },
-    ])
+    await makeEventLog(tmpDir, makeExecutingExpeditionEvents({ systemId: "resume-test", missionId, expeditionId }))
 
     const { stdout, status } = runSynth(["explain", "resume"], tmpDir)
     assert(status === 0, "explain resume should exit 0")
@@ -251,48 +140,8 @@ async function testDeterminism() {
   const tmpDir = await makeTempDir("synth-resume-determinism-")
   try {
     await makeManifest(tmpDir, { projectName: "Determinism Test" })
-    const now = Date.now()
     const missionId = "M-RESUME-3"
-    await makeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Determinism Test", systemId: "resume-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-3",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Determinism Mission",
-            purpose: "Test determinism",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-3",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-    ])
+    await makeEventLog(tmpDir, makeApprovedMissionEvents({ systemId: "resume-test", missionId }))
 
     const first = parseJson(runSynth(["explain", "resume"], tmpDir).stdout)
     const second = parseJson(runSynth(["explain", "resume"], tmpDir).stdout)
@@ -306,37 +155,13 @@ async function testDeterminism() {
   console.log("[PASS] resume briefing is deterministic across repeated invocations")
 }
 
-// ------------------------------------------------------------
-// Fixture: broken decision log emits warning
-// ------------------------------------------------------------
 async function testBrokenDecisionLogWarning() {
   const tmpDir = await makeTempDir("synth-resume-decision-warning-")
   try {
     await makeManifest(tmpDir, { projectName: "Decision Warning Test" })
     const dataDir = path.join(tmpDir, ".synth", "data")
     await fs.mkdir(dataDir, { recursive: true })
-    // Write a decision log with two genesis records, which breaks the chain.
-    await fs.writeFile(
-      path.join(dataDir, "decisions.jsonl"),
-      JSON.stringify({
-        schema: "synth-decision-v1",
-        id: "d1",
-        type: "MISSION_APPROVAL_APPROVED",
-        draftId: "DRAFT-WARN-1",
-        previousHash: "genesis",
-        timestamp: Date.now(),
-      }) +
-        "\n" +
-        JSON.stringify({
-          schema: "synth-decision-v1",
-          id: "d2",
-          type: "MISSION_APPROVAL_REJECTED",
-          draftId: "DRAFT-WARN-2",
-          previousHash: "genesis",
-          timestamp: Date.now() + 1,
-        }) +
-        "\n",
-    )
+    await fs.writeFile(path.join(dataDir, "decisions.jsonl"), makeBrokenDecisionRecords())
 
     const { stdout, status } = runSynth(["explain", "resume"], tmpDir)
     assert(status === 0, "explain resume should exit 0 even with broken decision log")

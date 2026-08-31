@@ -1,48 +1,10 @@
 import { makeTempDir } from "./helpers/workspace.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
+import { makeManifest, makeEventLog } from "./helpers/test-fixtures.js"
+import { makeApprovedMissionEvents, makeExecutingExpeditionEvents, makeBrokenDecisionRecords } from "./helpers/event-fixtures.js"
 import fs from "fs/promises"
 import path from "path"
-
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await fs.writeFile(path.join(dataDir, "event-log.jsonl"), events.map(e => JSON.stringify(e)).join("\n"), "utf-8")
-}
-
-async function writeManifest(dir, projectName = "Operator Briefing Test") {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName,
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "status", description: "Report state" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))
-}
 
 async function testUninitialized() {
   const tmpDir = await makeTempDir("synth-status-uninit-")
@@ -108,49 +70,9 @@ async function testPlanningDraftBelowThreshold() {
 async function testApprovedNoExpeditions() {
   const tmpDir = await makeTempDir("synth-status-approved-")
   try {
-    await writeManifest(tmpDir)
-    const now = Date.now()
+    await makeManifest(tmpDir)
     const missionId = "M-STATUS-1"
-    await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Approved Test", systemId: "status-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-1",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Approved Mission",
-            purpose: "Test approved phase",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-1",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-    ])
+    await makeEventLog(tmpDir, makeApprovedMissionEvents({ systemId: "status-test", missionId }))
 
     const { stdout, status } = runSynth(["status"], tmpDir)
     assert(status === 0, "status should exit 0")
@@ -168,82 +90,10 @@ async function testApprovedNoExpeditions() {
 async function testExecuting() {
   const tmpDir = await makeTempDir("synth-status-executing-")
   try {
-    await writeManifest(tmpDir)
-    const now = Date.now()
+    await makeManifest(tmpDir)
     const missionId = "M-STATUS-2"
     const expeditionId = "E-STATUS-2"
-    await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Executing Test", systemId: "status-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-2",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Executing Mission",
-            purpose: "Test executing phase",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-2",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-EXP-2",
-        type: "EXPEDITION_CREATED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CreateExpedition",
-        actor: "system",
-        payload: {
-          expedition: {
-            id: expeditionId,
-            missionId,
-            name: "Executing Expedition",
-            goal: "Test execution",
-            status: "approved",
-            objectives: [],
-            discoveries: [],
-            decisions: [],
-            metadata: {},
-            createdAt: now + 3,
-            updatedAt: now + 3,
-          },
-        },
-      },
-      {
-        id: "E-START-2",
-        type: "EXPEDITION_STARTED",
-        timestamp: now + 4,
-        transactionId: "tx-4",
-        capability: "StartExpedition",
-        actor: "system",
-        payload: { id: expeditionId, status: "executing" },
-      },
-    ])
+    await makeEventLog(tmpDir, makeExecutingExpeditionEvents({ systemId: "status-test", missionId, expeditionId }))
 
     const { stdout, status } = runSynth(["status"], tmpDir)
     assert(status === 0, "status should exit 0")
@@ -262,49 +112,9 @@ async function testExecuting() {
 async function testDeterminism() {
   const tmpDir = await makeTempDir("synth-status-determinism-")
   try {
-    await writeManifest(tmpDir)
-    const now = Date.now()
+    await makeManifest(tmpDir)
     const missionId = "M-STATUS-3"
-    await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Determinism Test", systemId: "status-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-3",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Determinism Mission",
-            purpose: "Test determinism",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-3",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-    ])
+    await makeEventLog(tmpDir, makeApprovedMissionEvents({ systemId: "status-test", missionId }))
 
     const first = parseJson(runSynth(["status"], tmpDir).stdout)
     const second = parseJson(runSynth(["status"], tmpDir).stdout)
@@ -321,30 +131,10 @@ async function testDeterminism() {
 async function testBrokenDecisionLogWarning() {
   const tmpDir = await makeTempDir("synth-status-decision-warning-")
   try {
-    await writeManifest(tmpDir, "Decision Warning Test")
+    await makeManifest(tmpDir, { projectName: "Decision Warning Test" })
     const dataDir = path.join(tmpDir, ".synth", "data")
     await fs.mkdir(dataDir, { recursive: true })
-    await fs.writeFile(
-      path.join(dataDir, "decisions.jsonl"),
-      JSON.stringify({
-        schema: "synth-decision-v1",
-        id: "d1",
-        type: "MISSION_APPROVAL_APPROVED",
-        draftId: "DRAFT-WARN-1",
-        previousHash: "genesis",
-        timestamp: Date.now(),
-      }) +
-        "\n" +
-        JSON.stringify({
-          schema: "synth-decision-v1",
-          id: "d2",
-          type: "MISSION_APPROVAL_REJECTED",
-          draftId: "DRAFT-WARN-2",
-          previousHash: "genesis",
-          timestamp: Date.now() + 1,
-        }) +
-        "\n",
-    )
+    await fs.writeFile(path.join(dataDir, "decisions.jsonl"), makeBrokenDecisionRecords())
 
     const { stdout, status } = runSynth(["status"], tmpDir)
     assert(status === 0, "status should exit 0 even with broken decision log")
