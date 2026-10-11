@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Governance Resolver Tests
 // ============================================================
@@ -9,88 +10,21 @@
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { seedEventLog } from "./helpers/seed-event-log.js"
+import { assert } from "./helpers/assert.js"
+import { makeManifest } from "./helpers/test-fixtures.js"
+import { makeApprovedMissionEvents, makeExecutingExpeditionEvents, makeBrokenDecisionRecords } from "./helpers/event-fixtures.js"
+import { loadResolver, loadComputeEventHash, writeEventLog } from "./helpers/state-fixtures.js"
 
 const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function loadResolver() {
-  return await import(RESOLVER_MODULE_PATH)
-}
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-}
-
-async function writeManifest(dir, projectName = "Governance Resolver Test") {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName,
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "status", description: "Report state" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))
-}
 
 async function writeBrokenDecisionLog(dir) {
   const dataDir = path.join(dir, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
-  await fs.writeFile(
-    path.join(dataDir, "decisions.jsonl"),
-    JSON.stringify({
-      schema: "synth-decision-v1",
-      id: "d1",
-      type: "MISSION_APPROVAL_APPROVED",
-      draftId: "DRAFT-WARN-1",
-      previousHash: "genesis",
-      timestamp: Date.now(),
-    }) +
-      "\n" +
-      JSON.stringify({
-        schema: "synth-decision-v1",
-        id: "d2",
-        type: "MISSION_APPROVAL_REJECTED",
-        draftId: "DRAFT-WARN-2",
-        previousHash: "genesis",
-        timestamp: Date.now() + 1,
-      }) +
-      "\n",
-  )
+  await fs.writeFile(path.join(dataDir, "decisions.jsonl"), makeBrokenDecisionRecords())
 }
 
-// ------------------------------------------------------------
-// Fixture: uninitialized directory
-// ------------------------------------------------------------
 async function testUninitialized() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-uninit-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-uninit-")
   try {
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
     const result = await resolveGovernanceContext(tmpDir)
@@ -111,9 +45,9 @@ async function testUninitialized() {
 // Fixture: initialized, no mission yet
 // ------------------------------------------------------------
 async function testInitializedNoMission() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-init-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-init-")
   try {
-    await writeManifest(tmpDir)
+    await makeManifest(tmpDir)
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
     const result = await resolveGovernanceContext(tmpDir)
     assert(!isGovernanceResolutionFailure(result), "should not fail for initialized project")
@@ -130,51 +64,11 @@ async function testInitializedNoMission() {
 // Fixture: approved mission, no expeditions
 // ------------------------------------------------------------
 async function testApprovedNoExpeditions() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-approved-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-approved-")
   try {
-    await writeManifest(tmpDir)
-    const now = Date.now()
+    await makeManifest(tmpDir)
     const missionId = "M-GOV-1"
-    await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Approved Test", systemId: "gov-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-1",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Approved Mission",
-            purpose: "Test approved phase",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-1",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-    ])
+    await writeEventLog(tmpDir, makeApprovedMissionEvents({ systemId: "gov-test", missionId }))
 
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
     const result = await resolveGovernanceContext(tmpDir)
@@ -189,88 +83,13 @@ async function testApprovedNoExpeditions() {
   console.log("[PASS] approved mission with no expeditions resolves to phase approved")
 }
 
-// ------------------------------------------------------------
-// Fixture: executing expedition
-// ------------------------------------------------------------
 async function testExecuting() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-executing-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-executing-")
   try {
-    await writeManifest(tmpDir)
-    const now = Date.now()
+    await makeManifest(tmpDir)
     const missionId = "M-GOV-2"
     const expeditionId = "E-GOV-2"
-    await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Executing Test", systemId: "gov-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION-2",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Executing Mission",
-            purpose: "Test executing phase",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE-2",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-EXP-2",
-        type: "EXPEDITION_CREATED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CreateExpedition",
-        actor: "system",
-        payload: {
-          expedition: {
-            id: expeditionId,
-            missionId,
-            name: "Executing Expedition",
-            goal: "Test execution",
-            status: "approved",
-            objectives: [],
-            discoveries: [],
-            decisions: [],
-            metadata: {},
-            createdAt: now + 3,
-            updatedAt: now + 3,
-          },
-        },
-      },
-      {
-        id: "E-START-2",
-        type: "EXPEDITION_STARTED",
-        timestamp: now + 4,
-        transactionId: "tx-4",
-        capability: "StartExpedition",
-        actor: "system",
-        payload: { id: expeditionId, status: "executing" },
-      },
-    ])
+    await writeEventLog(tmpDir, makeExecutingExpeditionEvents({ systemId: "gov-test", missionId, expeditionId }))
 
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()
     const result = await resolveGovernanceContext(tmpDir)
@@ -288,9 +107,9 @@ async function testExecuting() {
 // Fixture: broken decision log surfaces as warning divergence
 // ------------------------------------------------------------
 async function testBrokenDecisionLogWarning() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-gov-resolver-decision-"))
+  const tmpDir = await makeTempDir("synth-gov-resolver-decision-")
   try {
-    await writeManifest(tmpDir)
+    await makeManifest(tmpDir)
     await writeBrokenDecisionLog(tmpDir)
 
     const { resolveGovernanceContext, isGovernanceResolutionFailure } = await loadResolver()

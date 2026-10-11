@@ -7,10 +7,7 @@
 
 import fs from "fs/promises"
 import path from "path"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 const ROOT = process.cwd()
 const CHARTER = path.join(ROOT, "docs", "expeditions", "EXP-REVIEW-002.md")

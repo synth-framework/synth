@@ -7,6 +7,7 @@
 
 import { spawnSync } from "child_process"
 import path from "path"
+import { assert } from "./helpers/assert.js"
 
 const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
 
@@ -22,10 +23,6 @@ function runInstaller(args = [], env = {}) {
     stderr: result.stderr || "",
     status: result.status,
   }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testDryRunPrintsDistributionProfile() {

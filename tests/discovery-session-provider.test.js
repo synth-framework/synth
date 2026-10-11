@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // DISCOVERY SESSION PROVIDER TESTS
 // ============================================================
@@ -23,7 +24,7 @@ test("createDefaultDiscoverySessionProvider returns a provider with id and versi
 })
 
 test("discovering a directory with package.json and README.md produces a populated ProjectModel", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "discovery-provider-"))
+  const tmpDir = await makeTempDir("discovery-provider-")
   await fs.writeFile(
     path.join(tmpDir, "package.json"),
     JSON.stringify({ name: "test-project" }),
@@ -52,7 +53,7 @@ test("discovering a directory with package.json and README.md produces a populat
 })
 
 test("discovering an empty directory produces fileCount === 0 and repositoryType empty via analyzer", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "discovery-empty-"))
+  const tmpDir = await makeTempDir("discovery-empty-")
 
   try {
     const analysis = await analyzeRepository(tmpDir)
@@ -64,7 +65,7 @@ test("discovering an empty directory produces fileCount === 0 and repositoryType
 })
 
 test("default provider is read-only and leaves directory stat unchanged", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "discovery-readonly-"))
+  const tmpDir = await makeTempDir("discovery-readonly-")
   await fs.writeFile(
     path.join(tmpDir, "package.json"),
     JSON.stringify({ name: "test-project" }),

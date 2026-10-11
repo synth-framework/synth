@@ -8,10 +8,7 @@
 // ============================================================
 
 import { extractIntent } from "../dist/first-contact/extract/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function testExtractsSpaceMissionTracker() {
   const input = "Let's build a space mission tracker."

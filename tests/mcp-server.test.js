@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH MCP Server Tests (EXP-DIST-003)
 // ============================================================
@@ -10,14 +11,11 @@ import { spawn } from "child_process"
 import path from "path"
 import fs from "fs/promises"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const SERVER_PATH = path.resolve(PROJECT_ROOT, "dist", "distribution", "mcp-server.js")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function readModel() {
   const content = await fs.readFile(MODEL_PATH, "utf-8")
@@ -146,7 +144,7 @@ async function testToolsList() {
 }
 
 async function testReadOnlyToolCall() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-mcp-"))
+  const tmpDir = await makeTempDir("synth-mcp-")
   const server = startServer(tmpDir)
   try {
     await server.send("initialize", {

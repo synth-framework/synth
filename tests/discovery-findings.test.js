@@ -5,51 +5,9 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { projectFindings } from "../dist/discovery/index.js"
+import { makeEvidenceGraph } from "./helpers/discovery-fixtures.js"
 
-function makeGraph(claimAssertions) {
-  const claims = []
-  const observations = []
-  const edges = []
-
-  for (let i = 0; i < claimAssertions.length; i++) {
-    const assertion = claimAssertions[i]
-    const obsId = `obs-${i}`
-    observations.push({
-      id: obsId,
-      adapterId: "discovery:filesystem",
-      adapterVersion: "1.0.0",
-      source: { type: "filesystem", path: "/project" },
-      fact: assertion,
-      timestamp: 1,
-    })
-    const claimId = `claim-${String(i).padStart(6, "0")}`
-    claims.push({
-      id: claimId,
-      assertion,
-      observationIds: [obsId],
-      adapterId: "discovery:filesystem",
-      adapterVersion: "1.0.0",
-      source: { type: "filesystem", path: "/project" },
-      confidence: { value: 1, label: "certain", kind: "deterministic", reason: "test" },
-    })
-    edges.push({ from: obsId, to: claimId, kind: "supports" })
-  }
-
-  const observationIndex = {}
-  const claimIndex = {}
-  for (let i = 0; i < observations.length; i++) observationIndex[observations[i].id] = i
-  for (let i = 0; i < claims.length; i++) claimIndex[claims[i].id] = i
-
-  return {
-    schema: "synth-discovery-evidence-v1",
-    observations,
-    claims,
-    edges,
-    observationIndex,
-    claimIndex,
-    sourceIndex: { "filesystem:/project": 0 },
-  }
-}
+const makeGraph = (claimAssertions) => makeEvidenceGraph(claimAssertions, { sourcePath: "/project" })
 
 test("findings projection returns schema and empty items for no signals", () => {
   const graph = makeGraph([])

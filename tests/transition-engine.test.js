@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Transition Engine Tests
 // ============================================================
@@ -11,59 +12,24 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { seedEventLog } from "./helpers/seed-event-log.js"
+import {
+  assert,
+  loadResolver,
+  writeEventLog,
+  writeManifest,
+  genesisEvent,
+  missionCreatedEvent,
+  missionApprovedEvent,
+  missionCompletedEvent,
+  expeditionCreatedEvent,
+  expeditionStartedEvent,
+  workItemCreatedEvent,
+} from "./helpers/state-fixtures.js"
 
-const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
 const TRANSITION_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "transition-engine.js")
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function loadTransitionEngine() {
   return await import(TRANSITION_MODULE_PATH)
-}
-
-async function loadResolver() {
-  return await import(RESOLVER_MODULE_PATH)
-}
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-}
-
-async function writeManifest(dir, projectName = "Transition Engine Test") {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName,
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "status", description: "Report state" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))
 }
 
 async function writeDraft(dir, draft) {
@@ -87,7 +53,7 @@ async function transition(dir) {
 // Fixture: uninitialized -> InitializeProject
 // ------------------------------------------------------------
 async function testUninitialized() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-uninit-"))
+  const tmpDir = await makeTempDir("synth-transition-uninit-")
   try {
     const { transition: t } = await transition(tmpDir)
     assert(t.kind === "InitializeProject", `expected InitializeProject, got ${t.kind}`)
@@ -101,7 +67,7 @@ async function testUninitialized() {
 // Fixture: planning + no draft -> CreateMission
 // ------------------------------------------------------------
 async function testPlanningNoDraft() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-nodraft-"))
+  const tmpDir = await makeTempDir("synth-transition-nodraft-")
   try {
     await writeManifest(tmpDir)
     const { transition: t } = await transition(tmpDir)
@@ -116,7 +82,7 @@ async function testPlanningNoDraft() {
 // Fixture: planning + draft below threshold -> AddMissionEvidence
 // ------------------------------------------------------------
 async function testPlanningDraftBelowThreshold() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-lowconf-"))
+  const tmpDir = await makeTempDir("synth-transition-lowconf-")
   try {
     await writeManifest(tmpDir)
     await writeDraft(tmpDir, {
@@ -140,7 +106,7 @@ async function testPlanningDraftBelowThreshold() {
 // Fixture: planning + draft ready -> ApproveMission
 // ------------------------------------------------------------
 async function testPlanningDraftReady() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-ready-"))
+  const tmpDir = await makeTempDir("synth-transition-ready-")
   try {
     await writeManifest(tmpDir)
     await writeDraft(tmpDir, {
@@ -162,50 +128,15 @@ async function testPlanningDraftReady() {
 // Fixture: approved + no expedition -> CreateExpedition
 // ------------------------------------------------------------
 async function testApprovedNoExpedition() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-approved-"))
+  const tmpDir = await makeTempDir("synth-transition-approved-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-TRANS-1"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Approved", systemId: "trans-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Approved Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
+      genesisEvent(now, { projectName: "Approved", systemId: "trans-test" }),
+      missionCreatedEvent(now, missionId, "Approved Mission"),
+      missionApprovedEvent(now, missionId),
     ])
     const { transition: t } = await transition(tmpDir)
     assert(t.kind === "CreateExpedition", `expected CreateExpedition, got ${t.kind}`)
@@ -220,83 +151,18 @@ async function testApprovedNoExpedition() {
 // Fixture: executing -> InspectExecution
 // ------------------------------------------------------------
 async function testExecuting() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-executing-"))
+  const tmpDir = await makeTempDir("synth-transition-executing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-TRANS-2"
     const expeditionId = "E-TRANS-2"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Executing", systemId: "trans-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Executing Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-EXP",
-        type: "EXPEDITION_CREATED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CreateExpedition",
-        actor: "system",
-        payload: {
-          expedition: {
-            id: expeditionId,
-            missionId,
-            name: "Executing Expedition",
-            goal: "Test",
-            status: "approved",
-            objectives: [],
-            discoveries: [],
-            decisions: [],
-            metadata: {},
-            createdAt: now + 3,
-            updatedAt: now + 3,
-          },
-        },
-      },
-      {
-        id: "E-START",
-        type: "EXPEDITION_STARTED",
-        timestamp: now + 4,
-        transactionId: "tx-4",
-        capability: "StartExpedition",
-        actor: "system",
-        payload: { id: expeditionId, status: "executing" },
-      },
+      genesisEvent(now, { projectName: "Executing", systemId: "trans-test" }),
+      missionCreatedEvent(now, missionId, "Executing Mission"),
+      missionApprovedEvent(now, missionId),
+      expeditionCreatedEvent(now, expeditionId, missionId, "Executing Expedition"),
+      expeditionStartedEvent(now, expeditionId),
     ])
     const { transition: t } = await transition(tmpDir)
     assert(t.kind === "InspectExecution", `expected InspectExecution, got ${t.kind}`)
@@ -310,38 +176,13 @@ async function testExecuting() {
 // Fixture: blocked work item -> DiagnoseBlocker
 // ------------------------------------------------------------
 async function testBlocked() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-blocked-"))
+  const tmpDir = await makeTempDir("synth-transition-blocked-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Blocked", systemId: "trans-test", partitions: 1 },
-      },
-      {
-        id: "E-WI",
-        type: "WORK_ITEM_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateWorkItem",
-        actor: "system",
-        payload: {
-          workItem: {
-            id: "W-BLOCKED",
-            status: "blocked",
-            dependencies: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Blocked", systemId: "trans-test" }),
+      workItemCreatedEvent(now, "W-BLOCKED", "blocked"),
     ])
     const { transition: t } = await transition(tmpDir)
     assert(t.kind === "DiagnoseBlocker", `expected DiagnoseBlocker, got ${t.kind}`)
@@ -355,59 +196,16 @@ async function testBlocked() {
 // Fixture: complete -> ArchiveMission
 // ------------------------------------------------------------
 async function testComplete() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-transition-complete-"))
+  const tmpDir = await makeTempDir("synth-transition-complete-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-TRANS-3"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Complete", systemId: "trans-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Completed Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-COMPLETE",
-        type: "MISSION_COMPLETED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CompleteMission",
-        actor: "system",
-        payload: { id: missionId, status: "completed" },
-      },
+      genesisEvent(now, { projectName: "Complete", systemId: "trans-test" }),
+      missionCreatedEvent(now, missionId, "Completed Mission"),
+      missionApprovedEvent(now, missionId),
+      missionCompletedEvent(now, missionId),
     ])
     const { transition: t } = await transition(tmpDir)
     assert(t.kind === "ArchiveMission", `expected ArchiveMission, got ${t.kind}`)

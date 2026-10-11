@@ -7,10 +7,8 @@
 // ============================================================
 
 import { extractConversationPattern, promoteConversationPattern } from "../dist/first-contact/patterns.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
+import { evidenceTurns } from "./helpers/first-contact-fixtures.js"
 
 function buildEvidence(overrides = {}) {
   return {
@@ -25,32 +23,7 @@ function buildEvidence(overrides = {}) {
       notices: [],
     },
     agentInitialModel: { understoodAs: "unknown repository", confidence: 0.1, unknowns: ["purpose"] },
-    evidenceConsumed: [
-      {
-        turn: 1,
-        command: ["status"],
-        intent: "Determine state.",
-        agentReasoningState: { understoodAs: "unknown repository", confidence: 0.1, unknowns: ["purpose"] },
-        inputs: {},
-        outputs: { status: "ok", phase: "initialized" },
-        stateBefore: {},
-        stateAfter: {},
-        stateChange: {},
-        evidenceGenerated: [],
-      },
-      {
-        turn: 2,
-        command: ["explain"],
-        intent: "Read briefing.",
-        agentReasoningState: { understoodAs: "governed project", confidence: 0.6, unknowns: [] },
-        inputs: {},
-        outputs: { explanation: "..." },
-        stateBefore: {},
-        stateAfter: {},
-        stateChange: {},
-        evidenceGenerated: [],
-      },
-    ],
+    evidenceConsumed: evidenceTurns(),
     interpretationChanges: [
       {
         turn: 2,

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH v2 — Full Test Suite
 // ============================================================
@@ -37,38 +38,10 @@ import { rebuildState as replayRebuildState } from "../dist/runtime/replay.js"
 import { CheckpointStore } from "../dist/infra/checkpoint-store.js"
 import { PartitionStore } from "../dist/infra/event-store.js"
 
-// ---- Test harness ----
-const TESTS = []
-let passed = 0, failed = 0, skipped = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-function skip(name, _fn) { TESTS.push({ name, fn: null }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  SYNTH v2 — Full Test Suite")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    if (!t.fn) { console.log(`  [SKIP] ${t.name}`); skipped++; continue }
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed, ${skipped} skipped`)
-  console.log(`  Total: ${TESTS.length}`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test, skip } = suite
 
 // ---- Helpers ----
 const DATA_DIR = path.join(process.cwd(), "data-test")
@@ -738,7 +711,7 @@ test("P0: event store guard blocks direct writes after seal", async () => {
 })
 
 test("P0: checkpoint store blocks direct writes without authorization", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-checkpoints-"))
+  const tmpDir = await makeTempDir("synth-test-checkpoints-")
   const store = new CheckpointStore(path.join(tmpDir, "checkpoints.json"))
   await store.initialize()
   try {
@@ -751,7 +724,7 @@ test("P0: checkpoint store blocks direct writes without authorization", async ()
 })
 
 test("P0: partition store blocks direct writes without authorization", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-test-partitions-"))
+  const tmpDir = await makeTempDir("synth-test-partitions-")
   const store = new PartitionStore(1, tmpDir)
   await store.initialize()
   try {
@@ -1835,4 +1808,4 @@ test("SDK Event/State Ownership: CLI/workspace do not construct canonical artifa
 // RUN ALL TESTS
 // ============================================================
 
-run().catch((err) => { console.error("Test runner error:", err); process.exit(1) })
+suite.run("synth").catch((err) => { console.error("Test runner error:", err); process.exit(1) })

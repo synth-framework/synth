@@ -8,19 +8,9 @@ import { createFilesystemAdapter } from "../dist/adapters/filesystem/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 import fs from "fs"
 import path from "path"
+import { cleanFixtures, writeFixture, observeStagedFile } from "./helpers/adapter-fixtures.js"
 
 const FIXTURES_DIR = path.join(process.cwd(), "tests", "filesystem-adapter-fixtures")
-
-function cleanFixtures() {
-  fs.rmSync(FIXTURES_DIR, { recursive: true, force: true })
-  fs.mkdirSync(FIXTURES_DIR, { recursive: true })
-}
-
-function writeFixture(relativePath, content) {
-  const fullPath = path.join(FIXTURES_DIR, relativePath)
-  fs.mkdirSync(path.dirname(fullPath), { recursive: true })
-  fs.writeFileSync(fullPath, content)
-}
 
 test("AdapterRegistry lists filesystem adapter", () => {
   const registry = createAdapterRegistry()
@@ -35,7 +25,7 @@ test("FilesystemAdapter starts in discovered state", () => {
 })
 
 test("FilesystemAdapter transitions through lifecycle", async () => {
-  cleanFixtures()
+  cleanFixtures(FIXTURES_DIR)
   const adapter = createFilesystemAdapter()
   await adapter.configure({ rootDirectory: FIXTURES_DIR })
   assert.strictEqual(adapter.state, "configured")
@@ -48,13 +38,14 @@ test("FilesystemAdapter transitions through lifecycle", async () => {
 })
 
 test("FilesystemAdapter emits evidence observation for JSON config", async () => {
-  cleanFixtures()
-  writeFixture("config/app.json", '{"port": 3000, "env": "production"}')
-
   const adapter = createFilesystemAdapter()
-  await adapter.configure({ rootDirectory: FIXTURES_DIR })
-  await adapter.enable()
-  const result = await adapter.observe()
+  const result = await observeStagedFile(
+    FIXTURES_DIR,
+    "config/app.json",
+    '{"port": 3000, "env": "production"}',
+    adapter,
+    { rootDirectory: FIXTURES_DIR },
+  )
   assert.strictEqual(result.errors.length, 0)
   assert.strictEqual(result.observations.length, 1)
 
@@ -68,9 +59,9 @@ test("FilesystemAdapter emits evidence observation for JSON config", async () =>
 })
 
 test("FilesystemAdapter scans nested directories", async () => {
-  cleanFixtures()
-  writeFixture("schemas/user.sql", "CREATE TABLE users (id UUID PRIMARY KEY);")
-  writeFixture("assets/logo.png", "fake-binary")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "schemas/user.sql", "CREATE TABLE users (id UUID PRIMARY KEY);")
+  writeFixture(FIXTURES_DIR, "assets/logo.png", "fake-binary")
 
   const adapter = createFilesystemAdapter()
   await adapter.configure({ rootDirectory: FIXTURES_DIR })
@@ -90,9 +81,9 @@ test("FilesystemAdapter scans nested directories", async () => {
 })
 
 test("FilesystemAdapter scans explicit file list", async () => {
-  cleanFixtures()
-  writeFixture("a.txt", "Alpha")
-  writeFixture("b.txt", "Beta")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "a.txt", "Alpha")
+  writeFixture(FIXTURES_DIR, "b.txt", "Beta")
 
   const adapter = createFilesystemAdapter()
   await adapter.configure({ files: [path.join(FIXTURES_DIR, "a.txt")] })
@@ -103,9 +94,9 @@ test("FilesystemAdapter scans explicit file list", async () => {
 })
 
 test("FilesystemAdapter excludes hidden files by default", async () => {
-  cleanFixtures()
-  writeFixture("visible.txt", "visible")
-  writeFixture(".hidden.txt", "hidden")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "visible.txt", "visible")
+  writeFixture(FIXTURES_DIR, ".hidden.txt", "hidden")
 
   const adapter = createFilesystemAdapter()
   await adapter.configure({ rootDirectory: FIXTURES_DIR })
@@ -116,9 +107,9 @@ test("FilesystemAdapter excludes hidden files by default", async () => {
 })
 
 test("FilesystemAdapter includes hidden files when configured", async () => {
-  cleanFixtures()
-  writeFixture("visible.txt", "visible")
-  writeFixture(".hidden.txt", "hidden")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "visible.txt", "visible")
+  writeFixture(FIXTURES_DIR, ".hidden.txt", "hidden")
 
   const adapter = createFilesystemAdapter()
   await adapter.configure({ rootDirectory: FIXTURES_DIR, includeHidden: true })

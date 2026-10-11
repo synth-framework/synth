@@ -10,10 +10,7 @@
 
 import { extractIntent } from "../dist/first-contact/extract/index.js"
 import { clarify, DefaultClarificationStrategy } from "../dist/first-contact/clarify/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function testDetectsAmbiguitiesFromLowConfidence() {
   const artifact = extractIntent("Let's build a space mission tracker.")

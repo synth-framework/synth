@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // GOVERNANCE PROFILER TESTS (EXP-GOVERN-001 → EXP-GOVERN-004)
 // ============================================================
@@ -20,7 +21,7 @@ import { computeFingerprint } from "../scripts/governance/fingerprint.js"
 import { mapFileToModule } from "../scripts/governance/module-mapper.js"
 
 async function withTempPackage(testAll, fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-profiler-"))
+  const tmpDir = await makeTempDir("synth-govern-profiler-")
   const pkgPath = path.join(tmpDir, "package.json")
   await fs.writeFile(
     pkgPath,
@@ -35,7 +36,7 @@ async function withTempPackage(testAll, fn) {
 }
 
 async function withTempGovernRoot(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-root-"))
+  const tmpDir = await makeTempDir("synth-govern-root-")
   const pkgPath = path.join(tmpDir, "package.json")
   await fs.writeFile(
     pkgPath,
@@ -191,6 +192,16 @@ async function testModuleMapperClassifiesPaths() {
   console.log("[PASS] module mapper classifies paths into canonical modules")
 }
 
+/** Plan test:replay under changed files (shared scheduler arrange). */
+async function planCheck(root, { changedFiles = [], full = false } = {}) {
+  const store = new ProofStore({ cacheDir: path.join(root, "cache") })
+  const check = resolveCheck("test:replay")
+  await seedProof(store, root, check)
+  const engine = new IncrementalEngine({ store, root })
+  const scheduler = new Scheduler({ changedFiles, engine, root, ...(full ? { full: true } : {}) })
+  return scheduler.plan([check.id])
+}
+
 async function testSchedulerSkipsUnchangedChecksWithCacheHit() {
   await withTempGovernRoot(async (root) => {
     const store = new ProofStore({ cacheDir: path.join(root, "cache") })
@@ -235,13 +246,7 @@ async function testSchedulerInvalidatesOnSourceChange() {
 
 async function testSchedulerDoesNotInvalidateRuntimeOnDocsChange() {
   await withTempGovernRoot(async (root) => {
-    const store = new ProofStore({ cacheDir: path.join(root, "cache") })
-    const check = resolveCheck("test:replay")
-    await seedProof(store, root, check)
-
-    const engine = new IncrementalEngine({ store, root })
-    const scheduler = new Scheduler({ changedFiles: ["docs/architecture.md"], engine, root })
-    const plan = await scheduler.plan([check.id])
+    const plan = await planCheck(root, { changedFiles: ["docs/architecture.md"] })
 
     assert.strictEqual(plan[0].action, "skip")
     assert.strictEqual(plan[0].reason, "cache-hit")
@@ -251,13 +256,7 @@ async function testSchedulerDoesNotInvalidateRuntimeOnDocsChange() {
 
 async function testSchedulerFullFlagRunsEverything() {
   await withTempGovernRoot(async (root) => {
-    const store = new ProofStore({ cacheDir: path.join(root, "cache") })
-    const check = resolveCheck("test:replay")
-    await seedProof(store, root, check)
-
-    const engine = new IncrementalEngine({ store, root })
-    const scheduler = new Scheduler({ changedFiles: ["docs/architecture.md"], engine, root, full: true })
-    const plan = await scheduler.plan([check.id])
+    const plan = await planCheck(root, { changedFiles: ["docs/architecture.md"], full: true })
 
     assert.strictEqual(plan[0].action, "run")
     assert.strictEqual(plan[0].reason, "full-run")

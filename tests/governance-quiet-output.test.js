@@ -9,35 +9,12 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd, env = {}) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-    env: { ...process.env, ...env },
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { setupBasicProject } from "./helpers/mission-lifecycle.js"
+import { assert } from "./helpers/assert.js"
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-quiet-output-"))
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  if (bootstrapResult.status !== 0) {
-    throw new Error(`bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  }
-  return tmpDir
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
+  return setupBasicProject("synth-quiet-output-")
 }
 
 async function main() {

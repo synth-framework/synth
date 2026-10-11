@@ -11,26 +11,7 @@ import {
   createNodeObservationContext,
   getNodeEnvironmentMetadata,
 } from "../dist/environment/index.js"
-
-function makeInMemoryContext(files = {}, dirs = {}, env = {}, cwd = "/test") {
-  const fileMap = { ...files }
-  const directoryMap = { ...dirs }
-  function resolve(path) {
-    if (path.startsWith("/")) return path
-    return `${cwd}/${path}`
-  }
-  return {
-    readFile: async (path) => fileMap[resolve(path)],
-    listDirectory: async (path) => directoryMap[resolve(path)] || [],
-    pathExists: async (path) => resolve(path) in fileMap || resolve(path) in directoryMap,
-    readEnv: (name) => env[name],
-    execTool: async (command, args) => {
-      const key = `${command} ${args.join(" ")}`
-      return env[key]
-    },
-    cwd,
-  }
-}
+import { makeInMemoryContext } from "./helpers/in-memory-context.js"
 
 test("createDiscoveryOrchestrator exposes a discover method", () => {
   const orchestrator = createDiscoveryOrchestrator()

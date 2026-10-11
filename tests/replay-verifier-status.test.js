@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOV-024 — Replay Verifier Status Enum
 // ============================================================
@@ -13,6 +14,7 @@ import path from "node:path"
 import { EventStore } from "../dist/infra/event-store.js"
 import { InMemoryStateStore } from "../dist/infra/state-store.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
+import { missionWithExecutingExpeditionEvents } from "./helpers/kernel-event-fixtures.js"
 
 function makeEvent(type, payload) {
   return {
@@ -27,10 +29,16 @@ function makeEvent(type, payload) {
 }
 
 function writeTmpLog(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "replay-verifier-status-"))
+  const dir = makeTempDirSync("replay-verifier-status-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return logPath
+}
+
+async function verifyEvents(events) {
+  const logPath = writeTmpLog(events)
+  const verifier = createReplayVerifier(new EventStore(logPath), new InMemoryStateStore())
+  return verifier.verify()
 }
 
 test("committed expedition status does not produce structural divergence", async () => {
@@ -65,9 +73,7 @@ test("committed expedition status does not produce structural divergence", async
     }),
   ]
 
-  const logPath = writeTmpLog(events)
-  const verifier = createReplayVerifier(new EventStore(logPath), new InMemoryStateStore())
-  const report = await verifier.verify()
+  const report = await verifyEvents(events)
 
   const structuralDivergences = report.divergences.filter((d) =>
     d.key === "expedition.e1.status" && d.replayed === "valid_status_required"
@@ -77,34 +83,7 @@ test("committed expedition status does not produce structural divergence", async
 
 test("historical archive event with payload.status cancelled replays as cancelled", async () => {
   const events = [
-    makeEvent("MISSION_CREATED", {
-      mission: {
-        id: "m1",
-        name: "Mission 1",
-        purpose: "purpose",
-        status: "active",
-        expeditions: [],
-        metadata: {},
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    }),
-    makeEvent("EXPEDITION_CREATED", {
-      expedition: {
-        id: "e1",
-        missionId: "m1",
-        name: "Expedition 1",
-        goal: "goal",
-        status: "executing",
-        objectives: [],
-        discoveries: [],
-        decisions: [],
-        dependsOn: [],
-        metadata: {},
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    }),
+    ...missionWithExecutingExpeditionEvents(),
     makeEvent("EXPEDITION_ARCHIVED", {
       expeditionId: "e1",
       id: "e1",
@@ -114,9 +93,7 @@ test("historical archive event with payload.status cancelled replays as cancelle
     }),
   ]
 
-  const logPath = writeTmpLog(events)
-  const verifier = createReplayVerifier(new EventStore(logPath), new InMemoryStateStore())
-  const report = await verifier.verify()
+  const report = await verifyEvents(events)
 
   assert.strictEqual(report.consistent, true, "replay should be consistent for legacy cancelled archive events")
   assert.strictEqual(
@@ -142,9 +119,7 @@ test("projected mission status does not produce structural divergence", async ()
     }),
   ]
 
-  const logPath = writeTmpLog(events)
-  const verifier = createReplayVerifier(new EventStore(logPath), new InMemoryStateStore())
-  const report = await verifier.verify()
+  const report = await verifyEvents(events)
 
   const structuralDivergences = report.divergences.filter((d) =>
     d.key === "mission.m1.status" && d.replayed === "valid_status_required"

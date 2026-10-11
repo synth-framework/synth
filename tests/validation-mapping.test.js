@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Capability ↔ Test Mapping Tests
 // ============================================================
@@ -9,6 +10,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const VALIDATOR_PATH = path.resolve(process.cwd(), "scripts", "verify-capability-validation-map.js")
 const MAP_PATH = path.resolve(process.cwd(), "docs", "reference", "capability-validation-map.json")
@@ -31,10 +33,6 @@ async function runValidatorWithMap(mapPath) {
     encoding: "utf-8",
     env: { ...process.env, SYNTH_CAPABILITY_MAP_PATH: mapPath },
   })
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testValidMapPasses() {
@@ -104,7 +102,7 @@ async function testProtectedAssetsHaveStrongValidation() {
 }
 
 async function testInvalidSchemaFails() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-validation-map-"))
+  const tmpDir = await makeTempDir("synth-validation-map-")
   const invalidMapPath = path.join(tmpDir, "invalid-map.json")
 
   const map = await loadJson(MAP_PATH)
@@ -121,7 +119,7 @@ async function testInvalidSchemaFails() {
 }
 
 async function testMissingScriptsFail() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-validation-map-"))
+  const tmpDir = await makeTempDir("synth-validation-map-")
   const invalidMapPath = path.join(tmpDir, "invalid-map.json")
 
   const map = await loadJson(MAP_PATH)
@@ -142,7 +140,7 @@ async function testMissingScriptsFail() {
 }
 
 async function testEmptyCapabilityValidationFails() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-validation-map-"))
+  const tmpDir = await makeTempDir("synth-validation-map-")
   const invalidMapPath = path.join(tmpDir, "invalid-map.json")
 
   const map = await loadJson(MAP_PATH)

@@ -1,0 +1,80 @@
+{
+  "schema": "synth-proof-v1",
+  "generatedAt": "2026-08-26T06:14:08.898Z",
+  "trust": {
+    "level": "ATL-7",
+    "target": "ATL-7",
+    "assessmentDate": "2026-08-26T06:14:08.898Z"
+  },
+  "baseline": {
+    "constitutionVersion": "1.0",
+    "kernelVersion": "1.0",
+    "languageVersion": "1.0",
+    "proofSchema": "synth-proof-v1"
+  },
+  "repository": {
+    "commit": "25c53cfe2265bfaf13763bec7022610c7f8e40f8",
+    "sourceHash": "git:985983f54509871e5cadb31996cd7cb58b2a26fa"
+  },
+  "build": {
+    "distHash": "manifest:11959565cdbb8b3aa8838f85745378b3ca77423ebf9390b46fd160fa69bc11f7"
+  },
+  "runtime": {
+    "eventCount": 262,
+    "replayHash": "1239653762",
+    "projections": {
+      "workItems": 0,
+      "plans": 0,
+      "milestones": 0,
+      "projects": 0,
+      "missions": 2,
+      "expeditions": 44,
+      "objectives": 0,
+      "discoveries": 0,
+      "decisions": 0
+    }
+  },
+  "proofs": {
+    "p1Structural": {
+      "passed": true,
+      "detail": "structural audit: clean"
+    },
+    "p2Replay": {
+      "passed": true,
+      "chainValid": true,
+      "replayHash": "1239653762",
+      "operationalHash": "1239653762",
+      "eventCount": 262,
+      "detail": "Operational state is bit-for-bit identical to replayed state."
+    },
+    "p2Determinism": {
+      "passed": true,
+      "detail": "determinism: clean"
+    },
+    "p6GraphIntegrity": {
+      "passed": true,
+      "detail": "graph integrity: clean"
+    },
+    "p4Adversarial": {
+      "passed": true,
+      "detail": "adversarial: clean"
+    }
+  },
+  "reproduction": {
+    "command": "npm run govern",
+    "expectedSourceHash": "git:985983f54509871e5cadb31996cd7cb58b2a26fa",
+    "expectedDistHash": "manifest:11959565cdbb8b3aa8838f85745378b3ca77423ebf9390b46fd160fa69bc11f7",
+    "expectedReplayHash": "1239653762",
+    "note": "Run from a clean checkout at the referenced commit. Timestamps and file paths are expected to differ; hashes must match."
+  },
+  "overall": {
+    "passed": true,
+    "summary": [
+      "P1 Structural: PASS",
+      "P2 Replay: PASS",
+      "P2 Determinism: PASS",
+      "P6 Graph Integrity: PASS",
+      "P4 Adversarial: PASS"
+    ]
+  }
+}

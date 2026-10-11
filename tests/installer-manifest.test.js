@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Synth Installer Manifest Tests
 // ============================================================
@@ -9,17 +10,14 @@ import http from "http"
 import os from "os"
 import path from "path"
 import { spawn, spawnSync } from "child_process"
+import { assert } from "./helpers/assert.js"
 
 const GENERATOR_PATH = path.resolve(process.cwd(), "scripts", "generate-installer-manifest.js")
 const VALIDATOR_PATH = path.resolve(process.cwd(), "scripts", "verify-installer-manifest.js")
 const PACKAGE_JSON_PATH = path.resolve(process.cwd(), "package.json")
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-installer-manifest-"))
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
+  return makeTempDirSync("synth-installer-manifest-")
 }
 
 function runNode(scriptPath, args = [], env = {}) {

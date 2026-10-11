@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Event-Log Lineage Guard — CLI Integration Tests (expedition e617ccd0ac6d60b8)
 // ============================================================
@@ -18,14 +19,10 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { seedEventLog } from "./helpers/seed-event-log.js"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const EID = "e1a2b3c" // hex expedition short-id embedded in branch names
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], { cwd, encoding: "utf-8", timeout: 60000 })
-  return { stdout: result.stdout || "", stderr: result.stderr || "", status: result.status }
-}
 function git(args, cwd) { return execFileSync("git", args, { cwd, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }) }
 function assert(cond, msg) { if (!cond) throw new Error(`ASSERTION FAILED: ${msg}`) }
 
@@ -35,7 +32,7 @@ function branchName(suffix = "") {
 function eventLine(n) { return JSON.stringify({ type: "task", n }) }
 
 async function setupProject() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-lineage-guard-"))
+  const dir = await makeTempDir("synth-lineage-guard-")
   await fs.writeFile(path.join(dir, "package.json"), JSON.stringify({ name: "t", version: "1.0.0" }), "utf-8")
   const b = runSynth(["bootstrap", dir, "--approve"], process.cwd())
   assert(b.status === 0, `bootstrap must exit 0:\n${b.stderr}`)

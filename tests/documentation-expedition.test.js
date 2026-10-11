@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // DOCUMENTATION EXPEDITION TESTS
 // ============================================================
@@ -151,7 +152,7 @@ test("projectToAiContext generates a concise AI context document", () => {
 })
 
 test("runDocumentationExpedition writes all seven target documents", async () => {
-  const outDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-"))
+  const outDir = await makeTempDir("synth-docs-")
   const sources = [
     extractMarkdownKnowledge("intro.md", "# Synth\n\nSynth is a deterministic execution system."),
     extractMarkdownKnowledge("arch.md", "# Architecture\n\n- ExecutionGate\n- EventStore"),
@@ -173,8 +174,8 @@ test("runDocumentationExpedition writes all seven target documents", async () =>
 })
 
 test("Documentation Expedition output is deterministic", async () => {
-  const outDir1 = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-1-"))
-  const outDir2 = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-2-"))
+  const outDir1 = await makeTempDir("synth-docs-1-")
+  const outDir2 = await makeTempDir("synth-docs-2-")
   const sources = [extractMarkdownKnowledge("intro.md", "# Synth\n\nSynth is deterministic.")]
 
   const deterministicOptions = { computedAt: "2026-01-01T00:00:00.000Z" }
@@ -193,7 +194,7 @@ test("Documentation Expedition output is deterministic", async () => {
 })
 
 test("projections embed a deterministic sourceStateHash", async () => {
-  const outDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-hash-"))
+  const outDir = await makeTempDir("synth-docs-hash-")
   const sources = [
     extractMarkdownKnowledge("intro.md", "# Synth\n\nSynth is deterministic."),
   ]

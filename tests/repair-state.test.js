@@ -9,10 +9,7 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { runSynth, parseJson, withTempDir } from "./helpers/cli-harness.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function readJson(dir, ...segments) {
   const text = await fs.readFile(path.join(dir, ...segments), "utf-8")

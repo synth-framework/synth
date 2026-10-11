@@ -16,8 +16,73 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { seedEventLog } from "./seed-event-log.js"
+import { parseJson } from "./assert.js"
+import { makeTempDir } from "./workspace.js"
+
+export { parseJson }
 
 export const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
+
+/** Make a temp dir and run `synth init` with args; returns { tmpDir, initResult }. */
+export async function initProject(prefix, args) {
+  const tmpDir = await makeTempDir(prefix)
+  const initResult = runSynth(["init", ...args], tmpDir)
+  return { tmpDir, initResult }
+}
+
+/**
+ * Read and parse the canonical event log for a project directory.
+ * Supports both storage layouts: the partitioned `event-stream` directory
+ * (modern) and the legacy single-file `event-log.jsonl`. Replaces the
+ * duplicated `readEventLog` helpers found across the suite.
+ */
+export async function readEventLog(projectDir) {
+  const events = []
+
+  const streamDir = path.join(projectDir, ".synth", "data", "event-stream")
+  const walk = async (dir) => {
+    let entries
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      const p = path.join(dir, entry.name)
+      if (entry.isDirectory()) await walk(p)
+      else if (entry.name.endsWith(".jsonl")) {
+        const raw = await fs.readFile(p, "utf-8")
+        for (const line of raw.split("\n")) {
+          if (!line.trim()) continue
+          try {
+            events.push(JSON.parse(line))
+          } catch {
+            /* ignore malformed lines */
+          }
+        }
+      }
+    }
+  }
+  await walk(streamDir)
+
+  const legacyPath = path.join(projectDir, ".synth", "data", "event-log.jsonl")
+  try {
+    const raw = await fs.readFile(legacyPath, "utf-8")
+    for (const line of raw.split("\n")) {
+      if (!line.trim()) continue
+      try {
+        events.push(JSON.parse(line))
+      } catch {
+        /* ignore malformed lines */
+      }
+    }
+  } catch {
+    /* legacy file absent */
+  }
+
+  events.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
+  return events
+}
 const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 
 /** Verify the CLI binary exists. */
@@ -38,20 +103,15 @@ export function runSynth(args, cwd = process.cwd(), options = {}) {
     env: options.env,
   })
   return {
+    ...result,
     stdout: result.stdout || "",
     stderr: result.stderr || "",
     status: result.status,
   }
 }
 
-/** Parse CLI JSON output, throwing a descriptive error on failure. */
-export function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
+// Re-export the canonical parseJson from helpers/assert.js to keep a single
+// source of truth (dedupe-plan.md, finding F6).
 
 /** Create a temporary directory, run an async function, then clean up. */
 export async function withTempDir(prefix, fn) {

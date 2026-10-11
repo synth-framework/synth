@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Stale State Tests
 // ============================================================
@@ -14,59 +15,21 @@ import { seedEventLog } from "./helpers/seed-event-log.js"
 import { spawnSync } from "child_process"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import {
+  assert,
+  loadResolver,
+  writeEventLog,
+  writeManifest,
+  genesisEvent,
+  missionCreatedEvent,
+  missionApprovedEvent,
+  missionCompletedEvent,
+  missionArchivedEvent,
+} from "./helpers/state-fixtures.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
 const SNAPSHOT_STORE_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "snapshot-store.js")
 const SNAPSHOT_INTEGRITY_MODULE_PATH = path.resolve(process.cwd(), "dist", "mission-studio", "snapshot-integrity.js")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function loadResolver() {
-  return await import(RESOLVER_MODULE_PATH)
-}
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-  return events
-}
-
-async function writeManifest(dir, projectName = "Stale State Test") {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName,
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "status", description: "Report state" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2))
-}
 
 async function writeCanonicalState(dir, state) {
   const dataDir = path.join(dir, ".synth", "data")
@@ -83,26 +46,7 @@ function baseConfidence() {
   }
 }
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
 
 function emptyEvidence() {
   return {
@@ -197,41 +141,14 @@ function baseState() {
 // Fixture: persisted state lags event log (warning)
 // ------------------------------------------------------------
 async function testStateLagsEventsWarning() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-lag-"))
+  const tmpDir = await makeTempDir("synth-stale-lag-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-STALE-LAG"
     const events = await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Lag Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Lag Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Lag Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Lag Mission"),
     ])
 
     // Persisted state only knows about genesis.
@@ -254,41 +171,14 @@ async function testStateLagsEventsWarning() {
 // Fixture: persisted state hash differs from replay (failure)
 // ------------------------------------------------------------
 async function testReplayedStateMismatchFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-mismatch-"))
+  const tmpDir = await makeTempDir("synth-stale-mismatch-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-STALE-MISMATCH"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Mismatch Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Mismatch Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Mismatch Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Mismatch Mission"),
     ])
 
     await writeCanonicalState(tmpDir, { ...baseState(), stateHash: "stale-hash", lastEventOffset: 2 })
@@ -307,20 +197,12 @@ async function testReplayedStateMismatchFailure() {
 // Fixture: persisted state references missing events (failure)
 // ------------------------------------------------------------
 async function testMissingEventsFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-missing-"))
+  const tmpDir = await makeTempDir("synth-stale-missing-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Missing Test", systemId: "stale-test", partitions: 1 },
-      },
+      genesisEvent(now, { projectName: "Missing Test", systemId: "stale-test" }),
     ])
 
     // Persisted state claims it was rebuilt from 5 events but only 1 exists.
@@ -340,20 +222,12 @@ async function testMissingEventsFailure() {
 // Fixture: divergent replay (failure)
 // ------------------------------------------------------------
 async function testDivergentReplayFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-divergent-"))
+  const tmpDir = await makeTempDir("synth-stale-divergent-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Divergent Test", systemId: "stale-test", partitions: 1 },
-      },
+      genesisEvent(now, { projectName: "Divergent Test", systemId: "stale-test" }),
     ])
 
     // Persisted state contains a mission that never appeared in the event log.
@@ -387,41 +261,14 @@ async function testDivergentReplayFailure() {
 // Fixture: snapshot conflicts with replayed state (failure)
 // ------------------------------------------------------------
 async function testSnapshotStateConflictFailure() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-snapshot-"))
+  const tmpDir = await makeTempDir("synth-stale-snapshot-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-SNAPSHOT"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Snapshot Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Snapshot Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
+      genesisEvent(now, { projectName: "Snapshot Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Snapshot Mission"),
     ])
 
     // Snapshot claims the mission is approved while the event log says draft.
@@ -444,59 +291,16 @@ async function testSnapshotStateConflictFailure() {
 // Fixture: snapshot-approved mission later completed (no conflict)
 // ------------------------------------------------------------
 async function testSnapshotApprovedMissionCompletedNoConflict() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-completed-"))
+  const tmpDir = await makeTempDir("synth-stale-completed-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-SNAPSHOT-COMPLETED"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Completed Snapshot Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Completed Snapshot Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-COMPLETE",
-        type: "MISSION_COMPLETED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "CompleteMission",
-        actor: "system",
-        payload: { id: missionId, status: "completed" },
-      },
+      genesisEvent(now, { projectName: "Completed Snapshot Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Completed Snapshot Mission"),
+      missionApprovedEvent(now, missionId),
+      missionCompletedEvent(now, missionId),
     ])
 
     // Snapshot records the mission as approved before the completion event.
@@ -517,59 +321,16 @@ async function testSnapshotApprovedMissionCompletedNoConflict() {
 // Fixture: snapshot-approved mission later archived (conflict)
 // ------------------------------------------------------------
 async function testSnapshotApprovedMissionArchivedConflict() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-stale-archived-"))
+  const tmpDir = await makeTempDir("synth-stale-archived-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
     const missionId = "M-SNAPSHOT-ARCHIVED"
     await writeEventLog(tmpDir, [
-      {
-        id: "GENESIS",
-        type: "SYSTEM_GENESIS",
-        timestamp: now,
-        transactionId: "genesis-tx",
-        capability: "Genesis",
-        actor: "system",
-        payload: { projectName: "Archived Snapshot Test", systemId: "stale-test", partitions: 1 },
-      },
-      {
-        id: "E-MISSION",
-        type: "MISSION_CREATED",
-        timestamp: now + 1,
-        transactionId: "tx-1",
-        capability: "CreateMission",
-        actor: "system",
-        payload: {
-          mission: {
-            id: missionId,
-            name: "Archived Snapshot Mission",
-            purpose: "Test",
-            status: "draft",
-            expeditions: [],
-            metadata: {},
-            createdAt: now + 1,
-            updatedAt: now + 1,
-          },
-        },
-      },
-      {
-        id: "E-APPROVE",
-        type: "MISSION_APPROVED",
-        timestamp: now + 2,
-        transactionId: "tx-2",
-        capability: "ApproveMission",
-        actor: "system",
-        payload: { id: missionId, status: "active" },
-      },
-      {
-        id: "E-ARCHIVE",
-        type: "MISSION_ARCHIVED",
-        timestamp: now + 3,
-        transactionId: "tx-3",
-        capability: "ArchiveMission",
-        actor: "system",
-        payload: { id: missionId, status: "archived" },
-      },
+      genesisEvent(now, { projectName: "Archived Snapshot Test", systemId: "stale-test" }),
+      missionCreatedEvent(now, missionId, "Archived Snapshot Mission"),
+      missionApprovedEvent(now, missionId),
+      missionArchivedEvent(now, missionId),
     ])
 
     await writeCertifiedSnapshot(tmpDir, missionId, "Archived Snapshot Mission")
@@ -588,7 +349,7 @@ async function testSnapshotApprovedMissionArchivedConflict() {
 }
 
 async function testExpeditionCompletionDoesNotLagState() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-state-lag-regression-"))
+  const tmpDir = await makeTempDir("synth-state-lag-regression-")
   try {
     await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
 

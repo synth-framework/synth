@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // CLI: mission-scoped expedition listing & ranking
 // ============================================================
@@ -7,87 +8,22 @@
 // completed expeditions.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import os from "os"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
+import { bootstrapProject, createAndApproveMission } from "./helpers/mission-lifecycle.js"
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-mission-rank-"))
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  return tmpDir
+  const tmpDir = await makeTempDir("synth-cli-mission-rank-")
+  return await bootstrapProject(tmpDir)
 }
 
-async function createAndApproveMission(projectDir) {
-  const createResult = runSynth(
-    ["mission", "create", "--subject", "Ranking Mission", "--purpose", "Host expeditions for ranking"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  let draftId = parseJson(createResult.stdout).draftId
-
-  const evidenceResult = runSynth(
-    [
-      "mission", "evidence", "add",
-      "--draft-id", draftId,
-      "--subject", "Supporting evidence",
-      "--purpose", "Raises confidence above approval threshold",
-      "--confidence", "certain",
-    ],
-    projectDir,
-  )
-  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
-  draftId = parseJson(evidenceResult.stdout).draftId
-
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
+async function createAndApproveMissionLocal(projectDir) {
+  return await createAndApproveMission(projectDir, {
+    subject: "Ranking Mission",
+    purpose: "Host expeditions for ranking",
   })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const missionId = parseJson(approveResult.stdout).runtime?.missionId
-  assert(missionId, "mission approve should return a runtime missionId")
-  return missionId
 }
 
 // Create an expedition and advance it to a target lifecycle status.
@@ -116,7 +52,7 @@ async function main() {
   console.log("\n=== CLI Mission-Scoped Expedition Ranking Tests ===\n")
   const projectDir = await setupProject()
   try {
-    const missionId = await createAndApproveMission(projectDir)
+    const missionId = await createAndApproveMissionLocal(projectDir)
 
     const executingId = createExpeditionAtStatus(projectDir, missionId, "Executing work", "executing")
     const committedId = createExpeditionAtStatus(projectDir, missionId, "Committed work", "committed")

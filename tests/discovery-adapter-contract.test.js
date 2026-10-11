@@ -17,6 +17,7 @@ import {
   OPERATIONAL_ARTIFACT_ADAPTER_VERSION,
 } from "../dist/discovery/index.js"
 import { createInMemoryFilesystemProvider } from "../dist/environment/index.js"
+import { assertFilesystemOnlyCanHandle } from "./helpers/discovery-fixtures.js"
 
 test("filesystem adapter declares id, version, and determinism", () => {
   const fs = createInMemoryFilesystemProvider({})
@@ -31,9 +32,7 @@ test("filesystem adapter canHandle returns true only for filesystem sources", ()
   const fs = createInMemoryFilesystemProvider({})
   const adapter = createFilesystemDiscoveryAdapterWithProvider(fs)
 
-  assert.strictEqual(adapter.canHandle({ type: "filesystem", path: "/project" }), true)
-  assert.strictEqual(adapter.canHandle({ type: "git", url: "https://example.com/repo.git" }), false)
-  assert.strictEqual(adapter.canHandle({ type: "api", endpoint: "https://example.com/api" }), false)
+  assertFilesystemOnlyCanHandle(adapter)
 })
 
 test("filesystem adapter returns observations with required provenance", async () => {

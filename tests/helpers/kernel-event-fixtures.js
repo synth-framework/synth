@@ -146,6 +146,60 @@ export function validLog() {
 }
 
 /**
+ * Return the shared two-event prefix used by replay scenario tests: an
+ * active mission plus an executing expedition with byte-identical payloads.
+ * App status-specific third events (e.g. EXPEDITION_ARCHIVED) at call sites.
+ */
+export function missionWithExecutingExpeditionEvents(missionId = "m1", expeditionId = "e1") {
+  return [
+    {
+      id: "evt-MISSION_CREATED",
+      type: "MISSION_CREATED",
+      timestamp: 1,
+      transactionId: "tx-test",
+      capability: "test",
+      actor: "test",
+      payload: {
+        mission: {
+          id: missionId,
+          name: "Mission 1",
+          purpose: "purpose",
+          status: "active",
+          expeditions: [],
+          metadata: {},
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    },
+    {
+      id: "evt-EXPEDITION_CREATED",
+      type: "EXPEDITION_CREATED",
+      timestamp: 1,
+      transactionId: "tx-test",
+      capability: "test",
+      actor: "test",
+      payload: {
+        expedition: {
+          id: expeditionId,
+          missionId,
+          name: "Expedition 1",
+          goal: "goal",
+          status: "executing",
+          objectives: [],
+          discoveries: [],
+          decisions: [],
+          dependsOn: [],
+          metadata: {},
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    },
+  ]
+}
+
+/**
  * Write events to a temporary event-log.jsonl file.
  * Returns { dir, logPath, events }.
  */
@@ -154,4 +208,79 @@ export function writeTmpLog(events) {
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return { dir, logPath, events }
+}
+
+/**
+ * Build a seed event with the tx-N/timestamp-N envelope convention.
+ * Capability/actor default to test/test; genesis seeds pass
+ * `{ capability: "genesis", actor: "genesis" }`. Scenario payloads stay
+ * at call sites.
+ */
+export function seedEvent(id, type, timestamp, payload, { capability = "test", actor = "test" } = {}) {
+  return {
+    id,
+    type,
+    timestamp,
+    transactionId: `tx-${timestamp}`,
+    capability,
+    actor,
+    payload,
+  }
+}
+
+/**
+ * Build a hash-chained test event with an explicit id (identity/reference
+ * resolver shape: wall-clock timestamp, Genesis/system actor, canned
+ * hashes). For seq-id synthetic events, use makeEvent instead.
+ */
+export function makeIdentityEvent(id, type, payload) {
+  return {
+    id,
+    type,
+    timestamp: Date.now(),
+    transactionId: "tx-1",
+    capability: "Genesis",
+    actor: "system",
+    payload,
+    eventHash: "hash",
+    previousHash: "prev",
+  }
+}
+
+/** Shared creation-event pair for identity/reference resolver tests. */
+export function identityCreationEvents(missionId = "m1", expeditionId = "ex1", { expeditionMissionId } = {}) {
+  return [
+    makeIdentityEvent("e1", "MISSION_CREATED", {
+      mission: { id: missionId, name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
+    }),
+    makeIdentityEvent("e2", "EXPEDITION_CREATED", {
+      expedition: { id: expeditionId, missionId: expeditionMissionId ?? missionId, name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
+    }),
+  ]
+}
+
+/** Single MISSION_CREATED event for the canonical M/m1 mission. */
+export function missionMEvent(id = "e1", name = "M", timestamp = 1) {
+  return makeIdentityEvent(id, "MISSION_CREATED", {
+    mission: { id: "m1", name, status: "draft", expeditions: [], metadata: {}, createdAt: timestamp, updatedAt: timestamp },
+  })
+}
+
+/** Single EXPEDITION_CREATED event for the canonical E/ex1 expedition. */
+export function expeditionEEvent(id = "e2", missionId) {
+  return makeIdentityEvent(id, "EXPEDITION_CREATED", {
+    expedition: { id: "ex1", ...(missionId !== undefined ? { missionId } : {}), name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
+  })
+}
+
+/** Genesis + project seed pair shared by file-seeded CLI tests. */
+export function seedGenesisEvents(projectName, systemId) {
+  return [
+    seedEvent("evt-1", "SYSTEM_GENESIS", 1,
+      { projectName, systemId, partitions: 1 },
+      { capability: "genesis", actor: "genesis" }),
+    seedEvent("evt-2", "PROJECT_CREATED", 2,
+      { project: { id: "project-1", name: projectName, status: "active", metadata: {}, createdAt: 2, updatedAt: 2 } },
+      { capability: "genesis", actor: "genesis" }),
+  ]
 }

@@ -13,24 +13,40 @@ import {
 import { engineOpenAcceptanceGate } from "../dist/governance/review-gate-engine.js"
 import { deriveAlignmentContractFromIntentModel } from "../dist/governance/alignment-contract.js"
 import { mapToReviewDecision, mapToAcceptanceDecision } from "../dist/governance/proposal-evaluation/decision-mapping.js"
+import { makeRefinedIntentInput } from "./helpers/domain-runner.js"
 
 const humanReviewer = { kind: "human", id: "operator" }
 
-function makeRefinedIntentInput(expeditionId) {
-  return {
-    missionId: "mission-001",
-    objective: "Build a homepage that demonstrates SYNTH",
-    scope: "Mission Studio shell embedded in the homepage",
-    nonGoals: ["Backend runtime", "AI agent integration"],
-    successCriteria: ["Visitor understands SYNTH in under five minutes"],
-    visualReferences: ["design-board-v4.png"],
-    behavioralReferences: ["sticky workspace"],
-    constraints: ["No filesystem dependencies", "GitHub Pages deployable"],
-    protectedAssets: ["Public Vocabulary"],
-    acceptanceExamples: ["Storybook matches design board"],
-    knownUnknowns: ["Exact scroll thresholds"],
-    risks: ["Performance on low-end devices"],
-  }
+/** Arrange an expedition through conditional review-gate resolution. */
+function setupConditionalGate(expeditionId, conditions) {
+  let expedition = createReviewGateExpedition(expeditionId)
+
+  const { expedition: afterRefinement } = approveRefinedIntent(
+    expedition,
+    makeRefinedIntentInput(expeditionId),
+    humanReviewer,
+    GATE_POLICIES.humanRequired()
+  )
+  expedition = afterRefinement
+  expedition = beginExecution(expedition)
+
+  const { expedition: afterComplete } = completeImplementation(
+    expedition,
+    "impl-ref",
+    GATE_POLICIES.humanRequired()
+  )
+  expedition = afterComplete
+
+  const { expedition: afterResolve, gate: resolvedGate } = resolveReviewGate(
+    expedition,
+    "approve_with_conditions",
+    humanReviewer,
+    "Approved with conditions",
+    [],
+    [],
+    conditions
+  )
+  return { expedition: afterResolve, resolvedGate }
 }
 
 function makeIntentModel() {
@@ -53,35 +69,8 @@ function makeIntentModel() {
 
 void describe("Gate Decision Completeness (EXP-GOV-015)", () => {
   void it("approve_with_conditions creates conditions stored on gate state", () => {
-    let expedition = createReviewGateExpedition("exp-gov-015-001")
-
-    const { expedition: afterRefinement } = approveRefinedIntent(
-      expedition,
-      makeRefinedIntentInput("exp-gov-015-001"),
-      humanReviewer,
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterRefinement
-    expedition = beginExecution(expedition)
-
-    const { expedition: afterComplete, gate: reviewGate } = completeImplementation(
-      expedition,
-      "impl-ref",
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterComplete
-
     const conditions = ["Fix the scroll behavior", "Add loading state", "Update tests"]
-    const { expedition: afterResolve, gate: resolvedGate } = resolveReviewGate(
-      expedition,
-      "approve_with_conditions",
-      humanReviewer,
-      "Approved with conditions",
-      [],
-      [],
-      conditions
-    )
-    expedition = afterResolve
+    const { resolvedGate } = setupConditionalGate("exp-gov-015-001", conditions)
 
     assert.ok(resolvedGate.conditions, "Gate should have conditions")
     assert.strictEqual(resolvedGate.conditions.length, 3)
@@ -92,35 +81,8 @@ void describe("Gate Decision Completeness (EXP-GOV-015)", () => {
   })
 
   void it("FulfillCondition marks a condition as fulfilled", () => {
-    let expedition = createReviewGateExpedition("exp-gov-015-002")
-
-    const { expedition: afterRefinement } = approveRefinedIntent(
-      expedition,
-      makeRefinedIntentInput("exp-gov-015-002"),
-      humanReviewer,
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterRefinement
-    expedition = beginExecution(expedition)
-
-    const { expedition: afterComplete, gate: reviewGate } = completeImplementation(
-      expedition,
-      "impl-ref",
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterComplete
-
     const conditions = ["Fix scroll behavior"]
-    const { expedition: afterResolve, gate: resolvedGate } = resolveReviewGate(
-      expedition,
-      "approve_with_conditions",
-      humanReviewer,
-      "Approved with conditions",
-      [],
-      [],
-      conditions
-    )
-    expedition = afterResolve
+    const { resolvedGate } = setupConditionalGate("exp-gov-015-002", conditions)
 
     assert.ok(resolvedGate.conditions, "Gate should have conditions")
     assert.strictEqual(resolvedGate.conditions.length, 1)
@@ -135,35 +97,8 @@ void describe("Gate Decision Completeness (EXP-GOV-015)", () => {
   })
 
   void it("OpenAcceptanceGate blocks if conditions remain unfulfilled", () => {
-    let expedition = createReviewGateExpedition("exp-gov-015-003")
-
-    const { expedition: afterRefinement } = approveRefinedIntent(
-      expedition,
-      makeRefinedIntentInput("exp-gov-015-003"),
-      humanReviewer,
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterRefinement
-    expedition = beginExecution(expedition)
-
-    const { expedition: afterComplete, gate: reviewGate } = completeImplementation(
-      expedition,
-      "impl-ref",
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterComplete
-
     const conditions = ["Fix scroll behavior"]
-    const { expedition: afterResolve, gate: resolvedGate } = resolveReviewGate(
-      expedition,
-      "approve_with_conditions",
-      humanReviewer,
-      "Approved with conditions",
-      [],
-      [],
-      conditions
-    )
-    expedition = afterResolve
+    const { expedition, resolvedGate } = setupConditionalGate("exp-gov-015-003", conditions)
 
     assert.ok(resolvedGate.conditions, "Gate should have conditions")
     assert.strictEqual(resolvedGate.conditions.length, 1)
@@ -176,35 +111,8 @@ void describe("Gate Decision Completeness (EXP-GOV-015)", () => {
   })
 
   void it("OpenAcceptanceGate proceeds if all conditions fulfilled", () => {
-    let expedition = createReviewGateExpedition("exp-gov-015-004")
-
-    const { expedition: afterRefinement } = approveRefinedIntent(
-      expedition,
-      makeRefinedIntentInput("exp-gov-015-004"),
-      humanReviewer,
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterRefinement
-    expedition = beginExecution(expedition)
-
-    const { expedition: afterComplete, gate: reviewGate } = completeImplementation(
-      expedition,
-      "impl-ref",
-      GATE_POLICIES.humanRequired()
-    )
-    expedition = afterComplete
-
     const conditions = ["Fix scroll behavior"]
-    const { expedition: afterResolve, gate: resolvedGate } = resolveReviewGate(
-      expedition,
-      "approve_with_conditions",
-      humanReviewer,
-      "Approved with conditions",
-      [],
-      [],
-      conditions
-    )
-    expedition = afterResolve
+    const { expedition, resolvedGate } = setupConditionalGate("exp-gov-015-004", conditions)
 
     const conditionId = resolvedGate.conditions[0].id
     const updatedGate = fulfillCondition(resolvedGate, conditionId, "operator")

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Initialization Replay Tests
 // ============================================================
@@ -9,44 +10,14 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function readEventLog(dataDir) {
-  const logPath = path.join(dataDir, "event-log.jsonl")
-  try {
-    const raw = await fs.readFile(logPath, "utf-8")
-    return raw
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-  } catch {
-    return []
-  }
-}
+import { runSynth, CLI_PATH, readEventLog } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 // ------------------------------------------------------------
 // Fixture: replay from event log matches persisted canonical state
 // ------------------------------------------------------------
 async function testReplayMatchesCanonicalState() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-replay-"))
+  const tmpDir = await makeTempDir("synth-init-replay-")
   try {
     const knowledgeDir = path.join(tmpDir, "knowledge")
     await fs.mkdir(knowledgeDir, { recursive: true })
@@ -67,7 +38,7 @@ async function testReplayMatchesCanonicalState() {
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     assert(events.length === 1, `expected exactly one event, got ${events.length}`)
     assert(events[0].type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${events[0].type}`)
 
@@ -92,7 +63,7 @@ async function testReplayMatchesCanonicalState() {
 // Fixture: replay is stable across repeated runs
 // ------------------------------------------------------------
 async function testReplayIsStable() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-replay-stable-"))
+  const tmpDir = await makeTempDir("synth-init-replay-stable-")
   try {
     const docsDir = path.join(tmpDir, "docs")
     await fs.mkdir(docsDir, { recursive: true })
@@ -101,7 +72,7 @@ async function testReplayIsStable() {
     const initResult = runSynth(["init", "--name", "Replay Stable Test"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
-    const events = await readEventLog(path.join(tmpDir, ".synth", "data"))
+    const events = await readEventLog(tmpDir)
     const { rebuildState } = await import("../dist/runtime/replay.js")
     const first = rebuildState(events)
     const second = rebuildState(events)

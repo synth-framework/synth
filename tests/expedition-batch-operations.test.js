@@ -6,80 +6,20 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { createAndApproveMission as createAndApproveMissionIntent, setupBasicProject } from "./helpers/mission-lifecycle.js"
+import { assert } from "./helpers/assert.js"
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-batch-"))
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  return tmpDir
+  return setupBasicProject("synth-batch-")
 }
 
 async function createAndApproveMission(projectDir) {
-  const createResult = runSynth(
-    ["mission", "create", "--subject", "Batch Mission", "--purpose", "Test batch operations"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  const draftId1 = parseJson(createResult.stdout).draftId
-
-  const evidenceResult = runSynth(
-    ["mission", "evidence", "add", "--draft-id", draftId1, "--subject", "Evidence", "--confidence", "certain"],
-    projectDir,
-  )
-  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
-  const draftId2 = parseJson(evidenceResult.stdout).draftId
-
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
+  return createAndApproveMissionIntent(projectDir, {
+    subject: "Batch Mission",
+    purpose: "Test batch operations",
+    returnGateContext: true,
   })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId2, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const approveOutput = parseJson(approveResult.stdout)
-  assert(approveOutput.kind === "MissionApprovalDecision", `expected MissionApprovalDecision, got ${approveOutput.kind}`)
-  assert(approveOutput.decision?.approved === true, "mission should be approved")
-  const missionId = approveOutput.runtime?.missionId
-  assert(missionId, "mission approve should return a runtime missionId")
-  return { missionId, contractId }
 }
 
 async function createDraftExpeditions(projectDir, missionId, count) {

@@ -10,10 +10,7 @@
 
 import { extractIntent } from "../dist/first-contact/extract/index.js"
 import { projectArchitecture, RuleBasedArchitectureProjectionAdapter } from "../dist/first-contact/project/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function testProjectsWebTypeScript() {
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")

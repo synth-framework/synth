@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // OPERATOR JOURNEY CERTIFICATION TEST
 // ============================================================
@@ -253,7 +254,7 @@ test("Operator Journey completes end-to-end and produces certification evidence"
   // Step 8 — Documentation
   // ============================================================
   const t8 = now()
-  const outDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-operator-journey-docs-"))
+  const outDir = await makeTempDir("synth-operator-journey-docs-")
   const { projections, summary } = await documentFromKnowledgeBase(path.join(process.cwd(), "docs"), outDir)
   stepTimes.documentation = now() - t8
 

@@ -1,64 +1,24 @@
+import { cleanup, runCli, createDraft } from "./helpers/trust-workflow.js"
 // Certification tests for EXP-RUNTIME-001 — Runtime Correctness and Recovery.
 //
 // These tests certify that Mission approval is atomic (runtime events precede
 // snapshot persistence) and that `synth repair replay` can recover from missing
 // runtime events using only public CLI commands.
 
-import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { createCertHarness } from "./helpers/cert-test-base.js"
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const DIST_SYNTH = path.join(REPO_ROOT, "dist", "cli", "synth.js")
 
-let passed = 0
-let failed = 0
-
-function assert(condition, message) {
-  if (condition) {
-    passed++
-    console.log(`✓ ${message}`)
-  } else {
-    failed++
-    console.error(`✗ ${message}`)
-  }
-}
-
-function makeWorkspace() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "synth-runtime-"))
-}
-
-function cleanup(dir) {
-  fs.rmSync(dir, { recursive: true, force: true })
-}
+const { assert, makeWorkspace, finish } = createCertHarness("synth-runtime-")
 
 function initWorkspace(dir) {
   const r = runCli(dir, ["init", "--name", "Runtime Repair Test"])
   assert(r.status === 0, `init should succeed: ${r.output}`)
-}
-
-function runCli(dir, args) {
-  const env = { ...process.env }
-  delete env.SYNTH_GOVERN_DEPTH
-  const res = spawnSync(process.execPath, [DIST_SYNTH, ...args], {
-    cwd: dir,
-    env,
-    timeout: 30000,
-    encoding: "utf8",
-    killSignal: "SIGKILL",
-  })
-  return {
-    status: res.status,
-    output: `${res.stdout || ""}${res.stderr || ""}`,
-    timedOut: Boolean(res.error && res.error.code === "ETIMEDOUT"),
-  }
-}
-
-function createDraft(dir) {
-  const r = runCli(dir, ["mission", "create", "--subject", "Fixture Mission", "--purpose", "Demonstrate runtime guarantees."])
-  return r.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
 }
 
 function evidenceAdd(dir, draftId, subject) {
@@ -258,8 +218,7 @@ function main() {
     }
   }
 
-  console.log(`\n${passed} passed, ${failed} failed`)
-  if (failed > 0) process.exit(1)
+  finish()
 }
 
 main()

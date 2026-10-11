@@ -8,19 +8,9 @@ import { createSpecificationAdapter } from "../dist/adapters/specification/adapt
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 import fs from "fs"
 import path from "path"
+import { cleanFixtures, writeFixture } from "./helpers/adapter-fixtures.js"
 
 const FIXTURES_DIR = path.join(process.cwd(), "tests", "specification-adapter-fixtures")
-
-function cleanFixtures() {
-  fs.rmSync(FIXTURES_DIR, { recursive: true, force: true })
-  fs.mkdirSync(FIXTURES_DIR, { recursive: true })
-}
-
-function writeFixture(relativePath, content) {
-  const fullPath = path.join(FIXTURES_DIR, relativePath)
-  fs.mkdirSync(path.dirname(fullPath), { recursive: true })
-  fs.writeFileSync(fullPath, content)
-}
 
 test("AdapterRegistry lists specification adapter", () => {
   const registry = createAdapterRegistry()
@@ -35,7 +25,7 @@ test("SpecificationAdapter starts in discovered state", () => {
 })
 
 test("SpecificationAdapter transitions through lifecycle", async () => {
-  cleanFixtures()
+  cleanFixtures(FIXTURES_DIR)
   const adapter = createSpecificationAdapter()
   await adapter.configure({ specificationsDirectory: FIXTURES_DIR })
   assert.strictEqual(adapter.state, "configured")
@@ -48,8 +38,8 @@ test("SpecificationAdapter transitions through lifecycle", async () => {
 })
 
 test("SpecificationAdapter extracts OpenAPI capabilities", async () => {
-  cleanFixtures()
-  writeFixture(
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, 
     "api.openapi.json",
     JSON.stringify({
       openapi: "3.0.0",
@@ -80,8 +70,8 @@ test("SpecificationAdapter extracts OpenAPI capabilities", async () => {
 })
 
 test("SpecificationAdapter extracts AsyncAPI capabilities", async () => {
-  cleanFixtures()
-  writeFixture(
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, 
     "events.asyncapi.yaml",
     `asyncapi: '2.6.0'
 channels:
@@ -107,8 +97,8 @@ channels:
 })
 
 test("SpecificationAdapter extracts GraphQL capabilities", async () => {
-  cleanFixtures()
-  writeFixture(
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, 
     "schema.graphql",
     `type Query {
       user(id: ID!): User
@@ -131,8 +121,8 @@ test("SpecificationAdapter extracts GraphQL capabilities", async () => {
 })
 
 test("SpecificationAdapter extracts Protocol Buffer capabilities", async () => {
-  cleanFixtures()
-  writeFixture(
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, 
     "api.proto",
     `syntax = "proto3";
 service UserService {
@@ -152,8 +142,8 @@ service UserService {
 })
 
 test("SpecificationAdapter emits evidence for JSON Schema", async () => {
-  cleanFixtures()
-  writeFixture(
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, 
     "user.schema.json",
     JSON.stringify({
       $schema: "http://json-schema.org/draft-07/schema#",
@@ -173,9 +163,9 @@ test("SpecificationAdapter emits evidence for JSON Schema", async () => {
 })
 
 test("SpecificationAdapter scans explicit file list", async () => {
-  cleanFixtures()
-  writeFixture("a.openapi.json", JSON.stringify({ openapi: "3.0.0", paths: {} }))
-  writeFixture("b.openapi.json", JSON.stringify({ openapi: "3.0.0", paths: {} }))
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "a.openapi.json", JSON.stringify({ openapi: "3.0.0", paths: {} }))
+  writeFixture(FIXTURES_DIR, "b.openapi.json", JSON.stringify({ openapi: "3.0.0", paths: {} }))
 
   const adapter = createSpecificationAdapter()
   await adapter.configure({ files: [path.join(FIXTURES_DIR, "a.openapi.json")] })

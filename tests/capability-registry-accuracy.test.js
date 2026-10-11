@@ -7,10 +7,7 @@
 // ============================================================
 
 import { runSynth, parseJson } from "./helpers/cli-harness.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testDocumentationGenerationAvailable() {
   const { stdout, status } = runSynth(["capabilities"])

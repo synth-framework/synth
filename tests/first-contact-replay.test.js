@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // First Contact Replay Integration Tests
 // ============================================================
@@ -18,13 +19,10 @@ import { materialize } from "../dist/first-contact/materialize/index.js"
 import { EventStore } from "../dist/infra/event-store.js"
 import { StateStore } from "../dist/infra/state-store.js"
 import { createReplayVerifier } from "../dist/core/replay-verifier.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testReplayVerifiesMaterializedProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-replay-"))
+  const tmpDir = await makeTempDir("synth-first-contact-replay-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)
@@ -59,7 +57,7 @@ async function testReplayVerifiesMaterializedProject() {
 }
 
 async function testReplayDetectsArtifactTampering() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-replay-"))
+  const tmpDir = await makeTempDir("synth-first-contact-replay-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)
@@ -92,7 +90,7 @@ async function testReplayDetectsArtifactTampering() {
 }
 
 async function testReplayDetectsMissingArtifact() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-replay-"))
+  const tmpDir = await makeTempDir("synth-first-contact-replay-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)

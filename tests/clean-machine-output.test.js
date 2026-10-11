@@ -6,10 +6,7 @@
 // ============================================================
 
 import { runSynth, withTempDir } from "./helpers/cli-harness.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function hasDiagnosticLog(stderr) {
   return /"level"\s*:\s*"(INFO|WARN|DEBUG)"/.test(stderr)

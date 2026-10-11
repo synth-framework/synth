@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // MISSION STUDIO SNAPSHOT INTEGRITY TESTS (EXP-HARDEN-002)
 // ============================================================
@@ -28,20 +29,10 @@ import {
   migrateStoredSnapshot,
 } from "../dist/mission-studio/index.js"
 import { createAPI } from "../dist/api/index.js"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function makeObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation as makeObservation } from "./helpers/adapter.js"
 
 function makeApprovedSnapshot(name = "Build CRM", parentSnapshot) {
   const studio = createMissionStudio({ approvalThreshold: 0 })
@@ -54,7 +45,7 @@ function makeApprovedSnapshot(name = "Build CRM", parentSnapshot) {
 }
 
 async function makeTmpStore() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-snapshot-integrity-"))
+  const dir = await makeTempDir("synth-snapshot-integrity-")
   return { dir, store: createFileSystemSnapshotStore(dir) }
 }
 
@@ -65,10 +56,6 @@ async function rewriteSnapshotFile(dir, snapshotId, mutate) {
   await fs.writeFile(file, JSON.stringify(parsed, null, 2), "utf-8")
 }
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], { cwd, encoding: "utf-8", timeout: 60000 })
-  return { stdout: result.stdout || "", stderr: result.stderr || "", status: result.status }
-}
 
 // ============================================================
 // Persistence via the approval flow
@@ -369,7 +356,7 @@ test("An approved Mission is reconstructed from its persisted snapshot with a va
 // ============================================================
 
 test("synth mission snapshot inspects, verifies, and lists persisted snapshots", async () => {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-snapshot-"))
+  const tmpDir = await makeTempDir("synth-cli-snapshot-")
   try {
     const init = runSynth(["init", "--name", "Snapshot CLI Test"], tmpDir)
     assert.strictEqual(init.status, 0, init.stderr)

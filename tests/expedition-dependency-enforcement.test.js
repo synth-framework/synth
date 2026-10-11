@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GATE-013 — Expedition Dependency Enforcement Tests
 // ============================================================
@@ -13,13 +14,8 @@ import path from "path"
 import { promises as fs } from "fs"
 import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { approveMission as approveMissionIntent } from "./helpers/governance-intent.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-dependency-enforcement", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-dependency-enforcement")
@@ -27,7 +23,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-dependency-enforcement")
   const ctx = await bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),
@@ -46,22 +42,8 @@ async function makeCtx() {
   return ctx
 }
 
-async function approveMission(ctx, id) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateMission",
-    payload: { id, name: `Mission ${id}`, purpose: "Dependency enforcement test" },
-  })
-  assert.equal(result.status, "ok", `CreateMission should succeed: ${result.error}`)
-
-  const { contractId } = await createAlignedContract(ctx)
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "ApproveMission",
-    payload: { id, alignmentContractId: contractId },
-  })
-  assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
-  return { contractId }
+async function approveDependencyMission(ctx, id) {
+  return approveMissionIntent(ctx, id, { purpose: "Dependency enforcement test" })
 }
 
 async function createExpedition(ctx, missionId, expeditionId, dependsOn = []) {
@@ -122,35 +104,10 @@ async function certifyConvergence(ctx, missionId, expeditionId, contractId, deci
   assert.equal(result.result?.decision, decision, `Expected ${decision}, got ${result.result?.decision}`)
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GATE-013 — Dependency Enforcement")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 // ------------------------------------------------------------------
 // Status propagation
@@ -158,7 +115,7 @@ async function run() {
 
 test("downstream blocked when upstream completed without certification", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-NO-CERT")
+  const { contractId } = await approveDependencyMission(ctx, "M-NO-CERT")
   await createExpedition(ctx, "M-NO-CERT", "upstream-no-cert")
   await advanceToExecuting(ctx, "upstream-no-cert")
   await completeExpedition(ctx, "upstream-no-cert")
@@ -179,7 +136,7 @@ test("downstream blocked when upstream completed without certification", async (
 
 test("downstream blocked when upstream certification is partial_pass", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-PARTIAL")
+  const { contractId } = await approveDependencyMission(ctx, "M-PARTIAL")
   await createExpedition(ctx, "M-PARTIAL", "upstream-partial")
   await advanceToExecuting(ctx, "upstream-partial")
   await completeExpedition(ctx, "upstream-partial")
@@ -201,7 +158,7 @@ test("downstream blocked when upstream certification is partial_pass", async () 
 
 test("downstream proceeds when upstream certification passes", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-PASS")
+  const { contractId } = await approveDependencyMission(ctx, "M-PASS")
   await createExpedition(ctx, "M-PASS", "upstream-pass")
   await advanceToExecuting(ctx, "upstream-pass")
   await completeExpedition(ctx, "upstream-pass")
@@ -224,7 +181,7 @@ test("downstream proceeds when upstream certification passes", async () => {
 
 test("derived state dependencyStatusMap reflects upstream certification", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-MAP")
+  const { contractId } = await approveDependencyMission(ctx, "M-MAP")
   await createExpedition(ctx, "M-MAP", "upstream-map")
   await advanceToExecuting(ctx, "upstream-map")
   await completeExpedition(ctx, "upstream-map")
@@ -242,4 +199,4 @@ test("derived state dependencyStatusMap reflects upstream certification", async 
 
 // ------------------------------------------------------------------
 
-cleanData().then(run)
+cleanData().then(() => suite.run("expedition-dependency-enforcement"))

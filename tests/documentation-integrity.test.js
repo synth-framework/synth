@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Documentation Integrity Tests
 // ============================================================
@@ -10,6 +11,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const CHECK_LINKS_PATH = path.resolve(PROJECT_ROOT, "scripts", "check-links.js")
@@ -30,10 +32,6 @@ function runScript(scriptPath, cwd = PROJECT_ROOT) {
   }
 }
 
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
 async function testCheckLinksAcceptsProject() {
   const result = runScript(CHECK_LINKS_PATH)
   assert(result.status === 0, `check-links.js must pass on this project:\n${result.stdout}\n${result.stderr}`)
@@ -41,7 +39,7 @@ async function testCheckLinksAcceptsProject() {
 }
 
 async function testCheckLinksDetectsBrokenInternalLink() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-links-"))
+  const tmpDir = await makeTempDir("synth-links-")
   try {
     await fs.mkdir(path.join(tmpDir, "website"), { recursive: true })
     await fs.writeFile(
@@ -79,7 +77,7 @@ async function testWebsiteSyncPasses() {
 }
 
 async function testWebsiteSyncDetectsNonCanonicalRepoUrl() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-site-"))
+  const tmpDir = await makeTempDir("synth-site-")
   try {
     await fs.mkdir(path.join(tmpDir, "website"), { recursive: true })
     await fs.writeFile(path.join(tmpDir, "README.md"), "> **Tagline**\n", "utf-8")

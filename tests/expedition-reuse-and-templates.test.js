@@ -1,3 +1,4 @@
+import { setupGitBackedProject } from "./helpers/mission-lifecycle.js"
 // ============================================================
 // EXP-REUSE-001 — Alignment Contract Reuse and Expedition Templates
 // ============================================================
@@ -7,50 +8,17 @@
 //   - expedition create accepts --template and pre-fills goal/scope
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { strict as assert } from "assert"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
 process.env.SYNTH_STRICT_CONTEXT = "1"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 240000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function runGit(args, cwd) {
-  const result = spawnSync("git", args, {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} failed: ${result.stderr}`)
-  }
-  return result.stdout.trim()
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
 
 function assertOk(result, message) {
   if (result.status !== 0) {
@@ -59,22 +27,7 @@ function assertOk(result, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-reuse-templates-"))
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-
-  runGit(["init"], tmpDir)
-  runGit(["config", "user.email", "test@synth.local"], tmpDir)
-  runGit(["config", "user.name", "Test Operator"], tmpDir)
-  runGit(["add", "package.json"], tmpDir)
-  runGit(["commit", "-m", "initial"], tmpDir)
-
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assertOk(bootstrapResult, "bootstrap --approve must exit 0")
-
-  runGit(["add", "-A"], tmpDir)
-  runGit(["commit", "-m", "bootstrap"], tmpDir)
-
-  return tmpDir
+  return setupGitBackedProject("synth-reuse-templates-")
 }
 
 async function makeApiContext(projectDir) {

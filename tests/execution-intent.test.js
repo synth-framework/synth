@@ -20,7 +20,8 @@ function event(type, payload) {
   }
 }
 
-test("Execution Intent Model: lifecycle events update state", () => {
+/** Shared prefix: created → graph → [branch] → started. */
+function executionPrefixEvents({ branch = true } = {}) {
   const events = [
     event("EXECUTION_INTENT_CREATED", {
       intentId: "I-1",
@@ -39,15 +40,28 @@ test("Execution Intent Model: lifecycle events update state", () => {
       intentIds: ["I-1"],
       edgeCount: 0,
     }),
-    event("EXPEDITION_BRANCH_CREATED", {
-      expeditionId: "E-1",
-      branch: "exp/e-1-execution",
-      baseCommit: "abc123",
-    }),
+  ]
+  if (branch) {
+    events.push(
+      event("EXPEDITION_BRANCH_CREATED", {
+        expeditionId: "E-1",
+        branch: "exp/e-1-execution",
+        baseCommit: "abc123",
+      }),
+    )
+  }
+  events.push(
     event("EXECUTION_INTENT_STARTED", {
       intentId: "I-1",
       expeditionId: "E-1",
     }),
+  )
+  return events
+}
+
+test("Execution Intent Model: lifecycle events update state", () => {
+  const events = [
+    ...executionPrefixEvents(),
     event("EXECUTION_INTENT_COMPLETED", {
       intentId: "I-1",
       expeditionId: "E-1",
@@ -78,27 +92,7 @@ test("Execution Intent Model: lifecycle events update state", () => {
 
 test("Execution Intent Model: failure and rollback update phase", () => {
   const events = [
-    event("EXECUTION_INTENT_CREATED", {
-      intentId: "I-1",
-      expeditionId: "E-1",
-      objectiveId: "O-1",
-      workItemId: "W-1",
-      sequence: 0,
-      capability: "filesystem",
-      operation: "writeFile",
-      target: "src/example.ts",
-      dependencies: [],
-    }),
-    event("EXECUTION_INTENT_GRAPH_CREATED", {
-      expeditionId: "E-1",
-      branch: "exp/e-1-execution",
-      intentIds: ["I-1"],
-      edgeCount: 0,
-    }),
-    event("EXECUTION_INTENT_STARTED", {
-      intentId: "I-1",
-      expeditionId: "E-1",
-    }),
+    ...executionPrefixEvents({ branch: false }),
     event("EXECUTION_INTENT_FAILED", {
       intentId: "I-1",
       expeditionId: "E-1",

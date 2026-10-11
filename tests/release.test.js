@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // Release CLI Tests
 // ============================================================
@@ -10,22 +11,10 @@ import { spawnSync } from "child_process"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert, findJsonObject } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
-const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
-
-function runSynth(args, cwd = PROJECT_ROOT) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
 
 function runGit(args, cwd) {
   const result = spawnSync("git", args, { cwd, encoding: "utf-8" })
@@ -36,31 +25,8 @@ function runGit(args, cwd) {
   }
 }
 
-function findJsonObject(stdout) {
-  const trimmed = stdout.trim()
-  try {
-    return JSON.parse(trimmed)
-  } catch {
-    const lines = trimmed.split("\n")
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim().startsWith("{")) {
-        try {
-          return JSON.parse(lines.slice(i).join("\n"))
-        } catch {
-          // continue scanning
-        }
-      }
-    }
-  }
-  throw new Error(`No JSON object found in stdout:\n${stdout}`)
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
 function createTempRepo() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-release-test-"))
+  const dir = makeTempDirSync("synth-release-test-")
   runGit(["init"], dir)
   runGit(["config", "user.email", "test@synth.local"], dir)
   runGit(["config", "user.name", "Synth Test"], dir)

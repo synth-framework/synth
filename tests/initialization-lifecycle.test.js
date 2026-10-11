@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Initialization Lifecycle Tests
 // ============================================================
@@ -9,72 +10,18 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function readEventLog(dataDir) {
-  const streamDir = path.join(dataDir, "event-stream")
-  const events = []
-  const walk = async (d) => {
-    let entries
-    try {
-      entries = await fs.readdir(d, { withFileTypes: true })
-    } catch {
-      return
-    }
-    for (const entry of entries) {
-      const p = path.join(d, entry.name)
-      if (entry.isDirectory()) await walk(p)
-      else if (entry.name.endsWith(".jsonl")) {
-        const raw = await fs.readFile(p, "utf-8")
-        for (const line of raw.split("\n")) {
-          if (!line.trim()) continue
-          events.push(JSON.parse(line))
-        }
-      }
-    }
-  }
-  await walk(streamDir)
-  events.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
-  return events
-}
-
+import { runSynth, parseJson, CLI_PATH, readEventLog, initProject } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 // ------------------------------------------------------------
 // Fixture: synth init emits PROJECT_INITIALIZED event
 // ------------------------------------------------------------
 async function testInitEmitsProjectInitializedEvent() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-event-"))
+  const { tmpDir, initResult } = await initProject("synth-init-event-", ["--name", "Lifecycle Test"])
   try {
-    const initResult = runSynth(["init", "--name", "Lifecycle Test"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     assert(events.length === 1, `expected exactly one event, got ${events.length}`)
     assert(events[0].type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${events[0].type}`)
     assert(events[0].capability === "InitializeProject", `expected InitializeProject capability, got ${events[0].capability}`)
@@ -94,7 +41,7 @@ async function testInitEmitsProjectInitializedEvent() {
 // Fixture: synth init is idempotent
 // ------------------------------------------------------------
 async function testInitIsIdempotent() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-idempotent-"))
+  const tmpDir = await makeTempDir("synth-init-idempotent-")
   try {
     const first = runSynth(["init", "--name", "Idempotent Test"], tmpDir)
     assert(first.status === 0, "first init should succeed")
@@ -103,7 +50,7 @@ async function testInitIsIdempotent() {
     assert(second.status === 0, "second init should succeed")
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     assert(events.length === 1, `expected exactly one initialization event after idempotent init, got ${events.length}`)
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true })
@@ -115,7 +62,7 @@ async function testInitIsIdempotent() {
 // Fixture: manifest includes governanceVersion
 // ------------------------------------------------------------
 async function testManifestIncludesGovernanceVersion() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-manifest-"))
+  const tmpDir = await makeTempDir("synth-init-manifest-")
   try {
     const initResult = runSynth(["init", "--name", "Manifest Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -135,7 +82,7 @@ async function testManifestIncludesGovernanceVersion() {
 // Fixture: resolver reports initialized phase
 // ------------------------------------------------------------
 async function testResolverReportsInitializedPhase() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-phase-"))
+  const tmpDir = await makeTempDir("synth-init-phase-")
   try {
     const initResult = runSynth(["init", "--name", "Phase Test"], tmpDir)
     assert(initResult.status === 0, "init should succeed")
@@ -155,7 +102,7 @@ async function testResolverReportsInitializedPhase() {
 // Fixture: synth bootstrap --approve emits PROJECT_INITIALIZED event
 // ------------------------------------------------------------
 async function testBootstrapApproveEmitsProjectInitializedEvent() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-bootstrap-event-"))
+  const tmpDir = await makeTempDir("synth-bootstrap-event-")
   try {
     // Create a minimal package.json so bootstrap can run govern if needed.
     await fs.writeFile(
@@ -168,7 +115,7 @@ async function testBootstrapApproveEmitsProjectInitializedEvent() {
     assert(result.status === 0, `bootstrap --approve should succeed: ${result.stderr}`)
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     const initEvents = events.filter((e) => e.type === "PROJECT_INITIALIZED")
     assert(initEvents.length === 1, `expected exactly one PROJECT_INITIALIZED event, got ${initEvents.length}`)
     assert(initEvents[0].payload.name === "Bootstrap Test", "event should carry bootstrap project name")

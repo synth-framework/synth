@@ -8,6 +8,7 @@
 import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const AI_BENCHMARK_PATH = path.resolve(PROJECT_ROOT, "scripts", "ai-validation-benchmark.js")
@@ -25,10 +26,6 @@ function runScript(scriptPath, cwd) {
     stderr: result.stderr || "",
     status: result.status,
   }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testHumanProtocolExists() {

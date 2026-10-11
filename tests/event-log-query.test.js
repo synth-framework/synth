@@ -7,7 +7,7 @@ import { promises as fs } from "fs"
 import fsSync from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { execSync } from "child_process"
+import { createExecRunner } from "./helpers/cli-exec.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, "..")
@@ -81,21 +81,7 @@ async function cleanup() {
   }
 }
 
-function run(args, cwd = projectDir) {
-  return execSync(`node ${synth} ${args}`, {
-    cwd,
-    env: { ...process.env, SYNTH_QUIET_LOGS: "1" },
-    encoding: "utf-8",
-  })
-}
-
-function runAllowError(args, cwd = projectDir) {
-  try {
-    return { exitCode: 0, stdout: run(args, cwd) }
-  } catch (err) {
-    return { exitCode: err.status, stdout: err.stdout }
-  }
-}
+const { run, runAllowError } = createExecRunner({ synth, projectDir })
 
 describe("event-log query CLI", () => {
   before(async () => {

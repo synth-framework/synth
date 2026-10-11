@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // Regression guards for EXP-TRUST-004 (Decision Events).
 //
 // Approval decisions must be durable: every approval outcome is
@@ -5,85 +6,25 @@
 // (data/decisions.jsonl), and a draft's approval state derives
 // from that record — never from the editable approvalState field.
 
-import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { runCli, createDraft, evidenceAdd, approveWithAlignment as approve } from "./helpers/trust-workflow.js"
+import { createCertHarness } from "./helpers/cert-test-base.js"
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const DIST_SYNTH = path.join(REPO_ROOT, "dist", "cli", "synth.js")
 
-let passed = 0
-let failed = 0
-
-function assert(condition, message) {
-  if (condition) {
-    passed++
-    console.log(`✓ ${message}`)
-  } else {
-    failed++
-    console.error(`✗ ${message}`)
-  }
-}
+const { assert, cleanup, finish } = createCertHarness("synth-decisions-")
 
 function makeWorkspace() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-decisions-"))
+  const dir = makeTempDirSync("synth-decisions-")
   const init = runCli(dir, ["init", "--name", "Decision Events Test"])
   if (init.status !== 0) {
     throw new Error(`synth init failed in test workspace: ${init.output}`)
   }
   return dir
-}
-
-function cleanup(dir) {
-  fs.rmSync(dir, { recursive: true, force: true })
-}
-
-function runCli(dir, args) {
-  const env = { ...process.env }
-  delete env.SYNTH_GOVERN_DEPTH
-  const res = spawnSync(process.execPath, [DIST_SYNTH, ...args], {
-    cwd: dir,
-    env,
-    timeout: 30000,
-    encoding: "utf8",
-    killSignal: "SIGKILL",
-  })
-  return {
-    status: res.status,
-    output: `${res.stdout || ""}${res.stderr || ""}`,
-    timedOut: Boolean(res.error && res.error.code === "ETIMEDOUT"),
-  }
-}
-
-function createDraft(dir) {
-  const r = runCli(dir, ["mission", "create", "--subject", "Fixture Mission", "--purpose", "Demonstrate deterministic planning."])
-  return r.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
-}
-
-function evidenceAdd(dir, draftId, subject) {
-  const r = runCli(dir, ["mission", "evidence", "add", "--draft-id", draftId, "--subject", subject])
-  return r.output.match(/"draftId":\s*"([^"]+)"/)?.[1]
-}
-
-async function approve(dir, draftId) {
-  // Phase 2 governance: Mission approval requires an aligned Alignment Contract.
-  // The CLI operator workflow for creating this contract is not yet implemented,
-  // so tests construct it directly through the governance capabilities.
-  const dataDir = path.join(dir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
-  })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  return runCli(dir, ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId])
 }
 
 function readDecisions(dir) {
@@ -229,8 +170,7 @@ async function main() {
     }
   }
 
-  console.log(`\n${passed} passed, ${failed} failed`)
-  if (failed > 0) process.exit(1)
+  finish()
 }
 
 main().catch((err) => {

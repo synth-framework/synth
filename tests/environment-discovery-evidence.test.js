@@ -5,8 +5,6 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import {
-  createDiscoveryOrchestrator,
-  createReferenceProviders,
   createInMemoryFilesystemProvider,
   canonicalizeEvidence,
   hashDiscoveryEvidence,
@@ -17,26 +15,10 @@ import {
   DISCOVERY_EVIDENCE_PATH,
 } from "../dist/environment/index.js"
 import { FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
-
-function makeInMemoryContext(files = {}, dirs = {}, env = {}, cwd = "/test") {
-  const fileMap = { ...files }
-  const directoryMap = { ...dirs }
-  function resolve(path) {
-    if (path.startsWith("/")) return path
-    return `${cwd}/${path}`
-  }
-  return {
-    readFile: async (path) => fileMap[resolve(path)],
-    listDirectory: async (path) => directoryMap[resolve(path)] || [],
-    pathExists: async (path) => resolve(path) in fileMap || resolve(path) in directoryMap,
-    readEnv: (name) => env[name],
-    execTool: async (command, args) => env[`${command} ${args.join(" ")}`],
-    cwd,
-  }
-}
+import { discoverEvidence } from "./helpers/in-memory-context.js"
 
 async function produceEvidence() {
-  const ctx = makeInMemoryContext(
+  return discoverEvidence(
     {
       "/test/package.json": JSON.stringify({ name: "test-project" }),
       "/test/.synth/manifest.json": JSON.stringify({ name: "test" }),
@@ -44,9 +26,6 @@ async function produceEvidence() {
     { "/test": ["package.json", ".synth"], "/test/.synth": ["manifest.json"] },
     { "node --version": "v20.11.0", "npm --version": "10.2.4" },
   )
-  const orchestrator = createDiscoveryOrchestrator({ providers: createReferenceProviders() })
-  const result = await orchestrator.discover(ctx)
-  return result.evidence
 }
 
 test("canonicalizeEvidence is deterministic", async () => {

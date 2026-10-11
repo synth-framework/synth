@@ -5,6 +5,7 @@ import { createEmptyState, rebuildState } from "../dist/runtime/replay.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { createIntentModel, validateIntentModel, computeConfidence } from "../dist/governance/intent-model.js"
 import { startRefinement, answerQuestion, submitForRefinedIntent } from "../dist/governance/refinement-layer.js"
+import { createDomainRunner } from "./helpers/domain-runner.js"
 
 function makeCtx(timestamp = Date.now()) {
   return {
@@ -34,35 +35,6 @@ function makeInput(overrides = {}) {
     knownUnknowns: ["Scroll thresholds"],
     ...overrides,
   }
-}
-
-function createRunner() {
-  const eventLog = []
-  let seq = 0
-
-  function run(capability, payload) {
-    const state = rebuildState(eventLog)
-    const derivedState = buildDerivedState(eventLog)
-    const invocation = { actor: "test", capability, payload }
-    const result = applyDomain(invocation, state, derivedState, { ...makeCtx(), currentState: state })
-    for (const e of result.events) {
-      eventLog.push({
-        id: `evt-${seq}`,
-        type: e.type,
-        timestamp: Date.now(),
-        transactionId: "tx-1",
-        capability,
-        actor: "test",
-        payload: e.payload,
-        previousHash: "genesis",
-        eventHash: `hash-${seq}`,
-      })
-      seq += 1
-    }
-    return rebuildState(eventLog)
-  }
-  run.getEvents = () => eventLog
-  return run
 }
 
 void describe("Intent Model", () => {
@@ -131,7 +103,7 @@ void describe("Refinement Layer", () => {
 
 void describe("Intent Refinement Domain Integration", () => {
   void it("creates an Intent Model via domain capability", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
     run("CreateIntentModel", { input: makeInput() })
     const derived = buildDerivedState(run.getEvents())
     const model = Object.values(derived.intentModels)[0]
@@ -140,7 +112,7 @@ void describe("Intent Refinement Domain Integration", () => {
   })
 
   void it("runs a clarification session and submits the model", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
 
     run("CreateIntentModel", {
       input: {
@@ -184,7 +156,7 @@ void describe("Intent Refinement Domain Integration", () => {
   })
 
   void it("rejects submission of an insufficient model", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
     run("CreateIntentModel", {
       input: { rawIntentReference: "x", explicitObjectives: ["Build a homepage"] },
     })

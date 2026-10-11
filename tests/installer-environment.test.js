@@ -5,28 +5,9 @@
 // environment profile correctly.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import path from "path"
-
-const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
-
-function runInstaller(args = [], env = {}) {
-  const result = spawnSync("bash", [INSTALLER_PATH, ...args], {
-    cwd: process.cwd(),
-    encoding: "utf-8",
-    env: { ...process.env, ...env },
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
+import { runInstaller } from "./helpers/installer.js"
 
 async function testDryRunPrintsEnvironmentProfile() {
   const result = runInstaller(["--dry-run"])

@@ -15,17 +15,7 @@ import { snapshotToSeedEvents } from "../dist/genesis/snapshot-bridge.js"
 
 const { createMissionStudio, validateProposalGraph } = missionStudio
 
-function makeObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation as makeObservation } from "./helpers/adapter.js"
 
 function makeLinkedObservations() {
   return [

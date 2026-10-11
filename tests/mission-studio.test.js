@@ -6,17 +6,7 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { createMissionStudio, createMissionIntake } from "../dist/mission-studio/index.js"
 
-function makeObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation as makeObservation } from "./helpers/adapter.js"
 
 test("MissionStudio starts empty and is read-only", () => {
   const studio = createMissionStudio()

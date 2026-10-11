@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // MISSION STUDIO SNAPSHOT LINEAGE TESTS
 // ============================================================
@@ -16,17 +17,7 @@ import {
   diffSnapshots,
 } from "../dist/mission-studio/index.js"
 
-function makeObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation as makeObservation } from "./helpers/adapter.js"
 
 function makeApprovedSnapshot(name = "Build CRM", overrides = {}) {
   const studio = createMissionStudio({ approvalThreshold: 0 })
@@ -136,7 +127,7 @@ test("reconstructSessionFromSnapshot walks lineage to root", async () => {
 })
 
 test("FileSystemSnapshotStore persists snapshots across instances", async () => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-snapshot-"))
+  const dir = await makeTempDir("synth-snapshot-")
   const store1 = createFileSystemSnapshotStore(dir)
   const { snapshot, session } = makeApprovedSnapshot()
   await store1.save({ snapshot, session })

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // First Contact Experiment Tests
 // ============================================================
@@ -23,32 +24,17 @@ import {
 } from "../dist/first-contact/experiment.js"
 import { extractFirstContactEvidence } from "../dist/first-contact/evidence.js"
 import { repositoryIntroductionScenario } from "../dist/first-contact/scenarios.js"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
+import { evidenceTurns } from "./helpers/first-contact-fixtures.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const RUNNER_PATH = path.resolve(process.cwd(), "scripts", "first-contact-experiment.js")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    status: result.status,
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 // ------------------------------------------------------------
 // Fixture: CLI includes telemetry when agent flags are provided
 // ------------------------------------------------------------
 async function testCliTelemetryFlags() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-telemetry-"))
+  const tmpDir = await makeTempDir("synth-telemetry-")
   try {
     runSynth(["init", "--name", "Telemetry Test"], tmpDir)
 
@@ -83,7 +69,7 @@ async function testCliTelemetryFlags() {
 // Fixture: runner produces a session artifact for one scenario
 // ------------------------------------------------------------
 async function testRunnerProducesSessionArtifact() {
-  const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-output-"))
+  const outputDir = await makeTempDir("synth-first-contact-output-")
   try {
     const result = spawnSync(
       "node",
@@ -125,7 +111,7 @@ async function testRunnerProducesSessionArtifact() {
 // Fixture: all canonical scenarios run without error
 // ------------------------------------------------------------
 async function testAllScenariosRun() {
-  const outputDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-first-contact-all-"))
+  const outputDir = await makeTempDir("synth-first-contact-all-")
   try {
     const result = spawnSync("node", [RUNNER_PATH, "--all", "--output", outputDir], {
       cwd: process.cwd(),
@@ -274,32 +260,7 @@ function testExtractFirstContactEvidence() {
     cliPath: "node",
     repositoryRoot: "/tmp",
     startedAt: new Date().toISOString(),
-    turns: [
-      {
-        turn: 1,
-        command: ["status"],
-        intent: "Determine state.",
-        agentReasoningState: { understoodAs: "unknown repository", confidence: 0.1, unknowns: ["purpose"] },
-        inputs: {},
-        outputs: { status: "ok", phase: "initialized" },
-        stateBefore: { README: "", packageJson: "" },
-        stateAfter: {},
-        stateChange: {},
-        evidenceGenerated: [],
-      },
-      {
-        turn: 2,
-        command: ["explain"],
-        intent: "Read briefing.",
-        agentReasoningState: { understoodAs: "governed project", confidence: 0.6, unknowns: [] },
-        inputs: {},
-        outputs: { explanation: "..." },
-        stateBefore: {},
-        stateAfter: {},
-        stateChange: {},
-        evidenceGenerated: [],
-      },
-    ],
+    turns: evidenceTurns({ README: "", packageJson: "" }),
   }
 
   const evidence = extractFirstContactEvidence(artifact)

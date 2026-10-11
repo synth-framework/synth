@@ -6,35 +6,9 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { AdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
+import { createMockAdapter } from "./helpers/mocks.js"
 
-function createMockAdapter(name, observations = []) {
-  return {
-    metadata: { name, version: "1.0.0", kind: "mock", category: "integration" },
-    state: "enabled",
-    health: { state: "healthy", lastCheck: Date.now() },
-    async discover() { return "discovered" },
-    async configure() { return "configured" },
-    async validate() { return "validated" },
-    async enable() { return "enabled" },
-    async disable() { return "disabled" },
-    async healthCheck() { return "healthy" },
-    async observe() {
-      return { observations, errors: [] }
-    },
-  }
-}
-
-function makePlanningObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation } from "./helpers/adapter.js"
 
 test("bootstrap exposes adapterRegistry in context", async () => {
   const ctx = await bootstrap({ skipGenesis: true, infra: { persistence: "memory" } })

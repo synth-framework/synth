@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // GOVERNANCE RANKING TESTS (EXP-CLI-004)
 // ============================================================
@@ -16,7 +17,7 @@ import {
 } from "../dist/governance/rank.js"
 
 async function setupCharterDir() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-rank-test-"))
+  const dir = await makeTempDir("synth-rank-test-")
 
   await fs.writeFile(
     path.join(dir, "EXP-PROGRAM-001.md"),
@@ -147,7 +148,7 @@ async function testLoadProgramCompositionStatus() {
 }
 
 async function testDeferredNotCompleted() {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-rank-deferred-"))
+  const dir = await makeTempDir("synth-rank-deferred-")
   try {
     await fs.writeFile(
       path.join(dir, "EXP-PROGRAM-002.md"),

@@ -6,6 +6,7 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { createArchitectureAdapter } from "../dist/adapters/architecture/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
+import { assertAdapterLifecycle } from "./helpers/adapter-lifecycle.js"
 
 function makeObservation(category, subject, snippet = "", path = "") {
   return {
@@ -33,15 +34,7 @@ test("ArchitectureAdapter starts in discovered state", () => {
 })
 
 test("ArchitectureAdapter transitions through lifecycle", async () => {
-  const adapter = createArchitectureAdapter()
-  await adapter.configure({ observations: [] })
-  assert.strictEqual(adapter.state, "configured")
-  await adapter.validate()
-  assert.strictEqual(adapter.state, "validated")
-  await adapter.enable()
-  assert.strictEqual(adapter.state, "enabled")
-  await adapter.disable()
-  assert.strictEqual(adapter.state, "disabled")
+  await assertAdapterLifecycle(createArchitectureAdapter, { observations: [] })
 })
 
 test("ArchitectureAdapter infers hexagonal architecture", async () => {

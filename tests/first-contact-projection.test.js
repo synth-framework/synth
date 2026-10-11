@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH First Contact Projection Tests
 // ============================================================
@@ -11,6 +12,7 @@ import crypto from "crypto"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const GENERATOR_PATH = path.resolve(PROJECT_ROOT, "scripts", "generate-first-contact-projection.js")
@@ -29,10 +31,6 @@ function runScript(scriptPath, args = [], cwd = PROJECT_ROOT) {
     stderr: result.stderr || "",
     status: result.status,
   }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
 }
 
 async function testArchiveIsCompleteAndIntact() {
@@ -60,7 +58,7 @@ async function testProjectionCheckPasses() {
 }
 
 async function testProjectionIsDeterministic() {
-  const snapshotDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-projection-"))
+  const snapshotDir = await makeTempDir("synth-fc-projection-")
   try {
     const outputs = [
       path.join("docs", "first-contact", "journey.md"),
@@ -82,7 +80,7 @@ async function testProjectionIsDeterministic() {
 }
 
 async function testCheckDetectsDrift() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-drift-"))
+  const tmpDir = await makeTempDir("synth-fc-drift-")
   try {
     // Mirror both archives and committed outputs into the fixture
     await fs.mkdir(path.join(tmpDir, "examples", "first-contact", "recorded-journey"), { recursive: true })
@@ -115,7 +113,7 @@ async function testCheckDetectsDrift() {
 }
 
 async function testCheckFailsOnIncompleteArchive() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-incomplete-"))
+  const tmpDir = await makeTempDir("synth-fc-incomplete-")
   try {
     await fs.mkdir(path.join(tmpDir, "examples", "first-contact", "recorded-journey", "evidence-archive"), { recursive: true })
     const result = runScript(GENERATOR_PATH, ["--check"], tmpDir)
@@ -136,7 +134,7 @@ async function testRepairScriptDerivesConsistentReport() {
   const realReport = path.join(ARCHIVE_A_DIR, "replay-report.json")
   const realHashBefore = crypto.createHash("sha256").update(await fs.readFile(realReport)).digest("hex")
 
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-fc-repair-"))
+  const tmpDir = await makeTempDir("synth-fc-repair-")
   try {
     await fs.mkdir(path.join(tmpDir, "examples", "first-contact", "recorded-journey"), { recursive: true })
     await fs.cp(

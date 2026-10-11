@@ -6,34 +6,20 @@
 // ============================================================
 
 import { strict as assert } from "assert"
-import fs from "fs/promises"
-import path from "path"
-import { runSynth, parseJson, withTempDir, assertCliBuilt } from "./helpers/cli-harness.js"
+import { runSynth, parseJson, withTempDir, assertCliBuilt, readEventLog } from "./helpers/cli-harness.js"
 
-async function readEventLog(targetDir) {
-  const logPath = path.join(targetDir, ".synth", "data", "event-log.jsonl")
-  const raw = await fs.readFile(logPath, "utf-8")
-  return raw
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      try {
-        return JSON.parse(line)
-      } catch {
-        return null
-      }
-    })
-    .filter(Boolean)
+function identityEnv() {
+  return {
+    ...process.env,
+    SYNTH_AGENT_ID: "test-agent",
+    SYNTH_SESSION_ID: "test-session",
+    SYNTH_APPROVAL_MODE: "human-approved",
+  }
 }
 
 async function testSynthLogSessionIdFilter() {
   await withTempDir("synth-log-session-id-", async (targetDir) => {
-    const env = {
-      ...process.env,
-      SYNTH_AGENT_ID: "test-agent",
-      SYNTH_SESSION_ID: "test-session",
-      SYNTH_APPROVAL_MODE: "human-approved",
-    }
+    const env = identityEnv()
 
     const runResult = runSynth(["first-contact", "--approve"], targetDir, { env, timeout: 120000 })
     assert.equal(runResult.status, 0, `first-contact --approve failed: ${runResult.stderr}`)
@@ -51,12 +37,7 @@ async function testSynthLogSessionIdFilter() {
 
 async function testSynthLogApprovalModeFilter() {
   await withTempDir("synth-log-approval-mode-", async (targetDir) => {
-    const env = {
-      ...process.env,
-      SYNTH_AGENT_ID: "test-agent",
-      SYNTH_SESSION_ID: "test-session",
-      SYNTH_APPROVAL_MODE: "human-approved",
-    }
+    const env = identityEnv()
 
     const runResult = runSynth(["first-contact", "--approve"], targetDir, { env, timeout: 120000 })
     assert.equal(runResult.status, 0, `first-contact --approve failed: ${runResult.stderr}`)
@@ -74,12 +55,7 @@ async function testSynthLogApprovalModeFilter() {
 
 async function testSynthLogExpeditionIdFilter() {
   await withTempDir("synth-log-expedition-id-", async (targetDir) => {
-    const env = {
-      ...process.env,
-      SYNTH_AGENT_ID: "test-agent",
-      SYNTH_SESSION_ID: "test-session",
-      SYNTH_APPROVAL_MODE: "human-approved",
-    }
+    const env = identityEnv()
 
     const runResult = runSynth(["first-contact", "--approve"], targetDir, { env, timeout: 120000 })
     assert.equal(runResult.status, 0, `first-contact --approve failed: ${runResult.stderr}`)

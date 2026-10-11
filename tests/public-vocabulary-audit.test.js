@@ -14,6 +14,7 @@ import { test } from "node:test"
 import assert from "node:assert"
 import fs from "fs/promises"
 import path from "path"
+import { auditFiles } from "./helpers/vocabulary-audit.js"
 
 const PUBLIC_DOC_GLOBS = [
   "docs/operator/*.md",
@@ -103,22 +104,7 @@ test("Public docs do not leak forbidden implementation terminology", async () =>
   const files = await resolvePublicDocs()
   assert.ok(files.length > 0, "Should find public docs to audit")
 
-  const allViolations = []
-
-  for (const file of files) {
-    const content = await fs.readFile(file, "utf-8")
-    const violations = findViolations(file, content)
-    for (const v of violations) {
-      allViolations.push({ file: path.relative(process.cwd(), file), ...v })
-    }
-  }
-
-  if (allViolations.length > 0) {
-    const summary = allViolations
-      .map((v) => `  - ${v.file}: "${v.term}" in "${v.line.slice(0, 80)}"`)
-      .join("\n")
-    assert.fail(`Forbidden implementation terms found in public docs:\n${summary}`)
-  }
+  await auditFiles({ files, findViolations, failMessage: "Forbidden implementation terms found in public docs" })
 })
 
 test("Public vocabulary doc lists exactly seven public concepts", async () => {

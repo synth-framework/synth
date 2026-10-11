@@ -1,3 +1,6 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
+import { withoutLifecycleContinuation } from "./helpers/context.js"
+import { lastEvent, openDivergenceGate } from "./helpers/alignment-fixture.js"
 // ============================================================
 // EXP-GOVERNABILITY-006B — Deterministic Governance Lifecycle Replay
 // ============================================================
@@ -12,6 +15,8 @@
 // ============================================================
 
 import { strict as assert } from "assert"
+import { approveAlignmentContract } from "./helpers/alignment-fixture.js"
+import { createExecutingExpedition as createExecutingExpeditionIntent, certifyConvergenceWithFeatures } from "./helpers/governance-intent.js"
 import path from "path"
 import { promises as fs } from "fs"
 import { createHash } from "crypto"
@@ -19,11 +24,6 @@ import { bootstrap } from "../dist/core/bootstrap.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { rebuildState } from "../dist/runtime/replay.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-governance-lifecycle-replay", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-governance-lifecycle-replay")
@@ -31,7 +31,7 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
+  const dataDir = makeCwdDataDir("data-test-governance-lifecycle-replay")
   const ctx = await bootstrap({
     infra: {
       eventLogPath: path.join(dataDir, "event-log.jsonl"),
@@ -41,21 +41,7 @@ async function makeCtx() {
     genesis: { projectName: "Governance Lifecycle Replay", systemId: "gov-lifecycle-replay", partitions: 1 },
     skipGenesis: false,
   })
-  // Disable automatic lifecycle continuation so the replay can assert each
-  // governance stage independently.
-  const originalHandleIntent = ctx.api.handleIntent.bind(ctx.api)
-  ctx.api.handleIntent = (req) =>
-    originalHandleIntent({
-      ...req,
-      context: { ...(req.context || {}), disableLifecycleContinuation: true },
-    })
-  return ctx
-}
-
-async function lastEvent(ctx, type, predicate = () => true) {
-  const events = await ctx.infra.eventStore.loadAll()
-  const matches = events.filter((e) => e.type === type && predicate(e))
-  return matches[matches.length - 1]
+  return withoutLifecycleContinuation(ctx)
 }
 
 async function createReferenceEvidence(ctx) {
@@ -125,33 +111,10 @@ async function createAlignmentContract(ctx, intentModelId, evidenceId) {
   return event.payload.contractId
 }
 
-async function approveAlignmentContract(ctx, contractId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "SubmitAlignmentContract",
-    payload: { contractId },
-  })
-  assert.equal(result.status, "ok", `SubmitAlignmentContract failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "ApproveAlignmentContract",
-    payload: { contractId, reviewer: { kind: "human", id: "test-operator" } },
-  })
-  assert.equal(result.status, "ok", `ApproveAlignmentContract failed: ${result.error}`)
-}
-
 async function alignDivergenceGate(ctx, contractId, intentModelId, proposal) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "OpenDivergenceGate",
-    payload: { contractId, intentModelId },
-  })
-  assert.equal(result.status, "ok", `OpenDivergenceGate failed: ${result.error}`)
-  const opened = await lastEvent(ctx, "DIVERGENCE_GATE_OPENED", (e) => e.payload.contractId === contractId)
-  assert.ok(opened, "DIVERGENCE_GATE_OPENED event should exist")
+  const opened = await openDivergenceGate(ctx, contractId, intentModelId)
 
-  result = await ctx.api.handleIntent({
+  const result = await ctx.api.handleIntent({
     actor: "test",
     capability: "EvaluateAndResolveDivergenceGate",
     payload: {
@@ -184,21 +147,10 @@ async function createApprovedMission(ctx, missionId, contractId) {
 }
 
 async function createExecutingExpedition(ctx, missionId, expeditionId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateExpedition",
-    payload: { id: expeditionId, missionId, name: `Expedition ${expeditionId}`, goal: "Implement homepage" },
+  return createExecutingExpeditionIntent(ctx, missionId, expeditionId, {
+    name: `Expedition ${expeditionId}`,
+    goal: "Implement homepage",
   })
-  assert.equal(result.status, "ok", `CreateExpedition failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `ApproveExpedition failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `CommitExpedition failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `StartExpedition failed: ${result.error}`)
 }
 
 async function completeExpedition(ctx, expeditionId) {
@@ -262,20 +214,10 @@ async function evaluateAndResolveAcceptanceGate(ctx, expeditionId) {
 }
 
 async function certifyConvergence(ctx, missionId, expeditionId, contractId, observedFeatures) {
-  const result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures,
-      artifacts: [{ kind: "artifact", id: "homepage", path: "/homepage.html", description: "Homepage implementation" }],
-      runtimeEvidence: [{ kind: "runtime", id: "render", source: "replay", observation: "Workspace renders", timestamp: 0 }],
-      executionEvidence: [{ kind: "execution", id: "build", eventIds: ["e1"], summary: "Build passed" }],
-    },
+  return certifyConvergenceWithFeatures(ctx, missionId, expeditionId, contractId, observedFeatures, {
+    evidenceSource: "replay",
+    evidenceTimestamp: 0,
   })
-  return result
 }
 
 function buildProposal(features) {
@@ -588,35 +530,10 @@ async function assertDeterminism(name, executor, ids) {
   return runs[0]
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GOVERNABILITY-006B — Governance Lifecycle Replay")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 const evidence = {
   expedition: "EXP-GOVERNABILITY-006B",
@@ -723,7 +640,7 @@ async function writeEvidenceIfChanged(evidencePath, evidence) {
 
 await cleanData()
 try {
-  await run()
+  await suite.run("governance-lifecycle-replay")
   const evidencePath = path.join(process.cwd(), "docs/governance/program-027/lifecycle-replay-evidence.json")
   await writeEvidenceIfChanged(evidencePath, evidence)
 } finally {

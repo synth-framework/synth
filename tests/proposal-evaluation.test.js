@@ -1,3 +1,4 @@
+import { makeCwdDataDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-GOVERNABILITY-003 — Proposal Evaluation Capability Tests
 // ============================================================
@@ -8,7 +9,8 @@
 import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
-import { bootstrap } from "../dist/core/bootstrap.js"
+import { makeCtx as makeTestCtx } from "./helpers/context.js"
+import { assertEvaluationShape as assertEvaluationShapeBase } from "./helpers/test-fixtures.js"
 import {
   createIntentModel,
   createAlignmentContract,
@@ -18,11 +20,6 @@ import { buildDerivedState } from "../dist/state/derived/index.js"
 import { buildProposal } from "../dist/governance/proposal-evaluation/rules/program-027.js"
 import { evaluateProposal, program027RuleSet } from "../dist/governance/proposal-evaluation/index.js"
 
-let ctxCounter = 0
-
-function makeDataDir() {
-  return path.join(process.cwd(), "data-test-proposal-evaluation", `run-${ctxCounter++}`)
-}
 
 async function cleanData() {
   const base = path.join(process.cwd(), "data-test-proposal-evaluation")
@@ -30,47 +27,19 @@ async function cleanData() {
 }
 
 async function makeCtx() {
-  const dataDir = makeDataDir()
-  return bootstrap({
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-      checkpointPath: path.join(dataDir, "checkpoint.json"),
-    },
-    genesis: { projectName: "Proposal Evaluation Test", systemId: "proposal-eval-test", partitions: 1 },
+  const dataDir = makeCwdDataDir("data-test-proposal-evaluation")
+  return makeTestCtx(dataDir, {
+    projectName: "Proposal Evaluation Test",
+    systemId: "proposal-eval-test",
+    partitions: 1,
     skipGenesis: false,
   })
 }
 
-const TESTS = []
-let passed = 0
-let failed = 0
+import { createSuite } from "./helpers/runner.js"
 
-function test(name, fn) { TESTS.push({ name, fn }) }
-
-async function run() {
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log("  EXP-GOVERNABILITY-003 — Proposal Evaluation")
-  console.log("═══════════════════════════════════════════════════\n")
-
-  for (const t of TESTS) {
-    try {
-      await t.fn()
-      console.log(`  [PASS] ${t.name}`)
-      passed++
-    } catch (err) {
-      console.log(`  [FAIL] ${t.name}`)
-      console.log(`         ${err.message || err}`)
-      failed++
-    }
-  }
-
-  console.log("\n═══════════════════════════════════════════════════")
-  console.log(`  Results: ${passed} passed, ${failed} failed`)
-  console.log("═══════════════════════════════════════════════════\n")
-
-  if (failed > 0) process.exit(1)
-}
+const suite = createSuite()
+const { test } = suite
 
 async function createApprovedContractAndOpenGate(ctx) {
   const { intentModelId } = await createIntentModel(ctx)
@@ -114,13 +83,7 @@ async function evaluateGate(ctx, gateId, proposal) {
 }
 
 function assertEvaluationShape(evaluation) {
-  assert.ok(evaluation, "Evaluation payload should exist")
-  assert.ok(["aligned", "revision_required", "rejected"].includes(evaluation.decision), `Unexpected decision: ${evaluation.decision}`)
-  assert.equal(typeof evaluation.confidence, "number", "Confidence should be a number")
-  assert.ok(evaluation.confidence >= 0 && evaluation.confidence <= 1, "Confidence should be in [0, 1]")
-  assert.ok(Array.isArray(evaluation.matchedDriftClasses), "matchedDriftClasses should be an array")
-  assert.ok(Array.isArray(evaluation.reasoning), "reasoning should be an array")
-  assert.ok(evaluation.reasoning.length > 0, "reasoning should not be empty")
+  assertEvaluationShapeBase(evaluation, { checkReasoning: true })
 }
 
 // ------------------------------------------------------------------
@@ -348,4 +311,4 @@ test("EvaluateAndResolveDivergenceGate permits Mission approval after alignment"
 })
 
 await cleanData()
-await run()
+await suite.run("proposal-evaluation")

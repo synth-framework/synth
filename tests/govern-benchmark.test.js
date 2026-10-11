@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // GOVERN BENCHMARK TESTS
 // ============================================================
@@ -11,7 +12,7 @@ import path from "path"
 import { runBenchmark } from "../scripts/govern-benchmark.js"
 
 async function withTempBenchmarkDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-govern-benchmark-"))
+  const tmpDir = await makeTempDir("synth-govern-benchmark-")
   try {
     return await fn(tmpDir)
   } finally {

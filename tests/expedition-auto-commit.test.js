@@ -1,3 +1,4 @@
+import { runGit } from "./helpers/workspace.js"
 // ============================================================
 // EXP-AUTO-COMMIT-001 — Auto-commit derived SYNTH state
 // ============================================================
@@ -6,138 +7,33 @@
 // state changes no longer block expedition completion.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd, env = {}) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-    env: { ...process.env, ...env },
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function runGit(args, cwd) {
-  const result = spawnSync("git", args, {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} failed: ${result.stderr}`)
-  }
-  return result.stdout.trim()
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { createAndApproveMission as createAndApproveMissionIntent, setupGitBackedProject, createExecutingExpedition as createExecutingExpeditionIntent } from "./helpers/mission-lifecycle.js"
+import { certifyConvergence as certifyConvergenceIntent } from "./helpers/governance-intent.js"
+import { assert } from "./helpers/assert.js"
 
 async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-auto-commit-"))
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-
-  runGit(["init"], tmpDir)
-  runGit(["config", "user.email", "test@synth.local"], tmpDir)
-  runGit(["config", "user.name", "Test Operator"], tmpDir)
-  runGit(["add", "package.json"], tmpDir)
-  runGit(["commit", "-m", "initial"], tmpDir)
-
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-
-  // Derived state is tracked in this test project so auto-commit can operate.
-  runGit(["add", "-A"], tmpDir)
-  runGit(["commit", "-m", "bootstrap"], tmpDir)
-
-  return tmpDir
+  return setupGitBackedProject("synth-auto-commit-")
 }
 
 async function createAndApproveMission(projectDir) {
-  const createResult = runSynth(
-    ["mission", "create", "--subject", "Auto-commit Test Mission", "--purpose", "Test derived state auto-commit"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  const draftId1 = parseJson(createResult.stdout).draftId
-
-  const evidenceResult = runSynth(
-    [
-      "mission",
-      "evidence",
-      "add",
-      "--draft-id",
-      draftId1,
-      "--subject",
-      "Supporting evidence",
-      "--purpose",
-      "Raises confidence above approval threshold",
-      "--confidence",
-      "certain",
-    ],
-    projectDir,
-  )
-  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
-  const draftId2 = parseJson(evidenceResult.stdout).draftId
-
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
+  return createAndApproveMissionIntent(projectDir, {
+    subject: "Auto-commit Test Mission",
+    purpose: "Test derived state auto-commit",
+    returnGateContext: true,
   })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId2, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const approveOutput = parseJson(approveResult.stdout)
-  assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
-  assert(approveOutput.decision?.approved === true, `mission should be approved`)
-  const missionId = approveOutput.runtime?.missionId
-  assert(missionId, `mission approve should return a runtime missionId`)
-  return { missionId, contractId }
 }
 
 async function createExecutingExpedition(projectDir, missionId) {
-  const createResult = runSynth(
-    ["expedition", "create", "--mission", missionId, "--subject", "Auto-commit Expedition", "--goal", "Test auto-commit"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
-  const draftId = parseJson(createResult.stdout).draftId
-
-  const approveResult = runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
-  assert(approveResult.status === 0, `expedition approve must exit 0:\n${approveResult.stderr}`)
-
-  const commitResult = runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
-  assert(commitResult.status === 0, `expedition commit must exit 0:\n${commitResult.stderr}`)
-
-  return draftId
+  return createExecutingExpeditionIntent(projectDir, missionId, {
+    subject: "Auto-commit Expedition",
+    goal: "Test auto-commit",
+    start: false,
+  })
 }
 
 async function testStartAutoCommitsDerivedState(projectDir, missionId) {
@@ -188,22 +84,11 @@ async function testCompleteDoesNotBlockOnDerivedState(projectDir, missionId, gat
   assert(evidenceResult.status === 0, `evidence attach must exit 0:\n${evidenceResult.stderr}`)
   await fs.rm(evidenceFile, { force: true })
 
-  const certifyResult = await gateCtx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures: { hasFeature: true },
-      ruleSetId: "program-027-homepage",
-      artifacts: [{ path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`, hash: "test", description: "Test" }],
-      runtimeEvidence: [{ source: "test", observation: "ok", timestamp: 0 }],
-      executionEvidence: [{ executionId: "test", result: "passed", outcome: "completed" }],
-      certifier: { kind: "engine", id: "convergence-certification" },
-    },
+  await certifyConvergenceIntent(gateCtx, missionId, expeditionId, contractId, {
+    observedFeatures: { hasFeature: true },
+    artifacts: [{ path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`, hash: "test", description: "Test" }],
+    runtimeEvidence: [{ source: "test", observation: "ok", timestamp: 0 }],
   })
-  assert(certifyResult.status === "ok", `CertifyConvergence must succeed: ${certifyResult.error}`)
 
   // Simulate a mid-expedition source change that is committed; only derived
   // state should remain dirty after lifecycle transitions.

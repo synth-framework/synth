@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // AI Capability Projection Tests (EXP-DIST-001, EXP-DIST-002)
 // ============================================================
@@ -11,16 +12,13 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import crypto from "crypto"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const PROJECTION_SCRIPT = path.resolve(PROJECT_ROOT, "scripts", "project-ai-capabilities.js")
 const MODEL_PATH = path.resolve(PROJECT_ROOT, "src", "distribution", "ai-capability-model.json")
 const CAPABILITY_LIST_PATH = path.resolve(PROJECT_ROOT, "docs", "reference", "capability-list.json")
 const DISTRIBUTION_DIR = path.resolve(PROJECT_ROOT, "distribution")
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 function hashString(input) {
   return crypto.createHash("sha256").update(input, "utf-8").digest("hex")
@@ -80,7 +78,7 @@ async function testCanonicalModelExists() {
 }
 
 async function testProjectionGeneratesAtLeastThreeSurfaces() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-capability-"))
+  const tmpDir = await makeTempDir("synth-ai-capability-")
   try {
     const result = runProjection(tmpDir)
     assert(result.status === 0, `Projection engine must succeed:\n${result.stdout}\n${result.stderr}`)
@@ -113,8 +111,8 @@ async function testProjectionGeneratesAtLeastThreeSurfaces() {
 }
 
 async function testProjectionsAreDeterministic() {
-  const run1 = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-det-1-"))
-  const run2 = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-det-2-"))
+  const run1 = await makeTempDir("synth-ai-det-1-")
+  const run2 = await makeTempDir("synth-ai-det-2-")
   try {
     const result1 = runProjection(run1)
     const result2 = runProjection(run2)
@@ -143,7 +141,7 @@ async function testProjectionsAreDeterministic() {
 }
 
 async function testCommittedProjectionsAreFresh() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-fresh-"))
+  const tmpDir = await makeTempDir("synth-ai-fresh-")
   try {
     const result = runProjection(tmpDir)
     assert(result.status === 0, "Projection engine must succeed for freshness check")
@@ -176,7 +174,7 @@ async function readCapabilityList() {
 }
 
 async function testCheckModeDetectsDrift() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-drift-"))
+  const tmpDir = await makeTempDir("synth-ai-drift-")
   try {
     const result = runProjection(tmpDir)
     assert(result.status === 0, "Projection engine must succeed in drift test setup")
@@ -197,7 +195,7 @@ async function testCheckModeDetectsDrift() {
 
 async function testCapabilitiesProjected() {
   const capabilities = await readCapabilityList()
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-ai-cap-"))
+  const tmpDir = await makeTempDir("synth-ai-cap-")
   try {
     const result = runProjection(tmpDir)
     assert(result.status === 0, `Projection engine must succeed:\n${result.stdout}\n${result.stderr}`)

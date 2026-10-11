@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // First Contact Mission Materialization Tests
 // ============================================================
@@ -15,13 +16,10 @@ import { extractIntent } from "../dist/first-contact/extract/index.js"
 import { projectArchitecture } from "../dist/first-contact/project/index.js"
 import { verifyCapabilities } from "../dist/first-contact/verify/index.js"
 import { materialize } from "../dist/first-contact/materialize/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 async function testMaterializesProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-materialize-"))
+  const tmpDir = await makeTempDir("synth-materialize-")
   const artifact = extractIntent("Let's build a space mission tracker in TypeScript for the web.")
   const projection = projectArchitecture(artifact)
   const verification = verifyCapabilities(projection.recommended)
@@ -60,7 +58,7 @@ async function testMaterializesProject() {
 }
 
 async function testBlocksOnFailedVerification() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-materialize-"))
+  const tmpDir = await makeTempDir("synth-materialize-")
   const artifact = extractIntent("Let's build a space mission tracker.")
   const projection = projectArchitecture(artifact)
 

@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-AGENTS-001 — AGENTS.md Synchronization
 // ============================================================
@@ -8,24 +9,14 @@ import fs from "node:fs"
 import os from "os"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
 function makeTempProjectRoot() {
-  return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "agents-sync-test-")))
+  return fs.realpathSync.native(makeTempDirSync("agents-sync-test-"))
 }
 
-function runSynth(args, cwd) {
-  return spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    env: { ...process.env, NODE_ENV: "test" },
-  })
-}
 
-function parseJson(stdout) {
-  return JSON.parse(stdout.trim())
-}
 
 test("synth project AGENTS.md generates AGENTS.md from baseline", { concurrency: false }, async () => {
   const dir = makeTempProjectRoot()

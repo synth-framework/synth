@@ -5,6 +5,7 @@
 // the expected protocol and metadata functions.
 // ============================================================
 
+import { assert } from "./helpers/assert.js"
 import {
   parseSynthCommand,
   isMutatingCommand,
@@ -12,10 +13,6 @@ import {
   deriveProtocol,
   resolveRepositoryContext,
 } from "../packages/synth-agent-sdk/dist/index.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 function testParseSynthCommand() {
   const command = parseSynthCommand("synth mission create --subject X --purpose Y")

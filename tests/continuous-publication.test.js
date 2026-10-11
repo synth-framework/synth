@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Continuous Publication Tests
 // ============================================================
@@ -9,9 +10,10 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
-const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
 const PACKAGE_PATH = path.resolve(PROJECT_ROOT, "package.json")
 
 function runNpm(script, cwd) {
@@ -28,23 +30,6 @@ function runNpm(script, cwd) {
   }
 }
 
-function runSynth(args, cwd) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
 async function testDocsGenerateScriptExists() {
   const packageJson = JSON.parse(await fs.readFile(PACKAGE_PATH, "utf-8"))
   assert(typeof packageJson.scripts["docs:generate"] === "string", "docs:generate npm script must exist")
@@ -55,7 +40,7 @@ async function testDocsGenerateScriptExists() {
 }
 
 async function testDocsGenerateProducesProjections() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-docs-gen-"))
+  const tmpDir = await makeTempDir("synth-docs-gen-")
   try {
     const docsDir = path.join(tmpDir, "docs")
     const generatedDir = path.join(tmpDir, "docs", "generated")

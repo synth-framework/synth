@@ -3,7 +3,7 @@
 import { synthesizeIntents, buildIntentGraph, executeGraph } from "../dist/execution/index.js"
 import assert from "node:assert"
 import test from "node:test"
-import { makeWorkItem, makeExpedition, makeObjective } from "./helpers/execution-fixtures.js"
+import { makeWorkItem, makeExpedition, makeObjective, synthesizeSingleObjectiveIntents } from "./helpers/execution-fixtures.js"
 
 test("synthesizeIntents: writeFile produces filesystem intent", () => {
   const workItem = makeWorkItem("WI-1", {
@@ -40,12 +40,7 @@ test("synthesizeIntents: unknown operation produces no-op intent", () => {
 })
 
 test("executeGraph: emits lifecycle events and completes intents", async () => {
-  const intents = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-  }).intents
+  const intents = synthesizeSingleObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/exp-1", [intents])
 
@@ -71,12 +66,7 @@ test("executeGraph: emits lifecycle events and completes intents", async () => {
 })
 
 test("executeGraph: halts and emits failure when handler missing", async () => {
-  const intents = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-  }).intents
+  const intents = synthesizeSingleObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/exp-1", [intents])
 
@@ -93,12 +83,7 @@ test("executeGraph: halts and emits failure when handler missing", async () => {
 })
 
 test("executeGraph: halts on handler failure", async () => {
-  const intents = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-  }).intents
+  const intents = synthesizeSingleObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/exp-1", [intents])
 

@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // ============================================================
 // EXP-CLI-002 — Human-Readable CLI Output Mode
 // ============================================================
@@ -28,7 +29,7 @@ function runSynth(args, cwd) {
 }
 
 function makeTempDir() {
-  return fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), "human-output-test-")))
+  return fs.realpathSync.native(makeTempDirSync("human-output-test-"))
 }
 
 function isSingleJsonObject(text) {

@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Initialization Evidence Tests
 // ============================================================
@@ -10,37 +11,16 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
+import { runSynth, CLI_PATH, readEventLog } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function readEventLog(dataDir) {
-  const logPath = path.join(dataDir, "event-log.jsonl")
-  try {
-    const raw = await fs.readFile(logPath, "utf-8")
-    return raw
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-  } catch {
-    return []
-  }
+async function readSingleInitEvent(tmpDir) {
+  const events = await readEventLog(tmpDir)
+  assert(events.length === 1, `expected exactly one event, got ${events.length}`)
+  const event = events[0]
+  assert(event.type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${event.type}`)
+  assert(event.payload.sourceType === "filesystem", `expected sourceType filesystem, got ${event.payload.sourceType}`)
+  return event
 }
 
 async function listEvidenceArtifacts(evidenceDir) {
@@ -55,7 +35,7 @@ async function listEvidenceArtifacts(evidenceDir) {
 // Fixture: synth init with explicit source produces evidence
 // ------------------------------------------------------------
 async function testExplicitSourceProducesEvidenceArtifact() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-evidence-"))
+  const tmpDir = await makeTempDir("synth-init-evidence-")
   try {
     const knowledgeDir = path.join(tmpDir, "knowledge")
     await fs.mkdir(knowledgeDir, { recursive: true })
@@ -75,13 +55,7 @@ async function testExplicitSourceProducesEvidenceArtifact() {
     )
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
-    const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
-    assert(events.length === 1, `expected exactly one event, got ${events.length}`)
-
-    const event = events[0]
-    assert(event.type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${event.type}`)
-    assert(event.payload.sourceType === "filesystem", `expected sourceType filesystem, got ${event.payload.sourceType}`)
+    const event = await readSingleInitEvent(tmpDir)
     assert(event.payload.sourceLocation === "./knowledge", `expected sourceLocation ./knowledge, got ${event.payload.sourceLocation}`)
     assert(event.payload.adapterId === "filesystem", `expected adapterId filesystem, got ${event.payload.adapterId}`)
     assert(typeof event.payload.adapterVersion === "string", "adapterVersion should be a string")
@@ -110,7 +84,7 @@ async function testExplicitSourceProducesEvidenceArtifact() {
 // Fixture: default synth init uses filesystem adapter and evidence
 // ------------------------------------------------------------
 async function testDefaultInitUsesFilesystemAdapter() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-default-evidence-"))
+  const tmpDir = await makeTempDir("synth-init-default-evidence-")
   try {
     await fs.mkdir(path.join(tmpDir, "src"), { recursive: true })
     await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test" }), "utf-8")
@@ -118,18 +92,12 @@ async function testDefaultInitUsesFilesystemAdapter() {
     const initResult = runSynth(["init", "--name", "Default Evidence Test"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
-    const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
-    assert(events.length === 1, `expected exactly one event, got ${events.length}`)
-
-    const event = events[0]
-    assert(event.type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${event.type}`)
-    assert(event.payload.sourceType === "filesystem", `expected sourceType filesystem, got ${event.payload.sourceType}`)
+    const event = await readSingleInitEvent(tmpDir)
     assert(event.payload.adapterId === "filesystem", `expected adapterId filesystem, got ${event.payload.adapterId}`)
     assert(typeof event.payload.evidenceReference === "string", "evidenceReference should be a string")
     assert(event.payload.projectModel.lifecycleStage === "implementation", `expected lifecycleStage implementation, got ${event.payload.projectModel.lifecycleStage}`)
 
-    const evidenceDir = path.join(dataDir, "evidence", "initialization")
+    const evidenceDir = path.join(tmpDir, ".synth", "data", "evidence", "initialization")
     const artifacts = await listEvidenceArtifacts(evidenceDir)
     assert(artifacts.length === 1, `expected exactly one evidence artifact, got ${artifacts.length}`)
   } finally {
@@ -142,7 +110,7 @@ async function testDefaultInitUsesFilesystemAdapter() {
 // Fixture: unknown source type fails with a clear diagnostic
 // ------------------------------------------------------------
 async function testUnknownSourceTypeFails() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-init-unknown-source-"))
+  const tmpDir = await makeTempDir("synth-init-unknown-source-")
   try {
     const initResult = runSynth(
       ["init", "--name", "Unknown Source Test", "--source", "nonexistent"],

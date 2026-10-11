@@ -19,6 +19,7 @@ import { test } from "node:test"
 import assert from "node:assert"
 import fs from "fs/promises"
 import path from "path"
+import { auditFiles } from "./helpers/vocabulary-audit.js"
 
 const HOMEPAGE_FILES = [
   "website/index.html",
@@ -73,22 +74,7 @@ test("Homepage does not leak forbidden internal governance terminology", async (
   const files = await resolveHomepageFiles()
   assert.ok(files.length > 0, "Should find homepage files to audit")
 
-  const allViolations = []
-
-  for (const file of files) {
-    const content = await fs.readFile(file, "utf-8")
-    const violations = findViolations(file, content)
-    for (const v of violations) {
-      allViolations.push({ file: path.relative(process.cwd(), file), ...v })
-    }
-  }
-
-  if (allViolations.length > 0) {
-    const summary = allViolations
-      .map((v) => `  - ${v.file}: "${v.term}" in "${v.line.slice(0, 80)}"`)
-      .join("\n")
-    assert.fail(`Forbidden internal terms found in homepage:\n${summary}`)
-  }
+  await auditFiles({ files, findViolations, failMessage: "Forbidden internal terms found in homepage" })
 })
 
 test("Public experience resolver output does not contain forbidden terms", async () => {

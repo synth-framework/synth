@@ -1,10 +1,7 @@
 // Regression guard for 01604a3 deliverable (3): dependsOn must be settable
 // via expedition refine and survive a no-op refine (when not provided).
 import { refineExpedition } from "../dist/domain/planning.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function makeExpedition(overrides = {}) {
   return {

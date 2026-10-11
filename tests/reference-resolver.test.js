@@ -9,30 +9,10 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { resolveReferences } from "../dist/runtime/reference-resolver.js"
 import { resolveIdentities } from "../dist/runtime/identity-resolver.js"
-
-function makeEvent(id, type, payload) {
-  return {
-    id,
-    type,
-    timestamp: Date.now(),
-    transactionId: "tx-1",
-    capability: "Genesis",
-    actor: "system",
-    payload,
-    eventHash: "hash",
-    previousHash: "prev",
-  }
-}
+import { makeIdentityEvent as makeEvent, identityCreationEvents, missionMEvent, expeditionEEvent } from "./helpers/kernel-event-fixtures.js"
 
 test("resolves direct parent reference", () => {
-  const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "EXPEDITION_CREATED", {
-      expedition: { id: "ex1", missionId: "m1", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-  ]
+  const events = identityCreationEvents()
   const { registry } = resolveIdentities(events)
   const result = resolveReferences(events, registry)
 
@@ -43,9 +23,7 @@ test("resolves direct parent reference", () => {
 
 test("recovers unknown parent reference via unique candidate", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
+    missionMEvent("e1"),
     makeEvent("e2", "EXPEDITION_CREATED", {
       expedition: { id: "ex1", missionId: "legacy-mission", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
     }),
@@ -62,9 +40,7 @@ test("recovers unknown parent reference via unique candidate", () => {
 
 test("reports unresolved reference when multiple candidates exist", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M1", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
+    missionMEvent("e1", "M1"),
     makeEvent("e2", "MISSION_CREATED", {
       mission: { id: "m2", name: "M2", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
     }),
@@ -82,12 +58,8 @@ test("reports unresolved reference when multiple candidates exist", () => {
 
 test("reports missing parent reference as unresolved", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "EXPEDITION_CREATED", {
-      expedition: { id: "ex1", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
+    missionMEvent("e1"),
+    expeditionEEvent("e2"),
   ]
   const { registry } = resolveIdentities(events)
   const result = resolveReferences(events, registry)

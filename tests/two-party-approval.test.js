@@ -93,6 +93,31 @@ function makeGrantPayload(requestId, grantedBy) {
   }
 }
 
+async function setupApprovalScenario() {
+  const ctx = await setupContext()
+  const requestId = crypto.randomUUID()
+  const operationId = "bootstrap"
+  const requestedBy = makeIdentity("agent-a")
+  const grantedBy = makeIdentity("agent-b")
+  return { ctx, requestId, operationId, requestedBy, grantedBy }
+}
+
+async function requestApproval(ctx, { requestId, operationId, requestedBy }) {
+  return ctx.gate.execute({
+    actor: requestedBy.agentId,
+    capability: "Approval",
+    payload: makeRequestPayload(requestId, operationId, requestedBy, { operation: "approve" }, expiresAtIso(1)),
+  })
+}
+
+async function grantApproval(ctx, { requestId, grantedBy }) {
+  return ctx.gate.execute({
+    actor: grantedBy.agentId,
+    capability: "Approval",
+    payload: makeGrantPayload(requestId, grantedBy),
+  })
+}
+
 async function testBlockedWithoutApproval() {
   const ctx = await setupContext()
   const invocation = makeDestructiveInvocation()
@@ -110,12 +135,8 @@ async function testBlockedWithoutApproval() {
 }
 
 async function testRequestGrantAllowsExecution() {
-  const ctx = await setupContext()
-  const requestId = crypto.randomUUID()
+  const { ctx, requestId, operationId, requestedBy, grantedBy } = await setupApprovalScenario()
   const destructive = makeDestructiveInvocation()
-  const operationId = "bootstrap"
-  const requestedBy = makeIdentity("agent-a")
-  const grantedBy = makeIdentity("agent-b")
 
   const requestResult = await ctx.gate.execute({
     actor: requestedBy.agentId,
@@ -131,11 +152,7 @@ async function testRequestGrantAllowsExecution() {
   assert.strictEqual(requestedEvent.payload.operation, operationId)
   assert.ok(requestedEvent.payload.operationFingerprint, "request must carry operation fingerprint")
 
-  const grantResult = await ctx.gate.execute({
-    actor: grantedBy.agentId,
-    capability: "Approval",
-    payload: makeGrantPayload(requestId, grantedBy),
-  })
+  const grantResult = await grantApproval(ctx, { requestId, grantedBy })
   assert.strictEqual(grantResult.contract.finalState, "COMMITTED", "approval grant must commit")
 
   const stateBeforeExecute = await ctx.runtime.getState()
@@ -184,11 +201,7 @@ async function testSelfApprovalRejected() {
 }
 
 async function testExpiredRequestRejected() {
-  const ctx = await setupContext()
-  const requestId = crypto.randomUUID()
-  const operationId = "bootstrap"
-  const requestedBy = makeIdentity("agent-a")
-  const grantedBy = makeIdentity("agent-b")
+  const { ctx, requestId, operationId, requestedBy, grantedBy } = await setupApprovalScenario()
 
   await ctx.gate.execute({
     actor: requestedBy.agentId,
@@ -218,23 +231,11 @@ async function testExpiredRequestRejected() {
 }
 
 async function testMismatchedFingerprintRejected() {
-  const ctx = await setupContext()
-  const requestId = crypto.randomUUID()
-  const operationId = "bootstrap"
-  const requestedBy = makeIdentity("agent-a")
-  const grantedBy = makeIdentity("agent-b")
+  const { ctx, requestId, operationId, requestedBy, grantedBy } = await setupApprovalScenario()
 
-  await ctx.gate.execute({
-    actor: requestedBy.agentId,
-    capability: "Approval",
-    payload: makeRequestPayload(requestId, operationId, requestedBy, { operation: "approve" }, expiresAtIso(1)),
-  })
+  await requestApproval(ctx, { requestId, operationId, requestedBy })
 
-  await ctx.gate.execute({
-    actor: grantedBy.agentId,
-    capability: "Approval",
-    payload: makeGrantPayload(requestId, grantedBy),
-  })
+  await grantApproval(ctx, { requestId, grantedBy })
 
   const mutatedInvocation = {
     actor: "agent-a",
@@ -254,23 +255,11 @@ async function testMismatchedFingerprintRejected() {
 }
 
 async function testApprovalEventsReplayable() {
-  const ctx = await setupContext()
-  const requestId = crypto.randomUUID()
-  const operationId = "bootstrap"
-  const requestedBy = makeIdentity("agent-a")
-  const grantedBy = makeIdentity("agent-b")
+  const { ctx, requestId, operationId, requestedBy, grantedBy } = await setupApprovalScenario()
 
-  await ctx.gate.execute({
-    actor: requestedBy.agentId,
-    capability: "Approval",
-    payload: makeRequestPayload(requestId, operationId, requestedBy, { operation: "approve" }, expiresAtIso(1)),
-  })
+  await requestApproval(ctx, { requestId, operationId, requestedBy })
 
-  await ctx.gate.execute({
-    actor: grantedBy.agentId,
-    capability: "Approval",
-    payload: makeGrantPayload(requestId, grantedBy),
-  })
+  await grantApproval(ctx, { requestId, grantedBy })
 
   await ctx.gate.execute(makeDestructiveInvocation())
 

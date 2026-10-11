@@ -1,3 +1,5 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
+import { makeEvent, missionCreated, expeditionCreated, objectiveAdded } from "./helpers/kernel-event-fixtures.js"
 // ============================================================
 // REPLAY GRAPH INTEGRITY TESTS (EXP-HARDEN-004)
 // ============================================================
@@ -39,72 +41,6 @@ const FIRST_CONTACT_ARCHIVE = path.join(
   "events.jsonl",
 )
 
-let seq = 0
-function makeEvent(type, payload) {
-  seq += 1
-  // No hash-chain fields: the chain verifier tolerates pre-chain logs,
-  // keeping these fixtures focused on graph integrity.
-  return {
-    id: `evt-${seq}`,
-    type,
-    timestamp: seq,
-    transactionId: "tx-test",
-    capability: "test",
-    actor: "test",
-    payload,
-  }
-}
-
-function missionCreated(id, overrides = {}) {
-  return makeEvent("MISSION_CREATED", {
-    mission: {
-      id,
-      name: `Mission ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      expeditions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-    },
-  })
-}
-
-function expeditionCreated(id, missionId, overrides = {}) {
-  return makeEvent("EXPEDITION_CREATED", {
-    expedition: {
-      id,
-      name: `Expedition ${id}`,
-      goal: "goal",
-      status: "draft",
-      objectives: [],
-      discoveries: [],
-      decisions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(missionId === undefined ? {} : { missionId }),
-    },
-  })
-}
-
-function objectiveAdded(id, expeditionId, overrides = {}) {
-  return makeEvent("OBJECTIVE_ADDED", {
-    objective: {
-      id,
-      title: `Objective ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
 
 function validLog() {
   return [
@@ -115,7 +51,7 @@ function validLog() {
 }
 
 function writeTmpLog(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "replay-graph-integrity-"))
+  const dir = makeTempDirSync("replay-graph-integrity-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return logPath

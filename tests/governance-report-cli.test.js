@@ -6,15 +6,9 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { spawnSync } from "node:child_process"
 import path from "node:path"
+import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
-function runSynth(args) {
-  return spawnSync("node", [CLI_PATH, ...args], {
-    cwd: process.cwd(),
-    encoding: "utf-8",
-  })
-}
 
 function extractJsonObjects(text) {
   const objects = []

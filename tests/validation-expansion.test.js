@@ -1,3 +1,5 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
+import { makeEvent, missionCreated, expeditionCreated, objectiveAdded, workItemGenerated } from "./helpers/kernel-event-fixtures.js"
 // ============================================================
 // VALIDATION EXPANSION TESTS (EXP-HARDEN-006)
 // ============================================================
@@ -45,87 +47,6 @@ import { createMissionStudio } from "../dist/mission-studio/index.js"
 
 const LEGACY_LOG = path.join(process.cwd(), ".synth", "data", "event-log.jsonl")
 
-let seq = 0
-function makeEvent(type, payload) {
-  seq += 1
-  // No hash-chain fields: the chain verifier tolerates pre-chain logs,
-  // keeping these fixtures focused on the checks under test.
-  return {
-    id: `evt-${seq}`,
-    type,
-    timestamp: seq,
-    transactionId: "tx-test",
-    capability: "test",
-    actor: "test",
-    payload,
-  }
-}
-
-function missionCreated(id, overrides = {}) {
-  return makeEvent("MISSION_CREATED", {
-    mission: {
-      id,
-      name: `Mission ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      expeditions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-    },
-  })
-}
-
-function expeditionCreated(id, missionId, overrides = {}) {
-  return makeEvent("EXPEDITION_CREATED", {
-    expedition: {
-      id,
-      name: `Expedition ${id}`,
-      goal: "goal",
-      status: "draft",
-      objectives: [],
-      discoveries: [],
-      decisions: [],
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(missionId === undefined ? {} : { missionId }),
-    },
-  })
-}
-
-function objectiveAdded(id, expeditionId, overrides = {}) {
-  return makeEvent("OBJECTIVE_ADDED", {
-    objective: {
-      id,
-      title: `Objective ${id}`,
-      purpose: "purpose",
-      status: "draft",
-      metadata: {},
-      createdAt: 1,
-      updatedAt: 1,
-      ...overrides,
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
-
-function workItemGenerated(id, objectiveId, expeditionId, overrides = {}) {
-  return makeEvent("WORK_ITEM_GENERATED", {
-    workItem: {
-      id,
-      title: `Work Item ${id}`,
-      status: "generated",
-      metadata: {},
-      createdAt: 1,
-      ...overrides,
-      ...(objectiveId === undefined ? {} : { objectiveId }),
-      ...(expeditionId === undefined ? {} : { expeditionId }),
-    },
-  })
-}
 
 function validLog() {
   return [
@@ -135,17 +56,7 @@ function validLog() {
   ]
 }
 
-function makeObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation as makeObservation } from "./helpers/adapter.js"
 
 // The enriched mission/expedition/objective session shape the CLI and
 // integration suites use to clear the Mission Studio approval gate.
@@ -173,7 +84,7 @@ function sha256File(file) {
 }
 
 function writeTmpLog(events) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-"))
+  const dir = makeTempDirSync("validation-expansion-")
   const logPath = path.join(dir, "event-log.jsonl")
   fs.writeFileSync(logPath, events.map((e) => JSON.stringify(e)).join("\n") + "\n")
   return logPath
@@ -215,7 +126,7 @@ test("memory-mode bootstrap keeps writes in memory and leaves the canonical log 
 })
 
 test("memory mode creates no event-log file in an empty working directory", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-cwd-"))
+  const dir = makeTempDirSync("validation-expansion-cwd-")
   const bootstrapUrl = pathToFileURL(path.join(process.cwd(), "dist", "core", "bootstrap.js")).href
   const script = `
     const { bootstrap } = await import(${JSON.stringify(bootstrapUrl)})
@@ -243,7 +154,7 @@ test("memory mode creates no event-log file in an empty working directory", () =
 })
 
 test("file persistence with an explicit path still writes the log", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "validation-expansion-file-"))
+  const dir = makeTempDirSync("validation-expansion-file-")
   const eventLogPath = path.join(dir, "event-log.jsonl")
   const streamDir = path.join(dir, "event-stream")
   const ctx = await bootstrap({

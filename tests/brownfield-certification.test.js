@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Brownfield Certification Test Suite
 // ============================================================
@@ -10,6 +11,7 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { createPerfRunner } from "./helpers/perf-runner.js"
+import { assert, parseJson } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
@@ -19,25 +21,13 @@ const { runSynth } = createPerfRunner({
   logPath: process.env.SYNTH_PERF_LOG || "/tmp/synth-perf-brownfield-certification.log",
 })
 
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
 async function getDirectoryMtime(dir) {
   const stats = await fs.stat(dir)
   return stats.mtimeMs
 }
 
 async function setupTempRepo() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-brownfield-cert-"))
+  const tmpDir = await makeTempDir("synth-brownfield-cert-")
   await fs.writeFile(
     path.join(tmpDir, "package.json"),
     JSON.stringify({ name: "brownfield-cert", version: "1.0.0" }, null, 2),

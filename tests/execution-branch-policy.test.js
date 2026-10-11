@@ -1,3 +1,4 @@
+import { makeTempDirSync, gitInitWithCommit } from "./helpers/workspace.js"
 // ============================================================
 // Branch Policy & Execution Branch Checks (ECOSYSTEM-001 R)
 // ============================================================
@@ -20,19 +21,12 @@ import {
 import { createGitRepositoryAdapter } from "../dist/adapters/repository/git.js"
 
 function makeProject(withConfig = false, configYaml = "") {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "synth-bp-"))
+  const root = makeTempDirSync("synth-bp-")
   fs.mkdirSync(path.join(root, ".synth"), { recursive: true })
   if (withConfig) {
     fs.writeFileSync(path.join(root, ".synth", "config.yaml"), configYaml, "utf-8")
   }
   return root
-}
-
-function gitInitWithCommit(root, branch = "main") {
-  execFileSync("git", ["init", "-b", branch], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["config", "user.email", "test@synth.dev"], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["config", "user.name", "synth-test"], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["commit", "--allow-empty", "-m", "initial"], { cwd: root, stdio: "pipe" })
 }
 
 function makePolicy(overrides = {}) {

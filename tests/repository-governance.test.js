@@ -13,15 +13,12 @@ import {
   branchNameCandidates,
   slugify,
 } from "../dist/repository/branch-taxonomy.js"
+import { assert } from "./helpers/assert.js"
 import {
   inferVersionBump,
   nextSemanticVersion,
   validatePromotion,
 } from "../dist/repository/governance.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 function makeEvent(type, payload) {
   return {
@@ -37,15 +34,9 @@ function makeEvent(type, payload) {
   }
 }
 
-function testCreateEmptyStateHasNoRepository() {
-  const state = createEmptyState()
-  assert(state.repository === undefined, "empty state should have no repository")
-  console.log("[PASS] empty state has no repository")
-}
-
-function testRepositoryInitializedEvent() {
-  let state = createEmptyState()
-  state = applyEvent(
+/** Apply REPOSITORY_INITIALIZED for the canonical repo-1 repository. */
+function seedRepositoryInitialized(state) {
+  return applyEvent(
     state,
     makeEvent("REPOSITORY_INITIALIZED", {
       repositoryId: "repo-1",
@@ -54,6 +45,31 @@ function testRepositoryInitializedEvent() {
       versionStrategy: "semver",
     }),
   )
+}
+
+/** Apply BRANCH_CREATED for the canonical expedition branch. */
+function seedBranchCreated(state) {
+  return applyEvent(
+    state,
+    makeEvent("BRANCH_CREATED", {
+      branchName: "expedition/mission-1/expedition-1",
+      branchType: "expedition",
+      baseBranch: "main",
+      missionId: "mission-1",
+      expeditionId: "expedition-1",
+    }),
+  )
+}
+
+function testCreateEmptyStateHasNoRepository() {
+  const state = createEmptyState()
+  assert(state.repository === undefined, "empty state should have no repository")
+  console.log("[PASS] empty state has no repository")
+}
+
+function testRepositoryInitializedEvent() {
+  let state = createEmptyState()
+  state = seedRepositoryInitialized(state)
   assert(state.repository !== undefined, "repository should exist after initialization")
   assert(state.repository.defaultBranch === "main", "default branch should be main")
   assert(state.repository.forgeProvider === "github", "forge provider should be github")
@@ -64,25 +80,8 @@ function testRepositoryInitializedEvent() {
 
 function testBranchCreatedEvent() {
   let state = createEmptyState()
-  state = applyEvent(
-    state,
-    makeEvent("REPOSITORY_INITIALIZED", {
-      repositoryId: "repo-1",
-      defaultBranch: "main",
-      forgeProvider: "github",
-      versionStrategy: "semver",
-    }),
-  )
-  state = applyEvent(
-    state,
-    makeEvent("BRANCH_CREATED", {
-      branchName: "expedition/mission-1/expedition-1",
-      branchType: "expedition",
-      baseBranch: "main",
-      missionId: "mission-1",
-      expeditionId: "expedition-1",
-    }),
-  )
+  state = seedRepositoryInitialized(state)
+  state = seedBranchCreated(state)
   const branch = state.repository.branches["expedition/mission-1/expedition-1"]
   assert(branch !== undefined, "branch should exist")
   assert(branch.type === "expedition", "branch type should be expedition")
@@ -93,25 +92,8 @@ function testBranchCreatedEvent() {
 
 function testPullRequestOpenedEvent() {
   let state = createEmptyState()
-  state = applyEvent(
-    state,
-    makeEvent("REPOSITORY_INITIALIZED", {
-      repositoryId: "repo-1",
-      defaultBranch: "main",
-      forgeProvider: "github",
-      versionStrategy: "semver",
-    }),
-  )
-  state = applyEvent(
-    state,
-    makeEvent("BRANCH_CREATED", {
-      branchName: "expedition/mission-1/expedition-1",
-      branchType: "expedition",
-      baseBranch: "main",
-      missionId: "mission-1",
-      expeditionId: "expedition-1",
-    }),
-  )
+  state = seedRepositoryInitialized(state)
+  state = seedBranchCreated(state)
   state = applyEvent(
     state,
     makeEvent("PULL_REQUEST_OPENED", {
@@ -134,15 +116,7 @@ function testPullRequestOpenedEvent() {
 
 function testPromotionApprovedAndMergedEvents() {
   let state = createEmptyState()
-  state = applyEvent(
-    state,
-    makeEvent("REPOSITORY_INITIALIZED", {
-      repositoryId: "repo-1",
-      defaultBranch: "main",
-      forgeProvider: "github",
-      versionStrategy: "semver",
-    }),
-  )
+  state = seedRepositoryInitialized(state)
   state = applyEvent(
     state,
     makeEvent("PULL_REQUEST_OPENED", {
@@ -165,15 +139,7 @@ function testPromotionApprovedAndMergedEvents() {
 
 function testReleaseCreatedEvent() {
   let state = createEmptyState()
-  state = applyEvent(
-    state,
-    makeEvent("REPOSITORY_INITIALIZED", {
-      repositoryId: "repo-1",
-      defaultBranch: "main",
-      forgeProvider: "github",
-      versionStrategy: "semver",
-    }),
-  )
+  state = seedRepositoryInitialized(state)
   state = applyEvent(
     state,
     makeEvent("PULL_REQUEST_MERGED", { pullRequestId: "pr-1", commit: "abc123", strategy: "merge" }),
@@ -328,15 +294,7 @@ function testCanonicalBranchCandidates() {
 
 function testVersionInference() {
   let state = createEmptyState()
-  state = applyEvent(
-    state,
-    makeEvent("REPOSITORY_INITIALIZED", {
-      repositoryId: "repo-1",
-      defaultBranch: "main",
-      forgeProvider: "github",
-      versionStrategy: "semver",
-    }),
-  )
+  state = seedRepositoryInitialized(state)
 
   assert(inferVersionBump(state) === undefined, "no completed expeditions means no bump")
 
@@ -398,15 +356,7 @@ function testPromotionValidation() {
   const uninitialized = validatePromotion(state, "initialized", "branch-created")
   assert(!uninitialized.valid, "uninitialized repo cannot promote")
 
-  state = applyEvent(
-    state,
-    makeEvent("REPOSITORY_INITIALIZED", {
-      repositoryId: "repo-1",
-      defaultBranch: "main",
-      forgeProvider: "github",
-      versionStrategy: "semver",
-    }),
-  )
+  state = seedRepositoryInitialized(state)
 
   const noPr = validatePromotion(state, "initialized", "promotion-approved")
   assert(!noPr.valid, "promotion without PR should fail")

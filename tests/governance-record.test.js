@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // Governance Record Tests
 // ============================================================
@@ -9,50 +10,11 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { seedEventLog } from "./helpers/seed-event-log.js"
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
+import { writeEventLog } from "./helpers/state-fixtures.js"
 
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 const PROJECTION_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "governance-record-projection.js")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const { computeEventHash } = await import(path.resolve(process.cwd(), "dist", "core", "hash.js"))
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-}
 
 async function writeManifest(dir, projectName = "Governance Record Test") {
   const synthDir = path.join(dir, ".synth")
@@ -132,7 +94,7 @@ async function testProjectionModule() {
 }
 
 async function testExplainGovernanceCli() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-governance-cli-"))
+  const tmpDir = await makeTempDir("synth-governance-cli-")
   try {
     await writeManifest(tmpDir)
     const now = Date.now()
@@ -172,7 +134,7 @@ async function testExplainGovernanceCli() {
 }
 
 async function testEmptyLog() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-governance-empty-"))
+  const tmpDir = await makeTempDir("synth-governance-empty-")
   try {
     await writeManifest(tmpDir)
     await fs.mkdir(path.join(tmpDir, ".synth", "data"), { recursive: true })

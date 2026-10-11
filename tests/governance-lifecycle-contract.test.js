@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Governance Lifecycle Contract Certification
 // ============================================================
@@ -12,11 +13,12 @@
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { bootstrapProject, createAndApproveMission, createExecutingExpedition } from "./helpers/mission-lifecycle.js"
+import { assert, parseJson } from "./helpers/assert.js"
 import { createPerfRunner } from "./helpers/perf-runner.js"
 import { readAuthoritativeEventLog } from "../dist/runtime/governance-resolver.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
+import { certifyConvergence } from "./helpers/governance-intent.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
@@ -24,18 +26,6 @@ const { runSynth } = createPerfRunner({
   cliPath: CLI_PATH,
   logPath: process.env.SYNTH_PERF_LOG || "/tmp/synth-perf-governance.log",
 })
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON:\n${stdout}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
 
 async function readEventLog(projectDir) {
   // The partitioned event store is authoritative; read it through the
@@ -47,105 +37,11 @@ async function readEventLog(projectDir) {
   return readAuthoritativeEventLog(dataFs)
 }
 
-async function setupProject() {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-governance-contract-"))
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  return tmpDir
-}
-
-async function approveMission(projectDir, subject, purpose) {
-  let createResult = runSynth(["mission", "create", "--subject", subject, "--purpose", purpose], projectDir)
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  let createOutput = parseJson(createResult.stdout)
-  assert(createOutput.kind === "MissionDraft", `mission create should return MissionDraft, got ${createOutput.kind}`)
-  let draftId = createOutput.draftId
-
-  // Add enough evidence to clear the approval confidence threshold (0.7).
-  let evidenceIndex = 0
-  while (createOutput.confidence.overall < 0.72) {
-    evidenceIndex += 1
-    const evidenceResult = runSynth(
-      ["mission", "evidence", "add", "--draft-id", draftId, "--subject", `Contract evidence ${evidenceIndex}`, "--purpose", "Governance contract certification", "--confidence", "high"],
-      projectDir,
-    )
-    assert(evidenceResult.status === 0, `mission evidence add must exit 0. stdout:\n${evidenceResult.stdout}\nstderr:\n${evidenceResult.stderr}`)
-    createOutput = parseJson(evidenceResult.stdout)
-    draftId = createOutput.draftId
-  }
-
-  // Phase 2 governance: Mission approval requires an aligned Alignment Contract.
-  // The CLI operator workflow for creating this contract is not yet implemented,
-  // so tests construct it directly through the governance capabilities.
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
-  })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const approveOutput = parseJson(approveResult.stdout)
-  assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
-  assert(approveOutput.decision.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
-
-  const missionId = approveOutput.runtime?.missionId
-  assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
-  return { draftId, missionId, gateCtx, contractId }
-}
-
-async function certifyConvergence(gateCtx, missionId, expeditionId, contractId) {
-  const result = await gateCtx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures: {
-        hasPersistentHeader: true,
-        hasPersistentSidebar: true,
-        hasScrollDrivenPhases: true,
-      },
-      ruleSetId: "program-027-homepage",
-      artifacts: [
-        {
-          path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`,
-          hash: `test-${missionId}-${expeditionId}`,
-          description: "Test implementation reference",
-        },
-      ],
-      runtimeEvidence: [
-        {
-          source: `synth://missions/${missionId}/expeditions/${expeditionId}/runtime`,
-          observation: "Runtime behavior observed",
-          timestamp: 0,
-        },
-      ],
-      executionEvidence: [
-        {
-          executionId: `test-execution-${expeditionId}`,
-          result: "passed",
-          outcome: "completed",
-        },
-      ],
-      certifier: { kind: "engine", id: "convergence-certification" },
-    },
-  })
-  assert(result.status === "ok", `CertifyConvergence must succeed: ${result.error}`)
-  assert(result.result?.decision === "converged", `Convergence certification must converge, got ${result.result?.decision}`)
-}
-
 async function testMissionLifecycleEmitsRequiredEvents(projectDir) {
-  await approveMission(projectDir, "Contract Mission", "Test governance contract")
+  await createAndApproveMission(projectDir, {
+    subject: "Contract Mission",
+    purpose: "Test governance contract",
+  })
 
   const events = await readEventLog(projectDir)
   const types = events.map((e) => e.type)
@@ -167,32 +63,19 @@ async function testMissionLifecycleEmitsRequiredEvents(projectDir) {
 }
 
 async function testExpeditionLifecycleEmitsRequiredEvents(projectDir) {
-  const { missionId, gateCtx, contractId } = await approveMission(projectDir, "Expedition Host Mission", "Host expedition contract test")
+  const { missionId, gateCtx, contractId } = await createAndApproveMission(projectDir, {
+    subject: "Expedition Host Mission",
+    purpose: "Host expedition contract test",
+    returnGateContext: true,
+  })
 
-  const createResult = runSynth(
-    ["expedition", "create", "--mission", missionId, "--subject", "Contract Expedition", "--goal", "Test goal"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
-  const createOutput = parseJson(createResult.stdout)
-  assert(createOutput.kind === "ExpeditionDraft", `expedition create should return ExpeditionDraft, got ${createOutput.kind}`)
-  const draftId = createOutput.draftId
-
-  const approveResult = runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
-  assert(approveResult.status === 0, `expedition approve must exit 0:\n${approveResult.stderr}`)
-
-  const commitResult = runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
-  assert(commitResult.status === 0, `expedition commit must exit 0:\n${commitResult.stderr}`)
-
-  const startResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
-  assert(startResult.status === 0, `expedition start must exit 0:\n${startResult.stderr}`)
+  const draftId = await createExecutingExpedition(projectDir, missionId, {
+    subject: "Contract Expedition",
+    goal: "Test goal",
+    attachEvidence: true,
+  })
 
   await certifyConvergence(gateCtx, missionId, draftId, contractId)
-
-  const evidencePath = path.join(projectDir, "evidence.txt")
-  await fs.writeFile(evidencePath, "contract evidence", "utf-8")
-  const evidenceResult = runSynth(["expedition", "evidence", "--id", draftId, "--attach", evidencePath], projectDir)
-  assert(evidenceResult.status === 0, `expedition evidence must exit 0:\n${evidenceResult.stderr}`)
 
   const completeResult = runSynth(["expedition", "complete", "--id", draftId], projectDir)
   assert(completeResult.status === 0, `expedition complete must exit 0:\n${completeResult.stderr}`)
@@ -240,7 +123,7 @@ async function testReplayReconstructsGovernanceStatuses(projectDir) {
 
 async function main() {
   console.log("Running governance lifecycle contract certification...")
-  const projectDir = await setupProject()
+  const projectDir = await bootstrapProject(await makeTempDir("synth-governance-contract-"))
   try {
     await testMissionLifecycleEmitsRequiredEvents(projectDir)
     await testExpeditionLifecycleEmitsRequiredEvents(projectDir)

@@ -9,10 +9,7 @@ import fs from "fs/promises"
 import path from "path"
 import { spawnSync } from "child_process"
 import { runSynth, parseJson, withTempDir, writeManifest } from "./helpers/cli-harness.js"
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { assert } from "./helpers/assert.js"
 
 function runGit(cwd, args) {
   const result = spawnSync("git", args, { cwd, encoding: "utf-8" })

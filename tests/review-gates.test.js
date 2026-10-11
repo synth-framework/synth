@@ -1,5 +1,6 @@
 import { describe, it } from "node:test"
 import assert from "node:assert"
+import { makeRefinedIntentInput } from "./helpers/domain-runner.js"
 import {
   createReviewGateExpedition,
   beginExecution,
@@ -19,23 +20,6 @@ import {
 const humanReviewer = { kind: "human", id: "operator" }
 const aiReviewer = { kind: "ai", id: "reviewer-agent" }
 const engineReviewer = { kind: "engine", id: "certification-engine" }
-
-function makeRefinedIntentInput(expeditionId) {
-  return {
-    missionId: "mission-001",
-    objective: "Build a homepage that demonstrates SYNTH",
-    scope: "Mission Studio shell embedded in the homepage",
-    nonGoals: ["Backend runtime", "AI agent integration"],
-    successCriteria: ["Visitor understands SYNTH in under five minutes"],
-    visualReferences: ["design-board-v4.png"],
-    behavioralReferences: ["sticky workspace"],
-    constraints: ["No filesystem dependencies", "GitHub Pages deployable"],
-    protectedAssets: ["Public Vocabulary"],
-    acceptanceExamples: ["Storybook matches design board"],
-    knownUnknowns: ["Exact scroll thresholds"],
-    risks: ["Performance on low-end devices"],
-  }
-}
 
 void describe("Review Gate Governance", () => {
   void it("Scenario 1: straight-through acceptance", () => {

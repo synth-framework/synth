@@ -1,3 +1,4 @@
+import { makeTempDirSync } from "./helpers/workspace.js"
 // Regression guards for EXP-TRUST-001 (Govern Recursion Guard).
 //
 // A project must never be able to point its "govern" script back at the
@@ -33,7 +34,7 @@ function assert(condition, message) {
 // Every fixture is self-limiting: even without the guard, the recursion
 // collapses after LOOP_BOUND levels instead of hanging forever.
 function makeFixture(governScript) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-guard-"))
+  const dir = makeTempDirSync("synth-guard-")
   const counter = path.join(dir, ".loops")
   fs.writeFileSync(counter, "0")
 

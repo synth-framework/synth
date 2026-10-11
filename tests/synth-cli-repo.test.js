@@ -1,3 +1,4 @@
+import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH CLI Repository Governance Tests
 // ============================================================
@@ -8,36 +9,11 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-
-const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
-
-function runSynth(args, cwd = process.cwd()) {
-  const result = spawnSync("node", [CLI_PATH, ...args], {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
-
-function parseJson(stdout) {
-  try {
-    return JSON.parse(stdout.trim())
-  } catch (err) {
-    throw new Error(`Failed to parse CLI output as JSON: ${stdout}\nError: ${err.message}`)
-  }
-}
-
-function assert(condition, message) {
-  if (!condition) throw new Error(`ASSERTION FAILED: ${message}`)
-}
+import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { assert } from "./helpers/assert.js"
 
 async function withTempDir(fn) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "synth-cli-repo-test-"))
+  const tmpDir = await makeTempDir("synth-cli-repo-test-")
   try {
     return await fn(tmpDir)
   } finally {
