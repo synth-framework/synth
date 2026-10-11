@@ -1,0 +1,18 @@
+{
+  "id": "220f6163a7b55b45",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Fix adversarial audit for partitioned event-stream",
+  "goal": "Rewrite the P4 adversarial audit tamper/forgery/reorder attacks against the partitioned event-stream layout so tampering is actually exercised and detected; make govern proof pass",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "refinementId": "34a301d80d06da7a",
+    "refinementNote": "Scope widened per operator (red state): in addition to rewriting the P4 adversarial audit tamper/forgery/reorder attacks against the partitioned event-stream, modernize the ADR-051 pre-commit compliance check (scripts/check-adr-compliance.js) which still counts the stale monolithic .synth/data/event-log.jsonl and therefore rejects every commit while canonical-state tracks the partitioned stream. Until that lands, commits proceed under explicit ADR_ENFORCE=skip override.",
+    "refinementAt": 273
+  },
+  "createdAt": 271,
+  "updatedAt": 273
+}
