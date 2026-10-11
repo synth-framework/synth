@@ -1,0 +1,80 @@
+{
+  "schema": "synth-proof-v1",
+  "generatedAt": "2026-10-11T05:37:26.833Z",
+  "trust": {
+    "level": "ATL-7",
+    "target": "ATL-7",
+    "assessmentDate": "2026-10-11T05:37:26.833Z"
+  },
+  "baseline": {
+    "constitutionVersion": "1.0",
+    "kernelVersion": "1.0",
+    "languageVersion": "1.0",
+    "proofSchema": "synth-proof-v1"
+  },
+  "repository": {
+    "commit": "139e76c9b97cab9c66d98bba7f59eec650724b9e",
+    "sourceHash": "git:4b82ecae959e731a3f6c10a0f891d4e126684cf0"
+  },
+  "build": {
+    "distHash": "manifest:fab5a062920913d4ad3ae5f4f4d62819a5188859b6ebd4290a372b041ec00197"
+  },
+  "runtime": {
+    "eventCount": 271,
+    "replayHash": "1636349678",
+    "projections": {
+      "workItems": 0,
+      "plans": 0,
+      "milestones": 0,
+      "projects": 0,
+      "missions": 2,
+      "expeditions": 48,
+      "objectives": 0,
+      "discoveries": 0,
+      "decisions": 0
+    }
+  },
+  "proofs": {
+    "p1Structural": {
+      "passed": true,
+      "detail": "structural audit: clean"
+    },
+    "p2Replay": {
+      "passed": true,
+      "chainValid": true,
+      "replayHash": "1636349678",
+      "operationalHash": "1636349678",
+      "eventCount": 271,
+      "detail": "Operational state is bit-for-bit identical to replayed state."
+    },
+    "p2Determinism": {
+      "passed": true,
+      "detail": "determinism: clean"
+    },
+    "p6GraphIntegrity": {
+      "passed": true,
+      "detail": "graph integrity: clean"
+    },
+    "p4Adversarial": {
+      "passed": false,
+      "detail": "adversarial failed.\n--- stderr ---\n{\"timestamp\":\"2026-10-11T05:37:45.637Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Starting Synth v2 bootstrap with Control Boundary...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.653Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[1/13] Initializing infrastructure layer...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.662Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[2/13] Domain layer ready (pure functions)\"}\n{\"timestamp\":\"2026-10-11T05:37:45.662Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[3/13] Initializing policy engine...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.828Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[4/13] Validation layer ready\"}\n{\"timestamp\":\"2026-10-11T05:37:45.829Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[5/13] Initializing capability registry...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.843Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[6/13] Initializing runtime engine (execution-only)...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.844Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[7/13] Initializing ExecutionGate (control boundary)...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.870Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[8/13] Initializing Planning Cognition Engine...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.872Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[9/13] Initializing Mission Studio (read-only planning environment)...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.873Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[10/13] Initializing Adapter Registry...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.884Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[11/13] Initializing Workspace Cognition Environment...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.886Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[12/13] Initializing API layer...\"}\n{\"timestamp\":\"2026-10-11T05:37:45.887Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[13/13] Running genesis intake through ExecutionGate...\"}\n[telemetry] {\"ts\":\"2026-10-11T05:37:45.896Z\",\"kind\":\"span:start\",\"name\":\"eventStore.appendBatch\"}\n[telemetry] {\"ts\":\"2026-10-11T05:37:45.928Z\",\"kind\":\"span:end\",\"name\":\"eventStore.appendBatch\",\"ms\":32.5}\n{\"timestamp\":\"2026-10-11T05:37:45.958Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Genesis complete: 0 capabilities, 2 seed events, 1 work items\"}\n{\"timestamp\":\"2026-10-11T05:37:45.968Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Synth v2 bootstrap complete!\"}\n{\"timestamp\":\"2026-10-11T05:37:45.980Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Architecture: API → ExecutionGate → Runtime → Domain → EventStore\"}\n{\"timestamp\":\"2026-10-11T05:37:45.980Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Mutation authority: ExecutionGate (single point)\"}\n{\"timestamp\":\"2026-10-11T05:37:45.998Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"System sealed: registry and policy frozen\"}\n{\"timestamp\":\"2026-10-11T05:37:46.098Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Starting Synth v2 bootstrap with Control Boundary...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.099Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[1/13] Initializing infrastructure layer...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.104Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[2/13] Domain layer ready (pure functions)\"}\n{\"timestamp\":\"2026-10-11T05:37:46.107Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[3/13] Initializing policy engine...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.162Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[4/13] Validation layer ready\"}\n{\"timestamp\":\"2026-10-11T05:37:46.162Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[5/13] Initializing capability registry...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.164Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[6/13] Initializing runtime engine (execution-only)...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.164Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[7/13] Initializing ExecutionGate (control boundary)...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.189Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[8/13] Initializing Planning Cognition Engine...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.189Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[9/13] Initializing Mission Studio (read-only planning environment)...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.189Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[10/13] Initializing Adapter Registry...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.190Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[11/13] Initializing Workspace Cognition Environment...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.190Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[12/13] Initializing API layer...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.191Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[13/13] Running genesis intake through ExecutionGate...\"}\n[telemetry] {\"ts\":\"2026-10-11T05:37:46.192Z\",\"kind\":\"span:start\",\"name\":\"eventStore.appendBatch\"}\n[telemetry] {\"ts\":\"2026-10-11T05:37:46.216Z\",\"kind\":\"span:end\",\"name\":\"eventStore.appendBatch\",\"ms\":23.37}\n{\"timestamp\":\"2026-10-11T05:37:46.229Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Genesis complete: 0 capabilities, 2 seed events, 1 work items\"}\n{\"timestamp\":\"2026-10-11T05:37:46.230Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Synth v2 bootstrap complete!\"}\n{\"timestamp\":\"2026-10-11T05:37:46.230Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Architecture: API → ExecutionGate → Runtime → Domain → EventStore\"}\n{\"timestamp\":\"2026-10-11T05:37:46.231Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Mutation authority: ExecutionGate (single point)\"}\n{\"timestamp\":\"2026-10-11T05:37:46.298Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Starting Synth v2 bootstrap with Control Boundary...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.299Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[1/13] Initializing infrastructure layer...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.323Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[2/13] Domain layer ready (pure functions)\"}\n{\"timestamp\":\"2026-10-11T05:37:46.324Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[3/13] Initializing policy engine...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.491Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[4/13] Validation layer ready\"}\n{\"timestamp\":\"2026-10-11T05:37:46.491Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[5/13] Initializing capability registry...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.492Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[6/13] Initializing runtime engine (execution-only)...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.492Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[7/13] Initializing ExecutionGate (control boundary)...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.529Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[8/13] Initializing Planning Cognition Engine...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.529Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[9/13] Initializing Mission Studio (read-only planning environment)...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.529Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[10/13] Initializing Adapter Registry...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.530Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[11/13] Initializing Workspace Cognition Environment...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.530Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[12/13] Initializing API layer...\"}\n{\"timestamp\":\"2026-10-11T05:37:46.530Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"[13/13] Running genesis intake through ExecutionGate...\"}\n[telemetry] {\"ts\":\"2026-10-11T05:37:46.532Z\",\"kind\":\"span:start\",\"name\":\"eventStore.appendBatch\"}\n[telemetry] {\"ts\":\"2026-10-11T05:37:46.552Z\",\"kind\":\"span:end\",\"name\":\"eventStore.appendBatch\",\"ms\":20.67}\n{\"timestamp\":\"2026-10-11T05:37:46.562Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Genesis complete: 0 capabilities, 2 seed events, 1 work items\"}\n{\"timestamp\":\"2026-10-11T05:37:46.563Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Synth v2 bootstrap complete!\"}\n{\"timestamp\":\"2026-10-11T05:37:46.563Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Architecture: API → ExecutionGate → Runtime → Domain → EventStore\"}\n{\"timestamp\":\"2026-10-11T05:37:46.564Z\",\"level\":\"INFO\",\"component\":\"bootstrap\",\"message\":\"Mutation authority: ExecutionGate (single point)\"}\n--- stdout ---\n═══════════════════════════════════════════════════\n  SYNTH: Adversarial Architecture Audit (P4)\n═══════════════════════════════════════════════════\n\n  ✅ BLOCKED: Direct EventStore append\n      ILLEGAL_EVENTSTORE_WRITE: EventStore writes must pass through the ExecutionGate. Direct instantiation of EventStore is not an authorized mutation path.\n  ✅ BLOCKED: Registry mutation after seal\n      INVARIANT_VIOLATION: registry is frozen\n  ✅ BLOCKED: Policy mutation after freeze\n      ctx.policyEngine.defineRule is not a function\n  ❌ SUCCEEDED: Event payload tampering\n      Operational state is bit-for-bit identical to replayed state.\n  ✅ BLOCKED: Event reordering\n      not enough events to reorder\n  ❌ SUCCEEDED: Event hash forgery\n      Operational state is bit-for-bit identical to replayed state.\n\n═══════════════════════════════════════════════════\n  ❌ 2 of 6 attacks succeeded\n═══════════════════════════════════════════════════"
+    }
+  },
+  "reproduction": {
+    "command": "npm run govern",
+    "expectedSourceHash": "git:4b82ecae959e731a3f6c10a0f891d4e126684cf0",
+    "expectedDistHash": "manifest:fab5a062920913d4ad3ae5f4f4d62819a5188859b6ebd4290a372b041ec00197",
+    "expectedReplayHash": "1636349678",
+    "note": "Run from a clean checkout at the referenced commit. Timestamps and file paths are expected to differ; hashes must match."
+  },
+  "overall": {
+    "passed": false,
+    "summary": [
+      "P1 Structural: PASS",
+      "P2 Replay: PASS",
+      "P2 Determinism: PASS",
+      "P6 Graph Integrity: PASS",
+      "P4 Adversarial: FAIL"
+    ]
+  }
+}
