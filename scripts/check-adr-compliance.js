@@ -4,10 +4,14 @@
 // canonical-state.json is a committed, regenerable snapshot of the
 // immutable event log (the sole source of truth). The enforcement rule
 // is a single, safe CONSISTENCY invariant:
-//     canonical-state.lastEventOffset === event-log line count
-// This catches hand-edits / desyncs without ever false-positiving on a
-// legitimate SYNTH regeneration (which keeps the two in sync). It does
-// NOT require canonical-state and event-log to change in the same commit,
+//     canonical-state.lastEventOffset === partitioned event-stream count
+// The partitioned event-stream (event-stream/partition-*/segment-*.jsonl,
+// expedition 01604a3) is canonical; the monolithic event-log.jsonl is a
+// retired pre-partition artifact and is only consulted as a fallback for
+// repositories that predate the partition layout. This catches hand-edits
+// / desyncs without ever false-positiving on a legitimate SYNTH
+// regeneration (which keeps the two in sync). It does NOT require
+// canonical-state and the event-stream to change in the same commit,
 // because regeneration commonly rewrites canonical-state alone.
 // ============================================================
 
@@ -21,8 +25,8 @@ const REPO_ROOT = path.resolve(__dirname, "..")
 
 const DEFAULT_ENFORCEMENT = {
   citation: "ADR-051",
-  sourceOfTruth: ".synth/data/event-log.jsonl",
-  invariant: "canonical-state.lastEventOffset === event-log line count",
+  sourceOfTruth: ".synth/data/event-stream (partition-*/segment-*.jsonl; falls back to event-log.jsonl pre-partition)",
+  invariant: "canonical-state.lastEventOffset === partitioned event-stream event count",
 }
 
 function loadEnforcement(root) {
@@ -55,9 +59,42 @@ function readCanonicalState(root) {
   }
 }
 
-function readEventLogLineCount(root, enf) {
+export function readEventLogLineCount(root, enf) {
+  // The partitioned event-stream is the sole authority (same precedence as
+  // readAuthoritativeEventLog in src/runtime/governance-resolver.js).
+  const streamDir = path.join(root, ".synth", "data", "event-stream")
   try {
-    const raw = fs.readFileSync(path.join(root, enf.sourceOfTruth), "utf-8")
+    if (fs.existsSync(streamDir)) {
+      let count = 0
+      const partitions = fs
+        .readdirSync(streamDir)
+        .filter((p) => p.startsWith("partition-"))
+        .sort()
+      for (const partition of partitions) {
+        const partDir = path.join(streamDir, partition)
+        try {
+          if (!fs.statSync(partDir).isDirectory()) continue
+        } catch {
+          continue
+        }
+        for (const segment of fs
+          .readdirSync(partDir)
+          .filter((f) => f.endsWith(".jsonl"))
+          .sort()) {
+          const raw = fs.readFileSync(path.join(partDir, segment), "utf-8")
+          count += raw.split("\n").filter(Boolean).length
+        }
+      }
+      return count
+    }
+  } catch {
+    // Fall through to the monolithic file.
+  }
+  try {
+    // Pre-partition fallback: the retired monolithic log. This path is
+    // intentionally independent of enf.sourceOfTruth (a human-readable
+    // citation string), so config wording can never break the fallback.
+    const raw = fs.readFileSync(path.join(root, ".synth", "data", "event-log.jsonl"), "utf-8")
     return raw.split("\n").filter(Boolean).length
   } catch {
     return 0
