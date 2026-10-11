@@ -10,10 +10,38 @@ import os from "os"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { seedEvent, seedGenesisEvents } from "./helpers/kernel-event-fixtures.js"
+import { runGit } from "./helpers/workspace.js"
 
 
 function makeTempProjectRoot() {
   return fs.realpathSync.native(makeTempDirSync("evidence-test-"))
+}
+
+/** Fresh project with seeded events + committed tracked.txt. */
+function setupTrackedProject() {
+  const dir = makeTempProjectRoot()
+  seedEvents(dir)
+  initGitIdentity(dir)
+  fs.writeFileSync(path.join(dir, "tracked.txt"), "content")
+  spawnSync("git", ["add", "."], { cwd: dir })
+  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+  return dir
+}
+
+/** Attach --git-diff evidence and return the parsed output. */
+function attachGitDiff(dir) {
+  const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff"], dir)
+  assert.strictEqual(result.status, 0, result.stderr)
+  const output = parseJson(result.stdout)
+  assert.strictEqual(output.kind, "EvidenceAttached")
+  return output
+}
+/** Init a git repo with test identity (add/commit stay at call sites). */
+function initGitIdentity(dir) {
+  runGit(["init"], dir)
+  runGit(["config", "user.email", "test@test.com"], dir)
+  runGit(["config", "user.name", "Test"], dir)
 }
 
 function seedEvents(projectRoot, opts = {}) {
@@ -22,32 +50,9 @@ function seedEvents(projectRoot, opts = {}) {
   fs.writeFileSync(path.join(projectRoot, ".synth", "manifest.json"), "{}\n")
 
   const events = [
-    {
-      id: "evt-1",
-      type: "SYSTEM_GENESIS",
-      timestamp: 1,
-      transactionId: "tx-1",
-      capability: "genesis",
-      actor: "genesis",
-      payload: { projectName: "Evidence Test", systemId: "evidence-test", partitions: 1 },
-    },
-    {
-      id: "evt-2",
-      type: "PROJECT_CREATED",
-      timestamp: 2,
-      transactionId: "tx-2",
-      capability: "genesis",
-      actor: "genesis",
-      payload: { project: { id: "project-1", name: "Evidence Test", status: "active", metadata: {}, createdAt: 2, updatedAt: 2 } },
-    },
-    {
-      id: "evt-3",
-      type: "MISSION_CREATED",
-      timestamp: 3,
-      transactionId: "tx-3",
-      capability: "test",
-      actor: "test",
-      payload: {
+    ...seedGenesisEvents("Evidence Test", "evidence-test"),
+    seedEvent("evt-3", "MISSION_CREATED", 3,
+      {
         mission: {
           id: "m1",
           name: "Mission m1",
@@ -58,16 +63,9 @@ function seedEvents(projectRoot, opts = {}) {
           createdAt: 3,
           updatedAt: 3,
         },
-      },
-    },
-    {
-      id: "evt-4",
-      type: "EXPEDITION_CREATED",
-      timestamp: 4,
-      transactionId: "tx-4",
-      capability: "test",
-      actor: "test",
-      payload: {
+      }),
+    seedEvent("evt-4", "EXPEDITION_CREATED", 4,
+      {
         expedition: {
           id: "e1",
           missionId: "m1",
@@ -82,8 +80,7 @@ function seedEvents(projectRoot, opts = {}) {
           createdAt: 4,
           updatedAt: 4,
         },
-      },
-    },
+      }),
   ]
 
   fs.writeFileSync(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
@@ -104,11 +101,9 @@ test("expedition evidence --git-diff captures patch and appends EVIDENCE_ATTACHE
   const dir = makeTempProjectRoot()
   seedEvents(dir)
   fs.writeFileSync(path.join(dir, "tracked.txt"), "change")
-  spawnSync("git", ["init"], { cwd: dir })
-  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
-  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
-  spawnSync("git", ["add", "."], { cwd: dir })
-  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+  initGitIdentity(dir)
+  runGit(["add", "."], dir)
+  runGit(["commit", "-m", "initial"], dir)
   fs.writeFileSync(path.join(dir, "tracked.txt"), "changed")
 
   const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff", "--note", "git diff capture"], dir)
@@ -167,9 +162,7 @@ test("expedition evidence --git-diff falls back to baseline..HEAD when working t
   const dir = makeTempProjectRoot()
   seedEvents(dir)
   fs.writeFileSync(path.join(dir, "tracked.txt"), "initial")
-  spawnSync("git", ["init"], { cwd: dir })
-  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
-  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
+  initGitIdentity(dir)
   spawnSync("git", ["add", "."], { cwd: dir })
   spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
 
@@ -177,7 +170,7 @@ test("expedition evidence --git-diff falls back to baseline..HEAD when working t
   spawnSync("git", ["add", "."], { cwd: dir })
   spawnSync("git", ["commit", "-m", "change"], { cwd: dir })
 
-  const initialCommit = spawnSync("git", ["rev-parse", "HEAD~1"], { cwd: dir, encoding: "utf-8" }).stdout.trim()
+  const initialCommit = runGit(["rev-parse", "HEAD~1"], dir)
 
   const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff", "--baseline", initialCommit], dir)
   assert.strictEqual(result.status, 0, result.stderr)
@@ -192,37 +185,19 @@ test("expedition evidence --git-diff falls back to baseline..HEAD when working t
 })
 
 test("expedition evidence --git-diff warns when patch is empty", { concurrency: false }, async () => {
-  const dir = makeTempProjectRoot()
-  seedEvents(dir)
-  spawnSync("git", ["init"], { cwd: dir })
-  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
-  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
-  fs.writeFileSync(path.join(dir, "tracked.txt"), "content")
-  spawnSync("git", ["add", "."], { cwd: dir })
-  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+  const dir = setupTrackedProject()
 
-  const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff"], dir)
-  assert.strictEqual(result.status, 0, result.stderr)
-  const output = parseJson(result.stdout)
-  assert.strictEqual(output.kind, "EvidenceAttached")
+  const output = attachGitDiff(dir)
   assert.ok(Array.isArray(output.warnings), "should include warnings")
   assert.ok(output.warnings.some((w) => String(w).includes("empty")), "should warn about empty patch")
 })
 
 test("expedition evidence --git-diff captures untracked source files and restores the index", { concurrency: false }, async () => {
-  const dir = makeTempProjectRoot()
-  seedEvents(dir)
-  spawnSync("git", ["init"], { cwd: dir })
-  spawnSync("git", ["config", "user.email", "test@test.com"], { cwd: dir })
-  spawnSync("git", ["config", "user.name", "Test"], { cwd: dir })
-  fs.writeFileSync(path.join(dir, "tracked.txt"), "content")
-  spawnSync("git", ["add", "."], { cwd: dir })
-  spawnSync("git", ["commit", "-m", "initial"], { cwd: dir })
+  const dir = setupTrackedProject()
   fs.writeFileSync(path.join(dir, "new-source.ts"), "const brandNew = true\n")
   fs.writeFileSync(path.join(dir, ".synth", "data", "canonical-state.json"), "derived")
 
-  const result = runSynth(["expedition", "evidence", "--id", "e1", "--git-diff"], dir)
-  assert.strictEqual(result.status, 0, result.stderr)
+  const output = attachGitDiff(dir)
 
   const patchPath = path.join(dir, "proof", "expeditions", "e1", "git-diff.patch")
   assert.ok(fs.existsSync(patchPath), "git-diff.patch should exist")
@@ -231,10 +206,9 @@ test("expedition evidence --git-diff captures untracked source files and restore
   assert.ok(patchContent.includes("brandNew"), "patch should include untracked file content")
   assert.ok(!patchContent.includes("canonical-state"), "patch should exclude derived state")
 
-  const porcelain = spawnSync("git", ["status", "--porcelain"], { cwd: dir, encoding: "utf-8" }).stdout
+  const porcelain = runGit(["status", "--porcelain"], dir)
   assert.ok(porcelain.includes("?? new-source.ts"), "untracked file should remain untracked after capture")
   assert.ok(!porcelain.includes("A  new-source.ts"), "intent-to-add entry should be restored")
-  const output = parseJson(result.stdout)
   assert.ok(!(output.warnings || []).some((w) => String(w).includes("empty")), "patch should not be empty")
 })
 

@@ -14,7 +14,8 @@ import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
 import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { approveMission as approveMissionBase, createExecutingExpedition } from "./helpers/governance-intent.js"
+import { assertEvaluationShape as assertEvaluationShapeBase } from "./helpers/test-fixtures.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { buildProposal } from "../dist/governance/proposal-evaluation/rules/program-027.js"
 import { mapToAcceptanceDecision } from "../dist/governance/proposal-evaluation/decision-mapping.js"
@@ -45,40 +46,16 @@ async function lastEvent(ctx, type, predicate = () => true) {
   return matches[matches.length - 1]
 }
 
-async function approveMission(ctx, id) {
-  let result = await ctx.api.handleIntent({
+const approveEvalMission = (ctx, id) => approveMissionBase(ctx, id, { purpose: "Governance evaluation enforcement test" })
+
+/** Fulfill a review-gate condition through the engine. */
+async function fulfillCondition(ctx, expeditionId, gateId, conditionId) {
+  const result = await ctx.api.handleIntent({
     actor: "test",
-    capability: "CreateMission",
-    payload: { id, name: `Mission ${id}`, purpose: "Governance evaluation enforcement test" },
+    capability: "FulfillCondition",
+    payload: { expeditionId, gateId, conditionId, fulfilledBy: "dev" },
   })
-  assert.equal(result.status, "ok", `CreateMission should succeed: ${result.error}`)
-
-  const { contractId } = await createAlignedContract(ctx)
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "ApproveMission",
-    payload: { id, alignmentContractId: contractId },
-  })
-  assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
-  return { contractId }
-}
-
-async function createExecutingExpedition(ctx, missionId, expeditionId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateExpedition",
-    payload: { id: expeditionId, missionId, name: "Test Expedition" },
-  })
-  assert.equal(result.status, "ok", `CreateExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `ApproveExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `CommitExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `StartExpedition should succeed: ${result.error}`)
+  assert.equal(result.status, "ok", `FulfillCondition should succeed: ${result.error}`)
 }
 
 function makeRefinedIntentInput(missionId) {
@@ -137,17 +114,7 @@ async function evaluateAndResolveAcceptanceGate(ctx, expeditionId) {
 }
 
 function assertEvaluationShape(evaluation) {
-  assert.ok(evaluation, "Evaluation payload should exist")
-  assert.ok(["aligned", "revision_required", "rejected"].includes(evaluation.decision), `Unexpected decision: ${evaluation.decision}`)
-  assert.equal(typeof evaluation.confidence, "number", "Confidence should be a number")
-  assert.ok(evaluation.confidence >= 0 && evaluation.confidence <= 1, "Confidence should be in [0, 1]")
-  assert.ok(Array.isArray(evaluation.matchedRules), "matchedRules should be an array")
-  assert.ok(Array.isArray(evaluation.violatedRules), "violatedRules should be an array")
-  assert.ok(Array.isArray(evaluation.matchedDriftClasses), "matchedDriftClasses should be an array")
-  assert.ok(evaluation.evidence, "Evidence trace should exist")
-  assert.equal(typeof evaluation.evidence.summary, "string", "Evidence summary should be a string")
-  assert.ok(Array.isArray(evaluation.reasoning), "reasoning should be an array")
-  assert.ok(evaluation.reasoning.length > 0, "reasoning should not be empty")
+  assertEvaluationShapeBase(evaluation, { checkRules: true, checkReasoning: true, checkEvidence: true })
   assert.equal(evaluation.deterministic, true, "Evaluation should be deterministic")
 }
 
@@ -162,7 +129,7 @@ const { test } = suite
 
 test("[D01] generic dashboard drift is rejected at Review Gate", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-D01")
+  await approveEvalMission(ctx, "M-D01")
   await createExecutingExpedition(ctx, "M-D01", "E-D01")
   await approveRefinedIntent(ctx, "E-D01", "M-D01")
 
@@ -190,7 +157,7 @@ test("[D01] generic dashboard drift is rejected at Review Gate", async () => {
 
 test("[V01] persistent workspace proposal is approved at Review Gate", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-V01")
+  await approveEvalMission(ctx, "M-V01")
   await createExecutingExpedition(ctx, "M-V01", "E-V01")
   await approveRefinedIntent(ctx, "E-V01", "M-V01")
 
@@ -221,7 +188,7 @@ test("Acceptance Gate decision mapping treats revision_required and rejected as 
 
 test("Rejected review prevents acceptance and closes expedition", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-ACCEPT-REJECT")
+  await approveEvalMission(ctx, "M-ACCEPT-REJECT")
   await createExecutingExpedition(ctx, "M-ACCEPT-REJECT", "E-ACCEPT-REJECT")
   await approveRefinedIntent(ctx, "E-ACCEPT-REJECT", "M-ACCEPT-REJECT")
 
@@ -251,7 +218,7 @@ test("Rejected review prevents acceptance and closes expedition", async () => {
 
 test("Acceptance Gate cannot open without a resolved Review Gate decision", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-ACCEPT-NO-REVIEW")
+  await approveEvalMission(ctx, "M-ACCEPT-NO-REVIEW")
   await createExecutingExpedition(ctx, "M-ACCEPT-NO-REVIEW", "E-ACCEPT-NO-REVIEW")
   await approveRefinedIntent(ctx, "E-ACCEPT-NO-REVIEW", "M-ACCEPT-NO-REVIEW")
 
@@ -278,7 +245,7 @@ test("Acceptance Gate cannot open without a resolved Review Gate decision", asyn
 
 test("EvaluateAndResolveAcceptanceGate cannot synthesize acceptance without a review evaluation", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-ACCEPT-NO-EVAL")
+  await approveEvalMission(ctx, "M-ACCEPT-NO-EVAL")
   await createExecutingExpedition(ctx, "M-ACCEPT-NO-EVAL", "E-ACCEPT-NO-EVAL")
   await approveRefinedIntent(ctx, "E-ACCEPT-NO-EVAL", "M-ACCEPT-NO-EVAL")
 
@@ -309,7 +276,7 @@ test("EvaluateAndResolveAcceptanceGate cannot synthesize acceptance without a re
 
 test("Acceptance Gate auto-fires after Review Gate approval", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-ACCEPT-ACCEPT")
+  await approveEvalMission(ctx, "M-ACCEPT-ACCEPT")
   await createExecutingExpedition(ctx, "M-ACCEPT-ACCEPT", "E-ACCEPT-ACCEPT")
   await approveRefinedIntent(ctx, "E-ACCEPT-ACCEPT", "M-ACCEPT-ACCEPT")
 
@@ -341,7 +308,7 @@ test("Review Gate evaluation is replay-consistent", async () => {
   const ctx2 = await makeCtx()
 
   for (const ctx of [ctx1, ctx2]) {
-    await approveMission(ctx, "M-REPLAY")
+    await approveEvalMission(ctx, "M-REPLAY")
     await createExecutingExpedition(ctx, "M-REPLAY", "E-REPLAY")
     await approveRefinedIntent(ctx, "E-REPLAY", "M-REPLAY")
     await evaluateAndResolveReviewGate(ctx, "E-REPLAY", {
@@ -374,7 +341,7 @@ test("Review Gate evaluation is replay-consistent", async () => {
 
 test("[L01] Review Gate approval auto-chains through Acceptance Gate, Convergence, and Mission completion", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-L01")
+  await approveEvalMission(ctx, "M-L01")
   await createExecutingExpedition(ctx, "M-L01", "E-L01")
   await approveRefinedIntent(ctx, "E-L01", "M-L01")
 
@@ -436,7 +403,7 @@ test("[L01] Review Gate approval auto-chains through Acceptance Gate, Convergenc
 
 test("[L02] Rejected review gate does NOT auto-chain to acceptance gate", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-L02")
+  await approveEvalMission(ctx, "M-L02")
   await createExecutingExpedition(ctx, "M-L02", "E-L02")
   await approveRefinedIntent(ctx, "E-L02", "M-L02")
 
@@ -465,7 +432,7 @@ test("[L02] Rejected review gate does NOT auto-chain to acceptance gate", async 
 
 test("approve_with_conditions blocks acceptance until all conditions are fulfilled", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-COND")
+  await approveEvalMission(ctx, "M-COND")
   await createExecutingExpedition(ctx, "M-COND", "E-COND")
   await approveRefinedIntent(ctx, "E-COND", "M-COND")
 
@@ -511,12 +478,7 @@ test("approve_with_conditions blocks acceptance until all conditions are fulfill
   assert.equal(result.status, "error", "Acceptance should be blocked with unfulfilled conditions")
   assert.ok(result.error.includes("unfulfilled conditions"), `Expected unfulfilled conditions error, got ${result.error}`)
 
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "FulfillCondition",
-    payload: { expeditionId: "E-COND", gateId, conditionId: conditions[0].id, fulfilledBy: "dev" },
-  })
-  assert.equal(result.status, "ok", `FulfillCondition should succeed: ${result.error}`)
+  await fulfillCondition(ctx, "E-COND", gateId, conditions[0].id)
 
   result = await ctx.api.handleIntent({
     actor: "test",
@@ -528,12 +490,7 @@ test("approve_with_conditions blocks acceptance until all conditions are fulfill
   })
   assert.equal(result.status, "error", "Acceptance should still be blocked with one remaining condition")
 
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "FulfillCondition",
-    payload: { expeditionId: "E-COND", gateId, conditionId: conditions[1].id, fulfilledBy: "dev" },
-  })
-  assert.equal(result.status, "ok", `FulfillCondition should succeed: ${result.error}`)
+  await fulfillCondition(ctx, "E-COND", gateId, conditions[1].id)
 
   result = await ctx.api.handleIntent({
     actor: "test",
@@ -548,7 +505,7 @@ test("approve_with_conditions blocks acceptance until all conditions are fulfill
 
 test("CloseExpedition requires certified convergence", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-CLOSE")
+  const { contractId } = await approveEvalMission(ctx, "M-CLOSE")
   await createExecutingExpedition(ctx, "M-CLOSE", "E-CLOSE")
   await approveRefinedIntent(ctx, "E-CLOSE", "M-CLOSE")
 
@@ -649,7 +606,7 @@ test("CloseExpedition requires certified convergence", async () => {
 
 test("manual Review Gate capabilities still work", async () => {
   const ctx = await makeCtx()
-  await approveMission(ctx, "M-MANUAL")
+  await approveEvalMission(ctx, "M-MANUAL")
   await createExecutingExpedition(ctx, "M-MANUAL", "E-MANUAL")
   await approveRefinedIntent(ctx, "E-MANUAL", "M-MANUAL")
 

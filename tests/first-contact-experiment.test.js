@@ -26,6 +26,7 @@ import { extractFirstContactEvidence } from "../dist/first-contact/evidence.js"
 import { repositoryIntroductionScenario } from "../dist/first-contact/scenarios.js"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
+import { evidenceTurns } from "./helpers/first-contact-fixtures.js"
 
 const RUNNER_PATH = path.resolve(process.cwd(), "scripts", "first-contact-experiment.js")
 
@@ -259,32 +260,7 @@ function testExtractFirstContactEvidence() {
     cliPath: "node",
     repositoryRoot: "/tmp",
     startedAt: new Date().toISOString(),
-    turns: [
-      {
-        turn: 1,
-        command: ["status"],
-        intent: "Determine state.",
-        agentReasoningState: { understoodAs: "unknown repository", confidence: 0.1, unknowns: ["purpose"] },
-        inputs: {},
-        outputs: { status: "ok", phase: "initialized" },
-        stateBefore: { README: "", packageJson: "" },
-        stateAfter: {},
-        stateChange: {},
-        evidenceGenerated: [],
-      },
-      {
-        turn: 2,
-        command: ["explain"],
-        intent: "Read briefing.",
-        agentReasoningState: { understoodAs: "governed project", confidence: 0.6, unknowns: [] },
-        inputs: {},
-        outputs: { explanation: "..." },
-        stateBefore: {},
-        stateAfter: {},
-        stateChange: {},
-        evidenceGenerated: [],
-      },
-    ],
+    turns: evidenceTurns({ README: "", packageJson: "" }),
   }
 
   const evidence = extractFirstContactEvidence(artifact)

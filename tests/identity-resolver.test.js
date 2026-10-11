@@ -8,30 +8,10 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { resolveIdentities, getCanonicalId } from "../dist/runtime/identity-resolver.js"
-
-function makeEvent(id, type, payload) {
-  return {
-    id,
-    type,
-    timestamp: Date.now(),
-    transactionId: "tx-1",
-    capability: "Genesis",
-    actor: "system",
-    payload,
-    eventHash: "hash",
-    previousHash: "prev",
-  }
-}
+import { makeIdentityEvent as makeEvent, identityCreationEvents, missionMEvent } from "./helpers/kernel-event-fixtures.js"
 
 test("builds identity registry from creation events", () => {
-  const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "EXPEDITION_CREATED", {
-      expedition: { id: "ex1", missionId: "m1", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-  ]
+  const events = identityCreationEvents()
 
   const { registry } = resolveIdentities(events)
   assert.strictEqual(registry.size, 2)
@@ -43,9 +23,7 @@ test("builds identity registry from creation events", () => {
 
 test("ignores non-creation events", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
+    missionMEvent("e1"),
     makeEvent("e2", "MISSION_APPROVED", { id: "m1", status: "active" }),
   ]
 
@@ -56,12 +34,8 @@ test("ignores non-creation events", () => {
 
 test("reports duplicate identities", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 2, updatedAt: 2 },
-    }),
+    missionMEvent("e1"),
+    missionMEvent("e2", "M", 2),
   ]
 
   const { registry, notices } = resolveIdentities(events)

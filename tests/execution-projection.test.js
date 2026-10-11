@@ -7,27 +7,10 @@ import {
 } from "../dist/execution/index.js"
 import assert from "node:assert"
 import test from "node:test"
-import { makeWorkItem, makeExpedition, makeObjective, EXEC_OPTIONS } from "./helpers/execution-fixtures.js"
-
-function makeVersioningHandler() {
-  return async (intent) => {
-    if (intent.operation === "switchRevision") {
-      return { success: true, result: { commit: "baseabc123" } }
-    }
-    if (intent.operation === "createRevision") {
-      return { success: true, result: { commit: "resultdef456" } }
-    }
-    throw new Error(`Unexpected versioning operation: ${intent.operation}`)
-  }
-}
+import { makeWorkItem, makeExpedition, makeObjective, makeVersioningHandler, synthesizeSingleObjectiveIntents, synthesizeTwoObjectiveIntents, EXEC_OPTIONS } from "./helpers/execution-fixtures.js"
 
 test("executeGraph: creates pull request after commit", async () => {
-  const intents = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-  }).intents
+  const intents = synthesizeSingleObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/EXP-1", [intents], "main")
 
@@ -55,20 +38,7 @@ test("executeGraph: creates pull request after commit", async () => {
 })
 
 test("executeGraph: PR title and body correlate expedition and objectives", async () => {
-  const r1 = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-    sequenceStart: 0,
-  })
-  const r2 = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-2", "EXP-1"),
-    workItem: makeWorkItem("WI-2", { operation: "writeFile", target: "b.txt", content: "b" }),
-    baseBranch: "main",
-    sequenceStart: r1.nextSequence,
-  })
+  const { r1, r2 } = synthesizeTwoObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/EXP-1", [r1.intents, r2.intents], "main")
 
@@ -95,12 +65,7 @@ test("executeGraph: PR title and body correlate expedition and objectives", asyn
 })
 
 test("executeGraph: halts when pull request creation fails", async () => {
-  const intents = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-  }).intents
+  const intents = synthesizeSingleObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/EXP-1", [intents], "main")
 
@@ -122,12 +87,7 @@ test("executeGraph: halts when pull request creation fails", async () => {
 })
 
 test("executeGraph: skips PR projection when no forge handler is provided", async () => {
-  const intents = synthesizeIntents({
-    expedition: makeExpedition("EXP-1"),
-    objective: makeObjective("OBJ-1", "EXP-1"),
-    workItem: makeWorkItem("WI-1", { operation: "writeFile", target: "a.txt", content: "a" }),
-    baseBranch: "main",
-  }).intents
+  const intents = synthesizeSingleObjectiveIntents()
 
   const graph = buildIntentGraph("EXP-1", "exp/EXP-1", [intents], "main")
 

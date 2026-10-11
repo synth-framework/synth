@@ -37,16 +37,15 @@ function signed(snapshot) {
   return { ...snapshot, signature: signSnapshot(snapshot) }
 }
 
-function makePlanningObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
+import { makePlanningObservation } from "./helpers/adapter.js"
+
+/** Start a session on the shared CRM planning observations. */
+function startCrmSession(ctx) {
+  return ctx.missionStudio.startSession([
+    makePlanningObservation("mission", "Build CRM", { purpose: "Customer success" }),
+    makePlanningObservation("expedition", "CRM Data Model", { goal: "Design schema", missionSubject: "Build CRM" }),
+    makePlanningObservation("objective", "Design Schema", { title: "Design CRM schema", expeditionSubject: "CRM Data Model" }),
+  ])
 }
 
 function makeSeedEventGraph() {
@@ -332,11 +331,7 @@ test("genesisFromSnapshot rejects a snapshot with broken parent references befor
 
 test("genesisFromSnapshot rejects an approved snapshot whose content was tampered with", async () => {
   const ctx = await bootIsolated()
-  const session = ctx.missionStudio.startSession([
-    makePlanningObservation("mission", "Build CRM", { purpose: "Customer success" }),
-    makePlanningObservation("expedition", "CRM Data Model", { goal: "Design schema", missionSubject: "Build CRM" }),
-    makePlanningObservation("objective", "Design Schema", { title: "Design CRM schema", expeditionSubject: "CRM Data Model" }),
-  ])
+  const session = startCrmSession(ctx)
   const approval = ctx.missionStudio.approve(session)
   assert.strictEqual(approval.success, true, approval.error)
 
@@ -354,11 +349,7 @@ test("genesisFromSnapshot rejects an approved snapshot whose content was tampere
 
 test("genesisFromSnapshot accepts a valid snapshot with a certification report and integrity proof", async () => {
   const ctx = await bootIsolated()
-  const session = ctx.missionStudio.startSession([
-    makePlanningObservation("mission", "Build CRM", { purpose: "Customer success" }),
-    makePlanningObservation("expedition", "CRM Data Model", { goal: "Design schema", missionSubject: "Build CRM" }),
-    makePlanningObservation("objective", "Design Schema", { title: "Design CRM schema", expeditionSubject: "CRM Data Model" }),
-  ])
+  const session = startCrmSession(ctx)
   const approval = ctx.missionStudio.approve(session)
   assert.strictEqual(approval.success, true, approval.error)
 

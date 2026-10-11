@@ -17,17 +17,7 @@ import {
   diffSnapshots,
 } from "../dist/mission-studio/index.js"
 
-function makeObservation(type, subject, overrides = {}) {
-  return {
-    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
-    sourceAdapter: "test-adapter",
-    type,
-    payload: { subject, name: subject, ...overrides },
-    evidenceReference: `evidence-${type}-${subject}`,
-    confidence: "high",
-    timestamp: 1000,
-  }
-}
+import { makePlanningObservation as makeObservation } from "./helpers/adapter.js"
 
 function makeApprovedSnapshot(name = "Build CRM", overrides = {}) {
   const studio = createMissionStudio({ approvalThreshold: 0 })

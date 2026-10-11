@@ -23,17 +23,32 @@ function makeGraph(nodes, edges) {
   return { nodes: nodeMap, edges }
 }
 
+/** Three unweighted nodes used across topo/cycle tests (fresh copy). */
+function abcNodes() {
+  return [["a", {}], ["b", {}], ["c", {}]]
+}
+
+/** a→b→c chain edges (fresh copy). */
+function chainEdges() {
+  return [
+    { from: "a", to: "b", type: "depends_on" },
+    { from: "b", to: "c", type: "depends_on" },
+  ]
+}
+
+/** a→b→c→a cycle edges (fresh copy). */
+function cycleEdges() {
+  return [
+    { from: "a", to: "b", type: "depends_on" },
+    { from: "b", to: "c", type: "depends_on" },
+    { from: "c", to: "a", type: "depends_on" },
+  ]
+}
+
 function testBuildAdjacencyLists() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
-    [
-      { from: "a", to: "b", type: "depends_on" },
-      { from: "b", to: "c", type: "depends_on" },
-    ],
+    abcNodes(),
+    chainEdges(),
   )
   const { inbound, outbound } = buildAdjacencyLists(graph)
   assert.deepEqual(outbound.get("a"), new Set(["b"]))
@@ -47,15 +62,8 @@ function testBuildAdjacencyLists() {
 
 function testTopologicalSortAcyclic() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
-    [
-      { from: "a", to: "b", type: "depends_on" },
-      { from: "b", to: "c", type: "depends_on" },
-    ],
+    abcNodes(),
+    chainEdges(),
   )
   const result = topologicalSort(graph)
   assert.equal(result.ok, true)
@@ -65,16 +73,8 @@ function testTopologicalSortAcyclic() {
 
 function testTopologicalSortCyclic() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
-    [
-      { from: "a", to: "b", type: "depends_on" },
-      { from: "b", to: "c", type: "depends_on" },
-      { from: "c", to: "a", type: "depends_on" },
-    ],
+    abcNodes(),
+    cycleEdges(),
   )
   const result = topologicalSort(graph)
   assert.equal(result.ok, false)
@@ -106,15 +106,8 @@ function testTopologicalSortDeterministic() {
 
 function testDetectCyclesNoCycles() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
-    [
-      { from: "a", to: "b", type: "depends_on" },
-      { from: "b", to: "c", type: "depends_on" },
-    ],
+    abcNodes(),
+    chainEdges(),
   )
   const cycles = detectCycles(graph)
   assert.deepEqual(cycles, [])
@@ -123,16 +116,8 @@ function testDetectCyclesNoCycles() {
 
 function testDetectCyclesSimpleCycle() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
-    [
-      { from: "a", to: "b", type: "depends_on" },
-      { from: "b", to: "c", type: "depends_on" },
-      { from: "c", to: "a", type: "depends_on" },
-    ],
+    abcNodes(),
+    cycleEdges(),
   )
   const cycles = detectCycles(graph)
   assert.equal(cycles.length, 1)
@@ -142,16 +127,8 @@ function testDetectCyclesSimpleCycle() {
 
 function testDetectCyclesDeterministic() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
-    [
-      { from: "a", to: "b", type: "depends_on" },
-      { from: "b", to: "c", type: "depends_on" },
-      { from: "c", to: "a", type: "depends_on" },
-    ],
+    abcNodes(),
+    cycleEdges(),
   )
   const cycles1 = detectCycles(graph)
   const cycles2 = detectCycles(graph)
@@ -236,11 +213,7 @@ function testDisconnectedGraph() {
 
 function testEdgeTypeFiltering() {
   const graph = makeGraph(
-    [
-      ["a", {}],
-      ["b", {}],
-      ["c", {}],
-    ],
+    abcNodes(),
     [
       { from: "a", to: "b", type: "depends_on" },
       { from: "b", to: "c", type: "contains" },

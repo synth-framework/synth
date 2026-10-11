@@ -9,6 +9,7 @@ import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
 import { assert } from "./helpers/assert.js"
+import { loadJson } from "./helpers/test-fixtures.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROTECTED_ASSETS_PATH = path.resolve(__dirname, "..", "dist", "governance", "protected-assets.js")
@@ -16,11 +17,6 @@ const ANALYZER_PATH = path.resolve(__dirname, "..", "dist", "governance", "impac
 const PLANNER_PATH = path.resolve(__dirname, "..", "dist", "validation", "planner.js")
 const MAP_PATH = path.resolve(__dirname, "..", "docs", "reference", "capability-validation-map.json")
 const PACKAGE_PATH = path.resolve(__dirname, "..", "package.json")
-
-async function loadJson(filePath) {
-  const content = await fs.readFile(filePath, "utf-8")
-  return JSON.parse(content)
-}
 
 async function testCatalogMatchesAdr004() {
   const { PROTECTED_ASSETS } = await import(PROTECTED_ASSETS_PATH)

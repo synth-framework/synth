@@ -14,6 +14,7 @@ import {
   hashCanonical,
 } from "../dist/discovery/index.js"
 import { createInMemoryFilesystemProvider } from "../dist/environment/index.js"
+import { discoverWithContextualAdapter } from "./helpers/discovery-fixtures.js"
 
 function createFilesystemSession() {
   const fs = createInMemoryFilesystemProvider({
@@ -108,31 +109,7 @@ test("tampering with an evidence claim reference is detected", async () => {
 })
 
 test("contextual adapter produces contextual replay when source state is preserved", async () => {
-  const contextualAdapter = {
-    id: "discovery:contextual",
-    version: "1.0.0",
-    determinism: "contextual",
-    canHandle: (source) => source.type === "filesystem",
-    collectObservations: async (source) => [
-      {
-        id: "ctx-1",
-        adapterId: "discovery:contextual",
-        adapterVersion: "1.0.0",
-        source,
-        fact: "contextual state observed",
-        timestamp: 1,
-        sourceState: { snapshot: "stable-snapshot" },
-      },
-    ],
-  }
-
-  const engine = createDefaultDiscoveryEngine({
-    adapters: [contextualAdapter],
-  })
-
-  const session = await engine.discover({
-    sources: [{ type: "filesystem", path: "/project" }],
-  })
+  const session = await discoverWithContextualAdapter({ sourceState: { snapshot: "stable-snapshot" } })
 
   assert.strictEqual(session.replay.status, "contextual")
   assert.strictEqual(session.replay.tamperDetected, false)

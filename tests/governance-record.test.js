@@ -10,26 +10,11 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { seedEventLog } from "./helpers/seed-event-log.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
+import { writeEventLog } from "./helpers/state-fixtures.js"
 
 const PROJECTION_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "governance-record-projection.js")
-
-async function writeEventLog(dir, rawEvents) {
-  const { computeEventHash } = await import(path.resolve(process.cwd(), "dist", "core", "hash.js"))
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-}
 
 async function writeManifest(dir, projectName = "Governance Record Test") {
   const synthDir = path.join(dir, ".synth")

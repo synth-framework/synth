@@ -1,6 +1,7 @@
 import { makeTempDir } from "./workspace.js"
 import { runSynth } from "./cli-harness.js"
 import { assert, parseJson } from "./assert.js"
+import { writeManifest } from "./state-fixtures.js"
 import fs from "fs/promises"
 import path from "path"
 
@@ -9,21 +10,7 @@ export async function makeTestDir(prefix) {
 }
 
 export async function makeManifest(dir, opts = {}) {
-  const synthDir = path.join(dir, ".synth")
-  await fs.mkdir(synthDir, { recursive: true })
-  const manifest = {
-    schema: "synth-bootstrap-manifest-v1",
-    version: "2.0.0",
-    projectName: opts.projectName || "Test",
-    root: dir,
-    generatedAt: new Date().toISOString(),
-    bootstrapped: true,
-    commands: [{ name: "status", description: "Report state" }],
-    capabilities: [],
-    layout: { data: ".synth/data/" },
-    publicVocabulary: ["Mission", "Expedition", "Replay"],
-  }
-  await fs.writeFile(path.join(synthDir, "manifest.json"), JSON.stringify(manifest, null, 2), "utf-8")
+  return writeManifest(dir, opts.projectName || "Test")
 }
 
 export async function makeEventLog(dir, rawEvents) {
@@ -47,3 +34,33 @@ export function runAndParse(args, cwd) {
 }
 
 export { parseJson, assert }
+
+/** Read and parse a JSON file. */
+export async function loadJson(filePath) {
+  const content = await fs.readFile(filePath, "utf-8")
+  return JSON.parse(content)
+}
+
+/**
+ * Assert the common shape of an evaluation payload. Callers opt into
+ * stricter slices (rules, reasoning, evidence) they actually verify.
+ */
+export function assertEvaluationShape(evaluation, { checkRules = false, checkReasoning = false, checkEvidence = false } = {}) {
+  assert.ok(evaluation, "Evaluation payload should exist")
+  assert.ok(["aligned", "revision_required", "rejected"].includes(evaluation.decision), `Unexpected decision: ${evaluation.decision}`)
+  assert.equal(typeof evaluation.confidence, "number", "Confidence should be a number")
+  assert.ok(evaluation.confidence >= 0 && evaluation.confidence <= 1, "Confidence should be in [0, 1]")
+  if (checkRules) {
+    assert.ok(Array.isArray(evaluation.matchedRules), "matchedRules should be an array")
+    assert.ok(Array.isArray(evaluation.violatedRules), "violatedRules should be an array")
+  }
+  assert.ok(Array.isArray(evaluation.matchedDriftClasses), "matchedDriftClasses should be an array")
+  if (checkEvidence) {
+    assert.ok(evaluation.evidence, "Evidence trace should exist")
+    assert.equal(typeof evaluation.evidence.summary, "string", "Evidence summary should be a string")
+  }
+  if (checkReasoning) {
+    assert.ok(Array.isArray(evaluation.reasoning), "reasoning should be an array")
+    assert.ok(evaluation.reasoning.length > 0, "reasoning should not be empty")
+  }
+}

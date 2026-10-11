@@ -7,13 +7,11 @@ import { makeTempDirSync } from "./helpers/workspace.js"
 // synth doctor, Installation Proof output, and --verify-only.
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs"
 import os from "os"
 import path from "path"
 import { assert } from "./helpers/assert.js"
-
-const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
+import { runEngineInstaller as runInstaller, createFakeNpm } from "./helpers/installer.js"
 
 function makeTempDir() {
   return makeTempDirSync("synth-installer-verify-")
@@ -21,95 +19,6 @@ function makeTempDir() {
 
 function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content, { mode: 0o755 })
-}
-
-function createFakeNpm(options = {}) {
-  const dir = makeTempDir()
-  const logFile = path.join(dir, "npm.log")
-  const { prefix, synthVersion = "2.0.0-rc.1" } = options
-
-  const script = `#!/usr/bin/env bash
-set -euo pipefail
-FAKE_NPM_LOG="${logFile}"
-FAKE_NPM_PREFIX="${prefix || ""}"
-FAKE_SYNTH_VERSION="${synthVersion}"
-
-echo "$@" >> "$FAKE_NPM_LOG"
-
-if [ "$1" = "--version" ]; then
-  echo "10.0.0"
-  exit 0
-fi
-
-if [ "$1" = "view" ]; then
-  echo "2.0.0-rc.1"
-  exit 0
-fi
-
-if [ "$1" = "config" ] && [ "\${2:-}" = "get" ] && [ "\${3:-}" = "prefix" ]; then
-  if [ -n "$FAKE_NPM_PREFIX" ]; then
-    echo "$FAKE_NPM_PREFIX"
-  else
-    echo "/usr/local"
-  fi
-  exit 0
-fi
-
-if [ "$1" = "uninstall" ]; then
-  if [ -n "$FAKE_NPM_PREFIX" ] && [ -f "$FAKE_NPM_PREFIX/bin/synth" ]; then
-    rm -f "$FAKE_NPM_PREFIX/bin/synth"
-  fi
-  exit 0
-fi
-
-if [ -n "$FAKE_NPM_PREFIX" ]; then
-  mkdir -p "$FAKE_NPM_PREFIX/bin"
-  cat > "$FAKE_NPM_PREFIX/bin/synth" <<'INNEREOF'
-#!/usr/bin/env bash
-if [ "$1" = "--version" ] || [ "$1" = "version" ]; then
-  echo "synth \${FAKE_SYNTH_VERSION}"
-  exit 0
-fi
-if [ "$1" = "init" ]; then
-  mkdir -p .synth
-  echo '{"status":"ok"}' > .synth/manifest.json
-  echo '{"status":"ok","message":"initialized"}'
-  exit 0
-fi
-if [ "$1" = "doctor" ]; then
-  echo '{"status":"ok","name":"synth","version":"\${FAKE_SYNTH_VERSION}","healthy":true,"checks":{"node":{"ok":true},"binary":{"ok":true},"version":{"ok":true},"manifest":{"ok":true}}}'
-  exit 0
-fi
-echo "Unknown synth command: $1" >&2
-exit 1
-INNEREOF
-  chmod +x "$FAKE_NPM_PREFIX/bin/synth"
-fi
-
-exit 0
-`
-
-  writeFile(path.join(dir, "npm"), script)
-  return { dir, logFile }
-}
-
-function runInstaller(args = [], env = {}) {
-  const result = spawnSync("bash", [INSTALLER_PATH, ...args], {
-    cwd: process.cwd(),
-    encoding: "utf-8",
-    env: {
-      ...process.env,
-      SYNTH_INSTALLER_BASE_URL: "http://localhost:1",
-      ...env,
-    },
-    timeout: 60000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-    error: result.error,
-  }
 }
 
 async function testVerifyOnlyFailsWhenSynthMissing() {

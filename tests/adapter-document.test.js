@@ -8,17 +8,10 @@ import { createDocumentAdapter } from "../dist/adapters/document/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 import fs from "fs"
 import path from "path"
+import { cleanFixtures, writeFixture, observeStagedFile } from "./helpers/adapter-fixtures.js"
+import { assertAdapterLifecycle } from "./helpers/adapter-lifecycle.js"
 
 const FIXTURES_DIR = path.join(process.cwd(), "tests", "document-adapter-fixtures")
-
-function cleanFixtures() {
-  fs.rmSync(FIXTURES_DIR, { recursive: true, force: true })
-  fs.mkdirSync(FIXTURES_DIR, { recursive: true })
-}
-
-function writeFixture(name, content) {
-  fs.writeFileSync(path.join(FIXTURES_DIR, name), content)
-}
 
 test("AdapterRegistry lists document adapter", () => {
   const registry = createAdapterRegistry()
@@ -33,26 +26,19 @@ test("DocumentAdapter starts in discovered state", () => {
 })
 
 test("DocumentAdapter transitions through lifecycle", async () => {
-  cleanFixtures()
-  const adapter = createDocumentAdapter()
-  await adapter.configure({ documentsDirectory: FIXTURES_DIR })
-  assert.strictEqual(adapter.state, "configured")
-  await adapter.validate()
-  assert.strictEqual(adapter.state, "validated")
-  await adapter.enable()
-  assert.strictEqual(adapter.state, "enabled")
-  await adapter.disable()
-  assert.strictEqual(adapter.state, "disabled")
+  cleanFixtures(FIXTURES_DIR)
+  await assertAdapterLifecycle(() => createDocumentAdapter(), { documentsDirectory: FIXTURES_DIR })
 })
 
 test("DocumentAdapter emits evidence observation for markdown", async () => {
-  cleanFixtures()
-  writeFixture("mission.md", "# Mission\n\nBuild a CRM for the sales team.")
-
   const adapter = createDocumentAdapter()
-  await adapter.configure({ documentsDirectory: FIXTURES_DIR })
-  await adapter.enable()
-  const result = await adapter.observe()
+  const result = await observeStagedFile(
+    FIXTURES_DIR,
+    "mission.md",
+    "# Mission\n\nBuild a CRM for the sales team.",
+    adapter,
+    { documentsDirectory: FIXTURES_DIR },
+  )
   assert.strictEqual(result.errors.length, 0)
   assert.strictEqual(result.observations.length, 1)
 
@@ -66,8 +52,8 @@ test("DocumentAdapter emits evidence observation for markdown", async () => {
 })
 
 test("DocumentAdapter emits evidence observation for plain text", async () => {
-  cleanFixtures()
-  writeFixture("notes.txt", "The system must support OAuth2 login.")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "notes.txt", "The system must support OAuth2 login.")
 
   const adapter = createDocumentAdapter()
   await adapter.configure({ documentsDirectory: FIXTURES_DIR })
@@ -79,8 +65,8 @@ test("DocumentAdapter emits evidence observation for plain text", async () => {
 })
 
 test("DocumentAdapter emits evidence observation for ADR", async () => {
-  cleanFixtures()
-  writeFixture("decision.adr", "# ADR 001: Use PostgreSQL\n\nWe will use PostgreSQL for persistence.")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "decision.adr", "# ADR 001: Use PostgreSQL\n\nWe will use PostgreSQL for persistence.")
 
   const adapter = createDocumentAdapter()
   await adapter.configure({ documentsDirectory: FIXTURES_DIR })
@@ -91,7 +77,7 @@ test("DocumentAdapter emits evidence observation for ADR", async () => {
 })
 
 test("DocumentAdapter reports binary PDF without parsing", async () => {
-  cleanFixtures()
+  cleanFixtures(FIXTURES_DIR)
   fs.writeFileSync(path.join(FIXTURES_DIR, "spec.pdf"), Buffer.from("%PDF-1.4 fake pdf content"))
 
   const adapter = createDocumentAdapter()
@@ -105,9 +91,9 @@ test("DocumentAdapter reports binary PDF without parsing", async () => {
 })
 
 test("DocumentAdapter scans explicit file list", async () => {
-  cleanFixtures()
-  writeFixture("a.md", "Alpha")
-  writeFixture("b.md", "Beta")
+  cleanFixtures(FIXTURES_DIR)
+  writeFixture(FIXTURES_DIR, "a.md", "Alpha")
+  writeFixture(FIXTURES_DIR, "b.md", "Beta")
 
   const adapter = createDocumentAdapter()
   await adapter.configure({ files: [path.join(FIXTURES_DIR, "a.md")] })

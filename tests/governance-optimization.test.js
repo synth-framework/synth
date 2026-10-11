@@ -27,12 +27,17 @@ async function withTempDir(fn) {
   }
 }
 
+/** Two-check plan; B depends on the given ids. */
+function twoCheckPlan(dependenciesB = []) {
+  return [
+    { checkId: "a", action: "run", reason: "test", fingerprint: "a", upstreamFingerprints: [], dependencies: [] },
+    { checkId: "b", action: "run", reason: "test", fingerprint: "b", upstreamFingerprints: [], dependencies: dependenciesB },
+  ]
+}
+
 async function testParallelRunnerExecutesIndependentChecksConcurrently() {
   const runner = new ParallelRunner({ concurrency: 2 })
-  const plan = [
-    { checkId: "a", action: "run", reason: "test", fingerprint: "a", upstreamFingerprints: [], dependencies: [] },
-    { checkId: "b", action: "run", reason: "test", fingerprint: "b", upstreamFingerprints: [], dependencies: [] },
-  ]
+  const plan = twoCheckPlan()
 
   const order = []
   const { results, failed } = await runner.run(plan, async (entry) => {
@@ -53,10 +58,7 @@ async function testParallelRunnerExecutesIndependentChecksConcurrently() {
 
 async function testParallelRunnerRespectsDependencies() {
   const runner = new ParallelRunner({ concurrency: 2 })
-  const plan = [
-    { checkId: "a", action: "run", reason: "test", fingerprint: "a", upstreamFingerprints: [], dependencies: [] },
-    { checkId: "b", action: "run", reason: "test", fingerprint: "b", upstreamFingerprints: [], dependencies: ["a"] },
-  ]
+  const plan = twoCheckPlan(["a"])
 
   const order = []
   await runner.run(plan, async (entry) => {
@@ -70,10 +72,7 @@ async function testParallelRunnerRespectsDependencies() {
 
 async function testParallelRunnerBlocksDownstreamOnFailure() {
   const runner = new ParallelRunner({ concurrency: 2 })
-  const plan = [
-    { checkId: "a", action: "run", reason: "test", fingerprint: "a", upstreamFingerprints: [], dependencies: [] },
-    { checkId: "b", action: "run", reason: "test", fingerprint: "b", upstreamFingerprints: [], dependencies: ["a"] },
-  ]
+  const plan = twoCheckPlan(["a"])
 
   const { results, failed } = await runner.run(plan, async (entry) => {
     if (entry.checkId === "a") {

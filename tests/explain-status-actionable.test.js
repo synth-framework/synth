@@ -130,13 +130,9 @@ test("explain status: missing capability during execution", () => {
   assert.ok(report.reason.includes("convergence") || report.summary.includes("convergence"))
 })
 
-test("explain status: replay divergence from hand-edited canonical state", () => {
-  const events = [
-    missionCreated("m1"),
-    makeEvent("MISSION_APPROVED", { id: "m1" }),
-  ]
-  const canonicalState = {
-    lastEventOffset: events.length,
+function makeTamperedState(events, lastEventOffset) {
+  return {
+    lastEventOffset,
     stateHash: "deadbeef-deadbeef-deadbeef",
     missions: {},
     expeditions: {},
@@ -148,6 +144,14 @@ test("explain status: replay divergence from hand-edited canonical state", () =>
     discoveries: {},
     decisions: {},
   }
+}
+
+test("explain status: replay divergence from hand-edited canonical state", () => {
+  const events = [
+    missionCreated("m1"),
+    makeEvent("MISSION_APPROVED", { id: "m1" }),
+  ]
+  const canonicalState = makeTamperedState(events, events.length)
   const dir = makeProject(events, { canonicalState })
   const run = runExplainStatus(dir)
   assert.strictEqual(run.status, 0, run.stderr)
@@ -159,19 +163,7 @@ test("explain status: replay divergence from hand-edited canonical state", () =>
 
 test("explain status: replay divergence from event-log corruption", () => {
   const events = [missionCreated("m1")]
-  const canonicalState = {
-    lastEventOffset: 100,
-    stateHash: "deadbeef-deadbeef-deadbeef",
-    missions: {},
-    expeditions: {},
-    objectives: {},
-    workItems: {},
-    plans: {},
-    milestones: {},
-    projects: {},
-    discoveries: {},
-    decisions: {},
-  }
+  const canonicalState = makeTamperedState(events, 100)
   const dir = makeProject(events, { canonicalState })
   const run = runExplainStatus(dir)
   assert.strictEqual(run.status, 0, run.stderr)

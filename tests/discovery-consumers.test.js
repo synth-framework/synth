@@ -28,14 +28,7 @@ import {
 
 const PROJECT_ROOT = process.cwd()
 
-const BROWNFIELD_EXAMPLES = [
-  { name: "todo", dir: "examples/todo", type: "node" },
-  { name: "crm", dir: "examples/crm", type: "node" },
-  { name: "legacy-node", dir: "examples/legacy-node", type: "brownfield" },
-  { name: "polyglot", dir: "examples/polyglot", type: "polyglot" },
-  { name: "monolith", dir: "examples/monolith", type: "node" },
-  { name: "blog", dir: "examples/blog", type: "node" },
-]
+import { EXAMPLE_PROJECTS as BROWNFIELD_EXAMPLES } from "./helpers/example-projects.js"
 
 async function discoverExample(example) {
   const provider = createDefaultDiscoverySessionProvider()

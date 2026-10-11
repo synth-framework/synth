@@ -1,4 +1,3 @@
-import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // SYNTH Expedition Lifecycle Tests
 // ============================================================
@@ -9,9 +8,9 @@ import { makeTempDir } from "./helpers/workspace.js"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { createAndApproveMission as createAndApproveMissionIntent, createExecutingExpedition as createExecutingExpeditionIntent, setupBasicProject } from "./helpers/mission-lifecycle.js"
 import { createPerfRunner } from "./helpers/perf-runner.js"
+import { certifyConvergence } from "./helpers/governance-intent.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
@@ -33,107 +32,15 @@ function assert(condition, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await makeTempDir("synth-expedition-lifecycle-")
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  // Bootstrap the project so expedition runtime entities can be created.
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  return tmpDir
+  return setupBasicProject("synth-expedition-lifecycle-")
 }
 
 async function createAndApproveMission(projectDir) {
-  const createResult = runSynth(
-    ["mission", "create", "--subject", "Test Mission", "--purpose", "Test purpose"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `mission create must exit 0:\n${createResult.stderr}`)
-  const draftId1 = parseJson(createResult.stdout).draftId
-
-  const evidenceResult = runSynth(
-    [
-      "mission",
-      "evidence",
-      "add",
-      "--draft-id",
-      draftId1,
-      "--subject",
-      "Supporting evidence",
-      "--purpose",
-      "Raises confidence above approval threshold",
-      "--confidence",
-      "certain",
-    ],
-    projectDir,
-  )
-  assert(evidenceResult.status === 0, `mission evidence add must exit 0:\n${evidenceResult.stderr}`)
-  const draftId2 = parseJson(evidenceResult.stdout).draftId
-
-  // Phase 2 governance: Mission approval requires an aligned Alignment Contract.
-  // The CLI operator workflow for creating this contract is not yet implemented,
-  // so tests construct it directly through the governance capabilities.
-  const dataDir = path.join(projectDir, ".synth", "data")
-  const gateCtx = await bootstrap({
-    skipGenesis: true,
-    infra: {
-      eventLogPath: path.join(dataDir, "event-log.jsonl"),
-      statePath: path.join(dataDir, "canonical-state.json"),
-    },
+  return createAndApproveMissionIntent(projectDir, {
+    subject: "Test Mission",
+    purpose: "Test purpose",
+    returnGateContext: true,
   })
-  const { contractId } = await createAlignedContract(gateCtx)
-
-  const approveResult = runSynth(
-    ["mission", "approve", "--draft-id", draftId2, "--alignment-contract-id", contractId],
-    projectDir,
-  )
-  assert(approveResult.status === 0, `mission approve must exit 0:\n${approveResult.stderr}`)
-  const approveOutput = parseJson(approveResult.stdout)
-  assert(approveOutput.kind === "MissionApprovalDecision", `mission approve should return MissionApprovalDecision, got ${approveOutput.kind}`)
-  assert(approveOutput.decision?.approved === true, `mission should be approved, got ${JSON.stringify(approveOutput.decision)}`)
-  const missionId = approveOutput.runtime?.missionId
-  assert(missionId, `mission approve should return a runtime missionId, got ${JSON.stringify(approveOutput.runtime)}`)
-  return { missionId, gateCtx, contractId }
-}
-
-async function certifyConvergence(gateCtx, missionId, expeditionId, contractId) {
-  const result = await gateCtx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures: {
-        hasPersistentHeader: true,
-        hasPersistentSidebar: true,
-        hasScrollDrivenPhases: true,
-      },
-      ruleSetId: "program-027-homepage",
-      artifacts: [
-        {
-          path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`,
-          hash: `test-${missionId}-${expeditionId}`,
-          description: "Test implementation reference",
-        },
-      ],
-      runtimeEvidence: [
-        {
-          source: `synth://missions/${missionId}/expeditions/${expeditionId}/runtime`,
-          observation: "Runtime behavior observed",
-          timestamp: 0,
-        },
-      ],
-      executionEvidence: [
-        {
-          executionId: `test-execution-${expeditionId}`,
-          result: "passed",
-          outcome: "completed",
-        },
-      ],
-      certifier: { kind: "engine", id: "convergence-certification" },
-    },
-  })
-  assert(result.status === "ok", `CertifyConvergence must succeed: ${result.error}`)
-  assert(result.result?.decision === "converged", `Convergence certification must converge, got ${result.result?.decision}`)
 }
 
 async function testLifecycleTransitions(projectDir, missionId, gateCtx, contractId) {
@@ -289,26 +196,11 @@ async function testExplainAliasRedirectsToShow(projectDir, missionId) {
 }
 
 async function createStartedExpedition(projectDir, missionId, subject) {
-  const createResult = runSynth(
-    ["expedition", "create", "--mission", missionId, "--subject", subject, "--goal", "Test goal"],
-    projectDir,
-  )
-  assert(createResult.status === 0, `expedition create must exit 0:\n${createResult.stderr}`)
-  const draftId = parseJson(createResult.stdout).draftId
-
-  const approveResult = runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
-  assert(approveResult.status === 0, `expedition approve must exit 0:\n${approveResult.stderr}`)
-
-  const commitResult = runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
-  assert(commitResult.status === 0, `expedition commit must exit 0:\n${commitResult.stderr}`)
-
-  const startResult = runSynth(["expedition", "start", "--id", draftId], projectDir)
-  assert(startResult.status === 0, `expedition start must exit 0:\n${startResult.stderr}`)
-  const startOutput = parseJson(startResult.stdout)
-  assert(startOutput.kind === "ExpeditionStarted", `expedition start should return ExpeditionStarted, got ${startOutput.kind}`)
-  assert(startOutput.result.status === "executing", `expedition should be executing, got ${startOutput.result.status}`)
-
-  return draftId
+  return createExecutingExpeditionIntent(projectDir, missionId, {
+    subject,
+    goal: "Test goal",
+    verifyStart: true,
+  })
 }
 
 async function testArchiveSetsArchivedStatus(projectDir, missionId) {

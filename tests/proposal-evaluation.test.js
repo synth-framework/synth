@@ -10,6 +10,7 @@ import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
 import { makeCtx as makeTestCtx } from "./helpers/context.js"
+import { assertEvaluationShape as assertEvaluationShapeBase } from "./helpers/test-fixtures.js"
 import {
   createIntentModel,
   createAlignmentContract,
@@ -82,13 +83,7 @@ async function evaluateGate(ctx, gateId, proposal) {
 }
 
 function assertEvaluationShape(evaluation) {
-  assert.ok(evaluation, "Evaluation payload should exist")
-  assert.ok(["aligned", "revision_required", "rejected"].includes(evaluation.decision), `Unexpected decision: ${evaluation.decision}`)
-  assert.equal(typeof evaluation.confidence, "number", "Confidence should be a number")
-  assert.ok(evaluation.confidence >= 0 && evaluation.confidence <= 1, "Confidence should be in [0, 1]")
-  assert.ok(Array.isArray(evaluation.matchedDriftClasses), "matchedDriftClasses should be an array")
-  assert.ok(Array.isArray(evaluation.reasoning), "reasoning should be an array")
-  assert.ok(evaluation.reasoning.length > 0, "reasoning should not be empty")
+  assertEvaluationShapeBase(evaluation, { checkReasoning: true })
 }
 
 // ------------------------------------------------------------------

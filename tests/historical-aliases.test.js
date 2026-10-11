@@ -11,26 +11,13 @@ import { normalizeHistoricalEvents } from "../dist/runtime/historical-normalizer
 import { resolveReferences } from "../dist/runtime/reference-resolver.js"
 import { resolveIdentities } from "../dist/runtime/identity-resolver.js"
 import { validateAggregateGraph } from "../dist/runtime/replay.js"
+import { makeIdentityEvent as makeEvent, identityCreationEvents, missionMEvent } from "./helpers/kernel-event-fixtures.js"
 import {
   createEmptyHistoricalAliasRegistry,
   identityKey,
   isKnownAlias,
   getCanonicalId,
 } from "../dist/runtime/historical-aliases.js"
-
-function makeEvent(id, type, payload) {
-  return {
-    id,
-    type,
-    timestamp: Date.now(),
-    transactionId: "tx-1",
-    capability: "Genesis",
-    actor: "system",
-    payload,
-    eventHash: "hash",
-    previousHash: "prev",
-  }
-}
 
 function makeRegistry(entries) {
   const registry = createEmptyHistoricalAliasRegistry()
@@ -58,17 +45,7 @@ test("identityKey and registry helpers work", () => {
 
 test("normalizer suppresses duplicate warnings for registered aliases", () => {
   const canonicalMissionId = "m1"
-  const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: canonicalMissionId, name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "MISSION_CREATED", {
-      mission: { id: canonicalMissionId, name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 2, updatedAt: 2 },
-    }),
-    makeEvent("e3", "MISSION_CREATED", {
-      mission: { id: canonicalMissionId, name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 3, updatedAt: 3 },
-    }),
-  ]
+  const events = [1, 2, 3].map((t) => missionMEvent(`e${t}`, "M", t))
 
   const withoutRegistry = normalizeHistoricalEvents(events)
   assert.strictEqual(withoutRegistry.notices.length, 2)
@@ -87,14 +64,7 @@ test("normalizer suppresses duplicate warnings for registered aliases", () => {
 })
 
 test("reference resolver recovers historical parent aliases", () => {
-  const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "EXPEDITION_CREATED", {
-      expedition: { id: "ex1", missionId: "legacy-m1", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-  ]
+  const events = identityCreationEvents("m1", "ex1", { expeditionMissionId: "legacy-m1" })
 
   const { registry } = resolveIdentities(events)
   const registryWithAlias = makeRegistry({
@@ -118,12 +88,8 @@ test("reference resolver recovers historical parent aliases", () => {
 
 test("validateAggregateGraph suppresses duplicate and parent-alias violations", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 2, updatedAt: 2 },
-    }),
+    missionMEvent("e1"),
+    missionMEvent("e2", "M", 2),
     makeEvent("e3", "EXPEDITION_CREATED", {
       expedition: { id: "ex1", missionId: "legacy-m1", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
     }),
@@ -166,12 +132,7 @@ test("validateAggregateGraph suppresses duplicate and parent-alias violations", 
 
 test("validateAggregateGraph resolves alias parent ids for cycle and reachability checks", () => {
   const events = [
-    makeEvent("e1", "MISSION_CREATED", {
-      mission: { id: "m1", name: "M", status: "draft", expeditions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
-    makeEvent("e2", "EXPEDITION_CREATED", {
-      expedition: { id: "ex1", missionId: "legacy-m1", name: "E", goal: "g", status: "draft", objectives: [], discoveries: [], decisions: [], metadata: {}, createdAt: 1, updatedAt: 1 },
-    }),
+    ...identityCreationEvents("m1", "ex1", { expeditionMissionId: "legacy-m1" }),
     makeEvent("e3", "OBJECTIVE_ADDED", {
       objective: { id: "ob1", expeditionId: "legacy-ex1", title: "O", purpose: "", status: "draft", metadata: {}, createdAt: 1, updatedAt: 1 },
     }),

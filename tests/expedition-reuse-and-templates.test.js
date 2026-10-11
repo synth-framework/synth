@@ -1,4 +1,4 @@
-import { makeTempDir } from "./helpers/workspace.js"
+import { setupGitBackedProject } from "./helpers/mission-lifecycle.js"
 // ============================================================
 // EXP-REUSE-001 — Alignment Contract Reuse and Expedition Templates
 // ============================================================
@@ -8,7 +8,6 @@ import { makeTempDir } from "./helpers/workspace.js"
 //   - expedition create accepts --template and pre-fills goal/scope
 // ============================================================
 
-import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
@@ -21,19 +20,6 @@ process.env.SYNTH_STRICT_CONTEXT = "1"
 
 
 
-function runGit(args, cwd) {
-  const result = spawnSync("git", args, {
-    cwd,
-    encoding: "utf-8",
-    timeout: 30000,
-  })
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(" ")} failed: ${result.stderr}`)
-  }
-  return result.stdout.trim()
-}
-
-
 function assertOk(result, message) {
   if (result.status !== 0) {
     throw new Error(`${message}: ${result.stderr || result.stdout}`)
@@ -41,22 +27,7 @@ function assertOk(result, message) {
 }
 
 async function setupProject() {
-  const tmpDir = await makeTempDir("synth-reuse-templates-")
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-
-  runGit(["init"], tmpDir)
-  runGit(["config", "user.email", "test@synth.local"], tmpDir)
-  runGit(["config", "user.name", "Test Operator"], tmpDir)
-  runGit(["add", "package.json"], tmpDir)
-  runGit(["commit", "-m", "initial"], tmpDir)
-
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assertOk(bootstrapResult, "bootstrap --approve must exit 0")
-
-  runGit(["add", "-A"], tmpDir)
-  runGit(["commit", "-m", "bootstrap"], tmpDir)
-
-  return tmpDir
+  return setupGitBackedProject("synth-reuse-templates-")
 }
 
 async function makeApiContext(projectDir) {

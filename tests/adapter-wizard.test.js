@@ -7,6 +7,7 @@ import assert from "node:assert"
 import { createWizardAdapter } from "../dist/adapters/wizard/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
 import { makeObservation } from "./helpers/adapter.js"
+import { assertAdapterLifecycle } from "./helpers/adapter-lifecycle.js"
 
 
 test("AdapterRegistry lists wizard adapter", () => {
@@ -22,15 +23,7 @@ test("WizardAdapter starts in discovered state", () => {
 })
 
 test("WizardAdapter transitions through lifecycle", async () => {
-  const adapter = createWizardAdapter()
-  await adapter.configure({ observations: [] })
-  assert.strictEqual(adapter.state, "configured")
-  await adapter.validate()
-  assert.strictEqual(adapter.state, "validated")
-  await adapter.enable()
-  assert.strictEqual(adapter.state, "enabled")
-  await adapter.disable()
-  assert.strictEqual(adapter.state, "disabled")
+  await assertAdapterLifecycle(createWizardAdapter, { observations: [] })
 })
 
 test("WizardAdapter preserves existing wizard observations", async () => {

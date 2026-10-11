@@ -3,7 +3,7 @@
 // ============================================================
 
 /** Extract the most recent event of a given type from the event store. */
-async function lastEvent(ctx, type, predicate = () => true) {
+export async function lastEvent(ctx, type, predicate = () => true) {
   const events = await ctx.infra.eventStore.loadAll()
   const matches = events.filter((e) => e.type === type && predicate(e))
   if (matches.length === 0) return undefined
@@ -82,6 +82,7 @@ export async function createAlignmentContract(ctx, intentModelId, overrides = {}
         forbiddenInterpretation: overrides.forbiddenInterpretation || ["Generic dashboard", "Marketing landing page"],
         forbiddenDrift: overrides.forbiddenDrift || ["Add chat interface", "Use bootstrap aesthetics"],
         referenceEvidenceIds: [evidenceId],
+        ...(overrides.objectiveCoverage ? { objectiveCoverage: overrides.objectiveCoverage } : {}),
       },
     },
   })
@@ -119,19 +120,10 @@ export async function approveAlignmentContract(ctx, contractId) {
 
 /** Open a Divergence Gate and resolve it as aligned. Returns the generated gate id. */
 export async function alignDivergenceGate(ctx, contractId, intentModelId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "OpenDivergenceGate",
-    payload: { contractId, intentModelId },
-  })
-  if (result.status !== "ok") {
-    throw new Error(`OpenDivergenceGate failed: ${result.error}`)
-  }
-  const openedEvent = await lastEvent(ctx, "DIVERGENCE_GATE_OPENED", (e) => e.payload.contractId === contractId)
-  if (!openedEvent) throw new Error("DIVERGENCE_GATE_OPENED event not found")
+  const openedEvent = await openDivergenceGate(ctx, contractId, intentModelId)
   const gateId = openedEvent.payload.gateId
 
-  result = await ctx.api.handleIntent({
+  const result = await ctx.api.handleIntent({
     actor: "test",
     capability: "ResolveDivergenceGate",
     payload: {
@@ -146,6 +138,21 @@ export async function alignDivergenceGate(ctx, contractId, intentModelId) {
     throw new Error(`ResolveDivergenceGate failed: ${result.error}`)
   }
   return gateId
+}
+
+/** Open a Divergence Gate and return the opened event. Shared prefix for Evaluate/Resolve variants. */
+export async function openDivergenceGate(ctx, contractId, intentModelId) {
+  const result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "OpenDivergenceGate",
+    payload: { contractId, intentModelId },
+  })
+  if (result.status !== "ok") {
+    throw new Error(`OpenDivergenceGate failed: ${result.error}`)
+  }
+  const openedEvent = await lastEvent(ctx, "DIVERGENCE_GATE_OPENED", (e) => e.payload.contractId === contractId)
+  if (!openedEvent) throw new Error("DIVERGENCE_GATE_OPENED event not found")
+  return openedEvent
 }
 
 /** Full fixture: create intent model, alignment contract, approve it, and align divergence gate. */

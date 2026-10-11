@@ -1,4 +1,3 @@
-import { makeTempDirSync } from "./helpers/workspace.js"
 import { cleanup, runCli, createDraft } from "./helpers/trust-workflow.js"
 // Certification tests for EXP-RUNTIME-001 — Runtime Correctness and Recovery.
 //
@@ -10,26 +9,12 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { createCertHarness } from "./helpers/cert-test-base.js"
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const DIST_SYNTH = path.join(REPO_ROOT, "dist", "cli", "synth.js")
 
-let passed = 0
-let failed = 0
-
-function assert(condition, message) {
-  if (condition) {
-    passed++
-    console.log(`✓ ${message}`)
-  } else {
-    failed++
-    console.error(`✗ ${message}`)
-  }
-}
-
-function makeWorkspace() {
-  return makeTempDirSync("synth-runtime-")
-}
+const { assert, makeWorkspace, finish } = createCertHarness("synth-runtime-")
 
 function initWorkspace(dir) {
   const r = runCli(dir, ["init", "--name", "Runtime Repair Test"])
@@ -233,8 +218,7 @@ function main() {
     }
   }
 
-  console.log(`\n${passed} passed, ${failed} failed`)
-  if (failed > 0) process.exit(1)
+  finish()
 }
 
 main()

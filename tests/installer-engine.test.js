@@ -12,8 +12,7 @@ import fs from "fs"
 import os from "os"
 import path from "path"
 import { assert } from "./helpers/assert.js"
-
-const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
+import { runEngineInstaller as runInstaller, createFakeNpm } from "./helpers/installer.js"
 
 function makeTempDir() {
   return makeTempDirSync("synth-installer-engine-")
@@ -21,112 +20,6 @@ function makeTempDir() {
 
 function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content, { mode: 0o755 })
-}
-
-function createFakeNpm(options = {}) {
-  const dir = makeTempDir()
-  const logFile = path.join(dir, "npm.log")
-  const attemptsFile = path.join(dir, "attempts")
-  const { prefix, maxFail = 0, permanentFail = false } = options
-
-  const script = `#!/usr/bin/env bash
-set -euo pipefail
-FAKE_NPM_LOG="${logFile}"
-FAKE_NPM_ATTEMPTS="${attemptsFile}"
-FAKE_NPM_PREFIX="${prefix || ""}"
-FAKE_NPM_MAX_FAIL="${maxFail}"
-FAKE_NPM_PERMANENT_FAIL="${permanentFail ? "true" : "false"}"
-
-echo "$@" >> "$FAKE_NPM_LOG"
-
-if [ "$1" = "--version" ]; then
-  echo "10.0.0"
-  exit 0
-fi
-
-if [ "$1" = "view" ]; then
-  echo "2.0.0-rc.1"
-  exit 0
-fi
-
-if [ "$1" = "config" ] && [ "\${2:-}" = "get" ] && [ "\${3:-}" = "prefix" ]; then
-  if [ -n "$FAKE_NPM_PREFIX" ]; then
-    echo "$FAKE_NPM_PREFIX"
-  else
-    echo "/usr/local"
-  fi
-  exit 0
-fi
-
-if [ "$1" = "uninstall" ]; then
-  if [ -n "$FAKE_NPM_PREFIX" ] && [ -f "$FAKE_NPM_PREFIX/bin/synth" ]; then
-    rm -f "$FAKE_NPM_PREFIX/bin/synth"
-  fi
-  exit 0
-fi
-
-# install command
-attempt=$(cat "$FAKE_NPM_ATTEMPTS" 2>/dev/null || echo 0)
-attempt=$((attempt + 1))
-echo "$attempt" > "$FAKE_NPM_ATTEMPTS"
-
-if [ "$FAKE_NPM_PERMANENT_FAIL" = "true" ]; then
-  echo "Simulated permanent failure" >&2
-  exit 1
-fi
-
-if [ "$FAKE_NPM_MAX_FAIL" != "" ] && [ "$FAKE_NPM_MAX_FAIL" != "0" ] && [ "$attempt" -le "$FAKE_NPM_MAX_FAIL" ]; then
-  echo "Simulated network failure (attempt $attempt)" >&2
-  exit 1
-fi
-
-if [ -n "$FAKE_NPM_PREFIX" ]; then
-  mkdir -p "$FAKE_NPM_PREFIX/bin"
-  cat > "$FAKE_NPM_PREFIX/bin/synth" <<'INNEREOF'
-#!/usr/bin/env bash
-if [ "$1" = "--version" ] || [ "$1" = "version" ]; then
-  echo "synth 2.0.0-rc.1"
-  exit 0
-fi
-if [ "$1" = "init" ]; then
-  mkdir -p .synth
-  echo '{"status":"ok"}' > .synth/manifest.json
-  echo '{"status":"ok","message":"initialized"}'
-  exit 0
-fi
-if [ "$1" = "doctor" ]; then
-  echo '{"status":"ok","name":"synth","version":"2.0.0-rc.1","healthy":true,"checks":{"node":{"ok":true},"binary":{"ok":true},"version":{"ok":true},"manifest":{"ok":true}}}'
-  exit 0
-fi
-echo "Unknown synth command: $1" >&2
-exit 1
-INNEREOF
-  chmod +x "$FAKE_NPM_PREFIX/bin/synth"
-fi
-
-exit 0
-`
-
-  writeFile(path.join(dir, "npm"), script)
-  return { dir, logFile, attemptsFile }
-}
-
-function runInstaller(args = [], env = {}, timeout = 60000) {
-  const result = spawnSync("bash", [INSTALLER_PATH, ...args], {
-    cwd: process.cwd(),
-    encoding: "utf-8",
-    env: {
-      ...process.env,
-      SYNTH_INSTALLER_BASE_URL: "http://localhost:1",
-      ...env,
-    },
-    timeout,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
 }
 
 async function testDryRunDoesNotInstall() {

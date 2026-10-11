@@ -1,4 +1,3 @@
-import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-QUIET-001 — Quiet and Summary Output Modes
 // ============================================================
@@ -11,16 +10,11 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { setupBasicProject } from "./helpers/mission-lifecycle.js"
 import { assert } from "./helpers/assert.js"
 
 async function setupProject() {
-  const tmpDir = await makeTempDir("synth-quiet-output-")
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  if (bootstrapResult.status !== 0) {
-    throw new Error(`bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  }
-  return tmpDir
+  return setupBasicProject("synth-quiet-output-")
 }
 
 async function main() {

@@ -1,4 +1,4 @@
-import { makeTempDirSync } from "./helpers/workspace.js"
+import { makeTempDirSync, gitInitWithCommit } from "./helpers/workspace.js"
 // ============================================================
 // Branch Policy & Execution Branch Checks (ECOSYSTEM-001 R)
 // ============================================================
@@ -27,13 +27,6 @@ function makeProject(withConfig = false, configYaml = "") {
     fs.writeFileSync(path.join(root, ".synth", "config.yaml"), configYaml, "utf-8")
   }
   return root
-}
-
-function gitInitWithCommit(root, branch = "main") {
-  execFileSync("git", ["init", "-b", branch], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["config", "user.email", "test@synth.dev"], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["config", "user.name", "synth-test"], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["commit", "--allow-empty", "-m", "initial"], { cwd: root, stdio: "pipe" })
 }
 
 function makePolicy(overrides = {}) {

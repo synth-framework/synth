@@ -17,10 +17,18 @@ import path from "path"
 import os from "os"
 import { seedEventLog } from "./seed-event-log.js"
 import { parseJson } from "./assert.js"
+import { makeTempDir } from "./workspace.js"
 
 export { parseJson }
 
 export const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
+
+/** Make a temp dir and run `synth init` with args; returns { tmpDir, initResult }. */
+export async function initProject(prefix, args) {
+  const tmpDir = await makeTempDir(prefix)
+  const initResult = runSynth(["init", ...args], tmpDir)
+  return { tmpDir, initResult }
+}
 
 /**
  * Read and parse the canonical event log for a project directory.

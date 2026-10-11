@@ -6,6 +6,7 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { createObjectiveBuilderAdapter } from "../dist/adapters/objective-builder/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
+import { assertAdapterLifecycle } from "./helpers/adapter-lifecycle.js"
 import { makeObservation } from "./helpers/adapter.js"
 
 
@@ -22,15 +23,7 @@ test("ObjectiveBuilderAdapter starts in discovered state", () => {
 })
 
 test("ObjectiveBuilderAdapter transitions through lifecycle", async () => {
-  const adapter = createObjectiveBuilderAdapter()
-  await adapter.configure({ observations: [] })
-  assert.strictEqual(adapter.state, "configured")
-  await adapter.validate()
-  assert.strictEqual(adapter.state, "validated")
-  await adapter.enable()
-  assert.strictEqual(adapter.state, "enabled")
-  await adapter.disable()
-  assert.strictEqual(adapter.state, "disabled")
+  await assertAdapterLifecycle(createObjectiveBuilderAdapter, { observations: [] })
 })
 
 test("ObjectiveBuilderAdapter preserves existing objective observations", async () => {

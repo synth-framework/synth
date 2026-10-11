@@ -14,7 +14,7 @@ import path from "path"
 import { promises as fs } from "fs"
 import os from "os"
 import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { approveMission as approveMissionIntent } from "./helpers/governance-intent.js"
 
 
 async function cleanData() {
@@ -42,22 +42,8 @@ async function makeCtx() {
   return ctx
 }
 
-async function approveMission(ctx, id) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateMission",
-    payload: { id, name: `Mission ${id}`, purpose: "Dependency enforcement test" },
-  })
-  assert.equal(result.status, "ok", `CreateMission should succeed: ${result.error}`)
-
-  const { contractId } = await createAlignedContract(ctx)
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "ApproveMission",
-    payload: { id, alignmentContractId: contractId },
-  })
-  assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
-  return { contractId }
+async function approveDependencyMission(ctx, id) {
+  return approveMissionIntent(ctx, id, { purpose: "Dependency enforcement test" })
 }
 
 async function createExpedition(ctx, missionId, expeditionId, dependsOn = []) {
@@ -129,7 +115,7 @@ const { test } = suite
 
 test("downstream blocked when upstream completed without certification", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-NO-CERT")
+  const { contractId } = await approveDependencyMission(ctx, "M-NO-CERT")
   await createExpedition(ctx, "M-NO-CERT", "upstream-no-cert")
   await advanceToExecuting(ctx, "upstream-no-cert")
   await completeExpedition(ctx, "upstream-no-cert")
@@ -150,7 +136,7 @@ test("downstream blocked when upstream completed without certification", async (
 
 test("downstream blocked when upstream certification is partial_pass", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-PARTIAL")
+  const { contractId } = await approveDependencyMission(ctx, "M-PARTIAL")
   await createExpedition(ctx, "M-PARTIAL", "upstream-partial")
   await advanceToExecuting(ctx, "upstream-partial")
   await completeExpedition(ctx, "upstream-partial")
@@ -172,7 +158,7 @@ test("downstream blocked when upstream certification is partial_pass", async () 
 
 test("downstream proceeds when upstream certification passes", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-PASS")
+  const { contractId } = await approveDependencyMission(ctx, "M-PASS")
   await createExpedition(ctx, "M-PASS", "upstream-pass")
   await advanceToExecuting(ctx, "upstream-pass")
   await completeExpedition(ctx, "upstream-pass")
@@ -195,7 +181,7 @@ test("downstream proceeds when upstream certification passes", async () => {
 
 test("derived state dependencyStatusMap reflects upstream certification", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-MAP")
+  const { contractId } = await approveDependencyMission(ctx, "M-MAP")
   await createExpedition(ctx, "M-MAP", "upstream-map")
   await advanceToExecuting(ctx, "upstream-map")
   await completeExpedition(ctx, "upstream-map")

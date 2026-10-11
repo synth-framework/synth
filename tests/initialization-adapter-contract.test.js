@@ -30,12 +30,17 @@ import {
 // Helpers
 // ------------------------------------------------------------
 
-function createFilesystemAdapter() {
+// ------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------
+
+/** Evidence-collecting test adapter with per-adapter identity/content. */
+function createEvidenceAdapter({ id, version, sourceType, summary, confidence }) {
   return {
-    id: "filesystem",
-    version: "1.0.0",
+    id,
+    version,
     canHandle(input) {
-      return input.sourceType === "filesystem"
+      return input.sourceType === sourceType
     },
     async collectEvidence(input) {
       return {
@@ -46,34 +51,31 @@ function createFilesystemAdapter() {
         intent: input.declaredIntent ?? "unknown",
         domains: [{ name: "hospitality", description: "Guest services" }],
         constraints: [{ type: "compliance", statement: "PCI-DSS required" }],
-        summary: "Filesystem scan yielded specification artifacts",
-        confidence: { value: 0.72, label: "medium" },
+        summary,
+        confidence,
       }
     },
   }
 }
 
+function createFilesystemAdapter() {
+  return createEvidenceAdapter({
+    id: "filesystem",
+    version: "1.0.0",
+    sourceType: "filesystem",
+    summary: "Filesystem scan yielded specification artifacts",
+    confidence: { value: 0.72, label: "medium" },
+  })
+}
+
 function createConversationAdapter() {
-  return {
+  return createEvidenceAdapter({
     id: "conversation",
     version: "1.1.0",
-    canHandle(input) {
-      return input.sourceType === "conversation"
-    },
-    async collectEvidence(input) {
-      return {
-        adapterId: this.id,
-        adapterVersion: this.version,
-        sourceType: input.sourceType,
-        lifecycleStage: "specification",
-        intent: input.declaredIntent ?? "unknown",
-        domains: [{ name: "hospitality", description: "Guest services" }],
-        constraints: [{ type: "compliance", statement: "PCI-DSS required" }],
-        summary: "Operator described a hospitality platform",
-        confidence: { value: 0.8, label: "high" },
-      }
-    },
-  }
+    sourceType: "conversation",
+    summary: "Operator described a hospitality platform",
+    confidence: { value: 0.8, label: "high" },
+  })
 }
 
 function modelFromEvidence(evidence, identity) {

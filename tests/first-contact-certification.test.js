@@ -73,24 +73,22 @@ async function testAgentDerivesWorkflowFromHelp() {
   console.log("[CERTIFIED] agent can derive first-contact workflow from help")
 }
 
+async function getApprovedArtifact(intent) {
+  return withTempDir(async (tmpDir) => {
+    runSynth(["first-contact", "start", intent], tmpDir)
+    runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
+    runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
+    runSynth(["first-contact", "approve"], tmpDir)
+    return JSON.parse(await fs.readFile(path.join(tmpDir, ".synth", "first-contact", "approved-artifact.json"), "utf-8"))
+  })
+}
+
 async function testDeterministicPipeline() {
   const intent = "Let's build a space mission tracker in TypeScript for the web."
 
-  const run1Artifact = await withTempDir(async (tmpDir) => {
-    runSynth(["first-contact", "start", intent], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
-    runSynth(["first-contact", "approve"], tmpDir)
-    return JSON.parse(await fs.readFile(path.join(tmpDir, ".synth", "first-contact", "approved-artifact.json"), "utf-8"))
-  })
+  const run1Artifact = await getApprovedArtifact(intent)
 
-  const run2Artifact = await withTempDir(async (tmpDir) => {
-    runSynth(["first-contact", "start", intent], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
-    runSynth(["first-contact", "approve"], tmpDir)
-    return JSON.parse(await fs.readFile(path.join(tmpDir, ".synth", "first-contact", "approved-artifact.json"), "utf-8"))
-  })
+  const run2Artifact = await getApprovedArtifact(intent)
 
   assert(run1Artifact.artifactHash === run2Artifact.artifactHash, "approved artifact hash is deterministic for identical input and answers")
   console.log("[CERTIFIED] first-contact pipeline is deterministic")

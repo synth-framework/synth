@@ -4,6 +4,7 @@ import { applyDomain } from "../dist/domain/execution.js"
 import { createEmptyState, rebuildState } from "../dist/runtime/replay.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { GATE_POLICIES } from "../dist/governance/review-gates.js"
+import { createDomainRunner } from "./helpers/domain-runner.js"
 
 const humanReviewer = { kind: "human", id: "operator" }
 
@@ -36,38 +37,9 @@ function makeRefinedIntentInput() {
   }
 }
 
-function createRunner() {
-  const eventLog = []
-  let seq = 0
-
-  function run(capability, payload) {
-    const state = rebuildState(eventLog)
-    const derivedState = buildDerivedState(eventLog)
-    const invocation = { actor: "test", capability, payload }
-    const result = applyDomain(invocation, state, derivedState, { ...makeCtx(), currentState: state })
-    for (const e of result.events) {
-      eventLog.push({
-        id: `evt-${seq}`,
-        type: e.type,
-        timestamp: Date.now(),
-        transactionId: "tx-1",
-        capability,
-        actor: "test",
-        payload: e.payload,
-        previousHash: "genesis",
-        eventHash: `hash-${seq}`,
-      })
-      seq += 1
-    }
-    return buildDerivedState(eventLog)
-  }
-  run.getEvents = () => eventLog
-  return run
-}
-
 void describe("Review Gate Engine Integration", () => {
   void it("Scenario 1: straight-through acceptance via domain capabilities", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
 
     let state = run("ApproveRefinedIntent", {
       expeditionId: "exp-001",
@@ -114,7 +86,7 @@ void describe("Review Gate Engine Integration", () => {
   })
 
   void it("Scenario 2: revision loop", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
 
     run("ApproveRefinedIntent", {
       expeditionId: "exp-002",
@@ -148,7 +120,7 @@ void describe("Review Gate Engine Integration", () => {
   })
 
   void it("Scenario 5: upstream gate blocks dependent expedition start", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
 
     // Create upstream expedition with open review gate
     run("ApproveRefinedIntent", {
@@ -184,7 +156,7 @@ void describe("Review Gate Engine Integration", () => {
   })
 
   void it("prevents implementer self-approval under human-required policy", () => {
-    const run = createRunner()
+    const run = createDomainRunner({ makeCtx })
 
     run("ApproveRefinedIntent", {
       expeditionId: "exp-003",

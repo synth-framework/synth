@@ -1,5 +1,6 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
 import { parseJson } from "./helpers/assert.js"
+import { seedEvent, seedGenesisEvents } from "./helpers/kernel-event-fixtures.js"
 // ============================================================
 // EXP-DRYRUN-001 — Pre-Flight Dry-Run for Lifecycle Commands
 // ============================================================
@@ -27,32 +28,9 @@ function seedEvents(projectRoot, overrides = {}) {
   fs.writeFileSync(path.join(projectRoot, ".synth", "manifest.json"), "{}\n")
 
   const events = [
-    {
-      id: "evt-1",
-      type: "SYSTEM_GENESIS",
-      timestamp: 1,
-      transactionId: "tx-1",
-      capability: "genesis",
-      actor: "genesis",
-      payload: { projectName: "Dry Run Test", systemId: "dry-run-test", partitions: 1 },
-    },
-    {
-      id: "evt-2",
-      type: "PROJECT_CREATED",
-      timestamp: 2,
-      transactionId: "tx-2",
-      capability: "genesis",
-      actor: "genesis",
-      payload: { project: { id: "project-1", name: "Dry Run Test", status: "active", metadata: {}, createdAt: 2, updatedAt: 2 } },
-    },
-    {
-      id: "evt-3",
-      type: "MISSION_CREATED",
-      timestamp: 3,
-      transactionId: "tx-3",
-      capability: "test",
-      actor: "test",
-      payload: {
+    ...seedGenesisEvents("Dry Run Test", "dry-run-test"),
+    seedEvent("evt-3", "MISSION_CREATED", 3,
+      {
         mission: {
           id: "m1",
           name: "Mission m1",
@@ -63,17 +41,10 @@ function seedEvents(projectRoot, overrides = {}) {
           createdAt: 3,
           updatedAt: 3,
         },
-      },
-    },
-    { id: "evt-4", type: "MISSION_APPROVED", timestamp: 4, transactionId: "tx-4", capability: "test", actor: "test", payload: { id: "m1" } },
-    {
-      id: "evt-5",
-      type: "EXPEDITION_CREATED",
-      timestamp: 5,
-      transactionId: "tx-5",
-      capability: "test",
-      actor: "test",
-      payload: {
+      }),
+    seedEvent("evt-4", "MISSION_APPROVED", 4, { id: "m1" }),
+    seedEvent("evt-5", "EXPEDITION_CREATED", 5,
+      {
         expedition: {
           id: "e1",
           missionId: "m1",
@@ -88,18 +59,17 @@ function seedEvents(projectRoot, overrides = {}) {
           createdAt: 5,
           updatedAt: 5,
         },
-      },
-    },
+      }),
   ]
 
   if (overrides.approved) {
-    events.push({ id: "evt-6", type: "EXPEDITION_APPROVED", timestamp: 6, transactionId: "tx-6", capability: "test", actor: "test", payload: { id: "e1" } })
+    events.push(seedEvent("evt-6", "EXPEDITION_APPROVED", 6, { id: "e1" }))
   }
   if (overrides.committed) {
-    events.push({ id: "evt-7", type: "EXPEDITION_COMMITTED", timestamp: 7, transactionId: "tx-7", capability: "test", actor: "test", payload: { id: "e1" } })
+    events.push(seedEvent("evt-7", "EXPEDITION_COMMITTED", 7, { id: "e1" }))
   }
   if (overrides.started) {
-    events.push({ id: "evt-8", type: "EXPEDITION_STARTED", timestamp: 8, transactionId: "tx-8", capability: "test", actor: "test", payload: { id: "e1" } })
+    events.push(seedEvent("evt-8", "EXPEDITION_STARTED", 8, { id: "e1" }))
   }
 
   fs.writeFileSync(

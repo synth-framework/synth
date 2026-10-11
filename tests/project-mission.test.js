@@ -11,9 +11,11 @@ import { promises as fs } from "fs"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import {
   createAlignedContract,
+  createAlignmentContract,
   createIntentModel,
   createReferenceEvidence,
   approveAlignmentContract,
+  lastEvent,
 } from "./helpers/alignment-fixture.js"
 
 
@@ -33,13 +35,6 @@ async function makeCtx() {
     genesis: { projectName: "Projection Test", systemId: "projection-test", partitions: 1 },
     skipGenesis: false,
   })
-}
-
-async function lastEvent(ctx, type, predicate = () => true) {
-  const events = await ctx.infra.eventStore.loadAll()
-  const matches = events.filter((e) => e.type === type && predicate(e))
-  if (matches.length === 0) return undefined
-  return matches[matches.length - 1]
 }
 
 async function createApprovedRefinementReport(ctx, intentModelId) {
@@ -86,34 +81,12 @@ async function createApprovedRefinementReport(ctx, intentModelId) {
 async function createApprovedAlignmentContractWithReport(ctx, overrides = {}) {
   const evidenceId = await createReferenceEvidence(ctx)
   const { intentModelId } = await createIntentModel(ctx, { evidenceId, ...overrides })
-  const contractResult = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateAlignmentContract",
-    payload: {
-      input: {
-        intentModelId,
-        intentSummary: overrides.intentSummary || "Build a deterministic execution system",
-        expectedExperience: overrides.expectedExperience || "Mission Studio workspace as homepage",
-        requiredProperties: overrides.requiredProperties || ["Persistent workspace", "Artifact-driven interaction"],
-        forbiddenProperties: overrides.forbiddenProperties || ["Generic dashboard", "Marketing-first layout"],
-        requiredBehaviors: overrides.requiredBehaviors || ["Lifecycle progression", "Replay visibility"],
-        successCriteria: overrides.successCriteria || ["Homepage matches approved design boards"],
-        forbiddenInterpretation: overrides.forbiddenInterpretation || ["Generic dashboard", "Marketing landing page"],
-        forbiddenDrift: overrides.forbiddenDrift || ["Add chat interface", "Use bootstrap aesthetics"],
-        referenceEvidenceIds: [evidenceId],
-        objectiveCoverage: (overrides.explicitObjectives || ["Build a deterministic execution system"]).map((o) => ({
-          objective: o,
-          evidenceIds: [evidenceId],
-          aligned: true,
-        })),
-      },
-    },
-  })
-  if (contractResult.status !== "ok") {
-    throw new Error(`CreateAlignmentContract failed: ${contractResult.error}`)
-  }
-  const contractEvent = await lastEvent(ctx, "ALIGNMENT_CONTRACT_CREATED")
-  const contractId = contractEvent.payload.contractId
+  const objectiveCoverage = (overrides.explicitObjectives || ["Build a deterministic execution system"]).map((o) => ({
+    objective: o,
+    evidenceIds: [evidenceId],
+    aligned: true,
+  }))
+  const { contractId } = await createAlignmentContract(ctx, intentModelId, { evidenceId, objectiveCoverage, ...overrides })
   await approveAlignmentContract(ctx, contractId)
   await createApprovedRefinementReport(ctx, intentModelId)
   return { intentModelId, contractId, evidenceId }
@@ -180,26 +153,12 @@ test("ProjectMission fails when Alignment Contract is not approved", async () =>
   const ctx = await makeCtx()
   const evidenceId = await createReferenceEvidence(ctx)
   const { intentModelId } = await createIntentModel(ctx, { evidenceId })
-  const contractResult = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateAlignmentContract",
-    payload: {
-      input: {
-        intentModelId,
-        intentSummary: "Build a deterministic execution system",
-        expectedExperience: "Mission Studio workspace as homepage",
-        requiredProperties: ["Persistent workspace"],
-        forbiddenProperties: ["Generic dashboard"],
-        requiredBehaviors: ["Lifecycle progression"],
-        successCriteria: ["Homepage matches approved design boards"],
-        forbiddenInterpretation: ["Generic dashboard"],
-        forbiddenDrift: ["Add chat interface"],
-        referenceEvidenceIds: [evidenceId],
-      },
-    },
+  const { contractId } = await createAlignmentContract(ctx, intentModelId, {
+    evidenceId,
+    requiredProperties: ["Persistent workspace"],
+    forbiddenProperties: ["Generic dashboard"],
+    requiredBehaviors: ["Lifecycle progression"],
   })
-  const contractEvent = await lastEvent(ctx, "ALIGNMENT_CONTRACT_CREATED")
-  const contractId = contractEvent.payload.contractId
 
   const result = await ctx.api.handleIntent({
     actor: "test",
@@ -218,30 +177,16 @@ test("ProjectMission fails certification when objective is omitted", async () =>
     evidenceId,
     explicitObjectives: ["Objective A", "Objective B"],
   })
-  const contractResult = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateAlignmentContract",
-    payload: {
-      input: {
-        intentModelId,
-        intentSummary: "Build a deterministic execution system",
-        expectedExperience: "Mission Studio workspace as homepage",
-        requiredProperties: ["Persistent workspace"],
-        forbiddenProperties: ["Generic dashboard"],
-        requiredBehaviors: ["Lifecycle progression"],
-        successCriteria: ["Homepage matches approved design boards"],
-        forbiddenInterpretation: ["Generic dashboard"],
-        forbiddenDrift: ["Add chat interface"],
-        referenceEvidenceIds: [evidenceId],
-        objectiveCoverage: [
-          { objective: "Objective A", evidenceIds: [evidenceId], aligned: true },
-          { objective: "Objective B", evidenceIds: [evidenceId], aligned: true },
-        ],
-      },
-    },
+  const { contractId } = await createAlignmentContract(ctx, intentModelId, {
+    evidenceId,
+    requiredProperties: ["Persistent workspace"],
+    forbiddenProperties: ["Generic dashboard"],
+    requiredBehaviors: ["Lifecycle progression"],
+    objectiveCoverage: [
+      { objective: "Objective A", evidenceIds: [evidenceId], aligned: true },
+      { objective: "Objective B", evidenceIds: [evidenceId], aligned: true },
+    ],
   })
-  const contractEvent = await lastEvent(ctx, "ALIGNMENT_CONTRACT_CREATED")
-  const contractId = contractEvent.payload.contractId
   await approveAlignmentContract(ctx, contractId)
   await createApprovedRefinementReport(ctx, intentModelId)
 

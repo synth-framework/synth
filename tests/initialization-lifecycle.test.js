@@ -10,47 +10,18 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { runSynth, parseJson, CLI_PATH, readEventLog, initProject } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
-
-async function readEventLog(dataDir) {
-  const streamDir = path.join(dataDir, "event-stream")
-  const events = []
-  const walk = async (d) => {
-    let entries
-    try {
-      entries = await fs.readdir(d, { withFileTypes: true })
-    } catch {
-      return
-    }
-    for (const entry of entries) {
-      const p = path.join(d, entry.name)
-      if (entry.isDirectory()) await walk(p)
-      else if (entry.name.endsWith(".jsonl")) {
-        const raw = await fs.readFile(p, "utf-8")
-        for (const line of raw.split("\n")) {
-          if (!line.trim()) continue
-          events.push(JSON.parse(line))
-        }
-      }
-    }
-  }
-  await walk(streamDir)
-  events.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0))
-  return events
-}
-
 // ------------------------------------------------------------
 // Fixture: synth init emits PROJECT_INITIALIZED event
 // ------------------------------------------------------------
 async function testInitEmitsProjectInitializedEvent() {
-  const tmpDir = await makeTempDir("synth-init-event-")
+  const { tmpDir, initResult } = await initProject("synth-init-event-", ["--name", "Lifecycle Test"])
   try {
-    const initResult = runSynth(["init", "--name", "Lifecycle Test"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     assert(events.length === 1, `expected exactly one event, got ${events.length}`)
     assert(events[0].type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${events[0].type}`)
     assert(events[0].capability === "InitializeProject", `expected InitializeProject capability, got ${events[0].capability}`)
@@ -79,7 +50,7 @@ async function testInitIsIdempotent() {
     assert(second.status === 0, "second init should succeed")
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     assert(events.length === 1, `expected exactly one initialization event after idempotent init, got ${events.length}`)
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true })
@@ -144,7 +115,7 @@ async function testBootstrapApproveEmitsProjectInitializedEvent() {
     assert(result.status === 0, `bootstrap --approve should succeed: ${result.stderr}`)
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     const initEvents = events.filter((e) => e.type === "PROJECT_INITIALIZED")
     assert(initEvents.length === 1, `expected exactly one PROJECT_INITIALIZED event, got ${initEvents.length}`)
     assert(initEvents[0].payload.name === "Bootstrap Test", "event should carry bootstrap project name")

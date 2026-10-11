@@ -17,3 +17,20 @@ export function makeObservation(category, subject, snippet = "") {
     timestamp: Date.now(),
   }
 }
+
+/**
+ * Build a planning observation with overrides (mission-studio shape).
+ * Single home for the identical copies across mission-studio,
+ * validation-expansion, adapter-integration, and genesis tests.
+ */
+export function makePlanningObservation(type, subject, overrides = {}) {
+  return {
+    id: `obs-${type}-${subject.toLowerCase().replace(/\s+/g, "-")}`,
+    sourceAdapter: "test-adapter",
+    type,
+    payload: { subject, name: subject, ...overrides },
+    evidenceReference: `evidence-${type}-${subject}`,
+    confidence: "high",
+    timestamp: 1000,
+  }
+}

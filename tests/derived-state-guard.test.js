@@ -1,5 +1,6 @@
 import { makeTempDirSync } from "./helpers/workspace.js"
 import { parseJson } from "./helpers/assert.js"
+import { seedEvent, seedGenesisEvents } from "./helpers/kernel-event-fixtures.js"
 // ============================================================
 // EXP-GUARD-001 — Derived-State Protection & Expedition Scope
 // ============================================================
@@ -37,32 +38,9 @@ async function seedEvents(projectRoot, overrides = {}) {
 
   const scope = overrides.scope || []
   const events = [
-    {
-      id: "evt-1",
-      type: "SYSTEM_GENESIS",
-      timestamp: 1,
-      transactionId: "tx-1",
-      capability: "genesis",
-      actor: "genesis",
-      payload: { projectName: "Derived State Guard Test", systemId: "derived-state-test", partitions: 1 },
-    },
-    {
-      id: "evt-2",
-      type: "PROJECT_CREATED",
-      timestamp: 2,
-      transactionId: "tx-2",
-      capability: "genesis",
-      actor: "genesis",
-      payload: { project: { id: "project-1", name: "Derived State Guard Test", status: "active", metadata: {}, createdAt: 2, updatedAt: 2 } },
-    },
-    {
-      id: "evt-3",
-      type: "MISSION_CREATED",
-      timestamp: 3,
-      transactionId: "tx-3",
-      capability: "test",
-      actor: "test",
-      payload: {
+    ...seedGenesisEvents("Derived State Guard Test", "derived-state-test"),
+    seedEvent("evt-3", "MISSION_CREATED", 3,
+      {
         mission: {
           id: "m1",
           name: "Mission m1",
@@ -73,17 +51,10 @@ async function seedEvents(projectRoot, overrides = {}) {
           createdAt: 3,
           updatedAt: 3,
         },
-      },
-    },
-    { id: "evt-4", type: "MISSION_APPROVED", timestamp: 4, transactionId: "tx-4", capability: "test", actor: "test", payload: { id: "m1" } },
-    {
-      id: "evt-5",
-      type: "EXPEDITION_CREATED",
-      timestamp: 5,
-      transactionId: "tx-5",
-      capability: "test",
-      actor: "test",
-      payload: {
+      }),
+    seedEvent("evt-4", "MISSION_APPROVED", 4, { id: "m1" }),
+    seedEvent("evt-5", "EXPEDITION_CREATED", 5,
+      {
         expedition: {
           id: "e1",
           missionId: "m1",
@@ -98,8 +69,7 @@ async function seedEvents(projectRoot, overrides = {}) {
           createdAt: 5,
           updatedAt: 5,
         },
-      },
-    },
+      }),
     { id: "evt-6", type: "EXPEDITION_APPROVED", timestamp: 6, transactionId: "tx-6", capability: "test", actor: "test", payload: { id: "e1" } },
   ]
 

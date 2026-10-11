@@ -8,6 +8,7 @@
 // ============================================================
 
 import { strict as assert } from "assert"
+import { createDomainRunner } from "./helpers/domain-runner.js"
 import { applyDomain } from "../dist/domain/execution.js"
 import { createEmptyState, rebuildState } from "../dist/runtime/replay.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
@@ -59,36 +60,6 @@ function makeCtx(timestamp = Date.now()) {
   }
 }
 
-function createRunner() {
-  const eventLog = []
-  let seq = 0
-
-  function run(capability, payload) {
-    const state = rebuildState(eventLog)
-    const derivedState = buildDerivedState(eventLog)
-    const invocation = { actor: "test", capability, payload }
-    const result = applyDomain(invocation, state, derivedState, { ...makeCtx(), currentState: state })
-    for (const e of result.events) {
-      eventLog.push({
-        id: `evt-${seq}`,
-        type: e.type,
-        timestamp: Date.now(),
-        transactionId: "tx-1",
-        capability,
-        actor: "test",
-        payload: e.payload,
-        previousHash: "genesis",
-        eventHash: `hash-${seq}`,
-      })
-      seq += 1
-    }
-    return buildDerivedState(eventLog)
-  }
-  run.getEvents = () => eventLog
-  run.getCanonicalState = () => rebuildState(eventLog)
-  return run
-}
-
 import { createSuite } from "./helpers/runner.js"
 
 const suite = createSuite()
@@ -102,7 +73,7 @@ const { test } = suite
 // ============================================================
 
 test("Scenario 1 — Straight-through acceptance", () => {
-  const run = createRunner()
+  const run = createDomainRunner({ makeCtx })
 
   // Step 1: Approve Refined Intent
   let state = run("ApproveRefinedIntent", {
@@ -182,7 +153,7 @@ test("Scenario 1 — Straight-through acceptance", () => {
 // ============================================================
 
 test("Scenario 2 — Revision loop (engine path up to revision request)", () => {
-  const run = createRunner()
+  const run = createDomainRunner({ makeCtx })
 
   run("ApproveRefinedIntent", {
     expeditionId: "exp-002",
@@ -281,7 +252,7 @@ test("Scenario 2 — Revision loop (pure function: complete loop)", () => {
 // ============================================================
 
 test("Scenario 3 — Refinement clarification blocks execution", () => {
-  const run = createRunner()
+  const run = createDomainRunner({ makeCtx })
 
   // Attempt OpenReviewGate without an approved Refined Intent
   assert.throws(
@@ -317,7 +288,7 @@ test("Scenario 3 — beginExecution pure function blocks without refined intent"
 // ============================================================
 
 test("Scenario 4 — Mission change invalidates reviews", () => {
-  const run = createRunner()
+  const run = createDomainRunner({ makeCtx })
 
   // Step 1: Approve refined intent (v1)
   run("ApproveRefinedIntent", {
@@ -388,7 +359,7 @@ test("Scenario 4 — Mission change invalidates reviews", () => {
 // ============================================================
 
 test("Scenario 5 — Upstream gate blocks dependent expedition start", () => {
-  const run = createRunner()
+  const run = createDomainRunner({ makeCtx })
 
   // Create upstream expedition with an open (unresolved) review gate
   run("ApproveRefinedIntent", {
@@ -425,7 +396,7 @@ test("Scenario 5 — Upstream gate blocks dependent expedition start", () => {
 })
 
 test("Scenario 5 — Supersede resolves gate and downstream can proceed", () => {
-  const run = createRunner()
+  const run = createDomainRunner({ makeCtx })
 
   // Upstream: approve refined intent and open review gate
   run("ApproveRefinedIntent", {
@@ -495,8 +466,8 @@ test("Scenario 5 — Supersede resolves gate and downstream can proceed", () => 
 // ============================================================
 
 test("Deterministic: same scenario produces identical outcomes", () => {
-  const run1 = createRunner()
-  const run2 = createRunner()
+  const run1 = createDomainRunner({ makeCtx })
+  const run2 = createDomainRunner({ makeCtx })
 
   function executeScenario(run) {
     run("ApproveRefinedIntent", {

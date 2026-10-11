@@ -14,14 +14,7 @@ import { assert, parseJson } from "./helpers/assert.js"
 const PROJECT_ROOT = process.cwd()
 const CLI_PATH = path.resolve(PROJECT_ROOT, "dist", "cli", "synth.js")
 
-const EXAMPLES = [
-  { name: "todo", dir: "examples/todo", type: "node" },
-  { name: "crm", dir: "examples/crm", type: "node" },
-  { name: "legacy-node", dir: "examples/legacy-node", type: "brownfield" },
-  { name: "polyglot", dir: "examples/polyglot", type: "polyglot" },
-  { name: "monolith", dir: "examples/monolith", type: "node" },
-  { name: "blog", dir: "examples/blog", type: "node" },
-]
+import { EXAMPLE_PROJECTS as EXAMPLES } from "./helpers/example-projects.js"
 
 const { runSynth } = createPerfRunner({
   cliPath: CLI_PATH,

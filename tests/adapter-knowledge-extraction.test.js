@@ -6,6 +6,7 @@ import { test } from "node:test"
 import assert from "node:assert"
 import { createKnowledgeExtractionAdapter } from "../dist/adapters/knowledge/adapter.js"
 import { createAdapterRegistry } from "../dist/mission-studio/adapter-registry.js"
+import { assertAdapterLifecycle } from "./helpers/adapter-lifecycle.js"
 
 function makeObservation(category, subject, confidence = "high") {
   return {
@@ -32,15 +33,7 @@ test("KnowledgeExtractionAdapter starts in discovered state", () => {
 })
 
 test("KnowledgeExtractionAdapter transitions through lifecycle", async () => {
-  const adapter = createKnowledgeExtractionAdapter()
-  await adapter.configure({ observations: [] })
-  assert.strictEqual(adapter.state, "configured")
-  await adapter.validate()
-  assert.strictEqual(adapter.state, "validated")
-  await adapter.enable()
-  assert.strictEqual(adapter.state, "enabled")
-  await adapter.disable()
-  assert.strictEqual(adapter.state, "disabled")
+  await assertAdapterLifecycle(createKnowledgeExtractionAdapter, { observations: [] })
 })
 
 test("KnowledgeExtractionAdapter extracts mission from intent", async () => {

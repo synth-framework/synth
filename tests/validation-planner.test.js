@@ -9,16 +9,12 @@ import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
 import { assert } from "./helpers/assert.js"
+import { loadJson } from "./helpers/test-fixtures.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PLANNER_PATH = path.resolve(__dirname, "..", "dist", "validation", "planner.js")
 const MAP_PATH = path.resolve(__dirname, "..", "docs", "reference", "capability-validation-map.json")
 const PACKAGE_PATH = path.resolve(__dirname, "..", "package.json")
-
-async function loadJson(filePath) {
-  const content = await fs.readFile(filePath, "utf-8")
-  return JSON.parse(content)
-}
 
 async function loadPlanner() {
   return await import(PLANNER_PATH)

@@ -57,3 +57,18 @@ export async function makeCtx(dataDir, options = {}) {
 export function makeWorkspace(prefix = "synth-workspace-") {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix))
 }
+
+/**
+ * Disable automatic lifecycle continuation on a bootstrapped context so
+ * tests can assert each governance stage independently. Returns the ctx.
+ */
+export function withoutLifecycleContinuation(ctx) {
+  // These tests assert each governance stage explicitly.
+  const originalHandleIntent = ctx.api.handleIntent.bind(ctx.api)
+  ctx.api.handleIntent = (req) =>
+    originalHandleIntent({
+      ...req,
+      context: { ...(req.context || {}), disableLifecycleContinuation: true },
+    })
+  return ctx
+}

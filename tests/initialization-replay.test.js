@@ -10,21 +10,8 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
+import { runSynth, CLI_PATH, readEventLog } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
-
-async function readEventLog(dataDir) {
-  const logPath = path.join(dataDir, "event-log.jsonl")
-  try {
-    const raw = await fs.readFile(logPath, "utf-8")
-    return raw
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line))
-  } catch {
-    return []
-  }
-}
 
 // ------------------------------------------------------------
 // Fixture: replay from event log matches persisted canonical state
@@ -51,7 +38,7 @@ async function testReplayMatchesCanonicalState() {
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
     const dataDir = path.join(tmpDir, ".synth", "data")
-    const events = await readEventLog(dataDir)
+    const events = await readEventLog(tmpDir)
     assert(events.length === 1, `expected exactly one event, got ${events.length}`)
     assert(events[0].type === "PROJECT_INITIALIZED", `expected PROJECT_INITIALIZED, got ${events[0].type}`)
 
@@ -85,7 +72,7 @@ async function testReplayIsStable() {
     const initResult = runSynth(["init", "--name", "Replay Stable Test"], tmpDir)
     assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
 
-    const events = await readEventLog(path.join(tmpDir, ".synth", "data"))
+    const events = await readEventLog(tmpDir)
     const { rebuildState } = await import("../dist/runtime/replay.js")
     const first = rebuildState(events)
     const second = rebuildState(events)

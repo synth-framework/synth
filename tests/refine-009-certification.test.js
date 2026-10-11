@@ -8,6 +8,8 @@ import { makeCwdDataDir } from "./helpers/workspace.js"
 // Certification and Proposal Evaluation.
 
 import { strict as assert } from "assert"
+import { approveAlignmentContract, openDivergenceGate } from "./helpers/alignment-fixture.js"
+import { createExecutingExpedition as createExecutingExpeditionIntent } from "./helpers/governance-intent.js"
 import path from "path"
 import { promises as fs } from "fs"
 import { makeCtx as makeTestCtx } from "./helpers/context.js"
@@ -107,34 +109,10 @@ async function createAlignmentContract(ctx, intentModelId, overrides = {}) {
   return { contractId: event.payload.contractId, evidenceId }
 }
 
-async function approveAlignmentContract(ctx, contractId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "SubmitAlignmentContract",
-    payload: { contractId },
-  })
-  assert.equal(result.status, "ok", `SubmitAlignmentContract failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "ApproveAlignmentContract",
-    payload: { contractId, reviewer: { kind: "human", id: "test-operator" } },
-  })
-  assert.equal(result.status, "ok", `ApproveAlignmentContract failed: ${result.error}`)
-}
-
 async function alignDivergenceGate(ctx, contractId, intentModelId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "OpenDivergenceGate",
-    payload: { contractId, intentModelId },
-  })
-  assert.equal(result.status, "ok", `OpenDivergenceGate failed: ${result.error}`)
+  const opened = await openDivergenceGate(ctx, contractId, intentModelId)
 
-  const opened = await lastEvent(ctx, "DIVERGENCE_GATE_OPENED", (e) => e.payload.contractId === contractId)
-  assert.ok(opened, "DIVERGENCE_GATE_OPENED event should exist")
-
-  result = await ctx.api.handleIntent({
+  const result = await ctx.api.handleIntent({
     actor: "test",
     capability: "EvaluateAndResolveDivergenceGate",
     payload: {
@@ -164,21 +142,10 @@ async function createAlignedContract(ctx) {
 }
 
 async function createExecutingExpedition(ctx, missionId, expeditionId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateExpedition",
-    payload: { id: expeditionId, missionId, name: `Expedition ${expeditionId}`, goal: "REFINE-009 expedition" },
+  return createExecutingExpeditionIntent(ctx, missionId, expeditionId, {
+    name: `Expedition ${expeditionId}`,
+    goal: "REFINE-009 expedition",
   })
-  assert.equal(result.status, "ok", `CreateExpedition failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `ApproveExpedition failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `CommitExpedition failed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `StartExpedition failed: ${result.error}`)
 }
 
 const AUTOMATIC_POLICY = { reviewers: ["engine"], quorum: "any", autoAdvance: true }

@@ -10,52 +10,7 @@ import {
   projectProjectModel,
   validateProjectModel,
 } from "../dist/discovery/index.js"
-
-function makeGraph(claimsData) {
-  const claims = []
-  const observations = []
-  const edges = []
-
-  for (let i = 0; i < claimsData.length; i++) {
-    const { assertion, payload, source } = claimsData[i]
-    const obsId = `obs-${i}`
-    observations.push({
-      id: obsId,
-      adapterId: "discovery:filesystem",
-      adapterVersion: "1.0.0",
-      source: source ?? { type: "filesystem", path: "/my-project" },
-      fact: assertion,
-      payload,
-      timestamp: 1,
-    })
-    const claimId = `claim-${String(i).padStart(6, "0")}`
-    claims.push({
-      id: claimId,
-      assertion,
-      observationIds: [obsId],
-      adapterId: "discovery:filesystem",
-      adapterVersion: "1.0.0",
-      source: source ?? { type: "filesystem", path: "/my-project" },
-      confidence: { value: 1, label: "certain", kind: "deterministic", reason: "test" },
-    })
-    edges.push({ from: obsId, to: claimId, kind: "supports" })
-  }
-
-  const observationIndex = {}
-  const claimIndex = {}
-  for (let i = 0; i < observations.length; i++) observationIndex[observations[i].id] = i
-  for (let i = 0; i < claims.length; i++) claimIndex[claims[i].id] = i
-
-  return {
-    schema: "synth-discovery-evidence-v1",
-    observations,
-    claims,
-    edges,
-    observationIndex,
-    claimIndex,
-    sourceIndex: { "filesystem:/my-project": 0 },
-  }
-}
+import { makeEvidenceGraph as makeGraph } from "./helpers/discovery-fixtures.js"
 
 function ruleById(id) {
   return createDefaultProjectModelRules().find((rule) => rule.id === id)

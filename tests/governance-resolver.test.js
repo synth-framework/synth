@@ -10,37 +10,12 @@ import { makeTempDir } from "./helpers/workspace.js"
 import fs from "fs/promises"
 import path from "path"
 import os from "os"
-import { seedEventLog } from "./helpers/seed-event-log.js"
 import { assert } from "./helpers/assert.js"
 import { makeManifest } from "./helpers/test-fixtures.js"
 import { makeApprovedMissionEvents, makeExecutingExpeditionEvents, makeBrokenDecisionRecords } from "./helpers/event-fixtures.js"
+import { loadResolver, loadComputeEventHash, writeEventLog } from "./helpers/state-fixtures.js"
 
 const RESOLVER_MODULE_PATH = path.resolve(process.cwd(), "dist", "runtime", "governance-resolver.js")
-const HASH_MODULE_PATH = path.resolve(process.cwd(), "dist", "core", "hash.js")
-
-async function loadResolver() {
-  return await import(RESOLVER_MODULE_PATH)
-}
-
-async function loadComputeEventHash() {
-  const mod = await import(HASH_MODULE_PATH)
-  return mod.computeEventHash
-}
-
-async function writeEventLog(dir, rawEvents) {
-  const computeEventHash = await loadComputeEventHash()
-  const events = []
-  let previousHash = "genesis"
-  for (const raw of rawEvents) {
-    const event = { ...raw, eventHash: "", previousHash }
-    event.eventHash = computeEventHash(event)
-    previousHash = event.eventHash
-    events.push(event)
-  }
-  const dataDir = path.join(dir, ".synth", "data")
-  await fs.mkdir(dataDir, { recursive: true })
-  await seedEventLog(dataDir, events)
-}
 
 async function writeBrokenDecisionLog(dir) {
   const dataDir = path.join(dir, ".synth", "data")

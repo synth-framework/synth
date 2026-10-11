@@ -1,4 +1,4 @@
-import { makeTempDirSync } from "./helpers/workspace.js"
+import { makeTempDirSync, gitInitWithCommit } from "./helpers/workspace.js"
 // ============================================================
 // ECOSYSTEM-001 (R) — ExecutionGate Branch Enforcement Tests
 // ============================================================
@@ -23,6 +23,8 @@ import path from "path"
 import { fileURLToPath } from "url"
 import { bootstrap } from "../dist/core/bootstrap.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { withoutLifecycleContinuation } from "./helpers/context.js"
+import { createExecutingExpedition as createExecutingExpeditionIntent } from "./helpers/governance-intent.js"
 import { generateBranchName } from "../dist/repository/branch-taxonomy.js"
 import { CLI_PATH } from "./helpers/cli-harness.js"
 
@@ -47,10 +49,7 @@ function missionBranchNames(missionId, missionName) {
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function gitInit(root, branch = "main") {
-  execFileSync("git", ["init", "-b", branch], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["config", "user.email", "test@synth.dev"], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["config", "user.name", "synth-test"], { cwd: root, stdio: "pipe" })
-  execFileSync("git", ["commit", "--allow-empty", "-m", "initial"], { cwd: root, stdio: "pipe" })
+  return gitInitWithCommit(root, branch)
 }
 
 function currentBranch(root) {
@@ -77,13 +76,7 @@ async function makeCtx(root) {
     genesis: { projectName: "Branch Gate Test", systemId: "branch-gate", partitions: 1 },
     skipGenesis: false,
   })
-  const originalHandleIntent = ctx.api.handleIntent.bind(ctx.api)
-  ctx.api.handleIntent = (req) =>
-    originalHandleIntent({
-      ...req,
-      context: { ...(req.context || {}), disableLifecycleContinuation: true },
-    })
-  return ctx
+  return withoutLifecycleContinuation(ctx)
 }
 
 async function seedMissionAndExpedition(ctx, root, missionId, expeditionId) {
@@ -104,18 +97,10 @@ async function seedMissionAndExpedition(ctx, root, missionId, expeditionId) {
   })
   assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
 
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateExpedition",
-    payload: { id: expeditionId, missionId, name: `Expedition ${expeditionId}` },
+  await createExecutingExpeditionIntent(ctx, missionId, expeditionId, {
+    name: `Expedition ${expeditionId}`,
+    start: false,
   })
-  assert.equal(result.status, "ok", `CreateExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `ApproveExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `CommitExpedition should succeed: ${result.error}`)
 }
 
 function readConfig(root) {

@@ -1,4 +1,3 @@
-import { makeTempDirSync } from "./helpers/workspace.js"
 // Regression guards for EXP-TRUST-003 (Evidence Path).
 //
 // The confidence gate must offer a legitimate path through it:
@@ -6,56 +5,21 @@ import { makeTempDirSync } from "./helpers/workspace.js"
 // from the combined evidence, and every below-threshold rejection
 // names the command that resolves it (TaskPRO finding N3).
 
-import { spawnSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { runCli } from "./helpers/trust-workflow.js"
+import { createCertHarness } from "./helpers/cert-test-base.js"
+
+const { assert, makeWorkspace, cleanup, finish } = createCertHarness("synth-evidence-")
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const DIST_SYNTH = path.join(REPO_ROOT, "dist", "cli", "synth.js")
 
-let passed = 0
-let failed = 0
-
-function assert(condition, message) {
-  if (condition) {
-    passed++
-    console.log(`✓ ${message}`)
-  } else {
-    failed++
-    console.error(`✗ ${message}`)
-  }
-}
-
-function makeWorkspace() {
-  return makeTempDirSync("synth-evidence-")
-}
-
-function cleanup(dir) {
-  fs.rmSync(dir, { recursive: true, force: true })
-}
-
 function initWorkspace(dir) {
   const r = runCli(dir, ["init", "--name", "Evidence Path Test"])
   assert(r.status === 0, `init should succeed: ${r.output}`)
-}
-
-function runCli(dir, args) {
-  const env = { ...process.env }
-  delete env.SYNTH_GOVERN_DEPTH
-  const res = spawnSync(process.execPath, [DIST_SYNTH, ...args], {
-    cwd: dir,
-    env,
-    timeout: 30000,
-    encoding: "utf8",
-    killSignal: "SIGKILL",
-  })
-  return {
-    status: res.status,
-    output: `${res.stdout || ""}${res.stderr || ""}`,
-    timedOut: Boolean(res.error && res.error.code === "ETIMEDOUT"),
-  }
 }
 
 function createDraft(dir) {
@@ -191,8 +155,7 @@ function main() {
     }
   }
 
-  console.log(`\n${passed} passed, ${failed} failed`)
-  if (failed > 0) process.exit(1)
+  finish()
 }
 
 main()

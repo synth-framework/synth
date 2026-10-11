@@ -9,22 +9,7 @@ import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
 import { assert } from "./helpers/assert.js"
-
-const INSTALLER_PATH = path.resolve(process.cwd(), "scripts", "install.sh")
-
-function runInstaller(args = [], env = {}) {
-  const result = spawnSync("bash", [INSTALLER_PATH, ...args], {
-    cwd: process.cwd(),
-    encoding: "utf-8",
-    env: { ...process.env, ...env },
-    timeout: 30000,
-  })
-  return {
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
-    status: result.status,
-  }
-}
+import { INSTALLER_PATH, runInstaller } from "./helpers/installer.js"
 
 async function testHelpReturnsZero() {
   const result = runInstaller(["--help"])

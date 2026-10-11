@@ -151,12 +151,16 @@ function testWorkflowSelectionForGenericGreenfield() {
   console.log("[PASS] workflow selection falls back to generic greenfield")
 }
 
+async function setupApprovedFirstContact(tmpDir) {
+  runSynth(["first-contact", "start", "Let's build a space mission tracker in TypeScript for the web."], tmpDir)
+  runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
+  runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
+  runSynth(["first-contact", "approve"], tmpDir)
+}
+
 async function testDryRunDoesNotWriteAdaptersToManifest() {
   await withTempDir(async (tmpDir) => {
-    runSynth(["first-contact", "start", "Let's build a space mission tracker in TypeScript for the web."], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
-    runSynth(["first-contact", "approve"], tmpDir)
+    await setupApprovedFirstContact(tmpDir)
 
     const { stdout, status } = runSynth(["first-contact", "materialize", "--dry-run"], tmpDir)
     assert(status === 0, "materialize --dry-run should exit 0")
@@ -185,10 +189,7 @@ async function testDryRunDoesNotWriteAdaptersToManifest() {
 
 async function testApprovePersistsRecommendedAdaptersInManifest() {
   await withTempDir(async (tmpDir) => {
-    runSynth(["first-contact", "start", "Let's build a space mission tracker in TypeScript for the web."], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
-    runSynth(["first-contact", "approve"], tmpDir)
+    await setupApprovedFirstContact(tmpDir)
 
     const { stdout, status } = runSynth(["first-contact", "materialize", "--approve"], tmpDir)
     assert(status === 0, "materialize --approve should exit 0")
@@ -210,10 +211,7 @@ async function testApprovePersistsRecommendedAdaptersInManifest() {
 
 async function testMissionMaterializedEventIncludesRecommendations() {
   await withTempDir(async (tmpDir) => {
-    runSynth(["first-contact", "start", "Let's build a space mission tracker in TypeScript for the web."], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.primaryUsers", "--answer", "space enthusiasts"], tmpDir)
-    runSynth(["first-contact", "clarify", "--field", "audience.stakeholders", "--answer", "mission controllers"], tmpDir)
-    runSynth(["first-contact", "approve"], tmpDir)
+    await setupApprovedFirstContact(tmpDir)
 
     const { stdout, status } = runSynth(["first-contact", "materialize", "--approve"], tmpDir)
     assert(status === 0, "materialize --approve should exit 0")

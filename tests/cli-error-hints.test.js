@@ -1,4 +1,3 @@
-import { makeTempDir } from "./helpers/workspace.js"
 // ============================================================
 // EXP-CLI-HINTS — Contextual CLI error hints
 // ============================================================
@@ -11,14 +10,11 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { setupBasicProject } from "./helpers/mission-lifecycle.js"
 import { assert } from "./helpers/assert.js"
 
 async function setupProject() {
-  const tmpDir = await makeTempDir("synth-cli-hints-")
-  await fs.writeFile(path.join(tmpDir, "package.json"), JSON.stringify({ name: "test", version: "1.0.0" }), "utf-8")
-  const bootstrapResult = runSynth(["bootstrap", tmpDir, "--approve"], process.cwd())
-  assert(bootstrapResult.status === 0, `bootstrap --approve must exit 0:\n${bootstrapResult.stderr}`)
-  return tmpDir
+  return setupBasicProject("synth-cli-hints-")
 }
 
 async function createMissionDraft(projectDir) {

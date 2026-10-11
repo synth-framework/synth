@@ -8,30 +8,7 @@
 import { spawnSync } from "child_process"
 import path from "path"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
-import { assert } from "./helpers/assert.js"
-
-const PROJECT_ROOT = process.cwd()
-
-function findJsonObject(stdout) {
-  const trimmed = stdout.trim()
-  try {
-    return JSON.parse(trimmed)
-  } catch {
-    // CLI may mix log lines with JSON; scan for the first line that starts
-    // a JSON object and parse from there.
-    const lines = trimmed.split("\n")
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim().startsWith("{")) {
-        try {
-          return JSON.parse(lines.slice(i).join("\n"))
-        } catch {
-          // continue scanning
-        }
-      }
-    }
-  }
-  throw new Error(`No JSON object found in stdout:\n${stdout}`)
-}
+import { assert, findJsonObject } from "./helpers/assert.js"
 
 async function testAgentGuideJson() {
   const { stdout, status, stderr } = runSynth(["explain", "agents"])

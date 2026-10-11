@@ -6,25 +6,7 @@
 // ============================================================
 
 import { strict as assert } from "assert"
-import fs from "fs/promises"
-import path from "path"
-import { runSynth, parseJson, withTempDir, assertCliBuilt } from "./helpers/cli-harness.js"
-
-async function readEventLog(targetDir) {
-  const logPath = path.join(targetDir, ".synth", "data", "event-log.jsonl")
-  const raw = await fs.readFile(logPath, "utf-8")
-  return raw
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      try {
-        return JSON.parse(line)
-      } catch {
-        return null
-      }
-    })
-    .filter(Boolean)
-}
+import { runSynth, parseJson, withTempDir, assertCliBuilt, readEventLog } from "./helpers/cli-harness.js"
 
 function identityEnv() {
   return {

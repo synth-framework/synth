@@ -10,6 +10,7 @@ import {
   GIT_ADAPTER_ID,
   GIT_ADAPTER_VERSION,
 } from "../dist/discovery/index.js"
+import { assertFilesystemOnlyCanHandle } from "./helpers/discovery-fixtures.js"
 
 function makeGitProvider(path = "/project", overrides = {}) {
   return createInMemoryGitProvider(
@@ -65,9 +66,7 @@ test("git adapter declares id, version, and determinism", () => {
 test("git adapter canHandle returns true only for filesystem sources", () => {
   const adapter = createGitDiscoveryAdapterWithProvider(createInMemoryGitProvider())
 
-  assert.strictEqual(adapter.canHandle({ type: "filesystem", path: "/project" }), true)
-  assert.strictEqual(adapter.canHandle({ type: "git", url: "https://example.com/repo.git" }), false)
-  assert.strictEqual(adapter.canHandle({ type: "api", endpoint: "https://example.com/api" }), false)
+  assertFilesystemOnlyCanHandle(adapter)
 })
 
 test("git adapter returns observations with required provenance", async () => {

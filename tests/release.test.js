@@ -12,7 +12,7 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { runSynth, CLI_PATH } from "./helpers/cli-harness.js"
-import { assert } from "./helpers/assert.js"
+import { assert, findJsonObject } from "./helpers/assert.js"
 
 const PROJECT_ROOT = process.cwd()
 
@@ -23,25 +23,6 @@ function runGit(args, cwd) {
     stderr: result.stderr || "",
     status: result.status,
   }
-}
-
-function findJsonObject(stdout) {
-  const trimmed = stdout.trim()
-  try {
-    return JSON.parse(trimmed)
-  } catch {
-    const lines = trimmed.split("\n")
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim().startsWith("{")) {
-        try {
-          return JSON.parse(lines.slice(i).join("\n"))
-        } catch {
-          // continue scanning
-        }
-      }
-    }
-  }
-  throw new Error(`No JSON object found in stdout:\n${stdout}`)
 }
 
 function createTempRepo() {

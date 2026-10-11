@@ -36,3 +36,28 @@ export function parseJsonStrict(stdout) {
   }
   return value
 }
+
+/**
+ * Find the first JSON object in mixed CLI output (logs + JSON).
+ * Shared by agent-guide/release tests that scan noisy stdout.
+ */
+export function findJsonObject(stdout) {
+  const trimmed = String(stdout).trim()
+  try {
+    return JSON.parse(trimmed)
+  } catch {
+    // CLI may mix log lines with JSON; scan for the first line that starts
+    // a JSON object and parse from there.
+    const lines = trimmed.split("\n")
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().startsWith("{")) {
+        try {
+          return JSON.parse(lines.slice(i).join("\n"))
+        } catch {
+          // continue scanning
+        }
+      }
+    }
+  }
+  throw new Error(`No JSON object found in stdout:\n${stdout}`)
+}

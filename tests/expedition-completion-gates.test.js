@@ -17,6 +17,7 @@ import os from "os"
 import { bootstrapProject, createAndApproveMission, createExecutingExpedition } from "./helpers/mission-lifecycle.js"
 import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
+import { certifyConvergence as certifyConvergenceIntent } from "./helpers/governance-intent.js"
 
 function initGit(projectDir) {
   const result = spawnSync("git", ["init"], { cwd: projectDir })
@@ -39,27 +40,11 @@ async function setupProject() {
 }
 
 async function certifyConvergence(gateCtx, missionId, expeditionId, contractId) {
-  const result = await gateCtx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures: {
-        hasPersistentHeader: true,
-        hasPersistentSidebar: true,
-        hasScrollDrivenPhases: true,
-      },
-      ruleSetId: "program-027-homepage",
-      artifacts: [{ path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`, hash: "test", description: "Test" }],
-      runtimeEvidence: [{ source: "test", observation: "ok", timestamp: 0 }],
-      executionEvidence: [{ executionId: "test", result: "passed", outcome: "completed" }],
-      certifier: { kind: "engine", id: "convergence-certification" },
-    },
+  return certifyConvergenceIntent(gateCtx, missionId, expeditionId, contractId, {
+    artifacts: [{ path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`, hash: "test", description: "Test" }],
+    runtimeEvidence: [{ source: "test", observation: "ok", timestamp: 0 }],
+    decisionMessage: "Convergence must converge",
   })
-  assert(result.status === "ok", `CertifyConvergence must succeed: ${result.error}`)
-  assert(result.result?.decision === "converged", `Convergence must converge, got ${result.result?.decision}`)
 }
 
 async function attachEvidence(projectDir, expeditionId) {

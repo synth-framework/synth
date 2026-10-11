@@ -1,4 +1,6 @@
 import { makeCwdDataDir } from "./helpers/workspace.js"
+import { withoutLifecycleContinuation } from "./helpers/context.js"
+import { lastEvent } from "./helpers/alignment-fixture.js"
 // ============================================================
 // EXP-GOVERNABILITY-005 — Convergence Certification Tests
 // ============================================================
@@ -13,7 +15,7 @@ import { strict as assert } from "assert"
 import path from "path"
 import { promises as fs } from "fs"
 import { bootstrap } from "../dist/core/bootstrap.js"
-import { createAlignedContract } from "./helpers/alignment-fixture.js"
+import { approveMission as approveMissionBase, createExecutingExpedition, certifyConvergenceWithFeatures } from "./helpers/governance-intent.js"
 import { buildDerivedState } from "../dist/state/derived/index.js"
 import { rebuildState } from "../dist/runtime/replay.js"
 import { buildObservedFeatures, certifyConvergence as evaluateConvergence } from "../dist/governance/convergence-certification/index.js"
@@ -38,57 +40,10 @@ async function makeCtx() {
     genesis: { projectName: "Convergence Certification Test", systemId: "convergence-test", partitions: 1 },
     skipGenesis: false,
   })
-  // These tests assert each governance stage explicitly.
-  const originalHandleIntent = ctx.api.handleIntent.bind(ctx.api)
-  ctx.api.handleIntent = (req) =>
-    originalHandleIntent({
-      ...req,
-      context: { ...(req.context || {}), disableLifecycleContinuation: true },
-    })
-  return ctx
+  return withoutLifecycleContinuation(ctx)
 }
 
-async function lastEvent(ctx, type, predicate = () => true) {
-  const events = await ctx.infra.eventStore.loadAll()
-  const matches = events.filter((e) => e.type === type && predicate(e))
-  return matches[matches.length - 1]
-}
-
-async function approveMission(ctx, id) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateMission",
-    payload: { id, name: `Mission ${id}`, purpose: "Convergence certification test" },
-  })
-  assert.equal(result.status, "ok", `CreateMission should succeed: ${result.error}`)
-
-  const { contractId } = await createAlignedContract(ctx)
-  result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "ApproveMission",
-    payload: { id, alignmentContractId: contractId },
-  })
-  assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
-  return { contractId }
-}
-
-async function createExecutingExpedition(ctx, missionId, expeditionId) {
-  let result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CreateExpedition",
-    payload: { id: expeditionId, missionId, name: "Test Expedition" },
-  })
-  assert.equal(result.status, "ok", `CreateExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `ApproveExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `CommitExpedition should succeed: ${result.error}`)
-
-  result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: expeditionId } })
-  assert.equal(result.status, "ok", `StartExpedition should succeed: ${result.error}`)
-}
+const approveConvergenceMission = (ctx, id) => approveMissionBase(ctx, id, { purpose: "Convergence certification test" })
 
 async function completeExpedition(ctx, expeditionId) {
   const result = await ctx.api.handleIntent({
@@ -100,20 +55,10 @@ async function completeExpedition(ctx, expeditionId) {
 }
 
 async function certifyConvergence(ctx, missionId, expeditionId, contractId, observedFeatures) {
-  const result = await ctx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures,
-      artifacts: [{ kind: "artifact", id: "homepage", path: "/homepage.html", description: "Homepage implementation" }],
-      runtimeEvidence: [{ kind: "runtime", id: "render", source: "puppeteer", observation: "Workspace renders", timestamp: Date.now() }],
-      executionEvidence: [{ kind: "execution", id: "build", eventIds: ["e1"], summary: "Build passed" }],
-    },
+  return certifyConvergenceWithFeatures(ctx, missionId, expeditionId, contractId, observedFeatures, {
+    evidenceSource: "puppeteer",
+    evidenceTimestamp: Date.now(),
   })
-  return result
 }
 
 function assertConvergenceResultShape(result) {
@@ -142,7 +87,7 @@ const { test } = suite
 
 test("[D01] generic dashboard outcome diverges", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-D01")
+  const { contractId } = await approveConvergenceMission(ctx, "M-D01")
   await createExecutingExpedition(ctx, "M-D01", "E-D01")
   await completeExpedition(ctx, "E-D01")
 
@@ -163,7 +108,7 @@ test("[D01] generic dashboard outcome diverges", async () => {
 
 test("[D02] marketing-first landing outcome diverges", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-D02")
+  const { contractId } = await approveConvergenceMission(ctx, "M-D02")
   await createExecutingExpedition(ctx, "M-D02", "E-D02")
   await completeExpedition(ctx, "E-D02")
 
@@ -180,7 +125,7 @@ test("[D02] marketing-first landing outcome diverges", async () => {
 
 test("[D03] chat-primary interface outcome diverges", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-D03")
+  const { contractId } = await approveConvergenceMission(ctx, "M-D03")
   await createExecutingExpedition(ctx, "M-D03", "E-D03")
   await completeExpedition(ctx, "E-D03")
 
@@ -200,7 +145,7 @@ test("[D03] chat-primary interface outcome diverges", async () => {
 
 test("[V01] persistent workspace outcome converges", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-V01")
+  const { contractId } = await approveConvergenceMission(ctx, "M-V01")
   await createExecutingExpedition(ctx, "M-V01", "E-V01")
   await completeExpedition(ctx, "E-V01")
 
@@ -234,7 +179,7 @@ test("Convergence certification is deterministic", async () => {
   const ctx2 = await makeCtx()
 
   for (const ctx of [ctx1, ctx2]) {
-    const { contractId } = await approveMission(ctx, "M-DET")
+    const { contractId } = await approveConvergenceMission(ctx, "M-DET")
     await createExecutingExpedition(ctx, "M-DET", "E-DET")
     await completeExpedition(ctx, "E-DET")
     await certifyConvergence(ctx, "M-DET", "E-DET", contractId, {
@@ -261,7 +206,7 @@ test("Convergence certification is deterministic", async () => {
 
 test("Divergence includes violated clauses and drift classes", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-TRACE")
+  const { contractId } = await approveConvergenceMission(ctx, "M-TRACE")
   await createExecutingExpedition(ctx, "M-TRACE", "E-TRACE")
   await completeExpedition(ctx, "E-TRACE")
 
@@ -288,7 +233,7 @@ test("Divergence includes violated clauses and drift classes", async () => {
 
 test("Mission cannot complete without converged certification", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-GATE")
+  const { contractId } = await approveConvergenceMission(ctx, "M-GATE")
   await createExecutingExpedition(ctx, "M-GATE", "E-GATE")
   await completeExpedition(ctx, "E-GATE")
 
@@ -304,7 +249,7 @@ test("Mission cannot complete without converged certification", async () => {
 
 test("Mission completes after converged certification", async () => {
   const ctx = await makeCtx()
-  const { contractId } = await approveMission(ctx, "M-GATE-OK")
+  const { contractId } = await approveConvergenceMission(ctx, "M-GATE-OK")
   await createExecutingExpedition(ctx, "M-GATE-OK", "E-GATE-OK")
   await completeExpedition(ctx, "E-GATE-OK")
 

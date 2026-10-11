@@ -44,6 +44,23 @@ async function approveMission(ctx, id) {
   assert.equal(result.status, "ok", `ApproveMission should succeed: ${result.error}`)
 }
 
+/** Create + approve mission M-1 and start expedition E-1. */
+async function setupExecutingExpedition(ctx, name = "Test Expedition") {
+  await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-1", name: "Test Mission" } })
+  await approveMission(ctx, "M-1")
+  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-1", missionId: "M-1", name } })
+  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-1" } })
+  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-1" } })
+  await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-1" } })
+}
+
+/** Create + approve + commit (no start) an expedition. */
+async function setupCommittedExpedition(ctx, id, name) {
+  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id, missionId: "M-1", name } })
+  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id } })
+  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id } })
+}
+
 import { createSuite } from "./helpers/runner.js"
 
 const suite = createSuite()
@@ -75,12 +92,7 @@ test("expedition.create is allowed when a mission is active", async () => {
 
 test("expedition.create is blocked while another expedition is executing", async () => {
   const ctx = await makeCtx()
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-1", name: "Test Mission" } })
-  await approveMission(ctx, "M-1")
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-1", missionId: "M-1", name: "First Expedition" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-1" } })
+  await setupExecutingExpedition(ctx, "First Expedition")
 
   const state = await getState(ctx)
   const result = validateAgentAction({ kind: "expedition.create" }, state)
@@ -90,16 +102,9 @@ test("expedition.create is blocked while another expedition is executing", async
 
 test("expedition.start is blocked when expedition is only approved but another is executing", async () => {
   const ctx = await makeCtx()
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-1", name: "Test Mission" } })
-  await approveMission(ctx, "M-1")
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-1", missionId: "M-1", name: "First" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-1" } })
+  await setupExecutingExpedition(ctx, "First")
 
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-2", missionId: "M-1", name: "Second" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-2" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-2" } })
+  await setupCommittedExpedition(ctx, "E-2", "Second")
 
   const state = await getState(ctx)
   const result = validateAgentAction({ kind: "expedition.start", expeditionId: "E-2" }, state)
@@ -121,12 +126,7 @@ test("expedition.complete is blocked when expedition is not executing", async ()
 
 test("expedition.complete is allowed when expedition is executing", async () => {
   const ctx = await makeCtx()
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-1", name: "Test Mission" } })
-  await approveMission(ctx, "M-1")
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-1", missionId: "M-1", name: "Test Expedition" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-1" } })
+  await setupExecutingExpedition(ctx)
 
   const state = await getState(ctx)
   const result = validateAgentAction({ kind: "expedition.complete", expeditionId: "E-1" }, state)
@@ -144,12 +144,7 @@ test("execution.mutate is blocked without an active expedition", async () => {
 
 test("execution.mutate is allowed with an active expedition", async () => {
   const ctx = await makeCtx()
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-1", name: "Test Mission" } })
-  await approveMission(ctx, "M-1")
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-1", missionId: "M-1", name: "Test Expedition" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-1" } })
+  await setupExecutingExpedition(ctx)
 
   const state = await getState(ctx)
   const result = validateAgentAction({ kind: "execution.mutate", expeditionId: "E-1" }, state)
@@ -159,12 +154,7 @@ test("execution.mutate is allowed with an active expedition", async () => {
 
 test("completing an expedition unlocks creating the next expedition", async () => {
   const ctx = await makeCtx()
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateMission", payload: { id: "M-1", name: "Test Mission" } })
-  await approveMission(ctx, "M-1")
-  await ctx.api.handleIntent({ actor: "test", capability: "CreateExpedition", payload: { id: "E-1", missionId: "M-1", name: "First" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "ApproveExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "CommitExpedition", payload: { id: "E-1" } })
-  await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "E-1" } })
+  await setupExecutingExpedition(ctx)
   await ctx.api.handleIntent({ actor: "test", capability: "CompleteExpedition", payload: { id: "E-1" } })
 
   const state = await getState(ctx)

@@ -18,6 +18,7 @@ import { assert, parseJson } from "./helpers/assert.js"
 import { createPerfRunner } from "./helpers/perf-runner.js"
 import { readAuthoritativeEventLog } from "../dist/runtime/governance-resolver.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../dist/infra/filesystem-provider.js"
+import { certifyConvergence } from "./helpers/governance-intent.js"
 
 const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
 
@@ -34,48 +35,6 @@ async function readEventLog(projectDir) {
     FILESYSTEM_WRITE_TOKEN,
   )
   return readAuthoritativeEventLog(dataFs)
-}
-
-async function certifyConvergence(gateCtx, missionId, expeditionId, contractId) {
-  const result = await gateCtx.api.handleIntent({
-    actor: "test",
-    capability: "CertifyConvergence",
-    payload: {
-      missionId,
-      expeditionId,
-      alignmentContractId: contractId,
-      observedFeatures: {
-        hasPersistentHeader: true,
-        hasPersistentSidebar: true,
-        hasScrollDrivenPhases: true,
-      },
-      ruleSetId: "program-027-homepage",
-      artifacts: [
-        {
-          path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`,
-          hash: `test-${missionId}-${expeditionId}`,
-          description: "Test implementation reference",
-        },
-      ],
-      runtimeEvidence: [
-        {
-          source: `synth://missions/${missionId}/expeditions/${expeditionId}/runtime`,
-          observation: "Runtime behavior observed",
-          timestamp: 0,
-        },
-      ],
-      executionEvidence: [
-        {
-          executionId: `test-execution-${expeditionId}`,
-          result: "passed",
-          outcome: "completed",
-        },
-      ],
-      certifier: { kind: "engine", id: "convergence-certification" },
-    },
-  })
-  assert(result.status === "ok", `CertifyConvergence must succeed: ${result.error}`)
-  assert(result.result?.decision === "converged", `Convergence certification must converge, got ${result.result?.decision}`)
 }
 
 async function testMissionLifecycleEmitsRequiredEvents(projectDir) {

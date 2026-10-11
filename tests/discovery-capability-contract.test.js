@@ -4,33 +4,17 @@
 
 import { test } from "node:test"
 import assert from "node:assert"
-import {
-  createDefaultDiscoveryEngine,
-  createFilesystemDiscoveryAdapterWithProvider,
-} from "../dist/discovery/index.js"
-import { createInMemoryFilesystemProvider } from "../dist/environment/index.js"
+import { makeFilesystemEngine } from "./helpers/discovery-fixtures.js"
 
 test("DefaultDiscoveryEngine implements DiscoveryCapability", async () => {
-  const fs = createInMemoryFilesystemProvider({
-    "/project/package.json": "{}",
-    "/project/README.md": "# Project",
-  })
-  const engine = createDefaultDiscoveryEngine({
-    adapters: [createFilesystemDiscoveryAdapterWithProvider(fs)],
-  })
+  const engine = makeFilesystemEngine()
 
   assert.strictEqual(typeof engine.discover, "function")
   assert.strictEqual(typeof engine.replay, "function")
 })
 
 test("discover returns a DiscoverySession with required fields", async () => {
-  const fs = createInMemoryFilesystemProvider({
-    "/project/package.json": "{}",
-    "/project/README.md": "# Project",
-  })
-  const engine = createDefaultDiscoveryEngine({
-    adapters: [createFilesystemDiscoveryAdapterWithProvider(fs)],
-  })
+  const engine = makeFilesystemEngine()
 
   const session = await engine.discover({
     sources: [{ type: "filesystem", path: "/project" }],
@@ -53,12 +37,7 @@ test("discover returns a DiscoverySession with required fields", async () => {
 })
 
 test("discover runs only adapters that can handle the source", async () => {
-  const fs = createInMemoryFilesystemProvider({
-    "/project/package.json": "{}",
-  })
-  const engine = createDefaultDiscoveryEngine({
-    adapters: [createFilesystemDiscoveryAdapterWithProvider(fs)],
-  })
+  const engine = makeFilesystemEngine({ "/project/package.json": "{}" })
 
   const session = await engine.discover({
     sources: [{ type: "git", url: "https://example.com/repo.git" }],
@@ -70,13 +49,7 @@ test("discover runs only adapters that can handle the source", async () => {
 })
 
 test("replay verifies a deterministic session as exact", async () => {
-  const fs = createInMemoryFilesystemProvider({
-    "/project/package.json": "{}",
-    "/project/README.md": "# Project",
-  })
-  const engine = createDefaultDiscoveryEngine({
-    adapters: [createFilesystemDiscoveryAdapterWithProvider(fs)],
-  })
+  const engine = makeFilesystemEngine()
 
   const session = await engine.discover({
     sources: [{ type: "filesystem", path: "/project" }],
@@ -90,12 +63,7 @@ test("replay verifies a deterministic session as exact", async () => {
 })
 
 test("session lineage supports parentSessionId", async () => {
-  const fs = createInMemoryFilesystemProvider({
-    "/project/package.json": "{}",
-  })
-  const engine = createDefaultDiscoveryEngine({
-    adapters: [createFilesystemDiscoveryAdapterWithProvider(fs)],
-  })
+  const engine = makeFilesystemEngine({ "/project/package.json": "{}" })
 
   const session = await engine.discover({
     sources: [{ type: "filesystem", path: "/project" }],
