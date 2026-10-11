@@ -1,0 +1,12 @@
+{
+  "expeditionId": "220f6163a7b55b45",
+  "capturedAt": 1791756995048,
+  "note": "P4 audit rewritten vs partitioned stream (7/7 blocked); ADR-051 hook counts segments, no override needed",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/220f6163a7b55b45/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

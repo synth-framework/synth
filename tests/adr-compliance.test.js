@@ -4,7 +4,7 @@
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { evaluate } from "../scripts/check-adr-compliance.js"
+import { evaluate, readEventLogLineCount } from "../scripts/check-adr-compliance.js"
 import { countEvents } from "../dist/sdk/events/index.js"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -57,6 +57,14 @@ assert(
 assert(
   evaluate({ repoRoot: REPO_ROOT, stagedFiles: ["src/foo.ts"], canonicalState: cs, eventLogLineCount: ev }).ok,
   "unrelated changes pass",
+)
+
+// 5. The hook counts the partitioned event-stream (expedition 01604a3), not
+//    the retired monolithic log: its internal count must equal the SDK
+//    partitioned count.
+assert(
+  readEventLogLineCount(REPO_ROOT, {}) === ev,
+  "hook counts partitioned event-stream in sync with SDK countEvents",
 )
 
 console.log(failures === 0 ? "All ADR-compliance tests passed." : `${failures} ADR-compliance test(s) failed.`)
