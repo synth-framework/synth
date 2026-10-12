@@ -34,7 +34,7 @@ import {
   isGovernedArtifact,
 } from "../state/artifact-policy.js"
 import { checkLedger, repairLedger } from "../ledger/doctor.js"
-import { commitCeremony } from "../ledger/ceremony.js"
+import { ceremonyForCapability, commitCeremony } from "../ledger/ceremony.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -265,7 +265,80 @@ async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]
   }
   // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
   injectIdentityContext(ctx.api)
+  // ADR-055 rev 2 §R2.1 · AC1/AC10: the single choke point where every
+  // governance mutation lands a ledger commit. Verbs that commit themselves
+  // (verbLevel) and non-ceremony capabilities are skipped; everything else is
+  // committed through the Ledger Writer with the normative message shape.
+  wrapHandleIntentWithCeremony(ctx.api)
   return ctx
+}
+
+/**
+ * The ceremony a `handleIntent` call started, waiting to be committed. Marking
+ * at the choke point (instead of committing there) is what makes one verb one
+ * commit: the verb may write draft files, snapshots or decisions after the
+ * capability returns, and all of it belongs to the same ceremony commit.
+ */
+let pendingCeremony: { key: string; entityId?: string } | undefined
+
+function markCeremony(key: string, entityId?: string): void {
+  pendingCeremony = { key, entityId }
+}
+
+/**
+ * Commit the pending ceremony (ADR-055 rev 2 §R2.1 · AC1/AC10). Called by the
+ * handlers that want the commit in their response envelope, and by `main()`
+ * after every command so no verb can end with an uncommitted ledger.
+ */
+async function flushPendingCeremony(): Promise<LedgerCommitInfo | undefined> {
+  const pending = pendingCeremony
+  pendingCeremony = undefined
+  if (!pending || !isAutoCommitEnabled()) return undefined
+
+  const ceremony = await commitCeremony(process.cwd(), pending.key, pending.entityId)
+  if (!ceremony.committed && ceremony.code) {
+    // No silent `{committed:false}`: a ceremony whose ledger commit was
+    // refused fails loudly with the writer's code and next step.
+    printError(ceremony.reason ?? "The ledger commit for this ceremony failed", {
+      code: ceremony.code,
+      category: "ledger",
+      suggestion: ceremony.nextStep,
+    })
+  }
+  return {
+    committed: ceremony.committed,
+    ...(ceremony.commitHash ? { commitHash: ceremony.commitHash } : {}),
+    message: ceremony.message,
+    files: ceremony.files,
+    ...(ceremony.reason ? { reason: ceremony.reason } : {}),
+  }
+}
+
+type LedgerCommitInfo = {
+  committed: boolean
+  commitHash?: string
+  message: string
+  files: string[]
+  reason?: string
+}
+
+/**
+ * Wrap `api.handleIntent` so a successful governance capability marks the
+ * ceremony the verb must commit. Verb-level ceremonies keep their own commit
+ * call sites; this closes the verbs that previously committed nothing at all.
+ */
+function wrapHandleIntentWithCeremony(api: { handleIntent: (request: any) => Promise<any> }): void {
+  const original = api.handleIntent.bind(api)
+  api.handleIntent = async (request: any) => {
+    const result = await original(request)
+    if (result?.status !== "ok") return result
+
+    const ceremony = ceremonyForCapability(request?.capability, request?.payload)
+    if (!ceremony || ceremony.spec.verbLevel) return result
+
+    markCeremony(ceremony.key, ceremony.entityId)
+    return result
+  }
 }
 
 async function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState, runtime?: import("../runtime/engine.js").RuntimeEngine) {
@@ -467,7 +540,13 @@ async function getNonDerivedWorkingTreeStatus(): Promise<{
   }
 }
 
+// `--no-auto-commit` is a global flag parsed once in main(); ceremonies run
+// from the handleIntent choke point do not receive the per-command flags, so
+// the parsed value is mirrored here.
+let autoCommitDisabledByFlag = false
+
 function isAutoCommitEnabled(flags?: Record<string, string | boolean>): boolean {
+  if (autoCommitDisabledByFlag) return false
   if (flags && (flags["no-auto-commit"] === true || flags["no-auto-commit"] === "true")) {
     return false
   }
@@ -651,6 +730,16 @@ async function autoCommitDerivedState(
     files: ceremony.files,
     ...(ceremony.reason ? { reason: ceremony.reason } : {}),
   }
+}
+
+/**
+ * Commit an intake ceremony (draft creation/update, artifact retirement) that
+ * has no capability to hang a choke-point commit on. Loud on refusal, exactly
+ * like the capability path.
+ */
+async function commitDraftCeremony(transition: string, entityId?: string): Promise<LedgerCommitInfo | undefined> {
+  markCeremony(transition, entityId)
+  return flushPendingCeremony()
 }
 
 async function getVersion(): Promise<string> {
@@ -3401,6 +3490,10 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     }
   }
 
+  // The draft and its integrity record are this ceremony's ledger payload; the
+  // verb that writes them commits them (§R2.1 · AC9).
+  const ledger = await commitDraftCeremony("mission-draft", session.id)
+
   printJson({
     status: "ok",
     kind: "MissionDraft",
@@ -3415,6 +3508,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     unknowns: session.unknowns,
     questions: session.questions,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : [],
+    ...(ledger ? { ledger } : {}),
     nextStep: `synth mission approve --draft-id ${session.id}`,
   })
 }
@@ -3915,11 +4009,14 @@ async function cmdMissionDelete(flags: Record<string, string | boolean>) {
     printError(result.error || "Unknown execution gate error", "MissionDeleteFailed")
   }
 
+  const ledger = await commitDraftCeremony("mission-delete", id)
+
   printJson({
     status: "ok",
     kind: "MissionDeleted",
     missionId: id,
     result: result.result,
+    ...(ledger ? { ledger } : {}),
   })
 }
 
@@ -4024,6 +4121,8 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
   await fs.writeFile(successorPath, JSON.stringify(serialized, null, 2), "utf-8")
   await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
 
+  const ledger = await commitDraftCeremony("mission-evidence", session.id)
+
   printJson({
     status: "ok",
     kind: "MissionDraft",
@@ -4034,6 +4133,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     confidence: session.confidence,
     unknowns: session.unknowns,
     questions: session.questions,
+    ...(ledger ? { ledger } : {}),
     nextStep: `synth mission approve --draft-id ${session.id}`,
   })
 }
@@ -5503,6 +5603,11 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     },
   })
 
+  // The draft + integrity record join the ceremony commit (the CreateExpedition
+  // capability may already have committed the runtime entity; the draft files
+  // were written by this verb, so this verb commits them).
+  const draftLedger = await commitDraftCeremony("expedition-draft", expeditionId)
+
   if (createResult.status !== "ok") {
     printError(`Failed to create expedition runtime entity: ${createResult.error || JSON.stringify(createResult)}`)
   }
@@ -5518,6 +5623,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     goal,
     similar,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
+    ...(draftLedger ? { ledger: draftLedger } : {}),
     nextStep: `synth expedition approve --draft-id ${expeditionId}`,
   })
 }
@@ -6950,6 +7056,8 @@ async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
     draftRetirementError = err instanceof Error ? err.message : String(err)
   }
 
+  const ledger = await commitDraftCeremony("draft-retire", expeditionId)
+
   printJson({
     status: "ok",
     kind: "ExpeditionDeleted",
@@ -6957,6 +7065,7 @@ async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
     result: result.result,
     ...(draftRetired ? { draftRetired } : {}),
     ...(draftRetirementError ? { draftRetirementError } : {}),
+    ...(ledger ? { ledger } : {}),
   })
 }
 
@@ -8025,6 +8134,7 @@ export async function main() {
     arg !== "--summary"
   )
   const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
+  autoCommitDisabledByFlag = flags["no-auto-commit"] === true || flags["no-auto-commit"] === "true"
 
   // Propagate the global --json flag to subcommands that need to know it
   // (e.g., synth explain ... --json), while still keeping it out of the
@@ -8385,6 +8495,11 @@ export async function main() {
     default:
       printError(`Unknown command: ${command}. Run 'synth --help' for available commands.`)
   }
+
+  // ADR-055 rev 2 §R2.1: no verb may end with an uncommitted ceremony. The
+  // handlers that report the commit in their envelope have already flushed;
+  // this is the guarantee for every other verb.
+  await flushPendingCeremony()
 }
 
 // SYNTH-LOADER-001: only run when executed directly (not when imported lazily by

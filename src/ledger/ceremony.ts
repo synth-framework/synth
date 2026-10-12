@@ -29,6 +29,12 @@ export type CeremonySpec = {
   entityKind: "mission" | "expedition"
   /** Pathspecs this ceremony owns. Defaults to the whole ledger. */
   paths?: readonly string[]
+  /**
+   * True when the CLI verb already commits this ceremony itself (the six
+   * original call sites). The capability choke point skips these so one verb
+   * never produces two commits for one transition.
+   */
+  verbLevel?: boolean
 }
 
 /**
@@ -38,13 +44,98 @@ export type CeremonySpec = {
  * E5 report.
  */
 export const CEREMONIES: Record<string, CeremonySpec> = {
-  "expedition-start": { transition: "EXPEDITION_STARTED", entityKind: "expedition" },
-  "expedition-complete": { transition: "EXPEDITION_COMPLETED", entityKind: "expedition" },
-  "expedition-finish": { transition: "EXPEDITION_FINISHED", entityKind: "expedition" },
-  "evidence-attach": { transition: "EVIDENCE_ATTACHED", entityKind: "expedition" },
-  "expedition-refine": { transition: "EXPEDITION_REFINED", entityKind: "expedition" },
-  "convergence-certification": { transition: "CONVERGENCE_CERTIFIED", entityKind: "expedition" },
+  // Verb-level ceremonies: the CLI call site commits (and reports) these.
+  "expedition-start": { transition: "EXPEDITION_STARTED", entityKind: "expedition", verbLevel: true },
+  "expedition-complete": { transition: "EXPEDITION_COMPLETED", entityKind: "expedition", verbLevel: true },
+  "expedition-finish": { transition: "EXPEDITION_FINISHED", entityKind: "expedition", verbLevel: true },
+  "evidence-attach": { transition: "EVIDENCE_ATTACHED", entityKind: "expedition", verbLevel: true },
+  "expedition-refine": { transition: "EXPEDITION_REFINED", entityKind: "expedition", verbLevel: true },
+  "convergence-certification": { transition: "CONVERGENCE_CERTIFIED", entityKind: "expedition", verbLevel: true },
   "ledger-repair": { transition: "LEDGER_REPAIR", entityKind: "mission" },
+
+  // Capability ceremonies: committed by the handleIntent choke point, so every
+  // verb that mutates governance state lands a ledger commit (ADR-055 rev 2
+  // §R2.1 · AC1/AC10) without nineteen call sites.
+  "mission-create": { transition: "MISSION_CREATED", entityKind: "mission" },
+  "mission-approve": { transition: "MISSION_APPROVED", entityKind: "mission" },
+  "mission-complete": { transition: "MISSION_COMPLETED", entityKind: "mission" },
+  "mission-archive": { transition: "MISSION_ARCHIVED", entityKind: "mission" },
+  "mission-delete": { transition: "MISSION_DELETED", entityKind: "mission", verbLevel: true },
+  "expedition-create": { transition: "EXPEDITION_CREATED", entityKind: "expedition" },
+  "expedition-approve": { transition: "EXPEDITION_APPROVED", entityKind: "expedition" },
+  "expedition-commit": { transition: "EXPEDITION_COMMITTED", entityKind: "expedition" },
+  "expedition-pause": { transition: "EXPEDITION_PAUSED", entityKind: "expedition" },
+  "expedition-cancel": { transition: "EXPEDITION_CANCELLED", entityKind: "expedition" },
+  "expedition-archive": { transition: "EXPEDITION_ARCHIVED", entityKind: "expedition" },
+  "expedition-delete": { transition: "EXPEDITION_DELETED", entityKind: "expedition", verbLevel: true },
+  "expedition-move": { transition: "EXPEDITION_MOVED", entityKind: "expedition" },
+  "expedition-deliver": { transition: "EXPEDITION_DELIVERED", entityKind: "expedition" },
+  "expedition-seal": { transition: "EXPEDITION_INTEGRATED", entityKind: "expedition" },
+  "expedition-abandon": { transition: "EXPEDITION_ABANDONED", entityKind: "expedition" },
+
+  // Intake ceremonies: the draft + its integrity record are the input class of
+  // the planning step, and they are tracked — so the verb that writes them is
+  // the verb that commits them (§R2.1). Draft-only verbs have no capability to
+  // hang a choke-point commit on, so the CLI call site commits explicitly.
+  "mission-draft": { transition: "MISSION_DRAFTED", entityKind: "mission" },
+  "mission-evidence": { transition: "MISSION_EVIDENCE_ADDED", entityKind: "mission" },
+  "expedition-draft": { transition: "EXPEDITION_DRAFTED", entityKind: "expedition" },
+  // Deletion retires draft artifacts after the state mutation; the retirement
+  // is recorded in the same command (never a silent file deletion).
+  "draft-retire": { transition: "DRAFT_ARTIFACTS_RETIRED", entityKind: "mission" },
+}
+
+/** Which capability produces which ceremony. */
+export const CAPABILITY_CEREMONIES: Record<string, string> = {
+  CreateMission: "mission-create",
+  ApproveMission: "mission-approve",
+  CompleteMission: "mission-complete",
+  ArchiveMission: "mission-archive",
+  // DeleteMission / DeleteExpedition: the CLI commits after draft retirement,
+  // so the whole delete is one commit; marked verbLevel below.
+  CreateExpedition: "expedition-create",
+  ApproveExpedition: "expedition-approve",
+  CommitExpedition: "expedition-commit",
+  PauseExpedition: "expedition-pause",
+  CancelExpedition: "expedition-cancel",
+  ArchiveExpedition: "expedition-archive",
+  DeleteExpedition: "expedition-delete",
+  // (delete ceremonies are verbLevel: see above)
+  MoveExpedition: "expedition-move",
+  DeliverExpedition: "expedition-deliver",
+  SealExpedition: "expedition-seal",
+  AbandonExpedition: "expedition-abandon",
+}
+
+export type CeremonyIntent = {
+  key: string
+  spec: CeremonySpec
+  entityId?: string
+}
+
+function entityIdFromPayload(payload: Record<string, unknown> | undefined): string | undefined {
+  if (!payload) return undefined
+  for (const field of ["id", "expeditionId", "missionId", "draftId", "proposalId"]) {
+    const value = payload[field]
+    if (typeof value === "string" && value.length > 0) return value
+  }
+  return undefined
+}
+
+/**
+ * The ceremony a capability produces, or undefined when the capability is not
+ * a governance ceremony (planning steps, identity, genesis, repairs...).
+ */
+export function ceremonyForCapability(
+  capability: string | undefined,
+  payload: Record<string, unknown> | undefined,
+): CeremonyIntent | undefined {
+  if (!capability) return undefined
+  const key = CAPABILITY_CEREMONIES[capability]
+  if (!key) return undefined
+  const spec = CEREMONIES[key]
+  if (!spec) return undefined
+  return { key, spec, entityId: entityIdFromPayload(payload) }
 }
 
 export function ceremonyMessage(spec: CeremonySpec, entityId?: string): string {
