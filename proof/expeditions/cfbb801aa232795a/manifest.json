@@ -1,12 +1,12 @@
 {
   "expeditionId": "cfbb801aa232795a",
-  "capturedAt": 1791800839437,
-  "note": "Auto-attached by synth expedition finish",
+  "capturedAt": 1791800844860,
+  "note": "E3 scoped source diff (7cd93bd..e881f6d): artifact policy as the single classification table; CI guard checking index<->policy<->.gitignore plus a --ci branch-policy check; new regression tests (no-write-on-read 11/11 red->green, artifact-policy 11/11); registration in package.json/task-registry/validation map/govern task; AGENTS.md fragment corrected and regenerated.",
   "attachments": [
     {
-      "kind": "git-diff",
-      "path": "proof/expeditions/cfbb801aa232795a/git-diff.patch",
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "kind": "attachment",
+      "path": "proof/expeditions/cfbb801aa232795a/attachments/e3-source.patch",
+      "hash": "7484bb2cb5ff6e43aff673126be60e8cf14eda0b38bd13fc68dc55f73186ff29"
     }
   ]
 }
