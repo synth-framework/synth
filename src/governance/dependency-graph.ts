@@ -201,7 +201,16 @@ function gateStatusToDependencyStatus(gateStatus: GateStatus | undefined): Depen
   }
 }
 
-/** Check whether an expedition's upstream dependencies are resolved. */
+/** Check whether an expedition's upstream dependencies are resolved.
+ *
+ *  Expedition f4e4850f decision (target model): the canonical runtime
+ *  `expedition.dependsOn` attribute is the single authoritative source for
+ *  enforcement. Charter-parsed records are a legacy fallback for display
+ *  only. Enforcement is lifecycle completion PLUS convergence certification,
+ *  except that a `cancelled` upstream resolves immediately: abandoned work
+ *  can never be certified, so demanding certification would block downstream
+ *  work permanently with no recourse.
+ */
 export function checkUpstreamDependencies(
   expeditionId: string,
   state: CanonicalState,
@@ -224,6 +233,13 @@ export function checkUpstreamDependencies(
     const depExpedition = state.expeditions?.[depId]
     const depStatus = depExpedition?.status
     const lifecycleComplete = depStatus === "completed" || depStatus === "cancelled"
+
+    // A cancelled upstream is abandoned work: it can never be certified, so
+    // it resolves immediately instead of blocking downstream forever.
+    if (depStatus === "cancelled") {
+      upstreamExpeditions.push({ id: depId, gateStatus: depStatus, resolved: true })
+      continue
+    }
 
     let gateStatus: string | undefined = depStatus
     let resolved = lifecycleComplete
