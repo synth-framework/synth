@@ -85,9 +85,13 @@ test("ledger doctor: an uncommitted ceremony is detected and repaired as one com
 
     const repair = await repairLedger(root)
     assert.deepEqual(repair.errors, [])
-    assert.equal(repair.actions[0], "committed a stalled ceremony: 1 path(s) as " + repair.commit.commitHash.slice(0, 8))
+    assert.equal(repair.actions[0], "recorded the ledger branch as main", repair.actions.join(", "))
+    assert.ok(
+      repair.actions.some((a) => a.startsWith("committed ledger changes:")),
+      repair.actions.join(", "),
+    )
     assert.ok(repair.actions.some((a) => a.includes("recreated the anchor")), repair.actions.join(", "))
-    assert.deepEqual(repair.commit.files, [".synth/data/canonical-state.json"])
+    assert.deepEqual(repair.commit.files, [".synth/data/canonical-state.json", ".synth/data/ledger.json"])
     assert.equal(git(root, ["log", "-1", "--format=%s"]), "chore(synth): ledger repair (doctor --fix)")
     assert.equal(git(root, ["status", "--porcelain"]), "", "the repair leaves a clean checkout")
 
@@ -157,17 +161,34 @@ test("ledger doctor: a detached checkout is reported and the repair refuses", as
   })
 })
 
-test("ledger doctor: --fix on a healthy ledger is a no-op", async () => {
+test("ledger doctor: --fix names an inferred ledger branch once, then is a no-op", async () => {
   await withRepo(async (root) => {
     await ensureAnchor(root, "main")
     const head = git(root, ["rev-parse", "HEAD"])
 
-    const repair = await repairLedger(root)
+    const before = await checkLedger(root)
+    assert.equal(before.branchSource, "inferred")
 
-    assert.deepEqual(repair.actions, [])
-    assert.deepEqual(repair.errors, [])
-    assert.equal(repair.commit, undefined)
-    assert.equal(git(root, ["rev-parse", "HEAD"]), head)
+    // First --fix: name the ledger branch (recorded and committed), and
+    // reconcile the anchor with the new tip.
+    const first = await repairLedger(root)
+    assert.equal(first.actions[0], "recorded the ledger branch as main")
+    assert.ok(first.actions.some((a) => a.startsWith("committed ledger changes:")), first.actions.join(", "))
+    assert.ok(first.actions.some((a) => a.includes("re-pointed the anchor")), first.actions.join(", "))
+    assert.deepEqual(first.errors, [])
+    assert.deepEqual(first.commit.files, [".synth/data/ledger.json"])
+    assert.equal(git(root, ["log", "-1", "--format=%s"]), "chore(synth): ledger repair (doctor --fix)")
+    assert.equal(git(root, ["status", "--porcelain"]), "", "the record is committed, not left dirty")
+    assert.equal((await checkLedger(root)).branchSource, "recorded")
+
+    // Second --fix: nothing left to repair.
+    const head2 = git(root, ["rev-parse", "HEAD"])
+    const second = await repairLedger(root)
+    assert.deepEqual(second.actions, [])
+    assert.deepEqual(second.errors, [])
+    assert.equal(second.commit, undefined)
+    assert.equal(git(root, ["rev-parse", "HEAD"]), head2)
     assert.equal(dirtyLedgerPaths(root).length, 0)
+    void head
   })
 })

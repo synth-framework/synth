@@ -306,6 +306,64 @@ function isUnderAnyPathspec(filePath: string, paths: readonly string[]): boolean
   })
 }
 
+export type LedgerChange = { status: string; path: string }
+
+/**
+ * Ledger paths with a local modification in `root` (the checkout a ceremony
+ * ran in). Porcelain `-z` form, so no path ever needs unquoting.
+ */
+export function ledgerChanges(root: string, paths: readonly string[] = LEDGER_PATHS): LedgerChange[] {
+  // Deliberately not the trimmed `gitQuiet`: porcelain status lines start with
+  // a space for worktree-only changes, and trimming eats the first path byte.
+  let raw: string
+  try {
+    raw = execFileSync("git", ["status", "--porcelain", "-z", "--", ...paths], {
+      cwd: root,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+  } catch {
+    return []
+  }
+  const entries = raw.split("\0").filter((entry) => entry.length > 0)
+  const changes: LedgerChange[] = []
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
+    const status = entry.slice(0, 2)
+    let changedPath = entry.slice(3)
+    if (status.includes("R") || status.includes("C")) {
+      // rename/copy: the destination is the next NUL-separated field
+      changedPath = entries[++i] ?? changedPath
+    }
+    if (!changedPath) continue
+    changes.push({ status: status.trim() || "??", path: changedPath })
+  }
+  return changes
+}
+
+export function isUnderAnyPathspecFile(filePath: string, paths: readonly string[]): boolean {
+  return isUnderAnyPathspec(filePath, paths)
+}
+
+/**
+ * Copy the ceremony's ledger edits from the checkout that produced them into
+ * the writer's worktree (the anchor). The anchor is a separate working tree, so
+ * without this step the commit would see an unchanged tree and report "no
+ * changes" while the ledger sat uncommitted in the operator's checkout.
+ */
+async function materializeInto(sourceRoot: string, targetRoot: string, changes: readonly LedgerChange[]): Promise<void> {
+  for (const change of changes) {
+    const from = path.join(sourceRoot, change.path)
+    const to = path.join(targetRoot, change.path)
+    if (change.status.includes("D")) {
+      await fs.rm(to, { recursive: true, force: true })
+      continue
+    }
+    await fs.mkdir(path.dirname(to), { recursive: true })
+    await fs.cp(from, to, { recursive: true, force: true })
+  }
+}
+
 export type AdvanceResult = {
   committed: boolean
   branch: string
@@ -323,6 +381,11 @@ export type AdvanceOptions = {
   useCheckout?: string
   /** Set false to leave the operator checkout untouched after the CAS (tests). */
   refreshCheckout?: boolean
+  /**
+   * The checkout the ceremony ran in, when it is not the writer's worktree.
+   * Its ledger edits are materialized into the anchor before staging.
+   */
+  sourceRoot?: string
 }
 
 /**
@@ -339,6 +402,14 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
   const old = expectedBefore.out
 
   const writerPath = options.useCheckout ?? (await ensureAnchor(root, options.branch)).path
+
+  // A ceremony that ran in another checkout: move its ledger edits into the
+  // writer's worktree so the commit has content to record.
+  if (!options.useCheckout && options.sourceRoot && options.sourceRoot !== writerPath) {
+    const changes = ledgerChanges(options.sourceRoot, paths)
+    if (changes.length > 0) await materializeInto(options.sourceRoot, writerPath, changes)
+  }
+
   // Committing in the operator's own checkout (which is on the ledger branch)
   // moves the ref as part of the commit, so the compare-and-swap below would
   // compare against a ref this process already advanced. Detect the shortcut.

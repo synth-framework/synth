@@ -11,8 +11,17 @@
 // silent `{committed:false}` that leaves the ledger abandoned mid-ceremony.
 // ============================================================
 
-import { LEDGER_PATHS, LedgerError, advanceCanonicalBranch, withLedgerLock } from "./writer.js"
-import { ledgerBranch } from "./doctor.js"
+import { execFileSync } from "node:child_process"
+
+import {
+  LEDGER_PATHS,
+  LedgerError,
+  advanceCanonicalBranch,
+  isUnderAnyPathspecFile,
+  ledgerChanges,
+  withLedgerLock,
+} from "./writer.js"
+import { currentBranch, recordLedgerBranch, resolveLedgerBranch } from "./branch.js"
 
 export type CeremonySpec = {
   /** Transition recorded on the ledger, i.e. the event name. */
@@ -48,11 +57,19 @@ export type CeremonyCommit = {
   commitHash: string
   message: string
   files: string[]
+  /** Where the ledger branch came from: config | recorded | inferred. */
+  ledgerBranch?: { branch: string; source: string }
+  /** Set when this ceremony recorded the ledger branch (first inference). */
+  branchRecorded?: string
   /** Present when nothing was committed (e.g. the ledger was already clean). */
   reason?: string
-  /** Present when the writer refused: LEDGER_DIRTY | LEDGER_LOCKED | … */
+  /** Set when the writer refused: LEDGER_DIRTY | LEDGER_LOCKED | … */
   code?: string
   nextStep?: string
+  /** Set when the ceremony's checkout is not the ledger branch and stayed dirty. */
+  checkoutDirty?: boolean
+  /** Advisory text (e.g. the branch was inferred rather than configured). */
+  warning?: string
 }
 
 /**
@@ -65,16 +82,59 @@ export async function commitCeremony(root: string, transitionKey: string, entity
     ? ceremonyMessage(spec, entityId)
     : `chore(synth): record ${transitionKey}${entityId ? ` expedition ${entityId.slice(0, 8)}` : ""}`
 
-  const branch = ledgerBranch(root)
+  const resolution = resolveLedgerBranch(root)
+  const branch = resolution.branch
   if (!branch) {
     return {
       committed: false,
       commitHash: "",
       message,
       files: [],
-      reason: "Detached HEAD: the ledger branch cannot be resolved",
+      reason: "Detached HEAD and no recorded ledger branch",
       code: "LEDGER_UNAVAILABLE",
-      nextStep: "Check out a branch before running ceremonies (ADR-055 §2.3).",
+      nextStep:
+        "Check out the ledger branch (or name it once with git.ledgerBranch in .synth/config.yaml) before running ceremonies (ADR-055 §2.3).",
+    }
+  }
+
+  // The ledger branch is named, not assumed: the operator's checkout is the
+  // fast path only when it *is* the ledger branch. Every other checkout commits
+  // through the anchor, so the ledger never lands on a work branch (F12).
+  const checkout = currentBranch(root)
+  const fastPath = checkout === branch
+
+  // Outside the ledger branch, the checkout's ledger edits are the source of
+  // truth for this ceremony — but only the ones this ceremony owns. Anything
+  // else must be committed (or repaired) first, loudly.
+  if (!fastPath) {
+    const ownedPaths = spec?.paths ?? LEDGER_PATHS
+    const residue = ledgerChanges(root, LEDGER_PATHS).filter(
+      (change) => !isUnderAnyPathspecFile(change.path, ownedPaths),
+    )
+    if (residue.length > 0) {
+      return {
+        committed: false,
+        commitHash: "",
+        message,
+        files: [],
+        ledgerBranch: { branch, source: resolution.source },
+        reason: `The checkout holds ledger edits this ceremony does not own: ${residue
+          .map((change) => change.path)
+          .join(", ")}`,
+        code: "LEDGER_DIRTY",
+        nextStep: "Commit or stash them, or run `synth doctor --fix`, then repeat the ceremony.",
+      }
+    }
+  }
+
+  // First inference records the answer in the ledger, so the next ceremony —
+  // and every branch cut from here — resolves without guessing.
+  let branchRecorded: string | undefined
+  if (resolution.source === "inferred") {
+    try {
+      branchRecorded = recordLedgerBranch(root, branch)
+    } catch {
+      // Recording is best-effort; the ceremony still commits.
     }
   }
 
@@ -84,14 +144,19 @@ export async function commitCeremony(root: string, transitionKey: string, entity
         branch,
         message,
         paths: spec?.paths ?? LEDGER_PATHS,
-        useCheckout: root,
+        ...(fastPath ? { useCheckout: root } : { sourceRoot: root }),
       }),
     )
+    const checkoutDirty = !fastPath && hasLedgerDirt(root)
     return {
       committed: result.committed,
       commitHash: result.commitHash,
       message,
       files: result.files,
+      ledgerBranch: { branch, source: resolution.source },
+      ...(branchRecorded ? { branchRecorded } : {}),
+      ...(resolution.warning ? { warning: resolution.warning } : {}),
+      ...(checkoutDirty ? { checkoutDirty: true } : {}),
       ...(result.reason ? { reason: result.reason } : {}),
     }
   } catch (err) {
@@ -101,9 +166,25 @@ export async function commitCeremony(root: string, transitionKey: string, entity
       commitHash: "",
       message,
       files: [],
+      ledgerBranch: { branch, source: resolution.source },
+      ...(resolution.warning ? { warning: resolution.warning } : {}),
       reason: e.message ?? String(err),
       code: e.code ?? "LEDGER_UNAVAILABLE",
       nextStep: e.nextStep ?? "Run `synth doctor --fix`, then repeat the ceremony.",
     }
+  }
+}
+
+/** True when the checkout holds ledger edits (reported, never silently discarded). */
+function hasLedgerDirt(root: string): boolean {
+  try {
+    const out = execFileSync("git", ["status", "--porcelain", "--", ...LEDGER_PATHS], {
+      cwd: root,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim()
+    return out.length > 0
+  } catch {
+    return false
   }
 }

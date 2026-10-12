@@ -877,7 +877,17 @@ async function cmdDoctor(flags: Record<string, string | boolean> = {}) {
   const ledger = await checkLedger(process.cwd())
   const ledgerHealth: Record<string, DoctorCheckResult> = {
     ledgerBranch: ledger.repo
-      ? { ok: Boolean(ledger.branch), detail: ledger.branch ? `Ledger branch: ${ledger.branch}` : "Detached HEAD — ceremonies cannot commit", ...(ledger.branch ? {} : { nextStep: "Check out a branch before running ceremonies." }) }
+      ? {
+          ok: Boolean(ledger.branch),
+          detail: ledger.branch
+            ? `Ledger branch: ${ledger.branch}${ledger.branchSource ? ` (${ledger.branchSource})` : ""}`
+            : "Detached HEAD with no recorded ledger branch — ceremonies cannot commit",
+          ...(ledger.branch
+            ? ledger.branchSource === "inferred"
+              ? { nextStep: "Name the ledger branch: set git.ledgerBranch in .synth/config.yaml (the next ceremony records it otherwise)." }
+              : {}
+            : { nextStep: "Check out the ledger branch before running ceremonies." }),
+        }
       : { ok: true, detail: "Not a git repository" },
     ledgerAnchor: { ...ledger.anchor },
     ledgerCeremony: { ...ledger.ceremony },

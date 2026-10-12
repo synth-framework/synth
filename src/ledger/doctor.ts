@@ -23,12 +23,22 @@ import {
   readAnchorState,
   repairAnchor,
 } from "./writer.js"
+import {
+  currentBranch,
+  recordLedgerBranch,
+  resolveLedgerBranch,
+  type LedgerBranchSource,
+} from "./branch.js"
 
 export type LedgerCheck = { ok: boolean; detail: string; nextStep?: string }
 
 export type LedgerHealth = {
   repo: boolean
+  /** The ledger branch (named by config, recorded at bootstrap, or inferred). */
   branch?: string
+  /** Where the ledger branch came from: config | recorded | inferred | none. */
+  branchSource?: LedgerBranchSource
+  warning?: string
   anchor: LedgerCheck
   ceremony: LedgerCheck
   sync: LedgerCheck
@@ -53,10 +63,12 @@ export function dirtyLedgerPaths(root: string, paths: readonly string[] = LEDGER
     .filter(Boolean)
 }
 
-/** The ledger branch: the checked-out branch, or undefined on a detached HEAD. */
+/**
+ * The ledger branch: named by config, recorded in the ledger, or inferred from
+ * the checkout. Undefined only on a detached HEAD with no recorded branch.
+ */
 export function ledgerBranch(root: string): string | undefined {
-  const head = git(root, ["symbolic-ref", "-q", "--short", "HEAD"])
-  return head.ok && head.out.length > 0 ? head.out : undefined
+  return resolveLedgerBranch(root).branch
 }
 
 export async function checkLedger(root: string, options: { ledgerPaths?: readonly string[] } = {}): Promise<LedgerHealth> {
@@ -71,7 +83,8 @@ export async function checkLedger(root: string, options: { ledgerPaths?: readonl
     }
   }
 
-  const branch = ledgerBranch(root)
+  const resolution = resolveLedgerBranch(root)
+  const branch = resolution.branch
   const anchorState = await readAnchorState(root, paths)
 
   // 1. Anchor presence. An absent anchor is normal (created lazily); a prunable
@@ -127,6 +140,8 @@ export async function checkLedger(root: string, options: { ledgerPaths?: readonl
   return {
     repo: true,
     ...(branch ? { branch } : {}),
+    branchSource: resolution.source,
+    ...(resolution.warning ? { warning: resolution.warning } : {}),
     anchor,
     ceremony,
     sync,
@@ -150,11 +165,23 @@ export async function repairLedger(root: string, options: { ledgerPaths?: readon
   const paths = options.ledgerPaths ?? LEDGER_PATHS
   const result: LedgerRepair = { actions: [], errors: [] }
 
-  const branch = ledgerBranch(root)
+  const resolution = resolveLedgerBranch(root)
+  const branch = resolution.branch
   if (!branch) {
-    result.errors.push("Detached HEAD: check out a branch before repairing the ledger.")
+    result.errors.push("Detached HEAD and no recorded ledger branch: check out a branch before repairing the ledger.")
     return result
   }
+  // The same resolution the ceremonies use: record an inferred branch so the
+  // repair commit itself is the last guess this repository has to make.
+  if (resolution.source === "inferred") {
+    try {
+      recordLedgerBranch(root, branch, "doctor --fix")
+      result.actions.push(`recorded the ledger branch as ${branch}`)
+    } catch {
+      // best effort; the repair below still runs
+    }
+  }
+  const fastPath = currentBranch(root) === branch
 
   const checkoutDirty = dirtyLedgerPaths(root, paths)
   const anchorBefore = await readAnchorState(root, paths)
@@ -164,20 +191,20 @@ export async function repairLedger(root: string, options: { ledgerPaths?: readon
   //    fallback when the checkout is clean but the anchor holds the edits.
   const message = "chore(synth): ledger repair (doctor --fix)"
   try {
-    if (checkoutDirty.length > 0) {
+    if (checkoutDirty.length > 0 && fastPath) {
       const committed = await advanceCanonicalBranch(root, { branch, message, paths, useCheckout: root })
       if (committed.committed) {
         result.commit = { commitHash: committed.commitHash, files: committed.files }
         result.actions.push(
-          `committed a stalled ceremony: ${committed.files.length} path(s) as ${committed.commitHash.slice(0, 8)}`,
+          `committed ledger changes: ${committed.files.length} path(s) as ${committed.commitHash.slice(0, 8)}`,
         )
       }
-    } else if (anchorDirty.length > 0) {
+    } else if (anchorDirty.length > 0 || (checkoutDirty.length > 0 && !fastPath)) {
       const committed = await advanceCanonicalBranch(root, { branch, message, paths })
       if (committed.committed) {
         result.commit = { commitHash: committed.commitHash, files: committed.files }
         result.actions.push(
-          `committed a stalled anchor edit: ${committed.files.length} path(s) as ${committed.commitHash.slice(0, 8)}`,
+          `committed ledger changes: ${committed.files.length} path(s) as ${committed.commitHash.slice(0, 8)}`,
         )
       }
     }
