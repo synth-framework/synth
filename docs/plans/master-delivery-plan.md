@@ -1,7 +1,7 @@
 # SYNTH — Master Delivery Plan (rev 3)
 
 **Prepared:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Working branch:** `arena/c5db653e-synth` @ `144bbfe` (pushed)
-**Status:** bootstrap executed; **E1, E2 and E3 are complete and shipped on the branch**; the `mode: off` window is still open (exit = E4).
+**Status:** bootstrap executed; **E1–E3 complete, M1 completed, all shipped on the branch**; the `mode: off` window is still open (exit = E4).
 **Supersedes:** rev 2 of this document, and the ad-hoc sequencing in the project brief §4.2.
 **Design of record:** `docs/adr/ADR-054` (lifecycle), `docs/adr/ADR-055` (ceremonial events), `docs/adr/ADR-056` (declared branches).
 **Evidence base:** `docs/audits/mission-expedition-cli-audit-2026-10-12.md`, `docs/plans/reads-never-write.md`.
@@ -19,7 +19,7 @@
 | 5 | **`check-artifact-policy --ci` is deliberately not wired yet**: it asserts `branchPolicy.mode: enforce`, so it must land in the same PR that closes the window (E4) | otherwise the suspension could reach `main` silently |
 | 6 | **`AGENTS.md` was lying about its own architecture** ("do not commit `.synth/data/drafts/`"; "`event-log.jsonl` is the replay source") — fixed at the fragment source (`knowledge/AGENTS-intro.md`) and regenerated | E3; the contract now matches the policy table |
 | 7 | **`test:task-npm-migration` was red at HEAD** (the `test:adr` / `check:adr` task files were missing) — fixed by E3's registration pass | found while wiring; a second instance of the same class as F1 (registration drift) |
-| 8 | M1's three expeditions are complete; the next lifecycle act is M2's E4 (ADR-056), which is also the **window exit** | new sequencing detail in §5 |
+| 8 | M1's three expeditions are complete **and M1 itself auto-completed** (the framework completes a mission when its last expedition terminates — observed at `f3dda2d`), so the next lifecycle act is M2's E4 (ADR-056), which is also the **window exit** | new sequencing detail in §5; removes the "run `mission complete`" step rev 2 planned |
 
 ---
 
@@ -30,7 +30,7 @@
 | Repo / version | `synth-framework/synth` @ `ac4e81a` (merge #339), v2.6.1 |
 | Branch | `arena/c5db653e-synth` @ `144bbfe`, pushed and equal to `origin` |
 | Governance | 377 events, replay `consistent: true` |
-| Missions | `b536ecc7ceb9217a` *Derived-State Integrity* (active; 3/3 expeditions complete); `a57585f0aec4b2d8` *Governed Operation from Operator Branches* (active; E4, E5 committed) |
+| Missions | `b536ecc7ceb9217a` *Derived-State Integrity* — **completed** (auto-completed at `f3dda2d` when E3 finished; 3/3 expeditions complete); `a57585f0aec4b2d8` *Governed Operation from Operator Branches* — active (E4, E5 committed) |
 | Expeditions | E1 `ecc3688796be0545` **completed** · E2 `f089c4fea720c07c` **completed** · E3 `cfbb801aa232795a` **completed** · E4 `e788e528a896008a` committed · E5 `bda2bbd4ef6550af` committed (dep E1, E4) |
 | Window | `git.branchPolicy.mode: off` committed with a rationale comment + restore instruction (`.synth/config.yaml`); no branch is created or checked out anywhere in the window |
 | PR | **#340** open, **draft**, "Governance bootstrap: ADR-054/055/056, master plan, and the derived-state fixes (hold: carries `mode: off` window)" |
@@ -69,7 +69,7 @@ STAGE 3  E1–E5 created / approved / committed                                �
 STAGE 4  WORK LOOP (serialized on src/cli/synth.ts)                          ✅ E1 · ✅ E2 · ✅ E3
          code + tests → finish (evidence→certify→complete) → ledger commit → push
               │
-STAGE 4b M1 completion — after its three PRs are merged (see §5)             ⏳
+STAGE 4b M1 completion — AUTOMATIC when its last expedition terminated        ✅ b536ecc7ceb9217a
               │
 STAGE 5  E4 — Declared execution branches (ADR-056)                          ⏳ next
          + window close: restore mode:enforce · wire check-artifact-policy --ci
@@ -95,7 +95,7 @@ STAGE 7  STEADY STATE: finish → deliver → merge → seal → close;
 | **E2 — No write-on-read** `f089c4fea720c07c` | ✅ complete (`5a663e8`) | charter cache keyed on sha256 content digests at `.synth/cache/dependency-records.json` (gitignored, written only when the digest map or records change; legacy mtime cache no longer read), `writeAiMetadata` compares each file against disk and returns `{changed,files}`, `status` (light + heavy) is a pure read | PR-2 |
 | **E3 — Artifact policy + guards** `cfbb801aa232795a` | ✅ complete (`e881f6d`) | `src/state/artifact-policy.ts` (5 classes, first-match-wins, include roots + `:(exclude)` pathspecs derived), `scripts/check-artifact-policy.js` (index ↔ policy ↔ `.gitignore`, `--ci` for the window close), `tests/no-write-on-read.test.js` (pristine `git archive` tree; 9 read-only commands + cache stability; 0/11 pre-fix → 11/11), `tests/artifact-policy.test.js` (11/11), registration in `package.json` / `data/tasks` / `capability-validation-map.json` / `govern` task, `AGENTS.md` fragment corrected + regenerated | PR-3 |
 
-Full detail: `docs/plans/reads-never-write.md` (W1–W5 → E1–E3). **M1 is feature-complete on the branch**; the remaining act is `mission complete` after the merges (Stage 4b).
+Full detail: `docs/plans/reads-never-write.md` (W1–W5 → E1–E3). **M1 is complete**: the framework marked it `completed` at `f3dda2d` when E3 terminated. No `mission complete` call is needed (and none is available for an already-completed mission). Verify with `synth mission show --id b536ecc7ceb9217a`.
 
 ### 4.2 M2 — *Governed Operation from Operator Branches* (`a57585f0aec4b2d8`)
 
@@ -154,16 +154,14 @@ Purpose: make SYNTH govern work on pre-existing operator branches — declared e
 
 ## 5. Runbook (commands + expected output)
 
-### Stage 4b — close out M1 (after PR-1…PR-3 are merged)
+### Stage 4b — M1 is already closed
 
 ```bash
-synth expedition list --mission b536ecc7ceb9217a     # expect: E1,E2,E3 completed
-synth mission complete --id b536ecc7ceb9217a --dry-run
-synth mission complete --id b536ecc7ceb9217a
-git add -A .synth/data proof && git commit -m "chore(synth): ledger — M1 completed"
-git push origin arena/c5db653e-synth
+synth mission show --id b536ecc7ceb9217a     # expect: status completed (auto — no command ran)
+synth expedition list --mission b536ecc7ceb9217a
 ```
-Expected: certification `converged`, mission state `completed`, tree clean afterwards.
+The framework completes a mission when its last expedition terminates; observed when E3 finished
+(`f3dda2d`). The ledger commit for it is that same auto-commit, already pushed. Nothing left to run.
 
 ### Stage 5 — E4 (ADR-056) and the window close
 
@@ -234,7 +232,6 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 
 | Stage | Work | Duration |
 |---|---|---|
-| 4b | M1 completion + ledger commit | 0.5 h |
 | 5 | E4 (ADR-056) + window close + PR #340 review/merge | 1–2 d |
 | 6 | E5 (ledger writer, anchor, `deliver`/`seal` MVP) | 3–5 d |
 | 7 | FMW v2 resumes (`bc9c51e0`, `29b9a370`) · F1 follow-up | existing scopes |
