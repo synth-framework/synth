@@ -545,11 +545,17 @@
       "unitTests": [
         "test:expedition-governance",
         "test:impact-analyzer",
-        "test:protected-asset-escalation"
+        "test:protected-asset-escalation",
+        "test:artifact-policy",
+        "test:auto-commit-ignored-paths"
       ],
-      "integrationTests": [],
+      "integrationTests": [
+        "test:no-write-on-read"
+      ],
       "benchmarks": [],
-      "proofs": [],
+      "proofs": [
+        "check:artifact-policy"
+      ],
       "lintScope": [
         "src/governance/",
         "scripts/verify-expedition-governance.js",

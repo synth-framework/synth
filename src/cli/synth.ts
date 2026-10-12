@@ -26,6 +26,13 @@ import { detectRecommendedAdapters } from "./detect-adapters.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
+import {
+  AUTO_COMMIT_INCLUDE_ROOTS,
+  autoCommitExcludePathspecs,
+  isCommittableArtifact,
+  isExcludedFromCompletionGate,
+  isGovernedArtifact,
+} from "../state/artifact-policy.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -341,7 +348,7 @@ async function getUntrackedSourcePaths(): Promise<string[]> {
         .split("\n")
         .filter((line) => line.startsWith("?? "))
         .map((line) => line.slice(3))
-        .filter((p) => !isDerivedStateFile(p))
+        .filter((p) => !isGovernedArtifact(p))
       resolve(paths)
     })
     child.on("error", () => resolve([]))
@@ -358,29 +365,15 @@ async function getUntrackedSourcePaths(): Promise<string[]> {
 // manually between steps.
 // ============================================================
 
-const DERIVED_STATE_PATTERNS = [
-  ".synth/data/",
-  ".synth/ai/",
-  ".synth/cache/",
-  ".synth/discovery/",
-  ".synth/context.json",
-  "proof/expeditions/",
-  "data/event-log.jsonl",
-  "data/canonical-state.json",
-  "AGENTS.md",
-]
+// Auto-commit scope and exclusions come from the artifact policy
+// (src/state/artifact-policy.ts). The include roots are directory pathspecs:
+// `git add -A -- <dir>` stages additions, modifications and deletions, and
+// never fails on ignored content the way an explicit file list does (audit D1).
 
-// Auto-commit scope: durable SYNTH state plus proof artifacts. Directory
-// pathspecs are used deliberately — `git add -A -- <dir>` stages additions,
-// modifications *and deletions*, and never fails on ignored-but-untracked
-// content the way an explicit file list does (audit D1: one ignored path in
-// the batch aborted the whole staging step).
-const AUTO_COMMIT_PATHSPECS = [".synth/data", "proof/expeditions", "AGENTS.md"]
-
-/** Existing subset of AUTO_COMMIT_PATHSPECS (a missing pathspec fails `git add`). */
+/** Existing subset of the include roots (a missing pathspec fails `git add`). */
 async function existingAutoCommitPathspecs(cwd: string): Promise<string[]> {
   const existing: string[] = []
-  for (const relPath of AUTO_COMMIT_PATHSPECS) {
+  for (const relPath of AUTO_COMMIT_INCLUDE_ROOTS) {
     try {
       await fs.access(path.join(cwd, relPath))
       existing.push(relPath)
@@ -400,16 +393,6 @@ function isTrackedPath(cwd: string, relPath: string): boolean {
     return false
   }
 }
-
-// In-scope paths that must never be auto-committed: the stale monolithic
-// event log (superseded by event-stream/), the debug log, and the
-// machine-local dependency cache. E3 replaces this list with the shared
-// artifact policy (src/state/artifact-policy.ts).
-const AUTO_COMMIT_EXCLUDES = [
-  ":(exclude).synth/data/event-log.jsonl",
-  ":(exclude).synth/data/cli-errors.jsonl",
-  ":(exclude).synth/data/dependency-records-cache.json",
-]
 
 type AutoCommitResult = {
   committed: boolean
@@ -433,15 +416,9 @@ function isScratchFile(relPath: string): boolean {
   )
 }
 
-function isDerivedStateFile(relPath: string): boolean {
-  for (const pattern of DERIVED_STATE_PATTERNS) {
-    if (pattern.endsWith("/")) {
-      if (relPath.startsWith(pattern)) return true
-    } else if (relPath === pattern) {
-      return true
-    }
-  }
-  return isScratchFile(relPath)
+/** Governed artifacts and scratch files never count as source changes. */
+function isNonSourcePath(relPath: string): boolean {
+  return isExcludedFromCompletionGate(relPath) || isScratchFile(relPath)
 }
 
 /**
@@ -466,7 +443,7 @@ async function getNonDerivedWorkingTreeStatus(): Promise<{
   const nonDerivedLines: string[] = []
   for (const line of allLines) {
     const relPath = line.slice(3)
-    if (isDerivedStateFile(relPath)) {
+    if (isNonSourcePath(relPath)) {
       derivedLines.push(line)
     } else {
       nonDerivedLines.push(line)
@@ -566,13 +543,9 @@ async function listIgnoredPaths(cwd: string, files: string[]): Promise<Set<strin
   })
 }
 
-/** Relative paths currently tracked in the index (used for commit scoping). */
+/** Auto-commit only ever stages committable artifacts (durable + input). */
 function isAutoCommitScoped(relPath: string): boolean {
-  return (
-    relPath === "AGENTS.md" ||
-    relPath.startsWith(".synth/data/") ||
-    relPath.startsWith("proof/expeditions/")
-  )
+  return isCommittableArtifact(relPath)
 }
 
 /**
@@ -590,7 +563,7 @@ async function stageAutoCommitPaths(cwd: string): Promise<{ staged: string[]; fa
   let primaryOk = false
   if (pathspecs.length > 0) {
     try {
-      execFileSync("git", ["add", "-A", "--", ...pathspecs, ...AUTO_COMMIT_EXCLUDES], {
+      execFileSync("git", ["add", "-A", "--", ...pathspecs, ...autoCommitExcludePathspecs()], {
         cwd,
         stdio: ["pipe", "pipe", "pipe"],
       })
@@ -604,10 +577,8 @@ async function stageAutoCommitPaths(cwd: string): Promise<{ staged: string[]; fa
     // Per-path fallback: ignored *and untracked* paths are never staged;
     // ignored *and tracked* paths are staged with `-f` (they are legitimate
     // content — e.g. draft inputs — and explicit pathspecs need the flag).
-    const candidates = (await collectDerivedStateFiles(cwd)).filter(
-      (relPath) =>
-        isAutoCommitScoped(relPath) &&
-        !AUTO_COMMIT_EXCLUDES.some((rule) => rule.endsWith(relPath)),
+    const candidates = (await collectDerivedStateFiles(cwd)).filter((relPath) =>
+      isAutoCommitScoped(relPath),
     )
     const ignored = await listIgnoredPaths(cwd, candidates)
     for (const relPath of candidates) {
@@ -673,7 +644,7 @@ async function autoCommitDerivedState(
     .map((line) => line.trim())
     .filter(Boolean)
 
-  const statusBefore = execFileSync("git", ["status", "--porcelain", "--", ...AUTO_COMMIT_PATHSPECS, ...AUTO_COMMIT_EXCLUDES], {
+  const statusBefore = execFileSync("git", ["status", "--porcelain", "--", ...AUTO_COMMIT_INCLUDE_ROOTS, ...autoCommitExcludePathspecs()], {
     cwd,
     encoding: "utf-8",
   }).trim()

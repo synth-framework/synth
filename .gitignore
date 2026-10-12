@@ -27,9 +27,10 @@ coverage/
 # Runtime
 # =============================================================================
 
-# SYNTH artifacts by class. One classification, one place: E3 moves this table
-# into src/state/artifact-policy.ts and makes CI check that the index agrees
-# with it. Do not hand-edit one half of the table.
+# SYNTH artifacts by class. The classification table lives in
+# src/state/artifact-policy.ts (durable, input, derived, cache, legacy);
+# scripts/check-artifact-policy.js fails CI when the index or these rules
+# disagree with it. Do not hand-edit one half of the table.
 #
 # derived projections (never committed)
 .synth/ai/

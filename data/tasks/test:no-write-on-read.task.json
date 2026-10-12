@@ -1,0 +1,14 @@
+{
+  "id": "test:no-write-on-read",
+  "description": "npm script migration: test:no-write-on-read",
+  "command": "node tests/no-write-on-read.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

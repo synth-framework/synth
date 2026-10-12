@@ -1,0 +1,14 @@
+{
+  "id": "test:artifact-policy",
+  "description": "npm script migration: test:artifact-policy",
+  "command": "node tests/artifact-policy.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
