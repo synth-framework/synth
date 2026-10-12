@@ -1,0 +1,12 @@
+{
+  "expeditionId": "bfe9b21ecfd8074d",
+  "capturedAt": 1791764928038,
+  "note": "Verified on main-line: explain unknown-subcommand exits 1; brownfield-certification + command-safety + clean-machine-output + governance-quiet-output green; SYNTH_QUIET_LOGS + dot reporter wired in CI workflow",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/bfe9b21ecfd8074d/git-diff.patch",
+      "hash": "65eb993e00baa7d25468c0f0853cddf9aeb315cdbcf555743973a291b88cfc6c"
+    }
+  ]
+}
