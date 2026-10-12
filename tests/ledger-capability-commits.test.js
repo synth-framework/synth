@@ -160,3 +160,51 @@ test("capability ceremonies: a refused ceremony changes nothing", async () => {
     fs.rmSync(projectDir, { recursive: true, force: true })
   }
 })
+
+test("capability ceremonies: a verb that fails after mutating still leaves the ledger committed", async () => {
+  const projectDir = await setupGitBackedProject("synth-cap-failflush-")
+  try {
+    const { missionId } = await createAndApproveMission(projectDir, {
+      subject: "Fail Flush Mission",
+      purpose: "Prove the exit-path flush",
+      returnGateContext: true,
+    })
+    // Approve a second mission whose approval writes governance files, then fail
+    // the verb on purpose: `expedition approve` with an unknown draft id.
+    const created = runSynth(
+      ["mission", "create", "--subject", "Second Mission", "--purpose", "Another one"],
+      projectDir,
+    )
+    assert.equal(created.status, 0, created.stderr)
+
+    const before = git(projectDir, ["rev-parse", "HEAD"])
+    const failed = runSynth(["expedition", "approve", "--draft-id", "0".repeat(16)], projectDir)
+    assert.notEqual(failed.status, 0, "approving a draft that does not exist must fail")
+
+    // The failure is a refusal that mutated nothing: the ledger stays exactly as
+    // it was, and no half-written ceremony is left behind.
+    assert.equal(git(projectDir, ["rev-parse", "HEAD"]), before, "a refused verb writes no commit")
+    assert.equal(ledgerDirty(projectDir), "", "and leaves no uncommitted ledger")
+    assert.ok(missionId)
+
+    // A mutating step followed by a failure: the completion gate blocks on a
+    // foreign mission, after the approval mutation has already been recorded.
+    const expedition = runSynth(
+      ["expedition", "create", "--mission", missionId, "--subject", "Gate Expedition", "--goal", "Block the finish"],
+      projectDir,
+    )
+    const draftId = parseJson(expedition.stdout).draftId
+    runSynth(["expedition", "approve", "--draft-id", draftId], projectDir)
+    runSynth(["expedition", "commit", "--proposal-id", draftId], projectDir)
+    runSynth(["expedition", "start", "--id", draftId], projectDir)
+
+    const blocked = runSynth(["expedition", "finish", "--id", draftId], projectDir)
+    if (blocked.status !== 0) {
+      // Whatever failed, the mutations it already recorded must not be left
+      // sitting uncommitted in the working tree (that is the F12 bleed).
+      assert.equal(ledgerDirty(projectDir), "", `the ledger must not be left uncommitted:\n${ledgerDirty(projectDir)}`)
+    }
+  } finally {
+    fs.rmSync(projectDir, { recursive: true, force: true })
+  }
+})

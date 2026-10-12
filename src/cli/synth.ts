@@ -34,7 +34,7 @@ import {
   isGovernedArtifact,
 } from "../state/artifact-policy.js"
 import { checkLedger, repairLedger } from "../ledger/doctor.js"
-import { ceremonyForCapability, commitCeremony } from "../ledger/ceremony.js"
+import { ceremonyForCapability, commitCeremony, commitCeremonySync } from "../ledger/ceremony.js"
 import {
   abandonmentRef,
   createAbandonmentRef,
@@ -293,6 +293,34 @@ let pendingCeremony: { key: string; entityId?: string } | undefined
 
 function markCeremony(key: string, entityId?: string): void {
   pendingCeremony = { key, entityId }
+  installExitFlush()
+}
+
+/**
+ * A verb may mutate governance state and *then* fail — `printError` exits the
+ * process, so the deferred flush in `main()` never runs. This last-resort hook
+ * commits the pending ceremony synchronously at exit so a failure cannot leave
+ * the ledger dirty (it refuses to commit from a checkout that is not on the
+ * ledger branch; that would recreate the cross-branch bleed, F12).
+ */
+let exitFlushInstalled = false
+function installExitFlush(): void {
+  if (exitFlushInstalled) return
+  exitFlushInstalled = true
+  process.on("exit", () => {
+    const pending = pendingCeremony
+    pendingCeremony = undefined
+    if (!pending) return
+    // `--no-auto-commit` (global, mirrored into autoCommitDisabledByFlag in
+    // main()) disables the exit flush too: the operator asked for no writes.
+    if (!isAutoCommitEnabled()) return
+    const result = commitCeremonySync(process.cwd(), pending.key, pending.entityId)
+    if (result.committed) {
+      process.stderr.write(`ledger: recorded ${result.message} on exit (${result.commitHash.slice(0, 8)})\n`)
+    } else if (result.reason && result.reason !== "no ledger changes") {
+      process.stderr.write(`ledger: the pending ceremony could not be committed on exit — ${result.reason}\n`)
+    }
+  })
 }
 
 /**

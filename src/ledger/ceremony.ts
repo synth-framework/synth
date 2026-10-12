@@ -12,6 +12,8 @@
 // ============================================================
 
 import { execFileSync } from "node:child_process"
+import fsSync from "node:fs"
+import path from "node:path"
 
 import {
   LEDGER_PATHS,
@@ -35,6 +37,13 @@ export type CeremonySpec = {
    * never produces two commits for one transition.
    */
   verbLevel?: boolean
+  /**
+   * True only for the ceremonies whose verb deletes ledger artifacts
+   * (`draft-retire` and the delete/discard verbs). Every other ceremony has its
+   * tracked-but-missing files restored from the tip instead of committed as
+   * deletions (ADR-055 I5).
+   */
+  deletesArtifacts?: boolean
 }
 
 /**
@@ -60,21 +69,21 @@ export const CEREMONIES: Record<string, CeremonySpec> = {
   "mission-approve": { transition: "MISSION_APPROVED", entityKind: "mission" },
   "mission-complete": { transition: "MISSION_COMPLETED", entityKind: "mission" },
   "mission-archive": { transition: "MISSION_ARCHIVED", entityKind: "mission" },
-  "mission-delete": { transition: "MISSION_DELETED", entityKind: "mission", verbLevel: true },
+  "mission-delete": { transition: "MISSION_DELETED", entityKind: "mission", verbLevel: true, deletesArtifacts: true },
   "expedition-create": { transition: "EXPEDITION_CREATED", entityKind: "expedition" },
   "expedition-approve": { transition: "EXPEDITION_APPROVED", entityKind: "expedition" },
   "expedition-commit": { transition: "EXPEDITION_COMMITTED", entityKind: "expedition" },
   "expedition-pause": { transition: "EXPEDITION_PAUSED", entityKind: "expedition" },
   "expedition-cancel": { transition: "EXPEDITION_CANCELLED", entityKind: "expedition" },
   "expedition-archive": { transition: "EXPEDITION_ARCHIVED", entityKind: "expedition" },
-  "expedition-delete": { transition: "EXPEDITION_DELETED", entityKind: "expedition", verbLevel: true },
+  "expedition-delete": { transition: "EXPEDITION_DELETED", entityKind: "expedition", verbLevel: true, deletesArtifacts: true },
   "expedition-move": { transition: "EXPEDITION_MOVED", entityKind: "expedition" },
   "expedition-deliver": { transition: "EXPEDITION_DELIVERED", entityKind: "expedition" },
   "expedition-seal": { transition: "EXPEDITION_INTEGRATED", entityKind: "expedition" },
   "expedition-abandon": { transition: "EXPEDITION_ABANDONED", entityKind: "expedition" },
   // The deletion half of an abandonment: it is its own ceremony precisely so the
   // ledger can never be missing a deletion that happened.
-  "expedition-discard": { transition: "EXPEDITION_DISCARDED", entityKind: "expedition" },
+  "expedition-discard": { transition: "EXPEDITION_DISCARDED", entityKind: "expedition", deletesArtifacts: true },
 
   // Intake ceremonies: the draft + its integrity record are the input class of
   // the planning step, and they are tracked — so the verb that writes them is
@@ -85,7 +94,7 @@ export const CEREMONIES: Record<string, CeremonySpec> = {
   "expedition-draft": { transition: "EXPEDITION_DRAFTED", entityKind: "expedition" },
   // Deletion retires draft artifacts after the state mutation; the retirement
   // is recorded in the same command (never a silent file deletion).
-  "draft-retire": { transition: "DRAFT_ARTIFACTS_RETIRED", entityKind: "mission" },
+  "draft-retire": { transition: "DRAFT_ARTIFACTS_RETIRED", entityKind: "mission", deletesArtifacts: true },
 }
 
 /** Which capability produces which ceremony. */
@@ -177,6 +186,11 @@ export async function commitCeremony(root: string, transitionKey: string, entity
     ? ceremonyMessage(spec, entityId)
     : `chore(synth): record ${transitionKey}${entityId ? ` expedition ${entityId.slice(0, 8)}` : ""}`
 
+  if (!fsExistsSync(path.join(root, ".git"))) {
+    // Not a git project: there is no ledger to commit to. Not a refusal.
+    return { committed: false, commitHash: "", message, files: [], reason: "Not a git repository" }
+  }
+
   const resolution = resolveLedgerBranch(root)
   const branch = resolution.branch
   if (!branch) {
@@ -240,6 +254,7 @@ export async function commitCeremony(root: string, transitionKey: string, entity
         message,
         paths: spec?.paths ?? LEDGER_PATHS,
         ...(fastPath ? { useCheckout: root } : { sourceRoot: root }),
+        ...(spec?.deletesArtifacts ? { deletesArtifacts: true } : {}),
       }),
     )
     const checkoutDirty = !fastPath && hasLedgerDirt(root)
@@ -252,6 +267,9 @@ export async function commitCeremony(root: string, transitionKey: string, entity
       ...(branchRecorded ? { branchRecorded } : {}),
       ...(resolution.warning ? { warning: resolution.warning } : {}),
       ...(checkoutDirty ? { checkoutDirty: true } : {}),
+      ...(result.restoredDeletions && result.restoredDeletions.length > 0
+        ? { restoredDeletions: result.restoredDeletions }
+        : {}),
       ...(result.reason ? { reason: result.reason } : {}),
     }
   } catch (err) {
@@ -267,6 +285,97 @@ export async function commitCeremony(root: string, transitionKey: string, entity
       code: e.code ?? "LEDGER_UNAVAILABLE",
       nextStep: e.nextStep ?? "Run `synth doctor --fix`, then repeat the ceremony.",
     }
+  }
+}
+
+/**
+ * Last-resort flush for the process-exit path (ADR-055 §R2.1 · AC10).
+ *
+ * `printError` exits the process, so a verb that mutated governance state and
+ * *then* failed would leave that mutation uncommitted — the ledger dirty in the
+ * working tree, exactly the state E5 exists to eliminate. This commits the
+ * pending ceremony synchronously, in the operator's own checkout, and only when
+ * that checkout is the ledger branch: committing somewhere else would recreate
+ * the cross-branch bleed (F12). Anything else is left for `doctor`, loudly.
+ */
+export function commitCeremonySync(
+  root: string,
+  transitionKey: string,
+  entityId?: string,
+): { committed: boolean; commitHash: string; message: string; files: string[]; reason?: string } {
+  const spec = CEREMONIES[transitionKey]
+  const transition = spec?.transition ?? transitionKey
+  const entityKind = spec?.entityKind ?? "mission"
+  const id8 = (entityId ?? "").slice(0, 8)
+  const message = `chore(synth): ${transition} ${entityKind}${id8 ? ` ${id8}` : ""}`
+  const paths = spec?.paths ?? LEDGER_PATHS
+
+  if (!fsExistsSync(path.join(root, ".git"))) {
+    return { committed: false, commitHash: "", message, files: [], reason: "Not a git repository" }
+  }
+
+  let branch = ""
+  try {
+    const resolution = resolveLedgerBranch(root)
+    branch = resolution.branch ?? ""
+    const checkout = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+      cwd: root,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim()
+    if (checkout !== branch) {
+      return {
+        committed: false,
+        commitHash: "",
+        message,
+        files: [],
+        reason: `The pending ceremony belongs on ${branch}, but this checkout is on ${checkout} — run \`synth doctor\` to see the uncommitted ledger.`,
+      }
+    }
+  } catch (err) {
+    return { committed: false, commitHash: "", message, files: [], reason: (err as Error).message }
+  }
+
+  const existing: string[] = []
+  for (const spec_ of paths) {
+    const clean = spec_.replace(/^\/+|\/+$/g, "")
+    if (fsExistsSync(path.join(root, clean))) existing.push(spec_)
+  }
+  if (existing.length === 0) {
+    return { committed: false, commitHash: "", message, files: [], reason: "no ledger paths to commit" }
+  }
+
+  try {
+    execFileSync("git", ["add", "-A", "--", ...existing], { cwd: root, stdio: ["pipe", "pipe", "pipe"] })
+    const staged = execFileSync("git", ["diff", "--cached", "--name-only", "--", ...existing], {
+      cwd: root,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    })
+      .trim()
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+    if (staged.length === 0) {
+      return { committed: false, commitHash: "", message, files: [], reason: "no ledger changes" }
+    }
+    execFileSync("git", ["commit", "-m", message, "--", ...existing], { cwd: root, stdio: ["pipe", "pipe", "pipe"] })
+    const hash = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: root,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim()
+    return { committed: true, commitHash: hash, message, files: staged }
+  } catch (err) {
+    return { committed: false, commitHash: "", message, files: [], reason: (err as Error).message }
+  }
+}
+
+function fsExistsSync(target: string): boolean {
+  try {
+    return fsSync.existsSync(target)
+  } catch {
+    return false
   }
 }
 

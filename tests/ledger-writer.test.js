@@ -24,6 +24,8 @@ import {
   repairAnchor,
 } from "../dist/ledger/writer.js"
 import { makeTempDirSync } from "./helpers/workspace.js"
+import { commitCeremony } from "../dist/ledger/ceremony.js"
+import { setupGitBackedProject } from "./helpers/mission-lifecycle.js"
 
 function git(root, args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf-8" }).trim()
@@ -248,4 +250,40 @@ test("ledger writer: repairAnchor rebuilds a deleted anchor", async () => {
   assert.equal(result.committed, true)
 
   fs.rmSync(root, { recursive: true, force: true })
+})
+
+// ============================================================
+// I5 — no deletion without a record (and none without a verb)
+// ============================================================
+// A tracked ledger file missing from the working tree is an accident the
+// ceremony did not cause. Committing it would turn the accident into a durable
+// deletion, so the writer restores it from the branch tip and reports it.
+// ============================================================
+
+test("writer: a tracked ledger file missing from the worktree is restored, not deleted", async () => {
+  const projectDir = await setupGitBackedProject("synth-ledger-restore-")
+  try {
+    // A tracked ledger artifact of the mission-approval class.
+    const snapshotPath = path.join(projectDir, ".synth", "data", "snapshots", "deadbeefdeadbeef.json")
+    fs.mkdirSync(path.dirname(snapshotPath), { recursive: true })
+    fs.writeFileSync(snapshotPath, JSON.stringify({ id: "deadbeefdeadbeef", approved: true }, null, 2))
+    git(projectDir, ["add", "-A"])
+    git(projectDir, ["commit", "-m", "track an approval snapshot"])
+
+    // The accident: the file disappears from the working tree.
+    fs.rmSync(snapshotPath)
+    assert.equal(fs.existsSync(snapshotPath), false)
+
+    // A ceremony that deletes nothing must not commit a deletion.
+    const ceremony = await commitCeremony(projectDir, "mission-create", "feedfacefeedface")
+    assert.equal(ceremony.committed, true, JSON.stringify(ceremony))
+    assert.ok(fs.existsSync(snapshotPath), "the tracked file is restored")
+    assert.deepEqual(ceremony.restoredDeletions, [".synth/data/snapshots/deadbeefdeadbeef.json"])
+    assert.equal(git(projectDir, ["log", "-1", "--format=%s"]).includes("MISSION_CREATED"), true)
+    // and the deletion never reached the branch
+    const listing = git(projectDir, ["ls-tree", "-r", "--name-only", "HEAD"])
+    assert.ok(listing.includes(".synth/data/snapshots/deadbeefdeadbeef.json"), "the ledger still has the file")
+  } finally {
+    fs.rmSync(projectDir, { recursive: true, force: true })
+  }
 })

@@ -383,6 +383,8 @@ export type AdvanceResult = {
   commitHash: string
   files: string[]
   reason?: string
+  /** Tracked ledger files that were missing and restored from the tip. */
+  restoredDeletions?: string[]
 }
 
 export type AdvanceOptions = {
@@ -399,6 +401,14 @@ export type AdvanceOptions = {
    * Its ledger edits are materialized into the anchor before staging.
    */
   sourceRoot?: string
+  /**
+   * Set only by ceremonies that delete ledger artifacts (`draft-retire`,
+   * `*-delete`, `expedition-discard`). For every other ceremony a tracked
+   * ledger file missing from the working tree is restored from the branch tip
+   * instead of being committed as a deletion (ADR-055 I5: no deletion without a
+   * record — and a ceremony that deletes nothing must not delete anything).
+   */
+  deletesArtifacts?: boolean
 }
 
 /**
@@ -469,6 +479,39 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
   if (existingPaths.length === 0) {
     return { committed: false, branch: options.branch, commitHash: old, files: [], reason: "no ledger changes" }
   }
+  // A tracked ledger file missing from the working tree is an accident the
+  // ceremony did not cause — workspace re-provisioning, a stray `rm`, a failed
+  // migration. Staging it would turn that accident into a durable deletion, so
+  // it is restored from the branch tip and reported instead.
+  const restoredDeletions: string[] = []
+  if (!options.deletesArtifacts) {
+    const missing = gitQuiet(writerPath, [
+      "ls-tree",
+      "-r",
+      "--name-only",
+      options.branch,
+      "--",
+      ...existingPaths,
+    ])
+    if (missing.ok) {
+      for (const tracked of missing.out.split("\n").map((line) => line.trim()).filter(Boolean)) {
+        const present = await fs
+          .access(path.join(writerPath, tracked))
+          .then(() => true)
+          .catch(() => false)
+        if (present) continue
+        const restore = gitQuiet(writerPath, ["checkout", options.branch, "--", tracked])
+        if (restore.ok) restoredDeletions.push(tracked)
+        else
+          throw new LedgerError(
+            "LEDGER_UNAVAILABLE",
+            `A tracked ledger file is missing and could not be restored: ${tracked} (${restore.out})`,
+            "Run `synth doctor` and restore the file from the ledger history.",
+          )
+      }
+    }
+  }
+
   gitQuiet(writerPath, ["add", "-A", "--", ...existingPaths])
   const staged = gitQuiet(writerPath, ["diff", "--cached", "--name-only", "--", ...existingPaths])
   const files = staged.ok ? staged.out.split("\n").map((line) => line.trim()).filter(Boolean) : []
@@ -485,8 +528,15 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
     throw new LedgerError("LEDGER_UNAVAILABLE", "Ledger commit succeeded but HEAD is unreadable.")
   }
 
+  const result: AdvanceResult = {
+    committed: true,
+    branch: options.branch,
+    commitHash: newCommit.out,
+    files,
+    ...(restoredDeletions.length > 0 ? { restoredDeletions } : {}),
+  }
   if (commitsInBranch) {
-    return { committed: true, branch: options.branch, commitHash: newCommit.out, files }
+    return result
   }
 
   const cas = gitQuiet(root, ["update-ref", `refs/heads/${options.branch}`, newCommit.out, old])
@@ -505,7 +555,7 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
     await refreshCheckout(root, options.branch, newCommit.out, existingPaths)
   }
 
-  return { committed: true, branch: options.branch, commitHash: newCommit.out, files }
+  return result
 }
 
 /**
