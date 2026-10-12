@@ -33,6 +33,7 @@ import {
   isExcludedFromCompletionGate,
   isGovernedArtifact,
 } from "../state/artifact-policy.js"
+import { checkLedger, repairLedger } from "../ledger/doctor.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -853,7 +854,7 @@ async function verifyDiscoveryBaseline(): Promise<DoctorCheckResult> {
   }
 }
 
-async function cmdDoctor() {
+async function cmdDoctor(flags: Record<string, string | boolean> = {}) {
   const REQUIRED_NODE_MAJOR = 20
   const version = await getVersion()
 
@@ -899,14 +900,36 @@ async function cmdDoctor() {
     discoveryBaseline: await verifyDiscoveryBaseline(),
   }
 
+  // Ledger Health — ADR-055 AC6/AC13: the four silent-failure classes of the
+  // ceremony ledger. --fix repairs the anchor and commits a stalled ceremony.
+  const fixRequested = flags.fix === true || flags.fix === "true"
+  let repair: Awaited<ReturnType<typeof repairLedger>> | undefined
+  if (fixRequested) {
+    repair = await repairLedger(process.cwd())
+  }
+  const ledger = await checkLedger(process.cwd())
+  const ledgerHealth: Record<string, DoctorCheckResult> = {
+    ledgerBranch: ledger.repo
+      ? { ok: Boolean(ledger.branch), detail: ledger.branch ? `Ledger branch: ${ledger.branch}` : "Detached HEAD — ceremonies cannot commit", ...(ledger.branch ? {} : { nextStep: "Check out a branch before running ceremonies." }) }
+      : { ok: true, detail: "Not a git repository" },
+    ledgerAnchor: { ...ledger.anchor },
+    ledgerCeremony: { ...ledger.ceremony },
+    ledgerSync: { ...ledger.sync },
+  }
+
   const runtimeOk = Object.values(runtimeHealth).every((c) => c.ok)
   const projectOk = Object.values(projectHealth).every((c) => c.ok)
-  const allOk = runtimeOk && projectOk
+  const ledgerOk = Object.values(ledgerHealth).every((c) => c.ok)
+  const allOk = runtimeOk && projectOk && ledgerOk
 
   const runtimeNextSteps = Object.values(runtimeHealth)
     .filter((c) => !c.ok && c.nextStep)
     .map((c) => c.nextStep as string)
   const projectNextSteps = Object.values(projectHealth)
+    .filter((c) => !c.ok && c.nextStep)
+    .map((c) => c.nextStep as string)
+
+  const ledgerNextSteps = Object.values(ledgerHealth)
     .filter((c) => !c.ok && c.nextStep)
     .map((c) => c.nextStep as string)
 
@@ -919,6 +942,10 @@ async function cmdDoctor() {
     nextSteps.push("[Project Health]")
     nextSteps.push(...projectNextSteps)
   }
+  if (ledgerNextSteps.length > 0) {
+    nextSteps.push("[Ledger Health]")
+    nextSteps.push(...ledgerNextSteps)
+  }
   if (nextSteps.length === 0) {
     if (hasManifest) {
       nextSteps.push("synth status", "synth mission create --subject '...' --purpose '...'")
@@ -930,7 +957,7 @@ async function cmdDoctor() {
   // Maintain a backward-compatible `checks` view that flattens runtime and
   // project health signals. Some consumers (e.g. TaskPRO regression) read
   // individual checks from this top-level map.
-  const checks: Record<string, DoctorCheckResult> = { ...runtimeHealth, ...projectHealth }
+  const checks: Record<string, DoctorCheckResult> = { ...runtimeHealth, ...projectHealth, ...ledgerHealth }
 
   printJson({
     status: allOk ? "ok" : "warning",
@@ -939,6 +966,8 @@ async function cmdDoctor() {
     healthy: allOk,
     runtimeHealth,
     projectHealth,
+    ledgerHealth,
+    ...(repair ? { ledgerRepair: repair } : {}),
     checks,
     nextSteps,
   })
@@ -2510,7 +2539,8 @@ async function cmdExpeditionApproveHelp() {
 
 async function cmdDoctorHelp() {
   printJson(namespaceHelp("doctor", "Verify installation and project health", [
-    { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
+    { name: "synth doctor", description: "Report Runtime, Project and Ledger health sections" },
+    { name: "synth doctor --fix", description: "Repair the ledger: recreate a stale anchor, commit a stalled ceremony" },
   ]))
 }
 
@@ -8075,7 +8105,7 @@ export async function main() {
       break
 
     case "doctor":
-      await cmdDoctor()
+      await cmdDoctor(flags)
       break
 
     case "checkpoint":

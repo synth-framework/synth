@@ -287,9 +287,16 @@ export async function repairAnchor(root: string, branch: string): Promise<Ensure
 }
 
 /** `git status --porcelain` line → the path it refers to. */
-function stripStatus(line: string): string {
-  const match = /^.?\S?\s+(.*)$/.exec(line)
+export function porcelainPath(line: string): string {
+  // Porcelain v1: one or two status columns, then the path. The caller trims
+  // each line, which eats the leading space of a one-column status (" M p"),
+  // so accept both shapes.
+  const match = /^\s*[A-Z?!]{1,2}\s+(.*)$/.exec(line)
   return (match ? match[1] : line).trim().replace(/^"(.*)"$/, "$1")
+}
+
+function stripStatus(line: string): string {
+  return porcelainPath(line)
 }
 
 function isUnderAnyPathspec(filePath: string, paths: readonly string[]): boolean {
@@ -332,6 +339,11 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
   const old = expectedBefore.out
 
   const writerPath = options.useCheckout ?? (await ensureAnchor(root, options.branch)).path
+  // Committing in the operator's own checkout (which is on the ledger branch)
+  // moves the ref as part of the commit, so the compare-and-swap below would
+  // compare against a ref this process already advanced. Detect the shortcut.
+  const writerHead = gitQuiet(writerPath, ["symbolic-ref", "-q", "HEAD"])
+  const commitsInBranch = writerHead.ok && writerHead.out === `refs/heads/${options.branch}`
 
   // The residue check must see the *whole* ledger, not just this ceremony's
   // payload: a stale edit under `proof/` blocks a ceremony that only owns
@@ -387,6 +399,10 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
   const newCommit = gitQuiet(writerPath, ["rev-parse", "HEAD"])
   if (!newCommit.ok) {
     throw new LedgerError("LEDGER_UNAVAILABLE", "Ledger commit succeeded but HEAD is unreadable.")
+  }
+
+  if (commitsInBranch) {
+    return { committed: true, branch: options.branch, commitHash: newCommit.out, files }
   }
 
   const cas = gitQuiet(root, ["update-ref", `refs/heads/${options.branch}`, newCommit.out, old])
