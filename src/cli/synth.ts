@@ -3251,10 +3251,10 @@ async function cmdStatus() {
   await sdk.paths.ensureDataDir(sdk.workspace.root())
   const logger = new Logger("status")
   logger.info("Resolving governance context for operator briefing")
-  // EXP-AI-003: keep .synth/ai/ metadata synchronized with canonical state so
-  // agent orientation is always current when the operator asks for status.
-  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
-  await refreshAiMetadata(synthDir)
+  // EXP-AI-003 superseded (ADR-055 §2.8): `status` is a pure read. It used to
+  // rewrite .synth/ai/*.json on every invocation, which made a read-only
+  // command dirty the working tree. `synth ai refresh` is the explicit
+  // regenerator, and the bootstrap path still refreshes on init.
   const briefing = await buildOperatorBriefing(process.cwd())
   const validation = await buildStatusValidationSummary()
   if (briefing.status === "ok" && validation) {

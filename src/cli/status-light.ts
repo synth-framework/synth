@@ -4,16 +4,16 @@
 // pulls in bootstrap-free modules (ai-metadata, status-briefing,
 // status-validation), so it skips both the eager core/bootstrap import and the
 // 13-step bootstrap that every heavy command pays for.
+//
+// EXP-AI-003 superseded (ADR-055 §2.8): `status` is a pure read and must not
+// regenerate .synth/ai/. Use `synth ai refresh` for explicit regeneration.
 import * as sdk from "../sdk/index.js"
-import { refreshAiMetadata } from "./ai-metadata.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
 import { buildStatusValidationSummary } from "./status-validation.js"
 import { printJson } from "./print.js"
 
 export async function runStatus(): Promise<void> {
   await sdk.paths.ensureDataDir(sdk.workspace.root())
-  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
-  await refreshAiMetadata(synthDir)
 
   const briefing = await buildOperatorBriefing(process.cwd())
   const validation = await buildStatusValidationSummary()
