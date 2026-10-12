@@ -1,0 +1,179 @@
+{
+  "id": "6161fb1795f3fe0f",
+  "createdAt": 1791799448345,
+  "observations": [
+    {
+      "id": "obs-mission-governed-operation-from-operator-branches",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Governed Operation from Operator Branches",
+        "name": "Governed Operation from Operator Branches",
+        "purpose": "Make SYNTH govern work on pre-existing operator branches: declare and bind execution branches (ADR-056 --branch/--no-create), anchor and single-write the ceremony ledger (ADR-055: ledger writer, anchor, single writer), and make delivery and abandonment first-class ceremonies (deliver/seal/close/abandon) so finished work, files and history survive the branch lifecycle instead of being stranded or wiped."
+      },
+      "evidenceReference": "evidence-mission-Governed Operation from Operator Branches",
+      "confidence": "high",
+      "timestamp": 1791799444202
+    },
+    {
+      "id": "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+      "sourceAdapter": "synth-cli",
+      "type": "evidence",
+      "payload": {
+        "subject": "Branch policy blocks operator-owned branches (evidence: audit 3-12 / 4-R2)",
+        "name": "Branch policy blocks operator-owned branches (evidence: audit 3-12 / 4-R2)",
+        "description": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+        "purpose": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding."
+      },
+      "evidenceReference": "evidence-evidence-Branch policy blocks operator-owned branches (evidence: audit 3-12 / 4-R2)",
+      "confidence": "high",
+      "timestamp": 1791799448345
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "96946b91172b5645",
+        "observationId": "obs-mission-governed-operation-from-operator-branches",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Governed Operation from Operator Branches\",\"name\":\"Governed Operation from Operator Branches\",\"purpose\":\"Make SYNTH govern work on pre-existing operator branches: declare and bind executio",
+        "fingerprint": "d2c72fcb53c81dde",
+        "immutable": true
+      },
+      {
+        "id": "8b19a72b9c464f58",
+        "observationId": "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+        "source": "synth-cli",
+        "description": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+        "snippet": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+        "fingerprint": "35d3d94bce22b8cf",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-governed-operation-from-operator-branches",
+        {
+          "id": "96946b91172b5645",
+          "observationId": "obs-mission-governed-operation-from-operator-branches",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Governed Operation from Operator Branches\",\"name\":\"Governed Operation from Operator Branches\",\"purpose\":\"Make SYNTH govern work on pre-existing operator branches: declare and bind executio",
+          "fingerprint": "d2c72fcb53c81dde",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+        {
+          "id": "8b19a72b9c464f58",
+          "observationId": "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+          "source": "synth-cli",
+          "description": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+          "snippet": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+          "fingerprint": "35d3d94bce22b8cf",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "a57585f0aec4b2d8",
+        {
+          "id": "a57585f0aec4b2d8",
+          "kind": "mission",
+          "name": "Governed Operation from Operator Branches",
+          "description": "Make SYNTH govern work on pre-existing operator branches: declare and bind execution branches (ADR-056 --branch/--no-create), anchor and single-write the ceremony ledger (ADR-055: ledger writer, anchor, single writer), and make delivery and abandonment first-class ceremonies (deliver/seal/close/abandon) so finished work, files and history survive the branch lifecycle instead of being stranded or wiped.",
+          "purpose": "Make SYNTH govern work on pre-existing operator branches: declare and bind execution branches (ADR-056 --branch/--no-create), anchor and single-write the ceremony ledger (ADR-055: ledger writer, anchor, single writer), and make delivery and abandonment first-class ceremonies (deliver/seal/close/abandon) so finished work, files and history survive the branch lifecycle instead of being stranded or wiped.",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-governed-operation-from-operator-branches"
+          ],
+          "evidenceRefs": [
+            "96946b91172b5645"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "96946b91172b5645",
+          "observationId": "obs-mission-governed-operation-from-operator-branches",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Governed Operation from Operator Branches\",\"name\":\"Governed Operation from Operator Branches\",\"purpose\":\"Make SYNTH govern work on pre-existing operator branches: declare and bind executio",
+          "fingerprint": "d2c72fcb53c81dde",
+          "immutable": true
+        },
+        {
+          "id": "8b19a72b9c464f58",
+          "observationId": "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+          "source": "synth-cli",
+          "description": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+          "snippet": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+          "fingerprint": "35d3d94bce22b8cf",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-governed-operation-from-operator-branches",
+          {
+            "id": "96946b91172b5645",
+            "observationId": "obs-mission-governed-operation-from-operator-branches",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Governed Operation from Operator Branches\",\"name\":\"Governed Operation from Operator Branches\",\"purpose\":\"Make SYNTH govern work on pre-existing operator branches: declare and bind executio",
+            "fingerprint": "d2c72fcb53c81dde",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+          {
+            "id": "8b19a72b9c464f58",
+            "observationId": "obs-evidence-branch-policy-blocks-operator-owned-branches-(evidence:-audit-3-12-/-4-r2)",
+            "source": "synth-cli",
+            "description": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+            "snippet": "Verified: assertExecutionBranch requires mission/<slug>-<id7>; a workspace pinned to arena/c5db653e-synth is denied every mission approval and expedition start, and the mission branch is demanded but never created (only expedition branches are auto-created, at start). Nothing in the taxonomy lets an existing operator branch be bound to governed work. Remedy: ADR-056 --branch/--no-create with a recorded binding.",
+            "fingerprint": "35d3d94bce22b8cf",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
