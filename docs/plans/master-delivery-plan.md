@@ -87,9 +87,9 @@ Fix class: SYNTH's own read paths dirty the tree, block completion, and leave go
 
 | Expedition | Scope | Files | PR |
 |---|---|---|---|
-| **E1 — Derived-state staging correctness** (fixes live P1; closes `e8ba8f92`) | `check-ignore --no-index`; stage only existing/changed durable artifacts; per-file fallback; surface `autoCommit{committed,commitHash,files,reason}`; index surgery per W2 | `src/cli/synth.ts`, `src/state/artifact-policy.ts` (new), `.gitignore` | PR-1 |
-| **E2 — No write-on-read** | content-keyed cache in `.synth/cache/`; `status` stops persisting; `.synth/ai/` classified derived | `src/governance/dependency-graph.ts`, `src/cli/ai-metadata.ts`, `src/cli/status-light.ts` | PR-2 |
-| **E3 — Artifact policy + regression guard** (depends E1+E2) | policy module as single source; CI guard `scripts/check-artifact-policy.js`; `tests/no-write-on-read.test.js`, `tests/derived-state-commit.test.js` | policy + scripts + tests | PR-3 |
+| **E1 — Derived-state staging correctness** `ecc3688796be0545` **✓ completed 2026-10-12** (fixes live P1; closes `e8ba8f92`) | `check-ignore --no-index`; stage only existing/changed durable artifacts; per-file fallback; surface `autoCommit{committed,commitHash,files,reason}`; index surgery per W2 | `src/cli/synth.ts`, `src/state/artifact-policy.ts` (new), `.gitignore` | PR-1 |
+| **E2 — No write-on-read** `f089c4fea720c07c` (committed) | content-keyed cache in `.synth/cache/`; `status` stops persisting; `.synth/ai/` classified derived | `src/governance/dependency-graph.ts`, `src/cli/ai-metadata.ts`, `src/cli/status-light.ts` | PR-2 |
+| **E3 — Artifact policy + regression guard** `cfbb801aa232795a` (committed; depends E1+E2) | policy module as single source; CI guard `scripts/check-artifact-policy.js`; `tests/no-write-on-read.test.js`, `tests/derived-state-commit.test.js` | policy + scripts + tests | PR-3 |
 
 Full detail: `docs/plans/reads-never-write.md` (W1–W5, E1–E3, ~3 days, 3 PRs).
 
@@ -100,8 +100,8 @@ placement, delivery and abandonment protocol (ADR-055, ADR-056).
 
 | Expedition | Scope | Depends on | PR |
 |---|---|---|---|
-| **E4 — Declared execution branches** (ADR-056 minimal) | `--branch` / `--no-create` on `mission approve` / `expedition commit|start`; binding recorded (`*_BRANCH_BOUND`) and consulted before taxonomy; `BRANCH_POLICY_OVERRIDDEN` warning; `DECLARED_BRANCH_MISSING`/`DECLARED_BRANCH_IN_USE`; config `declaredPatterns` | — | PR-4 |
-| **E5 — Ledger writer + delivery MVP** (ADR-055 P1/P2 core) | anchor worktree + lock + CAS; ceremony commit routing (single writer); `doctor` checks (uncommitted ledger, stale anchor, ledger-ahead-N); `deliver` + `seal` verbs; abandonment/handoff record | E1 (staging), E4 | PR-5 |
+| **E4 — Declared execution branches** `e788e528a896008a` (committed; ADR-056 minimal) | `--branch` / `--no-create` on `mission approve` / `expedition commit|start`; binding recorded (`*_BRANCH_BOUND`) and consulted before taxonomy; `BRANCH_POLICY_OVERRIDDEN` warning; `DECLARED_BRANCH_MISSING`/`DECLARED_BRANCH_IN_USE`; config `declaredPatterns` | — | PR-4 |
+| **E5 — Ledger writer + delivery MVP** `bda2bbd4ef6550af` (committed; ADR-055 P1/P2 core) | anchor worktree + lock + CAS; ceremony commit routing (single writer); `doctor` checks (uncommitted ledger, stale anchor, ledger-ahead-N); `deliver` + `seal` verbs; abandonment/handoff record | E1 (staging), E4 | PR-5 |
 | **E6 — Worktrees + full delivery** (ADR-055 P3, deferred) | per-expedition worktrees; `deliveryPending` enforcement; `close` cleanup; `status` stale-work warnings | E5 | later |
 
 **E4 is the exit from the bootstrap window** — that is its strategic role, not just its feature content.
@@ -115,6 +115,23 @@ placement, delivery and abandonment protocol (ADR-055, ADR-056).
 | Typed entity references (`c830e84c138326f2`) | draft-ready command | stays in FMW v2; unaffected |
 | `0daac4fc9df96606` (gate scoping), `0463c2cae71ac727` (pointer evidence) | drafts | stay in FMW v2 backlog |
 | `729e4e2c17add703` (archive completed) | draft | **close as superseded by ADR-054** when ADR-054 lands |
+
+## 4.5 Progress log
+
+**2026-10-12 — bootstrap executed (option c).**
+
+| Step | Result |
+|---|---|
+| Branch backup | `arena/c5db653e-synth` pushed to origin (was local-only) |
+| Window open | `branchPolicy.mode: off` committed with rationale; drafts force-added; PR #340 opened as draft (hold until stage 5) |
+| Docs landed | ADR-054/055/056 + master plan + reads-never-write + audit + system review in `docs/` |
+| M1 | `b536ecc7ceb9217a` *Derived-State Integrity* approved (0.67 → 0.69 → 0.71 via two evidence rounds; contract `alignment-contract-mv533f89-0ytu7j`) |
+| M2 | `a57585f0aec4b2d8` *Governed Operation from Operator Branches* approved (same contract; 0.67 → 0.69 → 0.71) |
+| Expeditions | E1 `ecc3688796be0545`, E2 `f089c4fea720c07c`, E3 `cfbb801aa232795a` (dep E1,E2), E4 `e788e528a896008a`, E5 `bda2bbd4ef6550af` (dep E1,E4) |
+| E1 delivered | staging fix + `--no-index` classification + per-path fallback; index surgery (11 derived/cache/legacy files untracked); `.gitignore`/policy patterns aligned; `tests/auto-commit-ignored-paths.test.js` reproduces the failure (red before, green after); live proof: `autoCommit {committed: true}` on `refine`/`finish`/`evidence`, tree clean after every transition |
+| Bookkeeping | first E1 draft `adbb8b39dd2831e6` was deleted and recreated (a refine set its `dependsOn` to E3 — wrong direction — and the CLI cannot clear `dependsOn`; new finding, see audit Addendum 3) |
+
+Replay after E1: `consistent: true`, 364 events, chain valid.
 
 ### 4.4 Documentation landing
 

@@ -555,3 +555,30 @@ ends up with staged deletions of the new ledger files — `git reset --keep` doe
 `git restore --source=HEAD --staged --worktree -- .synth proof AGENTS.md` does (and clobbers local ledger
 edits, so a dirtiness check must precede it); deleting the anchor leaves it `prunable` and re-addable, so
 `doctor` can repair it.
+
+## Addendum 3 — 2026-10-12, findings while executing the bootstrap
+
+1. **`expedition refine --depends-on` can set but never clear a dependency.**
+   `refineExpedition` replaces `dependsOn` only when an array is passed
+   (`planning.ts:250`), while the CLI omits the field when the parsed list is empty
+   (`synth.ts`, `dependsOn.length > 0 ? { dependsOn } : {}`). An omitted list means
+   "leave unchanged", so a wrong edge cannot be removed through any verb. Live
+   consequence: an E1 draft received a wrong edge (E1→E3) and had to be
+   **deleted and recreated** (`expedition delete` … `create`), which is the only
+   CLI-native correction. Fix belongs with the ADR-054 verb work (a `--clear-depends`
+   or `--depends-on ""` contract).
+2. **`expedition evidence --git-diff --baseline <ref>` is not range-scoped.** With a
+   clean tree it diffs `<ref>..HEAD` (or worktree state), so the artifact includes every
+   ledger commit since the baseline and — on a second run — its own previously written
+   patch file. In this session the unrestricted capture was 0.9–1.4 MB of ledger noise
+   for a 3-file source change; a scoped `--attach` patch (16 KB) was used instead.
+   Evidence capture needs a `--range <from>..<to>` (and a ledger-exclusion) option.
+3. **The existing auto-commit test did not cover the real failure.** `tests/expedition-auto-commit.test.js`
+   passes on unpatched code because its temp project has no tracked-but-ignored files;
+   the bug requires the repository's own condition (drafts/ai tracked *and* ignored).
+   `tests/auto-commit-ignored-paths.test.js` (added with E1) recreates it and fails
+   before the fix.
+4. **`tests/expedition-auto-commit.test.js` sub-test 3 is red on unpatched code too**
+   (`Convergence certification must converge, got diverged` in the test helper,
+   reproduced against `ac4e81a`'s CLI). Pre-existing rot, unrelated to E1; the suite
+   aborts there, so sub-tests 4–6 are not exercised by that file today.
