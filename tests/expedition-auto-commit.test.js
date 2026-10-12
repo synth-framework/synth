@@ -88,7 +88,9 @@ async function testCompleteDoesNotBlockOnDerivedState(projectDir, missionId, gat
   await fs.rm(evidenceFile, { force: true })
 
   await certifyConvergenceIntent(gateCtx, missionId, expeditionId, contractId, {
-    observedFeatures: { hasFeature: true },
+    // program-027-homepage checks the persistent-workspace behaviors; a
+    // converging certification has to observe all three.
+    observedFeatures: { hasPersistentHeader: true, hasPersistentSidebar: true, hasScrollDrivenPhases: true },
     artifacts: [{ path: `synth://missions/${missionId}/expeditions/${expeditionId}/implementation`, hash: "test", description: "Test" }],
     runtimeEvidence: [{ source: "test", observation: "ok", timestamp: 0 }],
   })
@@ -149,7 +151,9 @@ async function testEnvDisablesAutoCommit(projectDir, missionId) {
 
   const beforeCommitCount = parseInt(runGit(["rev-list", "--count", "HEAD"], projectDir), 10)
 
-  const startResult = runSynth(["expedition", "start", "--id", expeditionId], projectDir, { SYNTH_AUTO_COMMIT: "0" })
+  const startResult = runSynth(["expedition", "start", "--id", expeditionId], projectDir, {
+    env: { ...process.env, SYNTH_AUTO_COMMIT: "0" },
+  })
   assert(startResult.status === 0, `start with SYNTH_AUTO_COMMIT=0 must exit 0:\n${startResult.stderr}`)
   const startOutput = parseJson(startResult.stdout)
   assert(!startOutput.autoCommit, `start with SYNTH_AUTO_COMMIT=0 should not auto-commit`)
