@@ -1,12 +1,12 @@
 {
   "expeditionId": "ecc3688796be0545",
-  "capturedAt": 1791799914925,
-  "note": "E1 source change only (staging fix, index surgery, regression test)",
+  "capturedAt": 1791799925000,
+  "note": "E1 scoped source diff (a2c3a34..123030d): staging fix, index surgery, regression test. Full-context diff omitted on purpose; the unrestricted git-diff captured ledger noise plus its own output.",
   "attachments": [
     {
-      "kind": "git-diff",
-      "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
-      "hash": "cd0c62f72f395eb2cbdd74c3deffd6ce881f0497f3754739bed379c7805d49bd"
+      "kind": "attachment",
+      "path": "proof/expeditions/ecc3688796be0545/attachments/e1-source.patch",
+      "hash": "a68550026b1d69b32c59bc9a40ea5786f4dfdb982e1a380faa4d1dda81af4904"
     }
   ]
 }
