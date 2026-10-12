@@ -38,6 +38,11 @@ function ledgerHeadMessage(root) {
 }
 
 /** Create + approve + start an expedition, returning its id. */
+// `status` prints bootstrap log lines before its pretty JSON briefing.
+function parseBriefing(stdout) {
+  return JSON.parse(stdout.slice(stdout.indexOf('{\n  "status"')))
+}
+
 async function runningExpedition(projectDir, missionId) {
   const created = runSynth(
     ["expedition", "create", "--mission", missionId, "--subject", "Delivery Expedition", "--goal", "Prove deliver/seal"],
@@ -204,6 +209,49 @@ test("delivery: --dry-run previews the push without touching the ledger", async 
 
     const show = parseJson(runSynth(["expedition", "show", "--id", expeditionId], projectDir).stdout)
     assert.equal(show.delivery.delivered, false, "dry-run records no delivery")
+  } finally {
+    fs.rmSync(projectDir, { recursive: true, force: true })
+  }
+})
+
+test("status: a finished expedition warns it is undelivered, then delivered-but-unsealed, and clears once sealed", async () => {
+  const projectDir = await setupGitBackedProject("synth-delivery-status-")
+  try {
+    const { missionId } = await createAndApproveMission(projectDir, {
+      subject: "Delivery Status Mission",
+      purpose: "Warn until sealed",
+      returnGateContext: true,
+    })
+    const expeditionId = await runningExpedition(projectDir, missionId, "Status Delivery Expedition")
+    const branch = git(projectDir, ["rev-parse", "--abbrev-ref", "HEAD"])
+    fs.writeFileSync(path.join(projectDir, "STATUS.md"), "status payload\n")
+    git(projectDir, ["add", "STATUS.md"])
+    git(projectDir, ["commit", "-m", "feat: status payload"])
+
+    const deliveryWarnings = () =>
+      parseBriefing(runSynth(["status"], projectDir).stdout).warnings.filter((w) => w.kind === "delivery-pending")
+
+    const finished = runSynth(["expedition", "finish", "--id", expeditionId, "--note", "status test"], projectDir)
+    assert.equal(finished.status, 0, finished.stderr)
+    let warned = deliveryWarnings()
+    assert.equal(warned.length, 1, "a finished, undelivered expedition warns")
+    assert.ok(warned[0].description.includes("not delivered"), warned[0].description)
+    assert.ok(warned[0].remediation.includes(`expedition deliver --id ${expeditionId}`), warned[0].remediation)
+
+    const delivered = runSynth(["expedition", "deliver", "--id", expeditionId, "--no-push", "--branch", branch], projectDir)
+    assert.equal(delivered.status, 0, delivered.stderr)
+    warned = deliveryWarnings()
+    assert.equal(warned.length, 1, "delivered but unmerged is still pending")
+    assert.ok(warned[0].description.includes("delivered from"), warned[0].description)
+    assert.ok(!warned[0].description.includes("not delivered"), "it is delivered, so the wording must say so")
+
+    git(projectDir, ["checkout", "-q", "-b", "base"])
+    git(projectDir, ["merge", "--no-ff", "-m", `Merge ${branch}`, branch])
+    const mergeCommit = git(projectDir, ["rev-parse", "HEAD"])
+    const sealed = runSynth(["expedition", "seal", "--id", expeditionId, "--merge-commit", mergeCommit], projectDir)
+    assert.equal(sealed.status, 0, sealed.stderr)
+
+    assert.equal(deliveryWarnings().length, 0, "a sealed expedition no longer warns")
   } finally {
     fs.rmSync(projectDir, { recursive: true, force: true })
   }
