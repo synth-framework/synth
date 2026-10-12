@@ -1,0 +1,12 @@
+{
+  "expeditionId": "886dc15e19a8e587",
+  "capturedAt": 1791767305630,
+  "note": "Deliverables verified: partitioned stream live; per-entity save live + test wired to dist (4/4); refine --depends-on added end-to-end, domain tests green",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/886dc15e19a8e587/git-diff.patch",
+      "hash": "5a897d81f7867c32138e23d23f2e1582757bd4cfb1e39452d0e39b970a24da17"
+    }
+  ]
+}
