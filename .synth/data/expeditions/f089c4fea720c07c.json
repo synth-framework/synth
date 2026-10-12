@@ -23,12 +23,17 @@
     }
   },
   "createdAt": 336,
-  "updatedAt": 367,
+  "updatedAt": 369,
   "attachments": [
     {
       "kind": "git-diff",
       "path": "proof/expeditions/f089c4fea720c07c/git-diff.patch",
       "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/f089c4fea720c07c/attachments/e2-source.patch",
+      "hash": "d53baf583f3402e6e18cd4a46b3ed288c4be42cbb0d8098febc171c49058aa16"
     }
   ]
 }

@@ -1,12 +1,12 @@
 {
   "expeditionId": "f089c4fea720c07c",
-  "capturedAt": 1791800248869,
-  "note": "Auto-attached by synth expedition finish",
+  "capturedAt": 1791800254139,
+  "note": "E2 scoped source diff (05c27b5..5a663e8): content-keyed charter cache in .synth/cache/, compare-and-write AI metadata, pure status. Verified: two status runs leave .synth/ai byte-identical; tree clean across heavy reads; cache created (413 digests) and stable.",
   "attachments": [
     {
-      "kind": "git-diff",
-      "path": "proof/expeditions/f089c4fea720c07c/git-diff.patch",
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "kind": "attachment",
+      "path": "proof/expeditions/f089c4fea720c07c/attachments/e2-source.patch",
+      "hash": "d53baf583f3402e6e18cd4a46b3ed288c4be42cbb0d8098febc171c49058aa16"
     }
   ]
 }
