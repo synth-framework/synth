@@ -39,15 +39,30 @@ function now() {
   return Date.now()
 }
 
-async function cleanSnapshotStore() {
-  try {
-    await fs.rm(path.join(process.cwd(), ".synth", "data", "snapshots"), { recursive: true, force: true })
-  } catch {
-    /* ok */
-  }
+/**
+ * The journey starts from an empty snapshot store. The store lives in the
+ * repository's own .synth/data/snapshots, which is tracked: emptying it used to
+ * delete committed ledger artifacts from the checkout on every test:all run.
+ * Instead, copy it aside, run against an empty store, and put the exact original
+ * bytes back when the test finishes, pass or fail.
+ */
+async function isolateSnapshotStore(t) {
+  const storeDir = path.join(process.cwd(), ".synth", "data", "snapshots")
+  const backupDir = await makeTempDir("synth-operator-journey-snapshots-")
+  const backup = path.join(backupDir, "snapshots")
+  const hadStore = await fs
+    .stat(storeDir)
+    .then(() => true)
+    .catch(() => false)
+  if (hadStore) await fs.cp(storeDir, backup, { recursive: true })
+  await fs.rm(storeDir, { recursive: true, force: true })
+  t.after(async () => {
+    await fs.rm(storeDir, { recursive: true, force: true })
+    if (hadStore) await fs.cp(backup, storeDir, { recursive: true })
+  })
 }
 
-test("Operator Journey completes end-to-end and produces certification evidence", async () => {
+test("Operator Journey completes end-to-end and produces certification evidence", async (t) => {
   const report = {
     expedition: "EXP-PROD-003",
     title: "Operator Journey Certification",
@@ -63,7 +78,7 @@ test("Operator Journey completes end-to-end and produces certification evidence"
   // ============================================================
   // Bootstrap a fresh Synth system in memory.
   // ============================================================
-  await cleanSnapshotStore()
+  await isolateSnapshotStore(t)
   const testDataDir = path.join(process.cwd(), "data-test", "operator-journey")
   await fs.rm(testDataDir, { recursive: true, force: true })
   await fs.mkdir(testDataDir, { recursive: true })
