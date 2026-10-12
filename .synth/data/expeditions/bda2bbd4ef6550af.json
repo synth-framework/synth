@@ -3,7 +3,7 @@
   "missionId": "a57585f0aec4b2d8",
   "name": "Ledger writer and delivery MVP (ADR-055 P1/P2)",
   "goal": "Implement ADR-055 phases P1-P2: anchor the ceremony ledger in a sparse, gitignored detached worktree (.synth/anchor) advanced by update-ref CAS with a lock and a dirty-ledger pre-check; route lifecycle ceremonies through the writer so each ceremony is one commit on the canonical branch; make doctor fail on uncommitted ledger, stale/missing anchor and ledger-ahead-of-main, with --fix performing worktree prune + re-add; add expedition deliver (push branch/publish PR, record EXPEDITION_DELIVERED) and expedition seal --merge-commit (verify the delivered tip is an ancestor of the merge commit, record EXPEDITION_INTEGRATED), plus the abandonment handoff block and deliveryPending marker.",
-  "status": "committed",
+  "status": "executing",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -25,8 +25,15 @@
     ],
     "refinementId": "c3cd1558506a011c",
     "refinementNote": "E5 consumes E1 staging correctness and E4 declared branch bindings",
-    "refinementAt": 354
+    "refinementAt": 354,
+    "identity": {
+      "agentId": "synth-cli-34518",
+      "sessionId": "0781b8bc-ca32-4c41-931a-71acc106915b",
+      "approvalMode": "autonomous",
+      "issuedAt": 385
+    }
   },
   "createdAt": 351,
-  "updatedAt": 354
+  "updatedAt": 385,
+  "executionBranch": "arena/c5db653e-synth"
 }
