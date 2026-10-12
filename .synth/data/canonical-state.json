@@ -1,6 +1,6 @@
 {
-  "version": 362,
-  "stateHash": "1580941252",
+  "version": 363,
+  "stateHash": "1482711822",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1409,7 +1409,7 @@
         "refinementAt": 356
       },
       "createdAt": 344,
-      "updatedAt": 361,
+      "updatedAt": 362,
       "attachments": [
         {
           "kind": "git-diff",
@@ -1420,6 +1420,11 @@
           "kind": "git-diff",
           "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
           "hash": "6ff105147b36a67796615a0cda7f248b9dff7939da35e8031f8cf7499f6c022f"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
+          "hash": "cd0c62f72f395eb2cbdd74c3deffd6ce881f0497f3754739bed379c7805d49bd"
         }
       ]
     },
@@ -1503,5 +1508,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 362
+  "lastEventOffset": 363
 }

@@ -1,12 +1,12 @@
 {
   "expeditionId": "ecc3688796be0545",
-  "capturedAt": 1791799904058,
-  "note": "E1 diff since main (staging fix, index surgery, regression test)",
+  "capturedAt": 1791799914925,
+  "note": "E1 source change only (staging fix, index surgery, regression test)",
   "attachments": [
     {
       "kind": "git-diff",
       "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
-      "hash": "6ff105147b36a67796615a0cda7f248b9dff7939da35e8031f8cf7499f6c022f"
+      "hash": "cd0c62f72f395eb2cbdd74c3deffd6ce881f0497f3754739bed379c7805d49bd"
     }
   ]
 }
