@@ -1,6 +1,6 @@
 {
-  "version": 357,
-  "stateHash": "1514195355",
+  "version": 361,
+  "stateHash": "1312882928",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1387,7 +1387,7 @@
       "missionId": "b536ecc7ceb9217a",
       "name": "Derived-state staging correctness (auto-commit + ignore filtering)",
       "goal": "Fix auto-commit staging so lifecycle transitions always commit durable state and never fail on gitignored paths: call git check-ignore with --no-index so tracked-but-ignored paths are filtered correctly, stage only existing/changed durable artifacts instead of walking all of .synth/data, fall back to per-file adds so one bad path cannot kill the commit, and surface the autoCommit result (committed/commitHash/files/reason) in command JSON. Absorbs draft e8ba8f92 and the index-surgery half of the Reads-Never-Write plan (W2).",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1409,7 +1409,14 @@
         "refinementAt": 356
       },
       "createdAt": 344,
-      "updatedAt": 356
+      "updatedAt": 359,
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
     },
     "e788e528a896008a": {
       "id": "e788e528a896008a",
@@ -1491,5 +1498,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 357
+  "lastEventOffset": 361
 }
