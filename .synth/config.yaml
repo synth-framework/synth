@@ -2,7 +2,14 @@
 # Derived from expedition ee4874cdcadaf218: enforce the expedition branch
 # workflow at start by auto-creating and staying on canonical expedition
 # branches (ECOSYSTEM-001).
+#
+# TEMPORARY SUSPENSION (2026-10-12, bootstrap window):
+# mode is "off" while the agent workspace runs the approved bootstrap ceremony
+# on arena/c5db653e-synth. This is the supported policy-off mode; it also stops
+# `expedition start` from creating/checking out canonical branches, so the
+# workspace branch pin is respected. RESTORED to "enforce" as soon as ADR-056
+# (--branch / --no-create) is available. See docs/plans/master-delivery-plan.md.
 git:
   branchStrategy: featured
   branchPolicy:
-    mode: enforce
+    mode: off
