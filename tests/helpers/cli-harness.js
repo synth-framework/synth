@@ -95,7 +95,16 @@ export async function assertCliBuilt() {
 }
 
 /** Invoke the SYNTH CLI and return stdout/stderr/status. */
+const RUN_SYNTH_OPTIONS = new Set(["env", "timeout"])
+
 export function runSynth(args, cwd = process.cwd(), options = {}) {
+  // A misspelled or misplaced option (e.g. passing an env var directly instead
+  // of inside `env`) is silently ignored by spawnSync and inherits CI's
+  // environment. Refuse it loudly instead.
+  const unknown = Object.keys(options).filter((key) => !RUN_SYNTH_OPTIONS.has(key))
+  if (unknown.length > 0) {
+    throw new Error(`runSynth: unknown option(s) ${unknown.join(", ")}; environment must be passed as { env: {...} }`)
+  }
   const result = spawnSync("node", [CLI_PATH, ...args], {
     cwd,
     encoding: "utf-8",
