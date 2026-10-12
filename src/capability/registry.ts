@@ -911,6 +911,7 @@ function createDefaultCapabilities(): Capability[] {
         const payload: Record<string, unknown> = { id, expeditionId: id, reason }
         if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
         if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+        if (typeof intent.payload.ref === "string") payload.ref = intent.payload.ref
         if (intent.payload.delivered === true) payload.delivered = true
         if (intent.payload.merged === true) payload.merged = true
         if (metadata) payload.metadata = metadata
@@ -944,7 +945,6 @@ function createDefaultCapabilities(): Capability[] {
         const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
         const payload: Record<string, unknown> = { id, expeditionId: id }
         if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
-        if (typeof intent.payload.ref === "string") payload.ref = intent.payload.ref
         if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
         if (Array.isArray(intent.payload.deleted)) payload.deleted = intent.payload.deleted
         if (metadata) payload.metadata = metadata

@@ -34,6 +34,11 @@ function ledgerHeadMessage(root) {
   return git(root, ["log", "-1", "--format=%s", branch])
 }
 
+// `status` prints bootstrap log lines before its pretty JSON briefing.
+function parseBriefing(stdout) {
+  return JSON.parse(stdout.slice(stdout.indexOf('{\n  "status"')))
+}
+
 async function runningExpedition(projectDir, missionId, subject = "Abandonment Expedition") {
   const created = runSynth(
     ["expedition", "create", "--mission", missionId, "--subject", subject, "--goal", "Prove abandonment"],
@@ -204,6 +209,102 @@ test("abandon: a missing reason is refused, and the ledger is untouched", async 
     const show = parseJson(runSynth(["expedition", "show", "--id", expeditionId], projectDir).stdout)
     assert.equal(show.handoff, undefined, "no handoff block is written")
     assert.notEqual(show.expedition.status, "cancelled")
+  } finally {
+    fs.rmSync(projectDir, { recursive: true, force: true })
+  }
+})
+
+test("status: an abandoned expedition raises a warning until it is discarded, and status never writes", async () => {
+  const projectDir = await setupGitBackedProject("synth-abandon-status-")
+  try {
+    const { missionId } = await createAndApproveMission(projectDir, {
+      subject: "Status Warning Mission",
+      purpose: "Surface abandoned work",
+      returnGateContext: true,
+    })
+    const draftId = await runningExpedition(projectDir, missionId, "Warned Expedition")
+    const home = git(projectDir, ["rev-parse", "--abbrev-ref", "HEAD"])
+
+    // The abandoned work lives on its own branch; we stand on `home`.
+    git(projectDir, ["checkout", "-q", "-b", "status/wip"])
+    fs.writeFileSync(path.join(projectDir, "WIP2.md"), "unfinished\n")
+    git(projectDir, ["add", "WIP2.md"])
+    git(projectDir, ["commit", "-m", "wip: unfinished"])
+    git(projectDir, ["checkout", "-q", home])
+
+    const abandoned = runSynth(
+      ["expedition", "abandon", "--id", draftId, "--reason", "scope moved on", "--branch", "status/wip"],
+      projectDir,
+    )
+    assert.equal(abandoned.status, 0, abandoned.stderr)
+
+    const treeBefore = gitQuiet(projectDir, ["status", "--porcelain", "--untracked-files=all"]).out
+    const status = runSynth(["status"], projectDir)
+    assert.equal(status.status, 0, status.stderr)
+    const warned = parseBriefing(status.stdout).warnings.filter((w) => w.kind === "abandoned-expedition")
+    assert.equal(warned.length, 1, "exactly one abandonment warning")
+    assert.ok(warned[0].description.includes(draftId.slice(0, 8)), "the warning names the expedition")
+    assert.ok(warned[0].description.includes("scope moved on"), "the warning carries the reason")
+    assert.ok(
+      warned[0].description.includes(`refs/synth/abandoned/${draftId.slice(0, 8)}`),
+      "the warning says where the work is recoverable",
+    )
+
+    // AC7: status is a pure read.
+    assert.equal(
+      gitQuiet(projectDir, ["status", "--porcelain", "--untracked-files=all"]).out,
+      treeBefore,
+      "status must not change the working tree",
+    )
+
+    const discarded = runSynth(
+      ["expedition", "abandon", "--id", draftId, "--reason", "scope moved on", "--branch", "status/wip", "--discard"],
+      projectDir,
+    )
+    assert.equal(discarded.status, 0, discarded.stderr)
+    const after = parseBriefing(runSynth(["status"], projectDir).stdout).warnings
+    assert.equal(
+      after.filter((w) => w.kind === "abandoned-expedition").length,
+      0,
+      "a discarded expedition has nothing left to act on, so no warning",
+    )
+  } finally {
+    fs.rmSync(projectDir, { recursive: true, force: true })
+  }
+})
+
+test("status: a discard that keeps the branch keeps the warning, because the work is still on it", async () => {
+  const projectDir = await setupGitBackedProject("synth-abandon-kept-")
+  try {
+    const { missionId } = await createAndApproveMission(projectDir, {
+      subject: "Kept Branch Mission",
+      purpose: "Keep the warning honest",
+      returnGateContext: true,
+    })
+    const draftId = await runningExpedition(projectDir, missionId, "Kept Expedition")
+    const home = git(projectDir, ["rev-parse", "--abbrev-ref", "HEAD"])
+    fs.writeFileSync(path.join(projectDir, "KEEP.md"), "still needed\n")
+    git(projectDir, ["add", "KEEP.md"])
+    git(projectDir, ["commit", "-m", "wip: still needed"])
+
+    // The branch we stand on: discard refuses to delete it, so the work stays.
+    const abandoned = runSynth(
+      ["expedition", "abandon", "--id", draftId, "--reason", "park it", "--branch", home],
+      projectDir,
+    )
+    assert.equal(abandoned.status, 0, abandoned.stderr)
+    const discarded = runSynth(
+      ["expedition", "abandon", "--id", draftId, "--reason", "park it", "--branch", home, "--discard"],
+      projectDir,
+    )
+    assert.equal(discarded.status, 0, discarded.stderr)
+
+    const warned = parseBriefing(runSynth(["status"], projectDir).stdout).warnings.filter(
+      (w) => w.kind === "abandoned-expedition",
+    )
+    assert.equal(warned.length, 1, "the work is still on the branch, so the warning stays")
+    assert.ok(warned[0].description.includes(`discard kept branch ${home}`), warned[0].description)
+    assert.equal(git(projectDir, ["rev-parse", "--abbrev-ref", "HEAD"]), home, "the branch was never deleted")
   } finally {
     fs.rmSync(projectDir, { recursive: true, force: true })
   }

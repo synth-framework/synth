@@ -104,6 +104,45 @@ function deriveFrictionWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
   return warnings
 }
 
+/**
+ * ADR-055 AC5: an abandoned expedition keeps its work recoverable (the
+ * `refs/synth/abandoned/<id8>` tag and the branch) until someone discards it.
+ * Until then `status` must say so, or the work silently rots. A discarded
+ * expedition has nothing left to act on, so it does not warn.
+ */
+/** A discard that refused to delete the branch (the one we stand on) leaves the work on it. */
+function keptByDiscard(handoff: Record<string, unknown> | undefined): boolean {
+  if (!handoff || handoff.discarded !== true || typeof handoff.branch !== "string") return false
+  const deleted = Array.isArray(handoff.deleted) ? (handoff.deleted as unknown[]) : []
+  return !deleted.includes(`branch ${handoff.branch}`)
+}
+
+function deriveAbandonmentWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
+  return Object.values(ctx.authoritative.replayedState.expeditions || {})
+    .filter((e) => e.status === "cancelled")
+    .map((e) => ({ e, handoff: (e.metadata?.abandonment ?? undefined) as Record<string, unknown> | undefined }))
+    .filter(({ handoff }) => handoff !== undefined && handoff.discarded !== true || keptByDiscard(handoff))
+    .map(({ e, handoff }) => {
+      const id8 = e.id.slice(0, 8)
+      const branch = typeof handoff!.branch === "string" ? handoff!.branch : undefined
+      const where =
+        handoff!.discarded === true && branch
+          ? `discard kept branch ${branch}, so the work is still on it`
+          : typeof handoff!.ref === "string"
+            ? `kept recoverable at ${handoff!.ref}`
+            : branch
+              ? `kept on branch ${branch}`
+              : "not preserved anywhere (no branch or recovery ref was recorded)"
+      return {
+        kind: "abandoned-expedition",
+        description: `Expedition ${id8} (${e.name}) was abandoned${
+          typeof handoff!.reason === "string" && handoff!.reason ? `: ${handoff!.reason}` : ""
+        }; ${where}.`,
+        remediation: `Inspect with \`synth expedition show --id ${e.id}\`. Delete the branch and ref only once the work is no longer needed: \`synth expedition abandon --id ${e.id} --reason "<why>" --discard\`.`,
+      }
+    })
+}
+
 function deriveWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
   const divergences = ctx.derived.divergences
     .filter((d) => d.severity === "warning")
@@ -112,7 +151,12 @@ function deriveWarnings(ctx: ResolvedGovernanceContext): Blocker[] {
       description: d.description,
       remediation: `Inspect ${d.artifact || "governance artifacts"} and follow the recovery guidance.`,
     }))
-  return [...divergences, ...deriveCapabilityWarnings(ctx), ...deriveFrictionWarnings(ctx)]
+  return [
+    ...divergences,
+    ...deriveCapabilityWarnings(ctx),
+    ...deriveFrictionWarnings(ctx),
+    ...deriveAbandonmentWarnings(ctx),
+  ]
 }
 
 function deriveBlockers(ctx: ResolvedGovernanceContext): Blocker[] {

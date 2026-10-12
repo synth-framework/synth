@@ -4565,13 +4565,26 @@ async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
     return
   }
 
-  // 1. Record the abandonment on the canonical ledger — before any branch
-  //    operation, so the abandonment survives whatever happens next.
+  // 1a. Preserve the tip first (default). Creating a tag deletes nothing, and
+  //     the record must only name a ref that actually exists: a record that
+  //     points at nothing would make the work's location a lie (AC5).
+  let preserved: { ok: boolean; ref?: string; detail: string } | undefined
+  if (tipCommit && !discard && !discardOnly) {
+    preserved = createAbandonmentRef(process.cwd(), {
+      expeditionId: id,
+      tipCommit,
+      reason,
+      timestamp: Date.now(),
+    })
+  }
+
+  // 1b. Record the abandonment on the canonical ledger, with the ref it made.
   let ledger: LedgerCommitInfo | undefined
   if (!discardOnly) {
     const payload: Record<string, unknown> = { id, reason }
     if (branch) payload.branch = branch
     if (tipCommit) payload.tipCommit = tipCommit
+    if (preserved?.ok && preserved.ref) payload.ref = preserved.ref
     if (delivery.delivered) payload.delivered = true
     if (delivery.integrated) payload.merged = true
 
@@ -4586,17 +4599,6 @@ async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
     ledger = await flushPendingCeremony()
   }
 
-  // 2. Preserve the tip (default) — a branch deleted tomorrow is still
-  //    recoverable from the ref.
-  let preserved: { ok: boolean; ref?: string; detail: string } | undefined
-  if (tipCommit && !discard && !discardOnly) {
-    preserved = createAbandonmentRef(process.cwd(), {
-      expeditionId: id,
-      tipCommit,
-      reason,
-      timestamp: Date.now(),
-    })
-  }
 
   // 3. Discard is a second, separately recorded ceremony: it may only claim a
   //    deletion that actually happened.
@@ -4609,7 +4611,10 @@ async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
       ...(discardBranch ? { branch: discardBranch } : {}),
     })
     discarded = { ok: outcome.ok, deleted: outcome.deleted, detail: outcome.detail }
-    if (outcome.ok) {
+    // Record whatever really got deleted, even when another step was refused
+    // (e.g. the branch we stand on). Gating on `outcome.ok` left a deleted ref
+    // unrecorded: exactly the missing-deletion case ADR-055 forbids.
+    if (outcome.deleted.length > 0) {
       const discardPayload: Record<string, unknown> = { id }
       if (discardBranch) discardPayload.branch = discardBranch
       discardPayload.ref = ref
