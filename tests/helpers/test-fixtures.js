@@ -1,6 +1,7 @@
 import { makeTempDir } from "./workspace.js"
 import { runSynth } from "./cli-harness.js"
-import { assert, parseJson } from "./assert.js"
+import { strict as assert } from "assert"
+import { parseJson } from "./assert.js"
 import { writeManifest } from "./state-fixtures.js"
 import fs from "fs/promises"
 import path from "path"
