@@ -1,6 +1,6 @@
 {
-  "version": 383,
-  "stateHash": "111724821",
+  "version": 384,
+  "stateHash": "1465034518",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1497,7 +1497,7 @@
         }
       },
       "createdAt": 348,
-      "updatedAt": 381,
+      "updatedAt": 383,
       "attachments": [
         {
           "kind": "attachment",
@@ -1567,5 +1567,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 383
+  "lastEventOffset": 384
 }
