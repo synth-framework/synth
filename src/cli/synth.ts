@@ -360,10 +360,55 @@ async function getUntrackedSourcePaths(): Promise<string[]> {
 
 const DERIVED_STATE_PATTERNS = [
   ".synth/data/",
+  ".synth/ai/",
+  ".synth/cache/",
+  ".synth/discovery/",
+  ".synth/context.json",
   "proof/expeditions/",
   "data/event-log.jsonl",
   "data/canonical-state.json",
   "AGENTS.md",
+]
+
+// Auto-commit scope: durable SYNTH state plus proof artifacts. Directory
+// pathspecs are used deliberately — `git add -A -- <dir>` stages additions,
+// modifications *and deletions*, and never fails on ignored-but-untracked
+// content the way an explicit file list does (audit D1: one ignored path in
+// the batch aborted the whole staging step).
+const AUTO_COMMIT_PATHSPECS = [".synth/data", "proof/expeditions", "AGENTS.md"]
+
+/** Existing subset of AUTO_COMMIT_PATHSPECS (a missing pathspec fails `git add`). */
+async function existingAutoCommitPathspecs(cwd: string): Promise<string[]> {
+  const existing: string[] = []
+  for (const relPath of AUTO_COMMIT_PATHSPECS) {
+    try {
+      await fs.access(path.join(cwd, relPath))
+      existing.push(relPath)
+    } catch {
+      // path does not exist in this workspace
+    }
+  }
+  return existing
+}
+
+/** True when `relPath` is in the index. */
+function isTrackedPath(cwd: string, relPath: string): boolean {
+  try {
+    const listing = execFileSync("git", ["ls-files", "--", relPath], { cwd, encoding: "utf-8" })
+    return listing.trim().length > 0
+  } catch {
+    return false
+  }
+}
+
+// In-scope paths that must never be auto-committed: the stale monolithic
+// event log (superseded by event-stream/), the debug log, and the
+// machine-local dependency cache. E3 replaces this list with the shared
+// artifact policy (src/state/artifact-policy.ts).
+const AUTO_COMMIT_EXCLUDES = [
+  ":(exclude).synth/data/event-log.jsonl",
+  ":(exclude).synth/data/cli-errors.jsonl",
+  ":(exclude).synth/data/dependency-records-cache.json",
 ]
 
 type AutoCommitResult = {
@@ -454,7 +499,6 @@ async function collectDerivedStateFiles(cwd: string): Promise<string[]> {
   const files: string[] = []
   const dirs = [sdk.paths.dataDir(cwd), path.join(cwd, "proof", "expeditions")]
   const rootFiles = [
-    sdk.paths.eventLogFile(cwd),
     sdk.paths.stateFile(cwd),
     path.join(cwd, "AGENTS.md"),
   ]
@@ -492,29 +536,104 @@ async function collectDerivedStateFilesRecursive(dir: string, cwd: string, out: 
   }
 }
 
-async function filterIgnoredFiles(cwd: string, files: string[]): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const child = spawn("git", ["check-ignore", "--stdin"], { cwd })
+/**
+ * Paths that .gitignore excludes, *including* tracked ones (`--no-index`).
+ * Plain `git check-ignore` hides indexed paths — the root cause of audit D2:
+ * the old filter never removed the ignored-but-tracked drafts from the
+ * staging batch, so `git add` refused the whole list (D1).
+ */
+async function listIgnoredPaths(cwd: string, files: string[]): Promise<Set<string>> {
+  return new Promise((resolve) => {
+    if (files.length === 0) {
+      resolve(new Set())
+      return
+    }
+    const child = spawn("git", ["check-ignore", "--no-index", "--stdin"], { cwd })
     let stdout = ""
-    let stderr = ""
     child.stdout.on("data", (data: Buffer) => {
       stdout += data.toString("utf-8")
-    })
-    child.stderr.on("data", (data: Buffer) => {
-      stderr += data.toString("utf-8")
     })
     child.on("close", (code) => {
       // git check-ignore exits 1 when none of the inputs are ignored.
       if (code !== 0 && code !== 1) {
-        reject(new Error(stderr || `git check-ignore exited with ${code}`))
+        resolve(new Set())
         return
       }
-      const ignored = new Set(stdout.trim().split("\n").filter(Boolean))
-      resolve(files.filter((f) => !ignored.has(f)))
+      resolve(new Set(stdout.trim().split("\n").map((line) => line.trim()).filter(Boolean)))
     })
-    child.on("error", reject)
+    child.on("error", () => resolve(new Set()))
     child.stdin.end(files.join("\n"))
   })
+}
+
+/** Relative paths currently tracked in the index (used for commit scoping). */
+function isAutoCommitScoped(relPath: string): boolean {
+  return (
+    relPath === "AGENTS.md" ||
+    relPath.startsWith(".synth/data/") ||
+    relPath.startsWith("proof/expeditions/")
+  )
+}
+
+/**
+ * Stage auto-commit content with a resilient three-step strategy:
+ *   1. one `git add -A` over directory pathspecs (stages deletions too, and
+ *      never fails because an ignored path was named explicitly);
+ *   2. per-path adds, retrying ignored-but-tracked paths with `-f`;
+ *   3. report the paths that still failed instead of aborting the commit.
+ * Returns the staged paths within the auto-commit scope.
+ */
+async function stageAutoCommitPaths(cwd: string): Promise<{ staged: string[]; failures: string[] }> {
+  const failures: string[] = []
+  const pathspecs = await existingAutoCommitPathspecs(cwd)
+
+  let primaryOk = false
+  if (pathspecs.length > 0) {
+    try {
+      execFileSync("git", ["add", "-A", "--", ...pathspecs, ...AUTO_COMMIT_EXCLUDES], {
+        cwd,
+        stdio: ["pipe", "pipe", "pipe"],
+      })
+      primaryOk = true
+    } catch {
+      // Fall back to per-path staging so one bad path cannot kill the commit.
+    }
+  }
+
+  if (!primaryOk) {
+    // Per-path fallback: ignored *and untracked* paths are never staged;
+    // ignored *and tracked* paths are staged with `-f` (they are legitimate
+    // content — e.g. draft inputs — and explicit pathspecs need the flag).
+    const candidates = (await collectDerivedStateFiles(cwd)).filter(
+      (relPath) =>
+        isAutoCommitScoped(relPath) &&
+        !AUTO_COMMIT_EXCLUDES.some((rule) => rule.endsWith(relPath)),
+    )
+    const ignored = await listIgnoredPaths(cwd, candidates)
+    for (const relPath of candidates) {
+      const isIgnored = ignored.has(relPath)
+      if (isIgnored && !isTrackedPath(cwd, relPath)) continue
+      const attempts = isIgnored ? [["-f"], []] : [[], ["-f"]]
+      let staged = false
+      for (const extra of attempts) {
+        try {
+          execFileSync("git", ["add", ...extra, "-A", "--", relPath], { cwd, stdio: ["pipe", "pipe", "pipe"] })
+          staged = true
+          break
+        } catch {
+          // try the next strategy
+        }
+      }
+      if (!staged) failures.push(relPath)
+    }
+  }
+
+  const stdout = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd, encoding: "utf-8" })
+  const staged = stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && isAutoCommitScoped(line))
+  return { staged, failures }
 }
 
 /**
@@ -534,51 +653,62 @@ async function autoCommitDerivedState(
     return { committed: false, message, files: [], reason: "Not a git repository" }
   }
 
-  const allFiles = await collectDerivedStateFiles(cwd)
+  const allFiles = await collectDerivedStateFiles(cwd).catch(() => [])
   if (allFiles.length === 0) {
     return { committed: false, message, files: [], reason: "No derived state files present" }
   }
 
-  let stageableFiles: string[]
-  try {
-    stageableFiles = await filterIgnoredFiles(cwd, allFiles)
-  } catch {
-    stageableFiles = allFiles
-  }
-  if (stageableFiles.length === 0) {
-    return { committed: false, message, files: allFiles, reason: "Derived state files are ignored by git" }
-  }
-
-  try {
-    execFileSync("git", ["add", "--", ...stageableFiles], { cwd, stdio: ["pipe", "pipe", "pipe"] })
-  } catch (err: any) {
-    return { committed: false, message, files: stageableFiles, reason: `Failed to stage derived state: ${err.message || err}` }
-  }
-
-  const stagedNames = await new Promise<string>((resolve, reject) => {
-    const child = spawn("git", ["diff", "--cached", "--name-only"], { cwd })
-    let stdout = ""
-    child.stdout.on("data", (data: Buffer) => {
-      stdout += data.toString("utf-8")
+  const stagedNames = (
+    await new Promise<string>((resolve) => {
+      const child = spawn("git", ["diff", "--cached", "--name-only"], { cwd })
+      let stdout = ""
+      child.stdout.on("data", (data: Buffer) => {
+        stdout += data.toString("utf-8")
+      })
+      child.on("close", () => resolve(stdout.trim()))
+      child.on("error", () => resolve(""))
     })
-    child.on("close", (code) => {
-      if (code !== 0) reject(new Error(`git diff --cached exited with ${code}`))
-      else resolve(stdout.trim())
-    })
-    child.on("error", reject)
-  })
+  )
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
 
-  const stagedFiles = stagedNames.split("\n").filter(Boolean)
-  if (stagedFiles.length === 0) {
-    return { committed: false, message, files: stageableFiles, reason: "No derived state changes to commit" }
+  const statusBefore = execFileSync("git", ["status", "--porcelain", "--", ...AUTO_COMMIT_PATHSPECS, ...AUTO_COMMIT_EXCLUDES], {
+    cwd,
+    encoding: "utf-8",
+  }).trim()
+  if (statusBefore.length === 0) {
+    const preStaged = stagedNames.filter((line) => isAutoCommitScoped(line))
+    if (preStaged.length === 0) {
+      return { committed: false, message, files: [], reason: "No derived state changes to commit" }
+    }
+  }
+
+  const { staged, failures } = await stageAutoCommitPaths(cwd)
+  if (staged.length === 0) {
+    return {
+      committed: false,
+      message,
+      files: [],
+      reason:
+        failures.length > 0
+          ? `Failed to stage derived state: ${failures.join(", ")}`
+          : "No derived state changes to commit",
+    }
   }
 
   try {
-    execFileSync("git", ["commit", "-m", message, "--", ...stagedFiles], { cwd, stdio: ["pipe", "pipe", "pipe"] })
+    execFileSync("git", ["commit", "-m", message, "--", ...staged], { cwd, stdio: ["pipe", "pipe", "pipe"] })
     const commitHash = execFileSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf-8" }).trim()
-    return { committed: true, commitHash, message, files: stagedFiles }
+    return {
+      committed: true,
+      commitHash,
+      message,
+      files: staged,
+      ...(failures.length > 0 ? { reason: `Staged with skips: ${failures.join(", ")}` } : {}),
+    }
   } catch (err: any) {
-    return { committed: false, message, files: stagedFiles, reason: `Commit failed: ${err.message || err}` }
+    return { committed: false, message, files: staged, reason: `Commit failed: ${err.message || err}` }
   }
 }
 
