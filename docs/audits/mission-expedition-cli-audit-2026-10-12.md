@@ -590,9 +590,11 @@ provable subset of the event-stream), **but three code paths still read the file
 of them is broken *because* of it, so the file is not safe to delete until the
 snapshot/verify path is migrated.
 
-1. **The data is redundant — proven, not assumed.** The monolith has 262 events; all 262
-   are present in `.synth/data/event-stream/` **by `eventHash`** (and by id+type+timestamp):
-   `legacy_hashes ⊆ stream_hashes`, `legacy-only = 0`, stream = 377 events. The store is
+1. **The data is redundant — proven field-by-field, not assumed.** The monolith has 262
+   events; all 262 are present in `.synth/data/event-stream/` with **identical `type`,
+   `timestamp`, `capability`, `actor`, `transactionId`, `previousHash`, `eventHash` and
+   `payload`** — 0 missing ids, 0 field mismatches. `legacy_hashes ⊆ stream_hashes`,
+   `legacy-only = 0`, stream = 377 events. The store is
    explicit: *"The event-stream is the sole authority for the event log. There is no
    monolithic `event-log.jsonl` and no migration path"* (`src/infra/event-store.ts:341`).
    `synth explain replay` → `consistent: true`.
