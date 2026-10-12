@@ -1,12 +1,12 @@
 {
   "expeditionId": "ecc3688796be0545",
-  "capturedAt": 1791799896315,
-  "note": "Auto-attached by synth expedition finish",
+  "capturedAt": 1791799904058,
+  "note": "E1 diff since main (staging fix, index surgery, regression test)",
   "attachments": [
     {
       "kind": "git-diff",
       "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "hash": "6ff105147b36a67796615a0cda7f248b9dff7939da35e8031f8cf7499f6c022f"
     }
   ]
 }
