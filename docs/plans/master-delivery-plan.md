@@ -1,7 +1,7 @@
 # SYNTH — Master Delivery Plan (rev 3)
 
 **Prepared:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Working branch:** `arena/c5db653e-synth` @ `144bbfe` (pushed)
-**Status:** bootstrap executed; **E1–E3 complete, M1 completed, all shipped on the branch**; the `mode: off` window is still open (exit = E4).
+**Status:** bootstrap executed; **E1–E3 complete, M1 completed, all shipped on the branch**; the `mode: off` window is still open (exit = E4). Rev 3.1 records finding **F7** (the snapshot/verify path still reads the legacy monolith — audit Addendum 4).
 **Supersedes:** rev 2 of this document, and the ad-hoc sequencing in the project brief §4.2.
 **Design of record:** `docs/adr/ADR-054` (lifecycle), `docs/adr/ADR-055` (ceremonial events), `docs/adr/ADR-056` (declared branches).
 **Evidence base:** `docs/audits/mission-expedition-cli-audit-2026-10-12.md`, `docs/plans/reads-never-write.md`.
@@ -129,6 +129,7 @@ Purpose: make SYNTH govern work on pre-existing operator branches — declared e
 | **F4** | `test:task-npm-migration` was red at HEAD: `test:adr` / `check:adr` had no task files | fixed by E3's registration pass; keep the test in the chain |
 | **F5** | `expedition evidence --git-diff` is not range-scoped and re-runs capture their own output | use `--attach` with a scoped `git diff <from> <to> -- <paths>`; all three E1–E3 evidence attachments do exactly that |
 | **F6** | `--depends-on` is set-only (`planning.ts` replaces only when an array is passed; the CLI omits empty arrays), so a wrong edge can only be cleared by delete + recreate | recorded in audit Addendum 3; E1's dependency set is correct (`E3 → E1, E2`), no repair needed |
+| **F7** | **The legacy monolith is still read by the snapshot path** (audit Addendum 4): `getEventOffset()` uses its line count (262 vs the true 377); `SNAPSHOT_FILES` includes it, so a commit-on-change snapshot `git add` would fail on the ignored file (reproduced); and `verifySnapshotAtTag()` requires it at the tagged commit, so `synth snapshot verify --tag synth-expedition/cfbb801aa232795a` → `Event log missing at tagged state`. The data itself is a proven subset of `event-stream/` (262/262 by `eventHash`, 0 unique) | **Do not delete the file yet** (§9.3). Migrate the three call sites to `event-stream/` in the F1 follow-up expedition; afterwards the file is inert and deletable. The snapshot test seeds its own monolith, which is why the suite stayed green while the ceremony is broken |
 
 ### 4.5 Progress log
 
@@ -225,6 +226,7 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 | A9 | Sandbox never holds the only copy: branch pushed; every ceremony committed + pushed | ✅ HEAD == origin after every step so far |
 | A10 | M1's own claim is verified, not asserted: the suite fails pre-fix and passes post-fix | ✅ E3 A/B (0/11 → 11/11) |
 | A11 | The Proof Gate actually executes the registered suite (F1) | ⏳ follow-up expedition (§9.12) |
+| A12 | `synth snapshot verify --tag <tag>` verifies against `event-stream/` (F7) | ⏳ currently fails with `Event log missing at tagged state`; follow-up expedition (§9.12) |
 
 ---
 
@@ -262,7 +264,7 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 |---|---|---|
 | 9.1 | Mission structure: 2 missions or fold M2 into M1? | **2 missions** (already created; purposes stay honest) |
 | 9.2 | Artifact policy: keep draft `*.integrity.json` tracked? | **tracked as `input`** (E3 implements and tests this) |
-| 9.3 | Delete stale `event-log.jsonl` outright? | **yes eventually** — *not done in E3*: the file is untracked and therefore the only copy; deletion deferred to an explicit operator confirmation (destructive, untracked). It is classified `legacy`, ignored, and never read |
+| 9.3 | Delete stale `event-log.jsonl` outright? | **Not yet — revised in rev 3.1.** The *data* is not needed (262/262 events are in `event-stream/` by `eventHash`; verified 2026-10-12), but three code paths still read the file and one is already broken by its absence from tags (F7). Sequence: migrate `getEventOffset` to `eventStore.count()`, drop the monolith from `SNAPSHOT_FILES`, make `verifySnapshotAtTag` replay `event-stream/` → then delete with the operator's confirmation |
 | 9.4 | ADR-054: cancel semantics / review gates / `committed` migration / shim lifetime | cancel→`archived`+reason; wire review gates for `--governed`; migrate the 8 committed expeditions in one repair; shims for **2** minor versions |
 | 9.5 | ADR-054 Q5: mission `start` vs approval-as-activation | keep **approval-as-activation** |
 | 9.6 | ADR-056 Q2: who may declare a branch | **any actor** with a recorded binding (`declaredBy`); mission branches need the operator identity |
@@ -271,7 +273,7 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 | 9.9 | ADR-056 Q5: declared branch checked out in another worktree | **prefer the current checkout** |
 | 9.10 | ADR-055 Q2: post-bootstrap host policy | **single writer at a time**, enforced by doctor + lock; `synth ledger import` later |
 | 9.11 | Anchor `worktree prune` ownership | `doctor --fix` |
-| 9.12 | F1 follow-up: create the "verification coverage truthfulness" expedition after the window? | **yes** (new mission; fix `loadGovernChecks` to read the task registry or fail loudly, then wire `check-artifact-policy --ci` and the new suites into the Gate) |
+| 9.12 | F1+F7 follow-up: create the "verification truthfulness" expedition after the window? | **yes** (new mission; fix `loadGovernChecks` to read the task registry or fail loudly, migrate the snapshot/verify path off the monolith (F7), then wire `check-artifact-policy --ci` and the new suites into the Gate) |
 | 9.13 | PR #340 shape: one merged PR at window close, or split? | **one PR** merged at Stage 5 (docs + E1–E3 + E4); E5 gets its own PR. Splitting earlier would require a branch not pinned to this session — the operator can do that if they prefer |
 
 ---

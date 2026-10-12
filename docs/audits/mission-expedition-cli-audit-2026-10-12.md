@@ -582,3 +582,46 @@ edits, so a dirtiness check must precede it); deleting the anchor leaves it `pru
    (`Convergence certification must converge, got diverged` in the test helper,
    reproduced against `ac4e81a`'s CLI). Pre-existing rot, unrelated to E1; the suite
    aborts there, so sub-tests 4–6 are not exercised by that file today.
+
+## Addendum 4 — 2026-10-12, the legacy monolith (`event-log.jsonl`)
+
+Operator question: *"Don't we need the `event-log.jsonl`?"* — **Not the data** (it is a
+provable subset of the event-stream), **but three code paths still read the file**, and one
+of them is broken *because* of it, so the file is not safe to delete until the
+snapshot/verify path is migrated.
+
+1. **The data is redundant — proven, not assumed.** The monolith has 262 events; all 262
+   are present in `.synth/data/event-stream/` **by `eventHash`** (and by id+type+timestamp):
+   `legacy_hashes ⊆ stream_hashes`, `legacy-only = 0`, stream = 377 events. The store is
+   explicit: *"The event-stream is the sole authority for the event log. There is no
+   monolithic `event-log.jsonl` and no migration path"* (`src/infra/event-store.ts:341`).
+   `synth explain replay` → `consistent: true`.
+
+2. **Snapshot metadata reads its offset from the monolith.** `getEventOffset()`
+   (`src/adapter/git-snapshot.ts:222`) returns the file's **line count**, so snapshot
+   records and tag commit messages say `Event log offset: 262` while the true offset is 377.
+   `src/control/execution-gate.ts:772` already uses `eventStore.count()` — the adapter was
+   never migrated.
+
+3. **A commit-on-change snapshot would now fail on the ignored file.** `SNAPSHOT_FILES`
+   includes `.synth/data/event-log.jsonl`, and `snapshot()` stages that list with
+   `git add -- <files>` (`git-snapshot.ts:389`, strict error handling). Reproduced:
+   `git add --dry-run -- .synth/data/event-log.jsonl` → exit 1,
+   *"The following paths are ignored by one of your .gitignore files"*. Current config
+   defaults to `snapshotPolicy: tag-only`, which is the only reason this has not bitten yet
+   (same class as D1/D3, in a second code path).
+
+4. **Snapshot verification is already broken on this branch.** `verifySnapshotAtTag()`
+   requires the monolith **at the tagged commit** and replays it. All three current
+   `synth-*` tags contain no `event-log.jsonl` (E1's index surgery untracked it), so:
+   `synth snapshot verify --tag synth-expedition/cfbb801aa232795a` →
+   `{"ok": false, "consistent": false, "reason": "Event log missing at tagged state", "eventCount": 0}`.
+   `tests/governance-git-snapshot.test.js` still seeds its own monolith, so the suite stays
+   green while the ceremony is broken.
+
+**Recommendation.** Do not delete the file yet, and do not leave it as unexplained dead
+weight. Finish the migration in one expedition: derive the offset from `eventStore.count()`,
+drop the monolith from `SNAPSHOT_FILES`, make `verifySnapshotAtTag` replay `event-stream/`,
+and update the test to stop seeding a monolith. After that lands the file is provably inert
+and can be deleted with the operator's confirmation. This belongs with F1 ("the Proof Gate
+does not run the suite"): both are verification paths that report success without verifying.
