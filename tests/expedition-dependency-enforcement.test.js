@@ -197,6 +197,30 @@ test("derived state dependencyStatusMap reflects upstream certification", async 
   assert.equal(derived.dependencyStatusMap["downstream-map"], "partial", "downstream should be partial")
 })
 
+test("downstream proceeds when upstream is cancelled (f4e4850f: abandoned work can never be certified)", async () => {
+  const ctx = await makeCtx()
+  const { contractId } = await approveDependencyMission(ctx, "M-CANCELLED")
+  await createExpedition(ctx, "M-CANCELLED", "upstream-cancelled")
+  await advanceToExecuting(ctx, "upstream-cancelled")
+
+  const cancelResult = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "CancelExpedition",
+    payload: { id: "upstream-cancelled", reason: "abandoned" },
+  })
+  assert.equal(cancelResult.status, "ok", `CancelExpedition should succeed: ${cancelResult.error}`)
+
+  await createExpedition(ctx, "M-CANCELLED", "downstream-cancelled", ["upstream-cancelled"])
+  await advanceToCommitted(ctx, "downstream-cancelled")
+
+  const result = await ctx.api.handleIntent({
+    actor: "test",
+    capability: "StartExpedition",
+    payload: { id: "downstream-cancelled" },
+  })
+  assert.equal(result.status, "ok", `downstream start should succeed: ${result.error}`)
+})
+
 // ------------------------------------------------------------------
 
 cleanData().then(() => suite.run("expedition-dependency-enforcement"))

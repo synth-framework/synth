@@ -1,0 +1,12 @@
+{
+  "expeditionId": "f4e4850f5929a111",
+  "capturedAt": 1791781317964,
+  "note": "Decision: canonical runtime dependsOn authoritative; charter records display-only; review-gate blocking kept dormant. Fix: cancelled upstream resolves (was permanent block). Enforcement suite 5/5.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/f4e4850f5929a111/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
