@@ -19,8 +19,11 @@
       "sessionId": "1a3f0a23-8d3e-40af-a755-4bebcd92e7f9",
       "approvalMode": "autonomous",
       "issuedAt": 355
-    }
+    },
+    "refinementId": "03776ae6448f55dc",
+    "refinementNote": "E1 implementation complete: staging fix + index surgery + regression test (red->green)",
+    "refinementAt": 356
   },
   "createdAt": 344,
-  "updatedAt": 355
+  "updatedAt": 356
 }
