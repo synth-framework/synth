@@ -3,7 +3,7 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "Fix --dry-run persisting state mutations",
   "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
-  "status": "approved",
+  "status": "completed",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -14,8 +14,36 @@
       "src/control",
       "src/runtime",
       "src/api"
-    ]
+    ],
+    "identity": {
+      "agentId": "synth-cli-9068",
+      "sessionId": "ac4fc936-2b59-4476-80a2-ee67417c8ae5",
+      "approvalMode": "autonomous",
+      "issuedAt": 306
+    }
   },
   "createdAt": 123,
-  "updatedAt": 211
+  "updatedAt": 312,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/5c2b2db11e77e740/attachments/ev-dry.log",
+      "hash": "bfdd208fe775fa373b98cc69afacb89f7db1c8e3329e59a1fcc9edafc2e06a5f"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/5c2b2db11e77e740/attachments/cert-dry.log",
+      "hash": "b00f219b23179bddf1846e73011f0317586e5b53a7b2b67eb7b00c13c8d81d52"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/5c2b2db11e77e740/git-diff.patch",
+      "hash": "d485df9f21827ce203639a41d188f186dfd51032a48bd939f789f4baa93bbe8e"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/5c2b2db11e77e740/git-diff.patch",
+      "hash": "89d11512b54dcef536f78baca21aaedec5f641f4cf98533a9f155c31754192b9"
+    }
+  ]
 }

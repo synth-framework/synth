@@ -1,0 +1,12 @@
+{
+  "expeditionId": "5c2b2db11e77e740",
+  "capturedAt": 1791771269521,
+  "note": "evidence+certify --dry-run made read-only (were silently executing); 13-command dry-run regression suite green",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/5c2b2db11e77e740/git-diff.patch",
+      "hash": "89d11512b54dcef536f78baca21aaedec5f641f4cf98533a9f155c31754192b9"
+    }
+  ]
+}

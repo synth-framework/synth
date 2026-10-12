@@ -3,12 +3,12 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "CLI Lazy-Load Strategy",
   "goal": "Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading model (shared bootstrap vs deferred domain graph), and define benchmarks and acceptance criteria so light commands stay bootstrap-free and heavy commands load only their group.",
-  "status": "approved",
+  "status": "committed",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
   "dependsOn": [],
   "metadata": {},
   "createdAt": 207,
-  "updatedAt": 209
+  "updatedAt": 304
 }

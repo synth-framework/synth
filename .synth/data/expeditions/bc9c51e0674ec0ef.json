@@ -3,7 +3,7 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "Unify expedition and mission termination commands",
   "goal": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
-  "status": "approved",
+  "status": "committed",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -19,5 +19,5 @@
     ]
   },
   "createdAt": 143,
-  "updatedAt": 145
+  "updatedAt": 301
 }
