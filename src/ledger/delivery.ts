@@ -92,6 +92,12 @@ export function resolveCommit(root: string, ref: string): string | undefined {
   return result.ok && result.out.length > 0 ? result.out : undefined
 }
 
+/** Resolve the object a ref names, without peeling tags to commits. */
+export function resolveObject(root: string, ref: string): string | undefined {
+  const result = git(root, ["rev-parse", "--verify", "--quiet", ref])
+  return result.ok && result.out.length > 0 ? result.out : undefined
+}
+
 export function isAncestor(root: string, ancestor: string, descendant: string): boolean {
   return git(root, ["merge-base", "--is-ancestor", ancestor, descendant]).ok
 }
@@ -171,5 +177,94 @@ export function verifySeal(root: string, options: { tipCommit?: string; mergeCom
     ...(tipCommit ? { tipCommit } : {}),
     mergeCommit,
     ...(onBaseBranch !== undefined ? { onBaseBranch } : {}),
+  }
+}
+
+// ------------------------------------------------------------
+// Abandonment (ADR-055 §2.7 / AC5, record half)
+// ------------------------------------------------------------
+// Nothing is wiped by default: the tip is preserved under
+// `refs/synth/abandoned/<id8>` (an annotated tag object holds the reason and
+// date), and the record carries a handoff block. `--discard` is the only path
+// that deletes, and it must be recorded to have happened.
+
+export type HandoffBlock = {
+  reason: string
+  abandonedAt?: number
+  branch?: string
+  tipCommit?: string
+  delivered?: boolean
+  merged?: boolean
+  discarded?: boolean
+  ref?: string
+}
+
+type ExpeditionLike2 = { status?: string; metadata?: Record<string, unknown> }
+
+export function handoffState(record: ExpeditionLike2 | undefined): HandoffBlock | undefined {
+  const metadata = (record?.metadata ?? {}) as Record<string, unknown>
+  return metadata.abandonment as HandoffBlock | undefined
+}
+
+export function abandonmentRef(id: string): string {
+  return `refs/synth/abandoned/${id.slice(0, 8)}`
+}
+
+export type RecoveryRefResult = { ok: boolean; ref?: string; detail: string }
+
+/**
+ * Preserve an abandoned tip. The annotated tag object carries the reason and
+ * date (a ref alone cannot), and the custom ref name points at it.
+ */
+export function createAbandonmentRef(
+  root: string,
+  options: { expeditionId: string; tipCommit: string; reason: string; timestamp: number },
+): RecoveryRefResult {
+  const ref = abandonmentRef(options.expeditionId)
+  const tempTag = `synth-abandoned-${options.expeditionId.slice(0, 8)}`
+  const message = `synth abandon ${options.expeditionId.slice(0, 8)} at ${new Date().toISOString()}\n\n${options.reason}`
+  const tag = git(root, ["tag", "-f", "-a", "-m", message, tempTag, options.tipCommit])
+  if (!tag.ok) return { ok: false, detail: `Could not tag ${options.tipCommit.slice(0, 8)}: ${tag.out}` }
+  const tagObject = resolveObject(root, `refs/tags/${tempTag}`)
+  if (!tagObject) return { ok: false, detail: `Could not resolve the recovery tag object for ${tempTag}` }
+  const refWrite = git(root, ["update-ref", "-m", `abandoned: ${options.reason}`, ref, tagObject])
+  if (!refWrite.ok) return { ok: false, detail: `Could not write ${ref}: ${refWrite.out}` }
+  git(root, ["update-ref", "-d", `refs/tags/${tempTag}`])
+  return { ok: true, ref, detail: `${ref} → ${tagObject.slice(0, 8)} (tip ${options.tipCommit.slice(0, 8)})` }
+}
+
+export type DiscardResult = { ok: boolean; deleted: string[]; detail: string }
+
+/** The only path that deletes: the branch it was abandoned on, and its ref. */
+export function discardAbandoned(
+  root: string,
+  options: { expeditionId: string; branch?: string },
+): DiscardResult {
+  const deleted: string[] = []
+  const notes: string[] = []
+  const ref = abandonmentRef(options.expeditionId)
+
+  if (options.branch) {
+    const current = git(root, ["rev-parse", "--abbrev-ref", "HEAD"]).out
+    if (current === options.branch) {
+      notes.push(`branch ${options.branch} is checked out; refusing to delete the branch you are standing on`)
+    } else {
+      const del = git(root, ["branch", "-D", options.branch])
+      if (del.ok) deleted.push(`branch ${options.branch}`)
+      else notes.push(`could not delete branch ${options.branch}: ${del.out}`)
+    }
+  }
+
+  const refExists = git(root, ["rev-parse", "--verify", "--quiet", ref]).ok
+  if (refExists) {
+    const del = git(root, ["update-ref", "-d", ref])
+    if (del.ok) deleted.push(ref)
+    else notes.push(`could not delete ${ref}: ${del.out}`)
+  }
+
+  return {
+    ok: notes.length === 0,
+    deleted,
+    detail: notes.length > 0 ? notes.join("; ") : deleted.length > 0 ? `deleted ${deleted.join(", ")}` : "nothing to delete",
   }
 }

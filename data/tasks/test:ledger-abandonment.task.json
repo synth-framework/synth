@@ -1,0 +1,14 @@
+{
+  "id": "test:ledger-abandonment",
+  "description": "npm script migration: test:ledger-abandonment",
+  "command": "node tests/ledger-abandonment.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 180000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

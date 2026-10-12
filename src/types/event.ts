@@ -95,6 +95,23 @@ export type StateEvent =
       tipCommit?: string
       baseBranch?: string
     }
+  | {
+      type: "EXPEDITION_ABANDONED"
+      expeditionId: string
+      reason: string
+      branch?: string
+      tipCommit?: string
+      delivered?: boolean
+      merged?: boolean
+    }
+  | {
+      type: "EXPEDITION_DISCARDED"
+      expeditionId: string
+      branch?: string
+      ref?: string
+      tipCommit?: string
+      deleted?: string[]
+    }
   // Review gate lifecycle (EXP-PROGRAM-035)
   | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
   | { type: "REVIEW_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; decision: string }

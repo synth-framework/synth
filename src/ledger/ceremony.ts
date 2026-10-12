@@ -72,6 +72,9 @@ export const CEREMONIES: Record<string, CeremonySpec> = {
   "expedition-deliver": { transition: "EXPEDITION_DELIVERED", entityKind: "expedition" },
   "expedition-seal": { transition: "EXPEDITION_INTEGRATED", entityKind: "expedition" },
   "expedition-abandon": { transition: "EXPEDITION_ABANDONED", entityKind: "expedition" },
+  // The deletion half of an abandonment: it is its own ceremony precisely so the
+  // ledger can never be missing a deletion that happened.
+  "expedition-discard": { transition: "EXPEDITION_DISCARDED", entityKind: "expedition" },
 
   // Intake ceremonies: the draft + its integrity record are the input class of
   // the planning step, and they are tracked — so the verb that writes them is
@@ -105,6 +108,7 @@ export const CAPABILITY_CEREMONIES: Record<string, string> = {
   DeliverExpedition: "expedition-deliver",
   SealExpedition: "expedition-seal",
   AbandonExpedition: "expedition-abandon",
+  DiscardExpedition: "expedition-discard",
 }
 
 export type CeremonyIntent = {

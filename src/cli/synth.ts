@@ -35,7 +35,16 @@ import {
 } from "../state/artifact-policy.js"
 import { checkLedger, repairLedger } from "../ledger/doctor.js"
 import { ceremonyForCapability, commitCeremony } from "../ledger/ceremony.js"
-import { deliveryState, pushBranch, resolveCommit, verifySeal } from "../ledger/delivery.js"
+import {
+  abandonmentRef,
+  createAbandonmentRef,
+  deliveryState,
+  discardAbandoned,
+  handoffState,
+  pushBranch,
+  resolveCommit,
+  verifySeal,
+} from "../ledger/delivery.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -4463,6 +4472,163 @@ async function cmdProgramShow(flags: Record<string, string | boolean>) {
 }
 
 /**
+ * `synth expedition abandon --id <id> --reason <text> [--branch <name>] [--discard]`
+ * ADR-055 §2.7 / AC5 (record half): nothing is wiped by default. The event lands
+ * on the ledger first, the tip is preserved under `refs/synth/abandoned/<id8>`,
+ * and the expedition record gains the handoff block. `--discard` is the only
+ * deletion path and it is itself a recorded ceremony.
+ */
+async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  const reason = typeof flags.reason === "string" ? flags.reason.trim() : ""
+  if (!id || !reason) {
+    printError("Usage: synth expedition abandon --id <expedition-id> --reason <text> [--branch <name>] [--discard]", {
+      code: "MissingAbandonArguments",
+      category: "validation",
+      suggestion: "Abandonment needs a reason — it is the note your successor reads.",
+    })
+  }
+
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const discard = flags.discard === true || flags.discard === "true"
+
+  const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+  const expedition = (await ctx.runtime.getState()).expeditions[id]
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+  }
+  const handoff = handoffState(expedition)
+  // Already abandoned, and the operator now wants the deletion done: that is a
+  // second act (the discard), not a second abandonment. Everything else about
+  // an already-terminal expedition is refused.
+  const discardOnly = Boolean(handoff) && discard
+  if (!discardOnly && (expedition.status === "cancelled" || expedition.status === "archived")) {
+    printError(`Expedition ${id} is already ${expedition.status} — nothing to abandon.`, {
+      code: "ExpeditionNotAbandonable",
+      category: "governance",
+      suggestion: handoff
+        ? `The handoff is recorded. To delete the branch and ref: synth expedition abandon --id ${id} --reason "${handoff.reason}" --discard`
+        : `Run 'synth expedition show --id ${id}' to see its state.`,
+    })
+  }
+
+  const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+  const tipCommit = branch ? resolveCommit(process.cwd(), branch) : undefined
+  const delivery = deliveryState(expedition)
+  const ref = abandonmentRef(id)
+
+  if (dryRun) {
+    printJson({
+      status: "ok",
+      kind: "ExpeditionAbandonDryRun",
+      expeditionId: id,
+      reason,
+      branch: branch || undefined,
+      tipCommit,
+      delivered: delivery.delivered,
+      merged: delivery.integrated,
+      wouldPreserve: tipCommit ? ref : undefined,
+      wouldDiscard: discard ? { branch: branch || undefined, ref } : undefined,
+      note: discardOnly
+        ? "Dry-run: the abandonment is already recorded; only the discard would run"
+        : "Dry-run: no event, no ref, no deletion",
+      nextStep: `synth expedition abandon --id ${id} --reason "${reason}"${discard ? " --discard" : ""}`,
+    })
+    return
+  }
+
+  // 1. Record the abandonment on the canonical ledger — before any branch
+  //    operation, so the abandonment survives whatever happens next.
+  let ledger: LedgerCommitInfo | undefined
+  if (!discardOnly) {
+    const payload: Record<string, unknown> = { id, reason }
+    if (branch) payload.branch = branch
+    if (tipCommit) payload.tipCommit = tipCommit
+    if (delivery.delivered) payload.delivered = true
+    if (delivery.integrated) payload.merged = true
+
+    const result = await ctx.api.handleIntent({ actor: "synth-cli", capability: "AbandonExpedition", payload })
+    if (result?.status !== "ok") {
+      printError(`Abandon refused: ${JSON.stringify(result?.error ?? result)}`, {
+        code: "ABANDON_REFUSED",
+        category: "governance",
+        suggestion: `Run 'synth expedition show --id ${id}' to check its state.`,
+      })
+    }
+    ledger = await flushPendingCeremony()
+  }
+
+  // 2. Preserve the tip (default) — a branch deleted tomorrow is still
+  //    recoverable from the ref.
+  let preserved: { ok: boolean; ref?: string; detail: string } | undefined
+  if (tipCommit && !discard && !discardOnly) {
+    preserved = createAbandonmentRef(process.cwd(), {
+      expeditionId: id,
+      tipCommit,
+      reason,
+      timestamp: Date.now(),
+    })
+  }
+
+  // 3. Discard is a second, separately recorded ceremony: it may only claim a
+  //    deletion that actually happened.
+  let discarded: { ok: boolean; deleted: string[]; detail: string } | undefined
+  let discardLedger: LedgerCommitInfo | undefined
+  if (discard) {
+    const discardBranch = branch || handoff?.branch || ""
+    const outcome = discardAbandoned(process.cwd(), {
+      expeditionId: id,
+      ...(discardBranch ? { branch: discardBranch } : {}),
+    })
+    discarded = { ok: outcome.ok, deleted: outcome.deleted, detail: outcome.detail }
+    if (outcome.ok) {
+      const discardPayload: Record<string, unknown> = { id }
+      if (discardBranch) discardPayload.branch = discardBranch
+      discardPayload.ref = ref
+      if (tipCommit ?? handoff?.tipCommit) discardPayload.tipCommit = tipCommit ?? handoff?.tipCommit
+      discardPayload.deleted = outcome.deleted
+      const discardResult = await ctx.api.handleIntent({
+        actor: "synth-cli",
+        capability: "DiscardExpedition",
+        payload: discardPayload,
+      })
+      if (discardResult?.status === "ok") {
+        discardLedger = await flushPendingCeremony()
+      } else {
+        printError(`The discard happened but could not be recorded: ${JSON.stringify(discardResult?.error ?? discardResult)}`, {
+          code: "DISCARD_UNRECORDED",
+          category: "ledger",
+          suggestion: "Record it by hand; the ledger must not be missing a deletion that happened.",
+        })
+      }
+    }
+  }
+
+  const after = handoffState((await ctx.runtime.getState()).expeditions[id])
+  const response: Record<string, unknown> = {
+    status: "ok",
+    kind: discardOnly ? "ExpeditionDiscarded" : "ExpeditionAbandoned",
+    expeditionId: id,
+    reason,
+    ...(branch ? { branch } : {}),
+    ...(tipCommit ? { tipCommit } : {}),
+    delivered: delivery.delivered,
+    merged: delivery.integrated,
+    ...(after?.ref ? { recoveryRef: after.ref } : {}),
+    ...(preserved && !preserved.ok ? { preservationError: preserved.detail } : {}),
+    ...(preserved?.ok ? { preservedTo: preserved.ref } : {}),
+    ...(discarded ? { discarded: discarded.deleted, discardDetail: discarded.detail } : {}),
+    ...(ledger ? { ledger } : {}),
+    ...(discardLedger ? { discardLedger } : {}),
+    nextStep: "Then update the plan/branch bookkeeping so the abandoned work is not mistaken for live work.",
+  }
+  if (preserved && !preserved.ok) {
+    response.preservationNextStep = `Create the recovery ref by hand: git update-ref ${ref} ${tipCommit}`
+  }
+  printJson(response)
+}
+
+/**
  * `synth expedition deliver --id <id> [--remote origin] [--pr <ref>] [--no-push]`
  * ADR-055 §2.6: deliver is what makes a finished branch reachable — push the
  * execution branch, record where it landed, and mark the ceremony committed.
@@ -4723,7 +4889,9 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   const runtimeExpedition = !isGovernanceResolutionFailure(runtimeResolved)
     ? runtimeResolved.authoritative.replayedState.expeditions[id]
     : undefined
-  const delivery = deliveryState((runtimeExpedition ?? expedition) as { status?: string; metadata?: Record<string, unknown> })
+  const record = (runtimeExpedition ?? expedition) as { status?: string; metadata?: Record<string, unknown> }
+  const delivery = deliveryState(record)
+  const handoff = handoffState(record)
   printJson({
     status: "ok",
     kind: "ExpeditionShow",
@@ -4739,6 +4907,7 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
       ...(delivery.delivery ? { record: delivery.delivery } : {}),
       ...(delivery.integration ? { integration: delivery.integration } : {}),
     },
+    ...(handoff ? { handoff } : {}),
   })
 }
 
@@ -8552,7 +8721,7 @@ export async function main() {
 
     case "expedition": {
       const sub = positional[1]
-      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel", "deliver", "seal"].includes(sub)) {
+      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel", "deliver", "seal", "abandon"].includes(sub)) {
         await guardEventLogLineage(flags)
       }
       if (sub === "create") await cmdExpeditionCreate(flags)
@@ -8567,6 +8736,7 @@ export async function main() {
       else if (sub === "delete") await cmdExpeditionDelete(flags)
       else if (sub === "move") await cmdExpeditionMove(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
+      else if (sub === "abandon") await cmdExpeditionAbandon(flags)
       else if (sub === "deliver") await cmdExpeditionDeliver(flags)
       else if (sub === "seal") await cmdExpeditionSeal(flags)
       else if (sub === "refine") await cmdExpeditionRefine(flags)

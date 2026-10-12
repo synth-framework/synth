@@ -876,6 +876,82 @@ function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "AbandonExpedition",
+      description: "Abandon a live expedition \u2014 records the handoff on the ledger before anything is touched (ADR-055 \u00a72.7)",
+      inputSchema: {
+        required: ["id", "reason"],
+        types: { id: "string", reason: "string", branch: "string", tipCommit: "string" },
+      },
+      outputSchema: { events: ["EXPEDITION_ABANDONED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_abandonable",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return Boolean(status) && status !== "archived"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const existing = state.expeditions[id]
+        if (!existing) {
+          throw new Error(`EXPEDITION_NOT_FOUND: cannot abandon unknown expedition ${id}`)
+        }
+        const reason = String(intent.payload.reason || "").trim()
+        if (!reason) {
+          throw new Error("INVARIANT_VIOLATION: AbandonExpedition requires a reason (nothing is wiped silently)")
+        }
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id, expeditionId: id, reason }
+        if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
+        if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+        if (intent.payload.delivered === true) payload.delivered = true
+        if (intent.payload.merged === true) payload.merged = true
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_ABANDONED", payload }] }
+      },
+    },
+    {
+      name: "DiscardExpedition",
+      description: "Delete an abandoned expedition's branch and recovery ref \u2014 the only path that deletes, and it is recorded (ADR-055 \u00a72.7)",
+      inputSchema: {
+        required: ["id"],
+        types: { id: "string", branch: "string", ref: "string", tipCommit: "string" },
+      },
+      outputSchema: { events: ["EXPEDITION_DISCARDED"], resultType: "Expedition" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const existing = state.expeditions[id]
+        if (!existing) {
+          throw new Error(`EXPEDITION_NOT_FOUND: cannot discard unknown expedition ${id}`)
+        }
+        if (!existing.metadata?.abandonment) {
+          throw new Error(
+            "INVARIANT_VIOLATION: discard only follows an abandonment \u2014 run `synth expedition abandon` first",
+          )
+        }
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id, expeditionId: id }
+        if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
+        if (typeof intent.payload.ref === "string") payload.ref = intent.payload.ref
+        if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+        if (Array.isArray(intent.payload.deleted)) payload.deleted = intent.payload.deleted
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_DISCARDED", payload }] }
+      },
+    },
+    {
       name: "CompleteExpedition",
       description: "Complete an expedition",
       inputSchema: { required: ["id"], types: { id: "string" } },

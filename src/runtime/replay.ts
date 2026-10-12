@@ -426,6 +426,56 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_ABANDONED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        const abandonment = (existing.metadata?.abandonment ?? {}) as Record<string, unknown>
+        state.expeditions[expeditionId] = {
+          ...existing,
+          // ADR-054: `cancelled` is the terminal ledger state for work that was
+          // walked away from; `abandon` is the honest verb that lands it.
+          status: "cancelled",
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            abandonment: {
+              ...abandonment,
+              reason: String(payload.reason ?? ""),
+              abandonedAt: event.timestamp,
+              ...(typeof payload.branch === "string" ? { branch: payload.branch } : {}),
+              ...(typeof payload.tipCommit === "string" ? { tipCommit: payload.tipCommit } : {}),
+              // explicit, always: "was it delivered / merged" is a question the
+              // handoff must answer, not one it may leave blank
+              delivered: payload.delivered === true,
+              merged: payload.merged === true,
+              ...(typeof payload.ref === "string" ? { ref: payload.ref } : {}),
+            },
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_DISCARDED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        state.expeditions[expeditionId] = {
+          ...existing,
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            abandonment: {
+              ...((existing.metadata?.abandonment ?? {}) as Record<string, unknown>),
+              discarded: true,
+              discardedAt: event.timestamp,
+              deleted: Array.isArray(payload.deleted) ? payload.deleted : [],
+            },
+          },
+        }
+      }
+      break
+    }
     case "EXPEDITION_REFINED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {

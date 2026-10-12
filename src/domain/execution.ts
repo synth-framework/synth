@@ -497,6 +497,50 @@ export function applyDomain(
       return { events: [{ type: "EXPEDITION_INTEGRATED", payload }] }
     }
 
+    case "AbandonExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const reason = String(intent.payload.reason || "").trim()
+      if (!existing) {
+        throw new Error(`EXPEDITION_NOT_FOUND: cannot abandon unknown expedition ${id}`)
+      }
+      if (!reason) {
+        throw new Error("INVARIANT_VIOLATION: AbandonExpedition requires a reason (nothing is wiped silently)")
+      }
+      if (existing.status === "archived") {
+        throw new Error("INVARIANT_VIOLATION: an archived expedition is closed; abandon is for live work")
+      }
+      const payload: Record<string, unknown> = { id, expeditionId: id, reason }
+      if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
+      if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+      if (intent.payload.delivered === true) payload.delivered = true
+      if (intent.payload.merged === true) payload.merged = true
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_ABANDONED", payload }] }
+    }
+
+    case "DiscardExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      if (!existing) {
+        throw new Error(`EXPEDITION_NOT_FOUND: cannot discard unknown expedition ${id}`)
+      }
+      if (!existing.metadata?.abandonment) {
+        throw new Error(
+          "INVARIANT_VIOLATION: discard only follows an abandonment — run `synth expedition abandon` first",
+        )
+      }
+      const payload: Record<string, unknown> = { id, expeditionId: id }
+      if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
+      if (typeof intent.payload.ref === "string") payload.ref = intent.payload.ref
+      if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+      if (Array.isArray(intent.payload.deleted)) payload.deleted = intent.payload.deleted
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_DISCARDED", payload }] }
+    }
+
     case "CompleteExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]
