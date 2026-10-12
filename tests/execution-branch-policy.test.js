@@ -16,8 +16,13 @@ import test from "node:test"
 
 import {
   loadBranchPolicyConfig,
+  matchesDeclaredBranchPattern,
   resolveExecutionBranch,
 } from "../dist/repository/branch-policy.js"
+import {
+  isCanonicalBranchForRole,
+  validateDeclaredBranchName,
+} from "../dist/repository/branch-taxonomy.js"
 import { createGitRepositoryAdapter } from "../dist/adapters/repository/git.js"
 
 function makeProject(withConfig = false, configYaml = "") {
@@ -235,4 +240,91 @@ git:
     expeditionId: "e-1",
   })
   assert.strictEqual(result.ok, true)
+})
+// ------------------------------------------------------------
+// ADR-056 — operator-declared execution branches
+// ------------------------------------------------------------
+
+test("loadBranchPolicyConfig: parses declaredPatterns", () => {
+  const root = makeProject(true, `
+git:
+  branchStrategy: featured
+  branchPolicy:
+    mode: enforce
+    declaredPatterns: ["arena/*", "fix/*"]
+`)
+  const p = loadBranchPolicyConfig(root)
+  assert.deepStrictEqual(p.declaredPatterns, ["arena/*", "fix/*"])
+})
+
+test("loadBranchPolicyConfig: declaredPatterns defaults to empty", () => {
+  const p = loadBranchPolicyConfig(makeProject(false))
+  assert.deepStrictEqual(p.declaredPatterns, [])
+})
+
+test("validateDeclaredBranchName: accepts operator names, rejects invalid refs", () => {
+  for (const name of ["arena/c5db653e-synth", "fix/login-flow", "expedition/m-1/e-1"]) {
+    assert.strictEqual(validateDeclaredBranchName(name).valid, true, name)
+  }
+  for (const name of ["", "has space", "bad..name", "trailing.", "/leading", "ends.lock", "weird~ref"]) {
+    assert.strictEqual(validateDeclaredBranchName(name).valid, false, name)
+  }
+})
+
+test("matchesDeclaredBranchPattern: `*` spans slashes, everything else is literal", () => {
+  assert.strictEqual(matchesDeclaredBranchPattern("arena/c5db653e-synth", ["arena/*"]), true)
+  assert.strictEqual(matchesDeclaredBranchPattern("fix/login-flow", ["arena/*"]), false)
+  assert.strictEqual(matchesDeclaredBranchPattern("fix/login-flow", ["fix/*", "arena/*"]), true)
+  assert.strictEqual(matchesDeclaredBranchPattern("anything", undefined), false)
+  // A pattern is not a regex: dots are literal.
+  assert.strictEqual(matchesDeclaredBranchPattern("arenaXc5db", ["arena.c5db"]), false)
+})
+
+test("resolveExecutionBranch: a declared branch is consulted before the taxonomy", () => {
+  const policy = makePolicy({ mode: "enforce" })
+  const result = resolveExecutionBranch("expedition", "arena/c5db653e-synth", policy, {
+    missionId: "m-1",
+    expeditionId: "e-1",
+    declaredBranch: "arena/c5db653e-synth",
+  })
+  assert.strictEqual(result.ok, true, result.reason)
+  assert.strictEqual(result.declaredBranch, "arena/c5db653e-synth")
+  assert.strictEqual(result.overridden, true)
+  assert.strictEqual(result.patternMatched, false)
+  assert.match(result.reason, /BRANCH_POLICY_OVERRIDDEN/)
+})
+
+test("resolveExecutionBranch: declaredPatterns soften the override warning", () => {
+  const policy = makePolicy({ mode: "enforce", declaredPatterns: ["arena/*"] })
+  const result = resolveExecutionBranch("mission", "arena/c5db653e-synth", policy, {
+    missionId: "m-1",
+    declaredBranch: "arena/c5db653e-synth",
+  })
+  assert.strictEqual(result.ok, true)
+  assert.strictEqual(result.overridden, true)
+  assert.strictEqual(result.patternMatched, true)
+  assert.doesNotMatch(result.reason, /BRANCH_POLICY_OVERRIDDEN/)
+})
+
+test("resolveExecutionBranch: a canonical declared branch is not an override", () => {
+  const policy = makePolicy({ mode: "enforce" })
+  const name = "expedition/m-1/e-1"
+  assert.strictEqual(isCanonicalBranchForRole("expedition", name, { missionId: "m-1", expeditionId: "e-1" }), true)
+  const result = resolveExecutionBranch("expedition", name, policy, {
+    missionId: "m-1",
+    expeditionId: "e-1",
+    declaredBranch: name,
+  })
+  assert.strictEqual(result.ok, true)
+  assert.strictEqual(result.overridden, false)
+})
+
+test("resolveExecutionBranch: without a declaration the taxonomy still governs", () => {
+  const policy = makePolicy({ mode: "enforce" })
+  const result = resolveExecutionBranch("expedition", "arena/c5db653e-synth", policy, {
+    missionId: "m-1",
+    expeditionId: "e-1",
+  })
+  assert.strictEqual(result.ok, false)
+  assert.strictEqual(result.requiredBranch, "expedition/m-1/e-1")
 })

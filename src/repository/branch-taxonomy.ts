@@ -201,3 +201,36 @@ export function generateBranchName(
 
   return parts.join("/")
 }
+
+/**
+ * Sanity check for an operator-declared branch name (ADR-056 §2.1). This is
+ * the pure subset of `git check-ref-format --branch`; the CLI additionally
+ * asks git itself before touching the repository, because ref rules evolve.
+ */
+export function validateDeclaredBranchName(name: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = []
+  const value = String(name ?? "").trim()
+  if (value.length === 0) errors.push("Branch name must not be empty")
+  if (/\s/.test(value)) errors.push("Branch name must not contain whitespace")
+  if (value.startsWith("-")) errors.push("Branch name must not start with '-'")
+  if (value.startsWith("/") || value.endsWith("/")) errors.push("Branch name must not start or end with '/'")
+  if (value.endsWith(".")) errors.push("Branch name must not end with '.'")
+  if (value.includes("..")) errors.push("Branch name must not contain '..'")
+  if (value.includes("@{")) errors.push("Branch name must not contain '@{'")
+  if (value === "@") errors.push("Branch name must not be '@'")
+  if (/[~^:?*\[\\]/.test(value)) errors.push("Branch name must not contain ~ ^ : ? * [ or \\")
+  if (value.endsWith(".lock") || value.split("/").some((part) => part.endsWith(".lock"))) {
+    errors.push("Branch name components must not end with '.lock'")
+  }
+  return { valid: errors.length === 0, errors }
+}
+
+/** True when `name` is a canonical <role> branch for this entity (and only this entity). */
+export function isCanonicalBranchForRole(
+  role: "mission" | "expedition",
+  name: string,
+  options: BranchNameOptions = {},
+): boolean {
+  if (classifyBranch(name) !== role) return false
+  return canonicalBranchCandidates(role, options).includes(name)
+}
