@@ -1,6 +1,6 @@
 {
-  "version": 387,
-  "stateHash": "1223199640",
+  "version": 395,
+  "stateHash": "1670802268",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -99,14 +99,14 @@
       "id": "a57585f0aec4b2d8",
       "name": "Governed Operation from Operator Branches",
       "purpose": "Make SYNTH govern work on pre-existing operator branches: declare and bind execution branches (ADR-056 --branch/--no-create), anchor and single-write the ceremony ledger (ADR-055: ledger writer, anchor, single writer), and make delivery and abandonment first-class ceremonies (deliver/seal/close/abandon) so finished work, files and history survive the branch lifecycle instead of being stranded or wiped.",
-      "status": "active",
+      "status": "completed",
       "expeditions": [
         "e788e528a896008a",
         "bda2bbd4ef6550af"
       ],
       "metadata": {},
       "createdAt": 331,
-      "updatedAt": 351,
+      "updatedAt": 390,
       "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
     }
   },
@@ -1516,7 +1516,7 @@
       "missionId": "a57585f0aec4b2d8",
       "name": "Ledger writer and delivery MVP (ADR-055 P1/P2)",
       "goal": "Implement ADR-055 phases P1-P2: anchor the ceremony ledger in a sparse, gitignored detached worktree (.synth/anchor) advanced by update-ref CAS with a lock and a dirty-ledger pre-check; route lifecycle ceremonies through the writer so each ceremony is one commit on the canonical branch; make doctor fail on uncommitted ledger, stale/missing anchor and ledger-ahead-of-main, with --fix performing worktree prune + re-add; add expedition deliver (push branch/publish PR, record EXPEDITION_DELIVERED) and expedition seal --merge-commit (verify the delivered tip is an ancestor of the merge commit, record EXPEDITION_INTEGRATED), plus the abandonment handoff block and deliveryPending marker.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1547,13 +1547,28 @@
         }
       },
       "createdAt": 351,
-      "updatedAt": 386,
+      "updatedAt": 393,
       "executionBranch": "arena/c5db653e-synth",
       "attachments": [
         {
           "kind": "attachment",
           "path": "proof/expeditions/bda2bbd4ef6550af/attachments/e5-p2-source.patch",
           "hash": "24090f930254bf59552f6c2bc63488df8b8957c73fef1cd397228ecd0974773c"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/bda2bbd4ef6550af/git-diff.patch",
+          "hash": "8ce1400075877604e60507c0df6846a170a38e62c55322cbe3384969ffbaca9c"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/bda2bbd4ef6550af/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/bda2bbd4ef6550af/git-diff.patch",
+          "hash": "c7e5bc480bfb8fa9a949f5d6ff3def82c5bdd7604c374b6282cf1be16c504c35"
         }
       ]
     }
@@ -1581,5 +1596,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 387
+  "lastEventOffset": 395
 }
