@@ -1,0 +1,21 @@
+{
+  "id": "f0f81e358899d8f2",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Revisit testing and reporting infrastructure",
+  "goal": "Re-examine the test chain (test:all, 111 npm-run steps), the governance profiler, and the reporting/logging surfaces. Decide which suites stay, which merge, which are retired, and how results are reported, so failures name a check and environment-dependent behavior is explicit. Replace the ad hoc decisions made while taming the codebase with a reviewed plan.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "tests/**",
+      "scripts/govern-profiler.js",
+      "scripts/governance/**",
+      "data/tasks/**"
+    ]
+  },
+  "createdAt": 395,
+  "updatedAt": 395
+}
