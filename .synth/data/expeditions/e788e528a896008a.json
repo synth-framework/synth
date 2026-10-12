@@ -26,5 +26,12 @@
     }
   },
   "createdAt": 348,
-  "updatedAt": 377
+  "updatedAt": 378,
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e788e528a896008a/attachments/e4-source.patch",
+      "hash": "5afec3c395e0693410558a340b12fc72e4f07cf6201f0752098583f8e928d9b2"
+    }
+  ]
 }
