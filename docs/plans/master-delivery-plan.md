@@ -1,7 +1,7 @@
-# SYNTH — Master Delivery Plan (rev 3)
+# SYNTH — Master Delivery Plan (rev 3.2)
 
-**Prepared:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Working branch:** `arena/c5db653e-synth` @ `144bbfe` (pushed)
-**Status:** bootstrap executed; **E1–E3 complete, M1 completed, all shipped on the branch**; the `mode: off` window is still open (exit = E4). Rev 3.1 records finding **F7** (the snapshot/verify path still reads the legacy monolith — audit Addendum 4).
+**Prepared:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Working branch:** `arena/c5db653e-synth` @ `19f1c99` (pushed)
+**Status:** bootstrap executed; **E1–E3 complete, M1 completed, E4 slice 1 + slice 2 shipped (`0708265`, `19f1c99`)**; E4 still executing; the `mode: off` window is still open (exit = the window-close step in §5). Rev 3.1 records **F7** (the snapshot/verify path still reads the legacy monolith); rev 3.2 records **F8** (a CLI test reads it too) and **F9** (two stale task tests are red and not in the chain).
 **Supersedes:** rev 2 of this document, and the ad-hoc sequencing in the project brief §4.2.
 **Design of record:** `docs/adr/ADR-054` (lifecycle), `docs/adr/ADR-055` (ceremonial events), `docs/adr/ADR-056` (declared branches).
 **Evidence base:** `docs/audits/mission-expedition-cli-audit-2026-10-12.md`, `docs/plans/reads-never-write.md`.
@@ -19,6 +19,10 @@
 | 5 | **`check-artifact-policy --ci` is deliberately not wired yet**: it asserts `branchPolicy.mode: enforce`, so it must land in the same PR that closes the window (E4) | otherwise the suspension could reach `main` silently |
 | 6 | **`AGENTS.md` was lying about its own architecture** ("do not commit `.synth/data/drafts/`"; "`event-log.jsonl` is the replay source") — fixed at the fragment source (`knowledge/AGENTS-intro.md`) and regenerated | E3; the contract now matches the policy table |
 | 7 | **`test:task-npm-migration` was red at HEAD** (the `test:adr` / `check:adr` task files were missing) — fixed by E3's registration pass | found while wiring; a second instance of the same class as F1 (registration drift) |
+| 9 | **E4 slice 2 landed** (`19f1c99`): the declaration is recorded (`BindExecutionBranch` → `MISSION_BRANCH_BOUND` / `EXPEDITION_BRANCH_BOUND`), projected onto the records, replayed, and used to enrich the gate's context — so later commands agree without flags. `--branch` / `--no-create` on `mission approve`, `expedition commit`, `expedition start`; git mechanics isolated in `src/repository/branch-declaration.ts`; 9 new tests (`test:declared-branch`, in the chain) | ADR-056 slice 2 |
+| 10 | **Two rules made explicit during implementation** (recorded in ADR-056 §2.1): (a) a binding is **not a bypass** — HEAD must be the bound branch or the gate denies with the bound name; (b) exclusivity is **per role** — one mission + its expeditions may share an operator-owned branch (the arena case), two live expeditions may not, and a terminal entity releases its branch | the arena workflow needs both; without (a) the binding would authorize ceremonies from any branch |
+| 11 | **F8 — `tests/execution-branch-gate.test.js` reads `.synth/data/event-log.jsonl`** in its two CLI assertions; since the event-stream cutover that file is no longer written, so both fail with `ENOENT` at HEAD (pre-existing; verified by stashing slice 2 and re-running). Same class as F7: a live consumer of the monolith | migrate the two assertions to the event-stream reader in the F1 follow-up (§9.12) |
+| 12 | **F9 — `tests/task-npm-adapter.test.js` and `tests/task-schema-registry.test.js` are red at HEAD and not in the `test:all` chain** (the first asserts every npm script delegates to the task shim and trips on the E3 additions; the second imports an export that no longer exists). Registration drift, same family as F1/F4 | fold into the F1 follow-up ("register or delete", one decision per stale test) |
 | 8 | M1's three expeditions are complete **and M1 itself auto-completed** (the framework completes a mission when its last expedition terminates — observed at `f3dda2d`), so the next lifecycle act is M2's E4 (ADR-056), which is also the **window exit** | new sequencing detail in §5; removes the "run `mission complete`" step rev 2 planned |
 
 ---
@@ -28,14 +32,14 @@
 | Item | Value |
 |---|---|
 | Repo / version | `synth-framework/synth` @ `ac4e81a` (merge #339), v2.6.1 |
-| Branch | `arena/c5db653e-synth` @ `144bbfe`, pushed and equal to `origin` |
+| Branch | `arena/c5db653e-synth` @ `19f1c99`, pushed and equal to `origin` |
 | Governance | 377 events, replay `consistent: true` |
 | Missions | `b536ecc7ceb9217a` *Derived-State Integrity* — **completed** (auto-completed at `f3dda2d` when E3 finished; 3/3 expeditions complete); `a57585f0aec4b2d8` *Governed Operation from Operator Branches* — active (E4, E5 committed) |
-| Expeditions | E1 `ecc3688796be0545` **completed** · E2 `f089c4fea720c07c` **completed** · E3 `cfbb801aa232795a` **completed** · E4 `e788e528a896008a` committed · E5 `bda2bbd4ef6550af` committed (dep E1, E4) |
+| Expeditions | E1 `ecc3688796be0545` **completed** · E2 `f089c4fea720c07c` **completed** · E3 `cfbb801aa232795a` **completed** · E4 `e788e528a896008a` **executing** (slice 1 `0708265`, slice 2 `19f1c99`) · E5 `bda2bbd4ef6550af` committed (dep E1, E4) |
 | Window | `git.branchPolicy.mode: off` committed with a rationale comment + restore instruction (`.synth/config.yaml`); no branch is created or checked out anywhere in the window |
 | PR | **#340** open, **draft**, "Governance bootstrap: ADR-054/055/056, master plan, and the derived-state fixes (hold: carries `mode: off` window)" |
 | Artifact classification | `scripts/check-artifact-policy.js` → PASS (2065 tracked paths; rules durable:10 input:1 derived:4 cache:4 legacy:2) |
-| Tests added | `tests/no-write-on-read.test.js` 11/11 (0/11 pre-fix) · `tests/artifact-policy.test.js` 11/11 · `tests/auto-commit-ignored-paths.test.js` green |
+| Tests added | `tests/no-write-on-read.test.js` 11/11 (0/11 pre-fix) · `tests/artifact-policy.test.js` 11/11 · `tests/auto-commit-ignored-paths.test.js` green · `test:declared-branch` 34/34 (25 policy + 6 git + 3 binding) |
 
 ---
 
@@ -103,7 +107,7 @@ Purpose: make SYNTH govern work on pre-existing operator branches — declared e
 
 | Expedition | Scope | Depends on | PR |
 |---|---|---|---|
-| **E4 — Declared execution branches** `e788e528a896008a` (committed) | `--branch` / `--no-create` on `mission approve` / `expedition commit|start`; binding recorded (`*_BRANCH_BOUND`) and consulted before taxonomy; `BRANCH_POLICY_OVERRIDDEN` warning; `DECLARED_BRANCH_MISSING` / `DECLARED_BRANCH_IN_USE`; config `declaredPatterns` (warning-softening) | — | PR-4 |
+| **E4 — Declared execution branches** `e788e528a896008a` (**executing**; slice 1 `0708265`, slice 2 `19f1c99`) | `--branch` / `--no-create` on `mission approve` / `expedition commit|start`; binding recorded (`*_BRANCH_BOUND`) and consulted before taxonomy; `BRANCH_POLICY_OVERRIDDEN` warning; `DECLARED_BRANCH_MISSING` / `DECLARED_BRANCH_IN_USE`; config `declaredPatterns` (warning-softening). **Remaining:** window close (§5) — `mode: enforce` + `declaredPatterns: ["arena/*"]` + `check-artifact-policy --ci` in the governed chain, then finish E4 | — | PR-4 |
 | **E5 — Ledger writer + delivery MVP** `bda2bbd4ef6550af` (committed) | anchor worktree + lock + CAS; ceremony commit routing (single writer); `doctor` checks (uncommitted ledger, stale anchor, ledger-ahead-N); `deliver` + `seal` verbs (seal verifies the merge commit after `git fetch origin main`); abandonment/handoff record | E1, E4 | PR-5 |
 | **E6 — Worktrees + full delivery** (ADR-055 P3, deferred) | per-expedition worktrees; `deliveryPending` enforcement; `close` cleanup; `status` stale-work warnings | E5 | later |
 
@@ -131,6 +135,9 @@ Purpose: make SYNTH govern work on pre-existing operator branches — declared e
 | **F6** | `--depends-on` is set-only (`planning.ts` replaces only when an array is passed; the CLI omits empty arrays), so a wrong edge can only be cleared by delete + recreate | recorded in audit Addendum 3; E1's dependency set is correct (`E3 → E1, E2`), no repair needed |
 | **F7** | **The legacy monolith is still read by the snapshot path** (audit Addendum 4): `getEventOffset()` uses its line count (262 vs the true 377); `SNAPSHOT_FILES` includes it, so a commit-on-change snapshot `git add` would fail on the ignored file (reproduced); and `verifySnapshotAtTag()` requires it at the tagged commit, so `synth snapshot verify --tag synth-expedition/cfbb801aa232795a` → `Event log missing at tagged state`. The data itself is a proven subset of `event-stream/` (262/262 by `eventHash`, 0 unique) | **Do not delete the file yet** (§9.3). Migrate the three call sites to `event-stream/` in the F1 follow-up expedition; afterwards the file is inert and deletable. The snapshot test seeds its own monolith, which is why the suite stayed green while the ceremony is broken |
 
+| **F8** | `tests/execution-branch-gate.test.js` (two CLI assertions) still reads `.synth/data/event-log.jsonl`, which the event-stream cutover stopped writing → both fail `ENOENT` at HEAD. Verified pre-existing: stashing E4 slice 2 and re-running reproduces it (engine tests in the same file pass) | migrate the assertions to the event-stream reader in the F1 follow-up (§9.12); until then the file is a known-red test, not a regression |
+| **F9** | `tests/task-npm-adapter.test.js` (asserts every npm script delegates to the task shim; trips on E3's additions) and `tests/task-schema-registry.test.js` (imports `getTasksByGroup`, which no longer exists) are red at HEAD **and absent from the `test:all` chain**, so CI neither runs nor reports them | fold into the F1 follow-up: one decision per stale test — register it (and fix it) or delete it; "not in the chain" must be a recorded decision, not an accident |
+
 ### 4.5 Progress log
 
 **2026-10-12 — bootstrap executed (option c).** Branch pushed; `mode: off` committed with rationale; drafts force-added; docs landed; M1 + M2 approved (0.67 → 0.69 → 0.71 via two evidence rounds each); E1–E5 chartered; PR #340 opened as a draft hold.
@@ -141,7 +148,11 @@ Purpose: make SYNTH govern work on pre-existing operator branches — declared e
 
 **2026-10-12 — E3 complete** (`e881f6d`). Policy table + CI guard + two regression suites + registration + `AGENTS.md` correction. Measured A/B: `tests/no-write-on-read.test.js` 0/11 pre-fix (failures: `status` writes `.synth/ai/`; the mtime cache rewrote on identical runs) → 11/11 post-fix; `scripts/check-artifact-policy.js` PASS (2065 tracked paths); `tests/artifact-policy.test.js` 11/11; `test:task-npm-migration` green again. Findings F1–F4 recorded above. Evidence: `proof/expeditions/cfbb801aa232795a/attachments/e3-source.patch`.
 
-**State after E1–E3:** replay `consistent: true` (377 events), tree clean after every ceremony, HEAD == origin.
+**2026-10-12 — E4 slice 1** (`0708265`). `BranchPolicy.declaredPatterns`; `ExecutionBranchContext.declaredBranch`; declaration-before-taxonomy resolution with `overridden` / `patternMatched` and the `BRANCH_POLICY_OVERRIDDEN` warning class; `validateDeclaredBranchName` + `isCanonicalBranchForRole`. 22 policy tests green.
+
+**2026-10-12 — E4 slice 2** (`19f1c99`). `BindExecutionBranch` capability → `MISSION_BRANCH_BOUND` / `EXPEDITION_BRANCH_BOUND`, projected onto the records (`Mission.executionBranch`, `Expedition.executionBranch`) and replayed by `applyEvent`; the gate enriches its branch context from the record, so later commands resolve the same branch without flags. `--branch` / `--no-create` on `mission approve`, `expedition commit`, `expedition start` (batch verbs refuse a single declaration; dry-runs report the declaration without touching git). Git mechanics isolated in `src/repository/branch-declaration.ts`. Two rules added to ADR-056: HEAD must be the bound branch (a binding is not a bypass — AC7) and exclusivity is per role (AC8). Tests: `declared-branch-git` 6/6, `declared-branch-binding` 3/3, policy 25/25 — wired as `test:declared-branch` in the chain. Findings F8/F9 recorded.
+
+**State after E1–E4s1/s2:** replay `consistent: true`; tree clean after every ceremony; HEAD == origin == `19f1c99`; M2/E4 still executing (window open).
 
 ### 4.6 Documentation landing
 
@@ -167,22 +178,28 @@ The framework completes a mission when its last expedition terminates; observed 
 ### Stage 5 — E4 (ADR-056) and the window close
 
 ```bash
-synth expedition start --id e788e528a896008a          # mode:off → runs in place; no branch switch
-# ... implement ADR-056, tests, then:
-synth expedition finish --id e788e528a896008a
+synth expedition start --id e788e528a896008a          # mode:off → ran in place; no branch switch
+# slice 1 + slice 2 landed: 0708265, 19f1c99
+synth expedition finish --id e788e528a896008a         # evidence + certify + complete (no branch-gated phase)
 git push origin arena/c5db653e-synth
 
 # window close (same PR):
-#   .synth/config.yaml: mode: off → enforce   (delete the suspension comment)
-node scripts/check-artifact-policy.js --ci            # expect PASS (enforce)
+#   1. .synth/config.yaml: mode: off → enforce  (delete the suspension comment)
+#   2. .synth/config.yaml: branchPolicy.declaredPatterns: ["arena/*"]   (ADR-056 §2.4)
+node scripts/check-artifact-policy.js --ci            # expect PASS (enforce + patterns)
 git add .synth/config.yaml && git commit -m "chore(governance): restore branch policy enforcement (ADR-056 available)"
 git push origin arena/c5db653e-synth
 # then, and only then, ask the operator to merge PR #340 (drop "hold" from the title)
 ```
+**Sequencing constraint (verified in code):** entities created *before* ADR-056 (M2, E4) carry no binding, so under `enforce` any branch-gated ceremony for them (`checkpoint`, a re-`start`) is denied with the canonical name. Therefore the flip happens **after E4 completes** and E5 declares its binding. `mission approve` is idempotent, so a legacy *mission* can still record a binding by re-approving its draft with `--branch`; a legacy *expedition* has no clean rebinding path today → `rebind` (§9.14).
+
 Expected: `check-artifact-policy --ci` PASS; `synth doctor` reports policy `enforce`; every later `start` uses the declared branch:
 ```bash
-synth expedition start --id <next> --branch arena/c5db653e-synth --no-create
-# expect EXPEDITION_BRANCH_BOUND{declared:true,created:false} + BRANCH_POLICY_OVERRIDDEN warning (recorded)
+synth expedition start --id bda2bbd4ef6550af --branch arena/c5db653e-synth --no-create
+# expect EXPEDITION_BRANCH_BOUND{declared:true,created:false}; with declaredPatterns ["arena/*"] the
+# BRANCH_POLICY_OVERRIDDEN warning is softened (patternMatched: true) and stays recorded either way
+# verify the binding is replayable: drop the flag and repeat
+synth expedition show --id bda2bbd4ef6550af          # resolution comes from the record, not the flag
 ```
 
 ### Stage 6 — E5 (ledger writer + delivery MVP)
@@ -220,7 +237,9 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 | A3 | Read-only commands never dirty the tree | ✅ `tests/no-write-on-read.test.js` 11/11 (0/11 pre-fix) |
 | A4 | Policy ↔ index ↔ `.gitignore` agree; guard wired | ✅ guard PASS (2065 paths) and now first in the `govern` task; `--ci` at Stage 5 |
 | A5 | Every PR: Proof Gate green, `explain replay` consistent, no ledger merge conflicts | ⏳ per PR; replay consistent (377) |
-| A6 | `arena/…` works with `mode: enforce` via `--branch --no-create` | ⏳ Stage 5 (ADR-056 AC1) |
+| A6 | `arena/…` works with `mode: enforce` via `--branch --no-create` | ⏳ Stage 5 (ADR-056 AC1); mechanism proven by tests, live proof at E5's start |
+| A6b | A recorded binding resolves later commands **without flags**, and never authorizes a ceremony from another branch | ✅ `tests/declared-branch-binding.test.js` 3/3 (gate resolves the record; off-branch denied citing the bound name) |
+| A6c | Ownership rules: mission + its expedition share one operator branch; second live expedition refused; terminal entity releases it | ✅ `findLiveBranchBindingOwner` tests in `execution-branch-policy` (25/25) + `declared-branch-git` 6/6 |
 | A7 | Delivery is a ceremony: `deliver` → merge → `seal`; `close` refuses `deliveryPending` | ⏳ Stage 6 (E5) |
 | A8 | Anchor resilient: delete `.synth/anchor/` → `doctor` repairs | ⏳ Stage 6 (E5) |
 | A9 | Sandbox never holds the only copy: branch pushed; every ceremony committed + pushed | ✅ HEAD == origin after every step so far |
@@ -268,12 +287,12 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 | 9.4 | ADR-054: cancel semantics / review gates / `committed` migration / shim lifetime | cancel→`archived`+reason; wire review gates for `--governed`; migrate the 8 committed expeditions in one repair; shims for **2** minor versions |
 | 9.5 | ADR-054 Q5: mission `start` vs approval-as-activation | keep **approval-as-activation** |
 | 9.6 | ADR-056 Q2: who may declare a branch | **any actor** with a recorded binding (`declaredBy`); mission branches need the operator identity |
-| 9.7 | ADR-056 Q3: ship `expedition rebind` now? | **defer** |
+| 9.7 | ADR-056 Q3: ship `expedition rebind` now? | **Revised in rev 3.2: ship it in E5, as a small verb.** Entities created before ADR-056 (M2, E4) carry no binding, and under `enforce` their branch-gated ceremonies (`checkpoint`, re-`start`) deny with the canonical name; the only clean recovery today is re-approving a mission draft or creating the expedition again. `rebind --id … --branch … --no-create` (operator identity required, `BRANCH_REBOUND` recorded) closes that gap. If the operator prefers, the flip can instead be sequenced to avoid legacy entities entirely |
 | 9.8 | ADR-056 Q4: `declaredPatterns` semantics | **warning-softening only** |
 | 9.9 | ADR-056 Q5: declared branch checked out in another worktree | **prefer the current checkout** |
 | 9.10 | ADR-055 Q2: post-bootstrap host policy | **single writer at a time**, enforced by doctor + lock; `synth ledger import` later |
 | 9.11 | Anchor `worktree prune` ownership | `doctor --fix` |
-| 9.12 | F1+F7 follow-up: create the "verification truthfulness" expedition after the window? | **yes** (new mission; fix `loadGovernChecks` to read the task registry or fail loudly, migrate the snapshot/verify path off the monolith (F7), then wire `check-artifact-policy --ci` and the new suites into the Gate) |
+| 9.12 | F1+F7 follow-up: create the "verification truthfulness" expedition after the window? | **yes** (new mission; fix `loadGovernChecks` to read the task registry or fail loudly, migrate the snapshot/verify path off the monolith (F7), migrate the two CLI assertions in `execution-branch-gate` that read the monolith (F8), resolve the two stale task tests register-or-delete (F9), then wire the new suites into the Gate) |
 | 9.13 | PR #340 shape: one merged PR at window close, or split? | **one PR** merged at Stage 5 (docs + E1–E3 + E4); E5 gets its own PR. Splitting earlier would require a branch not pinned to this session — the operator can do that if they prefer |
 
 ---
@@ -298,6 +317,10 @@ synth mission create --subject "Verification coverage truthfulness" --purpose ".
 | `docs/adr/ADR-055-ceremonial-events.md` | ledger placement, anchor, delivery, bootstrap §2.11 |
 | `docs/adr/ADR-056-declared-execution-branches.md` | `--branch` / `--no-create` |
 | `src/state/artifact-policy.ts` | the classification table (E3) |
+| `src/repository/branch-declaration.ts` | declared-branch git mechanics (E4 slice 2) |
+| `tests/execution-branch-policy.test.js` | resolution order, HEAD rule, per-role ownership (25 tests) |
+| `tests/declared-branch-git.test.js` | `--no-create`, create, origin-only, conflict (6 tests) |
+| `tests/declared-branch-binding.test.js` | recorded binding replays; gate resolves it (3 tests) |
 | `scripts/check-artifact-policy.js` | CI guard (index ↔ policy ↔ `.gitignore`; `--ci` for the window close) |
 | `tests/no-write-on-read.test.js` | the invariant, executable (E3) |
 | `docs/plans/master-delivery-plan.md` | this document |
