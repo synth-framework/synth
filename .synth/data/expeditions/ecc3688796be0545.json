@@ -3,7 +3,7 @@
   "missionId": "b536ecc7ceb9217a",
   "name": "Derived-state staging correctness (auto-commit + ignore filtering)",
   "goal": "Fix auto-commit staging so lifecycle transitions always commit durable state and never fail on gitignored paths: call git check-ignore with --no-index so tracked-but-ignored paths are filtered correctly, stage only existing/changed durable artifacts instead of walking all of .synth/data, fall back to per-file adds so one bad path cannot kill the commit, and surface the autoCommit result (committed/commitHash/files/reason) in command JSON. Absorbs draft e8ba8f92 and the index-surgery half of the Reads-Never-Write plan (W2).",
-  "status": "committed",
+  "status": "executing",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -13,8 +13,14 @@
       "src/cli/synth.ts",
       "src/state/artifact-policy.ts",
       ".gitignore"
-    ]
+    ],
+    "identity": {
+      "agentId": "synth-cli-11257",
+      "sessionId": "1a3f0a23-8d3e-40af-a755-4bebcd92e7f9",
+      "approvalMode": "autonomous",
+      "issuedAt": 355
+    }
   },
   "createdAt": 344,
-  "updatedAt": 346
+  "updatedAt": 355
 }
