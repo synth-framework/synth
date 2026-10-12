@@ -109,7 +109,7 @@ const EXPEDITION_LIFECYCLE: AgentLifecycleStep[] = [
   { phase: "Approve", command: "synth expedition approve --draft-id <id>", actor: "operator" },
   { phase: "Commit", command: "synth expedition commit --proposal-id <id>", actor: "agent" },
   { phase: "Start", command: "synth expedition start --id <id>", actor: "agent" },
-  { phase: "Refine", command: "synth expedition refine --id <id> --note '...'", actor: "agent", note: "Record charter scope changes without changing status." },
+  { phase: "Refine", command: "synth expedition refine --id <id> --note '...' [--depends-on <id>[,<id>...]]", actor: "agent", note: "Record charter scope changes without changing status." },
   { phase: "Evidence", command: "synth expedition evidence --id <id> --git-diff --note '...'", actor: "agent" },
   { phase: "Certify", command: "synth expedition certify --id <id>", actor: "agent" },
   { phase: "Complete", command: "synth expedition complete --id <id>", actor: "agent" },

@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { StateStore } from "../src/infra/state-store.js"
+import { StateStore } from "../dist/infra/state-store.js"
 import type { CanonicalState } from "../src/types/index.js"
 
 function tmpDir(): Promise<string> {
