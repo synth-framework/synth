@@ -1,6 +1,6 @@
 # PROPOSED ADR-055 — Ceremonial Events: Ledger Placement, Branch Protocol, and Delivery
 
-**Status:** Proposed (submitted for operator review; accepted on merge)
+**Status:** Proposed **rev 2** (submitted for operator review; accepted on merge). Rev 2 adds §R2 after the surface audit of 2026-10-12 (`docs/audits/mission-expedition-surface-audit-2026-10-12.md`, HEAD `63ed64f`); §1–§7 stand unchanged.
 **Date:** 2026-10-12
 **Depends on:** ADR-051 (derived-state protection), ADR-053 (branch inheritance — this ADR implements its Decision 4),
 ADR-054-proposed (unified lifecycle state machine — states; this ADR is the git/artifact half of the same change)
@@ -444,6 +444,141 @@ states) land in parallel; this ADR only adds the four ceremony verbs (`deliver`,
   `0463c2ca` (pointer evidence, resolves Q4), `729e4e2c17add703` / `0daac4fc9df96606` (orthogonal fixes).
 - The mission *Derived-State Integrity* (draft `2db51370ae127555`) is the natural home for P1; P2/P3 deserve
   their own expeditions under it (`E1` staging/anchoring, `E2` ledger writer, `E3` worktrees + delivery).
+
+---
+
+# Revision 2 — 2026-10-12, after the surface audit at `63ed64f`
+
+§1–§7 stand. This revision exists because the surface audit *proved* five mechanics that change how the
+decision must be implemented — and gives the operator one table to approve instead of nine paragraphs.
+
+What the audit proved (evidence: `docs/audits/mission-expedition-surface-audit-2026-10-12.md` §5–§8):
+
+1. **The bleed.** Thirteen of nineteen expedition verbs never commit. Their ledger edits sit in the working
+   tree, **follow `git checkout` to another branch, and are committed by the next unrelated ceremony on that
+   branch** (reproduced: a draft created on `bleed-a` was committed by a `refine` on `main` and vanished
+   from `bleed-a`). Fixing *only* the six `autoCommitDerivedState` call sites leaves the bleed intact.
+2. **The ledger is not mergeable.** Two branches from one base that each ran one ceremony conflict on three
+   files; a union-style resolution produces a forked chain and `explain replay` reports
+   `consistent: false` (`liveHash 2015876977 ≠ replayHash 662567280`). "Write to `main`" is not a
+   preference; it is the only mergeable design.
+3. **Two truths.** `synth status` on `main` says "approved, no active expeditions" while the arena branch
+   says "1 expedition executing". Reads are branch-local by construction.
+4. **Exclusivity already bites.** ADR-056's per-role binding rule makes `DECLARED_BRANCH_IN_USE` the normal
+   response to a second expedition on the operator's branch — with one checkout, that is one live
+   expedition until §2.5 worktrees land.
+5. **Nothing pushes.** No lifecycle path pushes a branch or opens a PR; `expedition finish` completes
+   *before* the PR exists and prints no delivery `nextStep`.
+
+## R2.1 The ceremony contract (normative, one table)
+
+Every row is **one commit on the canonical branch**, made by the Ledger Writer (anchor + lock + CAS, §2.3),
+with message `chore(synth): <TRANSITION> <entity-kind> <entity-id8>`. No row may leave
+`.synth/`, `proof/` or `AGENTS.md` dirty, and no row may move the operator's HEAD.
+
+| Ceremony | Canonical commit payload | Working-tree / branch effect | Artifacts | Must never |
+| --- | --- | --- | --- | --- |
+| `mission create \| approve \| evidence add \| delete` | mission record + events | none (no checkout) | draft + integrity (input class) | leave the ledger uncommitted |
+| `expedition create \| approve \| commit \| refine \| move \| certify \| evidence` | expedition record + events (+ binding on `commit`) | none | draft, integrity, attachment manifests | switch branches |
+| `expedition start` | `EXPEDITION_STARTED` + binding | worktree at `.synth/worktrees/<id8>/` on the bound branch; operator checkout untouched | — | `git checkout -b` in the operator's tree |
+| `expedition pause \| cancel \| archive \| delete` | status event (+ reason) | none; `delete` retires draft artifacts **and records the retirement** | — | silent file deletion (V4) |
+| `expedition complete \| finish` | `EXPEDITION_COMPLETED` (+ certificate, manifest) | none | evidence, certification, manifest | report success when the commit failed |
+| `expedition deliver` | `EXPEDITION_DELIVERED{branch, tipCommit, prRef, baseBranch}` | push branch / open PR | PR ref | merge anything |
+| `expedition seal --merge-commit <sha>` | `EXPEDITION_INTEGRATED{branch, tipCommit, mergeCommit}` | none | — | seal a merge commit that does not contain the delivered tip |
+| `expedition close` | `EXPEDITION_CLOSED` | removes worktree; keeps refs | — | run while `deliveryPending` |
+| `expedition abandon --reason [--discard]` | `EXPEDITION_ABANDONED{reason, tipCommit}` | keeps worktree + `refs/synth/abandoned/<id8>`; `--discard` deletes and records it | handoff block | delete an unpushed tip without a recovery ref |
+| reads (`status`, `list`, `show`, `explain`, `doctor`) | **no commit** | none | — | write anything (AC7) |
+
+## R2.2 Invariants (testable)
+
+- **I1 — single writer.** The canonical ledger advances only through the lock + CAS anchor; a ceremony never
+  commits ledger paths from the operator's checkout.
+- **I2 — the ledger never merges.** No ceremony writes ledger paths on a non-canonical branch; the work
+  branch carries code and (by hash reference) evidence.
+- **I3 — atomic ceremonies.** A refused or failed ceremony leaves the tree byte-identical (no residue files,
+  no dirty ledger paths). `LEDGER_DIRTY`/`LEDGER_LOCKED`/`LEDGER_DIVERGED`/`LEDGER_UNAVAILABLE` are loud.
+- **I4 — the operator's checkout is stable.** Ceremonies never switch HEAD; `start` allocates a worktree.
+- **I5 — no deletion without a record.** Every delete/discard is an event; abandoned tips are kept under
+  `refs/synth/abandoned/<id8>` until an explicit `--discard` that is itself recorded.
+- **I6 — delivery is a state.** `completed` ≠ `integrated`; `seal` is the only path to `integrated`; `close`
+  refuses while `deliveryPending`.
+
+## R2.3 What the CLI must stop doing
+
+1. `autoCommitDerivedState` on the current branch (synth.ts:616) — replaced by the Ledger Writer for **all**
+   verbs in R2.1, including the thirteen that never commit today.
+2. `git checkout -b` / `checkout` inside `start` (`ensureExpeditionBranch`, synth.ts:5926-5967) — replaced by
+   worktree allocation, with `--worktree=off` as the explicit single-flight escape hatch.
+3. `expedition delete` silently retiring draft files (V4) — record the retirement; keep the tombstone in the
+   ledger.
+4. `--complete-first` force-completing a blocking expedition with no evidence (V6) — replace with a named
+   force path (`--force --reason`) recorded in the ledger.
+5. Completing an expedition that has a deliverable with no `deliveryPending` marker (§2.6.1).
+6. `cancel` printing `nextStep: start` (R4) — the next step is a decision (`abandon`, `refine`, `start`),
+   not a verb.
+
+## R2.4 Acceptance criteria additions
+
+- **AC9 (no bleed).** After any ceremony, `git status --porcelain` is clean; running a ceremony on branch A
+  and then `git checkout <branch B>` leaves B exactly as it was. *Test:* two-branch fixture, ceremony on A,
+  checkout B, compare `git status --porcelain` and the B tree hash.
+- **AC10 (no uncommitted ceremony).** Every verb in R2.1 either lands a canonical commit or fails loudly;
+  the response envelope carries `ledger: {committed: true, commitHash}`. *Test:* iterate the verb table
+  against a fixture, assert HEAD-of-canonical moved (or a loud error), never `committed:false`.
+- **AC11 (failure atomicity).** Forced failures (branch already in use, lock held, diverged CAS) leave the
+  working tree byte-identical. *Test:* hash `.synth`/`proof`/`AGENTS.md` before/after the failed call.
+- **AC12 (delivery order).** `finish` on a code expedition sets `deliveryPending`; `deliver` records the tip;
+  `seal` refuses a merge commit that does not contain it; `close` refuses while pending.
+- **AC13 (doctor coverage).** `doctor` detects and (with `--fix`) repairs: uncommitted ceremony, stale/
+  prunable anchor, orphaned worktree, ledger-ahead-N.
+
+## R2.5 Mapping to the live plan (rev 3.4)
+
+| ADR-055 requirement | Owner | Status |
+| --- | --- | --- |
+| Ledger Writer core (anchor, lock, CAS, residue guard, checkout refresh) | E5 (plan Stage 6) | **implemented** on the branch: `63ed64f` (`src/ledger/writer.ts` + 7 tests, `test:ledger-writer` in the chain) |
+| Ceremony routing for every verb in R2.1 | E5 | to do — this is the E5 build |
+| `doctor` ledger checks (AC6/AC8/AC13) | E5 | to do |
+| `deliver` / `seal` MVP (AC12 first half) | E5 | to do |
+| `close`, `deliveryPending` enforcement, worktrees (AC3/AC4/AC8 full) | E6 (P3) | deferred, per plan rev 3.3 |
+| `abandon` + recovery refs (AC5) | E6 | deferred, per plan rev 3.3 |
+
+## R2.6 Operator-facing commands and expected output
+
+```console
+$ synth doctor
+{"runtimeHealth":{...},"projectHealth":{...},
+ "ledger":{"anchor":{"ok":true,"detail":".synth/anchor @ <sha> (detached, sparse)"},
+           "workingTree":{"ok":true,"detail":"no uncommitted ceremony"},
+           "divergence":{"ok":true,"detail":"canonical branch == anchor (ahead 0)"}}}
+
+$ synth expedition start --id <id> --branch arena/c5db653e-synth --no-create
+{"status":"ok","kind":"ExpeditionStarted","expeditionId":"<id>",
+ "executionBranch":{"branch":"arena/c5db653e-synth","created":false,"declared":true},
+ "ledger":{"committed":true,"commitHash":"<sha>","files":[".synth/data/event-stream/..."]}}
+
+$ synth expedition finish --id <id>
+{"status":"ok","kind":"ExpeditionFinished","steps":["evidence-attached","convergence-certified","expedition-completed"],
+ "deliveryPending":true,"ledger":{"committed":true,"commitHash":"<sha>"}}
+
+$ synth expedition deliver --id <id> --remote origin
+{"status":"ok","kind":"ExpeditionDelivered","branch":"expedition/...","tipCommit":"<sha>","prRef":"#<n>","ledger":{"committed":true}}
+
+$ synth expedition seal --id <id> --merge-commit <sha>      # after the PR's CI is green and it is merged
+{"status":"ok","kind":"ExpeditionIntegrated","mergeCommit":"<sha>","containsTip":true,"ledger":{"committed":true}}
+
+$ synth expedition close --id <id>
+{"status":"ok","kind":"ExpeditionClosed","worktreeRemoved":true,"branchKept":"expedition/..."}
+```
+
+A refused ceremony always looks like (never a silent `committed:false`):
+
+```console
+$ synth expedition start --id <other> --branch arena/c5db653e-synth --no-create
+{"status":"error","code":"DECLARED_BRANCH_IN_USE",
+ "error":"expedition bda2bbd4ef6550af is already bound to arena/c5db653e-synth",
+ "suggestion":"Use another branch, or finish bda2bbd4ef6550af first"}
+```
 
 ## Proof Impact
 
