@@ -1,12 +1,12 @@
 {
   "expeditionId": "e788e528a896008a",
-  "capturedAt": 1791802605495,
-  "note": "E4 source patch: slice 1 (0708265) + slice 2 (19f1c99); scoped diff ef340aa..19f1c99 excluding .synth/ and proof/",
+  "capturedAt": 1791802621206,
+  "note": "Auto-attached by synth expedition finish",
   "attachments": [
     {
-      "kind": "attachment",
-      "path": "proof/expeditions/e788e528a896008a/attachments/e4-source.patch",
-      "hash": "5afec3c395e0693410558a340b12fc72e4f07cf6201f0752098583f8e928d9b2"
+      "kind": "git-diff",
+      "path": "proof/expeditions/e788e528a896008a/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "version": 379,
-  "stateHash": "149111622",
+  "version": 383,
+  "stateHash": "111724821",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1474,7 +1474,7 @@
       "missionId": "a57585f0aec4b2d8",
       "name": "Declared execution branches (--branch / --no-create)",
       "goal": "Implement ADR-056: accept --branch <name> on mission approve, expedition commit and expedition start; record the binding in the entity record and as a ledger event (MISSION_BRANCH_BOUND / EXPEDITION_BRANCH_BOUND payload {entityId, branch, declared, created, baseCommit, declaredBy}); resolve execution branches binding-first (binding -> taxonomy candidates -> trunk); validate declared names (git check-ref-format, local or origin), refuse a branch bound to another live entity (DECLARED_BRANCH_IN_USE) and a missing branch with --no-create (DECLARED_BRANCH_MISSING); emit the recorded BRANCH_POLICY_OVERRIDDEN warning for non-canonical declarations; add the config-level declaredPatterns (warning-softening only).",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1497,12 +1497,17 @@
         }
       },
       "createdAt": 348,
-      "updatedAt": 378,
+      "updatedAt": 381,
       "attachments": [
         {
           "kind": "attachment",
           "path": "proof/expeditions/e788e528a896008a/attachments/e4-source.patch",
           "hash": "5afec3c395e0693410558a340b12fc72e4f07cf6201f0752098583f8e928d9b2"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/e788e528a896008a/git-diff.patch",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       ]
     },
@@ -1562,5 +1567,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 379
+  "lastEventOffset": 383
 }
