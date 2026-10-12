@@ -1,39 +1,41 @@
-# SYNTH — Master Delivery Plan (rev 2)
+# SYNTH — Master Delivery Plan (rev 3)
 
-**Prepared:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Working branch:** `arena/c5db653e-synth`
-**Status:** plan for operator approval — **no code, config, or state changes have been made.**
-**Supersedes:** the ad-hoc sequencing in `the operator project brief (working note, not in-repo)` §4.2 and the trailing "next steps" of the audit.
-**Design of record:** `PROPOSED-ADR-054` (lifecycle), `PROPOSED-ADR-055` (ceremonial events), `PROPOSED-ADR-056` (declared branches).
+**Prepared:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Working branch:** `arena/c5db653e-synth` @ `144bbfe` (pushed)
+**Status:** bootstrap executed; **E1, E2 and E3 are complete and shipped on the branch**; the `mode: off` window is still open (exit = E4).
+**Supersedes:** rev 2 of this document, and the ad-hoc sequencing in the project brief §4.2.
+**Design of record:** `docs/adr/ADR-054` (lifecycle), `docs/adr/ADR-055` (ceremonial events), `docs/adr/ADR-056` (declared branches).
+**Evidence base:** `docs/audits/mission-expedition-cli-audit-2026-10-12.md`, `docs/plans/reads-never-write.md`.
 
 ---
 
-## 0. What changed in rev 2
+## 0. What changed in rev 3
 
 | # | Change | Why |
 |---|---|---|
-| 1 | Bootstrap decided: **option (c) — this sandbox is the temporary host**, via a one-time, recorded `branchPolicy.mode: off` window | ADR-055 §2.11; the hash-chain finding makes "write here, merge later" impossible; (a) costs 15 synchronous operator transitions and breaks evidence capture |
-| 2 | **Single writer is structural** (global hash chain, `execution-gate.ts:162`), not a policy preference | two-clone reproduction: same offsets 317/321/326 assigned to different events; union+renumber → `Hash-chain broken at index 1` |
-| 3 | `--no-create` is the decided flag name for pre-existing branches | ADR-056, Q1 closed |
-| 4 | Anchor mechanics lab-verified; **AC8** added; residual = who runs `worktree prune` (proposal: `doctor`) | ADR-055 §2.10 |
-| 5 | Plan **corrects a factual error**: the expedition branch is created at **`start`**, not `commit` | verified in `startOneExpedition` (`synth.ts:5873` → `ensureExpeditionBranch`, L5732) and matches audit §1.2 |
-| 6 | New **mandatory guardrail**: push the working branch to `origin` early and after each ceremony | the sandbox is ephemeral and is now the only holder of the ledger |
-| 7 | Promotion mechanism named: **the arena-branch PR itself** is the delivery/promotion vehicle during the bootstrap | ADR-055 `deliver`/`seal` do not exist yet; the PR carries both code and the ledger temporarily |
+| 1 | **E2 — No write-on-read** is done: content-keyed charter cache in `.synth/cache/`, `writeAiMetadata` compares before writing, `status` no longer persists | verified in-repo: two consecutive `status` runs leave `.synth/ai/*` byte-identical; the cache is created once (413 digests) and not rewritten |
+| 2 | **E3 — Artifact policy + guards** is done: `src/state/artifact-policy.ts` is the single classification table; `scripts/check-artifact-policy.js` checks index ↔ policy ↔ `.gitignore`; two new regression tests; registration across `package.json`, the task registry, the validation map and the `govern` task | rev 2 listed this work; rev 3 records what was built and what it proved |
+| 3 | **The measured red was narrower than rev 2 claimed.** With each command judged on an independently reset tree, only `status` (writes `.synth/ai/`) and the cache-stability check fail pre-fix; `doctor`/`capabilities`/`expedition list`/… were clean because their writes were already-ignored files | E3's A/B run; corrected here and in `reads-never-write.md` |
+| 4 | **New finding F1 — the Proof Gate does not run the test suite.** `govern` → `node scripts/govern-profiler.js --full` → `runGovernProfile` decomposes `package.json.scripts["test:all"]`, which is the task-adapter shim, so it yields zero `npm run` checks: CI executes **build + proof only**. The class-based path (`--explain`/`--profile`) only runs scripts listed in `docs/reference/capability-validation-map.json` (47 of 111+ test scripts) | measured while wiring E3; mitigated in-week by making the `govern` task run the guard and the read-only regression explicitly, and by registering the new scripts in the map |
+| 5 | **`check-artifact-policy --ci` is deliberately not wired yet**: it asserts `branchPolicy.mode: enforce`, so it must land in the same PR that closes the window (E4) | otherwise the suspension could reach `main` silently |
+| 6 | **`AGENTS.md` was lying about its own architecture** ("do not commit `.synth/data/drafts/`"; "`event-log.jsonl` is the replay source") — fixed at the fragment source (`knowledge/AGENTS-intro.md`) and regenerated | E3; the contract now matches the policy table |
+| 7 | **`test:task-npm-migration` was red at HEAD** (the `test:adr` / `check:adr` task files were missing) — fixed by E3's registration pass | found while wiring; a second instance of the same class as F1 (registration drift) |
+| 8 | M1's three expeditions are complete; the next lifecycle act is M2's E4 (ADR-056), which is also the **window exit** | new sequencing detail in §5 |
 
 ---
 
-## 1. Verified starting state (2026-10-12)
+## 1. Verified starting state (2026-10-12, on this branch)
 
 | Item | Value |
 |---|---|
 | Repo / version | `synth-framework/synth` @ `ac4e81a` (merge #339), v2.6.1 |
-| Governance | 320 events, replay `consistent: true`, stateHash `97055763`, `status: ok` |
-| Missions | `9861cf62476c90ae` *Framework Audit and Maturation* (completed); `4ab7e9d2cc7b1b66` *Framework Maturation v2* (active, 48 expeditions) |
-| Mission draft ready | `2db51370ae127555` *Derived-State Integrity* → predicted runtime id `b536ecc7ceb9217a` |
-| Dry-run expedition proposals | E1 `f34ce3ec4217d46d`, E2 `70c43bc00f294f70`, E3 `60f642ee75ee4ea9`; typed-refs `c830e84c138326f2` |
-| Open PRs | none (the 4 `pr-*` remote branches are the deferred stale set) |
-| `origin` branches | `main` + **7 others** (no `pr-*` remain on origin — the local remote-tracking refs for those are stale); **`arena/c5db653e-synth` is local-only → must be pushed** |
-| Session constraint | Arena pins this session to `arena/c5db653e-synth`; it may not create or switch branches |
-| Standing instruction | no code changes until the operator green-lights; deliverable is the plan + the ADRs |
+| Branch | `arena/c5db653e-synth` @ `144bbfe`, pushed and equal to `origin` |
+| Governance | 377 events, replay `consistent: true` |
+| Missions | `b536ecc7ceb9217a` *Derived-State Integrity* (active; 3/3 expeditions complete); `a57585f0aec4b2d8` *Governed Operation from Operator Branches* (active; E4, E5 committed) |
+| Expeditions | E1 `ecc3688796be0545` **completed** · E2 `f089c4fea720c07c` **completed** · E3 `cfbb801aa232795a` **completed** · E4 `e788e528a896008a` committed · E5 `bda2bbd4ef6550af` committed (dep E1, E4) |
+| Window | `git.branchPolicy.mode: off` committed with a rationale comment + restore instruction (`.synth/config.yaml`); no branch is created or checked out anywhere in the window |
+| PR | **#340** open, **draft**, "Governance bootstrap: ADR-054/055/056, master plan, and the derived-state fixes (hold: carries `mode: off` window)" |
+| Artifact classification | `scripts/check-artifact-policy.js` → PASS (2065 tracked paths; rules durable:10 input:1 derived:4 cache:4 legacy:2) |
+| Tests added | `tests/no-write-on-read.test.js` 11/11 (0/11 pre-fix) · `tests/artifact-policy.test.js` 11/11 · `tests/auto-commit-ignored-paths.test.js` green |
 
 ---
 
@@ -44,241 +46,201 @@
 | Worktrees for execution isolation | **yes** | ADR-055 §2.5 (operator: "worktrees: yes") |
 | Push/remote policy | ceremonies are **local**; promote at seal/complete; docs/publish CI `paths-ignore: [".synth/**"]` | ADR-055 §2.9 |
 | Anchor location + mechanism | `.synth/anchor/` (sparse, gitignored, detached worktree, `update-ref` CAS, dirty-check-before-restore) | ADR-055 §2.3/§2.10, AC8 |
-| Bootstrap path | **(c)** sandbox as temporary host; one-time `mode: off`; revert at first PR that ships `--branch` | ADR-055 §2.11 |
+| Bootstrap path | **(c)** sandbox as temporary host; one-time `mode: off`; reverted in the E4 PR | ADR-055 §2.11 |
 | `--no-create` | decided, no alias | ADR-056 §2.2, Q1 closed |
-| Mission structure | **two missions** (M1 existing draft; M2 new) + residuals stay in FMW v2 | §4 below, open Q9.1 |
-| Branch creation point | `start` (already true in code; ADR-054 text corrected) | verified 2026-10-12 |
+| Mission structure | **two missions** (M1 draft → `b536ecc7ceb9217a`; M2 → `a57585f0aec4b2d8`) + residuals stay in FMW v2 | §4, open Q9.1 |
+| Branch creation point | `start` (verified; ADR-054 text is already correct) | `startOneExpedition` → `ensureExpeditionBranch` |
+| Artifact classes | durable / input / derived / cache / legacy, first-match-wins, one table in `src/state/artifact-policy.ts`; auto-commit scope and completion-gate exclusions derive from it | E3, ADR-055 §2.8 |
+| Draft files | **tracked inputs** (committed before use); `.gitignore` rules removed in E1's commit | E1/E3 |
+| Guard `--ci` | wired in the window-close PR, not before | §0.5 |
 
 ---
 
 ## 3. Plan on one page
 
 ```text
-STAGE 0  WINDOW OPEN (all on arena/c5db653e-synth)          [agent]
-         push branch · mode:off (1 commit) · force-add drafts · ledger commits per ceremony
+STAGE 0  WINDOW OPEN (all on arena/c5db653e-synth)                          ✅ done
+         push branch · mode:off commit · drafts force-added · PR #340 (draft, hold)
               │
-STAGE 1  M1 mission approve (alignment · evidence rounds)   [agent]
-STAGE 2  M2 mission draft + approve   (same window)         [agent]
-STAGE 3  E1–E3 + E4–E5 create/approve/commit/start          [agent]
+STAGE 1  M1 approve (alignment contract + 2 evidence rounds)                 ✅ b536ecc7ceb9217a
+STAGE 2  M2 draft + approve (same window)                                    ✅ a57585f0aec4b2d8
+STAGE 3  E1–E5 created / approved / committed                                ✅
               │
-STAGE 4  WORK LOOP, serialized on src/cli/synth.ts:         [agent → operator merges]
-         code+tests → finish → push → PR → Proof Gate green → merge → ledger stays linear
+STAGE 4  WORK LOOP (serialized on src/cli/synth.ts)                          ✅ E1 · ✅ E2 · ✅ E3
+         code + tests → finish (evidence→certify→complete) → ledger commit → push
               │
-STAGE 5  WINDOW CLOSE — after E4 (ADR-056) merges:          [agent]
-         mode:enforce restored · every later start uses --branch arena/... --no-create
+STAGE 4b M1 completion — after its three PRs are merged (see §5)             ⏳
               │
-STAGE 6  M2 continues (E5 ledger writer/delivery) · FMW v2 resumes (29b9a370, bc9c51e0)
+STAGE 5  E4 — Declared execution branches (ADR-056)                          ⏳ next
+         + window close: restore mode:enforce · wire check-artifact-policy --ci
               │
-STAGE 7  STEADY STATE: finish → deliver → merge → seal → close; second writer allowed only via
-         `synth ledger import` (does not exist yet)
+STAGE 6  E5 — Ledger writer + anchor + deliver/seal MVP (ADR-055 P1/P2)      ⏳
+              │
+STAGE 7  STEADY STATE: finish → deliver → merge → seal → close;
+         FMW v2 resumes (29b9a370 verb fold, bc9c51e0 termination unification);
+         F1 follow-up (govern actually runs the suite) as a new expedition   ⏳
 ```
 
-**Serialization rule:** E1, E2, E3, E4, E5 all edit `src/cli/synth.ts` (8,030 LOC). They must run **one at a
-time**, in the order below. Worktree concurrency (ADR-055 §2.5) does not help for conflicting files; it
-helps different files.
+**Serialization rule:** everything in stages 4–6 edits `src/cli/synth.ts` (still ~8k LOC) — one expedition at a time, in the order above. Worktree isolation (ADR-055 §2.5) helps for disjoint files only.
 
 ---
 
 ## 4. Work breakdown
 
-### 4.1 M1 — *Derived-State Integrity* (existing draft `2db51370ae127555`)
+### 4.1 M1 — *Derived-State Integrity* (`b536ecc7ceb9217a`)
 
-Fix class: SYNTH's own read paths dirty the tree, block completion, and leave governance state uncommitted.
-
-| Expedition | Scope | Files | PR |
+| Expedition | Status | Delivered | PR |
 |---|---|---|---|
-| **E1 — Derived-state staging correctness** `ecc3688796be0545` **✓ completed 2026-10-12** (fixes live P1; closes `e8ba8f92`) | `check-ignore --no-index`; stage only existing/changed durable artifacts; per-file fallback; surface `autoCommit{committed,commitHash,files,reason}`; index surgery per W2 | `src/cli/synth.ts`, `src/state/artifact-policy.ts` (new), `.gitignore` | PR-1 |
-| **E2 — No write-on-read** `f089c4fea720c07c` (committed) | content-keyed cache in `.synth/cache/`; `status` stops persisting; `.synth/ai/` classified derived | `src/governance/dependency-graph.ts`, `src/cli/ai-metadata.ts`, `src/cli/status-light.ts` | PR-2 |
-| **E3 — Artifact policy + regression guard** `cfbb801aa232795a` (committed; depends E1+E2) | policy module as single source; CI guard `scripts/check-artifact-policy.js`; `tests/no-write-on-read.test.js`, `tests/derived-state-commit.test.js` | policy + scripts + tests | PR-3 |
+| **E1 — Derived-state staging correctness** `ecc3688796be0545` | ✅ complete (`123030d`) | `existingAutoCommitPathspecs` (a missing pathspec no longer forces the fallback), `isTrackedPath` (`git ls-files --`), `check-ignore --no-index`, primary `git add -A -- <existing dirs> <excludes>` gated by `primaryOk`, fallback skips ignored+untracked and `-f` only for ignored+tracked, `autoCommit{committed,commitHash,files,reason}` surfaced; index surgery on 11 derived/cache/legacy files; regression `tests/auto-commit-ignored-paths.test.js` red→green | PR-1 |
+| **E2 — No write-on-read** `f089c4fea720c07c` | ✅ complete (`5a663e8`) | charter cache keyed on sha256 content digests at `.synth/cache/dependency-records.json` (gitignored, written only when the digest map or records change; legacy mtime cache no longer read), `writeAiMetadata` compares each file against disk and returns `{changed,files}`, `status` (light + heavy) is a pure read | PR-2 |
+| **E3 — Artifact policy + guards** `cfbb801aa232795a` | ✅ complete (`e881f6d`) | `src/state/artifact-policy.ts` (5 classes, first-match-wins, include roots + `:(exclude)` pathspecs derived), `scripts/check-artifact-policy.js` (index ↔ policy ↔ `.gitignore`, `--ci` for the window close), `tests/no-write-on-read.test.js` (pristine `git archive` tree; 9 read-only commands + cache stability; 0/11 pre-fix → 11/11), `tests/artifact-policy.test.js` (11/11), registration in `package.json` / `data/tasks` / `capability-validation-map.json` / `govern` task, `AGENTS.md` fragment corrected + regenerated | PR-3 |
 
-Full detail: `docs/plans/reads-never-write.md` (W1–W5, E1–E3, ~3 days, 3 PRs).
+Full detail: `docs/plans/reads-never-write.md` (W1–W5 → E1–E3). **M1 is feature-complete on the branch**; the remaining act is `mission complete` after the merges (Stage 4b).
 
-### 4.2 M2 — *Governed Operation from Operator Branches* (new mission, created in the window)
+### 4.2 M2 — *Governed Operation from Operator Branches* (`a57585f0aec4b2d8`)
 
-Purpose: make SYNTH govern work on pre-existing operator branches — declared execution branches, ledger
-placement, delivery and abandonment protocol (ADR-055, ADR-056).
+Purpose: make SYNTH govern work on pre-existing operator branches — declared execution branches, ledger placement, delivery and abandonment protocol (ADR-055, ADR-056).
 
 | Expedition | Scope | Depends on | PR |
 |---|---|---|---|
-| **E4 — Declared execution branches** `e788e528a896008a` (committed; ADR-056 minimal) | `--branch` / `--no-create` on `mission approve` / `expedition commit|start`; binding recorded (`*_BRANCH_BOUND`) and consulted before taxonomy; `BRANCH_POLICY_OVERRIDDEN` warning; `DECLARED_BRANCH_MISSING`/`DECLARED_BRANCH_IN_USE`; config `declaredPatterns` | — | PR-4 |
-| **E5 — Ledger writer + delivery MVP** `bda2bbd4ef6550af` (committed; ADR-055 P1/P2 core) | anchor worktree + lock + CAS; ceremony commit routing (single writer); `doctor` checks (uncommitted ledger, stale anchor, ledger-ahead-N); `deliver` + `seal` verbs; abandonment/handoff record | E1 (staging), E4 | PR-5 |
+| **E4 — Declared execution branches** `e788e528a896008a` (committed) | `--branch` / `--no-create` on `mission approve` / `expedition commit|start`; binding recorded (`*_BRANCH_BOUND`) and consulted before taxonomy; `BRANCH_POLICY_OVERRIDDEN` warning; `DECLARED_BRANCH_MISSING` / `DECLARED_BRANCH_IN_USE`; config `declaredPatterns` (warning-softening) | — | PR-4 |
+| **E5 — Ledger writer + delivery MVP** `bda2bbd4ef6550af` (committed) | anchor worktree + lock + CAS; ceremony commit routing (single writer); `doctor` checks (uncommitted ledger, stale anchor, ledger-ahead-N); `deliver` + `seal` verbs (seal verifies the merge commit after `git fetch origin main`); abandonment/handoff record | E1, E4 | PR-5 |
 | **E6 — Worktrees + full delivery** (ADR-055 P3, deferred) | per-expedition worktrees; `deliveryPending` enforcement; `close` cleanup; `status` stale-work warnings | E5 | later |
 
-**E4 is the exit from the bootstrap window** — that is its strategic role, not just its feature content.
+**E4 is the exit from the bootstrap window** — that is its strategic role, not just its feature content: with it, every later `start` runs under `mode: enforce` with `--branch arena/c5db653e-synth --no-create`.
 
 ### 4.3 Carried by existing work (FMW v2 / committed)
 
 | Item | State | Action in this plan |
 |---|---|---|
-| `bc9c51e0674ec0ef` *Unify termination* (ADR-054 vehicle) | committed | start + run **after E1** (same file, conflicts) |
+| `bc9c51e0674ec0ef` *Unify termination* (ADR-054 vehicle) | committed | start + run after E5 (collides with `synth.ts`) |
 | `29b9a3704eb1287c` *Fold legacy CLI verbs* | draft; framework's priority-1 next action | approve + run after the window (any time after E4) |
-| Typed entity references (`c830e84c138326f2`) | draft-ready command | stays in FMW v2; unaffected |
+| Typed entity references (`c830e84c138326f2`) | draft-ready command | stays in FMW v2 |
 | `0daac4fc9df96606` (gate scoping), `0463c2cae71ac727` (pointer evidence) | drafts | stay in FMW v2 backlog |
-| `729e4e2c17add703` (archive completed) | draft | **close as superseded by ADR-054** when ADR-054 lands |
+| `729e4e2c17add703` (archive completed) | draft | close as superseded by ADR-054 when ADR-054 lands |
 
-## 4.5 Progress log
+### 4.4 Findings and follow-ups (new in rev 3)
 
-**2026-10-12 — bootstrap executed (option c).**
+| # | Finding | Disposition |
+|---|---|---|
+| **F1** | `npm run govern` (the Proof Gate) runs **build + proof only**: `runGovernProfile` decomposes `package.json.scripts["test:all"]`, which is the `task-adapter-shim` indirection, so the registered suite is never expanded. The class-based path (`--explain`/`--profile`) covers only the 47 scripts present in `capability-validation-map.json` | **mitigated now** (the `govern` task runs the policy guard + the no-write-on-read regression first; new scripts registered in the map). **Proper fix** = make `loadGovernChecks` read the canonical chain from `data/tasks/test:all.task.json` (or fail loudly when it cannot decompose). Recommend a new expedition **after the window**, in a new mission ("verification coverage truthfulness"); assumed yes, see §9.12 |
+| **F2** | `check-artifact-policy --ci` fails while the window is open (by design) | wire it in the window-close PR (Stage 5). Until then the suspension is visible in PR #340's title and in this log |
+| **F3** | `AGENTS.md` contradicted the policy (drafts "do not commit"; `event-log.jsonl` as replay source) | fixed at the fragment source in E3 |
+| **F4** | `test:task-npm-migration` was red at HEAD: `test:adr` / `check:adr` had no task files | fixed by E3's registration pass; keep the test in the chain |
+| **F5** | `expedition evidence --git-diff` is not range-scoped and re-runs capture their own output | use `--attach` with a scoped `git diff <from> <to> -- <paths>`; all three E1–E3 evidence attachments do exactly that |
+| **F6** | `--depends-on` is set-only (`planning.ts` replaces only when an array is passed; the CLI omits empty arrays), so a wrong edge can only be cleared by delete + recreate | recorded in audit Addendum 3; E1's dependency set is correct (`E3 → E1, E2`), no repair needed |
 
-| Step | Result |
-|---|---|
-| Branch backup | `arena/c5db653e-synth` pushed to origin (was local-only) |
-| Window open | `branchPolicy.mode: off` committed with rationale; drafts force-added; PR #340 opened as draft (hold until stage 5) |
-| Docs landed | ADR-054/055/056 + master plan + reads-never-write + audit + system review in `docs/` |
-| M1 | `b536ecc7ceb9217a` *Derived-State Integrity* approved (0.67 → 0.69 → 0.71 via two evidence rounds; contract `alignment-contract-mv533f89-0ytu7j`) |
-| M2 | `a57585f0aec4b2d8` *Governed Operation from Operator Branches* approved (same contract; 0.67 → 0.69 → 0.71) |
-| Expeditions | E1 `ecc3688796be0545`, E2 `f089c4fea720c07c`, E3 `cfbb801aa232795a` (dep E1,E2), E4 `e788e528a896008a`, E5 `bda2bbd4ef6550af` (dep E1,E4) |
-| E1 delivered | staging fix + `--no-index` classification + per-path fallback; index surgery (11 derived/cache/legacy files untracked); `.gitignore`/policy patterns aligned; `tests/auto-commit-ignored-paths.test.js` reproduces the failure (red before, green after); live proof: `autoCommit {committed: true}` on `refine`/`finish`/`evidence`, tree clean after every transition |
-| Bookkeeping | first E1 draft `adbb8b39dd2831e6` was deleted and recreated (a refine set its `dependsOn` to E3 — wrong direction — and the CLI cannot clear `dependsOn`; new finding, see audit Addendum 3) |
+### 4.5 Progress log
 
-Replay after E1: `consistent: true`, 364 events, chain valid.
+**2026-10-12 — bootstrap executed (option c).** Branch pushed; `mode: off` committed with rationale; drafts force-added; docs landed; M1 + M2 approved (0.67 → 0.69 → 0.71 via two evidence rounds each); E1–E5 chartered; PR #340 opened as a draft hold.
 
-### 4.4 Documentation landing
+**2026-10-12 — E1 complete** (`123030d`). Staging fix + `--no-index` classification + per-path fallback; index surgery (11 files untracked); `.gitignore`/policy patterns aligned; `tests/auto-commit-ignored-paths.test.js` reproduces the failure (red before, green after); live proof: `autoCommit {committed: true}` on `refine`/`finish`/`evidence`, tree clean after every transition. Evidence: `proof/expeditions/ecc3688796be0545/attachments/e1-source.patch`.
+
+**2026-10-12 — E2 complete** (`5a663e8`). Content-keyed cache in `.synth/cache/` (413 digests, stable across runs); `writeAiMetadata` compare-and-write; `status` pure in both the light and heavy paths. In-repo verification: two consecutive `status` runs leave `.synth/ai/*.json` byte-identical; `status`/`doctor`/`capabilities`/`explain replay`/`expedition list`/`mission list`/`program list` leave `git status --porcelain` empty. Evidence: `proof/expeditions/f089c4fea720c07c/attachments/e2-source.patch`.
+
+**2026-10-12 — E3 complete** (`e881f6d`). Policy table + CI guard + two regression suites + registration + `AGENTS.md` correction. Measured A/B: `tests/no-write-on-read.test.js` 0/11 pre-fix (failures: `status` writes `.synth/ai/`; the mtime cache rewrote on identical runs) → 11/11 post-fix; `scripts/check-artifact-policy.js` PASS (2065 tracked paths); `tests/artifact-policy.test.js` 11/11; `test:task-npm-migration` green again. Findings F1–F4 recorded above. Evidence: `proof/expeditions/cfbb801aa232795a/attachments/e3-source.patch`.
+
+**State after E1–E3:** replay `consistent: true` (377 events), tree clean after every ceremony, HEAD == origin.
+
+### 4.6 Documentation landing
 
 | Doc | Destination | When |
 |---|---|---|
-| `PROPOSED-ADR-054/055/056` | `docs/adr/ADR-054…`, `ADR-055…`, `ADR-056…` | PR-0 (docs-only, before code work) |
-| This master plan | `docs/plans/master-delivery-plan.md` | PR-0 |
-| Audit + system review | stay outside the repo (operator's evidence), or `docs/audits/` if the operator wants them public | operator choice |
+| `docs/adr/ADR-054/055/056` | already landed | ✅ (`62bd91b`) |
+| This master plan + `reads-never-write.md` | `docs/plans/` | ✅ (updated in rev 3) |
+| Audit + system review | `docs/audits/` | ✅ |
 
 ---
 
 ## 5. Runbook (commands + expected output)
 
-### Stage 0 — window open, branch backed up
+### Stage 4b — close out M1 (after PR-1…PR-3 are merged)
 
 ```bash
-git push -u origin arena/c5db653e-synth
-# edit .synth/config.yaml: git.branchPolicy.mode: enforce → off
-git add .synth/config.yaml
-git commit -m "chore(governance): suspend branch policy for the bootstrap window (ADR-055 §2.11; reverted before merge)"
-git add -f .synth/data/drafts/2db51370ae127555.json .synth/data/drafts/2db51370ae127555.integrity.json
-git commit -m "chore(governance): preserve mission draft 2db51370ae127555 (bootstrap input)"
-```
-
-Expected: `git status --porcelain` empty; `synth status` still `ok`; `synth explain replay` → `consistent: true`.
-The suspension is a *supported* mode: with it, `ensureExpeditionBranch` returns early (`synth.ts:5738`), so
-**no branch is created or checked out anywhere in the window** — the session's branch pin is respected.
-
-### Stage 1 — M1 mission approved
-
-```bash
-synth alignment prepare
-synth mission approve --draft-id 2db51370ae127555 --alignment-contract-id <contractId>
-# below-threshold outcome (expected first):
-#   {"kind":"MissionApprovalDecision","decision":{"approved":false,"confidence":0.67},
-#    "nextStep":"synth mission evidence add --draft-id … then approve --draft-id <new-id>"}
-synth mission evidence add --draft-id <successor> --subject "…" --purpose "…" --confidence high   # ×2–3
-synth mission approve --draft-id <successor> --alignment-contract-id <contractId>
-synth mission show --id b536ecc7ceb9217a
-```
-
-Expected: `decision.approved: true`; mission `active`; ledger files modified → commit them
-(`git add -A .synth/data && git commit -m "chore(synth): ledger — mission approved"`), then
-`git status --porcelain` empty again.
-
-### Stage 2 — M2 mission created + approved (same window)
-
-```bash
-synth mission create --subject "Governed Operation from Operator Branches" \
-  --purpose "Make SYNTH govern work on pre-existing operator branches: declared execution branches, ledger placement, delivery and abandonment protocol (ADR-055, ADR-056)."
-synth alignment prepare
-synth mission approve --draft-id <M2-draft> --alignment-contract-id <contract2>   # + evidence rounds as needed
-```
-
-### Stage 3 — expeditions (create → approve → commit → start)
-
-```bash
-# for each of E1..E5
-synth expedition create --mission <missionId> --subject "…" --goal "…" --scope "…"
-synth expedition approve --draft-id <proposalId> --dry-run
-synth expedition approve --draft-id <proposalId>
-synth expedition commit  --proposal-id <proposalId> --dry-run
-synth expedition commit  --proposal-id <proposalId>
-synth expedition start   --id <proposalId>
-synth expedition refine  --id <E3-id> --note "consumes E1+E2 policy" --depends-on <E1>,<E2>
-```
-
-Expected in the window: `start` → `{"status":"ok"}` with **no branch switch**
-(`ensureExpeditionBranch` early-returns on `mode: off`); the ledger advances on the arena branch.
-
-### Stage 4 — work loop (per expedition, serialized)
-
-```bash
-# code + tests (agent), then:
-synth validate --dry-run
-node tests/<targeted>.test.js
-synth expedition finish --id <id>            # atomic: evidence → certify → complete
-git add -A .synth proof && git commit -m "chore(synth): ledger — <expedition> finished"
+synth expedition list --mission b536ecc7ceb9217a     # expect: E1,E2,E3 completed
+synth mission complete --id b536ecc7ceb9217a --dry-run
+synth mission complete --id b536ecc7ceb9217a
+git add -A .synth/data proof && git commit -m "chore(synth): ledger — M1 completed"
 git push origin arena/c5db653e-synth
-gh pr create --base main --head arena/c5db653e-synth --title "<expedition subject>" --body "…"
-# operator: npm run govern on the PR if required; merge when Proof Gate is green
-git fetch origin && git merge origin/main    # keep the linear ledger; STOP if this conflicts on .synth/**
 ```
+Expected: certification `converged`, mission state `completed`, tree clean afterwards.
 
-Expected (after E1 lands): `finish` → `autoCommit: {committed: true, commitHash: …}` and
-`git status --porcelain` **empty** afterwards (today it silently fails — the live P1).
-
-### Stage 5 — window close (after E4/ADR-056 merges)
+### Stage 5 — E4 (ADR-056) and the window close
 
 ```bash
-# edit .synth/config.yaml: mode: off → enforce
-git commit -am "chore(governance): restore branch policy enforcement (ADR-056 available)"
+synth expedition start --id e788e528a896008a          # mode:off → runs in place; no branch switch
+# ... implement ADR-056, tests, then:
+synth expedition finish --id e788e528a896008a
+git push origin arena/c5db653e-synth
+
+# window close (same PR):
+#   .synth/config.yaml: mode: off → enforce   (delete the suspension comment)
+node scripts/check-artifact-policy.js --ci            # expect PASS (enforce)
+git add .synth/config.yaml && git commit -m "chore(governance): restore branch policy enforcement (ADR-056 available)"
+git push origin arena/c5db653e-synth
+# then, and only then, ask the operator to merge PR #340 (drop "hold" from the title)
+```
+Expected: `check-artifact-policy --ci` PASS; `synth doctor` reports policy `enforce`; every later `start` uses the declared branch:
+```bash
 synth expedition start --id <next> --branch arena/c5db653e-synth --no-create
+# expect EXPEDITION_BRANCH_BOUND{declared:true,created:false} + BRANCH_POLICY_OVERRIDDEN warning (recorded)
 ```
 
-Expected: `EXPEDITION_BRANCH_BOUND{declared:true,created:false}` + `BRANCH_POLICY_OVERRIDDEN` warning
-(recorded, visible in `status`/`show`), and every later command resolves the binding with no flags.
-
-### Stage 6–7 — steady state
+### Stage 6 — E5 (ledger writer + delivery MVP)
 
 ```bash
-# FMW v2 resumes
-synth expedition approve --draft-id 29b9a3704eb1287c
-synth expedition start --id <id> --branch arena/c5db653e-synth --no-create
-# after E5 lands, the delivery ceremony replaces the manual PR dance:
-synth expedition finish --id <id>      # → deliveryPending
-synth expedition deliver --id <id>     # → push + PR recorded (EXPEDITION_DELIVERED)
-#   operator merges; CI green
-synth expedition seal --id <id> --merge-commit <sha>   # → EXPEDITION_INTEGRATED
-synth expedition close --id <id>       # cleanup; refuses while deliveryPending
+synth expedition start --id bda2bbd4ef6550af --branch arena/c5db653e-synth --no-create
+# ... implement anchor/lock/doctor/deliver/seal ...
+synth expedition finish --id bda2bbd4ef6550af
+git push origin arena/c5db653e-synth && gh pr create --base main --head arena/c5db653e-synth --draft
+# operator merges; then the ceremony replaces the manual PR dance:
+synth expedition seal --id bda2bbd4ef6550af --merge-commit <sha>   # after: git fetch origin main
+synth expedition close --id bda2bbd4ef6550af
 ```
 
+### Stage 7 — steady state
+
+```bash
+synth expedition approve --draft-id 29b9a3704eb1287c       # FMW v2 verb folding
+synth expedition start  --id <id> --branch arena/c5db653e-synth --no-create
+# F1 follow-up (new mission, after the window):
+synth mission create --subject "Verification coverage truthfulness" --purpose "..."
+#   → govern must fail loudly or expand the registered suite, not silently run build+proof
+```
+
+**Ledger rule during and after the window:** commit and push after every ceremony; if a merge from `origin/main` ever conflicts on `.synth/**`, **stop** — that is the two-writer signal (ADR-055 §2.9), not something to resolve by hand.
+
 ---
 
-## 6. Acceptance criteria (global definition of done)
+## 6. Acceptance criteria — status
 
-| # | Criterion | Verified by |
+| # | Criterion | Status |
 |---|---|---|
-| A1 | Mission M1 + M2 approved; E1–E5 created/approved/committed; at least one running | `synth mission list`, `synth expedition list` |
-| A2 | After every ceremony: auto-commit succeeds and tree is clean | `git status --porcelain` empty (agent asserts after each transition) |
-| A3 | Read-only commands never dirty the tree | `tests/no-write-on-read.test.js` green |
-| A4 | Policy ↔ index ↔ `.gitignore` agree; CI guard wired | `scripts/check-artifact-policy.js` in `govern`/Proof Gate |
-| A5 | Every PR: Proof Gate green, `explain replay` consistent, no ledger merge conflicts | CI + `synth explain replay` |
-| A6 | `arena/...` branch works with `mode: enforce` via `--branch --no-create` | ADR-056 AC1 reproduced in this workspace |
-| A7 | Delivery is a ceremony: `deliver` → merge → `seal`; `close` refuses `deliveryPending` | E5 tests |
-| A8 | Anchor resilient: delete `.synth/anchor/` → `doctor` repairs (`worktree prune` + re-add) | manual + test |
-| A9 | Sandbox never holds the only copy: branch pushed; every ceremony committed + pushed | `git log origin/arena/c5db653e-synth` |
+| A1 | M1 + M2 approved; E1–E5 created/approved/committed | ✅ 2026-10-12 |
+| A2 | After every ceremony: auto-commit succeeds and the tree is clean | ✅ E1 (live) + E2/E3 (observed, `autoCommit.committed: true`) |
+| A3 | Read-only commands never dirty the tree | ✅ `tests/no-write-on-read.test.js` 11/11 (0/11 pre-fix) |
+| A4 | Policy ↔ index ↔ `.gitignore` agree; guard wired | ✅ guard PASS (2065 paths) and now first in the `govern` task; `--ci` at Stage 5 |
+| A5 | Every PR: Proof Gate green, `explain replay` consistent, no ledger merge conflicts | ⏳ per PR; replay consistent (377) |
+| A6 | `arena/…` works with `mode: enforce` via `--branch --no-create` | ⏳ Stage 5 (ADR-056 AC1) |
+| A7 | Delivery is a ceremony: `deliver` → merge → `seal`; `close` refuses `deliveryPending` | ⏳ Stage 6 (E5) |
+| A8 | Anchor resilient: delete `.synth/anchor/` → `doctor` repairs | ⏳ Stage 6 (E5) |
+| A9 | Sandbox never holds the only copy: branch pushed; every ceremony committed + pushed | ✅ HEAD == origin after every step so far |
+| A10 | M1's own claim is verified, not asserted: the suite fails pre-fix and passes post-fix | ✅ E3 A/B (0/11 → 11/11) |
+| A11 | The Proof Gate actually executes the registered suite (F1) | ⏳ follow-up expedition (§9.12) |
 
 ---
 
-## 7. Effort & critical path
+## 7. Effort & critical path (remaining)
 
 | Stage | Work | Duration |
 |---|---|---|
-| 0 | window open + branch backup + draft preservation | 0.5 h |
-| 1–3 | mission approval loop + 5 expeditions | 0.5 d |
-| 4a | E1 (P1 fix) | 1 d |
-| 4b | E2 | 1 d |
-| 4c | E3 (policy + tests + CI) | 1 d |
-| 4d | E4 (ADR-056) | 1–2 d |
-| 5 | window close | 0.5 h |
-| 6 | E5 (ledger writer + deliver/seal MVP) | 3–5 d |
-| 6+ | FMW v2 resumes (`bc9c51e0`, `29b9a370`) | existing scopes |
+| 4b | M1 completion + ledger commit | 0.5 h |
+| 5 | E4 (ADR-056) + window close + PR #340 review/merge | 1–2 d |
+| 6 | E5 (ledger writer, anchor, `deliver`/`seal` MVP) | 3–5 d |
+| 7 | FMW v2 resumes (`bc9c51e0`, `29b9a370`) · F1 follow-up | existing scopes |
 
-**Critical path:** Stage 0 → E1 → E4 → Stage 5. Everything after the window close is steady-state work.
-**Window bound:** ~1 week (E1+E2+E3+E4 with review). After E1 it is already paying for itself (clean
-ceremonies), so an extension of the window is low-risk as long as the single-writer rule holds.
+**Critical path:** E4 → window close → PR #340 merge → E5 → steady state.
+**Window bound:** the remaining piece is E4 alone. E1–E3 already paid for the window (ceremonies now commit their own state; reads are pure).
 
 ---
 
@@ -286,13 +248,13 @@ ceremonies), so an extension of the window is low-risk as long as the single-wri
 
 | Risk | Mitigation |
 |---|---|
-| Sandbox lost with uncommitted ledger | push branch at Stage 0; commit + push after every ceremony (A9) |
-| A second writer runs a ceremony during the window | window rule (ADR-055 §2.9): code-only merges allowed; no ceremonies elsewhere; merge conflicts on `.synth/**` = stop signal |
-| PRs carry the ledger during bootstrap (gate bypass) | accepted deviation, ends with E5; recorded in the plan and in ADR-055 §2.9 item 5 |
-| `src/cli/synth.ts` conflicts across E1–E5 | strict serialization (one expedition in flight); ADR-054 refactor later splits the file |
-| `mode: off` forgotten before merge | Stage 5 checklist + this doc + `doctor` warning class (E5); the suspension commit is reverted explicitly |
-| Draft files are gitignored (lost on transfer) | force-add now (Stage 0); permanent fix is E1/E3 policy (`input` class) |
-| CI Proof Gate unexpectedly red on ledger-carrying PRs | run `synth explain replay` + targeted tests before pushing; the operator owns final `npm run govern` |
+| Sandbox lost with uncommitted ledger | push after every ceremony (A9); HEAD == origin is checked each step |
+| A second writer runs a ceremony during the window | window rule (ADR-055 §2.9): code-only merges allowed; a `.synth/**` merge conflict = stop signal |
+| PR #340 carries the ledger (gate bypass) | accepted deviation, ends with E5; recorded in ADR-055 §2.9 item 5 |
+| `mode: off` forgotten before merge | `check-artifact-policy --ci` (fails while off) + Stage 5 checklist + PR title holds the window |
+| The Proof Gate gives false assurance (F1) | mitigated in-week (guard + regression in the `govern` task); tracked as A11 with its own follow-up |
+| `src/cli/synth.ts` conflicts across E4/E5 and FMW v2 | strict serialization; ADR-054 refactor later splits the file |
+| `--depends-on` cannot clear an edge (F6) | set dependencies only in the final refine of a committed expedition; verify with `expedition show` |
 | Protection rules unknown (403 on details) | operator merges; no bypass assumed |
 
 ---
@@ -301,29 +263,29 @@ ceremonies), so an extension of the window is low-risk as long as the single-wri
 
 | # | Question | Assumed answer |
 |---|---|---|
-| 9.1 | Mission structure: 2 missions or fold M2 into M1? | **2 missions** (purposes stay honest; `expedition move` makes it cheap to change) |
-| 9.2 | Artifact policy: keep draft `*.integrity.json` tracked? (PLAN Q2) | **tracked as `input`** (draft-integrity tests consume them) |
-| 9.3 | Delete stale `event-log.jsonl` outright? (PLAN Q3) | **yes** (262 events vs 320; inert legacy) |
-| 9.4 | ADR-054: mission cancel semantics / review gates / `committed` migration / shim lifetime (Q1–Q4) | map cancel→`archived`+reason; **wire** review gates for `--governed`; migrate the 8 committed expeditions to `approved` in one repair; shims for **2** minor versions |
-| 9.5 | ADR-054 Q5: mission `start` vs approval-as-activation | keep **approval-as-activation** (no mission `start`) |
-| 9.6 | ADR-056 Q2: who may declare a branch | **any actor** with a recorded binding (`declaredBy` in the payload); mission branches need the operator identity |
-| 9.7 | ADR-056 Q3: ship `expedition rebind` now? | **defer** (Q4-style "wait for a real need") |
+| 9.1 | Mission structure: 2 missions or fold M2 into M1? | **2 missions** (already created; purposes stay honest) |
+| 9.2 | Artifact policy: keep draft `*.integrity.json` tracked? | **tracked as `input`** (E3 implements and tests this) |
+| 9.3 | Delete stale `event-log.jsonl` outright? | **yes eventually** — *not done in E3*: the file is untracked and therefore the only copy; deletion deferred to an explicit operator confirmation (destructive, untracked). It is classified `legacy`, ignored, and never read |
+| 9.4 | ADR-054: cancel semantics / review gates / `committed` migration / shim lifetime | cancel→`archived`+reason; wire review gates for `--governed`; migrate the 8 committed expeditions in one repair; shims for **2** minor versions |
+| 9.5 | ADR-054 Q5: mission `start` vs approval-as-activation | keep **approval-as-activation** |
+| 9.6 | ADR-056 Q2: who may declare a branch | **any actor** with a recorded binding (`declaredBy`); mission branches need the operator identity |
+| 9.7 | ADR-056 Q3: ship `expedition rebind` now? | **defer** |
 | 9.8 | ADR-056 Q4: `declaredPatterns` semantics | **warning-softening only** |
-| 9.9 | ADR-056 Q5: declared branch already checked out in another worktree | **prefer the current checkout** |
-| 9.10 | ADR-055 Q2: post-bootstrap host policy | **single writer at a time**, enforced by doctor + lock; `synth ledger import` for the second writer later |
-| 9.11 | Anchor `worktree prune` ownership | `doctor` (with `--fix`) |
+| 9.9 | ADR-056 Q5: declared branch checked out in another worktree | **prefer the current checkout** |
+| 9.10 | ADR-055 Q2: post-bootstrap host policy | **single writer at a time**, enforced by doctor + lock; `synth ledger import` later |
+| 9.11 | Anchor `worktree prune` ownership | `doctor --fix` |
+| 9.12 | F1 follow-up: create the "verification coverage truthfulness" expedition after the window? | **yes** (new mission; fix `loadGovernChecks` to read the task registry or fail loudly, then wire `check-artifact-policy --ci` and the new suites into the Gate) |
+| 9.13 | PR #340 shape: one merged PR at window close, or split? | **one PR** merged at Stage 5 (docs + E1–E3 + E4); E5 gets its own PR. Splitting earlier would require a branch not pinned to this session — the operator can do that if they prefer |
 
 ---
 
 ## 10. Out of scope / explicitly deferred
 
-- The 7 deferred remote branches on `origin` (`exp-program-013-*`, `expedition/*`, `feat*`) plus the stale
-  local remote-tracking refs for the already-deleted `pr-303…331` branches — operator handles later; do not
-  delete/close them.
-- Era IV roadmap and Program-level work (unchanged).
-- FMW v2's remaining backlog beyond the three named items — continues under its own mission.
-- ADR-055 P3 (full worktrees) and `synth ledger import` — E6/later, not needed to exit bootstrap.
-- `full-govern` observational-equivalence work — not required for these PRs (targeted validation per ADR-043).
+- The 7 deferred remote branches on `origin` plus the stale local remote-tracking refs for the deleted `pr-*` branches — operator handles later; do not delete/close them.
+- Era IV roadmap and Program-level work.
+- FMW v2's remaining backlog beyond the named items.
+- ADR-055 P3 (worktrees) and `synth ledger import` — E6/later.
+- `full-govern` observational-equivalence work.
 
 ---
 
@@ -331,10 +293,12 @@ ceremonies), so an extension of the window is low-risk as long as the single-wri
 
 | File | Role |
 |---|---|
-| `docs/audits/mission-expedition-cli-audit-2026-10-12.md` | evidence base (inventory, rules, reproductions, Addendum 2) |
-| `docs/plans/reads-never-write.md` | M1 detail (W1–W5 → E1–E3) |
+| `docs/audits/mission-expedition-cli-audit-2026-10-12.md` | evidence base (inventory, rules, reproductions, Addenda) |
+| `docs/plans/reads-never-write.md` | M1 detail (W1–W5 → E1–E3) + status log |
 | `docs/adr/ADR-054-unified-lifecycle-state-machine.md` | lifecycle design (vehicle `bc9c51e0`) |
 | `docs/adr/ADR-055-ceremonial-events.md` | ledger placement, anchor, delivery, bootstrap §2.11 |
 | `docs/adr/ADR-056-declared-execution-branches.md` | `--branch` / `--no-create` |
-| `the operator project brief (working note, not in-repo)` | project status & operating contract |
+| `src/state/artifact-policy.ts` | the classification table (E3) |
+| `scripts/check-artifact-policy.js` | CI guard (index ↔ policy ↔ `.gitignore`; `--ci` for the window close) |
+| `tests/no-write-on-read.test.js` | the invariant, executable (E3) |
 | `docs/plans/master-delivery-plan.md` | this document |

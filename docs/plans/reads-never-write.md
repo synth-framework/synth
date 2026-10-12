@@ -1,7 +1,7 @@
 # Implementation Plan — "Reads Never Write" (Derived-State Integrity)
 
 **Item:** Eliminate the defect class where SYNTH's own read paths dirty the working tree, block expedition completion, and leave governance state uncommitted.
-**Status:** Plan for operator approval — **no code, state, or config has been changed.**
+**Status:** **Executed for E1–E3** (see §12 status log) — E1 `123030d`, E2 `5a663e8`, E3 `e881f6d` on `arena/c5db653e-synth`; M1 completion and PR merges pending.
 **Date:** 2026-10-12 · **Base:** `main` @ `ac4e81a` (v2.6.1) · **Author:** Arena agent
 **Related:** `docs/audits/system-review-2026-10-12.md` §4/§7/§11 · drafts `e8ba8f92d0105412`, `0463c2cae71ac727` · ADR-051 (derived state protection) · `docs/adr/ADR-054-…` proposal (unrelated lifecycle work)
 
@@ -380,3 +380,27 @@ Dry-run proposal ids (for the record): E1 `f34ce3ec4217d46d`, E2 `70c43bc00f294f
 1. **Binding:** the DSI mission is a *draft*; `expedition create` resolves the parent by id-or-name against **state**, and a draft mission is not in state. Creating now would store a name string as `missionId` → a record that never links to the mission once approved. Verified in `cmdExpeditionCreate` + `intake.ts` (`expedition.create`).
 2. **State writes belong on a canonical branch:** `expedition create` calls `handleIntent` and emits `EXPEDITION_CREATED` into the tracked event stream. This session is pinned to `arena/c5db653e-synth`, so those events would be stranded outside the governance lineage — and the repo already carries two expeditions about exactly that hazard (`3c84f699`, `e617ccd0`). The repo's own contract requires an executing expedition + approval mode for state writes.
 3. The typed-refs expedition (parent is active) is blocked only by (2) — run it on the branch you intend to keep, and it will bind correctly.
+
+---
+
+## 12. Status log (2026-10-12)
+
+**E1 — Derived-state staging correctness** (`ecc3688796be0545`, commit `123030d`) — complete.
+`existingAutoCommitPathspecs` (a missing pathspec no longer forces the fallback), `isTrackedPath` (`git ls-files -- <p>`), `check-ignore --no-index`, primary `git add -A -- <existing dirs> <excludes>` gated by `primaryOk`, fallback skipping ignored+untracked and using `-f` only for ignored+tracked; `autoCommit{committed,commitHash,files,reason}` surfaced in command JSON; 11 derived/cache/legacy files untracked; `.gitignore` rules for drafts/`integrity.json` removed. New regression `tests/auto-commit-ignored-paths.test.js` red before, green after. Live: `autoCommit.committed: true` on `refine`/`finish`/`evidence`, tree clean after each transition.
+
+**E2 — No write-on-read** (`f089c4fea720c07c`, commit `5a663e8`) — complete.
+Charter cache keyed on sha256 content digests, stored at `.synth/cache/dependency-records.json` (gitignored, written only when the digest map or records change; the legacy mtime cache is no longer read). `writeAiMetadata` compares each file against disk and writes only what changed, returning `{changed, files}`. `synth status` (light and heavy) no longer regenerates `.synth/ai/`; `synth ai refresh` and the bootstrap path remain the explicit regenerators.
+
+**E3 — Artifact policy + guards** (`cfbb801aa232795a`, commit `e881f6d`) — complete.
+`src/state/artifact-policy.ts` (durable / input / derived / cache / legacy, first-match-wins, include roots and `:(exclude)` pathspecs derived), `scripts/check-artifact-policy.js` (index ↔ policy ↔ `.gitignore`, plus `--ci` asserting `mode: enforce` — wired at window close), `tests/no-write-on-read.test.js`, `tests/artifact-policy.test.js`, registration in `package.json`, `data/tasks/*`, `docs/reference/capability-validation-map.json` and the `govern` task, `knowledge/AGENTS-intro.md` corrected and `AGENTS.md` regenerated.
+
+### Corrections to the findings in §1
+
+| Finding | Correction after implementation |
+|---|---|
+| D5 (`status` writes tracked files) | Confirmed, and now measured against a pristine tree: pre-fix `status` **creates `.synth/ai/`**; post-fix it does not |
+| D7 (mtime-keyed cache) | Confirmed with a sharper test: pre-fix the cache was **rewritten by an identical run**; post-fix it is content-stable |
+| "fails today on `status`, `doctor`, `capabilities`" (§7 test plan) | Too broad. Judged on an independently reset tree, only `status` and the cache-stability check fail pre-fix (0/11 → 11/11); `doctor`, `capabilities`, `explain replay`, `expedition list`, `mission list`, `program list`, `validate --dry-run` were already clean because their writes were to ignored paths |
+| D4 (ignored-but-tracked) | E1's index surgery removed the tracked-but-ignored set; the guard now keeps it empty (2065 tracked paths checked) |
+| D8 (stale `event-log.jsonl`) | Classified `legacy` and ignored; **not deleted** — it is untracked, so deletion is the only copy and is deferred to explicit operator confirmation (master plan §9.3) |
+| New: Proof Gate coverage | `npm run govern` decomposes `package.json.scripts["test:all"]` (the shim), so it runs build + proof only. Mitigated in the `govern` task; proper fix is a follow-up expedition (master plan F1/A11) |
