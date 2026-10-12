@@ -1,6 +1,6 @@
 {
-  "version": 320,
-  "stateHash": "97055763",
+  "version": 329,
+  "stateHash": "1047322807",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1315,7 +1315,16 @@
       "mimeType": "text/markdown",
       "description": "Reference evidence created by alignment prepare",
       "capturedAt": 1786828653141
+    },
+    "evidence-mv533f3e-xl7odt": {
+      "id": "evidence-mv533f3e-xl7odt",
+      "kind": "document",
+      "uri": "file://alignment/prepare.md",
+      "hash": "sha256:00000000",
+      "mimeType": "text/markdown",
+      "description": "Reference evidence created by alignment prepare",
+      "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 320
+  "lastEventOffset": 329
 }
