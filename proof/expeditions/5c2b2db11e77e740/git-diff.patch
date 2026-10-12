@@ -1,0 +1,1419 @@
+diff --git a/.synth/data/canonical-state.json b/.synth/data/canonical-state.json
+index f31fc4c..3d22492 100644
+--- a/.synth/data/canonical-state.json
++++ b/.synth/data/canonical-state.json
+@@ -1,6 +1,6 @@
+ {
+-  "version": 308,
+-  "stateHash": "519828677",
++  "version": 310,
++  "stateHash": "1129054550",
+   "lifecycle": "uninitialized",
+   "workItems": {},
+   "plans": {},
+@@ -475,7 +475,7 @@
+         }
+       },
+       "createdAt": 123,
+-      "updatedAt": 307,
++      "updatedAt": 308,
+       "attachments": [
+         {
+           "kind": "attachment",
+@@ -486,6 +486,11 @@
+           "kind": "attachment",
+           "path": "proof/expeditions/5c2b2db11e77e740/attachments/cert-dry.log",
+           "hash": "b00f219b23179bddf1846e73011f0317586e5b53a7b2b67eb7b00c13c8d81d52"
++        },
++        {
++          "kind": "git-diff",
++          "path": "proof/expeditions/5c2b2db11e77e740/git-diff.patch",
++          "hash": "d485df9f21827ce203639a41d188f186dfd51032a48bd939f789f4baa93bbe8e"
+         }
+       ]
+     },
+@@ -1293,5 +1298,5 @@
+       "capturedAt": 1786828653141
+     }
+   },
+-  "lastEventOffset": 308
++  "lastEventOffset": 310
+ }
+\ No newline at end of file
+diff --git a/.synth/data/cli-errors.jsonl b/.synth/data/cli-errors.jsonl
+index bebafb1..94b8718 100644
+--- a/.synth/data/cli-errors.jsonl
++++ b/.synth/data/cli-errors.jsonl
+@@ -54,3 +54,4 @@
+ {"timestamp":"2026-08-24T00:01:44.435Z","cwd":"/Users/dev/Projects/synth-v2","kind":"LifecycleBlocked","error":"Mission approval is blocked: expedition e5fdf75656be46bb (Decouple synth.js: lazy-load command groups and thin CLI entrypoint) is executing in the same mission.","exitCode":1,"mode":"json","code":"LifecycleBlocked","category":"governance","suggestion":"Close the active expedition first (synth expedition complete --id e5fdf75656be46bb), or approve with --complete-first to close it automatically before approving the mission.","requiredAction":"Close the active expedition first (synth expedition complete --id e5fdf75656be46bb), or approve with --complete-first to close it automatically before approving the mission."}
+ {"timestamp":"2026-08-24T00:03:09.621Z","cwd":"/Users/dev/Projects/synth-v2","kind":"LifecycleBlocked","error":"Mission approval is blocked: expedition e5fdf75656be46bb (Decouple synth.js: lazy-load command groups and thin CLI entrypoint) is executing in the same mission.","exitCode":1,"mode":"json","code":"LifecycleBlocked","category":"governance","suggestion":"Close the active expedition first (synth expedition complete --id e5fdf75656be46bb), or approve with --complete-first to close it automatically before approving the mission.","requiredAction":"Close the active expedition first (synth expedition complete --id e5fdf75656be46bb), or approve with --complete-first to close it automatically before approving the mission."}
+ {"timestamp":"2026-08-24T00:04:49.905Z","cwd":"/Users/dev/Projects/synth-v2","kind":"LifecycleBlocked","error":"Mission approval is blocked: expedition e5fdf75656be46bb (Decouple synth.js: lazy-load command groups and thin CLI entrypoint) is executing in the same mission.","exitCode":1,"mode":"json","code":"LifecycleBlocked","category":"governance","suggestion":"Close the active expedition first (synth expedition complete --id e5fdf75656be46bb), or approve with --complete-first to close it automatically before approving the mission.","requiredAction":"Close the active expedition first (synth expedition complete --id e5fdf75656be46bb), or approve with --complete-first to close it automatically before approving the mission."}
++{"timestamp":"2026-10-12T02:13:22.688Z","cwd":"/Users/dev/Projects/synth-v2","kind":"ExpeditionCompleteFailed","error":"[REPOSITORY_ADAPTER_CHECK] ExecutionGate rejected at REPOSITORY_ADAPTER_CHECK: REPOSITORY_NOT_READY: Working tree has uncommitted source changes outside the snapshot set (2 file(s))","exitCode":1,"mode":"json"}
+diff --git a/.synth/data/drafts/5c2b2db11e77e740.json b/.synth/data/drafts/5c2b2db11e77e740.json
+deleted file mode 100644
+index 27d60d5..0000000
+--- a/.synth/data/drafts/5c2b2db11e77e740.json
++++ /dev/null
+@@ -1,209 +0,0 @@
+-{
+-  "id": "5c2b2db11e77e740",
+-  "createdAt": 1787200664438,
+-  "observations": [
+-    {
+-      "id": "obs-mission-framework-maturation-v2",
+-      "sourceAdapter": "synth-cli",
+-      "type": "mission",
+-      "payload": {
+-        "subject": "Framework Maturation v2",
+-        "name": "Framework Maturation v2",
+-        "id": "4ab7e9d2cc7b1b66",
+-        "purpose": "Referenced existing mission"
+-      },
+-      "evidenceReference": "evidence-mission-Framework Maturation v2",
+-      "confidence": "high",
+-      "timestamp": 1787200664438
+-    },
+-    {
+-      "id": "obs-expedition-fix---dry-run-persisting-state-mutations",
+-      "sourceAdapter": "synth-cli",
+-      "type": "expedition",
+-      "payload": {
+-        "subject": "Fix --dry-run persisting state mutations",
+-        "name": "Fix --dry-run persisting state mutations",
+-        "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+-        "missionSubject": "4ab7e9d2cc7b1b66"
+-      },
+-      "evidenceReference": "evidence-expedition-Fix --dry-run persisting state mutations",
+-      "confidence": "high",
+-      "timestamp": 1787200664438
+-    }
+-  ],
+-  "evidence": {
+-    "evidence": [
+-      {
+-        "id": "08019b145cfb2447",
+-        "observationId": "obs-mission-framework-maturation-v2",
+-        "source": "synth-cli",
+-        "description": "mission observation from synth-cli",
+-        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-        "fingerprint": "10603cfbcedff6fe",
+-        "immutable": true
+-      },
+-      {
+-        "id": "d430860df49b9320",
+-        "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+-        "source": "synth-cli",
+-        "description": "expedition observation from synth-cli",
+-        "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+-        "fingerprint": "63dd2bb59b663caf",
+-        "immutable": true
+-      }
+-    ],
+-    "byObservationId": [
+-      [
+-        "obs-mission-framework-maturation-v2",
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "10603cfbcedff6fe",
+-          "immutable": true
+-        }
+-      ],
+-      [
+-        "obs-expedition-fix---dry-run-persisting-state-mutations",
+-        {
+-          "id": "d430860df49b9320",
+-          "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+-          "fingerprint": "63dd2bb59b663caf",
+-          "immutable": true
+-        }
+-      ]
+-    ]
+-  },
+-  "questions": [],
+-  "unknowns": [],
+-  "confidence": {
+-    "overall": 0.6900000000000001,
+-    "observationCoverage": 0.2,
+-    "evidenceQuality": 0.8,
+-    "consistency": 1,
+-    "completeness": 1,
+-    "inferenceDepth": 1,
+-    "unknownImpact": 0,
+-    "contradictionCount": 0
+-  },
+-  "worldModel": {
+-    "version": 1,
+-    "nodes": [
+-      [
+-        "17b4994fe4f4c74b",
+-        {
+-          "id": "17b4994fe4f4c74b",
+-          "kind": "mission",
+-          "name": "Framework Maturation v2",
+-          "description": "Referenced existing mission",
+-          "purpose": "Referenced existing mission",
+-          "expeditionIds": [],
+-          "observationIds": [
+-            "obs-mission-framework-maturation-v2"
+-          ],
+-          "evidenceRefs": [
+-            "08019b145cfb2447"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ],
+-      [
+-        "c64b9ae0415b3e41",
+-        {
+-          "id": "c64b9ae0415b3e41",
+-          "kind": "expedition",
+-          "name": "Fix --dry-run persisting state mutations",
+-          "description": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+-          "missionId": "17b4994fe4f4c74b",
+-          "goal": "Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only.",
+-          "objectiveIds": [],
+-          "observationIds": [
+-            "obs-expedition-fix---dry-run-persisting-state-mutations"
+-          ],
+-          "evidenceRefs": [
+-            "d430860df49b9320"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ]
+-    ],
+-    "edges": [
+-      {
+-        "id": "2a4ed440b0ff4b84",
+-        "source": "c64b9ae0415b3e41",
+-        "target": "17b4994fe4f4c74b",
+-        "relation": "parent_of",
+-        "observationIds": [
+-          "obs-expedition-fix---dry-run-persisting-state-mutations"
+-        ]
+-      }
+-    ],
+-    "evidence": {
+-      "evidence": [
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "10603cfbcedff6fe",
+-          "immutable": true
+-        },
+-        {
+-          "id": "d430860df49b9320",
+-          "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+-          "fingerprint": "63dd2bb59b663caf",
+-          "immutable": true
+-        }
+-      ],
+-      "byObservationId": [
+-        [
+-          "obs-mission-framework-maturation-v2",
+-          {
+-            "id": "08019b145cfb2447",
+-            "observationId": "obs-mission-framework-maturation-v2",
+-            "source": "synth-cli",
+-            "description": "mission observation from synth-cli",
+-            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-            "fingerprint": "10603cfbcedff6fe",
+-            "immutable": true
+-          }
+-        ],
+-        [
+-          "obs-expedition-fix---dry-run-persisting-state-mutations",
+-          {
+-            "id": "d430860df49b9320",
+-            "observationId": "obs-expedition-fix---dry-run-persisting-state-mutations",
+-            "source": "synth-cli",
+-            "description": "expedition observation from synth-cli",
+-            "snippet": "{\"subject\":\"Fix --dry-run persisting state mutations\",\"name\":\"Fix --dry-run persisting state mutations\",\"goal\":\"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, d",
+-            "fingerprint": "63dd2bb59b663caf",
+-            "immutable": true
+-          }
+-        ]
+-      ]
+-    },
+-    "unknowns": [],
+-    "confidence": {
+-      "overall": 0.6900000000000001,
+-      "observationCoverage": 0.2,
+-      "evidenceQuality": 0.8,
+-      "consistency": 1,
+-      "completeness": 1,
+-      "inferenceDepth": 1,
+-      "unknownImpact": 0,
+-      "contradictionCount": 0
+-    },
+-    "planningDecisions": []
+-  },
+-  "planningDecisions": [],
+-  "approvalState": "draft"
+-}
+\ No newline at end of file
+diff --git a/.synth/data/drafts/71ce984c9d3dd48f.json b/.synth/data/drafts/71ce984c9d3dd48f.json
+deleted file mode 100644
+index 958ac25..0000000
+--- a/.synth/data/drafts/71ce984c9d3dd48f.json
++++ /dev/null
+@@ -1,209 +0,0 @@
+-{
+-  "id": "71ce984c9d3dd48f",
+-  "createdAt": 1787395053796,
+-  "observations": [
+-    {
+-      "id": "obs-mission-framework-maturation-v2",
+-      "sourceAdapter": "synth-cli",
+-      "type": "mission",
+-      "payload": {
+-        "subject": "Framework Maturation v2",
+-        "name": "Framework Maturation v2",
+-        "id": "4ab7e9d2cc7b1b66",
+-        "purpose": "Referenced existing mission"
+-      },
+-      "evidenceReference": "evidence-mission-Framework Maturation v2",
+-      "confidence": "high",
+-      "timestamp": 1787395053796
+-    },
+-    {
+-      "id": "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-      "sourceAdapter": "synth-cli",
+-      "type": "expedition",
+-      "payload": {
+-        "subject": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
+-        "name": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
+-        "goal": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
+-        "missionSubject": "4ab7e9d2cc7b1b66"
+-      },
+-      "evidenceReference": "evidence-expedition-Introduce DRY and SDK compliance certification into the expedition lifecycle",
+-      "confidence": "high",
+-      "timestamp": 1787395053796
+-    }
+-  ],
+-  "evidence": {
+-    "evidence": [
+-      {
+-        "id": "08019b145cfb2447",
+-        "observationId": "obs-mission-framework-maturation-v2",
+-        "source": "synth-cli",
+-        "description": "mission observation from synth-cli",
+-        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-        "fingerprint": "b189316d89ba2441",
+-        "immutable": true
+-      },
+-      {
+-        "id": "ed475ba15a8518d0",
+-        "observationId": "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-        "source": "synth-cli",
+-        "description": "expedition observation from synth-cli",
+-        "snippet": "{\"subject\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"name\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"goal\":\"Add a compliance",
+-        "fingerprint": "e0df460d92ce6abf",
+-        "immutable": true
+-      }
+-    ],
+-    "byObservationId": [
+-      [
+-        "obs-mission-framework-maturation-v2",
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "b189316d89ba2441",
+-          "immutable": true
+-        }
+-      ],
+-      [
+-        "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-        {
+-          "id": "ed475ba15a8518d0",
+-          "observationId": "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"name\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"goal\":\"Add a compliance",
+-          "fingerprint": "e0df460d92ce6abf",
+-          "immutable": true
+-        }
+-      ]
+-    ]
+-  },
+-  "questions": [],
+-  "unknowns": [],
+-  "confidence": {
+-    "overall": 0.6900000000000001,
+-    "observationCoverage": 0.2,
+-    "evidenceQuality": 0.8,
+-    "consistency": 1,
+-    "completeness": 1,
+-    "inferenceDepth": 1,
+-    "unknownImpact": 0,
+-    "contradictionCount": 0
+-  },
+-  "worldModel": {
+-    "version": 1,
+-    "nodes": [
+-      [
+-        "785e7e160576851f",
+-        {
+-          "id": "785e7e160576851f",
+-          "kind": "mission",
+-          "name": "Framework Maturation v2",
+-          "description": "Referenced existing mission",
+-          "purpose": "Referenced existing mission",
+-          "expeditionIds": [],
+-          "observationIds": [
+-            "obs-mission-framework-maturation-v2"
+-          ],
+-          "evidenceRefs": [
+-            "08019b145cfb2447"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ],
+-      [
+-        "e68dd60987f37a04",
+-        {
+-          "id": "e68dd60987f37a04",
+-          "kind": "expedition",
+-          "name": "Introduce DRY and SDK compliance certification into the expedition lifecycle",
+-          "description": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
+-          "missionId": "785e7e160576851f",
+-          "goal": "Add a compliance check to the expedition lifecycle that statically inspects an expedition's deliverables for DRY violations and SDK-state-mutation misuse, and emits a machine-readable certification attached as expedition evidence. The certification is either CERTIFIED (full DRY + SDK evidence) or NOT_REQ (explicit, valid reasons the checks do not apply, e.g. no source deliverables or only derived/doc files). The check must run non-mutating: it adds NO extra lifecycle events beyond the evidence attachment.",
+-          "objectiveIds": [],
+-          "observationIds": [
+-            "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle"
+-          ],
+-          "evidenceRefs": [
+-            "ed475ba15a8518d0"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ]
+-    ],
+-    "edges": [
+-      {
+-        "id": "4b08eb95d02b986a",
+-        "source": "e68dd60987f37a04",
+-        "target": "785e7e160576851f",
+-        "relation": "parent_of",
+-        "observationIds": [
+-          "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle"
+-        ]
+-      }
+-    ],
+-    "evidence": {
+-      "evidence": [
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "b189316d89ba2441",
+-          "immutable": true
+-        },
+-        {
+-          "id": "ed475ba15a8518d0",
+-          "observationId": "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"name\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"goal\":\"Add a compliance",
+-          "fingerprint": "e0df460d92ce6abf",
+-          "immutable": true
+-        }
+-      ],
+-      "byObservationId": [
+-        [
+-          "obs-mission-framework-maturation-v2",
+-          {
+-            "id": "08019b145cfb2447",
+-            "observationId": "obs-mission-framework-maturation-v2",
+-            "source": "synth-cli",
+-            "description": "mission observation from synth-cli",
+-            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-            "fingerprint": "b189316d89ba2441",
+-            "immutable": true
+-          }
+-        ],
+-        [
+-          "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-          {
+-            "id": "ed475ba15a8518d0",
+-            "observationId": "obs-expedition-introduce-dry-and-sdk-compliance-certification-into-the-expedition-lifecycle",
+-            "source": "synth-cli",
+-            "description": "expedition observation from synth-cli",
+-            "snippet": "{\"subject\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"name\":\"Introduce DRY and SDK compliance certification into the expedition lifecycle\",\"goal\":\"Add a compliance",
+-            "fingerprint": "e0df460d92ce6abf",
+-            "immutable": true
+-          }
+-        ]
+-      ]
+-    },
+-    "unknowns": [],
+-    "confidence": {
+-      "overall": 0.6900000000000001,
+-      "observationCoverage": 0.2,
+-      "evidenceQuality": 0.8,
+-      "consistency": 1,
+-      "completeness": 1,
+-      "inferenceDepth": 1,
+-      "unknownImpact": 0,
+-      "contradictionCount": 0
+-    },
+-    "planningDecisions": []
+-  },
+-  "planningDecisions": [],
+-  "approvalState": "draft"
+-}
+\ No newline at end of file
+diff --git a/.synth/data/drafts/97ddb728c5250c96.json b/.synth/data/drafts/97ddb728c5250c96.json
+deleted file mode 100644
+index 93cf3ce..0000000
+--- a/.synth/data/drafts/97ddb728c5250c96.json
++++ /dev/null
+@@ -1,209 +0,0 @@
+-{
+-  "id": "97ddb728c5250c96",
+-  "createdAt": 1787510848585,
+-  "observations": [
+-    {
+-      "id": "obs-mission-framework-maturation-v2",
+-      "sourceAdapter": "synth-cli",
+-      "type": "mission",
+-      "payload": {
+-        "subject": "Framework Maturation v2",
+-        "name": "Framework Maturation v2",
+-        "id": "4ab7e9d2cc7b1b66",
+-        "purpose": "Referenced existing mission"
+-      },
+-      "evidenceReference": "evidence-mission-Framework Maturation v2",
+-      "confidence": "high",
+-      "timestamp": 1787510848585
+-    },
+-    {
+-      "id": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-      "sourceAdapter": "synth-cli",
+-      "type": "expedition",
+-      "payload": {
+-        "subject": "Migrate synth.js to Lazy-Load Model",
+-        "name": "Migrate synth.js to Lazy-Load Model",
+-        "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+-        "missionSubject": "4ab7e9d2cc7b1b66"
+-      },
+-      "evidenceReference": "evidence-expedition-Migrate synth.js to Lazy-Load Model",
+-      "confidence": "high",
+-      "timestamp": 1787510848585
+-    }
+-  ],
+-  "evidence": {
+-    "evidence": [
+-      {
+-        "id": "08019b145cfb2447",
+-        "observationId": "obs-mission-framework-maturation-v2",
+-        "source": "synth-cli",
+-        "description": "mission observation from synth-cli",
+-        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-        "fingerprint": "9d348b6a637a0e29",
+-        "immutable": true
+-      },
+-      {
+-        "id": "2098b139780e4247",
+-        "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-        "source": "synth-cli",
+-        "description": "expedition observation from synth-cli",
+-        "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+-        "fingerprint": "d91dbfc7c7c8912d",
+-        "immutable": true
+-      }
+-    ],
+-    "byObservationId": [
+-      [
+-        "obs-mission-framework-maturation-v2",
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "9d348b6a637a0e29",
+-          "immutable": true
+-        }
+-      ],
+-      [
+-        "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-        {
+-          "id": "2098b139780e4247",
+-          "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+-          "fingerprint": "d91dbfc7c7c8912d",
+-          "immutable": true
+-        }
+-      ]
+-    ]
+-  },
+-  "questions": [],
+-  "unknowns": [],
+-  "confidence": {
+-    "overall": 0.6900000000000001,
+-    "observationCoverage": 0.2,
+-    "evidenceQuality": 0.8,
+-    "consistency": 1,
+-    "completeness": 1,
+-    "inferenceDepth": 1,
+-    "unknownImpact": 0,
+-    "contradictionCount": 0
+-  },
+-  "worldModel": {
+-    "version": 1,
+-    "nodes": [
+-      [
+-        "d951da41be5b661c",
+-        {
+-          "id": "d951da41be5b661c",
+-          "kind": "mission",
+-          "name": "Framework Maturation v2",
+-          "description": "Referenced existing mission",
+-          "purpose": "Referenced existing mission",
+-          "expeditionIds": [],
+-          "observationIds": [
+-            "obs-mission-framework-maturation-v2"
+-          ],
+-          "evidenceRefs": [
+-            "08019b145cfb2447"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ],
+-      [
+-        "aa1fb48ffa53d8c4",
+-        {
+-          "id": "aa1fb48ffa53d8c4",
+-          "kind": "expedition",
+-          "name": "Migrate synth.js to Lazy-Load Model",
+-          "description": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+-          "missionId": "d951da41be5b661c",
+-          "goal": "Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model defined by the CLI Lazy-Load Strategy expedition, preserving byte-identical command output and keeping light commands (version, help, status, explain replay/identity/resume/governance) bootstrap-free.",
+-          "objectiveIds": [],
+-          "observationIds": [
+-            "obs-expedition-migrate-synth.js-to-lazy-load-model"
+-          ],
+-          "evidenceRefs": [
+-            "2098b139780e4247"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ]
+-    ],
+-    "edges": [
+-      {
+-        "id": "d223be75616ee25d",
+-        "source": "aa1fb48ffa53d8c4",
+-        "target": "d951da41be5b661c",
+-        "relation": "parent_of",
+-        "observationIds": [
+-          "obs-expedition-migrate-synth.js-to-lazy-load-model"
+-        ]
+-      }
+-    ],
+-    "evidence": {
+-      "evidence": [
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "9d348b6a637a0e29",
+-          "immutable": true
+-        },
+-        {
+-          "id": "2098b139780e4247",
+-          "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+-          "fingerprint": "d91dbfc7c7c8912d",
+-          "immutable": true
+-        }
+-      ],
+-      "byObservationId": [
+-        [
+-          "obs-mission-framework-maturation-v2",
+-          {
+-            "id": "08019b145cfb2447",
+-            "observationId": "obs-mission-framework-maturation-v2",
+-            "source": "synth-cli",
+-            "description": "mission observation from synth-cli",
+-            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-            "fingerprint": "9d348b6a637a0e29",
+-            "immutable": true
+-          }
+-        ],
+-        [
+-          "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-          {
+-            "id": "2098b139780e4247",
+-            "observationId": "obs-expedition-migrate-synth.js-to-lazy-load-model",
+-            "source": "synth-cli",
+-            "description": "expedition observation from synth-cli",
+-            "snippet": "{\"subject\":\"Migrate synth.js to Lazy-Load Model\",\"name\":\"Migrate synth.js to Lazy-Load Model\",\"goal\":\"Migrate the monolithic synth.js heavy-load path to the per-command-group lazy-loading model define",
+-            "fingerprint": "d91dbfc7c7c8912d",
+-            "immutable": true
+-          }
+-        ]
+-      ]
+-    },
+-    "unknowns": [],
+-    "confidence": {
+-      "overall": 0.6900000000000001,
+-      "observationCoverage": 0.2,
+-      "evidenceQuality": 0.8,
+-      "consistency": 1,
+-      "completeness": 1,
+-      "inferenceDepth": 1,
+-      "unknownImpact": 0,
+-      "contradictionCount": 0
+-    },
+-    "planningDecisions": []
+-  },
+-  "planningDecisions": [],
+-  "approvalState": "draft"
+-}
+\ No newline at end of file
+diff --git a/.synth/data/drafts/bc9c51e0674ec0ef.json b/.synth/data/drafts/bc9c51e0674ec0ef.json
+deleted file mode 100644
+index 95c69c9..0000000
+--- a/.synth/data/drafts/bc9c51e0674ec0ef.json
++++ /dev/null
+@@ -1,209 +0,0 @@
+-{
+-  "id": "bc9c51e0674ec0ef",
+-  "createdAt": 1787360421328,
+-  "observations": [
+-    {
+-      "id": "obs-mission-framework-maturation-v2",
+-      "sourceAdapter": "synth-cli",
+-      "type": "mission",
+-      "payload": {
+-        "subject": "Framework Maturation v2",
+-        "name": "Framework Maturation v2",
+-        "id": "4ab7e9d2cc7b1b66",
+-        "purpose": "Referenced existing mission"
+-      },
+-      "evidenceReference": "evidence-mission-Framework Maturation v2",
+-      "confidence": "high",
+-      "timestamp": 1787360421328
+-    },
+-    {
+-      "id": "obs-expedition-unify-expedition-and-mission-termination-commands",
+-      "sourceAdapter": "synth-cli",
+-      "type": "expedition",
+-      "payload": {
+-        "subject": "Unify expedition and mission termination commands",
+-        "name": "Unify expedition and mission termination commands",
+-        "goal": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+-        "missionSubject": "4ab7e9d2cc7b1b66"
+-      },
+-      "evidenceReference": "evidence-expedition-Unify expedition and mission termination commands",
+-      "confidence": "high",
+-      "timestamp": 1787360421328
+-    }
+-  ],
+-  "evidence": {
+-    "evidence": [
+-      {
+-        "id": "08019b145cfb2447",
+-        "observationId": "obs-mission-framework-maturation-v2",
+-        "source": "synth-cli",
+-        "description": "mission observation from synth-cli",
+-        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-        "fingerprint": "139e7bbbcb094382",
+-        "immutable": true
+-      },
+-      {
+-        "id": "64d024fc59a8c98c",
+-        "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+-        "source": "synth-cli",
+-        "description": "expedition observation from synth-cli",
+-        "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+-        "fingerprint": "ad28733bbaef3436",
+-        "immutable": true
+-      }
+-    ],
+-    "byObservationId": [
+-      [
+-        "obs-mission-framework-maturation-v2",
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "139e7bbbcb094382",
+-          "immutable": true
+-        }
+-      ],
+-      [
+-        "obs-expedition-unify-expedition-and-mission-termination-commands",
+-        {
+-          "id": "64d024fc59a8c98c",
+-          "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+-          "fingerprint": "ad28733bbaef3436",
+-          "immutable": true
+-        }
+-      ]
+-    ]
+-  },
+-  "questions": [],
+-  "unknowns": [],
+-  "confidence": {
+-    "overall": 0.6900000000000001,
+-    "observationCoverage": 0.2,
+-    "evidenceQuality": 0.8,
+-    "consistency": 1,
+-    "completeness": 1,
+-    "inferenceDepth": 1,
+-    "unknownImpact": 0,
+-    "contradictionCount": 0
+-  },
+-  "worldModel": {
+-    "version": 1,
+-    "nodes": [
+-      [
+-        "641eeb4236953b89",
+-        {
+-          "id": "641eeb4236953b89",
+-          "kind": "mission",
+-          "name": "Framework Maturation v2",
+-          "description": "Referenced existing mission",
+-          "purpose": "Referenced existing mission",
+-          "expeditionIds": [],
+-          "observationIds": [
+-            "obs-mission-framework-maturation-v2"
+-          ],
+-          "evidenceRefs": [
+-            "08019b145cfb2447"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ],
+-      [
+-        "89433f71a415870e",
+-        {
+-          "id": "89433f71a415870e",
+-          "kind": "expedition",
+-          "name": "Unify expedition and mission termination commands",
+-          "description": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+-          "missionId": "641eeb4236953b89",
+-          "goal": "DELIVERY ITEM: a concise termination model for expeditions and missions — clear, simple, leaving no room for pollution artifacts. Today the conclusion surface is scattered across complete, finish, archive, cancel (and archive doubles as cleanup fallback), each with different gates, evidence rules, and artifact side-effects; users cannot predict which command leaves which state behind. Collapse the surface into a minimal explicit model: few conclusion verbs with deterministic preconditions, exactly one event trail per termination path, and mandatory retirement of derived artifacts (drafts, loose files) in the same transition so terminal states never leave pollution behind",
+-          "objectiveIds": [],
+-          "observationIds": [
+-            "obs-expedition-unify-expedition-and-mission-termination-commands"
+-          ],
+-          "evidenceRefs": [
+-            "64d024fc59a8c98c"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ]
+-    ],
+-    "edges": [
+-      {
+-        "id": "c2b4264b64a9646d",
+-        "source": "89433f71a415870e",
+-        "target": "641eeb4236953b89",
+-        "relation": "parent_of",
+-        "observationIds": [
+-          "obs-expedition-unify-expedition-and-mission-termination-commands"
+-        ]
+-      }
+-    ],
+-    "evidence": {
+-      "evidence": [
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "139e7bbbcb094382",
+-          "immutable": true
+-        },
+-        {
+-          "id": "64d024fc59a8c98c",
+-          "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+-          "fingerprint": "ad28733bbaef3436",
+-          "immutable": true
+-        }
+-      ],
+-      "byObservationId": [
+-        [
+-          "obs-mission-framework-maturation-v2",
+-          {
+-            "id": "08019b145cfb2447",
+-            "observationId": "obs-mission-framework-maturation-v2",
+-            "source": "synth-cli",
+-            "description": "mission observation from synth-cli",
+-            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-            "fingerprint": "139e7bbbcb094382",
+-            "immutable": true
+-          }
+-        ],
+-        [
+-          "obs-expedition-unify-expedition-and-mission-termination-commands",
+-          {
+-            "id": "64d024fc59a8c98c",
+-            "observationId": "obs-expedition-unify-expedition-and-mission-termination-commands",
+-            "source": "synth-cli",
+-            "description": "expedition observation from synth-cli",
+-            "snippet": "{\"subject\":\"Unify expedition and mission termination commands\",\"name\":\"Unify expedition and mission termination commands\",\"goal\":\"DELIVERY ITEM: a concise termination model for expeditions and mission",
+-            "fingerprint": "ad28733bbaef3436",
+-            "immutable": true
+-          }
+-        ]
+-      ]
+-    },
+-    "unknowns": [],
+-    "confidence": {
+-      "overall": 0.6900000000000001,
+-      "observationCoverage": 0.2,
+-      "evidenceQuality": 0.8,
+-      "consistency": 1,
+-      "completeness": 1,
+-      "inferenceDepth": 1,
+-      "unknownImpact": 0,
+-      "contradictionCount": 0
+-    },
+-    "planningDecisions": []
+-  },
+-  "planningDecisions": [],
+-  "approvalState": "draft"
+-}
+\ No newline at end of file
+diff --git a/.synth/data/drafts/f4e4850f5929a111.json b/.synth/data/drafts/f4e4850f5929a111.json
+deleted file mode 100644
+index 227d5f3..0000000
+--- a/.synth/data/drafts/f4e4850f5929a111.json
++++ /dev/null
+@@ -1,209 +0,0 @@
+-{
+-  "id": "f4e4850f5929a111",
+-  "createdAt": 1787513313964,
+-  "observations": [
+-    {
+-      "id": "obs-mission-framework-maturation-v2",
+-      "sourceAdapter": "synth-cli",
+-      "type": "mission",
+-      "payload": {
+-        "subject": "Framework Maturation v2",
+-        "name": "Framework Maturation v2",
+-        "id": "4ab7e9d2cc7b1b66",
+-        "purpose": "Referenced existing mission"
+-      },
+-      "evidenceReference": "evidence-mission-Framework Maturation v2",
+-      "confidence": "high",
+-      "timestamp": 1787513313964
+-    },
+-    {
+-      "id": "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-      "sourceAdapter": "synth-cli",
+-      "type": "expedition",
+-      "payload": {
+-        "subject": "Audit expedition model: dependsOn enforcement and keep/remove decision",
+-        "name": "Audit expedition model: dependsOn enforcement and keep/remove decision",
+-        "goal": "Determine whether the expedition model enforces the dependsOn property. Current evidence: checkUpstreamDependencies (lifecycle-completion based) is advisory-only (reported as a warning in expedition check/doctor), while isBlockedByUpstreamGate (review-gate based) blocks execution in domain/execution.ts and governance/intake.ts. Decide which dependency mechanisms to keep, harden (e.g., enforce lifecycle completion at start), or remove, and recommend the target model.",
+-        "missionSubject": "4ab7e9d2cc7b1b66"
+-      },
+-      "evidenceReference": "evidence-expedition-Audit expedition model: dependsOn enforcement and keep/remove decision",
+-      "confidence": "high",
+-      "timestamp": 1787513313964
+-    }
+-  ],
+-  "evidence": {
+-    "evidence": [
+-      {
+-        "id": "08019b145cfb2447",
+-        "observationId": "obs-mission-framework-maturation-v2",
+-        "source": "synth-cli",
+-        "description": "mission observation from synth-cli",
+-        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-        "fingerprint": "ab6f0eaf2e38992b",
+-        "immutable": true
+-      },
+-      {
+-        "id": "de59af33a77f4a6c",
+-        "observationId": "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-        "source": "synth-cli",
+-        "description": "expedition observation from synth-cli",
+-        "snippet": "{\"subject\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"name\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"goal\":\"Determine whether the expedi",
+-        "fingerprint": "afc0616bffd207fb",
+-        "immutable": true
+-      }
+-    ],
+-    "byObservationId": [
+-      [
+-        "obs-mission-framework-maturation-v2",
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "ab6f0eaf2e38992b",
+-          "immutable": true
+-        }
+-      ],
+-      [
+-        "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-        {
+-          "id": "de59af33a77f4a6c",
+-          "observationId": "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"name\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"goal\":\"Determine whether the expedi",
+-          "fingerprint": "afc0616bffd207fb",
+-          "immutable": true
+-        }
+-      ]
+-    ]
+-  },
+-  "questions": [],
+-  "unknowns": [],
+-  "confidence": {
+-    "overall": 0.6900000000000001,
+-    "observationCoverage": 0.2,
+-    "evidenceQuality": 0.8,
+-    "consistency": 1,
+-    "completeness": 1,
+-    "inferenceDepth": 1,
+-    "unknownImpact": 0,
+-    "contradictionCount": 0
+-  },
+-  "worldModel": {
+-    "version": 1,
+-    "nodes": [
+-      [
+-        "4280e38ad4052919",
+-        {
+-          "id": "4280e38ad4052919",
+-          "kind": "mission",
+-          "name": "Framework Maturation v2",
+-          "description": "Referenced existing mission",
+-          "purpose": "Referenced existing mission",
+-          "expeditionIds": [],
+-          "observationIds": [
+-            "obs-mission-framework-maturation-v2"
+-          ],
+-          "evidenceRefs": [
+-            "08019b145cfb2447"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ],
+-      [
+-        "e546aad3d88f8bbc",
+-        {
+-          "id": "e546aad3d88f8bbc",
+-          "kind": "expedition",
+-          "name": "Audit expedition model: dependsOn enforcement and keep/remove decision",
+-          "description": "Determine whether the expedition model enforces the dependsOn property. Current evidence: checkUpstreamDependencies (lifecycle-completion based) is advisory-only (reported as a warning in expedition check/doctor), while isBlockedByUpstreamGate (review-gate based) blocks execution in domain/execution.ts and governance/intake.ts. Decide which dependency mechanisms to keep, harden (e.g., enforce lifecycle completion at start), or remove, and recommend the target model.",
+-          "missionId": "4280e38ad4052919",
+-          "goal": "Determine whether the expedition model enforces the dependsOn property. Current evidence: checkUpstreamDependencies (lifecycle-completion based) is advisory-only (reported as a warning in expedition check/doctor), while isBlockedByUpstreamGate (review-gate based) blocks execution in domain/execution.ts and governance/intake.ts. Decide which dependency mechanisms to keep, harden (e.g., enforce lifecycle completion at start), or remove, and recommend the target model.",
+-          "objectiveIds": [],
+-          "observationIds": [
+-            "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision"
+-          ],
+-          "evidenceRefs": [
+-            "de59af33a77f4a6c"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ]
+-    ],
+-    "edges": [
+-      {
+-        "id": "1da5fb92ca350f5b",
+-        "source": "e546aad3d88f8bbc",
+-        "target": "4280e38ad4052919",
+-        "relation": "parent_of",
+-        "observationIds": [
+-          "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision"
+-        ]
+-      }
+-    ],
+-    "evidence": {
+-      "evidence": [
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "ab6f0eaf2e38992b",
+-          "immutable": true
+-        },
+-        {
+-          "id": "de59af33a77f4a6c",
+-          "observationId": "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"name\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"goal\":\"Determine whether the expedi",
+-          "fingerprint": "afc0616bffd207fb",
+-          "immutable": true
+-        }
+-      ],
+-      "byObservationId": [
+-        [
+-          "obs-mission-framework-maturation-v2",
+-          {
+-            "id": "08019b145cfb2447",
+-            "observationId": "obs-mission-framework-maturation-v2",
+-            "source": "synth-cli",
+-            "description": "mission observation from synth-cli",
+-            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-            "fingerprint": "ab6f0eaf2e38992b",
+-            "immutable": true
+-          }
+-        ],
+-        [
+-          "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-          {
+-            "id": "de59af33a77f4a6c",
+-            "observationId": "obs-expedition-audit-expedition-model:-dependson-enforcement-and-keep/remove-decision",
+-            "source": "synth-cli",
+-            "description": "expedition observation from synth-cli",
+-            "snippet": "{\"subject\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"name\":\"Audit expedition model: dependsOn enforcement and keep/remove decision\",\"goal\":\"Determine whether the expedi",
+-            "fingerprint": "afc0616bffd207fb",
+-            "immutable": true
+-          }
+-        ]
+-      ]
+-    },
+-    "unknowns": [],
+-    "confidence": {
+-      "overall": 0.6900000000000001,
+-      "observationCoverage": 0.2,
+-      "evidenceQuality": 0.8,
+-      "consistency": 1,
+-      "completeness": 1,
+-      "inferenceDepth": 1,
+-      "unknownImpact": 0,
+-      "contradictionCount": 0
+-    },
+-    "planningDecisions": []
+-  },
+-  "planningDecisions": [],
+-  "approvalState": "draft"
+-}
+\ No newline at end of file
+diff --git a/.synth/data/drafts/ff268079bb596ef3.json b/.synth/data/drafts/ff268079bb596ef3.json
+deleted file mode 100644
+index f5fdf54..0000000
+--- a/.synth/data/drafts/ff268079bb596ef3.json
++++ /dev/null
+@@ -1,209 +0,0 @@
+-{
+-  "id": "ff268079bb596ef3",
+-  "createdAt": 1787510762864,
+-  "observations": [
+-    {
+-      "id": "obs-mission-framework-maturation-v2",
+-      "sourceAdapter": "synth-cli",
+-      "type": "mission",
+-      "payload": {
+-        "subject": "Framework Maturation v2",
+-        "name": "Framework Maturation v2",
+-        "id": "4ab7e9d2cc7b1b66",
+-        "purpose": "Referenced existing mission"
+-      },
+-      "evidenceReference": "evidence-mission-Framework Maturation v2",
+-      "confidence": "high",
+-      "timestamp": 1787510762864
+-    },
+-    {
+-      "id": "obs-expedition-cli-lazy-load-strategy",
+-      "sourceAdapter": "synth-cli",
+-      "type": "expedition",
+-      "payload": {
+-        "subject": "CLI Lazy-Load Strategy",
+-        "name": "CLI Lazy-Load Strategy",
+-        "goal": "Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading model (shared bootstrap vs deferred domain graph), and define benchmarks and acceptance criteria so light commands stay bootstrap-free and heavy commands load only their group.",
+-        "missionSubject": "4ab7e9d2cc7b1b66"
+-      },
+-      "evidenceReference": "evidence-expedition-CLI Lazy-Load Strategy",
+-      "confidence": "high",
+-      "timestamp": 1787510762864
+-    }
+-  ],
+-  "evidence": {
+-    "evidence": [
+-      {
+-        "id": "08019b145cfb2447",
+-        "observationId": "obs-mission-framework-maturation-v2",
+-        "source": "synth-cli",
+-        "description": "mission observation from synth-cli",
+-        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-        "fingerprint": "688335a0b88aefd6",
+-        "immutable": true
+-      },
+-      {
+-        "id": "17fb4d57bd6e9dff",
+-        "observationId": "obs-expedition-cli-lazy-load-strategy",
+-        "source": "synth-cli",
+-        "description": "expedition observation from synth-cli",
+-        "snippet": "{\"subject\":\"CLI Lazy-Load Strategy\",\"name\":\"CLI Lazy-Load Strategy\",\"goal\":\"Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading m",
+-        "fingerprint": "cca8f24b4732caa6",
+-        "immutable": true
+-      }
+-    ],
+-    "byObservationId": [
+-      [
+-        "obs-mission-framework-maturation-v2",
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "688335a0b88aefd6",
+-          "immutable": true
+-        }
+-      ],
+-      [
+-        "obs-expedition-cli-lazy-load-strategy",
+-        {
+-          "id": "17fb4d57bd6e9dff",
+-          "observationId": "obs-expedition-cli-lazy-load-strategy",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"CLI Lazy-Load Strategy\",\"name\":\"CLI Lazy-Load Strategy\",\"goal\":\"Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading m",
+-          "fingerprint": "cca8f24b4732caa6",
+-          "immutable": true
+-        }
+-      ]
+-    ]
+-  },
+-  "questions": [],
+-  "unknowns": [],
+-  "confidence": {
+-    "overall": 0.6900000000000001,
+-    "observationCoverage": 0.2,
+-    "evidenceQuality": 0.8,
+-    "consistency": 1,
+-    "completeness": 1,
+-    "inferenceDepth": 1,
+-    "unknownImpact": 0,
+-    "contradictionCount": 0
+-  },
+-  "worldModel": {
+-    "version": 1,
+-    "nodes": [
+-      [
+-        "b5c79b2be8048c5c",
+-        {
+-          "id": "b5c79b2be8048c5c",
+-          "kind": "mission",
+-          "name": "Framework Maturation v2",
+-          "description": "Referenced existing mission",
+-          "purpose": "Referenced existing mission",
+-          "expeditionIds": [],
+-          "observationIds": [
+-            "obs-mission-framework-maturation-v2"
+-          ],
+-          "evidenceRefs": [
+-            "08019b145cfb2447"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ],
+-      [
+-        "ca3677756426935b",
+-        {
+-          "id": "ca3677756426935b",
+-          "kind": "expedition",
+-          "name": "CLI Lazy-Load Strategy",
+-          "description": "Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading model (shared bootstrap vs deferred domain graph), and define benchmarks and acceptance criteria so light commands stay bootstrap-free and heavy commands load only their group.",
+-          "missionId": "b5c79b2be8048c5c",
+-          "goal": "Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading model (shared bootstrap vs deferred domain graph), and define benchmarks and acceptance criteria so light commands stay bootstrap-free and heavy commands load only their group.",
+-          "objectiveIds": [],
+-          "observationIds": [
+-            "obs-expedition-cli-lazy-load-strategy"
+-          ],
+-          "evidenceRefs": [
+-            "17fb4d57bd6e9dff"
+-          ],
+-          "confidence": 0.8
+-        }
+-      ]
+-    ],
+-    "edges": [
+-      {
+-        "id": "a91858a3b5d58b12",
+-        "source": "ca3677756426935b",
+-        "target": "b5c79b2be8048c5c",
+-        "relation": "parent_of",
+-        "observationIds": [
+-          "obs-expedition-cli-lazy-load-strategy"
+-        ]
+-      }
+-    ],
+-    "evidence": {
+-      "evidence": [
+-        {
+-          "id": "08019b145cfb2447",
+-          "observationId": "obs-mission-framework-maturation-v2",
+-          "source": "synth-cli",
+-          "description": "mission observation from synth-cli",
+-          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-          "fingerprint": "688335a0b88aefd6",
+-          "immutable": true
+-        },
+-        {
+-          "id": "17fb4d57bd6e9dff",
+-          "observationId": "obs-expedition-cli-lazy-load-strategy",
+-          "source": "synth-cli",
+-          "description": "expedition observation from synth-cli",
+-          "snippet": "{\"subject\":\"CLI Lazy-Load Strategy\",\"name\":\"CLI Lazy-Load Strategy\",\"goal\":\"Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading m",
+-          "fingerprint": "cca8f24b4732caa6",
+-          "immutable": true
+-        }
+-      ],
+-      "byObservationId": [
+-        [
+-          "obs-mission-framework-maturation-v2",
+-          {
+-            "id": "08019b145cfb2447",
+-            "observationId": "obs-mission-framework-maturation-v2",
+-            "source": "synth-cli",
+-            "description": "mission observation from synth-cli",
+-            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+-            "fingerprint": "688335a0b88aefd6",
+-            "immutable": true
+-          }
+-        ],
+-        [
+-          "obs-expedition-cli-lazy-load-strategy",
+-          {
+-            "id": "17fb4d57bd6e9dff",
+-            "observationId": "obs-expedition-cli-lazy-load-strategy",
+-            "source": "synth-cli",
+-            "description": "expedition observation from synth-cli",
+-            "snippet": "{\"subject\":\"CLI Lazy-Load Strategy\",\"name\":\"CLI Lazy-Load Strategy\",\"goal\":\"Map the current synth.js bootstrap cost, identify command-group lazy boundaries, design the per-command-group lazy-loading m",
+-            "fingerprint": "cca8f24b4732caa6",
+-            "immutable": true
+-          }
+-        ]
+-      ]
+-    },
+-    "unknowns": [],
+-    "confidence": {
+-      "overall": 0.6900000000000001,
+-      "observationCoverage": 0.2,
+-      "evidenceQuality": 0.8,
+-      "consistency": 1,
+-      "completeness": 1,
+-      "inferenceDepth": 1,
+-      "unknownImpact": 0,
+-      "contradictionCount": 0
+-    },
+-    "planningDecisions": []
+-  },
+-  "planningDecisions": [],
+-  "approvalState": "draft"
+-}
+\ No newline at end of file
+diff --git a/.synth/data/event-stream/partition-0/segment-0001.jsonl b/.synth/data/event-stream/partition-0/segment-0001.jsonl
+index 6247c5e..23bb2dd 100644
+--- a/.synth/data/event-stream/partition-0/segment-0001.jsonl
++++ b/.synth/data/event-stream/partition-0/segment-0001.jsonl
+@@ -44,3 +44,4 @@
+ {"id":"8f287ad3575e12bed2956c01c47ee9b9ded84759859f990373d626f4a943fbce-0","type":"EVIDENCE_ATTACHED","timestamp":291,"transactionId":"8f287ad3575e12bed2956c01c47ee9b9ded84759859f990373d626f4a943fbce","capability":"AttachEvidence","actor":"synth-cli","payload":{"expeditionId":"886dc15e19a8e587","attachments":[{"kind":"git-diff","path":"proof/expeditions/886dc15e19a8e587/git-diff.patch","hash":"305d7e05dffb220a4a5cd4f383a5c02678f5acb12c5d16462d7ac6fe293334eb"}],"note":"Deliverables verified: partitioned stream live; per-entity save live + test wired to dist (4/4); refine --depends-on added end-to-end (dry-run shows payload), domain tests green"},"previousHash":"527d062dfd209316dac35a85aea887dfe4c4a1ee0942764060ed4045cc6780f1","eventHash":"2c9198cdef202bf6e0e93b978e0d13154d62fda4578b2e84756d770fc2547143","partitionKey":"EVIDENCE_ATTACHED","partition":0,"offset":292}
+ {"id":"5122d926af394365206330cc654b2995b2087d603a52689bbfa72dbe95d586b2-0","type":"EVIDENCE_ATTACHED","timestamp":293,"transactionId":"5122d926af394365206330cc654b2995b2087d603a52689bbfa72dbe95d586b2","capability":"AttachEvidence","actor":"synth-cli","payload":{"expeditionId":"886dc15e19a8e587","attachments":[{"kind":"git-diff","path":"proof/expeditions/886dc15e19a8e587/git-diff.patch","hash":"5a897d81f7867c32138e23d23f2e1582757bd4cfb1e39452d0e39b970a24da17"}],"note":"Deliverables verified: partitioned stream live; per-entity save live + test wired to dist (4/4); refine --depends-on added end-to-end, domain tests green"},"previousHash":"4755f69d3cd997c2c6219dac1c9b0a0848b26f56d07014611f8ea5c58d4a80cc","eventHash":"66941793ec938047407088599ffe73aab9bc4d5cec36fc2bb29fd55d2239449b","partitionKey":"EVIDENCE_ATTACHED","partition":0,"offset":294}
+ {"id":"a99c6ae034502230db3f286ee7dbd521151064e30e4ea345fce6c5bcc1eac7cf-0","type":"EVIDENCE_ATTACHED","timestamp":307,"transactionId":"a99c6ae034502230db3f286ee7dbd521151064e30e4ea345fce6c5bcc1eac7cf","capability":"AttachEvidence","actor":"synth-cli","payload":{"expeditionId":"5c2b2db11e77e740","attachments":[{"kind":"attachment","path":"proof/expeditions/5c2b2db11e77e740/attachments/ev-dry.log","hash":"bfdd208fe775fa373b98cc69afacb89f7db1c8e3329e59a1fcc9edafc2e06a5f"},{"kind":"attachment","path":"proof/expeditions/5c2b2db11e77e740/attachments/cert-dry.log","hash":"b00f219b23179bddf1846e73011f0317586e5b53a7b2b67eb7b00c13c8d81d52"}],"note":"dry-run read-only verification probes"},"previousHash":"de012686999afb84d448f44bf4267ced65a6696312fcbc6b5648a4bb58a9dbe2","eventHash":"fd464ed584a844a74197b0260c75c5a3edc6b2356499d6a52d71c053c150473d","partitionKey":"EVIDENCE_ATTACHED","partition":0,"offset":308}
++{"id":"7dde9b59e9c443033d703cce2d989133f160d91159bc83f1f36ae33ca4bd5238-0","type":"EVIDENCE_ATTACHED","timestamp":308,"transactionId":"7dde9b59e9c443033d703cce2d989133f160d91159bc83f1f36ae33ca4bd5238","capability":"AttachEvidence","actor":"synth-cli","payload":{"expeditionId":"5c2b2db11e77e740","attachments":[{"kind":"git-diff","path":"proof/expeditions/5c2b2db11e77e740/git-diff.patch","hash":"d485df9f21827ce203639a41d188f186dfd51032a48bd939f789f4baa93bbe8e"}],"note":"evidence+certify --dry-run made read-only (were silently executing); 13-command dry-run regression suite green"},"previousHash":"fd464ed584a844a74197b0260c75c5a3edc6b2356499d6a52d71c053c150473d","eventHash":"ba146bc1d633945a6222dc657e165150bea20f34cf63ac18f2c2adbd47ffa413","partitionKey":"EVIDENCE_ATTACHED","partition":0,"offset":309}
+diff --git a/.synth/data/event-stream/partition-1/segment-0001.jsonl b/.synth/data/event-stream/partition-1/segment-0001.jsonl
+index 11a60ae..c191fea 100644
+--- a/.synth/data/event-stream/partition-1/segment-0001.jsonl
++++ b/.synth/data/event-stream/partition-1/segment-0001.jsonl
+@@ -55,3 +55,4 @@
+ {"id":"f486cfba004c3b8f2e6575f8863a91afa030b2db72887f756b056d7a8eaddfad-0","type":"CONVERGENCE_CERTIFIED","timestamp":292,"transactionId":"f486cfba004c3b8f2e6575f8863a91afa030b2db72887f756b056d7a8eaddfad","capability":"CertifyConvergence","actor":"synth-cli","payload":{"certificationId":"convergence-certification-mv4jxkai-1svg4s","missionId":"4ab7e9d2cc7b1b66","expeditionId":"886dc15e19a8e587","alignmentContractId":"alignment-contract-msuvn8o1-qrlimc","decision":"converged","confidence":1,"failureClasses":[],"certifier":{"kind":"engine","id":"convergence-certification"},"result":{"decision":"converged","confidence":1,"dimensions":[{"dimension":"intent_fidelity","outcome":"pass","confidence":1,"rationale":"No forbidden interpretations detected in outcome.","evidence":{"summary":"intent_fidelity: all relevant rules satisfied.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"contract_fidelity","outcome":"pass","confidence":1,"rationale":"Outcome satisfies contract constraints.","evidence":{"summary":"contract_fidelity: all relevant rules satisfied.","ruleResults":[{"ruleId":"auto-expedition-goal-satisfied","ruleName":"Expedition goal satisfied by attached evidence","outcome":"pass","severity":"blocking","contractClauses":[{"field":"successCriteria","requirement":"Expedition goal is achieved and evidenced.","values":["Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."]},{"field":"requiredBehaviors","requirement":"Implementation behaviors align with expedition intent.","values":["changes verified","evidence attached"]}],"observedFeatures":[{"kind":"string","name":"goal","value":"Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."},{"kind":"number","name":"attachmentCount","value":1}],"rationale":"Expedition completed with 1 evidence attachment(s) and no reported drift."}],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"evidence_fidelity","outcome":"pass","confidence":1,"rationale":"Required evidence artifacts are present.","evidence":{"summary":"Evidence package complete.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"drift_absence","outcome":"pass","confidence":1,"rationale":"No drift classes detected in outcome.","evidence":{"summary":"No drift classes matched.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}}],"failureClasses":[],"evidence":{"summary":"Outcome is converged with approved intent and contract.","ruleResults":[{"ruleId":"auto-expedition-goal-satisfied","ruleName":"Expedition goal satisfied by attached evidence","outcome":"pass","severity":"blocking","contractClauses":[{"field":"successCriteria","requirement":"Expedition goal is achieved and evidenced.","values":["Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."]},{"field":"requiredBehaviors","requirement":"Implementation behaviors align with expedition intent.","values":["changes verified","evidence attached"]}],"observedFeatures":[{"kind":"string","name":"goal","value":"Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."},{"kind":"number","name":"attachmentCount","value":1}],"rationale":"Expedition completed with 1 evidence attachment(s) and no reported drift."}],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]},"reasoning":["intent_fidelity: pass (No forbidden interpretations detected in outcome.)","contract_fidelity: pass (Outcome satisfies contract constraints.)","evidence_fidelity: pass (Required evidence artifacts are present.)","drift_absence: pass (No drift classes detected in outcome.)"],"deterministic":true}},"previousHash":"2c9198cdef202bf6e0e93b978e0d13154d62fda4578b2e84756d770fc2547143","eventHash":"4755f69d3cd997c2c6219dac1c9b0a0848b26f56d07014611f8ea5c58d4a80cc","partitionKey":"CONVERGENCE_CERTIFIED","partition":1,"offset":293}
+ {"id":"b55d0cfc5d19ba01972e4f6dcb8329bae9800f87a0f353db12868ee277208cf9-0","type":"CONVERGENCE_CERTIFIED","timestamp":294,"transactionId":"b55d0cfc5d19ba01972e4f6dcb8329bae9800f87a0f353db12868ee277208cf9","capability":"CertifyConvergence","actor":"synth-cli","payload":{"certificationId":"convergence-certification-mv4jzr0b-ktycbh","missionId":"4ab7e9d2cc7b1b66","expeditionId":"886dc15e19a8e587","alignmentContractId":"alignment-contract-msuvn8o1-qrlimc","decision":"converged","confidence":1,"failureClasses":[],"certifier":{"kind":"engine","id":"convergence-certification"},"result":{"decision":"converged","confidence":1,"dimensions":[{"dimension":"intent_fidelity","outcome":"pass","confidence":1,"rationale":"No forbidden interpretations detected in outcome.","evidence":{"summary":"intent_fidelity: all relevant rules satisfied.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"contract_fidelity","outcome":"pass","confidence":1,"rationale":"Outcome satisfies contract constraints.","evidence":{"summary":"contract_fidelity: all relevant rules satisfied.","ruleResults":[{"ruleId":"auto-expedition-goal-satisfied","ruleName":"Expedition goal satisfied by attached evidence","outcome":"pass","severity":"blocking","contractClauses":[{"field":"successCriteria","requirement":"Expedition goal is achieved and evidenced.","values":["Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."]},{"field":"requiredBehaviors","requirement":"Implementation behaviors align with expedition intent.","values":["changes verified","evidence attached"]}],"observedFeatures":[{"kind":"string","name":"goal","value":"Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."},{"kind":"number","name":"attachmentCount","value":2}],"rationale":"Expedition completed with 2 evidence attachment(s) and no reported drift."}],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"evidence_fidelity","outcome":"pass","confidence":1,"rationale":"Required evidence artifacts are present.","evidence":{"summary":"Evidence package complete.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"drift_absence","outcome":"pass","confidence":1,"rationale":"No drift classes detected in outcome.","evidence":{"summary":"No drift classes matched.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}}],"failureClasses":[],"evidence":{"summary":"Outcome is converged with approved intent and contract.","ruleResults":[{"ruleId":"auto-expedition-goal-satisfied","ruleName":"Expedition goal satisfied by attached evidence","outcome":"pass","severity":"blocking","contractClauses":[{"field":"successCriteria","requirement":"Expedition goal is achieved and evidenced.","values":["Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."]},{"field":"requiredBehaviors","requirement":"Implementation behaviors align with expedition intent.","values":["changes verified","evidence attached"]}],"observedFeatures":[{"kind":"string","name":"goal","value":"Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved."},{"kind":"number","name":"attachmentCount","value":2}],"rationale":"Expedition completed with 2 evidence attachment(s) and no reported drift."}],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]},"reasoning":["intent_fidelity: pass (No forbidden interpretations detected in outcome.)","contract_fidelity: pass (Outcome satisfies contract constraints.)","evidence_fidelity: pass (Required evidence artifacts are present.)","drift_absence: pass (No drift classes detected in outcome.)"],"deterministic":true}},"previousHash":"66941793ec938047407088599ffe73aab9bc4d5cec36fc2bb29fd55d2239449b","eventHash":"daab6b035846ebf4b2ca5db0ac124e9abb6596fccc2ff052237108c7fa7f0f7b","partitionKey":"CONVERGENCE_CERTIFIED","partition":1,"offset":295}
+ {"id":"10d2343fdf9f249036a50294c80909500bafd77e40e59bd20da8d4d22aac5bc6-0","type":"EXPEDITION_BRANCH_CREATED","timestamp":305,"transactionId":"10d2343fdf9f249036a50294c80909500bafd77e40e59bd20da8d4d22aac5bc6","capability":"CreateExpeditionBranch","actor":"synth-cli","payload":{"expeditionId":"5c2b2db11e77e740","branch":"expedition/framework-maturation-v2-4ab7e9d/fix-dry-run-persisting-state-mutations-5c2b2db","baseCommit":"0ba8496d95c00e2cbe8f69a3bacb41e1576a9386"},"previousHash":"33e7079372929985937796301d964fed554b40c453ab50b7b1194db60cd2a7ac","eventHash":"f83832e9731a6563ea16af153e686597c57ae840666d550e3f8a83ff7aeb0dd2","partitionKey":"EXPEDITION_BRANCH_CREATED","partition":1,"offset":306}
++{"id":"e19af1ebeb9d70e54be955533d581a17cc547f117ccd6fa7717750668e435c22-0","type":"CONVERGENCE_CERTIFIED","timestamp":309,"transactionId":"e19af1ebeb9d70e54be955533d581a17cc547f117ccd6fa7717750668e435c22","capability":"CertifyConvergence","actor":"synth-cli","payload":{"certificationId":"convergence-certification-mv4mb5ep-ig3g21","missionId":"4ab7e9d2cc7b1b66","expeditionId":"5c2b2db11e77e740","alignmentContractId":"alignment-contract-msuvn8o1-qrlimc","decision":"converged","confidence":1,"failureClasses":[],"certifier":{"kind":"engine","id":"convergence-certification"},"result":{"decision":"converged","confidence":1,"dimensions":[{"dimension":"intent_fidelity","outcome":"pass","confidence":1,"rationale":"No forbidden interpretations detected in outcome.","evidence":{"summary":"intent_fidelity: all relevant rules satisfied.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"contract_fidelity","outcome":"pass","confidence":1,"rationale":"Outcome satisfies contract constraints.","evidence":{"summary":"contract_fidelity: all relevant rules satisfied.","ruleResults":[{"ruleId":"auto-expedition-goal-satisfied","ruleName":"Expedition goal satisfied by attached evidence","outcome":"pass","severity":"blocking","contractClauses":[{"field":"successCriteria","requirement":"Expedition goal is achieved and evidenced.","values":["Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only."]},{"field":"requiredBehaviors","requirement":"Implementation behaviors align with expedition intent.","values":["changes verified","evidence attached"]}],"observedFeatures":[{"kind":"string","name":"goal","value":"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only."},{"kind":"number","name":"attachmentCount","value":3}],"rationale":"Expedition completed with 3 evidence attachment(s) and no reported drift."}],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"evidence_fidelity","outcome":"pass","confidence":1,"rationale":"Required evidence artifacts are present.","evidence":{"summary":"Evidence package complete.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}},{"dimension":"drift_absence","outcome":"pass","confidence":1,"rationale":"No drift classes detected in outcome.","evidence":{"summary":"No drift classes matched.","ruleResults":[],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]}}],"failureClasses":[],"evidence":{"summary":"Outcome is converged with approved intent and contract.","ruleResults":[{"ruleId":"auto-expedition-goal-satisfied","ruleName":"Expedition goal satisfied by attached evidence","outcome":"pass","severity":"blocking","contractClauses":[{"field":"successCriteria","requirement":"Expedition goal is achieved and evidenced.","values":["Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only."]},{"field":"requiredBehaviors","requirement":"Implementation behaviors align with expedition intent.","values":["changes verified","evidence attached"]}],"observedFeatures":[{"kind":"string","name":"goal","value":"Investigate and fix the --dry-run flag in mutating CLI subcommands (expedition create, delete) so it never persists draft files, canonical-state, or event-log entries. Reproducer: two consecutive dry-run and real expedition-create invocations both logged EXPEDITION_CREATED events and persisted draft files (fdc1558fa0a676d7 was an accidental dry-run survivor). Dry-run must be read-only; observability of the intended mutation must come from preview output only."},{"kind":"number","name":"attachmentCount","value":3}],"rationale":"Expedition completed with 3 evidence attachment(s) and no reported drift."}],"matchedDriftClasses":[],"violatedContractFields":[],"violatedIntentClauses":[]},"reasoning":["intent_fidelity: pass (No forbidden interpretations detected in outcome.)","contract_fidelity: pass (Outcome satisfies contract constraints.)","evidence_fidelity: pass (Required evidence artifacts are present.)","drift_absence: pass (No drift classes detected in outcome.)"],"deterministic":true}},"previousHash":"ba146bc1d633945a6222dc657e165150bea20f34cf63ac18f2c2adbd47ffa413","eventHash":"395e82646f8501c6ab1b933a7ce1fde10fc709d661cd63cf0c4075ff280d0641","partitionKey":"CONVERGENCE_CERTIFIED","partition":1,"offset":310}
+diff --git a/.synth/data/expeditions/5c2b2db11e77e740.json b/.synth/data/expeditions/5c2b2db11e77e740.json
+index e9dd51f..d1905d9 100644
+--- a/.synth/data/expeditions/5c2b2db11e77e740.json
++++ b/.synth/data/expeditions/5c2b2db11e77e740.json
+@@ -23,7 +23,7 @@
+     }
+   },
+   "createdAt": 123,
+-  "updatedAt": 307,
++  "updatedAt": 308,
+   "attachments": [
+     {
+       "kind": "attachment",
+@@ -34,6 +34,11 @@
+       "kind": "attachment",
+       "path": "proof/expeditions/5c2b2db11e77e740/attachments/cert-dry.log",
+       "hash": "b00f219b23179bddf1846e73011f0317586e5b53a7b2b67eb7b00c13c8d81d52"
++    },
++    {
++      "kind": "git-diff",
++      "path": "proof/expeditions/5c2b2db11e77e740/git-diff.patch",
++      "hash": "d485df9f21827ce203639a41d188f186dfd51032a48bd939f789f4baa93bbe8e"
+     }
+   ]
+ }
+\ No newline at end of file
+diff --git a/proof/expeditions/5c2b2db11e77e740/manifest.json b/proof/expeditions/5c2b2db11e77e740/manifest.json
+index 72c8f3e..7d9e79e 100644
+--- a/proof/expeditions/5c2b2db11e77e740/manifest.json
++++ b/proof/expeditions/5c2b2db11e77e740/manifest.json
+@@ -1,17 +1,12 @@
+ {
+   "expeditionId": "5c2b2db11e77e740",
+-  "capturedAt": 1791771136943,
+-  "note": "dry-run read-only verification probes",
++  "capturedAt": 1791771196637,
++  "note": "evidence+certify --dry-run made read-only (were silently executing); 13-command dry-run regression suite green",
+   "attachments": [
+     {
+-      "kind": "attachment",
+-      "path": "proof/expeditions/5c2b2db11e77e740/attachments/ev-dry.log",
+-      "hash": "bfdd208fe775fa373b98cc69afacb89f7db1c8e3329e59a1fcc9edafc2e06a5f"
+-    },
+-    {
+-      "kind": "attachment",
+-      "path": "proof/expeditions/5c2b2db11e77e740/attachments/cert-dry.log",
+-      "hash": "b00f219b23179bddf1846e73011f0317586e5b53a7b2b67eb7b00c13c8d81d52"
++      "kind": "git-diff",
++      "path": "proof/expeditions/5c2b2db11e77e740/git-diff.patch",
++      "hash": "d485df9f21827ce203639a41d188f186dfd51032a48bd939f789f4baa93bbe8e"
+     }
+   ]
+ }
+\ No newline at end of file
