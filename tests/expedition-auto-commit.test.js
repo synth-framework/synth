@@ -45,7 +45,10 @@ async function testStartAutoCommitsDerivedState(projectDir, missionId) {
   const startOutput = parseJson(startResult.stdout)
   assert(startOutput.kind === "ExpeditionStarted", `expedition start should return ExpeditionStarted, got ${startOutput.kind}`)
   assert(startOutput.autoCommit?.committed === true, `start should auto-commit derived state: ${JSON.stringify(startOutput.autoCommit)}`)
-  assert(startOutput.autoCommit?.message?.includes("expedition-start"), `commit message should mention expedition-start`)
+  assert(
+    startOutput.autoCommit?.message === `chore(synth): EXPEDITION_STARTED expedition ${expeditionId.slice(0, 8)}`,
+    `commit message should follow ADR-055 rev 2 §R2.1: ${JSON.stringify(startOutput.autoCommit)}`,
+  )
 
   const log = runGit(["log", "--oneline", "-1"], projectDir)
   assert(log.includes("chore(synth)"), `latest commit should be chore(synth): ${log}`)

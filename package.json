@@ -100,6 +100,7 @@
     "test:expedition-auto-commit": "node tests/expedition-auto-commit.test.js",
     "test:ledger-writer": "node tests/ledger-writer.test.js",
     "test:ledger-doctor": "node tests/ledger-doctor.test.js",
+    "test:ledger-ceremony": "node tests/ledger-ceremony.test.js",
     "test:artifact-policy": "node tests/artifact-policy.test.js",
     "test:auto-commit-ignored-paths": "node tests/auto-commit-ignored-paths.test.js",
     "test:no-write-on-read": "node tests/no-write-on-read.test.js",

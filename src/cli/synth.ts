@@ -34,6 +34,7 @@ import {
   isGovernedArtifact,
 } from "../state/artifact-policy.js"
 import { checkLedger, repairLedger } from "../ledger/doctor.js"
+import { commitCeremony } from "../ledger/ceremony.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -614,75 +615,41 @@ async function stageAutoCommitPaths(cwd: string): Promise<{ staged: string[]; fa
  * Best-effort commit of derived SYNTH state files. Never throws; failures are
  * returned in `reason` so lifecycle commands can warn without aborting.
  */
+/**
+ * Commit the ceremony's governance state on the ledger branch (ADR-055 §2.3).
+ *
+ * This replaces the former best-effort `git add` sweep on the current branch:
+ * the commit goes through the Ledger Writer (lock → residue check → commit →
+ * CAS), and a refusal is loud — the CLI prints the `LEDGER_*` code and its next
+ * step and exits non-zero instead of reporting success with
+ * `{committed:false}`.
+ */
 async function autoCommitDerivedState(
   cwd: string,
   transition: string,
   expeditionId?: string,
 ): Promise<AutoCommitResult> {
-  const message = `chore(synth): record ${transition}${expeditionId ? ` for expedition ${expeditionId}` : ""}`
-
   try {
     await fs.access(path.join(cwd, ".git"))
   } catch {
-    return { committed: false, message, files: [], reason: "Not a git repository" }
+    return { committed: false, message: `chore(synth): record ${transition}`, files: [], reason: "Not a git repository" }
   }
 
-  const allFiles = await collectDerivedStateFiles(cwd).catch(() => [])
-  if (allFiles.length === 0) {
-    return { committed: false, message, files: [], reason: "No derived state files present" }
-  }
-
-  const stagedNames = (
-    await new Promise<string>((resolve) => {
-      const child = spawn("git", ["diff", "--cached", "--name-only"], { cwd })
-      let stdout = ""
-      child.stdout.on("data", (data: Buffer) => {
-        stdout += data.toString("utf-8")
-      })
-      child.on("close", () => resolve(stdout.trim()))
-      child.on("error", () => resolve(""))
+  const ceremony = await commitCeremony(cwd, transition, expeditionId)
+  if (!ceremony.committed && ceremony.code) {
+    printError(ceremony.reason ?? "The ledger commit failed", {
+      code: ceremony.code,
+      category: "ledger",
+      suggestion: ceremony.nextStep,
     })
-  )
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-
-  const statusBefore = execFileSync("git", ["status", "--porcelain", "--", ...AUTO_COMMIT_INCLUDE_ROOTS, ...autoCommitExcludePathspecs()], {
-    cwd,
-    encoding: "utf-8",
-  }).trim()
-  if (statusBefore.length === 0) {
-    const preStaged = stagedNames.filter((line) => isAutoCommitScoped(line))
-    if (preStaged.length === 0) {
-      return { committed: false, message, files: [], reason: "No derived state changes to commit" }
-    }
   }
 
-  const { staged, failures } = await stageAutoCommitPaths(cwd)
-  if (staged.length === 0) {
-    return {
-      committed: false,
-      message,
-      files: [],
-      reason:
-        failures.length > 0
-          ? `Failed to stage derived state: ${failures.join(", ")}`
-          : "No derived state changes to commit",
-    }
-  }
-
-  try {
-    execFileSync("git", ["commit", "-m", message, "--", ...staged], { cwd, stdio: ["pipe", "pipe", "pipe"] })
-    const commitHash = execFileSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf-8" }).trim()
-    return {
-      committed: true,
-      commitHash,
-      message,
-      files: staged,
-      ...(failures.length > 0 ? { reason: `Staged with skips: ${failures.join(", ")}` } : {}),
-    }
-  } catch (err: any) {
-    return { committed: false, message, files: staged, reason: `Commit failed: ${err.message || err}` }
+  return {
+    committed: ceremony.committed,
+    ...(ceremony.commitHash ? { commitHash: ceremony.commitHash } : {}),
+    message: ceremony.message,
+    files: ceremony.files,
+    ...(ceremony.reason ? { reason: ceremony.reason } : {}),
   }
 }
 
