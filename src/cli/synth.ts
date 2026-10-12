@@ -2362,7 +2362,7 @@ async function cmdExpeditionHelp() {
     { name: "synth expedition delete --id <id> [--reason <text>] [--dry-run]", description: "Delete an empty Expedition that has no objectives" },
     { name: "synth expedition move --id <id> --to-mission <mission-id> [--reason <text>] [--approved] [--dry-run]", description: "Re-parent an Expedition to another Mission under scope-and-intent verification; use --approved to override a misaligned move with operator approval" },
     { name: "synth expedition evidence --id <id> [--git-diff] [--baseline <commit>] [--test-results <path>] [--attach <path>[,...]] [--note <text>] [--no-auto-commit] [--dry-run]", description: "Capture and attach evidence artifacts to an executing Expedition" },
-    { name: "synth expedition refine --id <id> --note <text> [--no-auto-commit] [--dry-run]", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
+    { name: "synth expedition refine --id <id> --note <text> [--depends-on <id>[,<id>...]] [--no-auto-commit] [--dry-run]", description: "Record a charter refinement on a non-terminal Expedition; status does not change" },
     { name: "synth expedition certify --id <id> [--evaluation <path>] [--evidence <path>] [--no-auto-commit] [--dry-run]", description: "Certify convergence for an executing or completed Expedition; auto-generates evaluation when omitted" },
     { name: "synth expedition list", description: "List governance expeditions" },
     { name: "synth expedition list --mission <mission-id> [--ranked]", description: "List a single mission's expeditions; add --ranked to order them by priority, status, and downstream impact so operators see what is ahead within the mission", args: "--mission 2644f4a2c0ad2ad7 --ranked" },
@@ -6865,6 +6865,15 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   const note = typeof flags.note === "string" ? flags.note : ""
   if (!note) printError("--note is required")
 
+  // Expedition 886dc15e deliverable (3): dependsOn is a settable canonical
+  // attribute via `expedition refine --depends-on <id>[,<id>...]`. Omitted
+  // means "leave unchanged" (domain preserves existing dependsOn).
+  const rawDependsOn = typeof flags["depends-on"] === "string" ? flags["depends-on"] : ""
+  const dependsOn = rawDependsOn
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+
   if (flags["dry-run"] === true || flags["dry-run"] === "true") {
     const ctx = await bootstrapWithCapabilities({
       skipGenesis: true,
@@ -6872,7 +6881,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
     })
     const dryRun = await runLifecycleDryRun(ctx, {
       capability: "RefineExpedition",
-      payload: { id: expeditionId, note },
+      payload: { id: expeditionId, note, ...(dependsOn.length > 0 ? { dependsOn } : {}) },
       eventType: "EXPEDITION_REFINED",
       expeditionId,
       targetStatus: undefined,
@@ -6895,7 +6904,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
   const result = await ctx.api.handleIntent({
     actor: "synth-cli",
     capability: "RefineExpedition",
-    payload: { id: expeditionId, note },
+    payload: { id: expeditionId, note, ...(dependsOn.length > 0 ? { dependsOn } : {}) },
   })
 
   if (result.status !== "ok") {
@@ -6913,6 +6922,7 @@ async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
     kind: "ExpeditionRefined",
     expeditionId,
     note,
+    ...(dependsOn.length > 0 ? { dependsOn } : {}),
     refinementId: refined?.metadata?.refinementId,
     result: refined,
   }

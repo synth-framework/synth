@@ -3,7 +3,7 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
   "goal": "Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d: (1) PartitionedEvent chunking in src/infra/event-store.ts (.synth/data/event-stream/<partition>/<segment>.jsonl with offset-ordered manifest, deterministic replay preserved); (2) StateStore.save writes per-entity derived files instead of monolithic canonical-state.json (aggregate becomes generated); (3) dependsOn as settable canonical attribute via expedition refine --depends-on; (4) archive relocates per-entity file. Single source of truth (event log) preserved.",
-  "status": "executing",
+  "status": "completed",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -37,5 +37,17 @@
     }
   },
   "createdAt": 257,
-  "updatedAt": 261
+  "updatedAt": 295,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/886dc15e19a8e587/git-diff.patch",
+      "hash": "305d7e05dffb220a4a5cd4f383a5c02678f5acb12c5d16462d7ac6fe293334eb"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/886dc15e19a8e587/git-diff.patch",
+      "hash": "5a897d81f7867c32138e23d23f2e1582757bd4cfb1e39452d0e39b970a24da17"
+    }
+  ]
 }
