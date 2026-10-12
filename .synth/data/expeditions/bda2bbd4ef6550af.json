@@ -34,6 +34,13 @@
     }
   },
   "createdAt": 351,
-  "updatedAt": 385,
-  "executionBranch": "arena/c5db653e-synth"
+  "updatedAt": 386,
+  "executionBranch": "arena/c5db653e-synth",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/bda2bbd4ef6550af/attachments/e5-p2-source.patch",
+      "hash": "24090f930254bf59552f6c2bc63488df8b8957c73fef1cd397228ecd0974773c"
+    }
+  ]
 }

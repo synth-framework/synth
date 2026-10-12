@@ -1,0 +1,12 @@
+{
+  "expeditionId": "bda2bbd4ef6550af",
+  "capturedAt": 1791806321032,
+  "note": "E5 stage 2: ledger doctor + ceremony routing through the writer",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/bda2bbd4ef6550af/attachments/e5-p2-source.patch",
+      "hash": "24090f930254bf59552f6c2bc63488df8b8957c73fef1cd397228ecd0974773c"
+    }
+  ]
+}
