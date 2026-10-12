@@ -1,6 +1,6 @@
 {
-  "version": 333,
-  "stateHash": "962182680",
+  "version": 355,
+  "stateHash": "2000030171",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -85,10 +85,14 @@
       "name": "Derived-State Integrity",
       "purpose": "Eliminate the class of defects in which SYNTH's own read paths dirty the working tree, block expedition completion, or leave governance state uncommitted - by classifying every artifact once (durable, input, derived, cache, legacy) and enforcing two invariants: reads never write, and derived state never blocks work.",
       "status": "active",
-      "expeditions": [],
+      "expeditions": [
+        "f089c4fea720c07c",
+        "cfbb801aa232795a",
+        "ecc3688796be0545"
+      ],
       "metadata": {},
       "createdAt": 329,
-      "updatedAt": 330,
+      "updatedAt": 344,
       "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
     },
     "a57585f0aec4b2d8": {
@@ -96,10 +100,13 @@
       "name": "Governed Operation from Operator Branches",
       "purpose": "Make SYNTH govern work on pre-existing operator branches: declare and bind execution branches (ADR-056 --branch/--no-create), anchor and single-write the ceremony ledger (ADR-055: ledger writer, anchor, single writer), and make delivery and abandonment first-class ceremonies (deliver/seal/close/abandon) so finished work, files and history survive the branch lifecycle instead of being stranded or wiped.",
       "status": "active",
-      "expeditions": [],
+      "expeditions": [
+        "e788e528a896008a",
+        "bda2bbd4ef6550af"
+      ],
       "metadata": {},
       "createdAt": 331,
-      "updatedAt": 332,
+      "updatedAt": 351,
       "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
     }
   },
@@ -1323,6 +1330,133 @@
           "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       ]
+    },
+    "f089c4fea720c07c": {
+      "id": "f089c4fea720c07c",
+      "missionId": "b536ecc7ceb9217a",
+      "name": "No write-on-read: content-keyed cache and pure status",
+      "goal": "Make read-only commands read-only: key the charter dependency cache on content hashes instead of mtimes and relocate it to .synth/cache/ (untracked), make synth status compute AI metadata without persisting it while synth ai refresh remains the explicit regenerator, and extend the derived classification to .synth/ai/, .synth/cache/ and cli-errors.jsonl. Deliverable: status, doctor and capabilities leave a pristine tree clean.",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/governance/dependency-graph.ts",
+          "src/cli/ai-metadata.ts",
+          "src/cli/status-light.ts",
+          "src/cli/synth.ts"
+        ]
+      },
+      "createdAt": 336,
+      "updatedAt": 338
+    },
+    "cfbb801aa232795a": {
+      "id": "cfbb801aa232795a",
+      "missionId": "b536ecc7ceb9217a",
+      "name": "Artifact policy and no-write-on-read regression guard",
+      "goal": "Introduce src/state/artifact-policy.ts as the single classification of durable, input, derived, cache and legacy artifacts; make .gitignore, the auto-commit file list and the completion gate derive from it; add scripts/check-artifact-policy.js as a CI guard; add tests/no-write-on-read.test.js and tests/derived-state-commit.test.js so the invariants reads-never-write and derived-state-never-blocks-work are enforced by tests. Removes the stale tracked event-log.jsonl from the commit list and patterns.",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [
+        "ecc3688796be0545",
+        "f089c4fea720c07c"
+      ],
+      "metadata": {
+        "scope": [
+          "src/state/artifact-policy.ts",
+          "scripts/check-artifact-policy.js",
+          "tests/",
+          ".gitignore",
+          "AGENTS.md",
+          "package.json",
+          "data/tasks/"
+        ],
+        "refinementId": "2db36b4a36372931",
+        "refinementNote": "E3 consumes the artifact policy and staging invariants landed by E1 (ecc3688796be0545) and E2 (f089c4fea720c07c)",
+        "refinementAt": 347
+      },
+      "createdAt": 339,
+      "updatedAt": 347
+    },
+    "ecc3688796be0545": {
+      "id": "ecc3688796be0545",
+      "missionId": "b536ecc7ceb9217a",
+      "name": "Derived-state staging correctness (auto-commit + ignore filtering)",
+      "goal": "Fix auto-commit staging so lifecycle transitions always commit durable state and never fail on gitignored paths: call git check-ignore with --no-index so tracked-but-ignored paths are filtered correctly, stage only existing/changed durable artifacts instead of walking all of .synth/data, fall back to per-file adds so one bad path cannot kill the commit, and surface the autoCommit result (committed/commitHash/files/reason) in command JSON. Absorbs draft e8ba8f92 and the index-surgery half of the Reads-Never-Write plan (W2).",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli/synth.ts",
+          "src/state/artifact-policy.ts",
+          ".gitignore"
+        ]
+      },
+      "createdAt": 344,
+      "updatedAt": 346
+    },
+    "e788e528a896008a": {
+      "id": "e788e528a896008a",
+      "missionId": "a57585f0aec4b2d8",
+      "name": "Declared execution branches (--branch / --no-create)",
+      "goal": "Implement ADR-056: accept --branch <name> on mission approve, expedition commit and expedition start; record the binding in the entity record and as a ledger event (MISSION_BRANCH_BOUND / EXPEDITION_BRANCH_BOUND payload {entityId, branch, declared, created, baseCommit, declaredBy}); resolve execution branches binding-first (binding -> taxonomy candidates -> trunk); validate declared names (git check-ref-format, local or origin), refuse a branch bound to another live entity (DECLARED_BRANCH_IN_USE) and a missing branch with --no-create (DECLARED_BRANCH_MISSING); emit the recorded BRANCH_POLICY_OVERRIDDEN warning for non-canonical declarations; add the config-level declaredPatterns (warning-softening only).",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli/synth.ts",
+          "src/repository/branch-policy.ts",
+          "src/repository/branch-taxonomy.ts",
+          "src/capability/registry.ts",
+          "src/control/execution-gate.ts",
+          "src/domain/execution.ts",
+          "tests/"
+        ]
+      },
+      "createdAt": 348,
+      "updatedAt": 350
+    },
+    "bda2bbd4ef6550af": {
+      "id": "bda2bbd4ef6550af",
+      "missionId": "a57585f0aec4b2d8",
+      "name": "Ledger writer and delivery MVP (ADR-055 P1/P2)",
+      "goal": "Implement ADR-055 phases P1-P2: anchor the ceremony ledger in a sparse, gitignored detached worktree (.synth/anchor) advanced by update-ref CAS with a lock and a dirty-ledger pre-check; route lifecycle ceremonies through the writer so each ceremony is one commit on the canonical branch; make doctor fail on uncommitted ledger, stale/missing anchor and ledger-ahead-of-main, with --fix performing worktree prune + re-add; add expedition deliver (push branch/publish PR, record EXPEDITION_DELIVERED) and expedition seal --merge-commit (verify the delivered tip is an ancestor of the merge commit, record EXPEDITION_INTEGRATED), plus the abandonment handoff block and deliveryPending marker.",
+      "status": "committed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [
+        "ecc3688796be0545",
+        "e788e528a896008a"
+      ],
+      "metadata": {
+        "scope": [
+          "src/cli/synth.ts",
+          "src/control/",
+          "src/repository/",
+          "src/domain/",
+          "src/infrastructure/",
+          "tests/",
+          "scripts/",
+          ".gitignore",
+          ".synth/config.yaml"
+        ],
+        "refinementId": "c3cd1558506a011c",
+        "refinementNote": "E5 consumes E1 staging correctness and E4 declared branch bindings",
+        "refinementAt": 354
+      },
+      "createdAt": 351,
+      "updatedAt": 354
     }
   },
   "objectives": {},
@@ -1348,5 +1482,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 333
+  "lastEventOffset": 355
 }

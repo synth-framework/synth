@@ -1,0 +1,21 @@
+{
+  "id": "f089c4fea720c07c",
+  "missionId": "b536ecc7ceb9217a",
+  "name": "No write-on-read: content-keyed cache and pure status",
+  "goal": "Make read-only commands read-only: key the charter dependency cache on content hashes instead of mtimes and relocate it to .synth/cache/ (untracked), make synth status compute AI metadata without persisting it while synth ai refresh remains the explicit regenerator, and extend the derived classification to .synth/ai/, .synth/cache/ and cli-errors.jsonl. Deliverable: status, doctor and capabilities leave a pristine tree clean.",
+  "status": "committed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/governance/dependency-graph.ts",
+      "src/cli/ai-metadata.ts",
+      "src/cli/status-light.ts",
+      "src/cli/synth.ts"
+    ]
+  },
+  "createdAt": 336,
+  "updatedAt": 338
+}
