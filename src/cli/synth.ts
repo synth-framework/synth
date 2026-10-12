@@ -35,6 +35,7 @@ import {
 } from "../state/artifact-policy.js"
 import { checkLedger, repairLedger } from "../ledger/doctor.js"
 import { ceremonyForCapability, commitCeremony } from "../ledger/ceremony.js"
+import { deliveryState, pushBranch, resolveCommit, verifySeal } from "../ledger/delivery.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -4461,6 +4462,208 @@ async function cmdProgramShow(flags: Record<string, string | boolean>) {
   })
 }
 
+/**
+ * `synth expedition deliver --id <id> [--remote origin] [--pr <ref>] [--no-push]`
+ * ADR-055 §2.6: deliver is what makes a finished branch reachable — push the
+ * execution branch, record where it landed, and mark the ceremony committed.
+ */
+async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth expedition deliver --id <expedition-id> [--remote <remote>] [--pr <ref>] [--no-push]", {
+      code: "MissingExpeditionId",
+      category: "validation",
+      suggestion: "Run 'synth expedition show --id <id>' first.",
+    })
+    return
+  }
+
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const noPush = flags["no-push"] === true || flags["no-push"] === "true"
+  const remote = typeof flags.remote === "string" ? flags.remote : "origin"
+
+  const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+  if (dryRun) {
+    const state = await ctx.runtime.getState()
+    const expedition = state.expeditions[id]
+    if (!expedition) {
+      printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+      return
+    }
+    const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+    const tip = branch ? resolveCommit(process.cwd(), branch) : undefined
+    printJson({
+      status: "ok",
+      kind: "ExpeditionDeliverDryRun",
+      expeditionId: id,
+      expeditionStatus: expedition.status,
+      branch,
+      tipCommit: tip,
+      remote,
+      wouldPush: !noPush && Boolean(branch && tip),
+      note: "Dry-run: nothing pushed, no ledger event written",
+      nextStep: `synth expedition deliver --id ${id}${branch ? "" : "  # create/start the expedition first"}`,
+    })
+    return
+  }
+
+  const state = await ctx.runtime.getState()
+  const expedition = state.expeditions[id]
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, {
+      code: "ExpeditionNotFound",
+      category: "validation",
+      suggestion: "Run 'synth expedition list' to see available expeditions.",
+    })
+    return
+  }
+
+  const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+  if (!branch) {
+    printError(`Expedition ${id} has no recorded execution branch to deliver.`, {
+      code: "NoExecutionBranch",
+      category: "validation",
+      suggestion: `Name the branch explicitly (--branch <name>) or run 'synth expedition start --id ${id}' first.`,
+    })
+    return
+  }
+
+  let pushDetail: string | undefined
+  let pushed = false
+  if (!noPush) {
+    const result = pushBranch(process.cwd(), remote, branch)
+    if (!result.ok) {
+      printError(`Could not push ${branch} to ${remote}: ${result.detail}`, {
+        code: "DELIVERY_PUSH_FAILED",
+        category: "delivery",
+        suggestion: "Push the branch manually (or re-run with --no-push to record an existing delivery), then retry.",
+      })
+      return
+    }
+    pushDetail = result.detail
+    pushed = result.pushed === true
+  }
+
+  const tipCommit = resolveCommit(process.cwd(), branch)
+  if (!tipCommit) {
+    printError(`Could not resolve the tip commit of ${branch}.`, {
+      code: "DELIVERY_TIP_UNRESOLVED",
+      category: "delivery",
+      suggestion: "Check the branch name (`git branch --list`) and retry.",
+    })
+    return
+  }
+
+  const payload: Record<string, unknown> = { id, branch, tipCommit }
+  if (!noPush) payload.remote = remote
+  if (typeof flags.pr === "string") payload.prRef = flags.pr
+
+  const result = await ctx.api.handleIntent({ actor: "synth-cli", capability: "DeliverExpedition", payload })
+  if (result?.status !== "ok") {
+    printError(`Deliver refused: ${JSON.stringify(result?.error ?? result)}`, {
+      code: "DELIVERY_REFUSED",
+      category: "delivery",
+      suggestion: "Verify the expedition is completed or executing, then retry.",
+    })
+    return
+  }
+
+  const ledger = await flushPendingCeremony()
+  const after = deliveryState((await ctx.runtime.getState()).expeditions[id])
+  printJson({
+    status: "ok",
+    kind: "ExpeditionDelivered",
+    expeditionId: id,
+    branch,
+    tipCommit,
+    ...(pushed ? { remote } : {}),
+    ...(pushDetail ? { pushDetail } : {}),
+    ...(typeof flags.pr === "string" ? { prRef: flags.pr } : {}),
+    deliveryPending: after.deliveryPending,
+    ...(ledger ? { ledger } : {}),
+    nextStep: `synth expedition seal --id ${id} --merge-commit <sha>   (after the merge lands on the base branch)`,
+  })
+}
+
+/**
+ * `synth expedition seal --id <id> --merge-commit <sha> [--base main]`
+ * ADR-055 §2.6 / AC12: sealing proves the delivered tip is contained in the
+ * merge commit. A tip outside the merge commit is refused — a seal is evidence,
+ * never an assertion.
+ */
+async function cmdExpeditionSeal(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  const mergeCommit = typeof flags["merge-commit"] === "string" ? flags["merge-commit"] : undefined
+  if (!id || !mergeCommit) {
+    printError("Usage: synth expedition seal --id <expedition-id> --merge-commit <sha> [--base <branch>]", {
+      code: "MissingSealArguments",
+      category: "validation",
+      suggestion: "Get the merge commit from the PR that landed the expedition branch.",
+    })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+  const expedition = (await ctx.runtime.getState()).expeditions[id]
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+    return
+  }
+
+  const delivery = deliveryState(expedition)
+  const baseBranch = typeof flags.base === "string" ? flags.base : undefined
+  const verification = verifySeal(process.cwd(), {
+    ...(delivery.delivery?.tipCommit ? { tipCommit: delivery.delivery.tipCommit } : {}),
+    mergeCommit,
+    ...(baseBranch ? { baseBranch } : {}),
+  })
+
+  if (!verification.ok) {
+    // A refused seal is a failure, not a result: non-zero exit so scripts stop,
+    // with the structured envelope still machine-readable.
+    printError(verification.detail, {
+      code: "ExpeditionSealRefused",
+      category: "delivery",
+      suggestion: "Confirm the merge commit and re-run seal; a seal that cannot be verified is never recorded.",
+      expeditionId: id,
+      mergeCommit: verification.mergeCommit ?? mergeCommit,
+      ...(verification.tipCommit ? { tipCommit: verification.tipCommit } : {}),
+      delivered: delivery.delivered,
+    })
+  }
+
+  const payload: Record<string, unknown> = { id, mergeCommit: verification.mergeCommit }
+  if (delivery.delivery?.branch) payload.branch = delivery.delivery.branch
+  if (verification.tipCommit) payload.tipCommit = verification.tipCommit
+  if (baseBranch) payload.baseBranch = baseBranch
+
+  const result = await ctx.api.handleIntent({ actor: "synth-cli", capability: "SealExpedition", payload })
+  if (result?.status !== "ok") {
+    printError(`Seal refused: ${JSON.stringify(result?.error ?? result)}`, {
+      code: "SEAL_REFUSED",
+      category: "delivery",
+      suggestion: "Verify the expedition exists and the merge commit is reachable, then retry.",
+    })
+    return
+  }
+
+  const ledger = await flushPendingCeremony()
+  const after = deliveryState((await ctx.runtime.getState()).expeditions[id])
+  printJson({
+    status: "ok",
+    kind: "ExpeditionSealed",
+    expeditionId: id,
+    mergeCommit: verification.mergeCommit,
+    ...(verification.tipCommit ? { tipCommit: verification.tipCommit } : {}),
+    ...(baseBranch ? { baseBranch } : {}),
+    ...(verification.onBaseBranch !== undefined ? { onBaseBranch: verification.onBaseBranch } : {}),
+    detail: verification.detail,
+    deliveryPending: after.deliveryPending,
+    ...(ledger ? { ledger } : {}),
+    nextStep: `synth expedition complete --id ${id}   (if not already complete)`,
+  })
+}
+
 async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   const id = typeof flags.id === "string" ? flags.id : undefined
   if (!id) {
@@ -4516,6 +4719,11 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   }
 
   const { missionId, ...publicExpedition } = expedition
+  const runtimeResolved = await resolveGovernanceContext(process.cwd())
+  const runtimeExpedition = !isGovernanceResolutionFailure(runtimeResolved)
+    ? runtimeResolved.authoritative.replayedState.expeditions[id]
+    : undefined
+  const delivery = deliveryState((runtimeExpedition ?? expedition) as { status?: string; metadata?: Record<string, unknown> })
   printJson({
     status: "ok",
     kind: "ExpeditionShow",
@@ -4524,6 +4732,13 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
     missionId,
     upstream,
     downstream,
+    delivery: {
+      delivered: delivery.delivered,
+      integrated: delivery.integrated,
+      deliveryPending: delivery.deliveryPending,
+      ...(delivery.delivery ? { record: delivery.delivery } : {}),
+      ...(delivery.integration ? { integration: delivery.integration } : {}),
+    },
   })
 }
 
@@ -6818,6 +7033,9 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     ? await autoCommitDerivedState(process.cwd(), "expedition-complete", expeditionId)
     : undefined
 
+  // ADR-055 §2.6 / AC12: a completed-but-undelivered expedition is *pending*,
+  // and the response says so instead of letting the next agent assume done.
+  const pendingAfter = deliveryState((await ctx.runtime.getState()).expeditions[expeditionId])
   const response: Record<string, unknown> = {
     status,
     kind: "ExpeditionCompleted",
@@ -6825,7 +7043,11 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     evidencePath: finalEvidencePath,
     force: finalForce,
     forceReason: finalForceReason,
+    deliveryPending: pendingAfter.deliveryPending,
     result,
+  }
+  if (pendingAfter.deliveryPending) {
+    response.nextStep = `synth expedition deliver --id ${expeditionId}   (deliver/seal is what closes the loop)`
   }
   if (autoCommit) {
     response.autoCommit = {
@@ -6924,6 +7146,12 @@ async function cmdExpeditionFinish(flags: Record<string, string | boolean>) {
     manifestPath: path.relative(process.cwd(), manifestPath),
     result: completeResult,
     steps: ["evidence-attached", "convergence-certified", "expedition-completed"],
+  }
+  // ADR-055 §2.6 / AC12: finishing locally is not delivering. Say so.
+  const pendingAfter = deliveryState((await ctx.runtime.getState()).expeditions[expeditionId])
+  response.deliveryPending = pendingAfter.deliveryPending
+  if (pendingAfter.deliveryPending) {
+    response.nextStep = `synth expedition deliver --id ${expeditionId}   (then seal --merge-commit <sha> once the merge lands)`
   }
   if (warnings.length > 0) {
     response.warnings = warnings
@@ -8324,7 +8552,7 @@ export async function main() {
 
     case "expedition": {
       const sub = positional[1]
-      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel"].includes(sub)) {
+      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel", "deliver", "seal"].includes(sub)) {
         await guardEventLogLineage(flags)
       }
       if (sub === "create") await cmdExpeditionCreate(flags)
@@ -8339,6 +8567,8 @@ export async function main() {
       else if (sub === "delete") await cmdExpeditionDelete(flags)
       else if (sub === "move") await cmdExpeditionMove(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
+      else if (sub === "deliver") await cmdExpeditionDeliver(flags)
+      else if (sub === "seal") await cmdExpeditionSeal(flags)
       else if (sub === "refine") await cmdExpeditionRefine(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)

@@ -79,6 +79,22 @@ export type StateEvent =
   | { type: "EXPEDITION_DELETED"; expeditionId: string; missionId: string; reason?: string }
   | { type: "EXPEDITION_MOVED"; expeditionId: string; fromMissionId: string; toMissionId: string; verification: string; reason?: string }
   | { type: "EVIDENCE_ATTACHED"; expeditionId: string; attachments: unknown[]; note?: string }
+  | {
+      type: "EXPEDITION_DELIVERED"
+      expeditionId: string
+      branch: string
+      tipCommit: string
+      remote?: string
+      prRef?: string
+    }
+  | {
+      type: "EXPEDITION_INTEGRATED"
+      expeditionId: string
+      mergeCommit: string
+      branch?: string
+      tipCommit?: string
+      baseBranch?: string
+    }
   // Review gate lifecycle (EXP-PROGRAM-035)
   | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
   | { type: "REVIEW_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; decision: string }

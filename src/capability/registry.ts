@@ -803,6 +803,79 @@ function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "DeliverExpedition",
+      description: "Record that the expedition branch was delivered (pushed / PR opened) \u2014 ADR-055 \u00a72.6",
+      inputSchema: {
+        required: ["id", "branch", "tipCommit"],
+        types: { id: "string", branch: "string", tipCommit: "string", remote: "string", prRef: "string" },
+      },
+      outputSchema: { events: ["EXPEDITION_DELIVERED"], resultType: "Expedition" },
+      preconditions: [
+        {
+          name: "expedition_deliverable",
+          evaluate: (intent, state) => {
+            const id = String(intent.payload.id)
+            const status = state.expeditions[id]?.status
+            return status === "completed" || status === "executing"
+          },
+        },
+      ],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const existing = state.expeditions[id]
+        if (!existing) {
+          throw new Error(`EXPEDITION_NOT_FOUND: cannot deliver unknown expedition ${id}`)
+        }
+        const branch = String(intent.payload.branch || existing.executionBranch || "")
+        const tipCommit = String(intent.payload.tipCommit || "")
+        if (!branch || !tipCommit) {
+          throw new Error("INVARIANT_VIOLATION: DeliverExpedition requires a branch and the delivered tip commit")
+        }
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id, expeditionId: id, branch, tipCommit }
+        if (typeof intent.payload.remote === "string") payload.remote = intent.payload.remote
+        if (typeof intent.payload.prRef === "string") payload.prRef = intent.payload.prRef
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_DELIVERED", payload }] }
+      },
+    },
+    {
+      name: "SealExpedition",
+      description: "Seal an expedition against the merge commit that integrated it \u2014 ADR-055 \u00a72.6",
+      inputSchema: {
+        required: ["id", "mergeCommit"],
+        types: { id: "string", mergeCommit: "string", branch: "string", tipCommit: "string", baseBranch: "string" },
+      },
+      outputSchema: { events: ["EXPEDITION_INTEGRATED"], resultType: "Expedition" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent, state, executionCtx }) => {
+        const id = String(intent.payload.id)
+        const existing = state.expeditions[id]
+        if (!existing) {
+          throw new Error(`EXPEDITION_NOT_FOUND: cannot seal unknown expedition ${id}`)
+        }
+        const mergeCommit = String(intent.payload.mergeCommit || "")
+        if (!mergeCommit) {
+          throw new Error("INVARIANT_VIOLATION: SealExpedition requires the merge commit")
+        }
+        const metadata = identityPayloadMetadata(executionCtx.identity, executionCtx.timestamp)
+        const payload: Record<string, unknown> = { id, expeditionId: id, mergeCommit }
+        if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
+        if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+        if (typeof intent.payload.baseBranch === "string") payload.baseBranch = intent.payload.baseBranch
+        if (metadata) payload.metadata = metadata
+        return { events: [{ type: "EXPEDITION_INTEGRATED", payload }] }
+      },
+    },
+    {
       name: "CompleteExpedition",
       description: "Complete an expedition",
       inputSchema: { required: ["id"], types: { id: "string" } },

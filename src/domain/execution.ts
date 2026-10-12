@@ -454,6 +454,49 @@ export function applyDomain(
       return { events: [{ type: "EXPEDITION_REFINED", payload }] }
     }
 
+    case "DeliverExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const branch = String(intent.payload.branch || existing?.executionBranch || "")
+      const tipCommit = String(intent.payload.tipCommit || "")
+      if (!existing) {
+        throw new Error(`EXPEDITION_NOT_FOUND: cannot deliver unknown expedition ${id}`)
+      }
+      if (existing.status !== "completed" && existing.status !== "executing") {
+        throw new Error(
+          `INVARIANT_VIOLATION: can only deliver a completed or executing expedition (current: ${existing.status})`,
+        )
+      }
+      if (!branch || !tipCommit) {
+        throw new Error("INVARIANT_VIOLATION: DeliverExpedition requires a branch and the delivered tip commit")
+      }
+      const payload: Record<string, unknown> = { id, expeditionId: id, branch, tipCommit }
+      if (typeof intent.payload.remote === "string") payload.remote = intent.payload.remote
+      if (typeof intent.payload.prRef === "string") payload.prRef = intent.payload.prRef
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_DELIVERED", payload }] }
+    }
+
+    case "SealExpedition": {
+      const id = String(intent.payload.id)
+      const existing = state.expeditions[id]
+      const metadata = identityPayloadMetadata(ctx.identity, ctx.timestamp)
+      const mergeCommit = String(intent.payload.mergeCommit || "")
+      if (!existing) {
+        throw new Error(`EXPEDITION_NOT_FOUND: cannot seal unknown expedition ${id}`)
+      }
+      if (!mergeCommit) {
+        throw new Error("INVARIANT_VIOLATION: SealExpedition requires the merge commit")
+      }
+      const payload: Record<string, unknown> = { id, expeditionId: id, mergeCommit }
+      if (typeof intent.payload.branch === "string") payload.branch = intent.payload.branch
+      if (typeof intent.payload.tipCommit === "string") payload.tipCommit = intent.payload.tipCommit
+      if (typeof intent.payload.baseBranch === "string") payload.baseBranch = intent.payload.baseBranch
+      if (metadata) payload.metadata = metadata
+      return { events: [{ type: "EXPEDITION_INTEGRATED", payload }] }
+    }
+
     case "CompleteExpedition": {
       const id = String(intent.payload.id)
       const existing = state.expeditions[id]

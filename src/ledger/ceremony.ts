@@ -268,14 +268,6 @@ export async function commitCeremony(root: string, transitionKey: string, entity
 
 /** True when the checkout holds ledger edits (reported, never silently discarded). */
 function hasLedgerDirt(root: string): boolean {
-  try {
-    const out = execFileSync("git", ["status", "--porcelain", "--", ...LEDGER_PATHS], {
-      cwd: root,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim()
-    return out.length > 0
-  } catch {
-    return false
-  }
+  return ledgerChanges(root, LEDGER_PATHS).length > 0
 }
+

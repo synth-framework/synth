@@ -102,6 +102,7 @@
     "test:ledger-doctor": "node tests/ledger-doctor.test.js",
     "test:ledger-ceremony": "node tests/ledger-ceremony.test.js",
     "test:ledger-capability-commits": "node tests/ledger-capability-commits.test.js",
+    "test:ledger-delivery": "node tests/ledger-delivery.test.js",
     "test:artifact-policy": "node tests/artifact-policy.test.js",
     "test:auto-commit-ignored-paths": "node tests/auto-commit-ignored-paths.test.js",
     "test:no-write-on-read": "node tests/no-write-on-read.test.js",

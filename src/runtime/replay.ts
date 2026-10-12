@@ -384,6 +384,48 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "EXPEDITION_DELIVERED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        state.expeditions[expeditionId] = {
+          ...existing,
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            delivery: {
+              branch: String(payload.branch ?? ""),
+              tipCommit: String(payload.tipCommit ?? ""),
+              ...(typeof payload.remote === "string" ? { remote: payload.remote } : {}),
+              ...(typeof payload.prRef === "string" ? { prRef: payload.prRef } : {}),
+              deliveredAt: event.timestamp,
+            },
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_INTEGRATED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        state.expeditions[expeditionId] = {
+          ...existing,
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            integration: {
+              mergeCommit: String(payload.mergeCommit ?? ""),
+              ...(typeof payload.branch === "string" ? { branch: payload.branch } : {}),
+              ...(typeof payload.tipCommit === "string" ? { tipCommit: payload.tipCommit } : {}),
+              ...(typeof payload.baseBranch === "string" ? { baseBranch: payload.baseBranch } : {}),
+              integratedAt: event.timestamp,
+            },
+          },
+        }
+      }
+      break
+    }
     case "EXPEDITION_REFINED": {
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {

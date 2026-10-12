@@ -42,6 +42,17 @@ export function anchorPath(root: string): string {
   return path.join(root, ".synth", "anchor")
 }
 
+/**
+ * The anchor worktree is writer bookkeeping, never ledger content. Git would
+ * only skip it when the project ignores `.synth/anchor/` — and a project that
+ * forgets must not be able to turn the writer's own worktree into a ledger
+ * change (which would make the writer try to copy the anchor into itself).
+ */
+export function isAnchorPath(root: string, changedPath: string): boolean {
+  const relative = path.relative(root, anchorPath(root)).split(path.sep).join("/")
+  return changedPath === relative || changedPath.startsWith(`${relative}/`)
+}
+
 function lockPath(root: string): string {
   return path.join(root, ".git", "synth-ledger.lock")
 }
@@ -336,6 +347,7 @@ export function ledgerChanges(root: string, paths: readonly string[] = LEDGER_PA
       changedPath = entries[++i] ?? changedPath
     }
     if (!changedPath) continue
+    if (isAnchorPath(root, changedPath)) continue
     changes.push({ status: status.trim() || "??", path: changedPath })
   }
   return changes
@@ -353,6 +365,7 @@ export function isUnderAnyPathspecFile(filePath: string, paths: readonly string[
  */
 async function materializeInto(sourceRoot: string, targetRoot: string, changes: readonly LedgerChange[]): Promise<void> {
   for (const change of changes) {
+    if (isAnchorPath(sourceRoot, change.path)) continue
     const from = path.join(sourceRoot, change.path)
     const to = path.join(targetRoot, change.path)
     if (change.status.includes("D")) {

@@ -103,6 +103,8 @@ export function validateInvocation(invocation: CapabilityInvocation): Validation
     "ApproveExpedition",
     "StartExpedition",
     "CompleteExpedition",
+    "DeliverExpedition",
+    "SealExpedition",
     "AddObjective",
     "RecordDiscovery",
     "AcceptDecision",
