@@ -1,7 +1,7 @@
 {
   "id": "check:artifact-policy",
   "description": "npm script migration: check:artifact-policy",
-  "command": "node scripts/check-artifact-policy.js",
+  "command": "node scripts/check-artifact-policy.js --ci",
   "group": "runtime",
   "dependsOn": [],
   "tags": [

@@ -30,7 +30,7 @@
     "test": "node scripts/task-adapter-shim.js test",
     "test:adr": "node tests/adr-compliance.test.js",
     "check:adr": "node scripts/check-adr-compliance.js",
-    "check:artifact-policy": "node scripts/check-artifact-policy.js",
+    "check:artifact-policy": "node scripts/check-artifact-policy.js --ci",
     "test:governance-evaluation-enforcement": "node scripts/task-adapter-shim.js test:governance-evaluation-enforcement",
     "test:governance-quiet-output": "node scripts/task-adapter-shim.js test:governance-quiet-output",
     "test:expedition-reuse-and-templates": "node scripts/task-adapter-shim.js test:expedition-reuse-and-templates",
