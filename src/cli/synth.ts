@@ -6823,6 +6823,49 @@ async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
     infra: { persistence: "file" },
   })
 
+  // Expedition 5c2b2db1: --dry-run must be read-only. Preview what would be
+  // captured (file list + event trail) without writing proof artifacts,
+  // appending EVIDENCE_ATTACHED, or staging git files.
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const state = await ctx.runtime.getState()
+    const expedition = state.expeditions[expeditionId]
+    if (!expedition) {
+      printError(`Expedition ${expeditionId} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+    }
+    const sources = [
+      ...(testResultsPath ? [testResultsPath] : []),
+      ...attachPaths,
+    ]
+    const missingSources: string[] = []
+    for (const source of sources) {
+      try {
+        await fs.access(path.resolve(source))
+      } catch {
+        missingSources.push(source)
+      }
+    }
+    const baseDir = path.join("proof", "expeditions", expeditionId)
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "AttachEvidence",
+      payload: { id: expeditionId, ...(note ? { note } : {}) },
+      eventType: "EVIDENCE_ATTACHED",
+      expeditionId,
+    })
+    printJson({
+      ...dryRun,
+      kind: "EvidenceAttachDryRun",
+      wouldWrite: [
+        ...(gitDiff ? [path.join(baseDir, "git-diff.patch")] : []),
+        ...(testResultsPath ? [path.join(baseDir, "test-results.txt")] : []),
+        ...attachPaths.map((p) => path.join(baseDir, "attachments", path.basename(p))),
+        path.join(baseDir, "manifest.json"),
+      ],
+      missingSources,
+      note: "No files written, no events appended, no git staging",
+    })
+    return
+  }
+
   const { attachments, warnings, manifestPath } = await attachExpeditionEvidence(ctx, expeditionId, {
     gitDiff,
     testResultsPath,
@@ -7077,6 +7120,43 @@ async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
+
+  // Expedition 5c2b2db1: --dry-run must be read-only. The help advertises
+  // --dry-run for certify but the flag was silently ignored and the full
+  // certification executed (CONVERGENCE_* events appended). Preview the
+  // read-only preconditions and the would-be trail instead.
+  if (flags["dry-run"] === true || flags["dry-run"] === "true") {
+    const state = await ctx.runtime.getState()
+    const expedition = state.expeditions[expeditionId]
+    if (!expedition) {
+      printError(`Expedition ${expeditionId} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+    }
+    if (expedition.status !== "executing" && expedition.status !== "completed") {
+      printError(
+        `Expedition ${expeditionId} is ${expedition.status}; only executing or completed expeditions can be certified.`,
+        { code: "ExpeditionNotCertifiable", category: "lifecycle" },
+      )
+    }
+    const evaluationPath = typeof flags.evaluation === "string" ? flags.evaluation : undefined
+    const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
+    const dryRun = await runLifecycleDryRun(ctx, {
+      capability: "CertifyConvergence",
+      payload: {
+        expeditionId,
+        missionId: expedition.missionId,
+        ...(evaluationPath ? { evaluationPath } : {}),
+        ...(evidencePath ? { evidencePath } : {}),
+      },
+      eventType: "CONVERGENCE_CERTIFIED",
+      expeditionId,
+    })
+    printJson({
+      ...dryRun,
+      kind: "ConvergenceCertifyDryRun",
+      note: "Actual trail is CONVERGENCE_CERTIFIED on convergence, CONVERGENCE_DIVERGED otherwise; nothing appended",
+    })
+    return
+  }
 
   const { decision, confidence, certificationId, result, missionId, alignmentContractId } = await certifyExpedition(
     ctx,

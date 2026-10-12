@@ -1,0 +1,17 @@
+{
+  "expeditionId": "5c2b2db11e77e740",
+  "capturedAt": 1791771136943,
+  "note": "dry-run read-only verification probes",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/5c2b2db11e77e740/attachments/ev-dry.log",
+      "hash": "bfdd208fe775fa373b98cc69afacb89f7db1c8e3329e59a1fcc9edafc2e06a5f"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/5c2b2db11e77e740/attachments/cert-dry.log",
+      "hash": "b00f219b23179bddf1846e73011f0317586e5b53a7b2b67eb7b00c13c8d81d52"
+    }
+  ]
+}
