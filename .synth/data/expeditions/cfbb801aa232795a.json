@@ -3,7 +3,7 @@
   "missionId": "b536ecc7ceb9217a",
   "name": "Artifact policy and no-write-on-read regression guard",
   "goal": "Introduce src/state/artifact-policy.ts as the single classification of durable, input, derived, cache and legacy artifacts; make .gitignore, the auto-commit file list and the completion gate derive from it; add scripts/check-artifact-policy.js as a CI guard; add tests/no-write-on-read.test.js and tests/derived-state-commit.test.js so the invariants reads-never-write and derived-state-never-blocks-work are enforced by tests. Removes the stale tracked event-log.jsonl from the commit list and patterns.",
-  "status": "executing",
+  "status": "completed",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -32,5 +32,12 @@
     }
   },
   "createdAt": 339,
-  "updatedAt": 370
+  "updatedAt": 374,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/cfbb801aa232795a/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
 }
