@@ -1,0 +1,1 @@
+{"schema":"synth-decision-v1","id":"45b431e954e1f4cb6f613489a15b6beeaec729c7c51b33f1e63a4373a25cc1fb","type":"MISSION_APPROVAL_REJECTED","draftId":"2db51370ae127555","reason":"Confidence 0.67 below threshold 0.7","confidence":0.67,"previousHash":"genesis","timestamp":1791799405460}
