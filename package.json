@@ -175,7 +175,8 @@
     "govern:watch": "node scripts/task-adapter-shim.js govern:watch",
     "govern:benchmark": "node scripts/task-adapter-shim.js govern:benchmark",
     "govern:ci": "node scripts/task-adapter-shim.js govern:ci",
-    "test:certification-framework": "node scripts/task-adapter-shim.js test:certification-framework"
+    "test:certification-framework": "node scripts/task-adapter-shim.js test:certification-framework",
+    "test:declared-branch": "node tests/execution-branch-policy.test.js && node tests/declared-branch-git.test.js && node tests/declared-branch-binding.test.js"
   },
   "keywords": [
     "event-sourcing",

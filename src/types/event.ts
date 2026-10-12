@@ -132,6 +132,10 @@ export type StateEvent =
   // Repository governance lifecycle (EXP-PROGRAM-028)
   | { type: "REPOSITORY_INITIALIZED"; repositoryId: string; defaultBranch: string; forgeProvider: string; versionStrategy: string }
   | { type: "BRANCH_CREATED"; branchName: string; branchType: string; baseBranch?: string; missionId?: string; expeditionId?: string }
+  // Operator-declared execution branches (ADR-056): the binding is recorded so
+  // resolution is replayable instead of derived from a naming convention.
+  | { type: "MISSION_BRANCH_BOUND"; missionId: string; branch: string; declared: boolean; created: boolean; baseCommit: string; declaredBy: string }
+  | { type: "EXPEDITION_BRANCH_BOUND"; expeditionId: string; branch: string; declared: boolean; created: boolean; baseCommit: string; declaredBy: string }
   | { type: "PULL_REQUEST_OPENED"; pullRequestId: string; forgeId: string; url: string; number: number; headBranch: string; baseBranch: string; missionId?: string; expeditionId?: string }
   | { type: "PULL_REQUEST_UPDATED"; pullRequestId: string; state: "open" | "closed" | "merged"; title?: string }
   | { type: "PULL_REQUEST_MERGED"; pullRequestId: string; commit: string; strategy: string }

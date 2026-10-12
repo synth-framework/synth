@@ -76,6 +76,8 @@ export type Mission = {
   id: string
   name: string
   purpose: string
+  /** ADR-056: operator-declared execution branch (recorded, replayable). */
+  executionBranch?: string
   status: "projected" | "draft" | "active" | "completed" | "archived"
   projectionStatus?: "projected" | "certified" | "failed"
   expeditions: string[]
@@ -116,6 +118,8 @@ export type Expedition = {
   missionId: string
   name: string
   goal: string
+  /** ADR-056: operator-declared execution branch (recorded, replayable). */
+  executionBranch?: string
   status: "draft" | "approved" | "committed" | "executing" | "paused" | "completed" | "cancelled" | "archived"
   objectives: string[]
   discoveries: string[]

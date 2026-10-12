@@ -15,6 +15,8 @@ import path from "node:path"
 import test from "node:test"
 
 import {
+  enrichExecutionBranchContext,
+  findLiveBranchBindingOwner,
   loadBranchPolicyConfig,
   matchesDeclaredBranchPattern,
   resolveExecutionBranch,
@@ -327,4 +329,87 @@ test("resolveExecutionBranch: without a declaration the taxonomy still governs",
   })
   assert.strictEqual(result.ok, false)
   assert.strictEqual(result.requiredBranch, "expedition/m-1/e-1")
+})
+
+test("enrichExecutionBranchContext: a persisted binding becomes the declared branch", () => {
+  const records = {
+    missions: {
+      "m-1": { name: "Mission One", status: "active", executionBranch: "arena/mission-one" },
+    },
+    expeditions: {
+      "e-1": { name: "Expedition One", status: "executing", missionId: "m-1", executionBranch: "arena/expedition-one" },
+      "e-2": { name: "Expedition Two", status: "executing", missionId: "m-1" },
+    },
+  }
+
+  const missionCtx = enrichExecutionBranchContext("mission", "m-1", records)
+  assert.strictEqual(missionCtx.declaredBranch, "arena/mission-one")
+
+  // An expedition binding wins over the mission's own binding.
+  const ownBinding = enrichExecutionBranchContext("expedition", "e-1", records)
+  assert.strictEqual(ownBinding.declaredBranch, "arena/expedition-one")
+
+  // Without its own binding an expedition inherits the mission binding: the
+  // arena workflow keeps both roles on one operator-owned branch.
+  const inherited = enrichExecutionBranchContext("expedition", "e-2", records)
+  assert.strictEqual(inherited.declaredBranch, "arena/mission-one")
+
+  // An explicit context value always wins over the record.
+  const explicit = enrichExecutionBranchContext("mission", "m-1", records, { declaredBranch: "arena/typed" })
+  assert.strictEqual(explicit.declaredBranch, "arena/typed")
+})
+
+test("resolveExecutionBranch: HEAD must be the bound branch (a binding is not a bypass)", () => {
+  const policy = makePolicy({ mode: "enforce" })
+  const bound = resolveExecutionBranch("mission", "arena/bound", policy, {
+    missionId: "m-1",
+    declaredBranch: "arena/bound",
+  })
+  assert.strictEqual(bound.ok, true)
+
+  const drifted = resolveExecutionBranch("mission", "main", policy, {
+    missionId: "m-1",
+    declaredBranch: "arena/bound",
+  })
+  assert.strictEqual(drifted.ok, false)
+  assert.strictEqual(drifted.requiredBranch, "arena/bound")
+  assert.match(drifted.reason, /bound to arena\/bound/)
+})
+
+test("findLiveBranchBindingOwner: exclusivity is per role and per live entity", () => {
+  const records = {
+    missions: {
+      "m-1": { status: "active", executionBranch: "arena/shared" },
+      "m-9": { status: "active", executionBranch: "arena/shared" },
+    },
+    expeditions: {
+      "e-1": { status: "executing", missionId: "m-1", executionBranch: "arena/shared" },
+      "e-2": { status: "executing", missionId: "m-1", executionBranch: "arena/shared" },
+      "e-3": { status: "completed", missionId: "m-1", executionBranch: "arena/freed" },
+      "e-4": { status: "executing", missionId: "m-1", executionBranch: "arena/freed" },
+    },
+  }
+
+  // Second live mission on the same branch is a conflict; itself is not.
+  assert.deepStrictEqual(findLiveBranchBindingOwner(records, "mission", "m-1", "arena/shared"), {
+    kind: "mission",
+    id: "m-9",
+  })
+  assert.strictEqual(findLiveBranchBindingOwner(records, "mission", "m-9", "arena/shared").id, "m-1")
+
+  // Second live expedition on the same branch is a conflict.
+  assert.deepStrictEqual(findLiveBranchBindingOwner(records, "expedition", "e-1", "arena/shared"), {
+    kind: "expedition",
+    id: "e-2",
+  })
+
+  // A completed expedition releases the branch for a new live one.
+  assert.strictEqual(findLiveBranchBindingOwner(records, "expedition", "e-4", "arena/freed"), undefined)
+
+  // A live mission binding does not block an expedition from the same branch
+  // (mission and expedition ownership are separate roles).
+  assert.strictEqual(findLiveBranchBindingOwner(records, "expedition", "e-9", "arena/unused"), undefined)
+
+  // Unknown roles/branches never conflict.
+  assert.strictEqual(findLiveBranchBindingOwner(records, "expedition", "e-9", ""), undefined)
 })

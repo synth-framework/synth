@@ -1235,6 +1235,24 @@ export function applyDomain(
       }
     }
 
+    case "BindExecutionBranch": {
+      const role = String(intent.payload.role)
+      const entityId = String(intent.payload.entityId)
+      const branch = String(intent.payload.branch)
+      const declared = intent.payload.declared !== false
+      const created = intent.payload.created === true
+      const baseCommit = String(intent.payload.baseCommit || "")
+      const declaredBy = String(intent.payload.declaredBy || "operator")
+      const payload = { branch, declared, created, baseCommit, declaredBy }
+      return {
+        events: [
+          role === "mission"
+            ? { type: "MISSION_BRANCH_BOUND" as const, payload: { missionId: entityId, ...payload } }
+            : { type: "EXPEDITION_BRANCH_BOUND" as const, payload: { expeditionId: entityId, ...payload } },
+        ],
+      }
+    }
+
     case "OpenPullRequest": {
       const pullRequestId = String(intent.payload.pullRequestId)
       const forgeId = String(intent.payload.forgeId)

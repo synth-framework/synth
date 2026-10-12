@@ -252,6 +252,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "MISSION_BRANCH_BOUND": {
+      const missionId = String(payload.missionId)
+      if (state.missions[missionId]) {
+        state.missions[missionId] = {
+          ...state.missions[missionId],
+          executionBranch: String(payload.branch),
+          updatedAt: event.timestamp,
+        }
+      }
+      break
+    }
     case "MISSION_ARCHIVED": {
       const missionId = String(payload.id)
       if (state.missions[missionId]) {
@@ -301,6 +312,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
         state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "committed", updatedAt: event.timestamp }
+      }
+      break
+    }
+    case "EXPEDITION_BRANCH_BOUND": {
+      const expeditionId = String(payload.expeditionId)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          executionBranch: String(payload.branch),
+          updatedAt: event.timestamp,
+        }
       }
       break
     }

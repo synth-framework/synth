@@ -68,8 +68,11 @@ export type ExecutionBranchResult = {
 // Canonical-state records consulted when enriching a branch context with
 // human-readable names. Structural subset — any canonical state satisfies it.
 export type ExecutionNameRecords = {
-  missions?: Record<string, { name?: string } | undefined>
-  expeditions?: Record<string, { name?: string; missionId?: string } | undefined>
+  missions?: Record<string, { name?: string; status?: string; executionBranch?: string } | undefined>
+  expeditions?: Record<
+    string,
+    { name?: string; missionId?: string; status?: string; executionBranch?: string } | undefined
+  >
 }
 
 // Single source of name enrichment for candidate resolution: fills missing
@@ -87,6 +90,7 @@ export function enrichExecutionBranchContext(
       ...base,
       missionId: requestId,
       missionName: base?.missionName ?? records?.missions?.[requestId]?.name,
+      declaredBranch: base?.declaredBranch ?? records?.missions?.[requestId]?.executionBranch,
     }
   }
   const expedition = records?.expeditions?.[requestId]
@@ -97,6 +101,12 @@ export function enrichExecutionBranchContext(
     missionId: missionId || undefined,
     expeditionName: base?.expeditionName ?? expedition?.name,
     missionName: base?.missionName ?? (missionId ? records?.missions?.[missionId]?.name : undefined),
+    // ADR-056: a recorded binding is consulted before the taxonomy, so the
+    // resolution survives replays and later commands can omit --branch.
+    declaredBranch:
+      base?.declaredBranch ??
+      expedition?.executionBranch ??
+      (missionId ? records?.missions?.[missionId]?.executionBranch : undefined),
   }
 }
 
@@ -124,6 +134,36 @@ export function matchesDeclaredBranchPattern(
     const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")
     return new RegExp(`^${escaped}$`).test(branch)
   })
+}
+
+/**
+ * A live entity that already owns a branch (ADR-056 §2.3). Exclusivity is per
+ * role: a live mission binding does not block its expeditions from declaring
+ * the same branch (the operator-owned workspace case).
+ */
+export function findLiveBranchBindingOwner(
+  records: ExecutionNameRecords | null | undefined,
+  role: "mission" | "expedition",
+  entityId: string,
+  branch: string,
+): { kind: "mission" | "expedition"; id: string } | undefined {
+  if (!branch) return undefined
+  if (role === "mission") {
+    const live = new Set(["projected", "draft", "active"])
+    for (const [id, mission] of Object.entries(records?.missions ?? {})) {
+      if (!mission || mission.executionBranch !== branch || id === entityId) continue
+      if (!live.has(String((mission as { status?: string }).status))) continue
+      return { kind: "mission", id }
+    }
+    return undefined
+  }
+  const live = new Set(["draft", "approved", "committed", "executing", "paused"])
+  for (const [id, expedition] of Object.entries(records?.expeditions ?? {})) {
+    if (!expedition || expedition.executionBranch !== branch || id === entityId) continue
+    if (!live.has(String((expedition as { status?: string }).status))) continue
+    return { kind: "expedition", id }
+  }
+  return undefined
 }
 
 export function loadBranchPolicyConfig(cwd: string): BranchPolicy {
@@ -217,6 +257,17 @@ export function resolveExecutionBranch(
   // rather than a law, and the override is explicit — never silent.
   if (context.declaredBranch) {
     const declared = context.declaredBranch
+    // A binding is not a bypass: the checked-out branch must be the declared
+    // one. Resolution then comes from the binding, not from the name taxonomy.
+    if (currentBranch !== declared) {
+      return {
+        ...base,
+        ok: false,
+        requiredBranch: declared,
+        declaredBranch: declared,
+        reason: `${role} execution is bound to ${declared} (ADR-056); current branch is ${currentBranch}`,
+      }
+    }
     const canonical =
       role === "mission" || role === "expedition"
         ? isCanonicalBranchForRole(role, declared, {

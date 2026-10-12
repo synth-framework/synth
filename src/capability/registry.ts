@@ -1381,6 +1381,46 @@ function createDefaultCapabilities(): Capability[] {
       },
     },
     {
+      name: "BindExecutionBranch",
+      description: "Record an operator-declared execution branch binding for a mission or expedition (ADR-056)",
+      inputSchema: {
+        required: ["role", "entityId", "branch"],
+        types: {
+          role: "string",
+          entityId: "string",
+          branch: "string",
+          declared: "boolean",
+          created: "boolean",
+          baseCommit: "string",
+          declaredBy: "string",
+        },
+      },
+      outputSchema: { events: ["MISSION_BRANCH_BOUND", "EXPEDITION_BRANCH_BOUND"], resultType: "ExecutionBranchBinding" },
+      preconditions: [],
+      postconditions: [],
+      invariantsChecked: [],
+      sideEffects: false,
+      executionClass: "sync",
+      handler: ({ intent }) => {
+        const role = String(intent.payload.role)
+        const entityId = String(intent.payload.entityId)
+        const branch = String(intent.payload.branch)
+        const declared = intent.payload.declared !== false
+        const created = intent.payload.created === true
+        const baseCommit = String(intent.payload.baseCommit || "")
+        const declaredBy = String(intent.payload.declaredBy || "operator")
+        const payload = { branch, declared, created, baseCommit, declaredBy }
+        return {
+          events: [
+            role === "mission"
+              ? { type: "MISSION_BRANCH_BOUND" as const, payload: { missionId: entityId, ...payload } }
+              : { type: "EXPEDITION_BRANCH_BOUND" as const, payload: { expeditionId: entityId, ...payload } },
+          ],
+          result: { role, entityId, branch, declared, created, baseCommit },
+        }
+      },
+    },
+    {
       name: "OpenPullRequest",
       description: "Open a pull request as a promotion proposal",
       inputSchema: {

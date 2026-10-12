@@ -60,8 +60,14 @@ Semantics:
   instead of a *law*.
 - The declared branch is validated with `git check-ref-format --branch`, resolves locally or as
   `origin/<name>` (a local tracking branch is created when only the remote exists), and must not already be
-  bound to another non-terminal mission/expedition of a different owner — otherwise
-  `DECLARED_BRANCH_IN_USE`.
+  bound to another **live entity of the same role** — otherwise `DECLARED_BRANCH_IN_USE`. Exclusivity is
+  per role: a live mission binding does not block that mission's expeditions from declaring the same
+  branch (the operator-owned workspace case, §2.4), while two live expeditions on one branch remain
+  forbidden. A terminal entity (`completed`/`cancelled`/`archived`) releases its branch for re-use.
+- **A binding is not a bypass.** Resolution uses the binding *instead of the naming taxonomy*, but the
+  checked-out branch must be the bound branch: from any other branch the gate denies with
+  `<role> execution is bound to <branch>` and repeats the bound name, so a recorded binding can never
+  authorize a ceremony from an unrelated branch.
 - A declared branch that does **not** match a taxonomy candidate is not silently accepted: the command
   succeeds with a recorded, visible warning (`BRANCH_POLICY_OVERRIDDEN: declared branch <name> is not a
   canonical <role> branch; recorded as an operator decision`) and the override appears in `status`,
@@ -93,7 +99,8 @@ argues against multiplying spellings for one behaviour.
 ### 2.3 What stays enforced
 
 - The ExecutionGate's `EXECUTION_BRANCH_CHECK` still runs for `ApproveMission` / `StartExpedition` — it now
-  passes because the binding resolves, not because the name matched.
+  passes because the binding resolves (and HEAD is the bound branch), not because the name matched. The
+  gate enriches its context from the persisted record, so no flag is needed on later commands.
 - Chore lanes, trunk/branch-strategy semantics, and the lineage guard are unchanged.
 - A declared binding is **per entity**, not global: declaring a branch for expedition E1 does not let
   expedition E2 run anywhere. Two expeditions on one branch remains forbidden (`DECLARED_BRANCH_IN_USE`),
@@ -140,6 +147,10 @@ configuration-level story that does not require per-command ceremony.
    warning, and `synth status` shows the override for the entity.
 6. **AC6** — Without `--branch`, behaviour is exactly as today (taxonomy candidates), so existing branches
    and the 49 historical expeditions keep resolving.
+7. **AC7** — A recorded binding never authorizes a ceremony from another branch: with `m` bound to `arena/x`,
+   `ApproveMission` from `main` is denied and the denial cites `arena/x`.
+8. **AC8** — Ownership is per role: one live mission and its expedition may declare the same operator-owned
+   branch (arena workspace); a second live expedition on that branch is refused with `DECLARED_BRANCH_IN_USE`.
 
 ## 4. Code surface
 
@@ -151,7 +162,9 @@ configuration-level story that does not require per-command ceremony.
 | `src/capability/registry.ts` | `CreateExpeditionBranch` payload gains `declared`, `created`, `baseCommit`, `declaredBy` (or new `BindExecutionBranch` capability) |
 | `src/control/execution-gate.ts` | PHASE 2d enriches the branch context from the binding |
 | `src/domain/execution.ts` | persist `executionBranch` on the mission/expedition record |
-| `tests/` | declared-branch resolution, missing-branch, conflict, no-create, worktree fallback |
+| `src/repository/branch-declaration.ts` | git-facing half of the declaration (validate, owner check, checkout/create) — pure, testable, never prints |
+| `src/runtime/replay.ts` | apply `MISSION_BRANCH_BOUND` / `EXPEDITION_BRANCH_BOUND` to the record (replayable binding) |
+| `tests/` | `execution-branch-policy` (resolution order, HEAD rule, ownership), `declared-branch-git` (--no-create, create, origin-only, conflict), `declared-branch-binding` (recorded binding replays and the gate resolves it) |
 
 Estimated: ~1–2 days of work, no schema migration (payload is additive; old records resolve by name as
 today).
@@ -177,6 +190,17 @@ today).
    candidates for `checkpoint`/`status` reads?
 5. **Q5 — interaction with ADR-055 P3 worktrees:** when the declared branch is already checked out in the
    main worktree, prefer the current checkout (recommended) or force a worktree and detach the main one?
+
+## 7. Implementation record
+
+- **Slice 1** — resolution order, `declaredPatterns`, warning class, name validation
+  (`branch-policy.ts`, `branch-taxonomy.ts`); 22 policy tests green.
+- **Slice 2** — `BindExecutionBranch` capability + `*_BRANCH_BOUND` events, record fields, replay
+  cases, gate/guard enrichment, `--branch` / `--no-create` on `mission approve`, `expedition commit`,
+  `expedition start`, and `repository/branch-declaration.ts` for the git mechanics.
+- The window exit is: `git.branchPolicy.mode: enforce` restored in `.synth/config.yaml` once the bootstrap
+  mission is approved with `--branch <operator branch> --no-create` (ADR-056 §2.4), so the declared
+  pattern — not `mode: off` — keeps the operator branch valid.
 
 ## Proof Impact
 

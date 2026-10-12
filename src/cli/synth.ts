@@ -107,11 +107,13 @@ import {
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
-import { branchNameCandidates } from "../repository/branch-taxonomy.js"
+import { branchNameCandidates, validateDeclaredBranchName } from "../repository/branch-taxonomy.js"
+import { resolveDeclaredBranch } from "../repository/branch-declaration.js"
 import { analyzeEventLogLineage } from "./event-log-lineage.js"
 import {
   enrichExecutionBranchContext,
   loadBranchPolicyConfig,
+  resolveExecutionBranch,
   type ExecutionBranchContext,
   type ExecutionNameRecords,
 } from "../repository/branch-policy.js"
@@ -3466,6 +3468,9 @@ async function materializeApprovedMission(
 
 async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
+  const declaredBranchFlag = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
+  const noCreateFlag = flags["no-create"] === true || flags["no-create"] === "true"
+  if (noCreateFlag && !declaredBranchFlag) printError("--no-create requires --branch")
   if (!draftId) printError("--draft-id is required")
 
   let alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
@@ -3586,8 +3591,27 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const missionNode = Array.from(session.worldModel.nodes.values()).find(
     (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
   )
+  let declaredMissionBranch: DeclaredBranchInfo | undefined
   if (missionNode) {
-    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id })
+    if (declaredBranchFlag) {
+      // ADR-056 §2.2: the operator declares the execution branch; the CLI
+      // materializes or checks it out before the mission is approved.
+      declaredMissionBranch = await declareExecutionBranch("mission", {
+        branch: declaredBranchFlag,
+        noCreate: noCreateFlag,
+        entityId: missionNode.id,
+        missionId: missionNode.id,
+        missionName: missionNode.name,
+      })
+      if (!declaredMissionBranch.ok) {
+        printError(declaredMissionBranch.error || "The declared execution branch is not usable", {
+          code: declaredMissionBranch.code,
+          category: "governance",
+          ...(declaredMissionBranch.suggestion ? { suggestion: declaredMissionBranch.suggestion } : {}),
+        })
+      }
+    }
+    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id }, declaredBranchFlag)
   }
 
   const ctx = await bootstrap({
@@ -3663,6 +3687,12 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     printError(err instanceof Error ? err.message : String(err))
   }
 
+  // ADR-056 §2.5: record the binding once the mission exists in the ledger, so
+  // every later resolution (gate + CLI guard) replays the same branch.
+  if (declaredMissionBranch?.ok && missionNode) {
+    await recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
+  }
+
   // Persist the approved snapshot as an immutable, certified artifact.
   let snapshotPersisted = false
   let snapshotNote: string | undefined
@@ -3712,6 +3742,15 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
       created: runtimeResult.created,
       approved: runtimeResult.approved,
     },
+    ...(declaredMissionBranch?.ok
+      ? {
+          executionBranch: {
+            branch: declaredMissionBranch.branch,
+            created: declaredMissionBranch.created,
+            ...(declaredMissionBranch.warning ? { warning: declaredMissionBranch.warning } : {}),
+          },
+        }
+      : {}),
     proposals: approvedData.proposals,
     nextStep: `synth mission snapshot ${approvedData.id} to inspect the persisted snapshot`,
   })
@@ -5649,18 +5688,53 @@ async function commitOneExpedition(
   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   proposalId: string,
   dryRun: boolean,
+  declaredBranch?: string,
+  noCreate = false,
 ): Promise<Record<string, unknown>> {
   if (dryRun) {
-    return runLifecycleDryRun(ctx, {
+    const preview = await runLifecycleDryRun(ctx, {
       capability: "CommitExpedition",
       payload: { id: proposalId },
       eventType: "EXPEDITION_COMMITTED",
       expeditionId: proposalId,
       targetStatus: "committed",
     })
+    if (declaredBranch) {
+      const nameCheck = validateDeclaredBranchName(declaredBranch)
+      return {
+        ...preview,
+        declaredBranch: { branch: declaredBranch, valid: nameCheck.valid, errors: nameCheck.errors },
+      }
+    }
+    return preview
   }
 
   const state = await ctx.runtime.getState()
+  let declared: DeclaredBranchInfo | undefined
+  if (declaredBranch) {
+    const record = state.expeditions?.[proposalId]
+    if (!record) {
+      return { status: "error", proposalId, code: "ExpeditionNotFound", error: `Expedition ${proposalId} is not in the ledger` }
+    }
+    declared = await declareExecutionBranch("expedition", {
+      branch: declaredBranch,
+      noCreate,
+      entityId: proposalId,
+      missionId: record.missionId,
+      missionName: record.missionId ? state.missions?.[record.missionId]?.name : undefined,
+      expeditionName: record.name,
+    })
+    if (!declared.ok) {
+      return {
+        status: "error",
+        proposalId,
+        code: declared.code,
+        error: declared.error,
+        ...(declared.suggestion ? { suggestion: declared.suggestion } : {}),
+      }
+    }
+  }
+
   const intake = await gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     return {
@@ -5693,11 +5767,24 @@ async function commitOneExpedition(
     draftRetirementError = err instanceof Error ? err.message : String(err)
   }
 
+  if (declared?.ok) {
+    await recordExecutionBranchBinding(ctx, "expedition", proposalId, declared)
+  }
+
   return {
     status: "ok",
     kind: "ExpeditionCommitted",
     proposalId,
     result: result.result,
+    ...(declared?.ok
+      ? {
+          executionBranch: {
+            branch: declared.branch,
+            created: declared.created,
+            ...(declared.warning ? { warning: declared.warning } : {}),
+          },
+        }
+      : {}),
     ...(draftRetired ? { draftRetired } : {}),
     ...(draftRetirementError ? { draftRetirementError } : {}),
     nextStep: `synth expedition start --id ${proposalId}`,
@@ -5709,6 +5796,12 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
   const allApproved = flags["all-approved"] === true || flags["all-approved"] === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const declaredBranch = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
+  const noCreate = flags["no-create"] === true || flags["no-create"] === "true"
+  if (noCreate && !declaredBranch) printError("--no-create requires --branch")
+  // Two expeditions cannot share one branch (ADR-056 §2.3), so a batch commit
+  // cannot carry a single declaration.
+  if (allApproved && declaredBranch) printError("--branch cannot be combined with --all-approved")
 
   if (allApproved) {
     if (!missionId) printError("--all-approved requires --mission")
@@ -5760,7 +5853,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
-  const result = await commitOneExpedition(ctx, proposalId, dryRun)
+  const result = await commitOneExpedition(ctx, proposalId, dryRun, declaredBranch, noCreate)
   printJson(result)
   if (result.status === "error") process.exit(1)
 }
@@ -5873,6 +5966,110 @@ async function ensureExpeditionBranch(
   return { branch: canonical, created: true }
 }
 
+// ------------------------------------------------------------
+// ADR-056 — operator-declared execution branches
+// ------------------------------------------------------------
+
+type DeclaredBranchInfo = {
+  ok: boolean
+  branch: string
+  created: boolean
+  baseCommit: string
+  warning?: string
+  code?: string
+  error?: string
+  suggestion?: string
+}
+
+/** Read canonical state for the live-owner rule; degrade to no records. */
+async function readStateRecords(): Promise<unknown | undefined> {
+  try {
+    return (await sdk.state.readState(process.cwd())) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Resolve an operator-declared execution branch (ADR-056 §2.1/§2.2): git
+ * mechanics live in repository/branch-declaration; the policy verdict and its
+ * warning class are added here.
+ */
+async function declareExecutionBranch(
+  role: "mission" | "expedition",
+  options: {
+    branch: string
+    noCreate: boolean
+    entityId: string
+    missionId?: string
+    missionName?: string
+    expeditionName?: string
+  },
+): Promise<DeclaredBranchInfo> {
+  const state = await readStateRecords()
+  const resolution = resolveDeclaredBranch({
+    root: process.cwd(),
+    role,
+    entityId: options.entityId,
+    branch: options.branch,
+    noCreate: options.noCreate,
+    state: state as ExecutionNameRecords | undefined,
+  })
+  if (!resolution.ok) {
+    return {
+      ok: false,
+      branch: resolution.branch,
+      created: false,
+      baseCommit: resolution.baseCommit,
+      ...(resolution.code ? { code: resolution.code } : {}),
+      ...(resolution.error ? { error: resolution.error } : {}),
+      ...(resolution.suggestion ? { suggestion: resolution.suggestion } : {}),
+    }
+  }
+
+  const policy = loadBranchPolicyConfig(process.cwd())
+  const verdict = resolveExecutionBranch(role, resolution.currentBranch, policy, {
+    missionId: options.missionId,
+    expeditionId: role === "expedition" ? options.entityId : undefined,
+    missionName: options.missionName,
+    expeditionName: options.expeditionName,
+    declaredBranch: options.branch,
+  })
+  const warning = verdict.overridden && !verdict.patternMatched ? verdict.reason : undefined
+  return {
+    ok: true,
+    branch: resolution.branch,
+    created: resolution.created,
+    baseCommit: resolution.baseCommit,
+    ...(warning ? { warning } : {}),
+  }
+}
+
+/** Record the binding in the ledger so later commands agree without flags. */
+async function recordExecutionBranchBinding(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  role: "mission" | "expedition",
+  entityId: string,
+  info: DeclaredBranchInfo,
+): Promise<void> {
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "BindExecutionBranch",
+    payload: {
+      role,
+      entityId,
+      branch: info.branch,
+      declared: true,
+      created: info.created,
+      baseCommit: info.baseCommit,
+      declaredBy: "operator",
+    },
+  })
+  if (result.status !== "ok") {
+    printError(`Failed to record the branch binding for ${role} ${entityId}: ${result.error || JSON.stringify(result)}`)
+  }
+}
+
 // CLI fail-fast branch guard (ECOSYSTEM-001): surface a branch-policy
 // violation before heavy lifecycle work runs. The ExecutionGate enforces the
 // same policy inside handleIntent; this gives the operator an early, specific
@@ -5881,6 +6078,7 @@ async function assertExecutionBranch(
   capability: string,
   role: "mission" | "expedition" | "chore",
   context: { missionId?: string; expeditionId?: string; missionName?: string; expeditionName?: string; capability?: string },
+  declaredBranch?: string,
 ): Promise<void> {
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
@@ -5896,6 +6094,11 @@ async function assertExecutionBranch(
         // than blocking. The ExecutionGate still enforces at the boundary.
       }
     }
+  }
+  if (declaredBranch) {
+    // ADR-056: the operator declaration is consulted before the taxonomy, so
+    // the fail-fast guard and the ExecutionGate agree on one resolution order.
+    enriched = { ...enriched, declaredBranch }
   }
   const result = await adapter.validateExecutionBranch(role, enriched)
   if (result.ok) return
@@ -5918,19 +6121,29 @@ async function startOneExpedition(
   expeditionId: string,
   dryRun: boolean,
   autoCommit = false,
+  declaredBranch?: string,
+  noCreate = false,
 ): Promise<Record<string, unknown>> {
   const baselineCommit = getCurrentGitCommit()
   const startPayload: Record<string, unknown> = { id: expeditionId }
   if (baselineCommit) startPayload.baselineCommit = baselineCommit
 
   if (dryRun) {
-    return runLifecycleDryRun(ctx, {
+    const preview = await runLifecycleDryRun(ctx, {
       capability: "StartExpedition",
       payload: startPayload,
       eventType: "EXPEDITION_STARTED",
       expeditionId,
       targetStatus: "executing",
     })
+    if (declaredBranch) {
+      const nameCheck = validateDeclaredBranchName(declaredBranch)
+      return {
+        ...preview,
+        declaredBranch: { branch: declaredBranch, valid: nameCheck.valid, errors: nameCheck.errors },
+      }
+    }
+    return preview
   }
 
   const initialState = await ctx.runtime.getState()
@@ -5955,10 +6168,21 @@ async function startOneExpedition(
     currentStatus = "approved"
   }
 
+  let declaredInfo: DeclaredBranchInfo | undefined
   if (currentStatus === "approved") {
-    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun)
+    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun, declaredBranch, noCreate)
     if (commitResult.status !== "ok") {
       return commitResult
+    }
+    // The commit-time declaration already checked out the branch and recorded
+    // the binding; reuse it so start does not declare twice.
+    if (commitResult.executionBranch) {
+      declaredInfo = {
+        ok: true,
+        branch: String((commitResult.executionBranch as Record<string, unknown>).branch),
+        created: (commitResult.executionBranch as Record<string, unknown>).created === true,
+        baseCommit: "",
+      }
     }
     currentStatus = "committed"
   }
@@ -5971,14 +6195,42 @@ async function startOneExpedition(
   const expeditionRecord = state.expeditions?.[expeditionId]
   let autoCreatedBranch: { branch: string; created: boolean } | undefined
   if (expeditionRecord?.missionId) {
-    const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
-    if (branchInfo.created) autoCreatedBranch = branchInfo
+    if (declaredBranch && !declaredInfo) {
+      // The expedition was already committed: declare now, before the guard.
+      declaredInfo = await declareExecutionBranch("expedition", {
+        branch: declaredBranch,
+        noCreate,
+        entityId: expeditionId,
+        missionId: expeditionRecord.missionId,
+        missionName: state.missions?.[expeditionRecord.missionId]?.name,
+        expeditionName: expeditionRecord.name,
+      })
+      if (!declaredInfo.ok) {
+        return {
+          status: "error",
+          expeditionId,
+          code: declaredInfo.code,
+          error: declaredInfo.error,
+          ...(declaredInfo.suggestion ? { suggestion: declaredInfo.suggestion } : {}),
+        }
+      }
+      await recordExecutionBranchBinding(ctx, "expedition", expeditionId, declaredInfo)
+    }
+    if (!declaredInfo) {
+      const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
+      if (branchInfo.created) autoCreatedBranch = branchInfo
+    }
     // ECOSYSTEM-001: fail fast when the current branch cannot host this
     // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
-    await assertExecutionBranch("StartExpedition", "expedition", {
-      expeditionId,
-      missionId: expeditionRecord.missionId,
-    })
+    await assertExecutionBranch(
+      "StartExpedition",
+      "expedition",
+      {
+        expeditionId,
+        missionId: expeditionRecord.missionId,
+      },
+      declaredInfo?.ok ? declaredInfo.branch : declaredBranch,
+    )
   }
   const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
@@ -6008,7 +6260,14 @@ async function startOneExpedition(
     result: result.result,
     nextStep: `synth expedition complete --id ${expeditionId}`,
   }
-  if (autoCreatedBranch) {
+  if (declaredInfo?.ok) {
+    response.executionBranch = {
+      branch: declaredInfo.branch,
+      created: declaredInfo.created,
+      declared: true,
+      ...(declaredInfo.warning ? { warning: declaredInfo.warning } : {}),
+    }
+  } else if (autoCreatedBranch) {
     response.executionBranch = {
       branch: autoCreatedBranch.branch,
       created: true,
@@ -6035,6 +6294,10 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   const allCommitted = flags["all-committed"] === true || flags["all-committed"] === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
   const autoCommit = isAutoCommitEnabled(flags)
+  const declaredBranch = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
+  const noCreate = flags["no-create"] === true || flags["no-create"] === "true"
+  if (noCreate && !declaredBranch) printError("--no-create requires --branch")
+  if (allCommitted && declaredBranch) printError("--branch cannot be combined with --all-committed")
 
   if (allCommitted) {
     if (!missionId) printError("--all-committed requires --mission")
@@ -6085,7 +6348,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
-  const result = await startOneExpedition(ctx, expeditionId, dryRun, autoCommit)
+  const result = await startOneExpedition(ctx, expeditionId, dryRun, autoCommit, declaredBranch, noCreate)
   printJson(result)
   if (result.status === "error") process.exit(1)
 }
