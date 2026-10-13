@@ -1,0 +1,1038 @@
+diff --git a/src/cli/status-briefing.ts b/src/cli/status-briefing.ts
+index b8a8e55..8709691 100644
+--- a/src/cli/status-briefing.ts
++++ b/src/cli/status-briefing.ts
+@@ -11,7 +11,14 @@ import {
+   isGovernanceResolutionFailure,
+ } from "../runtime/governance-resolver.js"
+ import { deriveValidTransition } from "../runtime/transition-engine.js"
+-import { deliveryState } from "../ledger/delivery.js"
++import {
++  deliveryState,
++  buildRefIndex,
++  remoteBranchesFromIndex,
++  resolveDeliveryBranch,
++  resolveIntegrationCandidate,
++  type BranchCreatedEventLike,
++} from "../ledger/delivery.js"
+ import { toOperatorBriefing } from "../runtime/status-projection.js"
+ import { createCapabilityRegistry } from "../capability/registry.js"
+ import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
+@@ -35,6 +42,12 @@ export type Blocker = {
+   kind: string
+   description: string
+   remediation: string
++  /**
++   * The remediation as ready-to-run commands, one per line, with every id,
++   * branch and commit already filled in. `status` is the inbox: an operator (or
++   * an agent) copies these instead of assembling them from three other queries.
++   */
++  commands?: string[]
+ }
+ 
+ export type NextAction = {
+@@ -101,32 +114,110 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
+   const transition = deriveValidTransition(result)
+   const briefing = toOperatorBriefing(result, transition)
+   if (briefing.status !== "ok") return briefing
+-  return { ...briefing, warnings: [...briefing.warnings, ...deliveryWarnings(result)] }
++  return { ...briefing, warnings: [...briefing.warnings, ...deliveryWarnings(result, rootDir)] }
++}
++
++/** Where a resolved branch name came from, phrased for the operator. */
++function branchSourceNote(source: string | undefined, id8: string): string | undefined {
++  if (source === "branchCreatedEvent") return "branch from the EXPEDITION_BRANCH_CREATED event"
++  if (source === "remoteScan") return `branch from a remote ref naming ${id8}`
++  return undefined
+ }
+ 
+ /**
+  * ADR-055 §2.6: a finished expedition is not delivered until its merge is
+  * sealed. `deliveryState` (ledger/delivery) is the one definition of "pending",
+  * so status and `expedition show` cannot disagree.
++ *
++ * The remediation is a *working command*, not a template: the branch is
++ * resolved (recorded binding → branch-created event → a remote ref naming the
++ * expedition) and the merge commit is named when the base branch already
++ * contains the delivered tip. Printing `deliver --id <id>` alone is what makes
++ * a fresh session fail with NoExecutionBranch and go hunting through the event
++ * log; printing `--merge-commit <sha>` alone is what makes it guess.
+  */
+-function deliveryWarnings(ctx: { authoritative: { replayedState: { expeditions?: Record<string, any> } } }): Blocker[] {
+-  return Object.values(ctx.authoritative.replayedState.expeditions || {})
++function deliveryWarnings(
++  ctx: {
++    authoritative: {
++      replayedState: { expeditions?: Record<string, any> }
++      events?: unknown[]
++    }
++  },
++  rootDir: string,
++): Blocker[] {
++  const pending = Object.values(ctx.authoritative.replayedState.expeditions || {})
+     .map((e) => ({ e, d: deliveryState(e) }))
+     .filter(({ d }) => d.deliveryPending)
+-    .map(({ e, d }) => {
+-      const id8 = String(e.id).slice(0, 8)
+-      const tip = d.delivery?.tipCommit
+-      if (tip) {
+-        return {
+-          kind: "delivery-pending",
+-          description: `Expedition ${id8} (${e.name}) was delivered from ${d.delivery?.branch} at ${tip.slice(0, 8)}, but no merge is sealed yet.`,
+-          remediation: `Merge the delivered branch, then record the merge: \`synth expedition seal --id ${e.id} --merge-commit <sha>\`.`,
+-        }
++  if (pending.length === 0) return []
++
++  // One git call for the whole briefing: every branch name is resolved against
++  // an in-memory ref index, so status stays read-only and stays fast however
++  // many expeditions are pending.
++  const refs = buildRefIndex(rootDir)
++  const remoteBranches = remoteBranchesFromIndex(refs)
++  const cache = new Map<string, string | undefined>()
++  const events = (ctx.authoritative.events ?? []) as unknown as BranchCreatedEventLike[]
++
++  return pending.map(({ e, d }) => {
++    const id = String(e.id)
++    const id8 = id.slice(0, 8)
++    const resolved = resolveDeliveryBranch(rootDir, {
++      expeditionId: id,
++      ...(typeof e.executionBranch === "string" && e.executionBranch.length > 0
++        ? { executionBranch: e.executionBranch }
++        : {}),
++      events,
++      remoteBranches,
++      cache,
++      refs,
++    })
++    const tip = d.delivery?.tipCommit ?? resolved.tipCommit
++    const integration = resolveIntegrationCandidate(rootDir, { tipCommit: tip, cache, refs })
++    const mergeArg = integration.mergeCommit ?? "<sha>"
++    const sealCommand = `synth expedition seal --id ${id} --merge-commit ${mergeArg}`
++
++    // Already delivered: the only missing step is the seal.
++    if (d.delivery?.tipCommit) {
++      return {
++        kind: "delivery-pending",
++        description: `Expedition ${id8} (${e.name}) was delivered from ${d.delivery?.branch} at ${d.delivery.tipCommit.slice(0, 8)}, but no merge is sealed yet.`,
++        remediation: integration.mergeCommit
++          ? `Seal it — ${integration.base} already contains the delivered tip:\n  ${sealCommand}`
++          : `No base-branch commit contains the delivered tip yet. Merge it, then record the merge:\n  ${sealCommand}`,
++        commands: [sealCommand],
+       }
++    }
++
++    const deliverCommand = `synth expedition deliver --id ${id} --branch ${resolved.branch ?? "<branch>"} --no-push`
++    const commands = [
++      ...(resolved.unresolved && resolved.fetchHint ? [resolved.fetchHint] : []),
++      deliverCommand,
++      sealCommand,
++    ]
++    const note = branchSourceNote(resolved.source, id8)
++    const noteLine = note ? `\n  # ${note}` : ""
++
++    if (resolved.unresolved) {
+       return {
+         kind: "delivery-pending",
+-        description: `Expedition ${id8} (${e.name}) is finished but not delivered: its work is not yet merged or sealed.`,
+-        remediation: `Deliver it: \`synth expedition deliver --id ${e.id}\`. Then merge and record the merge: \`synth expedition seal --id ${e.id} --merge-commit <sha>\`.`,
++        description: `Expedition ${id8} (${e.name}) is completed but not delivered: its work is not yet merged or sealed, and its branch is not in this clone.`,
++        remediation: `Fetch the branch, then deliver and seal it (copy-paste):\n  ${commands.join("\n  ")}${noteLine}`,
++        commands,
+       }
+-    })
++    }
++    if (resolved.branch) {
++      return {
++        kind: "delivery-pending",
++        description: `Expedition ${id8} (${e.name}) is completed but not delivered: its work is not yet merged or sealed.`,
++        remediation: `Deliver it, then seal the merge (copy-paste):\n  ${commands.join("\n  ")}${noteLine}`,
++        commands,
++      }
++    }
++    return {
++      kind: "delivery-pending",
++      description: `Expedition ${id8} (${e.name}) is finished but not delivered: its work is not yet merged or sealed.`,
++      remediation: `Deliver it, then seal the merge. No branch is recorded for this expedition and no remote ref names ${id8}, so name the branch that carries the work:\n  ${commands.join("\n  ")}`,
++      commands,
++    }
++  })
+ }
+diff --git a/src/cli/synth.ts b/src/cli/synth.ts
+index 34e16be..ef25f35 100644
+--- a/src/cli/synth.ts
++++ b/src/cli/synth.ts
+@@ -43,6 +43,8 @@ import {
+   handoffState,
+   pushBranch,
+   resolveCommit,
++  resolveDeliveryBranch,
++  resolveIntegrationCandidate,
+   verifySeal,
+ } from "../ledger/delivery.js"
+ import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
+@@ -1093,10 +1095,20 @@ async function resolveCheckpointBranch(
+     return { ok: true, detail: "No executing expedition to verify execution branch", currentBranch: status.branch }
+   }
+ 
+-  // Match the current branch to the executing expedition whose canonical
+-  // branch it satisfies, so multiple executing expeditions (or a canonical
+-  // branch that differs from the first entry) are resolved correctly.
++  // ADR-056: a recorded binding is the answer, and it is consulted before the
++  // canonical taxonomy — otherwise a declared operator branch (an Arena session
++  // checkout, say) is reported as a violation of a branch the operator never
++  // asked for, and the pre-flight checkpoint blocks work it should authorize.
++  const records = (await sdk.state.readState(rootDir).catch(() => undefined)) as ExecutionNameRecords | undefined
++
++  // Match the current branch to the executing expedition it belongs to: first
++  // by recorded binding, then by canonical name, so multiple executing
++  // expeditions resolve to the right one.
+   const match =
++    executingExpeditions.find((e) => {
++      const bound = records?.expeditions?.[e.id]?.executionBranch
++      return typeof bound === "string" && bound.length > 0 && bound === status.branch
++    }) ??
+     executingExpeditions.find((e) => {
+       try {
+         const names = branchNameCandidates("expedition", {
+@@ -1107,14 +1119,18 @@ async function resolveCheckpointBranch(
+       } catch {
+         return false
+       }
+-    }) ?? executingExpeditions[0]
+-
+-  const result = await adapter.validateExecutionBranch("expedition", {
+-    expeditionId: match.id,
+-    missionId: match.missionId,
+-    expeditionName: match.name,
+-    missionName: match.missionName,
+-  })
++    }) ??
++    executingExpeditions[0]
++
++  const result = await adapter.validateExecutionBranch(
++    "expedition",
++    enrichExecutionBranchContext("expedition", match.id, records, {
++      expeditionId: match.id,
++      missionId: match.missionId,
++      expeditionName: match.name,
++      missionName: match.missionName,
++    }),
++  )
+   return {
+     ok: result.ok,
+     detail: result.reason || (result.ok ? "Execution branch satisfies the declared policy" : "Execution branch policy violated"),
+@@ -4688,6 +4704,48 @@ async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
+   printJson(response)
+ }
+ 
++/**
++ * The branch a deliver should name: the flag, else the recorded binding, else
++ * the branch the ledger says was created for this expedition, else a remote ref
++ * naming it.
++ *
++ * Canonical replay projects `executionBranch` from `EXPEDITION_BRANCH_BOUND`
++ * only. An expedition whose branch was auto-created (`EXPEDITION_BRANCH_CREATED`,
++ * ECOSYSTEM-001) therefore has no recorded branch, and `deliver --id <id>` used
++ * to fail with NoExecutionBranch — sending the operator to grep the event
++ * stream for a name the ledger already holds. Events are read only when the
++ * record has nothing, so the common path costs no extra I/O.
++ */
++async function resolveDeliverBranch(
++  expeditionId: string,
++  executionBranch: string | undefined,
++  flagBranch: string | undefined,
++): Promise<{ branch: string; source?: string; note?: string; fetchHint?: string }> {
++  if (flagBranch) return { branch: flagBranch, source: "flag" }
++  if (executionBranch) return { branch: executionBranch, source: "executionBranch" }
++
++  const events = await sdk.events.readEvents(process.cwd()).catch(() => [])
++  const resolution = resolveDeliveryBranch(process.cwd(), {
++    expeditionId,
++    events: events as Array<{ type?: string; timestamp?: number; payload?: Record<string, unknown> }>,
++  })
++  if (!resolution.branch) return { branch: "" }
++
++  const id8 = expeditionId.slice(0, 8)
++  const note =
++    resolution.source === "branchCreatedEvent"
++      ? `No executionBranch is recorded for ${id8}; delivering ${resolution.branch} from its EXPEDITION_BRANCH_CREATED event.`
++      : resolution.source === "remoteScan"
++        ? `No executionBranch is recorded for ${id8}; delivering ${resolution.branch}, a remote ref naming ${id8}.`
++        : undefined
++  return {
++    branch: resolution.branch,
++    ...(resolution.source ? { source: resolution.source } : {}),
++    ...(note ? { note } : {}),
++    ...(resolution.fetchHint ? { fetchHint: resolution.fetchHint } : {}),
++  }
++}
++
+ /**
+  * `synth expedition deliver --id <id> [--remote origin] [--pr <ref>] [--no-push]`
+  * ADR-055 §2.6: deliver is what makes a finished branch reachable — push the
+@@ -4716,7 +4774,12 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
+       printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+       return
+     }
+-    const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
++    const resolvedBranch = await resolveDeliverBranch(
++      id,
++      expedition.executionBranch,
++      typeof flags.branch === "string" ? flags.branch : undefined,
++    )
++    const branch = resolvedBranch.branch
+     const tip = branch ? resolveCommit(process.cwd(), branch) : undefined
+     printJson({
+       status: "ok",
+@@ -4724,10 +4787,14 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
+       expeditionId: id,
+       expeditionStatus: expedition.status,
+       branch,
++      ...(resolvedBranch.source ? { branchSource: resolvedBranch.source } : {}),
+       tipCommit: tip,
+       remote,
+       wouldPush: !noPush && Boolean(branch && tip),
+-      note: "Dry-run: nothing pushed, no ledger event written",
++      note: resolvedBranch.note
++        ? `${resolvedBranch.note} Dry-run: nothing pushed, no ledger event written.`
++        : "Dry-run: nothing pushed, no ledger event written",
++      ...(resolvedBranch.fetchHint ? { fetchHint: resolvedBranch.fetchHint } : {}),
+       nextStep: `synth expedition deliver --id ${id}${branch ? "" : "  # create/start the expedition first"}`,
+     })
+     return
+@@ -4744,12 +4811,17 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
+     return
+   }
+ 
+-  const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
++  const resolvedBranch = await resolveDeliverBranch(
++    id,
++    expedition.executionBranch,
++    typeof flags.branch === "string" ? flags.branch : undefined,
++  )
++  const branch = resolvedBranch.branch
+   if (!branch) {
+     printError(`Expedition ${id} has no recorded execution branch to deliver.`, {
+       code: "NoExecutionBranch",
+       category: "validation",
+-      suggestion: `Name the branch explicitly (--branch <name>) or run 'synth expedition start --id ${id}' first.`,
++      suggestion: `Name the branch explicitly (--branch <name>) or run 'synth expedition start --id ${id}' first. Neither the ledger (EXPEDITION_BRANCH_CREATED) nor a remote ref names ${id.slice(0, 8)}.`,
+     })
+     return
+   }
+@@ -4796,18 +4868,25 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
+ 
+   const ledger = await flushPendingCeremony()
+   const after = deliveryState((await ctx.runtime.getState()).expeditions[id])
++  // The seal command is printed ready to paste: when the base branch already
++  // contains the delivered tip, name that commit instead of `<sha>`.
++  const integration = resolveIntegrationCandidate(process.cwd(), { tipCommit })
+   printJson({
+     status: "ok",
+     kind: "ExpeditionDelivered",
+     expeditionId: id,
+     branch,
++    ...(resolvedBranch.source ? { branchSource: resolvedBranch.source } : {}),
++    ...(resolvedBranch.note ? { note: resolvedBranch.note } : {}),
+     tipCommit,
+     ...(pushed ? { remote } : {}),
+     ...(pushDetail ? { pushDetail } : {}),
+     ...(typeof flags.pr === "string" ? { prRef: flags.pr } : {}),
+     deliveryPending: after.deliveryPending,
+     ...(ledger ? { ledger } : {}),
+-    nextStep: `synth expedition seal --id ${id} --merge-commit <sha>   (after the merge lands on the base branch)`,
++    nextStep: integration.mergeCommit
++      ? `synth expedition seal --id ${id} --merge-commit ${integration.mergeCommit}   (${integration.base} already contains the delivered tip)`
++      : `synth expedition seal --id ${id} --merge-commit <sha>   (after the merge lands on the base branch)`,
+   })
+ }
+ 
+diff --git a/src/ledger/branch.ts b/src/ledger/branch.ts
+index c86a79f..afe345f 100644
+--- a/src/ledger/branch.ts
++++ b/src/ledger/branch.ts
+@@ -9,6 +9,12 @@
+ //      (written by the first ceremony that had to infer one)
+ //   3. the attached checkout                       (inferred; always warned)
+ //
++// A branch named by 1 or 2 that does not exist *in this clone* (a fresh agent
++// session, or a value left behind by a branch that was merged and deleted)
++// falls back to `main`, then to the checkout, and says so in `warning`. Naming
++// a branch is still the answer; a stale name is not a reason to refuse every
++// ceremony with LEDGER_UNAVAILABLE.
++//
+ // A detached HEAD with no config and no record resolves to nothing, and every
+ // caller must treat that as a loud refusal — never as "commit where I stand".
+ // ============================================================
+@@ -31,6 +37,17 @@ export type LedgerBranchResolution = {
+ 
+ export const LEDGER_RECORD_PATH = [".synth", "data", "ledger.json"] as const
+ 
++/** Where each answer comes from, as a repo-relative path (for `from`). */
++const CONFIG_PATH = ".synth/config.yaml"
++const RECORD_PATH = LEDGER_RECORD_PATH.join("/")
++
++/**
++ * The branch ceremonies fall back to when the named one is absent from this
++ * clone. `main` is the canonical ledger branch (ADR-055 §2.9); the checkout is
++ * the last resort, and both are reported in the resolution warning.
++ */
++export const LEDGER_FALLBACK_BRANCH = "main"
++
+ function git(root: string, args: string[]): string | undefined {
+   try {
+     return execFileSync("git", args, { cwd: root, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }).trim()
+@@ -39,6 +56,13 @@ function git(root: string, args: string[]): string | undefined {
+   }
+ }
+ 
++/** Does `refs/heads/<branch>` exist in this clone? (Remote refs do not count.) */
++export function branchExistsLocally(root: string, branch: string): boolean {
++  if (!branch) return false
++  const resolved = git(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`])
++  return typeof resolved === "string" && resolved.length > 0
++}
++
+ /** The branch the operator's checkout is on (undefined when detached). */
+ export function currentBranch(root: string): string | undefined {
+   const head = git(root, ["symbolic-ref", "-q", "--short", "HEAD"])
+@@ -81,12 +105,39 @@ export function readRecordedLedgerBranch(root: string): LedgerBranchRecord {
+ export function resolveLedgerBranch(root: string): LedgerBranchResolution {
+   const configured = readConfiguredLedgerBranch(root)
+   if (configured) {
+-    return { branch: configured, source: "config", from: ".synth/config.yaml" }
++    if (branchExistsLocally(root, configured)) {
++      return { branch: configured, source: "config", from: CONFIG_PATH }
++    }
++    // A configured branch this clone does not have — a fresh agent session, or
++    // a stale value left behind by a branch that was merged and deleted — must
++    // not turn every ceremony into a loud LEDGER_UNAVAILABLE. Fall back to the
++    // canonical base branch (else the checkout) and say so in the warning.
++    const fallback = [LEDGER_FALLBACK_BRANCH, currentBranch(root)].find((name) => branchExistsLocally(root, name ?? ""))
++    if (fallback) {
++      return {
++        branch: fallback,
++        source: "config",
++        from: CONFIG_PATH,
++        warning: `git.ledgerBranch (${configured}) does not exist in this clone; committing ceremonies on ${fallback} instead. Fetch it ('git fetch origin ${configured}') or point git.ledgerBranch at a branch that exists.`,
++      }
++    }
++    // Nothing to fall back to: continue to the recorded branch / inference.
+   }
+ 
+   const record = readRecordedLedgerBranch(root)
+   if (record.branch) {
+-    return { branch: record.branch, source: "recorded", from: ".synth/data/ledger.json" }
++    if (branchExistsLocally(root, record.branch)) {
++      return { branch: record.branch, source: "recorded", from: RECORD_PATH }
++    }
++    const fallback = [LEDGER_FALLBACK_BRANCH, currentBranch(root)].find((name) => branchExistsLocally(root, name ?? ""))
++    if (fallback) {
++      return {
++        branch: fallback,
++        source: "recorded",
++        from: RECORD_PATH,
++        warning: `The recorded ledger branch (${record.branch}) does not exist in this clone; committing ceremonies on ${fallback} instead.`,
++      }
++    }
+   }
+ 
+   const current = currentBranch(root)
+diff --git a/src/ledger/delivery.ts b/src/ledger/delivery.ts
+index 1a77840..e124264 100644
+--- a/src/ledger/delivery.ts
++++ b/src/ledger/delivery.ts
+@@ -102,6 +102,260 @@ export function isAncestor(root: string, ancestor: string, descendant: string):
+   return git(root, ["merge-base", "--is-ancestor", ancestor, descendant]).ok
+ }
+ 
++/**
++ * True when this clone is shallow (`.git/shallow` grafts history). A shallow
++ * boundary hides parent links, so an ancestry proof that would pass on a full
++ * clone is *refused* here — the difference matters enough to say so.
++ */
++export function isShallowRepository(root: string): boolean {
++  const result = git(root, ["rev-parse", "--is-shallow-repository"])
++  return result.ok && result.out.trim() === "true"
++}
++
++/** How to undo a shallow graft, phrased as the command the operator runs. */
++export const UNSHALLOW_HINT = "git fetch origin main --unshallow"
++
++/**
++ * The hint appended to a refused verification when the refusal may be an
++ * artifact of a shallow clone rather than a real absence of the tip.
++ */
++function shallowHint(root: string): string | undefined {
++  if (!isShallowRepository(root)) return undefined
++  return `This clone is shallow, so parent links are grafted and ancestry cannot be proven. Deepen it, then re-run: ${UNSHALLOW_HINT} (or 'git fetch --deepen=1' for one level).`
++}
++
++// ------------------------------------------------------------
++// Delivery branch resolution — the "dull inbox"
++// ------------------------------------------------------------
++// `status` must print a deliver/seal command that *works* when pasted. That
++// means resolving the branch the same way an operator would have to: the
++// recorded execution branch, else the branch the ledger says was created, else
++// a remote ref that names the expedition. Never a bare `--id` that fails with
++// NoExecutionBranch, and never a branch name this clone cannot resolve.
++
++export type DeliveryBranchSource = "executionBranch" | "branchCreatedEvent" | "remoteScan"
++
++export type BranchCreatedEventLike = {
++  type?: string
++  timestamp?: number
++  payload?: Record<string, unknown> | undefined
++}
++
++export type DeliveryBranchResolution = {
++  /** A ref this clone can resolve — safe to paste after `--branch`. */
++  branch?: string
++  /** Where the answer came from, so the caller can say so. */
++  source?: DeliveryBranchSource
++  tipCommit?: string
++  /** The canonical branch name without the `origin/` prefix, when they differ. */
++  canonicalBranch?: string
++  /** Set when a name was found but nothing in this clone resolves it. */
++  unresolved?: string
++  /** The command that would make an unresolved branch resolvable. */
++  fetchHint?: string
++}
++
++/**
++ * The branch named by the newest `EXPEDITION_BRANCH_CREATED` event for an
++ * expedition. This is the fallback that matters: canonical replay projects
++ * `executionBranch` from `EXPEDITION_BRANCH_BOUND` only, so an expedition whose
++ * branch was auto-created (never declared) has no `executionBranch` even though
++ * the ledger knows the branch name.
++ */
++export function lastBranchCreatedBranch(
++  events: readonly BranchCreatedEventLike[] | undefined,
++  expeditionId: string,
++): string | undefined {
++  if (!Array.isArray(events) || !expeditionId) return undefined
++  let best: { branch: string; timestamp: number } | undefined
++  for (const event of events) {
++    if (event?.type !== "EXPEDITION_BRANCH_CREATED") continue
++    const payload = (event.payload ?? {}) as Record<string, unknown>
++    if (String(payload.expeditionId ?? "") !== expeditionId) continue
++    const branch = typeof payload.branch === "string" ? payload.branch : ""
++    if (branch.length === 0) continue
++    const timestamp = typeof event.timestamp === "number" ? event.timestamp : 0
++    // Events are not guaranteed ordered across partitions: newest timestamp
++    // wins, and a tie keeps the later entry.
++    if (!best || timestamp >= best.timestamp) best = { branch, timestamp }
++  }
++  return best?.branch
++}
++
++/** Remote-tracking refs (`origin/foo`), excluding the symbolic `origin/HEAD`. */
++export function listRemoteTrackingBranches(root: string): string[] {
++  const result = git(root, ["for-each-ref", "--format=%(refname:short)", "refs/remotes/"])
++  if (!result.ok || result.out.length === 0) return []
++  return result.out
++    .split("\n")
++    .map((line) => line.trim())
++    .filter((name) => name.length > 0 && !name.endsWith("/HEAD"))
++}
++
++/**
++ * Every ref in the clone, as `refname → object sha`, read with ONE git call.
++ *
++ * `synth status` resolves a branch per pending expedition; spawning git per
++ * name would make the briefing slower than the work it reports. The index keeps
++ * resolution in memory and keeps status read-only (no write-on-read).
++ */
++export type RefIndex = Map<string, string>
++
++export function buildRefIndex(root: string): RefIndex {
++  const index: RefIndex = new Map()
++  const result = git(root, ["for-each-ref", "--format=%(refname) %(objectname)"])
++  if (!result.ok || result.out.length === 0) return index
++  for (const line of result.out.split("\n")) {
++    const split = line.lastIndexOf(" ")
++    if (split <= 0) continue
++    index.set(line.slice(0, split), line.slice(split + 1))
++  }
++  return index
++}
++
++/**
++ * Resolve a ref name against an index using git's own lookup order
++ * (`<name>`, `refs/<name>`, `refs/tags/<name>`, `refs/heads/<name>`,
++ * `refs/remotes/<name>`, `refs/remotes/<name>/HEAD`).
++ */
++export function resolveFromRefIndex(index: RefIndex, name: string): string | undefined {
++  if (!name || index.size === 0) return undefined
++  const direct = index.get(name)
++  if (direct) return direct
++  for (const prefix of ["refs/", "refs/tags/", "refs/heads/", "refs/remotes/"]) {
++    const hit = index.get(`${prefix}${name}`)
++    if (hit) return hit
++  }
++  return index.get(`refs/remotes/${name}/HEAD`)
++}
++
++/** The remote-tracking short names (`origin/foo`) inside an index. */
++export function remoteBranchesFromIndex(index: RefIndex): string[] {
++  const names: string[] = []
++  for (const refname of index.keys()) {
++    if (!refname.startsWith("refs/remotes/")) continue
++    const short = refname.slice("refs/remotes/".length)
++    if (short.length === 0 || short.endsWith("/HEAD")) continue
++    names.push(short)
++  }
++  return names
++}
++
++/**
++ * Resolve the branch an expedition was delivered from, in the order an operator
++ * would search: recorded binding → branch-created event → a remote ref naming
++ * the expedition. Every candidate must resolve to a commit in *this* clone;
++ * a name that does not resolve is reported as unresolved with the fetch that
++ * would fix it, so the printed command is never a dead end.
++ *
++ * `remoteBranches` and `cache` exist so one `synth status` lists refs once and
++ * resolves each name once, however many expeditions are pending.
++ */
++export function resolveDeliveryBranch(
++  root: string,
++  options: {
++    expeditionId: string
++    executionBranch?: string
++    events?: readonly BranchCreatedEventLike[]
++    remoteBranches?: string[]
++    cache?: Map<string, string | undefined>
++    /** Pre-built ref index: resolve names in memory instead of spawning git. */
++    refs?: RefIndex
++  },
++): DeliveryBranchResolution {
++  const cache = options.cache ?? new Map<string, string | undefined>()
++  const tipOf = (name: string): string | undefined => {
++    if (!name) return undefined
++    if (cache.has(name)) return cache.get(name)
++    const tip = options.refs ? resolveFromRefIndex(options.refs, name) : resolveCommit(root, name)
++    cache.set(name, tip)
++    return tip
++  }
++
++  const id8 = String(options.expeditionId).slice(0, 8)
++  const candidates: Array<{ name: string; source: DeliveryBranchSource }> = []
++  if (options.executionBranch) candidates.push({ name: options.executionBranch, source: "executionBranch" })
++  const fromEvent = lastBranchCreatedBranch(options.events, options.expeditionId)
++  if (fromEvent) candidates.push({ name: fromEvent, source: "branchCreatedEvent" })
++  const remote =
++    options.remoteBranches ?? (options.refs ? remoteBranchesFromIndex(options.refs) : listRemoteTrackingBranches(root))
++  for (const name of remote) {
++    if (name.includes(id8)) candidates.push({ name, source: "remoteScan" })
++  }
++
++  let firstKnown: { name: string; source: DeliveryBranchSource } | undefined
++  for (const candidate of candidates) {
++    if (!firstKnown) firstKnown = candidate
++    const tip = tipOf(candidate.name)
++    const canonical = candidate.name.startsWith("origin/") ? candidate.name.slice("origin/".length) : undefined
++    if (tip) {
++      return {
++        branch: candidate.name,
++        source: candidate.source,
++        tipCommit: tip,
++        ...(canonical ? { canonicalBranch: canonical } : {}),
++      }
++    }
++    // A canonical name that only exists on origin still yields a working
++    // command once fetched: `origin/<name>` resolves as a ref.
++    if (candidate.source === "remoteScan") continue
++    const remoteTip = tipOf(`origin/${candidate.name}`)
++    if (remoteTip) {
++      return {
++        branch: `origin/${candidate.name}`,
++        source: candidate.source,
++        tipCommit: remoteTip,
++        canonicalBranch: candidate.name,
++      }
++    }
++  }
++
++  if (firstKnown) {
++    return {
++      branch: firstKnown.name,
++      source: firstKnown.source,
++      unresolved: firstKnown.name,
++      fetchHint: `git fetch origin ${firstKnown.name}`,
++    }
++  }
++  return {}
++}
++
++export type IntegrationCandidate = {
++  /** A commit in this clone that contains the delivered tip. */
++  mergeCommit?: string
++  /** The base ref the commit came from. */
++  base?: string
++}
++
++/**
++ * The merge commit to seal against, when the base branch already contains the
++ * delivered tip. Nothing is invented when it does not: the caller prints the
++ * `<sha>` placeholder rather than a commit that would fail verification.
++ */
++export function resolveIntegrationCandidate(
++  root: string,
++  options: {
++    tipCommit?: string
++    baseBranches?: readonly string[]
++    cache?: Map<string, string | undefined>
++    refs?: RefIndex
++  },
++): IntegrationCandidate {
++  if (!options.tipCommit) return {}
++  const cache = options.cache
++  for (const base of options.baseBranches ?? ["origin/main", "main"]) {
++    let resolved = cache?.has(base) ? cache.get(base) : undefined
++    if (resolved === undefined && !cache?.has(base)) {
++      resolved = options.refs ? resolveFromRefIndex(options.refs, base) : resolveCommit(root, base)
++      cache?.set(base, resolved)
++    }
++    if (!resolved) continue
++    if (isAncestor(root, options.tipCommit, resolved)) return { mergeCommit: resolved, base }
++  }
++  return {}
++}
++
+ export type PushResult = { ok: boolean; detail: string; pushed?: boolean }
+ 
+ /**
+@@ -131,28 +385,47 @@ export type SealVerification = {
+   tipCommit?: string
+   mergeCommit?: string
+   onBaseBranch?: boolean
++  /** Set when the refusal may be an artifact of a shallow clone. */
++  hint?: string
+ }
+ 
+ /**
+  * Verify a seal: the merge commit must exist, must contain the delivered tip as
+  * an ancestor, and must itself be reachable from the base branch when that ref
+  * exists locally.
++ *
++ * A refusal in a shallow clone names the shallow clone: the ancestry proof is
++ * only as good as the history present, and "does not contain the tip" is
++ * indistinguishable from "the parents were never fetched" unless we say so.
+  */
+ export function verifySeal(root: string, options: { tipCommit?: string; mergeCommit: string; baseBranch?: string }): SealVerification {
+   const mergeCommit = resolveCommit(root, options.mergeCommit)
+   if (!mergeCommit) {
+-    return { ok: false, detail: `Merge commit ${options.mergeCommit} does not exist in this repository` }
++    const hint = shallowHint(root)
++    return {
++      ok: false,
++      detail: `Merge commit ${options.mergeCommit} does not exist in this repository${hint ? `. ${hint}` : ""}`,
++      ...(hint ? { hint } : {}),
++    }
+   }
+   const tipCommit = options.tipCommit ? resolveCommit(root, options.tipCommit) : undefined
+   if (options.tipCommit && !tipCommit) {
+-    return { ok: false, detail: `Delivered tip ${options.tipCommit} does not exist in this repository`, mergeCommit }
++    const hint = shallowHint(root)
++    return {
++      ok: false,
++      detail: `Delivered tip ${options.tipCommit} does not exist in this repository${hint ? `. ${hint}` : ""}`,
++      mergeCommit,
++      ...(hint ? { hint } : {}),
++    }
+   }
+   if (tipCommit && !isAncestor(root, tipCommit, mergeCommit)) {
++    const hint = shallowHint(root)
+     return {
+       ok: false,
+-      detail: `Merge commit ${mergeCommit.slice(0, 8)} does not contain the delivered tip ${tipCommit.slice(0, 8)}`,
++      detail: `Merge commit ${mergeCommit.slice(0, 8)} does not contain the delivered tip ${tipCommit.slice(0, 8)}${hint ? `. ${hint}` : ""}`,
+       tipCommit,
+       mergeCommit,
++      ...(hint ? { hint } : {}),
+     }
+   }
+   let onBaseBranch: boolean | undefined
+diff --git a/tests/ledger-ceremony.test.js b/tests/ledger-ceremony.test.js
+index 2567692..0b48876 100644
+--- a/tests/ledger-ceremony.test.js
++++ b/tests/ledger-ceremony.test.js
+@@ -103,12 +103,43 @@ test("ledger ceremony: config names the ledger branch and wins over the record",
+       { branch: "main", source: "recorded" },
+     )
+ 
+-    // Config wins over the record.
++    // Config wins over the record. The named branch exists in this clone, so
++    // the answer is the configured name with nothing to warn about.
++    git(root, ["branch", "trunk-ledger"])
+     fs.writeFileSync(path.join(root, ".synth", "config.yaml"), "git:\n  ledgerBranch: trunk-ledger\n")
+     assert.deepEqual(
+       { branch: resolveLedgerBranch(root).branch, source: resolveLedgerBranch(root).source },
+       { branch: "trunk-ledger", source: "config" },
+     )
++    assert.equal(resolveLedgerBranch(root).warning, undefined, "a configured branch this clone has needs no warning")
++  } finally {
++    fs.rmSync(root, { recursive: true, force: true })
++  }
++})
++
++test("ledger ceremony: a named ledger branch missing from this clone falls back instead of refusing", () => {
++  const root = makeLedgerRepo()
++  try {
++    // The fresh-session case: config names a branch left behind by a session
++    // whose branch was merged and deleted, so this clone does not have it.
++    // Every ceremony used to fail LEDGER_UNAVAILABLE here.
++    fs.writeFileSync(path.join(root, ".synth", "config.yaml"), "git:\n  ledgerBranch: arena/previous-session\n")
++    const resolution = resolveLedgerBranch(root)
++    assert.equal(resolution.branch, "main", "falls back to the canonical ledger branch")
++    assert.equal(resolution.source, "config", "the answer still came from config")
++    assert.match(resolution.warning, /arena\/previous-session/, "the warning names the branch that is missing")
++    assert.match(resolution.warning, /main/, "and the branch it fell back to")
++
++    // A recorded branch that is missing falls back the same way.
++    fs.rmSync(path.join(root, ".synth", "config.yaml"))
++    fs.writeFileSync(
++      path.join(root, ".synth", "data", "ledger.json"),
++      JSON.stringify({ branch: "gone-after-merge", recordedAt: "2026-10-12T00:00:00.000Z" }) + "\n",
++    )
++    const fromRecord = resolveLedgerBranch(root)
++    assert.equal(fromRecord.branch, "main")
++    assert.equal(fromRecord.source, "recorded")
++    assert.match(fromRecord.warning, /gone-after-merge/)
+   } finally {
+     fs.rmSync(root, { recursive: true, force: true })
+   }
+diff --git a/tests/ledger-delivery.test.js b/tests/ledger-delivery.test.js
+index d48371b..a44a4cb 100644
+--- a/tests/ledger-delivery.test.js
++++ b/tests/ledger-delivery.test.js
+@@ -15,6 +15,14 @@ import path from "path"
+ import test from "node:test"
+ import { runSynth, parseJson } from "./helpers/cli-harness.js"
+ import { setupGitBackedProject, createAndApproveMission } from "./helpers/mission-lifecycle.js"
++import { makeTempDirSync } from "./helpers/workspace.js"
++import {
++  isShallowRepository,
++  lastBranchCreatedBranch,
++  resolveDeliveryBranch,
++  resolveIntegrationCandidate,
++  verifySeal,
++} from "../dist/ledger/delivery.js"
+ 
+ function git(root, args) {
+   return execFileSync("git", args, { cwd: root, encoding: "utf-8" }).trim()
+@@ -256,3 +264,213 @@ test("status: a finished expedition warns it is undelivered, then delivered-but-
+     fs.rmSync(projectDir, { recursive: true, force: true })
+   }
+ })
++
++// ============================================================
++// THE DULL INBOX — `status` prints commands that work when pasted
++// ============================================================
++// A fresh clone must not need three queries (status, show, and a grep of the
++// event stream for EXPEDITION_BRANCH_CREATED) to assemble two commands, and a
++// shallow clone must not report a true ancestry as a false refusal. These tests
++// pin the resolution order, the shallow hint, and the shape of the warning.
++// ============================================================
++
++/** A throwaway git repo on `main` with two commits, for the resolution tests. */
++function makeDeliveryRepo(prefix = "synth-delivery-unit-") {
++  const root = makeTempDirSync(prefix)
++  fs.writeFileSync(path.join(root, "README.md"), "# fixture\n")
++  execFileSync("git", ["init", "-b", "main", root], { stdio: "pipe" })
++  git(root, ["config", "user.email", "delivery@test"])
++  git(root, ["config", "user.name", "Delivery Test"])
++  git(root, ["add", "-A"])
++  git(root, ["commit", "-m", "c1"])
++  const first = git(root, ["rev-parse", "HEAD"])
++  fs.writeFileSync(path.join(root, "SECOND.md"), "second\n")
++  git(root, ["add", "-A"])
++  git(root, ["commit", "-m", "c2"])
++  return { root, first, second: git(root, ["rev-parse", "HEAD"]) }
++}
++
++test("delivery: verifySeal names a shallow clone and the fetch that fixes it", () => {
++  const { root, first, second } = makeDeliveryRepo()
++  const parentDir = makeTempDirSync("synth-delivery-shallow-")
++  const clone = path.join(parentDir, "clone")
++  try {
++    execFileSync("git", ["clone", "--depth", "1", `file://${root}`, clone], { stdio: "pipe" })
++    assert.equal(isShallowRepository(clone), true, "the depth-1 clone is shallow")
++    assert.equal(isShallowRepository(root), false, "the source repo is not")
++
++    // The parent commit is absent from a depth-1 clone, so the proof cannot be
++    // made — and the refusal must say that the clone, not history, is at fault.
++    const refused = verifySeal(clone, { tipCommit: first, mergeCommit: second })
++    assert.equal(refused.ok, false)
++    assert.match(refused.detail, /shallow/i, refused.detail)
++    assert.match(refused.hint, /git fetch origin main --unshallow/)
++
++    // The same proof succeeds in the full clone.
++    const full = verifySeal(root, { tipCommit: first, mergeCommit: second })
++    assert.equal(full.ok, true, full.detail)
++    assert.equal(full.hint, undefined)
++
++    // The hint is the fix: deepen, and the shallow clone proves it too.
++    execFileSync("git", ["fetch", "--deepen=1"], { cwd: clone, stdio: "pipe" })
++    const deepened = verifySeal(clone, { tipCommit: first, mergeCommit: second })
++    assert.equal(deepened.ok, true, deepened.detail)
++  } finally {
++    fs.rmSync(root, { recursive: true, force: true })
++    fs.rmSync(parentDir, { recursive: true, force: true })
++  }
++})
++
++test("delivery: resolveDeliveryBranch falls back from the record to the event to a remote ref", () => {
++  const { root } = makeDeliveryRepo()
++  const expeditionId = "abc12345deadbeef"
++  const branchName = "expedition/m1/revisit-testing-abc12345"
++  try {
++    git(root, ["branch", branchName])
++    const tip = git(root, ["rev-parse", branchName])
++    const events = [
++      { type: "EXPEDITION_BRANCH_CREATED", timestamp: 5, payload: { expeditionId, branch: "expedition/m1/older-abc12345" } },
++      { type: "EXPEDITION_BRANCH_CREATED", timestamp: 9, payload: { expeditionId, branch: branchName } },
++      { type: "EXPEDITION_CREATED", timestamp: 3, payload: { expedition: { id: expeditionId } } },
++    ]
++
++    // The newest branch-created event wins; other event types are ignored.
++    assert.equal(lastBranchCreatedBranch(events, expeditionId), branchName)
++    assert.equal(lastBranchCreatedBranch(events, "ffffffffffffffff"), undefined)
++
++    // 1. A recorded binding beats the event.
++    const bound = resolveDeliveryBranch(root, { expeditionId, executionBranch: "main", events })
++    assert.equal(bound.branch, "main")
++    assert.equal(bound.source, "executionBranch")
++
++    // 2. No binding: the ledger's branch-created event supplies the name — the
++    //    case that used to fail with NoExecutionBranch.
++    const fromEvent = resolveDeliveryBranch(root, { expeditionId, events })
++    assert.equal(fromEvent.branch, branchName)
++    assert.equal(fromEvent.source, "branchCreatedEvent")
++    assert.equal(fromEvent.tipCommit, tip)
++
++    // 3. Neither: a remote ref naming the expedition.
++    git(root, ["update-ref", `refs/remotes/origin/${branchName}`, tip])
++    const fromRemote = resolveDeliveryBranch(root, { expeditionId })
++    assert.equal(fromRemote.source, "remoteScan")
++    assert.equal(fromRemote.tipCommit, tip)
++
++    // 4. A recorded name this clone cannot resolve loses to one that can: the
++    //    point is a command that works, not fidelity to a stale binding.
++    const staleBinding = resolveDeliveryBranch(root, { expeditionId, executionBranch: "merged-and-deleted" })
++    assert.equal(staleBinding.branch, `origin/${branchName}`)
++    assert.equal(staleBinding.source, "remoteScan")
++    assert.equal(staleBinding.canonicalBranch, branchName, "the canonical name survives the origin/ form")
++
++    // A name nothing in this clone resolves is reported with the fetch that
++    // would fix it — never printed as a command that would fail.
++    const missing = resolveDeliveryBranch(root, { expeditionId: "beef1234beef1234", executionBranch: "merged-and-deleted" })
++    assert.equal(missing.branch, "merged-and-deleted")
++    assert.equal(missing.unresolved, "merged-and-deleted")
++    assert.equal(missing.fetchHint, "git fetch origin merged-and-deleted")
++    assert.equal(missing.tipCommit, undefined)
++
++    // Nothing known at all: no branch is invented.
++    assert.deepEqual(resolveDeliveryBranch(root, { expeditionId: "0000000000000000" }), {})
++  } finally {
++    fs.rmSync(root, { recursive: true, force: true })
++  }
++})
++
++test("delivery: resolveIntegrationCandidate names the base head that contains the tip, and nothing otherwise", () => {
++  const { root } = makeDeliveryRepo()
++  try {
++    git(root, ["checkout", "-q", "-b", "feat"])
++    fs.writeFileSync(path.join(root, "FEAT.md"), "feat\n")
++    git(root, ["add", "-A"])
++    git(root, ["commit", "-m", "feat: work"])
++    const tip = git(root, ["rev-parse", "HEAD"])
++
++    assert.deepEqual(
++      resolveIntegrationCandidate(root, { tipCommit: tip, baseBranches: ["main"] }),
++      {},
++      "main does not contain the tip yet, so nothing is named",
++    )
++    assert.deepEqual(resolveIntegrationCandidate(root, { baseBranches: ["main"] }), {}, "no tip, no guess")
++
++    git(root, ["checkout", "-q", "main"])
++    git(root, ["merge", "--no-ff", "-q", "-m", "Merge feat", "feat"])
++    assert.deepEqual(
++      resolveIntegrationCandidate(root, { tipCommit: tip, baseBranches: ["main"] }),
++      { mergeCommit: git(root, ["rev-parse", "HEAD"]), base: "main" },
++    )
++  } finally {
++    fs.rmSync(root, { recursive: true, force: true })
++  }
++})
++
++test("status: a pending expedition warns with copy-pasteable commands, and deliver works bare", async () => {
++  const projectDir = await setupGitBackedProject("synth-delivery-inbox-")
++  try {
++    const { missionId } = await createAndApproveMission(projectDir, {
++      subject: "Inbox Mission",
++      purpose: "Prove status prints working commands",
++      returnGateContext: true,
++    })
++    const branch = git(projectDir, ["rev-parse", "--abbrev-ref", "HEAD"])
++
++    const created = runSynth(
++      ["expedition", "create", "--mission", missionId, "--subject", "Inbox Expedition", "--goal", "Prove the inbox"],
++      projectDir,
++    )
++    assert.equal(created.status, 0, created.stderr)
++    const expeditionId = parseJson(created.stdout).draftId
++    assert.equal(runSynth(["expedition", "approve", "--draft-id", expeditionId], projectDir).status, 0)
++
++    // Declare the branch (ADR-056) so the record carries it. This is what a
++    // fresh session has, and what `deliver --id <id>` needs to work bare.
++    const committed = runSynth(
++      ["expedition", "commit", "--proposal-id", expeditionId, "--branch", branch, "--no-create"],
++      projectDir,
++    )
++    assert.equal(committed.status, 0, committed.stderr)
++    const started = runSynth(["expedition", "start", "--id", expeditionId, "--branch", branch, "--no-create"], projectDir)
++    assert.equal(started.status, 0, started.stderr)
++
++    fs.writeFileSync(path.join(projectDir, "INBOX.md"), "inbox payload\n")
++    git(projectDir, ["add", "INBOX.md"])
++    git(projectDir, ["commit", "-m", "feat: inbox payload"])
++    const finished = runSynth(["expedition", "finish", "--id", expeditionId, "--note", "inbox test"], projectDir)
++    assert.equal(finished.status, 0, finished.stderr)
++
++    const warning = parseBriefing(runSynth(["status"], projectDir).stdout).warnings.find(
++      (w) => w.kind === "delivery-pending",
++    )
++    assert.ok(warning, "the finished expedition warns")
++    assert.ok(Array.isArray(warning.commands), `the warning carries commands, not prose to parse: ${warning.remediation}`)
++    assert.equal(warning.commands[0], `synth expedition deliver --id ${expeditionId} --branch ${branch} --no-push`)
++    assert.match(warning.commands[1], new RegExp(`^synth expedition seal --id ${expeditionId} --merge-commit \\S+$`))
++
++    // Whatever commit the seal command names must really contain the tip.
++    const named = warning.commands[1].split("--merge-commit ")[1]
++    if (named !== "<sha>") {
++      const contains = (() => {
++        try {
++          execFileSync("git", ["merge-base", "--is-ancestor", git(projectDir, ["rev-parse", branch]), named], {
++            cwd: projectDir,
++            stdio: "pipe",
++          })
++          return true
++        } catch {
++          return false
++        }
++      })()
++      assert.equal(contains, true, `${named} does not contain the delivered tip`)
++    }
++
++    // The printed deliver command works as printed — bare, with no --branch.
++    const delivered = runSynth(["expedition", "deliver", "--id", expeditionId, "--no-push"], projectDir)
++    assert.equal(delivered.status, 0, delivered.stderr)
++    const deliveredJson = parseJson(delivered.stdout)
++    assert.equal(deliveredJson.branch, branch)
++    assert.equal(deliveredJson.branchSource, "executionBranch")
++  } finally {
++    fs.rmSync(projectDir, { recursive: true, force: true })
++  }
++})
