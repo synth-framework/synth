@@ -1,0 +1,26 @@
+test:verify-engine                    PASS  (10/10, incl. 5 new event-log-visibility tests)
+test:first-operator-experience        PASS
+test:synth-cli                        PASS
+test:replay                           PASS
+test:replay-graph-integrity           PASS
+test:graph-integrity                  PASS
+test:explain-observability            PASS
+test:installer-verify                 PASS
+node --test event-log-query           PASS  10/10
+node --test discovery-replay          PASS  9/9
+node --test replay-verifier-status    PASS  3/3
+node --test event-log-lineage         PASS  1/1
+node --test initialization-replay     PASS  1/1
+
+Pre-existing failures (identical on stashed clean baseline; not caused by this change):
+node --test lifecycle-dry-run         FAIL  0/4   stateDelta "unknown -> approved"
+node --test first-contact-verify      FAIL  0/1   missing dist export RuleBasedCapabilityVerifier
+node --test first-contact-replay      FAIL  0/1   state divergence in materialized replay
+
+Repo-level:
+synth verify      ok   {"total":6,"pass":6,"fail":0,"warn":0,"skipped":0}  ReplayIntegrity pass (449 events)
+synth checkpoint  ok   steps.replay "Event log consistent (449 events, segmented layout)"
+synth doctor      ok   projectHealth.replay + eventChain both truthful with counts
+synth log         ok   layout segmented, total 449 (was: "No event log found ... run synth init")
+synth validate --dry-run  ok  ValidationPlan
+npm run build     0 TypeScript errors

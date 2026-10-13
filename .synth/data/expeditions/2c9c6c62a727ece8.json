@@ -1,0 +1,56 @@
+{
+  "id": "2c9c6c62a727ece8",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Verification sees the whole event log",
+  "goal": "The framework integrity evidence is vacuous on any repository whose event log has been chunked. src/verification/context.ts:44,62 computes `hasEventLog = migratedEvents.length > 0 || await pathExists(eventLogPath)` where eventLogPath is sdk.paths.eventLogFile(root) - the legacy single file .synth/data/event-log.jsonl. This repository log lives at .synth/data/event-stream/partition-<n>/segment-XXXX.jsonl (four partitions, 442 events), the layout documented at src/runtime/governance-resolver.ts:84 and read by SegmentStore (src/infra/event-store.ts:325). So hasEventLog is false, and in order: verification/checks.ts:44 returns ReplayIntegrity \"pass\" with the message \"No event log present; replay integrity is vacuously satisfied\"; checks.ts:117 and checks.ts:386 skip their event-log-gated assertions; verification/engine.ts:29 skips replay entirely; and cli/synth.ts:862-869 (verifyReplayHealth) reports \"No event log present; replay skipped\" inside `synth checkpoint`. At the same moment `synth explain replay` reads the partitioned store correctly and reports 442 events, consistent, chain valid. The two disagree and the disagreement is invisible: the check whose only job is proving the ledger is intact reports success without ever looking at it. Every green validate, govern and full-govern run on a chunked repository - including the one that certified PR #343 - carried that vacuous pass. The same legacy-path assumption is spread across at least seven further call sites: cli/bootstrap-apply.ts:235, cli/explain-observability.ts:110, cli/explain-paths.ts:57, cli/explain-replay-light.ts:49, cli/first-contact.ts:746, 780 and 826. Two complications make this more than a one-line fix. First, THREE layouts coexist in the codebase: the legacy single file, event-stream/partition-<n>.jsonl (still implemented by PartitionStore.filePath at event-store.ts:161-162) and the current event-stream/partition-<n>/segment-XXXX.jsonl - so the codebase carries two contradictory ideas of what a partition is. Second, the vocabulary cannot express the truth: verification/types.ts:14 declares `CheckStatus = \"pass\" | \"fail\" | \"warn\"` with no skipped value, which is precisely why an absent log is reported as a pass instead of as a non-result. Outcome required: (1) ONE authority for where the event log is and whether there is one - a single resolver recognising all three layouts and returning present, layout, paths and eventCount - consumed by verification/context, verifyReplayHealth and every call site listed above; after this, no module may construct or test the legacy path directly. (2) A vacuous pass becomes impossible: CheckStatus gains `skipped` carrying a structured reason (the same shape EXP-TEST-004 proposes for test skips), ReplayIntegrity reports skipped with reason no-event-log when there is genuinely no log, and reports the eventCount it actually replayed when there is one. (3) `synth checkpoint` replay step names the layout and the event count verified, and can never again print \"No event log present\" for a repository holding 442 events. (4) PartitionStore stale partition-<n>.jsonl naming is either reconciled with the segment layout or explicitly marked legacy-read-only, so two contradictory partition layouts stop shipping side by side. (5) Tests pin all three layouts: a segment-partitioned ledger must yield a ReplayIntegrity result naming its eventCount; a legacy single-file ledger must still verify; an empty project must report skipped rather than pass; and a regression guard must fail if any module reintroduces a direct legacy-path existence check. Acceptance: on this repository `synth checkpoint` and `synth validate` report replay over 442 events instead of skipping; ReplayIntegrity and `explain replay` agree; and no verification check is able to report pass without having read the log.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/verification/**",
+      "src/cli/synth.ts",
+      "src/cli/bootstrap-apply.ts",
+      "src/cli/explain-observability.ts",
+      "src/cli/explain-paths.ts",
+      "src/cli/explain-replay-light.ts",
+      "src/cli/first-contact.ts",
+      "src/infra/event-store.ts",
+      "src/infra/index.ts",
+      "src/sdk/**",
+      "src/runtime/governance-resolver.ts",
+      "tests/**"
+    ],
+    "identity": {
+      "agentId": "synth-cli-5598",
+      "sessionId": "f4c28888-9f0f-42ca-81b6-6854e3d42ef2",
+      "approvalMode": "autonomous",
+      "issuedAt": 447
+    },
+    "refinementId": "fa4896cd841daec3",
+    "refinementNote": "CORRECTION to the drafted goal, recorded during implementation as required by the append-only ledger. The goal asserted that verification/checks.ts:44 returns a vacuous ReplayIntegrity pass on this repository and that every green validate/govern/full-govern run carried it. That is FALSE and was measured wrong. buildVerificationContext (src/verification/context.ts:53-63) already builds the partition-aware store: createInfra returns a PartitionedEventStore, eventStore.loadAll() returns 448 events here, hasEventLog is true, and `synth verify` reports ReplayIntegrity pass with the message 'Chain valid, replay consistent, graph valid (448 events)'. All six checks pass on real evidence. What IS true, and is the defect this expedition fixes: (1) verifyReplayHealth (src/cli/synth.ts:862-869) tests only sdk.paths.eventLogFile(root) - the legacy single file - so `synth checkpoint` reports 'No event log present; replay skipped' for a ledger holding 448 events; (2) the same legacy-path-only assumption is served to operators and agents by explain paths, explain observability, explain replay-light, first-contact (746, 780, 826) and bootstrap-apply:235, none of which mention the event-stream layout that actually exists on disk; (3) a genuinely empty project still reports ReplayIntegrity as pass rather than as a non-result, because CheckStatus (verification/types.ts:14) has no skipped value; (4) three log layouts coexist with no single resolver. Scope narrows accordingly: the verification engine is NOT broken and must not be rewritten; the presence-and-location question is answered in seven places by one wrong path, and that is what gets unified.",
+    "refinementAt": 448
+  },
+  "createdAt": 442,
+  "updatedAt": 450,
+  "executionBranch": "arena/841cc45d-synth",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/2c9c6c62a727ece8/git-diff.patch",
+      "hash": "4996bb34ef1f92c3984daf89466afa20a79f08e266d06ebb1575377dea510224"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/2c9c6c62a727ece8/test-results.txt",
+      "hash": "4ba51d1fce1f1d3c1ec447f03d0e1b3aa18ca9e30322ce4acde209b311c90496"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/2c9c6c62a727ece8/attachments/evidence-2c9c6c62.md",
+      "hash": "27201f25ddbf931c0233e51ed8c6d3c30faab85a40a9a35e5d4a98590b3f7081"
+    }
+  ]
+}

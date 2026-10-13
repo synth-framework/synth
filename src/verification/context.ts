@@ -7,6 +7,7 @@
 import fs from "fs/promises"
 import path from "path"
 import { createInfra } from "../infra/index.js"
+import { locateEventLog } from "../infra/event-store.js"
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
 import { listDecisions } from "../mission-studio/decision-log.js"
@@ -59,7 +60,12 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
   const checkpointStore = infra.checkpointStore
 
   const migratedEvents = await eventStore.loadAll()
-  const hasEventLog = migratedEvents.length > 0 || (await pathExists(eventLogPath))
+  // Presence is answered by the single event-log authority rather than a private
+  // path test: a chunked ledger has no legacy monolithic file, so testing that
+  // path alone reports "no log" for a project holding hundreds of events. What
+  // the store actually loaded remains the ground truth.
+  const located = locateEventLog(cwd)
+  const hasEventLog = migratedEvents.length > 0 || located.present
 
   const verifier = createReplayVerifier(eventStore, stateStore)
 
@@ -93,6 +99,7 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
     dataDir: rootDataDir,
     hasManifest,
     hasEventLog,
+    eventLogLayout: located.layout,
     eventStore,
     stateStore,
     checkpointStore,

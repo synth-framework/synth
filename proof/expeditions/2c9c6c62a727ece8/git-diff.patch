@@ -1,0 +1,709 @@
+diff --git a/src/cli/synth.ts b/src/cli/synth.ts
+index ef25f35..4d0f0f9 100644
+--- a/src/cli/synth.ts
++++ b/src/cli/synth.ts
+@@ -24,6 +24,7 @@ import { createFilesystemInitializationAdapter } from "../adapters/filesystem-in
+ import { createDefaultAdapterCatalog } from "../adapters/adapter-catalog.js"
+ import { detectRecommendedAdapters } from "./detect-adapters.js"
+ import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
++import { locateEventLog } from "../infra/event-store.js"
+ import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
+ import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
+ import {
+@@ -863,8 +864,12 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
+   try {
+     const root = sdk.workspace.root()
+     await sdk.paths.ensureDataDir(root)
+-    const logPath = sdk.paths.eventLogFile(root)
+-    if (!(await sdk.files.exists(logPath))) {
++    // One authority for "is there a log, and where". Testing only the legacy
++    // monolithic path made this report "No event log present; replay skipped"
++    // for a ledger whose events live in the chunked event-stream store - an
++    // ok:true that certified nothing while 448 events went unexamined.
++    const located = locateEventLog(root)
++    if (!located.present) {
+       return { ok: true, detail: "No event log present; replay skipped" }
+     }
+     const ctx = await bootstrap({
+@@ -881,7 +886,7 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
+     return {
+       ok: result.consistent,
+       detail: result.consistent
+-        ? `Event log consistent (${result.eventCount} events)`
++        ? `Event log consistent (${result.eventCount} events, ${located.layout} layout)`
+         : `Replay inconsistent: ${result.explanation}`,
+       ...(result.consistent ? {} : { nextStep: "Run 'synth explain replay' to diagnose the inconsistency, then repair or replay from a known-good snapshot." }),
+     }
+@@ -898,13 +903,25 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
+   try {
+     const root = sdk.workspace.root()
+     await sdk.paths.ensureDataDir(root)
+-    const logPath = sdk.paths.eventLogFile(root)
+-    if (!(await sdk.files.exists(logPath))) {
++    const located = locateEventLog(root)
++    if (!located.present) {
+       return { ok: true, detail: "No event log present; chain skipped" }
+     }
+-    const events = await sdk.events.readEvents(root)
++    // sdk.events.readEvents reads the chunked store. A project that still holds
++    // only the legacy monolithic file would come back empty, which is the same
++    // lie as the guard above, so read that layout directly - as a pure read, no
++    // migration write from a health check.
++    const events = located.layout === "legacy-file"
++      ? (await fs.readFile(located.legacyPath, "utf-8"))
++          .split("\n")
++          .filter((line) => line.trim().length > 0)
++          .map((line) => JSON.parse(line) as { previousHash: string; eventHash: string })
++      : await sdk.events.readEvents(root)
+     if (events.length === 0) {
+-      return { ok: true, detail: "Event log is empty" }
++      return {
++        ok: true,
++        detail: `Event log is empty (${located.layout} layout, ${located.paths.length} file(s) present)`,
++      }
+     }
+     let previousHash = "genesis"
+     for (let i = 0; i < events.length; i++) {
+@@ -918,7 +935,7 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
+       }
+       previousHash = event.eventHash
+     }
+-    return { ok: true, detail: `${events.length} event(s) chained` }
++    return { ok: true, detail: `${events.length} event(s) chained (${located.layout} layout)` }
+   } catch (err) {
+     return {
+       ok: false,
+@@ -2768,20 +2785,37 @@ async function cmdLogHelp() {
+ }
+ 
+ async function cmdLog(flags: Record<string, string | boolean>) {
+-  const logPath = sdk.paths.eventLogFile(process.cwd())
+-  let raw = ""
+-  try {
+-    raw = await fs.readFile(logPath, "utf-8")
+-  } catch (err) {
+-    const code = (err as NodeJS.ErrnoException).code
+-    if (code === "ENOENT") {
+-      printError(
+-        `No event log found at ${logPath}. Run 'synth init' or 'synth bootstrap' first.`,
+-        { nextStep: "synth bootstrap . --approve" },
+-      )
+-      return
++  // One authority for "is there a log, and where" (EXP 2c9c6c62). This verb read
++  // only the legacy monolithic file, so on any chunked project it told the
++  // operator their ledger did not exist and to re-bootstrap it - while the
++  // events were sitting in <data>/event-stream/.
++  const located = locateEventLog(process.cwd())
++  if (!located.present) {
++    printError(
++      `No event log found (looked for the chunked store at ${located.streamDir} and the legacy file at ${located.legacyPath}). Run 'synth init' or 'synth bootstrap' first.`,
++      { nextStep: "synth bootstrap . --approve" },
++    )
++    return
++  }
++  // The legacy layout is still read line-by-line so offsets and malformed-line
++  // skipping behave exactly as before. Chunked layouts must go through the
++  // store: partitions are routed by aggregate key, so concatenating segment
++  // files is not global log order and every `offset` would lie.
++  let raw: string | null = null
++  if (located.layout === "legacy-file") {
++    try {
++      raw = await fs.readFile(located.legacyPath, "utf-8")
++    } catch (err) {
++      const code = (err as NodeJS.ErrnoException).code
++      if (code === "ENOENT") {
++        printError(
++          `No event log found at ${located.legacyPath}. Run 'synth init' or 'synth bootstrap' first.`,
++          { nextStep: "synth bootstrap . --approve" },
++        )
++        return
++      }
++      throw err
+     }
+-    throw err
+   }
+ 
+   const expeditionId = typeof flags.expedition === "string" ? flags.expedition : typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : undefined
+@@ -2801,14 +2835,21 @@ async function cmdLog(flags: Record<string, string | boolean>) {
+     return
+   }
+ 
+-  const lines = raw.split("\n").filter(Boolean)
+   const events: Array<SynthEvent & { offset: number }> = []
+-  for (let i = 0; i < lines.length; i++) {
+-    try {
+-      const event = JSON.parse(lines[i]) as SynthEvent
+-      events.push({ ...event, offset: i + 1 })
+-    } catch {
+-      // Skip malformed lines; they cannot be attributed safely.
++  if (raw !== null) {
++    const lines = raw.split("\n").filter(Boolean)
++    for (let i = 0; i < lines.length; i++) {
++      try {
++        const event = JSON.parse(lines[i]) as SynthEvent
++        events.push({ ...event, offset: i + 1 })
++      } catch {
++        // Skip malformed lines; they cannot be attributed safely.
++      }
++    }
++  } else {
++    const all = await sdk.events.readEvents(process.cwd())
++    for (let i = 0; i < all.length; i++) {
++      events.push({ ...all[i], offset: i + 1 })
+     }
+   }
+ 
+@@ -2846,6 +2887,7 @@ async function cmdLog(flags: Record<string, string | boolean>) {
+   printJson({
+     status: "ok",
+     kind: "EventLogQuery",
++    layout: located.layout,
+     total: events.length,
+     matched: filtered.length,
+     returned: page.length,
+@@ -4059,7 +4101,7 @@ async function cmdMissionDelete(flags: Record<string, string | boolean>) {
+         type: "MISSION_DELETED",
+         payload: { id },
+       },
+-      verifyResult: { pass: 0, fail: 0, warn: 0 },
++      verifyResult: { pass: 0, fail: 0, warn: 0, skipped: 0 },
+       stateDelta: `mission ${id} removed from governance state`,
+     })
+     return
+@@ -6515,7 +6557,7 @@ async function runLifecycleDryRun(
+   status: "ok"
+   kind: "LifecycleDryRun"
+   wouldAppend: { type: string; payload: Record<string, unknown> }
+-  verifyResult: { pass: number; fail: number; warn: number }
++  verifyResult: { pass: number; fail: number; warn: number; skipped: number }
+   stateDelta: string
+ }> {
+   const state = await ctx.runtime.getState()
+@@ -6526,6 +6568,9 @@ async function runLifecycleDryRun(
+   const pass = checks.filter((c: any) => c.status === "ok" || c.status === "pass").length
+   const fail = checks.filter((c: any) => c.status === "error" || c.status === "fail").length
+   const warn = checks.filter((c: any) => c.status === "warning" || c.status === "warn").length
++  // A check that could not run is reported as such instead of silently
++  // shrinking the pass count (EXP 2c9c6c62).
++  const skipped = checks.filter((c: any) => c.status === "skipped").length
+ 
+   return {
+     status: "ok",
+@@ -6534,7 +6579,7 @@ async function runLifecycleDryRun(
+       type: input.eventType,
+       payload: input.payload,
+     },
+-    verifyResult: { pass, fail, warn },
++    verifyResult: { pass, fail, warn, skipped },
+     stateDelta: input.targetStatus
+       ? `expedition ${input.expeditionId} status: ${beforeStatus} → ${input.targetStatus}`
+       : `expedition ${input.expeditionId} metadata updated (${input.eventType})`,
+diff --git a/src/infra/event-store.ts b/src/infra/event-store.ts
+index 97de4fe..4d169c0 100644
+--- a/src/infra/event-store.ts
++++ b/src/infra/event-store.ts
+@@ -3,6 +3,7 @@
+ // ============================================================
+ 
+ import { promises as fs } from "fs"
++import { existsSync, readdirSync, statSync } from "fs"
+ import os from "os"
+ import path from "path"
+ import type { SynthEvent, PartitionedEvent } from "../types/index.js"
+@@ -12,6 +13,100 @@ import { dataDir } from "../sdk/paths/index.js"
+ const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
+ const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
+ 
++// ------------------------------------------------------------
++// Event-log location: ONE authority for "is there a log, and where"
++// ------------------------------------------------------------
++// Three layouts exist in the wild, and callers used to guess among them:
++//
++//   1. segmented        <data>/event-stream/partition-<n>/segment-XXXX.jsonl  (current)
++//   2. partitioned-flat <data>/event-stream/partition-<n>.jsonl               (PartitionStore)
++//   3. legacy-file      <data>/event-log.jsonl                                (pre-chunking)
++//
++// Testing only (3) is what made `synth checkpoint` report "No event log present;
++// replay skipped" for a ledger holding 448 events: the events were in (1), and
++// the check was looking at a path that has not existed since the log was
++// chunked. Presence and location are answered here and nowhere else. Callers
++// that need to *read* events still go through the store (which migrates a legacy
++// file into the chunked layout); callers that need to *know whether a log
++// exists, and in which layout* use locateEventLog.
++//
++// Note: the EVENT_LOG_FILE / EVENT_STREAM_DIR constants above are bound to
++// process.cwd() at module load. locateEventLog takes the root explicitly so a
++// caller inspecting another project (or a fixture) gets that project's answer.
++
++/** Which of the three on-disk event-log layouts a project actually uses. */
++export type EventLogLayout = "segmented" | "partitioned-flat" | "legacy-file" | "none"
++
++export type EventLogLocation = {
++  /** True when any layout holds events. */
++  present: boolean
++  layout: EventLogLayout
++  /** Absolute paths holding events for `layout` (segments, partitions, or the legacy file). */
++  paths: string[]
++  /** The legacy monolithic path, whether or not it exists. Reported so callers can say what they looked for. */
++  legacyPath: string
++  /** Directory of the chunked store. */
++  streamDir: string
++}
++
++/**
++ * Resolve where a project's event log lives, across all three layouts.
++ *
++ * Never throws: a missing or unreadable directory yields `layout: "none"`.
++ * Precedence is segmented > partitioned-flat > legacy-file, so a project that
++ * has been migrated reports the layout it actually reads from, not the file it
++ * was migrated from.
++ */
++export function locateEventLog(root: string): EventLogLocation {
++  const data = dataDir(root)
++  const legacyPath = path.join(data, "event-log.jsonl")
++  const streamDir = path.join(data, "event-stream")
++
++  const segments: string[] = []
++  const flat: string[] = []
++  let entries: string[] = []
++  try {
++    entries = readdirSync(streamDir)
++  } catch {
++    entries = []
++  }
++  for (const entry of entries) {
++    const full = path.join(streamDir, entry)
++    let isDir = false
++    try {
++      isDir = statSync(full).isDirectory()
++    } catch {
++      continue
++    }
++    if (isDir) {
++      if (!/^partition-\d+$/.test(entry)) continue
++      let segs: string[] = []
++      try {
++        segs = readdirSync(full)
++      } catch {
++        segs = []
++      }
++      for (const seg of segs) {
++        if (seg.endsWith(".jsonl")) segments.push(path.join(full, seg))
++      }
++    } else if (/^partition-\d+\.jsonl$/.test(entry)) {
++      flat.push(full)
++    }
++  }
++
++  const base = { legacyPath, streamDir }
++  if (segments.length > 0) {
++    return { present: true, layout: "segmented", paths: segments.sort(), ...base }
++  }
++  if (flat.length > 0) {
++    return { present: true, layout: "partitioned-flat", paths: flat.sort(), ...base }
++  }
++  if (existsSync(legacyPath)) {
++    return { present: true, layout: "legacy-file", paths: [legacyPath], ...base }
++  }
++  return { present: false, layout: "none", paths: [], ...base }
++}
++
+ /** Module-private authorization token for EventStore writes.
+  *  Only createGuardedEventStore can obtain it, ensuring writes flow
+  *  through the single mutation authority.
+@@ -158,6 +253,16 @@ export class PartitionStore {
+     await fs.mkdir(this.baseDir, { recursive: true })
+   }
+ 
++  /**
++   * Flat per-partition file path: <baseDir>/partition-<p>.jsonl
++   *
++   * LEGACY READ PATH. The current write layout is
++   * <baseDir>/partition-<p>/segment-XXXX.jsonl (SegmentStore, see the class
++   * comment below), so this naming survives only to read pre-segmentation
++   * stores. locateEventLog recognises both and reports which one a project
++   * actually uses - do not test this path's existence directly to decide
++   * whether an event log is present.
++   */
+   private filePath(partition: number): string {
+     return path.join(this.baseDir, `partition-${partition}.jsonl`)
+   }
+diff --git a/src/verification/checks.ts b/src/verification/checks.ts
+index 512af6b..cc6d8c1 100644
+--- a/src/verification/checks.ts
++++ b/src/verification/checks.ts
+@@ -14,6 +14,7 @@ import type {
+   VerificationCheckResult,
+   VerificationViolation,
+   VerificationContext,
++  CheckStatus,
+ } from "./types.js"
+ import { formatWarningMessage } from "./warning-catalog.js"
+ 
+@@ -26,11 +27,12 @@ function v(
+ 
+ function result(
+   name: string,
+-  status: "pass" | "fail" | "warn",
++  status: CheckStatus,
+   message: string,
+   violations: VerificationViolation[] = [],
++  extra: Partial<VerificationCheckResult> = {},
+ ): VerificationCheckResult {
+-  return { name, status, message, violations }
++  return { name, status, message, violations, ...extra }
+ }
+ 
+ /**
+@@ -41,7 +43,15 @@ function result(
+  */
+ const checkReplayIntegrity: VerificationCheck = async (ctx) => {
+   if (!ctx.hasEventLog) {
+-    return result("ReplayIntegrity", "pass", "No event log present; replay integrity is vacuously satisfied.")
++    // Not a pass, and not "vacuously satisfied": nothing was examined. An empty
++    // project reports a skipped check so the summary cannot read as verified.
++    return result(
++      "ReplayIntegrity",
++      "skipped",
++      "No event log present (checked the chunked event-stream store and the legacy monolithic file); replay integrity was not checked.",
++      [],
++      { skippedReason: "no-event-log" },
++    )
+   }
+ 
+   const r = ctx.replayResult
+diff --git a/src/verification/context.ts b/src/verification/context.ts
+index b8fc837..fd666de 100644
+--- a/src/verification/context.ts
++++ b/src/verification/context.ts
+@@ -7,6 +7,7 @@
+ import fs from "fs/promises"
+ import path from "path"
+ import { createInfra } from "../infra/index.js"
++import { locateEventLog } from "../infra/event-store.js"
+ import { createReplayVerifier } from "../core/replay-verifier.js"
+ import { createFileSystemSnapshotStore } from "../mission-studio/snapshot-store.js"
+ import { listDecisions } from "../mission-studio/decision-log.js"
+@@ -59,7 +60,12 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
+   const checkpointStore = infra.checkpointStore
+ 
+   const migratedEvents = await eventStore.loadAll()
+-  const hasEventLog = migratedEvents.length > 0 || (await pathExists(eventLogPath))
++  // Presence is answered by the single event-log authority rather than a private
++  // path test: a chunked ledger has no legacy monolithic file, so testing that
++  // path alone reports "no log" for a project holding hundreds of events. What
++  // the store actually loaded remains the ground truth.
++  const located = locateEventLog(cwd)
++  const hasEventLog = migratedEvents.length > 0 || located.present
+ 
+   const verifier = createReplayVerifier(eventStore, stateStore)
+ 
+@@ -93,6 +99,7 @@ export async function buildVerificationContext(cwd: string): Promise<Verificatio
+     dataDir: rootDataDir,
+     hasManifest,
+     hasEventLog,
++    eventLogLayout: located.layout,
+     eventStore,
+     stateStore,
+     checkpointStore,
+diff --git a/src/verification/engine.ts b/src/verification/engine.ts
+index 8ac1ac3..e2826f4 100644
+--- a/src/verification/engine.ts
++++ b/src/verification/engine.ts
+@@ -57,6 +57,7 @@ export async function runVerification(cwd: string): Promise<VerificationReport>
+     pass: checks.filter((c) => c.status === "pass").length,
+     fail: checks.filter((c) => c.status === "fail").length,
+     warn: checks.filter((c) => c.status === "warn").length,
++    skipped: checks.filter((c) => c.status === "skipped").length,
+   }
+ 
+   const hasFailure = checks.some((c) => c.status === "fail")
+diff --git a/src/verification/types.ts b/src/verification/types.ts
+index 9706f8f..63562b5 100644
+--- a/src/verification/types.ts
++++ b/src/verification/types.ts
+@@ -5,13 +5,21 @@
+ // ============================================================
+ 
+ import type { ReplayCheckResult } from "../core/replay-verifier.js"
+-import type { EventStore } from "../infra/event-store.js"
++import type { EventStore, EventLogLayout } from "../infra/event-store.js"
+ import type { IStateStore } from "../infra/state-store.js"
+ import type { ICheckpointStore } from "../infra/checkpoint-store.js"
+ 
+ export type Severity = "error" | "warning" | "info"
+ 
+-export type CheckStatus = "pass" | "fail" | "warn"
++/**
++ * Outcome of a verification check.
++ *
++ * "skipped" means the check could not run because its subject does not exist
++ * (no event log to replay). It is deliberately NOT a pass: a check that never
++ * examined anything certifies nothing, and folding that into `pass` is how an
++ * unverified project came to look verified.
++ */
++export type CheckStatus = "pass" | "fail" | "warn" | "skipped"
+ 
+ export type VerificationViolation = {
+   message: string
+@@ -27,6 +35,8 @@ export type VerificationCheckResult = {
+   status: CheckStatus
+   message: string
+   violations: VerificationViolation[]
++  /** Present when status is "skipped": why the check could not run. */
++  skippedReason?: string
+ }
+ 
+ export type VerificationSummary = {
+@@ -34,6 +44,8 @@ export type VerificationSummary = {
+   pass: number
+   fail: number
+   warn: number
++  /** Checks that did not run. Never counted as pass. */
++  skipped: number
+ }
+ 
+ export type VerificationReport = {
+@@ -59,6 +71,8 @@ export type VerificationContext = {
+   dataDir: string
+   hasManifest: boolean
+   hasEventLog: boolean
++  /** Which on-disk event-log layout the project uses, per locateEventLog. */
++  eventLogLayout?: EventLogLayout
+   eventStore: EventStore
+   stateStore: IStateStore
+   checkpointStore: ICheckpointStore
+diff --git a/tests/verify-engine.test.js b/tests/verify-engine.test.js
+index c049883..1f5063e 100644
+--- a/tests/verify-engine.test.js
++++ b/tests/verify-engine.test.js
+@@ -13,6 +13,8 @@ import { seedEventLog } from "./helpers/seed-event-log.js"
+ import { rebuildState } from "../dist/runtime/replay.js"
+ import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+ import { assert } from "./helpers/assert.js"
++import { fileURLToPath } from "url"
++import { locateEventLog } from "../dist/infra/event-store.js"
+ 
+ async function writeEventLog(cwd, events) {
+   // Governed projects created by `synth init` store runtime data under
+@@ -38,8 +40,17 @@ async function testVerifyUninitializedProject() {
+     const output = parseJson(stdout)
+     assert(output.status === "ok", `verify status should be ok, got ${output.status}`)
+     assert(output.kind === "VerificationReport", "verify should return VerificationReport")
+-    assert(output.summary.pass === 6, `all six checks should pass on uninitialized project: ${JSON.stringify(output.summary)}`)
+-    console.log("[PASS] synth verify on uninitialized project")
++    // EXP 2c9c6c62: a project with no event log has nothing to replay, so
++    // ReplayIntegrity is skipped - NOT passed. The old behaviour reported
++    // pass=6 with the message "replay integrity is vacuously satisfied",
++    // which made an unexamined project indistinguishable from a verified one.
++    assert(output.summary.pass === 5, `five checks should pass on uninitialized project: ${JSON.stringify(output.summary)}`)
++    assert(output.summary.skipped === 1, `ReplayIntegrity should be counted as skipped, not passed: ${JSON.stringify(output.summary)}`)
++    assert(output.summary.fail === 0, `nothing should fail: ${JSON.stringify(output.summary)}`)
++    const replayCheck = output.checks.find((c) => c.name === "ReplayIntegrity")
++    assert(replayCheck && replayCheck.status === "skipped", `ReplayIntegrity should be skipped with no log, got ${replayCheck && replayCheck.status}`)
++    assert(replayCheck.skippedReason === "no-event-log", `skipped check must carry a structured reason, got ${replayCheck.skippedReason}`)
++    console.log("[PASS] synth verify on uninitialized project reports a skipped replay check")
+   } finally {
+     await fs.rm(tmpDir, { recursive: true, force: true })
+   }
+@@ -202,6 +213,188 @@ async function testVerifyHelpListsVerify() {
+   console.log("[PASS] synth --help lists verify command")
+ }
+ 
++// ============================================================
++// Event-log visibility (EXP 2c9c6c62)
++// ============================================================
++// Three on-disk layouts exist:
++//   segmented        <data>/event-stream/partition-<n>/segment-XXXX.jsonl  (current)
++//   partitioned-flat <data>/event-stream/partition-<n>.jsonl               (PartitionStore)
++//   legacy-file      <data>/event-log.jsonl                                (pre-chunking)
++// `synth checkpoint`, `synth doctor` and `synth log` all tested only the
++// legacy path, so on any chunked project they reported "No event log present"
++// (checkpoint, ok:true - a vacuous green) or "No event log found ... run synth
++// init" (log - telling the operator to re-bootstrap a healthy ledger).
++// locateEventLog is now the single authority; these tests pin all three
++// layouts and the two operator-visible regressions.
++
++const REPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..")
++
++async function testLocateEventLogAcrossLayouts() {
++  const tmpDir = await makeTempDir("synth-locate-layouts-")
++  try {
++    const data = path.join(tmpDir, ".synth", "data")
++    const stream = path.join(data, "event-stream")
++
++    // (4) no log at all
++    await fs.mkdir(data, { recursive: true })
++    let located = locateEventLog(tmpDir)
++    assert(located.present === false, `empty project should not be present: ${JSON.stringify(located)}`)
++    assert(located.layout === "none", `empty project layout should be none, got ${located.layout}`)
++    assert(located.paths.length === 0, "empty project should report no paths")
++    assert(located.legacyPath === path.join(data, "event-log.jsonl"), "legacy path must still be reported so callers can say what they looked for")
++
++    // (3) legacy monolithic file
++    await fs.writeFile(path.join(data, "event-log.jsonl"), '{"type":"X"}\n', "utf-8")
++    located = locateEventLog(tmpDir)
++    assert(located.present === true, "legacy file must count as present")
++    assert(located.layout === "legacy-file", `expected legacy-file, got ${located.layout}`)
++    assert(located.paths.length === 1 && located.paths[0].endsWith("event-log.jsonl"), `legacy paths: ${JSON.stringify(located.paths)}`)
++
++    // (2) flat per-partition files
++    await fs.mkdir(stream, { recursive: true })
++    await fs.writeFile(path.join(stream, "partition-1.jsonl"), '{"type":"X"}\n', "utf-8")
++    await fs.writeFile(path.join(stream, "partition-0.jsonl"), '{"type":"X"}\n', "utf-8")
++    located = locateEventLog(tmpDir)
++    assert(located.layout === "partitioned-flat", `expected partitioned-flat, got ${located.layout}`)
++    assert(located.paths.length === 2, `expected both partitions, got ${JSON.stringify(located.paths)}`)
++    assert(located.paths[0].endsWith("partition-0.jsonl"), "partition paths must be sorted for stable output")
++
++    // (1) segmented partitions - and precedence over the older layouts, which
++    // are still on disk here exactly as they are in a migrated project
++    const partDir = path.join(stream, "partition-0")
++    await fs.mkdir(partDir, { recursive: true })
++    await fs.writeFile(path.join(partDir, "segment-0002.jsonl"), '{"type":"X"}\n', "utf-8")
++    await fs.writeFile(path.join(partDir, "segment-0001.jsonl"), '{"type":"X"}\n', "utf-8")
++    located = locateEventLog(tmpDir)
++    assert(located.present === true, "segmented store must be present")
++    assert(located.layout === "segmented", `a migrated project must report the layout it reads from, got ${located.layout}`)
++    assert(located.paths.length === 2, `expected both segments, got ${JSON.stringify(located.paths)}`)
++    assert(located.paths[0].endsWith("segment-0001.jsonl"), "segments must be sorted so offsets are stable")
++    assert(located.streamDir === stream, `streamDir should be the chunked store, got ${located.streamDir}`)
++
++    console.log("[PASS] locateEventLog resolves all three layouts, segmented wins precedence")
++  } finally {
++    await fs.rm(tmpDir, { recursive: true, force: true })
++  }
++}
++
++async function testLocateEventLogNeverThrows() {
++  // A missing project root is a normal state (uninitialized cwd), not an error:
++  // the answer is "no log", and the caller decides what that means.
++  const located = locateEventLog(path.join(os.tmpdir(), "synth-does-not-exist-" + Date.now()))
++  assert(located.present === false, "a nonexistent root must report absent, not throw")
++  assert(located.layout === "none", `nonexistent root layout should be none, got ${located.layout}`)
++  console.log("[PASS] locateEventLog reports none for an absent project instead of throwing")
++}
++
++async function testChunkedLedgerIsVisibleToOperatorVerbs() {
++  // `synth init` writes the chunked (segmented) layout, so a freshly
++  // initialized project is exactly the case the legacy-path guards got wrong.
++  const tmpDir = await makeTempDir("synth-chunked-visible-")
++  try {
++    const initResult = runSynth(["init", "--name", "Chunked Visibility"], tmpDir)
++    assert(initResult.status === 0, `init should succeed: ${initResult.stderr}`)
++
++    const located = locateEventLog(tmpDir)
++    assert(located.layout === "segmented", `init should produce the segmented layout, got ${located.layout}`)
++    assert(located.present === true, "init should produce a present event log")
++    assert(!located.paths.some((p) => p.endsWith("event-log.jsonl")), "the legacy file must not be what init writes")
++
++    // REGRESSION: `synth log` used to answer "No event log found at
++    // <legacy path>. Run 'synth init' or 'synth bootstrap' first." here.
++    const logResult = runSynth(["log", "--limit", "5"], tmpDir)
++    assert(logResult.status === 0, `synth log must succeed on a chunked ledger: ${logResult.stdout}`)
++    const logOutput = parseJson(logResult.stdout)
++    assert(logOutput.status === "ok", `synth log should find the chunked ledger, got ${logOutput.status}: ${logOutput.error || ""}`)
++    assert(logOutput.kind === "EventLogQuery", `expected EventLogQuery, got ${logOutput.kind}`)
++    assert(logOutput.layout === "segmented", `synth log must report which layout it read, got ${logOutput.layout}`)
++    assert(logOutput.total >= 1, `init writes at least one event, got total=${logOutput.total}`)
++    assert(Array.isArray(logOutput.events) && logOutput.events.length >= 1, "synth log must return the events it found")
++    assert(logOutput.events[0].offset >= 1, `offsets must be real log positions, got ${logOutput.events[0].offset}`)
++
++    // REGRESSION: `synth checkpoint` used to answer
++    // {"ok":true,"detail":"No event log present; replay skipped"} here - a green
++    // step that certified nothing.
++    // checkpoint exits non-zero when no expedition is executing, which is
++    // orthogonal to replay visibility - the report is still emitted, so assert
++    // on the replay step rather than the exit code.
++    const checkpointResult = runSynth(["checkpoint"], tmpDir)
++    const checkpoint = parseJson(checkpointResult.stdout)
++    assert(checkpoint.kind === "AgentCheckpoint", `expected an AgentCheckpoint report, got ${checkpoint.kind}`)
++    const replayStep = checkpoint.steps && checkpoint.steps.replay
++    assert(replayStep, `checkpoint must report a replay step: ${JSON.stringify(Object.keys(checkpoint.steps || {}))}`)
++    assert(!/No event log present/i.test(replayStep.detail || ""), `checkpoint must not claim there is no log while ${logOutput.total} events exist: ${replayStep.detail}`)
++    assert(/\d+ events/.test(replayStep.detail || ""), `checkpoint must report how many events it replayed: ${replayStep.detail}`)
++    assert(replayStep.ok === true, `replay of a fresh ledger should be consistent: ${replayStep.detail}`)
++
++    // REGRESSION: `synth doctor`'s chain check skipped for the same reason.
++    const doctorResult = runSynth(["doctor"], tmpDir)
++    assert(doctorResult.status === 0, `doctor should succeed: ${doctorResult.stderr}`)
++    const doctor = parseJson(doctorResult.stdout)
++    const health = doctor.projectHealth || {}
++    assert(health.replay && health.replay.ok === true, `doctor replay should pass on a chunked ledger: ${JSON.stringify(health.replay)}`)
++    assert(!/No event log present/i.test(health.replay.detail || ""), `doctor must not claim there is no log: ${health.replay.detail}`)
++    assert(health.eventChain && health.eventChain.ok === true, `doctor chain check should pass: ${JSON.stringify(health.eventChain)}`)
++    assert(/event\(s\) chained/.test(health.eventChain.detail || ""), `doctor must report a real chain count: ${health.eventChain.detail}`)
++
++    // And verification still passes on real evidence, not a vacuous skip.
++    const verifyOutput = parseJson(runSynth(["verify"], tmpDir).stdout)
++    assert(verifyOutput.summary.skipped === 0, `a project with events must not skip replay: ${JSON.stringify(verifyOutput.summary)}`)
++    const replayCheck = verifyOutput.checks.find((c) => c.name === "ReplayIntegrity")
++    assert(replayCheck.status === "pass", `ReplayIntegrity should pass on a real ledger, got ${replayCheck.status}`)
++
++    console.log(`[PASS] chunked ledger is visible to log (${logOutput.total} events), checkpoint and doctor`)
++  } finally {
++    await fs.rm(tmpDir, { recursive: true, force: true })
++  }
++}
++
++async function testLegacyLayoutStillReads() {
++  // A pre-chunking project must keep working: locateEventLog reports it, and
++  // `synth log` reads that layout line-by-line so offsets are unchanged.
++  const tmpDir = await makeTempDir("synth-legacy-layout-")
++  try {
++    const data = path.join(tmpDir, ".synth", "data")
++    await fs.mkdir(data, { recursive: true })
++    const event = {
++      type: "PROJECT_INITIALIZED",
++      timestamp: 0,
++      payload: { name: "Legacy Layout" },
++      previousHash: "genesis",
++      eventHash: "0".repeat(64),
++    }
++    await fs.writeFile(path.join(data, "event-log.jsonl"), JSON.stringify(event) + "\n", "utf-8")
++
++    const located = locateEventLog(tmpDir)
++    assert(located.layout === "legacy-file", `expected legacy-file, got ${located.layout}`)
++
++    const logOutput = parseJson(runSynth(["log", "--limit", "5"], tmpDir).stdout)
++    assert(logOutput.status === "ok", `legacy layout must still be queryable, got ${logOutput.status}: ${logOutput.error || ""}`)
++    assert(logOutput.layout === "legacy-file", `synth log should report the legacy layout, got ${logOutput.layout}`)
++    assert(logOutput.total === 1, `expected the one legacy event, got ${logOutput.total}`)
++    assert(logOutput.events[0].offset === 1, "legacy offsets must be line positions, unchanged")
++    console.log("[PASS] legacy single-file layout is still located and still queryable")
++  } finally {
++    await fs.rm(tmpDir, { recursive: true, force: true })
++  }
++}
++
++async function testNoLegacyOnlyPresenceGuardRemains() {
++  // Source-level guard: the bug was a presence test against the legacy path.
++  // If that pattern comes back, the operator-visible lies come back with it.
++  const src = await fs.readFile(path.join(REPO_ROOT, "src", "cli", "synth.ts"), "utf-8")
++  assert(/from "\.\.\/infra\/event-store\.js"/.test(src), "synth.ts must import the event-log authority from infra/event-store.js")
++  assert(/locateEventLog\(/.test(src), "synth.ts must consult locateEventLog")
++  assert(
++    !/const logPath = sdk\.paths\.eventLogFile\(/.test(src),
++    "no check may test the legacy monolithic path for existence to decide whether an event log is present (use locateEventLog)",
++  )
++  // Passing the legacy path INTO infra as a migration source is legitimate and
++  // must stay; only presence tests are forbidden.
++  assert(/eventLogPath: sdk\.paths\.eventLogFile\(/.test(src), "infra migration input should still name the legacy path")
++  console.log("[PASS] no legacy-only event-log presence guard remains in the CLI")
++}
++
+ async function main() {
+   try {
+     await fs.access(CLI_PATH)
+@@ -215,6 +408,11 @@ async function main() {
+   await testVerifyValidGraph()
+   await testVerifyBrokenGraph()
+   await testVerifyHelpListsVerify()
++  await testLocateEventLogAcrossLayouts()
++  await testLocateEventLogNeverThrows()
++  await testChunkedLedgerIsVisibleToOperatorVerbs()
++  await testLegacyLayoutStillReads()
++  await testNoLegacyOnlyPresenceGuardRemains()
+ 
+   console.log("\n[VERIFY ENGINE] All tests passed")
+ }
