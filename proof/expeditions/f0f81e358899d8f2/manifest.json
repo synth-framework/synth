@@ -1,0 +1,12 @@
+{
+  "expeditionId": "f0f81e358899d8f2",
+  "capturedAt": 1791873362661,
+  "note": "Reviewed plan for testing and reporting infrastructure",
+  "attachments": [
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/f0f81e358899d8f2/attachments/testing-and-reporting-infrastructure-review.md",
+      "hash": "3895dc24fc6f2f328e2b806fb527950c150cdb28f35d5d374c444c696f55679c"
+    }
+  ]
+}
