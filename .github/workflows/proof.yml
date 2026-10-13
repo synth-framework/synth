@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          # The artifact-removal guard compares against the base branch.
+          # A shallow checkout exposes neither origin/main nor main.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

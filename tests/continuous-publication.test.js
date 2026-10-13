@@ -88,6 +88,12 @@ async function testWorkflowFilesExist() {
     assert(stats && stats.isFile(), `Expected workflow file ${path.basename(file)}`)
   }
 
+  const proofContent = await fs.readFile(proofYml, "utf-8")
+  assert(
+    /name:\s*Checkout source\s*\n\s*uses:\s*actions\/checkout@v4[\s\S]{0,300}?fetch-depth:\s*0/.test(proofContent),
+    "proof.yml must fetch full history so check:artifact-policy --ci can compare the base branch",
+  )
+
   const publishContent = await fs.readFile(publishYml, "utf-8")
   const invokesDocsGenerate =
     publishContent.includes("npm run docs:generate") ||
