@@ -1,0 +1,386 @@
+{
+  "snapshot": {
+    "id": "8309b613cb39603d",
+    "version": "1.0.0",
+    "signature": "ee04e2d59792386e4758b5eef517f0d2c1a03acbe0d05ff29b59863873d973b2",
+    "sessionId": "9bedcb50f20ca107",
+    "worldModel": {
+      "version": 1,
+      "nodes": {
+        "__type": "Map",
+        "value": [
+          [
+            "b6ff1be26d13a677",
+            {
+              "id": "b6ff1be26d13a677",
+              "kind": "mission",
+              "name": "Verification Coverage Truthfulness",
+              "description": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+              "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+              "expeditionIds": [],
+              "observationIds": [
+                "obs-mission-verification-coverage-truthfulness"
+              ],
+              "evidenceRefs": [
+                "61237615100ed10d"
+              ],
+              "confidence": 0.8
+            }
+          ]
+        ]
+      },
+      "edges": [],
+      "evidence": {
+        "evidence": [
+          {
+            "id": "61237615100ed10d",
+            "observationId": "obs-mission-verification-coverage-truthfulness",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"purpose\":\"Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail",
+            "fingerprint": "8940f2d7ea9e0ccf",
+            "immutable": true
+          },
+          {
+            "id": "92dd86659e4def86",
+            "observationId": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+            "source": "synth-cli",
+            "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+            "snippet": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+            "fingerprint": "e42d5a9dc420f2b1",
+            "immutable": true
+          },
+          {
+            "id": "01b046e4580ea929",
+            "observationId": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+            "source": "synth-cli",
+            "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+            "snippet": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+            "fingerprint": "13a2e55df51793f5",
+            "immutable": true
+          }
+        ],
+        "byObservationId": {
+          "__type": "Map",
+          "value": [
+            [
+              "obs-mission-verification-coverage-truthfulness",
+              {
+                "id": "61237615100ed10d",
+                "observationId": "obs-mission-verification-coverage-truthfulness",
+                "source": "synth-cli",
+                "description": "mission observation from synth-cli",
+                "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"purpose\":\"Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail",
+                "fingerprint": "8940f2d7ea9e0ccf",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+              {
+                "id": "92dd86659e4def86",
+                "observationId": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+                "source": "synth-cli",
+                "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+                "snippet": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+                "fingerprint": "e42d5a9dc420f2b1",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+              {
+                "id": "01b046e4580ea929",
+                "observationId": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+                "source": "synth-cli",
+                "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+                "snippet": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+                "fingerprint": "13a2e55df51793f5",
+                "immutable": true
+              }
+            ]
+          ]
+        }
+      },
+      "unknowns": [],
+      "confidence": {
+        "overall": 0.71,
+        "observationCoverage": 0.3,
+        "evidenceQuality": 0.8000000000000002,
+        "consistency": 1,
+        "completeness": 1,
+        "inferenceDepth": 1,
+        "unknownImpact": 0,
+        "contradictionCount": 0
+      },
+      "planningDecisions": []
+    },
+    "proposals": [
+      {
+        "id": "cf2776f9c722b90f",
+        "kind": "mission",
+        "name": "Verification Coverage Truthfulness",
+        "description": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+        "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+        "evidenceRefs": [
+          "61237615100ed10d"
+        ],
+        "observationIds": [
+          "obs-mission-verification-coverage-truthfulness"
+        ],
+        "confidence": 0.8,
+        "rationale": "Proposed from mission observation obs-mission-verification-coverage-truthfulness"
+      }
+    ],
+    "timestamp": 1791862675872,
+    "lineage": {
+      "lineageId": "3975f53fa377d25d",
+      "version": 1,
+      "approvedAt": 1791862675872
+    }
+  },
+  "session": {
+    "id": "9bedcb50f20ca107",
+    "createdAt": 1791862547426,
+    "observations": [
+      {
+        "id": "obs-mission-verification-coverage-truthfulness",
+        "sourceAdapter": "synth-cli",
+        "type": "mission",
+        "payload": {
+          "subject": "Verification Coverage Truthfulness",
+          "name": "Verification Coverage Truthfulness",
+          "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden."
+        },
+        "evidenceReference": "evidence-mission-Verification Coverage Truthfulness",
+        "confidence": "high",
+        "timestamp": 1791862492296
+      },
+      {
+        "id": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+        "sourceAdapter": "synth-cli",
+        "type": "evidence",
+        "payload": {
+          "subject": "Operator-approved scope: F1, F7, F8, F9, F10, and F15",
+          "name": "Operator-approved scope: F1, F7, F8, F9, F10, and F15",
+          "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+          "purpose": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition."
+        },
+        "evidenceReference": "evidence-evidence-Operator-approved scope: F1, F7, F8, F9, F10, and F15",
+        "confidence": "high",
+        "timestamp": 1791862542988
+      },
+      {
+        "id": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+        "sourceAdapter": "synth-cli",
+        "type": "evidence",
+        "payload": {
+          "subject": "Reproducible verification targets and acceptance commands",
+          "name": "Reproducible verification targets and acceptance commands",
+          "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+          "purpose": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern."
+        },
+        "evidenceReference": "evidence-evidence-Reproducible verification targets and acceptance commands",
+        "confidence": "high",
+        "timestamp": 1791862547426
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "61237615100ed10d",
+          "observationId": "obs-mission-verification-coverage-truthfulness",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"purpose\":\"Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail",
+          "fingerprint": "8940f2d7ea9e0ccf",
+          "immutable": true
+        },
+        {
+          "id": "92dd86659e4def86",
+          "observationId": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+          "source": "synth-cli",
+          "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+          "snippet": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+          "fingerprint": "e42d5a9dc420f2b1",
+          "immutable": true
+        },
+        {
+          "id": "01b046e4580ea929",
+          "observationId": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+          "source": "synth-cli",
+          "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+          "snippet": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+          "fingerprint": "13a2e55df51793f5",
+          "immutable": true
+        }
+      ],
+      "byObservationId": {
+        "__type": "Map",
+        "value": [
+          [
+            "obs-mission-verification-coverage-truthfulness",
+            {
+              "id": "61237615100ed10d",
+              "observationId": "obs-mission-verification-coverage-truthfulness",
+              "source": "synth-cli",
+              "description": "mission observation from synth-cli",
+              "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"purpose\":\"Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail",
+              "fingerprint": "8940f2d7ea9e0ccf",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+            {
+              "id": "92dd86659e4def86",
+              "observationId": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+              "source": "synth-cli",
+              "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+              "snippet": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+              "fingerprint": "e42d5a9dc420f2b1",
+              "immutable": true
+            }
+          ],
+          [
+            "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+            {
+              "id": "01b046e4580ea929",
+              "observationId": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+              "source": "synth-cli",
+              "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+              "snippet": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+              "fingerprint": "13a2e55df51793f5",
+              "immutable": true
+            }
+          ]
+        ]
+      }
+    },
+    "questions": [],
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.71,
+      "observationCoverage": 0.3,
+      "evidenceQuality": 0.8000000000000002,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "worldModel": {
+      "version": 1,
+      "nodes": {
+        "__type": "Map",
+        "value": [
+          [
+            "b6ff1be26d13a677",
+            {
+              "id": "b6ff1be26d13a677",
+              "kind": "mission",
+              "name": "Verification Coverage Truthfulness",
+              "description": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+              "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+              "expeditionIds": [],
+              "observationIds": [
+                "obs-mission-verification-coverage-truthfulness"
+              ],
+              "evidenceRefs": [
+                "61237615100ed10d"
+              ],
+              "confidence": 0.8
+            }
+          ]
+        ]
+      },
+      "edges": [],
+      "evidence": {
+        "evidence": [
+          {
+            "id": "61237615100ed10d",
+            "observationId": "obs-mission-verification-coverage-truthfulness",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"purpose\":\"Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail",
+            "fingerprint": "8940f2d7ea9e0ccf",
+            "immutable": true
+          },
+          {
+            "id": "92dd86659e4def86",
+            "observationId": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+            "source": "synth-cli",
+            "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+            "snippet": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+            "fingerprint": "e42d5a9dc420f2b1",
+            "immutable": true
+          },
+          {
+            "id": "01b046e4580ea929",
+            "observationId": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+            "source": "synth-cli",
+            "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+            "snippet": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+            "fingerprint": "13a2e55df51793f5",
+            "immutable": true
+          }
+        ],
+        "byObservationId": {
+          "__type": "Map",
+          "value": [
+            [
+              "obs-mission-verification-coverage-truthfulness",
+              {
+                "id": "61237615100ed10d",
+                "observationId": "obs-mission-verification-coverage-truthfulness",
+                "source": "synth-cli",
+                "description": "mission observation from synth-cli",
+                "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"purpose\":\"Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail",
+                "fingerprint": "8940f2d7ea9e0ccf",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+              {
+                "id": "92dd86659e4def86",
+                "observationId": "obs-evidence-operator-approved-scope:-f1,-f7,-f8,-f9,-f10,-and-f15",
+                "source": "synth-cli",
+                "description": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+                "snippet": "The merged PR #340 baseline and docs/plans/master-delivery-plan.md sections 4.4 and 9.12 document the verification-truthfulness follow-up, its legacy event-stream migration, its test-registration decisions, evidence-manifest contract, convergence-helper repair, and the required green gates. The operator explicitly selected this as the next expedition.",
+                "fingerprint": "e42d5a9dc420f2b1",
+                "immutable": true
+              }
+            ],
+            [
+              "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+              {
+                "id": "01b046e4580ea929",
+                "observationId": "obs-evidence-reproducible-verification-targets-and-acceptance-commands",
+                "source": "synth-cli",
+                "description": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+                "snippet": "The expedition has concrete, reproducible targets: loadGovernChecks must consume data/tasks/test:all.task.json or fail loudly; synth snapshot verify --tag synth-expedition/cfbb801aa232795a must verify from event-stream; tests/execution-branch-gate.test.js has two legacy-reader assertions; and the completion gate is SYNTH_QUIET_LOGS=1 npm run test:all, node scripts/check-artifact-policy.js --ci, and npm run govern.",
+                "fingerprint": "13a2e55df51793f5",
+                "immutable": true
+              }
+            ]
+          ]
+        }
+      },
+      "unknowns": [],
+      "confidence": {
+        "overall": 0.71,
+        "observationCoverage": 0.3,
+        "evidenceQuality": 0.8000000000000002,
+        "consistency": 1,
+        "completeness": 1,
+        "inferenceDepth": 1,
+        "unknownImpact": 0,
+        "contradictionCount": 0
+      },
+      "planningDecisions": []
+    },
+    "planningDecisions": [],
+    "approvalState": "approved"
+  }
+}

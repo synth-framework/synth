@@ -2,9 +2,11 @@
   "id": "b6ff1be26d13a677",
   "name": "Verification Coverage Truthfulness",
   "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
-  "status": "draft",
+  "status": "active",
   "expeditions": [],
   "metadata": {},
   "createdAt": 396,
-  "updatedAt": 396
+  "updatedAt": 398,
+  "executionBranch": "arena/92bee2da-synth",
+  "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
 }
