@@ -1,6 +1,6 @@
 {
-  "version": 407,
-  "stateHash": "1556993863",
+  "version": 409,
+  "stateHash": "1441753214",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1613,7 +1613,7 @@
       "missionId": "b6ff1be26d13a677",
       "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
       "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
-      "status": "executing",
+      "status": "completed",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1627,7 +1627,7 @@
         }
       },
       "createdAt": 399,
-      "updatedAt": 404,
+      "updatedAt": 407,
       "executionBranch": "arena/92bee2da-synth",
       "attachments": [
         {
@@ -1681,5 +1681,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 407
+  "lastEventOffset": 409
 }
