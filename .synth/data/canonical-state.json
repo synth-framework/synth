@@ -1,6 +1,6 @@
 {
-  "version": 419,
-  "stateHash": "674577616",
+  "version": 441,
+  "stateHash": "792413487",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -74,11 +74,16 @@
         "e38aa99f7f2593af",
         "9ab1218c6f872c60",
         "220f6163a7b55b45",
-        "f0f81e358899d8f2"
+        "f0f81e358899d8f2",
+        "e9a83ffda86ca767",
+        "f6420030064a6f70",
+        "328c0147b49d2743",
+        "a33ac4392da04d0e",
+        "684ca7dfec6566d9"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 395,
+      "updatedAt": 431,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     },
     "b536ecc7ceb9217a": {
@@ -1113,14 +1118,16 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Fix derived-state auto-commit (EXP-AUTO-COMMIT-001) to skip gitignored paths",
       "goal": "autoCommitDerivedState (src/cli/synth.ts ~351) builds an explicit git add path list that includes .synth/data/drafts/ (gitignored), causing the whole git add to error and the derived-state commit to abort, leaving event-log.jsonl/canonical-state.json staged-but-uncommitted after lifecycle transitions. Fix: exclude gitignored/derived-excluded paths before git add (filter via git check-ignore, or use git add -A which skips ignored). See attached finding.",
-      "status": "draft",
+      "status": "cancelled",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "cancelReason": "Premise no longer holds: .synth/data/drafts/ is tracked, not gitignored (git check-ignore exits 1), and completed expedition ecc3688796be0545 'Derived-state staging correctness (auto-commit + ignore filtering)' delivered the ignore-filtering fix. Ceremony commits now stage draft files successfully, so the EXP-AUTO-COMMIT-001 failure mode is gone."
+      },
       "createdAt": 246,
-      "updatedAt": 247,
+      "updatedAt": 430,
       "attachments": [
         {
           "kind": "attachment",
@@ -1150,14 +1157,16 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
       "goal": "Resolve the monolithic-state problem at both layers. (1) EVENT LOG: implement the already-designed PartitionedEvent chunking (src/infra/event-store.ts append(partition,event)/readPartition/readSegment) into .synth/data/event-stream/<partition>/<segment>.jsonl with an offset-ordered manifest, preserving deterministic replay. (2) PROJECTION: change StateStore.save (src/infra/state-store.ts:66) to write per-entity derived files (.synth/data/expeditions/<id>.json, .synth/data/missions/<id>.json) instead of one canonical-state.json; canonical-state.json becomes a generated aggregate (amend contract tracking rule). (3) dependsOn: make it a settable canonical attribute via expedition refine --depends-on (writes event, materialized into per-entity file). (4) Archive: relocate per-entity file to .synth/data/expeditions/archived/<id>.json (status marker), not a monolith shuffle. Single source of truth (event log) preserved; merge/review/scale improved.",
-      "status": "draft",
+      "status": "cancelled",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "cancelReason": "Superseded by completed expedition 886dc15e19a8e587, whose goal explicitly lands this feature ('Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d'). Artifacts verified present at HEAD: .synth/data/event-stream/partition-0..3, 60 per-entity expedition files, 5 mission files. Retiring the duplicate draft so it cannot be approved as fresh work."
+      },
       "createdAt": 251,
-      "updatedAt": 251
+      "updatedAt": 429
     },
     "bfe9b21ecfd8074d": {
       "id": "bfe9b21ecfd8074d",
@@ -1612,10 +1621,21 @@
         },
         "refinementId": "3282c184975ae033",
         "refinementNote": "Reviewed plan produced: docs/plans/testing-and-reporting-infrastructure-review.md covers canonical test chain (114 steps), governance profiler decomposition (collection/scheduling/execution/reporting), test/report/logging surfaces, decision matrix for distinct/merge/retire (target ~70 checks), and failure identification with environment explicit. No broad refactor in this expedition; plan ready for follow-up expeditions EXP-TEST-001 to 004.",
-        "refinementAt": 416
+        "refinementAt": 416,
+        "delivery": {
+          "branch": "expedition/framework-maturation-v2-4ab7e9d/revisit-testing-and-reporting-infrastructure-f0f81e3",
+          "tipCommit": "afd5a2291f6078af47450f3c71f180e4bd894d14",
+          "deliveredAt": 419
+        },
+        "integration": {
+          "mergeCommit": "21ffc64986e633393ec98818f3e5744e32b9bec4",
+          "branch": "expedition/framework-maturation-v2-4ab7e9d/revisit-testing-and-reporting-infrastructure-f0f81e3",
+          "tipCommit": "afd5a2291f6078af47450f3c71f180e4bd894d14",
+          "integratedAt": 420
+        }
       },
       "createdAt": 395,
-      "updatedAt": 417,
+      "updatedAt": 420,
       "attachments": [
         {
           "kind": "attachment",
@@ -1683,6 +1703,134 @@
           "hash": "bc28cdde640a09d171f78e8fc9b53a1365507b7c13ddf863a7e444c3ad5ce1b5"
         }
       ]
+    },
+    "e9a83ffda86ca767": {
+      "id": "e9a83ffda86ca767",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-001 Normalize logging & failure envelope",
+      "goal": "Make every check failure emit structured JSON {checkId, status, duration, module, determinism, environment, failure:{file,line,assertion}} and prefix logs with [checkId]; introduce SYNTH_LOG_LEVEL, respect SYNTH_TASK_VERBOSE/SYNTH_QUIET_LOGS, extend test:clean-machine-output and test:governance-quiet-output.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "tests/helpers/**",
+          "scripts/governance/**",
+          "src/cli/**"
+        ]
+      },
+      "createdAt": 421,
+      "updatedAt": 425
+    },
+    "f6420030064a6f70": {
+      "id": "f6420030064a6f70",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-002 Merge suites 114→~70",
+      "goal": "Implement decision matrix from docs/plans/testing-and-reporting-infrastructure-review.md: keep ledger 6 distinct, execution 5, installer 7, documentation 3, governance 4; merge mission-studio 8→3, discovery 8→2, adapter 16→4, environment 5→4; add registration guard that every test:* task is in test:all or marked standalone.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "data/tasks/**",
+          "tests/**",
+          "package.json"
+        ]
+      },
+      "createdAt": 422,
+      "updatedAt": 426
+    },
+    "328c0147b49d2743": {
+      "id": "328c0147b49d2743",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-003 Parallelize independent checks",
+      "goal": "Use ParallelRunner for deterministic checks with no dependencies after build; keep contextual/non-deterministic sequential; measure speedup for govern --full; ensure no flakiness; add retry for non-deterministic.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "scripts/governance/parallel-runner.js",
+          "scripts/govern-profiler.js",
+          "scripts/governance/**"
+        ]
+      },
+      "createdAt": 423,
+      "updatedAt": 427
+    },
+    "a33ac4392da04d0e": {
+      "id": "a33ac4392da04d0e",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-004 Environment explicit",
+      "goal": "Add environment field to GovernanceCheck and GovernSummary, surface environment-capability-report guidance in failures, make t.skip emit structured reason {environment:{baseBranch:missing}} with nextStep 'git fetch origin main --unshallow', introduce SYNTH_ENV=ci|local|container.",
+      "status": "approved",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/environment/**",
+          "tests/environment-*",
+          "scripts/governance/**"
+        ]
+      },
+      "createdAt": 424,
+      "updatedAt": 428
+    },
+    "684ca7dfec6566d9": {
+      "id": "684ca7dfec6566d9",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Dull status inbox for deliver/seal",
+      "goal": "Make synth status print exact copy-pasteable deliver --branch and seal --merge-commit commands, fixing NoExecutionBranch fallback, ledgerBranch missing fallback, and shallow-clone hint, so fresh Arena sessions can seal after pull without extra queries.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli/status-briefing.ts",
+          "src/cli/synth.ts",
+          "src/ledger/branch.ts",
+          "src/ledger/delivery.ts"
+        ],
+        "identity": {
+          "agentId": "synth-cli-3385",
+          "sessionId": "2b00e9e1-0e88-433f-a994-17a0dca44176",
+          "approvalMode": "autonomous",
+          "issuedAt": 436
+        },
+        "refinementId": "bd5628b56c9f2472",
+        "refinementNote": "Implemented the four drafted changes plus one in-scope discovery: resolveCheckpointBranch (src/cli/synth.ts) built its branch context by hand and never consulted the recorded ADR-056 binding, so 'synth checkpoint' reported status:blocked for an expedition executing on a declared arena/* branch; it now enriches via enrichExecutionBranchContext and matches the executing expedition by recorded binding before canonical name. Scope extension: tests/ledger-delivery.test.js and tests/ledger-ceremony.test.js were necessarily modified (outside the drafted four-file scope) to cover the new behaviour; one existing ceremony assertion encoded the old behaviour (a configured ledger branch that does not exist locally was returned verbatim) and now creates the branch so it still tests config-over-record precedence, with a new test covering the fallback.",
+        "refinementAt": 437
+      },
+      "createdAt": 431,
+      "updatedAt": 439,
+      "executionBranch": "arena/a3a7925a-synth",
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/684ca7dfec6566d9/git-diff.patch",
+          "hash": "f86ab948b3683c46461fe6aa70674283cc09d47a68b099506cee4795c01e279a"
+        },
+        {
+          "kind": "test-results",
+          "path": "proof/expeditions/684ca7dfec6566d9/test-results.txt",
+          "hash": "865d5d4e1ecfc3cb93b9424bc16b656bdece2677eb29af5c683d8a390f69f4a5"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/684ca7dfec6566d9/attachments/dull-status-inbox-summary.md",
+          "hash": "373e6b3bf5ac9d989244155c1daf6d98456d02289f60f754d7672e4870603172"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -1708,5 +1856,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 419
+  "lastEventOffset": 441
 }

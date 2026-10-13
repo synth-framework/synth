@@ -1,0 +1,20 @@
+{
+  "id": "328c0147b49d2743",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "EXP-TEST-003 Parallelize independent checks",
+  "goal": "Use ParallelRunner for deterministic checks with no dependencies after build; keep contextual/non-deterministic sequential; measure speedup for govern --full; ensure no flakiness; add retry for non-deterministic.",
+  "status": "approved",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "scripts/governance/parallel-runner.js",
+      "scripts/govern-profiler.js",
+      "scripts/governance/**"
+    ]
+  },
+  "createdAt": 423,
+  "updatedAt": 427
+}

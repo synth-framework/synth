@@ -1,0 +1,18 @@
+synth validate — adaptive validation run (profile: pull-request)
+changed files: src/cli/status-briefing.ts, src/cli/synth.ts, src/ledger/branch.ts, src/ledger/delivery.ts, tests/ledger-ceremony.test.js, tests/ledger-delivery.test.js
+affected capabilities: CLI, Tests, Unknown
+protected assets touched: False
+risk: medium | promotionRisk: medium
+execution.success: True
+
+--- test:synth-cli: exit 0 (8176ms)
+    [PASS] lines: 28 | [FAIL] lines: 0 | TAP: n/a
+    [SYNTH CLI] All tests passed
+    [SYNTH CLI Contract] All tests passed
+--- test:release: exit 0 (1004ms)
+    [PASS] lines: 5 | [FAIL] lines: 0 | TAP: n/a
+    All release CLI tests passed.
+--- test:operator-journey: exit 0 (1020ms)
+    [PASS] lines: 0 | [FAIL] lines: 0 | TAP: {'tests': '1', 'pass': '1', 'fail': '0'}
+--- test: exit 0 (11803ms)
+    [PASS] lines: 0 | [FAIL] lines: 0 | TAP: n/a

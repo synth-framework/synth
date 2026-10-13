@@ -102,6 +102,260 @@ export function isAncestor(root: string, ancestor: string, descendant: string): 
   return git(root, ["merge-base", "--is-ancestor", ancestor, descendant]).ok
 }
 
+/**
+ * True when this clone is shallow (`.git/shallow` grafts history). A shallow
+ * boundary hides parent links, so an ancestry proof that would pass on a full
+ * clone is *refused* here — the difference matters enough to say so.
+ */
+export function isShallowRepository(root: string): boolean {
+  const result = git(root, ["rev-parse", "--is-shallow-repository"])
+  return result.ok && result.out.trim() === "true"
+}
+
+/** How to undo a shallow graft, phrased as the command the operator runs. */
+export const UNSHALLOW_HINT = "git fetch origin main --unshallow"
+
+/**
+ * The hint appended to a refused verification when the refusal may be an
+ * artifact of a shallow clone rather than a real absence of the tip.
+ */
+function shallowHint(root: string): string | undefined {
+  if (!isShallowRepository(root)) return undefined
+  return `This clone is shallow, so parent links are grafted and ancestry cannot be proven. Deepen it, then re-run: ${UNSHALLOW_HINT} (or 'git fetch --deepen=1' for one level).`
+}
+
+// ------------------------------------------------------------
+// Delivery branch resolution — the "dull inbox"
+// ------------------------------------------------------------
+// `status` must print a deliver/seal command that *works* when pasted. That
+// means resolving the branch the same way an operator would have to: the
+// recorded execution branch, else the branch the ledger says was created, else
+// a remote ref that names the expedition. Never a bare `--id` that fails with
+// NoExecutionBranch, and never a branch name this clone cannot resolve.
+
+export type DeliveryBranchSource = "executionBranch" | "branchCreatedEvent" | "remoteScan"
+
+export type BranchCreatedEventLike = {
+  type?: string
+  timestamp?: number
+  payload?: Record<string, unknown> | undefined
+}
+
+export type DeliveryBranchResolution = {
+  /** A ref this clone can resolve — safe to paste after `--branch`. */
+  branch?: string
+  /** Where the answer came from, so the caller can say so. */
+  source?: DeliveryBranchSource
+  tipCommit?: string
+  /** The canonical branch name without the `origin/` prefix, when they differ. */
+  canonicalBranch?: string
+  /** Set when a name was found but nothing in this clone resolves it. */
+  unresolved?: string
+  /** The command that would make an unresolved branch resolvable. */
+  fetchHint?: string
+}
+
+/**
+ * The branch named by the newest `EXPEDITION_BRANCH_CREATED` event for an
+ * expedition. This is the fallback that matters: canonical replay projects
+ * `executionBranch` from `EXPEDITION_BRANCH_BOUND` only, so an expedition whose
+ * branch was auto-created (never declared) has no `executionBranch` even though
+ * the ledger knows the branch name.
+ */
+export function lastBranchCreatedBranch(
+  events: readonly BranchCreatedEventLike[] | undefined,
+  expeditionId: string,
+): string | undefined {
+  if (!Array.isArray(events) || !expeditionId) return undefined
+  let best: { branch: string; timestamp: number } | undefined
+  for (const event of events) {
+    if (event?.type !== "EXPEDITION_BRANCH_CREATED") continue
+    const payload = (event.payload ?? {}) as Record<string, unknown>
+    if (String(payload.expeditionId ?? "") !== expeditionId) continue
+    const branch = typeof payload.branch === "string" ? payload.branch : ""
+    if (branch.length === 0) continue
+    const timestamp = typeof event.timestamp === "number" ? event.timestamp : 0
+    // Events are not guaranteed ordered across partitions: newest timestamp
+    // wins, and a tie keeps the later entry.
+    if (!best || timestamp >= best.timestamp) best = { branch, timestamp }
+  }
+  return best?.branch
+}
+
+/** Remote-tracking refs (`origin/foo`), excluding the symbolic `origin/HEAD`. */
+export function listRemoteTrackingBranches(root: string): string[] {
+  const result = git(root, ["for-each-ref", "--format=%(refname:short)", "refs/remotes/"])
+  if (!result.ok || result.out.length === 0) return []
+  return result.out
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((name) => name.length > 0 && !name.endsWith("/HEAD"))
+}
+
+/**
+ * Every ref in the clone, as `refname → object sha`, read with ONE git call.
+ *
+ * `synth status` resolves a branch per pending expedition; spawning git per
+ * name would make the briefing slower than the work it reports. The index keeps
+ * resolution in memory and keeps status read-only (no write-on-read).
+ */
+export type RefIndex = Map<string, string>
+
+export function buildRefIndex(root: string): RefIndex {
+  const index: RefIndex = new Map()
+  const result = git(root, ["for-each-ref", "--format=%(refname) %(objectname)"])
+  if (!result.ok || result.out.length === 0) return index
+  for (const line of result.out.split("\n")) {
+    const split = line.lastIndexOf(" ")
+    if (split <= 0) continue
+    index.set(line.slice(0, split), line.slice(split + 1))
+  }
+  return index
+}
+
+/**
+ * Resolve a ref name against an index using git's own lookup order
+ * (`<name>`, `refs/<name>`, `refs/tags/<name>`, `refs/heads/<name>`,
+ * `refs/remotes/<name>`, `refs/remotes/<name>/HEAD`).
+ */
+export function resolveFromRefIndex(index: RefIndex, name: string): string | undefined {
+  if (!name || index.size === 0) return undefined
+  const direct = index.get(name)
+  if (direct) return direct
+  for (const prefix of ["refs/", "refs/tags/", "refs/heads/", "refs/remotes/"]) {
+    const hit = index.get(`${prefix}${name}`)
+    if (hit) return hit
+  }
+  return index.get(`refs/remotes/${name}/HEAD`)
+}
+
+/** The remote-tracking short names (`origin/foo`) inside an index. */
+export function remoteBranchesFromIndex(index: RefIndex): string[] {
+  const names: string[] = []
+  for (const refname of index.keys()) {
+    if (!refname.startsWith("refs/remotes/")) continue
+    const short = refname.slice("refs/remotes/".length)
+    if (short.length === 0 || short.endsWith("/HEAD")) continue
+    names.push(short)
+  }
+  return names
+}
+
+/**
+ * Resolve the branch an expedition was delivered from, in the order an operator
+ * would search: recorded binding → branch-created event → a remote ref naming
+ * the expedition. Every candidate must resolve to a commit in *this* clone;
+ * a name that does not resolve is reported as unresolved with the fetch that
+ * would fix it, so the printed command is never a dead end.
+ *
+ * `remoteBranches` and `cache` exist so one `synth status` lists refs once and
+ * resolves each name once, however many expeditions are pending.
+ */
+export function resolveDeliveryBranch(
+  root: string,
+  options: {
+    expeditionId: string
+    executionBranch?: string
+    events?: readonly BranchCreatedEventLike[]
+    remoteBranches?: string[]
+    cache?: Map<string, string | undefined>
+    /** Pre-built ref index: resolve names in memory instead of spawning git. */
+    refs?: RefIndex
+  },
+): DeliveryBranchResolution {
+  const cache = options.cache ?? new Map<string, string | undefined>()
+  const tipOf = (name: string): string | undefined => {
+    if (!name) return undefined
+    if (cache.has(name)) return cache.get(name)
+    const tip = options.refs ? resolveFromRefIndex(options.refs, name) : resolveCommit(root, name)
+    cache.set(name, tip)
+    return tip
+  }
+
+  const id8 = String(options.expeditionId).slice(0, 8)
+  const candidates: Array<{ name: string; source: DeliveryBranchSource }> = []
+  if (options.executionBranch) candidates.push({ name: options.executionBranch, source: "executionBranch" })
+  const fromEvent = lastBranchCreatedBranch(options.events, options.expeditionId)
+  if (fromEvent) candidates.push({ name: fromEvent, source: "branchCreatedEvent" })
+  const remote =
+    options.remoteBranches ?? (options.refs ? remoteBranchesFromIndex(options.refs) : listRemoteTrackingBranches(root))
+  for (const name of remote) {
+    if (name.includes(id8)) candidates.push({ name, source: "remoteScan" })
+  }
+
+  let firstKnown: { name: string; source: DeliveryBranchSource } | undefined
+  for (const candidate of candidates) {
+    if (!firstKnown) firstKnown = candidate
+    const tip = tipOf(candidate.name)
+    const canonical = candidate.name.startsWith("origin/") ? candidate.name.slice("origin/".length) : undefined
+    if (tip) {
+      return {
+        branch: candidate.name,
+        source: candidate.source,
+        tipCommit: tip,
+        ...(canonical ? { canonicalBranch: canonical } : {}),
+      }
+    }
+    // A canonical name that only exists on origin still yields a working
+    // command once fetched: `origin/<name>` resolves as a ref.
+    if (candidate.source === "remoteScan") continue
+    const remoteTip = tipOf(`origin/${candidate.name}`)
+    if (remoteTip) {
+      return {
+        branch: `origin/${candidate.name}`,
+        source: candidate.source,
+        tipCommit: remoteTip,
+        canonicalBranch: candidate.name,
+      }
+    }
+  }
+
+  if (firstKnown) {
+    return {
+      branch: firstKnown.name,
+      source: firstKnown.source,
+      unresolved: firstKnown.name,
+      fetchHint: `git fetch origin ${firstKnown.name}`,
+    }
+  }
+  return {}
+}
+
+export type IntegrationCandidate = {
+  /** A commit in this clone that contains the delivered tip. */
+  mergeCommit?: string
+  /** The base ref the commit came from. */
+  base?: string
+}
+
+/**
+ * The merge commit to seal against, when the base branch already contains the
+ * delivered tip. Nothing is invented when it does not: the caller prints the
+ * `<sha>` placeholder rather than a commit that would fail verification.
+ */
+export function resolveIntegrationCandidate(
+  root: string,
+  options: {
+    tipCommit?: string
+    baseBranches?: readonly string[]
+    cache?: Map<string, string | undefined>
+    refs?: RefIndex
+  },
+): IntegrationCandidate {
+  if (!options.tipCommit) return {}
+  const cache = options.cache
+  for (const base of options.baseBranches ?? ["origin/main", "main"]) {
+    let resolved = cache?.has(base) ? cache.get(base) : undefined
+    if (resolved === undefined && !cache?.has(base)) {
+      resolved = options.refs ? resolveFromRefIndex(options.refs, base) : resolveCommit(root, base)
+      cache?.set(base, resolved)
+    }
+    if (!resolved) continue
+    if (isAncestor(root, options.tipCommit, resolved)) return { mergeCommit: resolved, base }
+  }
+  return {}
+}
+
 export type PushResult = { ok: boolean; detail: string; pushed?: boolean }
 
 /**
@@ -131,28 +385,47 @@ export type SealVerification = {
   tipCommit?: string
   mergeCommit?: string
   onBaseBranch?: boolean
+  /** Set when the refusal may be an artifact of a shallow clone. */
+  hint?: string
 }
 
 /**
  * Verify a seal: the merge commit must exist, must contain the delivered tip as
  * an ancestor, and must itself be reachable from the base branch when that ref
  * exists locally.
+ *
+ * A refusal in a shallow clone names the shallow clone: the ancestry proof is
+ * only as good as the history present, and "does not contain the tip" is
+ * indistinguishable from "the parents were never fetched" unless we say so.
  */
 export function verifySeal(root: string, options: { tipCommit?: string; mergeCommit: string; baseBranch?: string }): SealVerification {
   const mergeCommit = resolveCommit(root, options.mergeCommit)
   if (!mergeCommit) {
-    return { ok: false, detail: `Merge commit ${options.mergeCommit} does not exist in this repository` }
+    const hint = shallowHint(root)
+    return {
+      ok: false,
+      detail: `Merge commit ${options.mergeCommit} does not exist in this repository${hint ? `. ${hint}` : ""}`,
+      ...(hint ? { hint } : {}),
+    }
   }
   const tipCommit = options.tipCommit ? resolveCommit(root, options.tipCommit) : undefined
   if (options.tipCommit && !tipCommit) {
-    return { ok: false, detail: `Delivered tip ${options.tipCommit} does not exist in this repository`, mergeCommit }
-  }
-  if (tipCommit && !isAncestor(root, tipCommit, mergeCommit)) {
+    const hint = shallowHint(root)
     return {
       ok: false,
-      detail: `Merge commit ${mergeCommit.slice(0, 8)} does not contain the delivered tip ${tipCommit.slice(0, 8)}`,
+      detail: `Delivered tip ${options.tipCommit} does not exist in this repository${hint ? `. ${hint}` : ""}`,
+      mergeCommit,
+      ...(hint ? { hint } : {}),
+    }
+  }
+  if (tipCommit && !isAncestor(root, tipCommit, mergeCommit)) {
+    const hint = shallowHint(root)
+    return {
+      ok: false,
+      detail: `Merge commit ${mergeCommit.slice(0, 8)} does not contain the delivered tip ${tipCommit.slice(0, 8)}${hint ? `. ${hint}` : ""}`,
       tipCommit,
       mergeCommit,
+      ...(hint ? { hint } : {}),
     }
   }
   let onBaseBranch: boolean | undefined

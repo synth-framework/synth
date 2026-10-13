@@ -43,6 +43,8 @@ import {
   handoffState,
   pushBranch,
   resolveCommit,
+  resolveDeliveryBranch,
+  resolveIntegrationCandidate,
   verifySeal,
 } from "../ledger/delivery.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
@@ -1093,10 +1095,20 @@ async function resolveCheckpointBranch(
     return { ok: true, detail: "No executing expedition to verify execution branch", currentBranch: status.branch }
   }
 
-  // Match the current branch to the executing expedition whose canonical
-  // branch it satisfies, so multiple executing expeditions (or a canonical
-  // branch that differs from the first entry) are resolved correctly.
+  // ADR-056: a recorded binding is the answer, and it is consulted before the
+  // canonical taxonomy — otherwise a declared operator branch (an Arena session
+  // checkout, say) is reported as a violation of a branch the operator never
+  // asked for, and the pre-flight checkpoint blocks work it should authorize.
+  const records = (await sdk.state.readState(rootDir).catch(() => undefined)) as ExecutionNameRecords | undefined
+
+  // Match the current branch to the executing expedition it belongs to: first
+  // by recorded binding, then by canonical name, so multiple executing
+  // expeditions resolve to the right one.
   const match =
+    executingExpeditions.find((e) => {
+      const bound = records?.expeditions?.[e.id]?.executionBranch
+      return typeof bound === "string" && bound.length > 0 && bound === status.branch
+    }) ??
     executingExpeditions.find((e) => {
       try {
         const names = branchNameCandidates("expedition", {
@@ -1107,14 +1119,18 @@ async function resolveCheckpointBranch(
       } catch {
         return false
       }
-    }) ?? executingExpeditions[0]
+    }) ??
+    executingExpeditions[0]
 
-  const result = await adapter.validateExecutionBranch("expedition", {
-    expeditionId: match.id,
-    missionId: match.missionId,
-    expeditionName: match.name,
-    missionName: match.missionName,
-  })
+  const result = await adapter.validateExecutionBranch(
+    "expedition",
+    enrichExecutionBranchContext("expedition", match.id, records, {
+      expeditionId: match.id,
+      missionId: match.missionId,
+      expeditionName: match.name,
+      missionName: match.missionName,
+    }),
+  )
   return {
     ok: result.ok,
     detail: result.reason || (result.ok ? "Execution branch satisfies the declared policy" : "Execution branch policy violated"),
@@ -4689,6 +4705,48 @@ async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
 }
 
 /**
+ * The branch a deliver should name: the flag, else the recorded binding, else
+ * the branch the ledger says was created for this expedition, else a remote ref
+ * naming it.
+ *
+ * Canonical replay projects `executionBranch` from `EXPEDITION_BRANCH_BOUND`
+ * only. An expedition whose branch was auto-created (`EXPEDITION_BRANCH_CREATED`,
+ * ECOSYSTEM-001) therefore has no recorded branch, and `deliver --id <id>` used
+ * to fail with NoExecutionBranch — sending the operator to grep the event
+ * stream for a name the ledger already holds. Events are read only when the
+ * record has nothing, so the common path costs no extra I/O.
+ */
+async function resolveDeliverBranch(
+  expeditionId: string,
+  executionBranch: string | undefined,
+  flagBranch: string | undefined,
+): Promise<{ branch: string; source?: string; note?: string; fetchHint?: string }> {
+  if (flagBranch) return { branch: flagBranch, source: "flag" }
+  if (executionBranch) return { branch: executionBranch, source: "executionBranch" }
+
+  const events = await sdk.events.readEvents(process.cwd()).catch(() => [])
+  const resolution = resolveDeliveryBranch(process.cwd(), {
+    expeditionId,
+    events: events as Array<{ type?: string; timestamp?: number; payload?: Record<string, unknown> }>,
+  })
+  if (!resolution.branch) return { branch: "" }
+
+  const id8 = expeditionId.slice(0, 8)
+  const note =
+    resolution.source === "branchCreatedEvent"
+      ? `No executionBranch is recorded for ${id8}; delivering ${resolution.branch} from its EXPEDITION_BRANCH_CREATED event.`
+      : resolution.source === "remoteScan"
+        ? `No executionBranch is recorded for ${id8}; delivering ${resolution.branch}, a remote ref naming ${id8}.`
+        : undefined
+  return {
+    branch: resolution.branch,
+    ...(resolution.source ? { source: resolution.source } : {}),
+    ...(note ? { note } : {}),
+    ...(resolution.fetchHint ? { fetchHint: resolution.fetchHint } : {}),
+  }
+}
+
+/**
  * `synth expedition deliver --id <id> [--remote origin] [--pr <ref>] [--no-push]`
  * ADR-055 §2.6: deliver is what makes a finished branch reachable — push the
  * execution branch, record where it landed, and mark the ceremony committed.
@@ -4716,7 +4774,12 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
       printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
       return
     }
-    const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+    const resolvedBranch = await resolveDeliverBranch(
+      id,
+      expedition.executionBranch,
+      typeof flags.branch === "string" ? flags.branch : undefined,
+    )
+    const branch = resolvedBranch.branch
     const tip = branch ? resolveCommit(process.cwd(), branch) : undefined
     printJson({
       status: "ok",
@@ -4724,10 +4787,14 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
       expeditionId: id,
       expeditionStatus: expedition.status,
       branch,
+      ...(resolvedBranch.source ? { branchSource: resolvedBranch.source } : {}),
       tipCommit: tip,
       remote,
       wouldPush: !noPush && Boolean(branch && tip),
-      note: "Dry-run: nothing pushed, no ledger event written",
+      note: resolvedBranch.note
+        ? `${resolvedBranch.note} Dry-run: nothing pushed, no ledger event written.`
+        : "Dry-run: nothing pushed, no ledger event written",
+      ...(resolvedBranch.fetchHint ? { fetchHint: resolvedBranch.fetchHint } : {}),
       nextStep: `synth expedition deliver --id ${id}${branch ? "" : "  # create/start the expedition first"}`,
     })
     return
@@ -4744,12 +4811,17 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
     return
   }
 
-  const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+  const resolvedBranch = await resolveDeliverBranch(
+    id,
+    expedition.executionBranch,
+    typeof flags.branch === "string" ? flags.branch : undefined,
+  )
+  const branch = resolvedBranch.branch
   if (!branch) {
     printError(`Expedition ${id} has no recorded execution branch to deliver.`, {
       code: "NoExecutionBranch",
       category: "validation",
-      suggestion: `Name the branch explicitly (--branch <name>) or run 'synth expedition start --id ${id}' first.`,
+      suggestion: `Name the branch explicitly (--branch <name>) or run 'synth expedition start --id ${id}' first. Neither the ledger (EXPEDITION_BRANCH_CREATED) nor a remote ref names ${id.slice(0, 8)}.`,
     })
     return
   }
@@ -4796,18 +4868,25 @@ async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
 
   const ledger = await flushPendingCeremony()
   const after = deliveryState((await ctx.runtime.getState()).expeditions[id])
+  // The seal command is printed ready to paste: when the base branch already
+  // contains the delivered tip, name that commit instead of `<sha>`.
+  const integration = resolveIntegrationCandidate(process.cwd(), { tipCommit })
   printJson({
     status: "ok",
     kind: "ExpeditionDelivered",
     expeditionId: id,
     branch,
+    ...(resolvedBranch.source ? { branchSource: resolvedBranch.source } : {}),
+    ...(resolvedBranch.note ? { note: resolvedBranch.note } : {}),
     tipCommit,
     ...(pushed ? { remote } : {}),
     ...(pushDetail ? { pushDetail } : {}),
     ...(typeof flags.pr === "string" ? { prRef: flags.pr } : {}),
     deliveryPending: after.deliveryPending,
     ...(ledger ? { ledger } : {}),
-    nextStep: `synth expedition seal --id ${id} --merge-commit <sha>   (after the merge lands on the base branch)`,
+    nextStep: integration.mergeCommit
+      ? `synth expedition seal --id ${id} --merge-commit ${integration.mergeCommit}   (${integration.base} already contains the delivered tip)`
+      : `synth expedition seal --id ${id} --merge-commit <sha>   (after the merge lands on the base branch)`,
   })
 }
 

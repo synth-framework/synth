@@ -1,0 +1,48 @@
+{
+  "id": "684ca7dfec6566d9",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Dull status inbox for deliver/seal",
+  "goal": "Make synth status print exact copy-pasteable deliver --branch and seal --merge-commit commands, fixing NoExecutionBranch fallback, ledgerBranch missing fallback, and shallow-clone hint, so fresh Arena sessions can seal after pull without extra queries.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/cli/status-briefing.ts",
+      "src/cli/synth.ts",
+      "src/ledger/branch.ts",
+      "src/ledger/delivery.ts"
+    ],
+    "identity": {
+      "agentId": "synth-cli-3385",
+      "sessionId": "2b00e9e1-0e88-433f-a994-17a0dca44176",
+      "approvalMode": "autonomous",
+      "issuedAt": 436
+    },
+    "refinementId": "bd5628b56c9f2472",
+    "refinementNote": "Implemented the four drafted changes plus one in-scope discovery: resolveCheckpointBranch (src/cli/synth.ts) built its branch context by hand and never consulted the recorded ADR-056 binding, so 'synth checkpoint' reported status:blocked for an expedition executing on a declared arena/* branch; it now enriches via enrichExecutionBranchContext and matches the executing expedition by recorded binding before canonical name. Scope extension: tests/ledger-delivery.test.js and tests/ledger-ceremony.test.js were necessarily modified (outside the drafted four-file scope) to cover the new behaviour; one existing ceremony assertion encoded the old behaviour (a configured ledger branch that does not exist locally was returned verbatim) and now creates the branch so it still tests config-over-record precedence, with a new test covering the fallback.",
+    "refinementAt": 437
+  },
+  "createdAt": 431,
+  "updatedAt": 439,
+  "executionBranch": "arena/a3a7925a-synth",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/684ca7dfec6566d9/git-diff.patch",
+      "hash": "f86ab948b3683c46461fe6aa70674283cc09d47a68b099506cee4795c01e279a"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/684ca7dfec6566d9/test-results.txt",
+      "hash": "865d5d4e1ecfc3cb93b9424bc16b656bdece2677eb29af5c683d8a390f69f4a5"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/684ca7dfec6566d9/attachments/dull-status-inbox-summary.md",
+      "hash": "373e6b3bf5ac9d989244155c1daf6d98456d02289f60f754d7672e4870603172"
+    }
+  ]
+}
