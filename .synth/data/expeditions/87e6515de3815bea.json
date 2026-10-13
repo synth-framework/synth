@@ -17,6 +17,33 @@
     }
   },
   "createdAt": 399,
-  "updatedAt": 403,
-  "executionBranch": "arena/92bee2da-synth"
+  "updatedAt": 404,
+  "executionBranch": "arena/92bee2da-synth",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/87e6515de3815bea/git-diff.patch",
+      "hash": "2a93758848b110b340d869d57a749065ef095a6486eeba0e95e4e112832e843f"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/87e6515de3815bea/attachments/govern-baseline.json",
+      "hash": "b55a74b8bae1cf10ca6d299f72729a39a54fb9d2814473e537ffa86b45ddc0e8"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/87e6515de3815bea/attachments/govern-dependency-graph.json",
+      "hash": "b0b2f932422e279f505e7c4b643fe7650d6296ffa211b6b39b101f855d2a01c2"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/87e6515de3815bea/attachments/proof-2026-10-13T04-13-49-600Z.json",
+      "hash": "747d0cb6e1ab5c65e090c3373030643faa92f90ca0040f76dcc5bf91733d4100"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/87e6515de3815bea/attachments/graph-integrity-proof-2026-10-13T04-13-50-071Z.json",
+      "hash": "bc28cdde640a09d171f78e8fc9b53a1365507b7c13ddf863a7e444c3ad5ce1b5"
+    }
+  ]
 }
