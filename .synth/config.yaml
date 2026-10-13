@@ -8,13 +8,17 @@
 # their branch explicitly; declaredPatterns keeps the arena branch warning-free.
 # See docs/plans/master-delivery-plan.md.
 git:
-  # This Arena checkout is the declared, single-writer ledger branch for the
-  # delivery/seal ceremonies of expedition f0f81e35 (Revisit testing and
-  # reporting infrastructure). The previously declared branch
-  # (arena/92bee2da-synth) belongs to a finished session and no longer exists
-  # in this clone; the historical recorded branch (arena/c5db653e-synth) was
-  # merged. Ceremonies stay local (ADR-055 §2.9) and land on this checkout.
-  ledgerBranch: arena/a3a7925a-synth
+  # Single-writer ledger branch for this session's ceremonies (ADR-055 §2.9).
+  # NOTE: this key is a session-scoped value in tracked config, and it goes
+  # stale the moment the session ends — the previous value named a branch that
+  # was deleted on merge, and `.synth/data/ledger.json` still records an even
+  # older one (arena/c5db653e-synth). With both stale, resolution falls back to
+  # `main`, which would commit governance state onto the trunk branch instead
+  # of this checkout. Naming the checkout explicitly is the current workaround;
+  # removing the key entirely (infer the ledger branch from the checkout when it
+  # matches branchPolicy.declaredPatterns) is the fix, drafted as expedition
+  # "Adapter configuration consolidated".
+  ledgerBranch: arena/841cc45d-synth
   branchStrategy: featured
   branchPolicy:
     mode: enforce

@@ -1,0 +1,209 @@
+{
+  "id": "31a26dadaf47a42d",
+  "createdAt": 1791917595533,
+  "observations": [
+    {
+      "id": "obs-mission-framework-maturation-v2",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Framework Maturation v2",
+        "name": "Framework Maturation v2",
+        "id": "4ab7e9d2cc7b1b66",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Framework Maturation v2",
+      "confidence": "high",
+      "timestamp": 1791917595533
+    },
+    {
+      "id": "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Adapter configuration consolidated: declared vs detected",
+        "name": "Adapter configuration consolidated: declared vs detected",
+        "goal": "Adapter configuration has no home. It is spread across five places with no authority order and no schema. (a) .synth/config.yaml holds a single `git:` block, parsed ad hoc by three independent modules (ledger/branch.ts:74, adapter/git-snapshot.ts:338, repository/branch-policy.ts) with no type, no loader module and no validation, so an unknown or misspelled key is silently ignored. (b) `synth init` writes detection results into the generated manifest under `adapters: {selected, config, diagnostics}` (cli/synth.ts:3070-3090) - a regenerable document, and absent from this repository manifest altogether. (c) .synth/context.json persists a repository classification (`repositoryType: brownfield-polyglot`, confidence, derivedFrom) but no adapter configuration. (d) `synth adapter configure repository path=. remote=origin defaultBranch=main promotionMode=direct` (cli/adapter.ts:11,74-86) is accepted and then lost: GitRepositoryAdapter.configure (adapters/repository/git.ts:187-199) merges into in-memory state and never writes, so the verb has no durable effect across a process restart. (e) Forge credentials are split between env GITHUB_TOKEN and a config schema that declares `token` required (adapters/github/adapter.ts:72), which invites a personal access token into tracked YAML. The consequence is measured, not theoretical: detectRecommendedAdapters already computes defaultBranch and remote (cli/detect-adapters.ts:113-119) and both are dropped, so the same fact is hardcoded three separate times (ledger/delivery.ts:347 defaults baseBranches to [\"origin/main\",\"main\"] and no caller ever passes the option; ledger/branch.ts:49 LEDGER_FALLBACK_BRANCH = \"main\"; cli/adapter.ts:81 defaultBranch || \"main\"). Outcome required: (1) a typed `adapters:` section in .synth/config.yaml - adapters.repository.{provider,remote,baseBranch,snapshots,hooks} and adapters.forge.{provider,owner,repo,baseUrl} - read through one new loader module with schema validation that warns on unknown keys. (2) Detected observations written to .synth/cache/adapters.json (gitignored, artifact class `cache` per state/artifact-policy.ts:58, same precedent as dependency-records.json), each carrying value, confidence and derivedFrom, and including a git BINARY probe so that \"git is not installed\" is distinguishable from \"git is installed but this directory is not a repository\". Today first-contact onboard:detect returns byte-identical output for both cases and advises `synth adapter init` even when git is absent, which is advice the operator cannot follow. (3) A documented and tested authority order: CLI flag, then config.yaml, then cached detection, then built-in default - where the built-in default is provider none declaring no capabilities, never origin/main. (4) The three hardcoded branch defaults deleted and fed from configuration through the baseBranches option ledger/delivery.ts:347 already accepts. (5) `synth adapter configure --approve` promotes a detection proposal into config.yaml, plan-then-approve in the same shape as first-contact onboard --approve; this single mechanism is what makes the greenfield offer (\"git is installed, this is not a repository - initialise it?\") and the brownfield offer (\"a repository and a GitHub remote were detected - configure the forge adapter?\") the same code path. (6) Credentials resolved from env or a secret store only, with `token` removed from the GitHub adapter required config schema. (7) The existing `git:` block migrated to adapters.repository.* with a deprecation warning on read, and `git.ledgerBranch` retired: the ledger branch is inferred from the checkout when it matches branchPolicy.declaredPatterns, with trunk as the last resort rather than the first. (8) The ledger-branch fallback order corrected - a stale configured value plus a stale .synth/data/ledger.json record (currently arena/c5db653e-synth) resolve to local `main` today, which would commit governance state onto the trunk branch instead of the declared operator checkout; a checkout matching a declared pattern must win over trunk. Acceptance: the three-system matrix (no git at all / git installed without a repository / git installed with a repository) yields distinct, truthful recognition output and identical ledger behaviour in all three; no repository or branch value is hardcoded outside the loader documented defaults; `synth adapter configure` survives a process restart; no secret can be written into .synth/config.yaml; and the ledger records ceremonies with zero VCS present, reporting verification as unavailable rather than failing.",
+        "missionSubject": "4ab7e9d2cc7b1b66"
+      },
+      "evidenceReference": "evidence-expedition-Adapter configuration consolidated: declared vs detected",
+      "confidence": "high",
+      "timestamp": 1791917595533
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "08019b145cfb2447",
+        "observationId": "obs-mission-framework-maturation-v2",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "f1b3b695ed247891",
+        "immutable": true
+      },
+      {
+        "id": "f878ade5819f7695",
+        "observationId": "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Adapter configuration consolidated: declared vs detected\",\"name\":\"Adapter configuration consolidated: declared vs detected\",\"goal\":\"Adapter configuration has no home. It is spread across f",
+        "fingerprint": "3c7db44e8c65fcd0",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-framework-maturation-v2",
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "f1b3b695ed247891",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+        {
+          "id": "f878ade5819f7695",
+          "observationId": "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Adapter configuration consolidated: declared vs detected\",\"name\":\"Adapter configuration consolidated: declared vs detected\",\"goal\":\"Adapter configuration has no home. It is spread across f",
+          "fingerprint": "3c7db44e8c65fcd0",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "d4b7a9b2feb0db51",
+        {
+          "id": "d4b7a9b2feb0db51",
+          "kind": "mission",
+          "name": "Framework Maturation v2",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-framework-maturation-v2"
+          ],
+          "evidenceRefs": [
+            "08019b145cfb2447"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "445e47e85ac4d523",
+        {
+          "id": "445e47e85ac4d523",
+          "kind": "expedition",
+          "name": "Adapter configuration consolidated: declared vs detected",
+          "description": "Adapter configuration has no home. It is spread across five places with no authority order and no schema. (a) .synth/config.yaml holds a single `git:` block, parsed ad hoc by three independent modules (ledger/branch.ts:74, adapter/git-snapshot.ts:338, repository/branch-policy.ts) with no type, no loader module and no validation, so an unknown or misspelled key is silently ignored. (b) `synth init` writes detection results into the generated manifest under `adapters: {selected, config, diagnostics}` (cli/synth.ts:3070-3090) - a regenerable document, and absent from this repository manifest altogether. (c) .synth/context.json persists a repository classification (`repositoryType: brownfield-polyglot`, confidence, derivedFrom) but no adapter configuration. (d) `synth adapter configure repository path=. remote=origin defaultBranch=main promotionMode=direct` (cli/adapter.ts:11,74-86) is accepted and then lost: GitRepositoryAdapter.configure (adapters/repository/git.ts:187-199) merges into in-memory state and never writes, so the verb has no durable effect across a process restart. (e) Forge credentials are split between env GITHUB_TOKEN and a config schema that declares `token` required (adapters/github/adapter.ts:72), which invites a personal access token into tracked YAML. The consequence is measured, not theoretical: detectRecommendedAdapters already computes defaultBranch and remote (cli/detect-adapters.ts:113-119) and both are dropped, so the same fact is hardcoded three separate times (ledger/delivery.ts:347 defaults baseBranches to [\"origin/main\",\"main\"] and no caller ever passes the option; ledger/branch.ts:49 LEDGER_FALLBACK_BRANCH = \"main\"; cli/adapter.ts:81 defaultBranch || \"main\"). Outcome required: (1) a typed `adapters:` section in .synth/config.yaml - adapters.repository.{provider,remote,baseBranch,snapshots,hooks} and adapters.forge.{provider,owner,repo,baseUrl} - read through one new loader module with schema validation that warns on unknown keys. (2) Detected observations written to .synth/cache/adapters.json (gitignored, artifact class `cache` per state/artifact-policy.ts:58, same precedent as dependency-records.json), each carrying value, confidence and derivedFrom, and including a git BINARY probe so that \"git is not installed\" is distinguishable from \"git is installed but this directory is not a repository\". Today first-contact onboard:detect returns byte-identical output for both cases and advises `synth adapter init` even when git is absent, which is advice the operator cannot follow. (3) A documented and tested authority order: CLI flag, then config.yaml, then cached detection, then built-in default - where the built-in default is provider none declaring no capabilities, never origin/main. (4) The three hardcoded branch defaults deleted and fed from configuration through the baseBranches option ledger/delivery.ts:347 already accepts. (5) `synth adapter configure --approve` promotes a detection proposal into config.yaml, plan-then-approve in the same shape as first-contact onboard --approve; this single mechanism is what makes the greenfield offer (\"git is installed, this is not a repository - initialise it?\") and the brownfield offer (\"a repository and a GitHub remote were detected - configure the forge adapter?\") the same code path. (6) Credentials resolved from env or a secret store only, with `token` removed from the GitHub adapter required config schema. (7) The existing `git:` block migrated to adapters.repository.* with a deprecation warning on read, and `git.ledgerBranch` retired: the ledger branch is inferred from the checkout when it matches branchPolicy.declaredPatterns, with trunk as the last resort rather than the first. (8) The ledger-branch fallback order corrected - a stale configured value plus a stale .synth/data/ledger.json record (currently arena/c5db653e-synth) resolve to local `main` today, which would commit governance state onto the trunk branch instead of the declared operator checkout; a checkout matching a declared pattern must win over trunk. Acceptance: the three-system matrix (no git at all / git installed without a repository / git installed with a repository) yields distinct, truthful recognition output and identical ledger behaviour in all three; no repository or branch value is hardcoded outside the loader documented defaults; `synth adapter configure` survives a process restart; no secret can be written into .synth/config.yaml; and the ledger records ceremonies with zero VCS present, reporting verification as unavailable rather than failing.",
+          "missionId": "d4b7a9b2feb0db51",
+          "goal": "Adapter configuration has no home. It is spread across five places with no authority order and no schema. (a) .synth/config.yaml holds a single `git:` block, parsed ad hoc by three independent modules (ledger/branch.ts:74, adapter/git-snapshot.ts:338, repository/branch-policy.ts) with no type, no loader module and no validation, so an unknown or misspelled key is silently ignored. (b) `synth init` writes detection results into the generated manifest under `adapters: {selected, config, diagnostics}` (cli/synth.ts:3070-3090) - a regenerable document, and absent from this repository manifest altogether. (c) .synth/context.json persists a repository classification (`repositoryType: brownfield-polyglot`, confidence, derivedFrom) but no adapter configuration. (d) `synth adapter configure repository path=. remote=origin defaultBranch=main promotionMode=direct` (cli/adapter.ts:11,74-86) is accepted and then lost: GitRepositoryAdapter.configure (adapters/repository/git.ts:187-199) merges into in-memory state and never writes, so the verb has no durable effect across a process restart. (e) Forge credentials are split between env GITHUB_TOKEN and a config schema that declares `token` required (adapters/github/adapter.ts:72), which invites a personal access token into tracked YAML. The consequence is measured, not theoretical: detectRecommendedAdapters already computes defaultBranch and remote (cli/detect-adapters.ts:113-119) and both are dropped, so the same fact is hardcoded three separate times (ledger/delivery.ts:347 defaults baseBranches to [\"origin/main\",\"main\"] and no caller ever passes the option; ledger/branch.ts:49 LEDGER_FALLBACK_BRANCH = \"main\"; cli/adapter.ts:81 defaultBranch || \"main\"). Outcome required: (1) a typed `adapters:` section in .synth/config.yaml - adapters.repository.{provider,remote,baseBranch,snapshots,hooks} and adapters.forge.{provider,owner,repo,baseUrl} - read through one new loader module with schema validation that warns on unknown keys. (2) Detected observations written to .synth/cache/adapters.json (gitignored, artifact class `cache` per state/artifact-policy.ts:58, same precedent as dependency-records.json), each carrying value, confidence and derivedFrom, and including a git BINARY probe so that \"git is not installed\" is distinguishable from \"git is installed but this directory is not a repository\". Today first-contact onboard:detect returns byte-identical output for both cases and advises `synth adapter init` even when git is absent, which is advice the operator cannot follow. (3) A documented and tested authority order: CLI flag, then config.yaml, then cached detection, then built-in default - where the built-in default is provider none declaring no capabilities, never origin/main. (4) The three hardcoded branch defaults deleted and fed from configuration through the baseBranches option ledger/delivery.ts:347 already accepts. (5) `synth adapter configure --approve` promotes a detection proposal into config.yaml, plan-then-approve in the same shape as first-contact onboard --approve; this single mechanism is what makes the greenfield offer (\"git is installed, this is not a repository - initialise it?\") and the brownfield offer (\"a repository and a GitHub remote were detected - configure the forge adapter?\") the same code path. (6) Credentials resolved from env or a secret store only, with `token` removed from the GitHub adapter required config schema. (7) The existing `git:` block migrated to adapters.repository.* with a deprecation warning on read, and `git.ledgerBranch` retired: the ledger branch is inferred from the checkout when it matches branchPolicy.declaredPatterns, with trunk as the last resort rather than the first. (8) The ledger-branch fallback order corrected - a stale configured value plus a stale .synth/data/ledger.json record (currently arena/c5db653e-synth) resolve to local `main` today, which would commit governance state onto the trunk branch instead of the declared operator checkout; a checkout matching a declared pattern must win over trunk. Acceptance: the three-system matrix (no git at all / git installed without a repository / git installed with a repository) yields distinct, truthful recognition output and identical ledger behaviour in all three; no repository or branch value is hardcoded outside the loader documented defaults; `synth adapter configure` survives a process restart; no secret can be written into .synth/config.yaml; and the ledger records ceremonies with zero VCS present, reporting verification as unavailable rather than failing.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected"
+          ],
+          "evidenceRefs": [
+            "f878ade5819f7695"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "63f392b32708e14b",
+        "source": "445e47e85ac4d523",
+        "target": "d4b7a9b2feb0db51",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "08019b145cfb2447",
+          "observationId": "obs-mission-framework-maturation-v2",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "f1b3b695ed247891",
+          "immutable": true
+        },
+        {
+          "id": "f878ade5819f7695",
+          "observationId": "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Adapter configuration consolidated: declared vs detected\",\"name\":\"Adapter configuration consolidated: declared vs detected\",\"goal\":\"Adapter configuration has no home. It is spread across f",
+          "fingerprint": "3c7db44e8c65fcd0",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-framework-maturation-v2",
+          {
+            "id": "08019b145cfb2447",
+            "observationId": "obs-mission-framework-maturation-v2",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Framework Maturation v2\",\"name\":\"Framework Maturation v2\",\"id\":\"4ab7e9d2cc7b1b66\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "f1b3b695ed247891",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+          {
+            "id": "f878ade5819f7695",
+            "observationId": "obs-expedition-adapter-configuration-consolidated:-declared-vs-detected",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Adapter configuration consolidated: declared vs detected\",\"name\":\"Adapter configuration consolidated: declared vs detected\",\"goal\":\"Adapter configuration has no home. It is spread across f",
+            "fingerprint": "3c7db44e8c65fcd0",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
