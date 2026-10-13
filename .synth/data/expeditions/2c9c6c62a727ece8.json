@@ -31,10 +31,14 @@
     },
     "refinementId": "fa4896cd841daec3",
     "refinementNote": "CORRECTION to the drafted goal, recorded during implementation as required by the append-only ledger. The goal asserted that verification/checks.ts:44 returns a vacuous ReplayIntegrity pass on this repository and that every green validate/govern/full-govern run carried it. That is FALSE and was measured wrong. buildVerificationContext (src/verification/context.ts:53-63) already builds the partition-aware store: createInfra returns a PartitionedEventStore, eventStore.loadAll() returns 448 events here, hasEventLog is true, and `synth verify` reports ReplayIntegrity pass with the message 'Chain valid, replay consistent, graph valid (448 events)'. All six checks pass on real evidence. What IS true, and is the defect this expedition fixes: (1) verifyReplayHealth (src/cli/synth.ts:862-869) tests only sdk.paths.eventLogFile(root) - the legacy single file - so `synth checkpoint` reports 'No event log present; replay skipped' for a ledger holding 448 events; (2) the same legacy-path-only assumption is served to operators and agents by explain paths, explain observability, explain replay-light, first-contact (746, 780, 826) and bootstrap-apply:235, none of which mention the event-stream layout that actually exists on disk; (3) a genuinely empty project still reports ReplayIntegrity as pass rather than as a non-result, because CheckStatus (verification/types.ts:14) has no skipped value; (4) three log layouts coexist with no single resolver. Scope narrows accordingly: the verification engine is NOT broken and must not be rewritten; the presence-and-location question is answered in seven places by one wrong path, and that is what gets unified.",
-    "refinementAt": 448
+    "refinementAt": 448,
+    "integration": {
+      "mergeCommit": "8b8dce2692588417764630e6c2bb6aad116d6d05",
+      "integratedAt": 457
+    }
   },
   "createdAt": 442,
-  "updatedAt": 450,
+  "updatedAt": 457,
   "executionBranch": "arena/841cc45d-synth",
   "attachments": [
     {
