@@ -1,6 +1,6 @@
 {
-  "version": 421,
-  "stateHash": "1840642833",
+  "version": 422,
+  "stateHash": "2024268622",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -74,11 +74,12 @@
         "e38aa99f7f2593af",
         "9ab1218c6f872c60",
         "220f6163a7b55b45",
-        "f0f81e358899d8f2"
+        "f0f81e358899d8f2",
+        "e9a83ffda86ca767"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 395,
+      "updatedAt": 421,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     },
     "b536ecc7ceb9217a": {
@@ -1694,6 +1695,26 @@
           "hash": "bc28cdde640a09d171f78e8fc9b53a1365507b7c13ddf863a7e444c3ad5ce1b5"
         }
       ]
+    },
+    "e9a83ffda86ca767": {
+      "id": "e9a83ffda86ca767",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-001 Normalize logging & failure envelope",
+      "goal": "Make every check failure emit structured JSON {checkId, status, duration, module, determinism, environment, failure:{file,line,assertion}} and prefix logs with [checkId]; introduce SYNTH_LOG_LEVEL, respect SYNTH_TASK_VERBOSE/SYNTH_QUIET_LOGS, extend test:clean-machine-output and test:governance-quiet-output.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "tests/helpers/**",
+          "scripts/governance/**",
+          "src/cli/**"
+        ]
+      },
+      "createdAt": 421,
+      "updatedAt": 421
     }
   },
   "objectives": {},
@@ -1719,5 +1740,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 421
+  "lastEventOffset": 422
 }
