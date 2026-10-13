@@ -1,6 +1,6 @@
 {
-  "version": 443,
-  "stateHash": "1555328460",
+  "version": 444,
+  "stateHash": "1475650281",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1872,7 +1872,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Verification sees the whole event log",
       "goal": "The framework integrity evidence is vacuous on any repository whose event log has been chunked. src/verification/context.ts:44,62 computes `hasEventLog = migratedEvents.length > 0 || await pathExists(eventLogPath)` where eventLogPath is sdk.paths.eventLogFile(root) - the legacy single file .synth/data/event-log.jsonl. This repository log lives at .synth/data/event-stream/partition-<n>/segment-XXXX.jsonl (four partitions, 442 events), the layout documented at src/runtime/governance-resolver.ts:84 and read by SegmentStore (src/infra/event-store.ts:325). So hasEventLog is false, and in order: verification/checks.ts:44 returns ReplayIntegrity \"pass\" with the message \"No event log present; replay integrity is vacuously satisfied\"; checks.ts:117 and checks.ts:386 skip their event-log-gated assertions; verification/engine.ts:29 skips replay entirely; and cli/synth.ts:862-869 (verifyReplayHealth) reports \"No event log present; replay skipped\" inside `synth checkpoint`. At the same moment `synth explain replay` reads the partitioned store correctly and reports 442 events, consistent, chain valid. The two disagree and the disagreement is invisible: the check whose only job is proving the ledger is intact reports success without ever looking at it. Every green validate, govern and full-govern run on a chunked repository - including the one that certified PR #343 - carried that vacuous pass. The same legacy-path assumption is spread across at least seven further call sites: cli/bootstrap-apply.ts:235, cli/explain-observability.ts:110, cli/explain-paths.ts:57, cli/explain-replay-light.ts:49, cli/first-contact.ts:746, 780 and 826. Two complications make this more than a one-line fix. First, THREE layouts coexist in the codebase: the legacy single file, event-stream/partition-<n>.jsonl (still implemented by PartitionStore.filePath at event-store.ts:161-162) and the current event-stream/partition-<n>/segment-XXXX.jsonl - so the codebase carries two contradictory ideas of what a partition is. Second, the vocabulary cannot express the truth: verification/types.ts:14 declares `CheckStatus = \"pass\" | \"fail\" | \"warn\"` with no skipped value, which is precisely why an absent log is reported as a pass instead of as a non-result. Outcome required: (1) ONE authority for where the event log is and whether there is one - a single resolver recognising all three layouts and returning present, layout, paths and eventCount - consumed by verification/context, verifyReplayHealth and every call site listed above; after this, no module may construct or test the legacy path directly. (2) A vacuous pass becomes impossible: CheckStatus gains `skipped` carrying a structured reason (the same shape EXP-TEST-004 proposes for test skips), ReplayIntegrity reports skipped with reason no-event-log when there is genuinely no log, and reports the eventCount it actually replayed when there is one. (3) `synth checkpoint` replay step names the layout and the event count verified, and can never again print \"No event log present\" for a repository holding 442 events. (4) PartitionStore stale partition-<n>.jsonl naming is either reconciled with the segment layout or explicitly marked legacy-read-only, so two contradictory partition layouts stop shipping side by side. (5) Tests pin all three layouts: a segment-partitioned ledger must yield a ReplayIntegrity result naming its eventCount; a legacy single-file ledger must still verify; an empty project must report skipped rather than pass; and a regression guard must fail if any module reintroduces a direct legacy-path existence check. Acceptance: on this repository `synth checkpoint` and `synth validate` report replay over 442 events instead of skipping; ReplayIntegrity and `explain replay` agree; and no verification check is able to report pass without having read the log.",
-      "status": "draft",
+      "status": "approved",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1894,7 +1894,7 @@
         ]
       },
       "createdAt": 442,
-      "updatedAt": 442
+      "updatedAt": 443
     }
   },
   "objectives": {},
@@ -1920,5 +1920,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 443
+  "lastEventOffset": 444
 }
