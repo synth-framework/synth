@@ -1,0 +1,13 @@
+{
+  "id": "check:adr",
+  "description": "npm script migration: check:adr",
+  "command": "node scripts/check-adr-compliance.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

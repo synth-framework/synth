@@ -1,0 +1,14 @@
+{
+  "id": "test:declared-branch",
+  "description": "npm script migration: test:declared-branch",
+  "command": "node tests/execution-branch-policy.test.js && node tests/declared-branch-git.test.js && node tests/declared-branch-binding.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

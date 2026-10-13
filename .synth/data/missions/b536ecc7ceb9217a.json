@@ -1,0 +1,15 @@
+{
+  "id": "b536ecc7ceb9217a",
+  "name": "Derived-State Integrity",
+  "purpose": "Eliminate the class of defects in which SYNTH's own read paths dirty the working tree, block expedition completion, or leave governance state uncommitted - by classifying every artifact once (durable, input, derived, cache, legacy) and enforcing two invariants: reads never write, and derived state never blocks work.",
+  "status": "completed",
+  "expeditions": [
+    "f089c4fea720c07c",
+    "cfbb801aa232795a",
+    "ecc3688796be0545"
+  ],
+  "metadata": {},
+  "createdAt": 329,
+  "updatedAt": 373,
+  "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
+}

@@ -252,6 +252,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       }
       break
     }
+    case "MISSION_BRANCH_BOUND": {
+      const missionId = String(payload.missionId)
+      if (state.missions[missionId]) {
+        state.missions[missionId] = {
+          ...state.missions[missionId],
+          executionBranch: String(payload.branch),
+          updatedAt: event.timestamp,
+        }
+      }
+      break
+    }
     case "MISSION_ARCHIVED": {
       const missionId = String(payload.id)
       if (state.missions[missionId]) {
@@ -301,6 +312,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
       const expeditionId = String(payload.id)
       if (state.expeditions[expeditionId]) {
         state.expeditions[expeditionId] = { ...state.expeditions[expeditionId], status: "committed", updatedAt: event.timestamp }
+      }
+      break
+    }
+    case "EXPEDITION_BRANCH_BOUND": {
+      const expeditionId = String(payload.expeditionId)
+      if (state.expeditions[expeditionId]) {
+        state.expeditions[expeditionId] = {
+          ...state.expeditions[expeditionId],
+          executionBranch: String(payload.branch),
+          updatedAt: event.timestamp,
+        }
       }
       break
     }
@@ -357,6 +379,98 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
           metadata: {
             ...state.expeditions[expeditionId].metadata,
             cancelReason: typeof payload.reason === "string" ? payload.reason : undefined,
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_DELIVERED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        state.expeditions[expeditionId] = {
+          ...existing,
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            delivery: {
+              branch: String(payload.branch ?? ""),
+              tipCommit: String(payload.tipCommit ?? ""),
+              ...(typeof payload.remote === "string" ? { remote: payload.remote } : {}),
+              ...(typeof payload.prRef === "string" ? { prRef: payload.prRef } : {}),
+              deliveredAt: event.timestamp,
+            },
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_INTEGRATED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        state.expeditions[expeditionId] = {
+          ...existing,
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            integration: {
+              mergeCommit: String(payload.mergeCommit ?? ""),
+              ...(typeof payload.branch === "string" ? { branch: payload.branch } : {}),
+              ...(typeof payload.tipCommit === "string" ? { tipCommit: payload.tipCommit } : {}),
+              ...(typeof payload.baseBranch === "string" ? { baseBranch: payload.baseBranch } : {}),
+              integratedAt: event.timestamp,
+            },
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_ABANDONED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        const abandonment = (existing.metadata?.abandonment ?? {}) as Record<string, unknown>
+        state.expeditions[expeditionId] = {
+          ...existing,
+          // ADR-054: `cancelled` is the terminal ledger state for work that was
+          // walked away from; `abandon` is the honest verb that lands it.
+          status: "cancelled",
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            abandonment: {
+              ...abandonment,
+              reason: String(payload.reason ?? ""),
+              abandonedAt: event.timestamp,
+              ...(typeof payload.branch === "string" ? { branch: payload.branch } : {}),
+              ...(typeof payload.tipCommit === "string" ? { tipCommit: payload.tipCommit } : {}),
+              // explicit, always: "was it delivered / merged" is a question the
+              // handoff must answer, not one it may leave blank
+              delivered: payload.delivered === true,
+              merged: payload.merged === true,
+              ...(typeof payload.ref === "string" ? { ref: payload.ref } : {}),
+            },
+          },
+        }
+      }
+      break
+    }
+    case "EXPEDITION_DISCARDED": {
+      const expeditionId = String(payload.id ?? payload.expeditionId)
+      const existing = state.expeditions[expeditionId]
+      if (existing) {
+        state.expeditions[expeditionId] = {
+          ...existing,
+          updatedAt: event.timestamp,
+          metadata: {
+            ...existing.metadata,
+            abandonment: {
+              ...((existing.metadata?.abandonment ?? {}) as Record<string, unknown>),
+              discarded: true,
+              discardedAt: event.timestamp,
+              deleted: Array.isArray(payload.deleted) ? payload.deleted : [],
+            },
           },
         }
       }

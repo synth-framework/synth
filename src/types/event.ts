@@ -79,6 +79,39 @@ export type StateEvent =
   | { type: "EXPEDITION_DELETED"; expeditionId: string; missionId: string; reason?: string }
   | { type: "EXPEDITION_MOVED"; expeditionId: string; fromMissionId: string; toMissionId: string; verification: string; reason?: string }
   | { type: "EVIDENCE_ATTACHED"; expeditionId: string; attachments: unknown[]; note?: string }
+  | {
+      type: "EXPEDITION_DELIVERED"
+      expeditionId: string
+      branch: string
+      tipCommit: string
+      remote?: string
+      prRef?: string
+    }
+  | {
+      type: "EXPEDITION_INTEGRATED"
+      expeditionId: string
+      mergeCommit: string
+      branch?: string
+      tipCommit?: string
+      baseBranch?: string
+    }
+  | {
+      type: "EXPEDITION_ABANDONED"
+      expeditionId: string
+      reason: string
+      branch?: string
+      tipCommit?: string
+      delivered?: boolean
+      merged?: boolean
+    }
+  | {
+      type: "EXPEDITION_DISCARDED"
+      expeditionId: string
+      branch?: string
+      ref?: string
+      tipCommit?: string
+      deleted?: string[]
+    }
   // Review gate lifecycle (EXP-PROGRAM-035)
   | { type: "REVIEW_GATE_OPENED"; expeditionId: string; gateId: string; reviewPackageId: string; policy: unknown }
   | { type: "REVIEW_GATE_RESOLVED"; expeditionId: string; gateId: string; decisionId: string; decision: string }
@@ -132,6 +165,10 @@ export type StateEvent =
   // Repository governance lifecycle (EXP-PROGRAM-028)
   | { type: "REPOSITORY_INITIALIZED"; repositoryId: string; defaultBranch: string; forgeProvider: string; versionStrategy: string }
   | { type: "BRANCH_CREATED"; branchName: string; branchType: string; baseBranch?: string; missionId?: string; expeditionId?: string }
+  // Operator-declared execution branches (ADR-056): the binding is recorded so
+  // resolution is replayable instead of derived from a naming convention.
+  | { type: "MISSION_BRANCH_BOUND"; missionId: string; branch: string; declared: boolean; created: boolean; baseCommit: string; declaredBy: string }
+  | { type: "EXPEDITION_BRANCH_BOUND"; expeditionId: string; branch: string; declared: boolean; created: boolean; baseCommit: string; declaredBy: string }
   | { type: "PULL_REQUEST_OPENED"; pullRequestId: string; forgeId: string; url: string; number: number; headBranch: string; baseBranch: string; missionId?: string; expeditionId?: string }
   | { type: "PULL_REQUEST_UPDATED"; pullRequestId: string; state: "open" | "closed" | "merged"; title?: string }
   | { type: "PULL_REQUEST_MERGED"; pullRequestId: string; commit: string; strategy: string }

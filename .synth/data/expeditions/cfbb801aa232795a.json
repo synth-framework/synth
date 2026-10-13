@@ -1,0 +1,48 @@
+{
+  "id": "cfbb801aa232795a",
+  "missionId": "b536ecc7ceb9217a",
+  "name": "Artifact policy and no-write-on-read regression guard",
+  "goal": "Introduce src/state/artifact-policy.ts as the single classification of durable, input, derived, cache and legacy artifacts; make .gitignore, the auto-commit file list and the completion gate derive from it; add scripts/check-artifact-policy.js as a CI guard; add tests/no-write-on-read.test.js and tests/derived-state-commit.test.js so the invariants reads-never-write and derived-state-never-blocks-work are enforced by tests. Removes the stale tracked event-log.jsonl from the commit list and patterns.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [
+    "ecc3688796be0545",
+    "f089c4fea720c07c"
+  ],
+  "metadata": {
+    "scope": [
+      "src/state/artifact-policy.ts",
+      "scripts/check-artifact-policy.js",
+      "tests/",
+      ".gitignore",
+      "AGENTS.md",
+      "package.json",
+      "data/tasks/"
+    ],
+    "refinementId": "2db36b4a36372931",
+    "refinementNote": "E3 consumes the artifact policy and staging invariants landed by E1 (ecc3688796be0545) and E2 (f089c4fea720c07c)",
+    "refinementAt": 347,
+    "identity": {
+      "agentId": "synth-cli-23293",
+      "sessionId": "56e6575c-3101-42f3-8d5c-63f95122bce0",
+      "approvalMode": "autonomous",
+      "issuedAt": 370
+    }
+  },
+  "createdAt": 339,
+  "updatedAt": 376,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/cfbb801aa232795a/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/cfbb801aa232795a/attachments/e3-source.patch",
+      "hash": "7484bb2cb5ff6e43aff673126be60e8cf14eda0b38bd13fc68dc55f73186ff29"
+    }
+  ]
+}

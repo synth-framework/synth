@@ -16,7 +16,12 @@
 import fs from "fs"
 import path from "path"
 import { load as loadYaml } from "js-yaml"
-import { canonicalBranchCandidates, classifyBranch, validateBranchName } from "./branch-taxonomy.js"
+import {
+  canonicalBranchCandidates,
+  classifyBranch,
+  isCanonicalBranchForRole,
+  validateBranchName,
+} from "./branch-taxonomy.js"
 
 export type BranchPolicyMode = "off" | "enforce"
 export type BranchStrategy = "featured" | "trunk" | "observed"
@@ -26,6 +31,12 @@ export type BranchPolicy = {
   strategy: BranchStrategy
   allowChoreOnMain: boolean
   choreCapabilities: string[]
+  /**
+   * ADR-056 §2.4: branch patterns pre-approved as declared execution targets
+   * (`arena/*`). A match softens the override warning; it never binds anything
+   * implicitly — the binding still has to be declared and recorded.
+   */
+  declaredPatterns: string[]
 }
 
 export type ExecutionRole = "mission" | "expedition" | "chore" | "internal"
@@ -36,6 +47,8 @@ export type ExecutionBranchContext = {
   missionName?: string
   expeditionName?: string
   capability?: string
+  /** ADR-056 §2.1: the operator-declared binding, consulted before the taxonomy. */
+  declaredBranch?: string
 }
 
 export type ExecutionBranchResult = {
@@ -44,13 +57,22 @@ export type ExecutionBranchResult = {
   strategy: BranchStrategy
   requiredBranch?: string
   reason?: string
+  /** Set when the decision came from an operator declaration (ADR-056). */
+  declaredBranch?: string
+  /** True when the declared branch is not a canonical branch for the role. */
+  overridden?: boolean
+  /** True when the declared branch matched `declaredPatterns` (no warning). */
+  patternMatched?: boolean
 }
 
 // Canonical-state records consulted when enriching a branch context with
 // human-readable names. Structural subset — any canonical state satisfies it.
 export type ExecutionNameRecords = {
-  missions?: Record<string, { name?: string } | undefined>
-  expeditions?: Record<string, { name?: string; missionId?: string } | undefined>
+  missions?: Record<string, { name?: string; status?: string; executionBranch?: string } | undefined>
+  expeditions?: Record<
+    string,
+    { name?: string; missionId?: string; status?: string; executionBranch?: string } | undefined
+  >
 }
 
 // Single source of name enrichment for candidate resolution: fills missing
@@ -68,6 +90,7 @@ export function enrichExecutionBranchContext(
       ...base,
       missionId: requestId,
       missionName: base?.missionName ?? records?.missions?.[requestId]?.name,
+      declaredBranch: base?.declaredBranch ?? records?.missions?.[requestId]?.executionBranch,
     }
   }
   const expedition = records?.expeditions?.[requestId]
@@ -78,6 +101,12 @@ export function enrichExecutionBranchContext(
     missionId: missionId || undefined,
     expeditionName: base?.expeditionName ?? expedition?.name,
     missionName: base?.missionName ?? (missionId ? records?.missions?.[missionId]?.name : undefined),
+    // ADR-056: a recorded binding is consulted before the taxonomy, so the
+    // resolution survives replays and later commands can omit --branch.
+    declaredBranch:
+      base?.declaredBranch ??
+      expedition?.executionBranch ??
+      (missionId ? records?.missions?.[missionId]?.executionBranch : undefined),
   }
 }
 
@@ -87,7 +116,54 @@ function defaultBranchPolicy(): BranchPolicy {
     strategy: "featured",
     allowChoreOnMain: false,
     choreCapabilities: [],
+    declaredPatterns: [],
   }
+}
+
+/**
+ * Glob-style match for `declaredPatterns` (ADR-056 §2.4). `*` matches any run
+ * of characters, including `/`; everything else is literal.
+ */
+export function matchesDeclaredBranchPattern(
+  branch: string,
+  patterns: readonly string[] | undefined | null,
+): boolean {
+  const list = Array.isArray(patterns) ? patterns : []
+  return list.some((pattern) => {
+    if (typeof pattern !== "string" || pattern.length === 0) return false
+    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")
+    return new RegExp(`^${escaped}$`).test(branch)
+  })
+}
+
+/**
+ * A live entity that already owns a branch (ADR-056 §2.3). Exclusivity is per
+ * role: a live mission binding does not block its expeditions from declaring
+ * the same branch (the operator-owned workspace case).
+ */
+export function findLiveBranchBindingOwner(
+  records: ExecutionNameRecords | null | undefined,
+  role: "mission" | "expedition",
+  entityId: string,
+  branch: string,
+): { kind: "mission" | "expedition"; id: string } | undefined {
+  if (!branch) return undefined
+  if (role === "mission") {
+    const live = new Set(["projected", "draft", "active"])
+    for (const [id, mission] of Object.entries(records?.missions ?? {})) {
+      if (!mission || mission.executionBranch !== branch || id === entityId) continue
+      if (!live.has(String((mission as { status?: string }).status))) continue
+      return { kind: "mission", id }
+    }
+    return undefined
+  }
+  const live = new Set(["draft", "approved", "committed", "executing", "paused"])
+  for (const [id, expedition] of Object.entries(records?.expeditions ?? {})) {
+    if (!expedition || expedition.executionBranch !== branch || id === entityId) continue
+    if (!live.has(String((expedition as { status?: string }).status))) continue
+    return { kind: "expedition", id }
+  }
+  return undefined
 }
 
 export function loadBranchPolicyConfig(cwd: string): BranchPolicy {
@@ -115,6 +191,9 @@ export function loadBranchPolicyConfig(cwd: string): BranchPolicy {
   }
   if (Array.isArray(policy.choreCapabilities)) {
     config.choreCapabilities = policy.choreCapabilities.filter((c: unknown): c is string => typeof c === "string")
+  }
+  if (Array.isArray(policy.declaredPatterns)) {
+    config.declaredPatterns = policy.declaredPatterns.filter((p: unknown): p is string => typeof p === "string")
   }
   return config
 }
@@ -171,6 +250,54 @@ export function resolveExecutionBranch(
   // Internal/framework operations never block on canonical branches.
   if (role === "internal") {
     return { ...base, reason: "Internal operations are exempt from branch enforcement" }
+  }
+
+  // Operator-declared execution branch (ADR-056 §2.1). The binding is
+  // consulted before the naming taxonomy: the convention becomes a default
+  // rather than a law, and the override is explicit — never silent.
+  if (context.declaredBranch) {
+    const declared = context.declaredBranch
+    // A binding is not a bypass: the checked-out branch must be the declared
+    // one. Resolution then comes from the binding, not from the name taxonomy.
+    if (currentBranch !== declared) {
+      return {
+        ...base,
+        ok: false,
+        requiredBranch: declared,
+        declaredBranch: declared,
+        reason: `${role} execution is bound to ${declared} (ADR-056); current branch is ${currentBranch}`,
+      }
+    }
+    const canonical =
+      role === "mission" || role === "expedition"
+        ? isCanonicalBranchForRole(role, declared, {
+            missionId: context.missionId,
+            missionName: context.missionName,
+            expeditionId: role === "expedition" ? context.expeditionId : undefined,
+            expeditionName: role === "expedition" ? context.expeditionName : undefined,
+          })
+        : false
+    const patternMatched = matchesDeclaredBranchPattern(declared, policy.declaredPatterns)
+    if (canonical) {
+      return {
+        ...base,
+        requiredBranch: declared,
+        declaredBranch: declared,
+        overridden: false,
+        patternMatched,
+        reason: `Declared ${role} branch ${declared} is canonical`,
+      }
+    }
+    return {
+      ...base,
+      requiredBranch: declared,
+      declaredBranch: declared,
+      overridden: true,
+      patternMatched,
+      reason: patternMatched
+        ? `Declared branch ${declared} matches a configured declaredPattern`
+        : `BRANCH_POLICY_OVERRIDDEN: declared branch ${declared} is not a canonical ${role} branch; recorded as an operator decision`,
+    }
   }
 
   // Mission/expedition roles require a canonical branch matching their id.

@@ -282,25 +282,57 @@ async function deriveAiMetadata(
   }
 }
 
+export type AiMetadataWriteResult = {
+  /** True when at least one file on disk was actually rewritten. */
+  changed: boolean
+  /** Relative paths that changed (empty when nothing needed writing). */
+  files: string[]
+}
+
+/**
+ * Persist the AI metadata bundle, writing each file only when its content
+ * differs from disk. Read-only commands (notably `synth status`) must not
+ * touch this directory at all: `synth ai refresh` is the explicit
+ * regenerator (ADR-055 §2.8, audit D5).
+ */
 export async function writeAiMetadata(
   synthDir: string,
   state: CanonicalState,
   manifest: { name?: string; governanceVersion?: string },
   force = false,
-): Promise<void> {
+): Promise<AiMetadataWriteResult> {
   const aiDir = path.join(synthDir, AI_METADATA_DIR)
-  await fs.mkdir(aiDir, { recursive: true })
-
   const bundle = await deriveAiMetadata(state, manifest, synthDir)
 
-  await fs.writeFile(path.join(aiDir, "discovery.json"), JSON.stringify(bundle.discovery, null, 2), "utf-8")
-  await fs.writeFile(path.join(aiDir, "capabilities.json"), JSON.stringify(bundle.capabilities, null, 2), "utf-8")
-  await fs.writeFile(path.join(aiDir, "lifecycle.json"), JSON.stringify(bundle.lifecycle, null, 2), "utf-8")
-  await fs.writeFile(path.join(aiDir, "protocols.json"), JSON.stringify(bundle.protocols, null, 2), "utf-8")
-  await fs.writeFile(path.join(aiDir, "skills.json"), JSON.stringify(bundle.skills, null, 2), "utf-8")
+  const outputs: Array<[string, unknown]> = [
+    ["discovery.json", bundle.discovery],
+    ["capabilities.json", bundle.capabilities],
+    ["lifecycle.json", bundle.lifecycle],
+    ["protocols.json", bundle.protocols],
+    ["skills.json", bundle.skills],
+  ]
 
-  // EXP-AI-004: interaction manifest is derived from the same canonical state.
+  const changedFiles: string[] = []
+  for (const [name, value] of outputs) {
+    const target = path.join(aiDir, name)
+    const serialized = JSON.stringify(value, null, 2)
+    let current: string | null = null
+    try {
+      current = await fs.readFile(target, "utf-8")
+    } catch {
+      current = null
+    }
+    if (!force && current === serialized) continue
+    await fs.mkdir(aiDir, { recursive: true })
+    await fs.writeFile(target, serialized, "utf-8")
+    changedFiles.push(path.join(AI_METADATA_DIR, name))
+  }
+
+  // EXP-AI-004: interaction manifest is derived from the same canonical state
+  // and already compares before writing (unless forced).
   await writeAiInteractionManifest(synthDir, state, manifest, force)
+
+  return { changed: changedFiles.length > 0, files: changedFiles }
 }
 
 export async function refreshAiMetadata(synthDir: string, force = false): Promise<void> {

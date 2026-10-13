@@ -1,0 +1,51 @@
+{
+  "id": "ecc3688796be0545",
+  "missionId": "b536ecc7ceb9217a",
+  "name": "Derived-state staging correctness (auto-commit + ignore filtering)",
+  "goal": "Fix auto-commit staging so lifecycle transitions always commit durable state and never fail on gitignored paths: call git check-ignore with --no-index so tracked-but-ignored paths are filtered correctly, stage only existing/changed durable artifacts instead of walking all of .synth/data, fall back to per-file adds so one bad path cannot kill the commit, and surface the autoCommit result (committed/commitHash/files/reason) in command JSON. Absorbs draft e8ba8f92 and the index-surgery half of the Reads-Never-Write plan (W2).",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/cli/synth.ts",
+      "src/state/artifact-policy.ts",
+      ".gitignore"
+    ],
+    "identity": {
+      "agentId": "synth-cli-11257",
+      "sessionId": "1a3f0a23-8d3e-40af-a755-4bebcd92e7f9",
+      "approvalMode": "autonomous",
+      "issuedAt": 355
+    },
+    "refinementId": "03776ae6448f55dc",
+    "refinementNote": "E1 implementation complete: staging fix + index surgery + regression test (red->green)",
+    "refinementAt": 356
+  },
+  "createdAt": 344,
+  "updatedAt": 363,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
+      "hash": "6ff105147b36a67796615a0cda7f248b9dff7939da35e8031f8cf7499f6c022f"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/ecc3688796be0545/git-diff.patch",
+      "hash": "cd0c62f72f395eb2cbdd74c3deffd6ce881f0497f3754739bed379c7805d49bd"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/ecc3688796be0545/attachments/e1-source.patch",
+      "hash": "a68550026b1d69b32c59bc9a40ea5786f4dfdb982e1a380faa4d1dda81af4904"
+    }
+  ]
+}

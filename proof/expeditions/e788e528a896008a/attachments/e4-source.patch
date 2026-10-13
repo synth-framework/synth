@@ -1,0 +1,1758 @@
+diff --git a/data/tasks/test:all.task.json b/data/tasks/test:all.task.json
+index 0e99a45..d1ccb5e 100644
+--- a/data/tasks/test:all.task.json
++++ b/data/tasks/test:all.task.json
+@@ -1,7 +1,7 @@
+ {
+   "id": "test:all",
+   "description": "npm script migration: test:all",
+-  "command": "npm run test && npm run test:governance-quiet-output && npm run test:expedition-reuse-and-templates && npm run test:skr && npm run test:audit && npm run test:replay && npm run test:replay-graph-integrity && npm run test:execution-intent && npm run test:execution-runtime && npm run test:execution-branch && npm run test:execution-commit && npm run test:execution-projection && npm run test:graph-integrity && npm run test:explain-observability && npm run test:determinism && npm run test:adversarial && npm run test:adapter && npm run test:github && npm run test:tdd && npm run test:bdd && npm run test:conversation && npm run test:document && npm run test:filesystem && npm run test:specification && npm run test:knowledge-extraction && npm run test:confidence && npm run test:dependency && npm run test:architecture && npm run test:mission-builder && npm run test:expedition-builder && npm run test:objective-builder && npm run test:wizard && npm run test:mission-studio && npm run test:mission-studio-snapshot-lineage && npm run test:mission-studio-proposal-graph && npm run test:mission-studio-snapshot-integrity && npm run test:documentation-expedition && npm run test:operator-journey && npm run test:public-vocabulary-audit && npm run test:freeze-certification && npm run test:mission-studio-adapter-mapper && npm run test:mission-studio-adapter-collector && npm run test:mission-studio-duplicate-detection && npm run test:cli-duplicate-advisory && npm run test:genesis-snapshot-bridge && npm run test:genesis-hardening && npm run test:api-adapter-integration && npm run test:validation-expansion && npm run test:continuous-publication && npm run test:documentation-integrity && npm run test:documentation-projections && npm run test:first-contact-patterns && npm run test:first-contact-quickstart && npm run test:first-contact-archive-a && npm run test:first-operator-experience && npm run test:brownfield && npm run test:adoption-validation && npm run test:ai-benchmark && npm run test:expedition-governance && npm run test:environment-discovery && npm run test:environment-capability-graph && npm run test:environment-filesystem && npm run test:environment-discovery-evidence && npm run test:environment-capability-report && npm run test:core-boundary && npm run test:impact-analyzer && npm run test:validation-mapping && npm run test:validation-planner && npm run test:protected-asset-escalation && npm run test:installer-contract && npm run test:installer-environment && npm run test:installer-distribution && npm run test:installer-engine && npm run test:installer-verify && npm run test:installer-manifest && npm run test:installer-upgrade && npm run test:synth-cli && npm run test:govern-recursion-guard && npm run test:draft-integrity && npm run test:evidence-path && npm run test:decision-events && npm run test:operator-briefing && npm run test:clean-machine-output && npm run test:adapter-introspection && npm run test:extraction-reporting && npm run test:runtime-integrity && npm run test:repository-identity && npm run test:resume-briefing && npm run test:taskpro-regression && npm run bench:interruption && npm run test:governance-record && npm run test:verify-engine && npm run test:discovery && npm run test:govern-profiler && npm run test:governance-incremental && npm run test:governance-optimization && npm run test:runtime-repair && npm run test:certification-framework && npm run test:expedition-auto-commit && npm run test:artifact-policy && npm run test:auto-commit-ignored-paths && npm run test:no-write-on-read && npm run check:artifact-policy && npm run test:adr",
++  "command": "npm run test && npm run test:governance-quiet-output && npm run test:expedition-reuse-and-templates && npm run test:skr && npm run test:audit && npm run test:replay && npm run test:replay-graph-integrity && npm run test:execution-intent && npm run test:execution-runtime && npm run test:execution-branch && npm run test:execution-commit && npm run test:execution-projection && npm run test:graph-integrity && npm run test:explain-observability && npm run test:determinism && npm run test:adversarial && npm run test:adapter && npm run test:github && npm run test:tdd && npm run test:bdd && npm run test:conversation && npm run test:document && npm run test:filesystem && npm run test:specification && npm run test:knowledge-extraction && npm run test:confidence && npm run test:dependency && npm run test:architecture && npm run test:mission-builder && npm run test:expedition-builder && npm run test:objective-builder && npm run test:wizard && npm run test:mission-studio && npm run test:mission-studio-snapshot-lineage && npm run test:mission-studio-proposal-graph && npm run test:mission-studio-snapshot-integrity && npm run test:documentation-expedition && npm run test:operator-journey && npm run test:public-vocabulary-audit && npm run test:freeze-certification && npm run test:mission-studio-adapter-mapper && npm run test:mission-studio-adapter-collector && npm run test:mission-studio-duplicate-detection && npm run test:cli-duplicate-advisory && npm run test:genesis-snapshot-bridge && npm run test:genesis-hardening && npm run test:api-adapter-integration && npm run test:validation-expansion && npm run test:continuous-publication && npm run test:documentation-integrity && npm run test:documentation-projections && npm run test:first-contact-patterns && npm run test:first-contact-quickstart && npm run test:first-contact-archive-a && npm run test:first-operator-experience && npm run test:brownfield && npm run test:adoption-validation && npm run test:ai-benchmark && npm run test:expedition-governance && npm run test:environment-discovery && npm run test:environment-capability-graph && npm run test:environment-filesystem && npm run test:environment-discovery-evidence && npm run test:environment-capability-report && npm run test:core-boundary && npm run test:impact-analyzer && npm run test:validation-mapping && npm run test:validation-planner && npm run test:protected-asset-escalation && npm run test:installer-contract && npm run test:installer-environment && npm run test:installer-distribution && npm run test:installer-engine && npm run test:installer-verify && npm run test:installer-manifest && npm run test:installer-upgrade && npm run test:synth-cli && npm run test:govern-recursion-guard && npm run test:draft-integrity && npm run test:evidence-path && npm run test:decision-events && npm run test:operator-briefing && npm run test:clean-machine-output && npm run test:adapter-introspection && npm run test:extraction-reporting && npm run test:runtime-integrity && npm run test:repository-identity && npm run test:resume-briefing && npm run test:taskpro-regression && npm run bench:interruption && npm run test:governance-record && npm run test:verify-engine && npm run test:discovery && npm run test:govern-profiler && npm run test:governance-incremental && npm run test:governance-optimization && npm run test:runtime-repair && npm run test:certification-framework && npm run test:expedition-auto-commit && npm run test:declared-branch && npm run test:artifact-policy && npm run test:auto-commit-ignored-paths && npm run test:no-write-on-read && npm run check:artifact-policy && npm run test:adr",
+   "group": "runtime",
+   "dependsOn": [],
+   "tags": [
+diff --git a/data/tasks/test:declared-branch.task.json b/data/tasks/test:declared-branch.task.json
+new file mode 100644
+index 0000000..2ab0c51
+--- /dev/null
++++ b/data/tasks/test:declared-branch.task.json
+@@ -0,0 +1,14 @@
++{
++  "id": "test:declared-branch",
++  "description": "npm script migration: test:declared-branch",
++  "command": "node tests/execution-branch-policy.test.js && node tests/declared-branch-git.test.js && node tests/declared-branch-binding.test.js",
++  "group": "runtime",
++  "dependsOn": [],
++  "tags": [
++    "runtime",
++    "test"
++  ],
++  "estimatedDurationMs": 30000,
++  "capabilities": [],
++  "lifecycle": "accepted"
++}
+diff --git a/docs/adr/ADR-056-declared-execution-branches.md b/docs/adr/ADR-056-declared-execution-branches.md
+index 22f2d41..7eb0caa 100644
+--- a/docs/adr/ADR-056-declared-execution-branches.md
++++ b/docs/adr/ADR-056-declared-execution-branches.md
+@@ -60,8 +60,14 @@ Semantics:
+   instead of a *law*.
+ - The declared branch is validated with `git check-ref-format --branch`, resolves locally or as
+   `origin/<name>` (a local tracking branch is created when only the remote exists), and must not already be
+-  bound to another non-terminal mission/expedition of a different owner — otherwise
+-  `DECLARED_BRANCH_IN_USE`.
++  bound to another **live entity of the same role** — otherwise `DECLARED_BRANCH_IN_USE`. Exclusivity is
++  per role: a live mission binding does not block that mission's expeditions from declaring the same
++  branch (the operator-owned workspace case, §2.4), while two live expeditions on one branch remain
++  forbidden. A terminal entity (`completed`/`cancelled`/`archived`) releases its branch for re-use.
++- **A binding is not a bypass.** Resolution uses the binding *instead of the naming taxonomy*, but the
++  checked-out branch must be the bound branch: from any other branch the gate denies with
++  `<role> execution is bound to <branch>` and repeats the bound name, so a recorded binding can never
++  authorize a ceremony from an unrelated branch.
+ - A declared branch that does **not** match a taxonomy candidate is not silently accepted: the command
+   succeeds with a recorded, visible warning (`BRANCH_POLICY_OVERRIDDEN: declared branch <name> is not a
+   canonical <role> branch; recorded as an operator decision`) and the override appears in `status`,
+@@ -93,7 +99,8 @@ argues against multiplying spellings for one behaviour.
+ ### 2.3 What stays enforced
+ 
+ - The ExecutionGate's `EXECUTION_BRANCH_CHECK` still runs for `ApproveMission` / `StartExpedition` — it now
+-  passes because the binding resolves, not because the name matched.
++  passes because the binding resolves (and HEAD is the bound branch), not because the name matched. The
++  gate enriches its context from the persisted record, so no flag is needed on later commands.
+ - Chore lanes, trunk/branch-strategy semantics, and the lineage guard are unchanged.
+ - A declared binding is **per entity**, not global: declaring a branch for expedition E1 does not let
+   expedition E2 run anywhere. Two expeditions on one branch remains forbidden (`DECLARED_BRANCH_IN_USE`),
+@@ -140,6 +147,10 @@ configuration-level story that does not require per-command ceremony.
+    warning, and `synth status` shows the override for the entity.
+ 6. **AC6** — Without `--branch`, behaviour is exactly as today (taxonomy candidates), so existing branches
+    and the 49 historical expeditions keep resolving.
++7. **AC7** — A recorded binding never authorizes a ceremony from another branch: with `m` bound to `arena/x`,
++   `ApproveMission` from `main` is denied and the denial cites `arena/x`.
++8. **AC8** — Ownership is per role: one live mission and its expedition may declare the same operator-owned
++   branch (arena workspace); a second live expedition on that branch is refused with `DECLARED_BRANCH_IN_USE`.
+ 
+ ## 4. Code surface
+ 
+@@ -151,7 +162,9 @@ configuration-level story that does not require per-command ceremony.
+ | `src/capability/registry.ts` | `CreateExpeditionBranch` payload gains `declared`, `created`, `baseCommit`, `declaredBy` (or new `BindExecutionBranch` capability) |
+ | `src/control/execution-gate.ts` | PHASE 2d enriches the branch context from the binding |
+ | `src/domain/execution.ts` | persist `executionBranch` on the mission/expedition record |
+-| `tests/` | declared-branch resolution, missing-branch, conflict, no-create, worktree fallback |
++| `src/repository/branch-declaration.ts` | git-facing half of the declaration (validate, owner check, checkout/create) — pure, testable, never prints |
++| `src/runtime/replay.ts` | apply `MISSION_BRANCH_BOUND` / `EXPEDITION_BRANCH_BOUND` to the record (replayable binding) |
++| `tests/` | `execution-branch-policy` (resolution order, HEAD rule, ownership), `declared-branch-git` (--no-create, create, origin-only, conflict), `declared-branch-binding` (recorded binding replays and the gate resolves it) |
+ 
+ Estimated: ~1–2 days of work, no schema migration (payload is additive; old records resolve by name as
+ today).
+@@ -178,6 +191,17 @@ today).
+ 5. **Q5 — interaction with ADR-055 P3 worktrees:** when the declared branch is already checked out in the
+    main worktree, prefer the current checkout (recommended) or force a worktree and detach the main one?
+ 
++## 7. Implementation record
++
++- **Slice 1** — resolution order, `declaredPatterns`, warning class, name validation
++  (`branch-policy.ts`, `branch-taxonomy.ts`); 22 policy tests green.
++- **Slice 2** — `BindExecutionBranch` capability + `*_BRANCH_BOUND` events, record fields, replay
++  cases, gate/guard enrichment, `--branch` / `--no-create` on `mission approve`, `expedition commit`,
++  `expedition start`, and `repository/branch-declaration.ts` for the git mechanics.
++- The window exit is: `git.branchPolicy.mode: enforce` restored in `.synth/config.yaml` once the bootstrap
++  mission is approved with `--branch <operator branch> --no-create` (ADR-056 §2.4), so the declared
++  pattern — not `mode: off` — keeps the operator branch valid.
++
+ ## Proof Impact
+ 
+ - **P1 Replay Integrity:** improved — the declared branch is recorded in the ledger (`*_BRANCH_BOUND`), so branch resolution is replayable instead of being derived from a naming convention.
+diff --git a/docs/audits/mission-expedition-cli-audit-2026-10-12.md b/docs/audits/mission-expedition-cli-audit-2026-10-12.md
+index d526f1c..c886f86 100644
+--- a/docs/audits/mission-expedition-cli-audit-2026-10-12.md
++++ b/docs/audits/mission-expedition-cli-audit-2026-10-12.md
+@@ -590,9 +590,11 @@ provable subset of the event-stream), **but three code paths still read the file
+ of them is broken *because* of it, so the file is not safe to delete until the
+ snapshot/verify path is migrated.
+ 
+-1. **The data is redundant — proven, not assumed.** The monolith has 262 events; all 262
+-   are present in `.synth/data/event-stream/` **by `eventHash`** (and by id+type+timestamp):
+-   `legacy_hashes ⊆ stream_hashes`, `legacy-only = 0`, stream = 377 events. The store is
++1. **The data is redundant — proven field-by-field, not assumed.** The monolith has 262
++   events; all 262 are present in `.synth/data/event-stream/` with **identical `type`,
++   `timestamp`, `capability`, `actor`, `transactionId`, `previousHash`, `eventHash` and
++   `payload`** — 0 missing ids, 0 field mismatches. `legacy_hashes ⊆ stream_hashes`,
++   `legacy-only = 0`, stream = 377 events. The store is
+    explicit: *"The event-stream is the sole authority for the event log. There is no
+    monolithic `event-log.jsonl` and no migration path"* (`src/infra/event-store.ts:341`).
+    `synth explain replay` → `consistent: true`.
+diff --git a/package.json b/package.json
+index 9763b2f..bdce95e 100644
+--- a/package.json
++++ b/package.json
+@@ -175,7 +175,8 @@
+     "govern:watch": "node scripts/task-adapter-shim.js govern:watch",
+     "govern:benchmark": "node scripts/task-adapter-shim.js govern:benchmark",
+     "govern:ci": "node scripts/task-adapter-shim.js govern:ci",
+-    "test:certification-framework": "node scripts/task-adapter-shim.js test:certification-framework"
++    "test:certification-framework": "node scripts/task-adapter-shim.js test:certification-framework",
++    "test:declared-branch": "node tests/execution-branch-policy.test.js && node tests/declared-branch-git.test.js && node tests/declared-branch-binding.test.js"
+   },
+   "keywords": [
+     "event-sourcing",
+diff --git a/src/capability/registry.ts b/src/capability/registry.ts
+index 09420dd..a52c3e9 100644
+--- a/src/capability/registry.ts
++++ b/src/capability/registry.ts
+@@ -1380,6 +1380,46 @@ function createDefaultCapabilities(): Capability[] {
+         }
+       },
+     },
++    {
++      name: "BindExecutionBranch",
++      description: "Record an operator-declared execution branch binding for a mission or expedition (ADR-056)",
++      inputSchema: {
++        required: ["role", "entityId", "branch"],
++        types: {
++          role: "string",
++          entityId: "string",
++          branch: "string",
++          declared: "boolean",
++          created: "boolean",
++          baseCommit: "string",
++          declaredBy: "string",
++        },
++      },
++      outputSchema: { events: ["MISSION_BRANCH_BOUND", "EXPEDITION_BRANCH_BOUND"], resultType: "ExecutionBranchBinding" },
++      preconditions: [],
++      postconditions: [],
++      invariantsChecked: [],
++      sideEffects: false,
++      executionClass: "sync",
++      handler: ({ intent }) => {
++        const role = String(intent.payload.role)
++        const entityId = String(intent.payload.entityId)
++        const branch = String(intent.payload.branch)
++        const declared = intent.payload.declared !== false
++        const created = intent.payload.created === true
++        const baseCommit = String(intent.payload.baseCommit || "")
++        const declaredBy = String(intent.payload.declaredBy || "operator")
++        const payload = { branch, declared, created, baseCommit, declaredBy }
++        return {
++          events: [
++            role === "mission"
++              ? { type: "MISSION_BRANCH_BOUND" as const, payload: { missionId: entityId, ...payload } }
++              : { type: "EXPEDITION_BRANCH_BOUND" as const, payload: { expeditionId: entityId, ...payload } },
++          ],
++          result: { role, entityId, branch, declared, created, baseCommit },
++        }
++      },
++    },
+     {
+       name: "OpenPullRequest",
+       description: "Open a pull request as a promotion proposal",
+diff --git a/src/cli/synth.ts b/src/cli/synth.ts
+index 9763d73..49b05f3 100644
+--- a/src/cli/synth.ts
++++ b/src/cli/synth.ts
+@@ -107,11 +107,13 @@ import {
+ } from "./first-contact.js"
+ import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
+ import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
+-import { branchNameCandidates } from "../repository/branch-taxonomy.js"
++import { branchNameCandidates, validateDeclaredBranchName } from "../repository/branch-taxonomy.js"
++import { resolveDeclaredBranch } from "../repository/branch-declaration.js"
+ import { analyzeEventLogLineage } from "./event-log-lineage.js"
+ import {
+   enrichExecutionBranchContext,
+   loadBranchPolicyConfig,
++  resolveExecutionBranch,
+   type ExecutionBranchContext,
+   type ExecutionNameRecords,
+ } from "../repository/branch-policy.js"
+@@ -3466,6 +3468,9 @@ async function materializeApprovedMission(
+ 
+ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
+   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
++  const declaredBranchFlag = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
++  const noCreateFlag = flags["no-create"] === true || flags["no-create"] === "true"
++  if (noCreateFlag && !declaredBranchFlag) printError("--no-create requires --branch")
+   if (!draftId) printError("--draft-id is required")
+ 
+   let alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
+@@ -3586,8 +3591,27 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
+   const missionNode = Array.from(session.worldModel.nodes.values()).find(
+     (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
+   )
++  let declaredMissionBranch: DeclaredBranchInfo | undefined
+   if (missionNode) {
+-    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id })
++    if (declaredBranchFlag) {
++      // ADR-056 §2.2: the operator declares the execution branch; the CLI
++      // materializes or checks it out before the mission is approved.
++      declaredMissionBranch = await declareExecutionBranch("mission", {
++        branch: declaredBranchFlag,
++        noCreate: noCreateFlag,
++        entityId: missionNode.id,
++        missionId: missionNode.id,
++        missionName: missionNode.name,
++      })
++      if (!declaredMissionBranch.ok) {
++        printError(declaredMissionBranch.error || "The declared execution branch is not usable", {
++          code: declaredMissionBranch.code,
++          category: "governance",
++          ...(declaredMissionBranch.suggestion ? { suggestion: declaredMissionBranch.suggestion } : {}),
++        })
++      }
++    }
++    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id }, declaredBranchFlag)
+   }
+ 
+   const ctx = await bootstrap({
+@@ -3663,6 +3687,12 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
+     printError(err instanceof Error ? err.message : String(err))
+   }
+ 
++  // ADR-056 §2.5: record the binding once the mission exists in the ledger, so
++  // every later resolution (gate + CLI guard) replays the same branch.
++  if (declaredMissionBranch?.ok && missionNode) {
++    await recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
++  }
++
+   // Persist the approved snapshot as an immutable, certified artifact.
+   let snapshotPersisted = false
+   let snapshotNote: string | undefined
+@@ -3712,6 +3742,15 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
+       created: runtimeResult.created,
+       approved: runtimeResult.approved,
+     },
++    ...(declaredMissionBranch?.ok
++      ? {
++          executionBranch: {
++            branch: declaredMissionBranch.branch,
++            created: declaredMissionBranch.created,
++            ...(declaredMissionBranch.warning ? { warning: declaredMissionBranch.warning } : {}),
++          },
++        }
++      : {}),
+     proposals: approvedData.proposals,
+     nextStep: `synth mission snapshot ${approvedData.id} to inspect the persisted snapshot`,
+   })
+@@ -5649,18 +5688,53 @@ async function commitOneExpedition(
+   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+   proposalId: string,
+   dryRun: boolean,
++  declaredBranch?: string,
++  noCreate = false,
+ ): Promise<Record<string, unknown>> {
+   if (dryRun) {
+-    return runLifecycleDryRun(ctx, {
++    const preview = await runLifecycleDryRun(ctx, {
+       capability: "CommitExpedition",
+       payload: { id: proposalId },
+       eventType: "EXPEDITION_COMMITTED",
+       expeditionId: proposalId,
+       targetStatus: "committed",
+     })
++    if (declaredBranch) {
++      const nameCheck = validateDeclaredBranchName(declaredBranch)
++      return {
++        ...preview,
++        declaredBranch: { branch: declaredBranch, valid: nameCheck.valid, errors: nameCheck.errors },
++      }
++    }
++    return preview
+   }
+ 
+   const state = await ctx.runtime.getState()
++  let declared: DeclaredBranchInfo | undefined
++  if (declaredBranch) {
++    const record = state.expeditions?.[proposalId]
++    if (!record) {
++      return { status: "error", proposalId, code: "ExpeditionNotFound", error: `Expedition ${proposalId} is not in the ledger` }
++    }
++    declared = await declareExecutionBranch("expedition", {
++      branch: declaredBranch,
++      noCreate,
++      entityId: proposalId,
++      missionId: record.missionId,
++      missionName: record.missionId ? state.missions?.[record.missionId]?.name : undefined,
++      expeditionName: record.name,
++    })
++    if (!declared.ok) {
++      return {
++        status: "error",
++        proposalId,
++        code: declared.code,
++        error: declared.error,
++        ...(declared.suggestion ? { suggestion: declared.suggestion } : {}),
++      }
++    }
++  }
++
+   const intake = await gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state, ctx.runtime)
+   if (intake.decision === "BLOCK") {
+     return {
+@@ -5693,11 +5767,24 @@ async function commitOneExpedition(
+     draftRetirementError = err instanceof Error ? err.message : String(err)
+   }
+ 
++  if (declared?.ok) {
++    await recordExecutionBranchBinding(ctx, "expedition", proposalId, declared)
++  }
++
+   return {
+     status: "ok",
+     kind: "ExpeditionCommitted",
+     proposalId,
+     result: result.result,
++    ...(declared?.ok
++      ? {
++          executionBranch: {
++            branch: declared.branch,
++            created: declared.created,
++            ...(declared.warning ? { warning: declared.warning } : {}),
++          },
++        }
++      : {}),
+     ...(draftRetired ? { draftRetired } : {}),
+     ...(draftRetirementError ? { draftRetirementError } : {}),
+     nextStep: `synth expedition start --id ${proposalId}`,
+@@ -5709,6 +5796,12 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
+   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
+   const allApproved = flags["all-approved"] === true || flags["all-approved"] === "true"
+   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
++  const declaredBranch = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
++  const noCreate = flags["no-create"] === true || flags["no-create"] === "true"
++  if (noCreate && !declaredBranch) printError("--no-create requires --branch")
++  // Two expeditions cannot share one branch (ADR-056 §2.3), so a batch commit
++  // cannot carry a single declaration.
++  if (allApproved && declaredBranch) printError("--branch cannot be combined with --all-approved")
+ 
+   if (allApproved) {
+     if (!missionId) printError("--all-approved requires --mission")
+@@ -5760,7 +5853,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
+     skipGenesis: true,
+     infra: { persistence: "file" },
+   })
+-  const result = await commitOneExpedition(ctx, proposalId, dryRun)
++  const result = await commitOneExpedition(ctx, proposalId, dryRun, declaredBranch, noCreate)
+   printJson(result)
+   if (result.status === "error") process.exit(1)
+ }
+@@ -5873,6 +5966,110 @@ async function ensureExpeditionBranch(
+   return { branch: canonical, created: true }
+ }
+ 
++// ------------------------------------------------------------
++// ADR-056 — operator-declared execution branches
++// ------------------------------------------------------------
++
++type DeclaredBranchInfo = {
++  ok: boolean
++  branch: string
++  created: boolean
++  baseCommit: string
++  warning?: string
++  code?: string
++  error?: string
++  suggestion?: string
++}
++
++/** Read canonical state for the live-owner rule; degrade to no records. */
++async function readStateRecords(): Promise<unknown | undefined> {
++  try {
++    return (await sdk.state.readState(process.cwd())) ?? undefined
++  } catch {
++    return undefined
++  }
++}
++
++/**
++ * Resolve an operator-declared execution branch (ADR-056 §2.1/§2.2): git
++ * mechanics live in repository/branch-declaration; the policy verdict and its
++ * warning class are added here.
++ */
++async function declareExecutionBranch(
++  role: "mission" | "expedition",
++  options: {
++    branch: string
++    noCreate: boolean
++    entityId: string
++    missionId?: string
++    missionName?: string
++    expeditionName?: string
++  },
++): Promise<DeclaredBranchInfo> {
++  const state = await readStateRecords()
++  const resolution = resolveDeclaredBranch({
++    root: process.cwd(),
++    role,
++    entityId: options.entityId,
++    branch: options.branch,
++    noCreate: options.noCreate,
++    state: state as ExecutionNameRecords | undefined,
++  })
++  if (!resolution.ok) {
++    return {
++      ok: false,
++      branch: resolution.branch,
++      created: false,
++      baseCommit: resolution.baseCommit,
++      ...(resolution.code ? { code: resolution.code } : {}),
++      ...(resolution.error ? { error: resolution.error } : {}),
++      ...(resolution.suggestion ? { suggestion: resolution.suggestion } : {}),
++    }
++  }
++
++  const policy = loadBranchPolicyConfig(process.cwd())
++  const verdict = resolveExecutionBranch(role, resolution.currentBranch, policy, {
++    missionId: options.missionId,
++    expeditionId: role === "expedition" ? options.entityId : undefined,
++    missionName: options.missionName,
++    expeditionName: options.expeditionName,
++    declaredBranch: options.branch,
++  })
++  const warning = verdict.overridden && !verdict.patternMatched ? verdict.reason : undefined
++  return {
++    ok: true,
++    branch: resolution.branch,
++    created: resolution.created,
++    baseCommit: resolution.baseCommit,
++    ...(warning ? { warning } : {}),
++  }
++}
++
++/** Record the binding in the ledger so later commands agree without flags. */
++async function recordExecutionBranchBinding(
++  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
++  role: "mission" | "expedition",
++  entityId: string,
++  info: DeclaredBranchInfo,
++): Promise<void> {
++  const result = await ctx.api.handleIntent({
++    actor: "synth-cli",
++    capability: "BindExecutionBranch",
++    payload: {
++      role,
++      entityId,
++      branch: info.branch,
++      declared: true,
++      created: info.created,
++      baseCommit: info.baseCommit,
++      declaredBy: "operator",
++    },
++  })
++  if (result.status !== "ok") {
++    printError(`Failed to record the branch binding for ${role} ${entityId}: ${result.error || JSON.stringify(result)}`)
++  }
++}
++
+ // CLI fail-fast branch guard (ECOSYSTEM-001): surface a branch-policy
+ // violation before heavy lifecycle work runs. The ExecutionGate enforces the
+ // same policy inside handleIntent; this gives the operator an early, specific
+@@ -5881,6 +6078,7 @@ async function assertExecutionBranch(
+   capability: string,
+   role: "mission" | "expedition" | "chore",
+   context: { missionId?: string; expeditionId?: string; missionName?: string; expeditionName?: string; capability?: string },
++  declaredBranch?: string,
+ ): Promise<void> {
+   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
+   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
+@@ -5897,6 +6095,11 @@ async function assertExecutionBranch(
+       }
+     }
+   }
++  if (declaredBranch) {
++    // ADR-056: the operator declaration is consulted before the taxonomy, so
++    // the fail-fast guard and the ExecutionGate agree on one resolution order.
++    enriched = { ...enriched, declaredBranch }
++  }
+   const result = await adapter.validateExecutionBranch(role, enriched)
+   if (result.ok) return
+   printError(
+@@ -5918,19 +6121,29 @@ async function startOneExpedition(
+   expeditionId: string,
+   dryRun: boolean,
+   autoCommit = false,
++  declaredBranch?: string,
++  noCreate = false,
+ ): Promise<Record<string, unknown>> {
+   const baselineCommit = getCurrentGitCommit()
+   const startPayload: Record<string, unknown> = { id: expeditionId }
+   if (baselineCommit) startPayload.baselineCommit = baselineCommit
+ 
+   if (dryRun) {
+-    return runLifecycleDryRun(ctx, {
++    const preview = await runLifecycleDryRun(ctx, {
+       capability: "StartExpedition",
+       payload: startPayload,
+       eventType: "EXPEDITION_STARTED",
+       expeditionId,
+       targetStatus: "executing",
+     })
++    if (declaredBranch) {
++      const nameCheck = validateDeclaredBranchName(declaredBranch)
++      return {
++        ...preview,
++        declaredBranch: { branch: declaredBranch, valid: nameCheck.valid, errors: nameCheck.errors },
++      }
++    }
++    return preview
+   }
+ 
+   const initialState = await ctx.runtime.getState()
+@@ -5955,11 +6168,22 @@ async function startOneExpedition(
+     currentStatus = "approved"
+   }
+ 
++  let declaredInfo: DeclaredBranchInfo | undefined
+   if (currentStatus === "approved") {
+-    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun)
++    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun, declaredBranch, noCreate)
+     if (commitResult.status !== "ok") {
+       return commitResult
+     }
++    // The commit-time declaration already checked out the branch and recorded
++    // the binding; reuse it so start does not declare twice.
++    if (commitResult.executionBranch) {
++      declaredInfo = {
++        ok: true,
++        branch: String((commitResult.executionBranch as Record<string, unknown>).branch),
++        created: (commitResult.executionBranch as Record<string, unknown>).created === true,
++        baseCommit: "",
++      }
++    }
+     currentStatus = "committed"
+   }
+ 
+@@ -5971,14 +6195,42 @@ async function startOneExpedition(
+   const expeditionRecord = state.expeditions?.[expeditionId]
+   let autoCreatedBranch: { branch: string; created: boolean } | undefined
+   if (expeditionRecord?.missionId) {
+-    const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
+-    if (branchInfo.created) autoCreatedBranch = branchInfo
++    if (declaredBranch && !declaredInfo) {
++      // The expedition was already committed: declare now, before the guard.
++      declaredInfo = await declareExecutionBranch("expedition", {
++        branch: declaredBranch,
++        noCreate,
++        entityId: expeditionId,
++        missionId: expeditionRecord.missionId,
++        missionName: state.missions?.[expeditionRecord.missionId]?.name,
++        expeditionName: expeditionRecord.name,
++      })
++      if (!declaredInfo.ok) {
++        return {
++          status: "error",
++          expeditionId,
++          code: declaredInfo.code,
++          error: declaredInfo.error,
++          ...(declaredInfo.suggestion ? { suggestion: declaredInfo.suggestion } : {}),
++        }
++      }
++      await recordExecutionBranchBinding(ctx, "expedition", expeditionId, declaredInfo)
++    }
++    if (!declaredInfo) {
++      const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
++      if (branchInfo.created) autoCreatedBranch = branchInfo
++    }
+     // ECOSYSTEM-001: fail fast when the current branch cannot host this
+     // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
+-    await assertExecutionBranch("StartExpedition", "expedition", {
+-      expeditionId,
+-      missionId: expeditionRecord.missionId,
+-    })
++    await assertExecutionBranch(
++      "StartExpedition",
++      "expedition",
++      {
++        expeditionId,
++        missionId: expeditionRecord.missionId,
++      },
++      declaredInfo?.ok ? declaredInfo.branch : declaredBranch,
++    )
+   }
+   const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
+   if (intake.decision === "BLOCK") {
+@@ -6008,7 +6260,14 @@ async function startOneExpedition(
+     result: result.result,
+     nextStep: `synth expedition complete --id ${expeditionId}`,
+   }
+-  if (autoCreatedBranch) {
++  if (declaredInfo?.ok) {
++    response.executionBranch = {
++      branch: declaredInfo.branch,
++      created: declaredInfo.created,
++      declared: true,
++      ...(declaredInfo.warning ? { warning: declaredInfo.warning } : {}),
++    }
++  } else if (autoCreatedBranch) {
+     response.executionBranch = {
+       branch: autoCreatedBranch.branch,
+       created: true,
+@@ -6035,6 +6294,10 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
+   const allCommitted = flags["all-committed"] === true || flags["all-committed"] === "true"
+   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+   const autoCommit = isAutoCommitEnabled(flags)
++  const declaredBranch = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
++  const noCreate = flags["no-create"] === true || flags["no-create"] === "true"
++  if (noCreate && !declaredBranch) printError("--no-create requires --branch")
++  if (allCommitted && declaredBranch) printError("--branch cannot be combined with --all-committed")
+ 
+   if (allCommitted) {
+     if (!missionId) printError("--all-committed requires --mission")
+@@ -6085,7 +6348,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
+     skipGenesis: true,
+     infra: { persistence: "file" },
+   })
+-  const result = await startOneExpedition(ctx, expeditionId, dryRun, autoCommit)
++  const result = await startOneExpedition(ctx, expeditionId, dryRun, autoCommit, declaredBranch, noCreate)
+   printJson(result)
+   if (result.status === "error") process.exit(1)
+ }
+diff --git a/src/domain/execution.ts b/src/domain/execution.ts
+index 03dda5f..3632ceb 100644
+--- a/src/domain/execution.ts
++++ b/src/domain/execution.ts
+@@ -1235,6 +1235,24 @@ export function applyDomain(
+       }
+     }
+ 
++    case "BindExecutionBranch": {
++      const role = String(intent.payload.role)
++      const entityId = String(intent.payload.entityId)
++      const branch = String(intent.payload.branch)
++      const declared = intent.payload.declared !== false
++      const created = intent.payload.created === true
++      const baseCommit = String(intent.payload.baseCommit || "")
++      const declaredBy = String(intent.payload.declaredBy || "operator")
++      const payload = { branch, declared, created, baseCommit, declaredBy }
++      return {
++        events: [
++          role === "mission"
++            ? { type: "MISSION_BRANCH_BOUND" as const, payload: { missionId: entityId, ...payload } }
++            : { type: "EXPEDITION_BRANCH_BOUND" as const, payload: { expeditionId: entityId, ...payload } },
++        ],
++      }
++    }
++
+     case "OpenPullRequest": {
+       const pullRequestId = String(intent.payload.pullRequestId)
+       const forgeId = String(intent.payload.forgeId)
+diff --git a/src/repository/branch-declaration.ts b/src/repository/branch-declaration.ts
+new file mode 100644
+index 0000000..a80ae1a
+--- /dev/null
++++ b/src/repository/branch-declaration.ts
+@@ -0,0 +1,130 @@
++// ============================================================
++// REPOSITORY — Declared execution branch resolution (ADR-056)
++// ============================================================
++// Git-facing half of `--branch` / `--no-create`: validate the operator's
++// branch name, refuse a branch already owned by another live entity, check
++// existence locally and on origin, and check it out (creating it only when
++// allowed). Policy decisions live in branch-policy; this module never prints.
++// ============================================================
++
++import { execFileSync } from "node:child_process"
++import {
++  findLiveBranchBindingOwner,
++  type ExecutionNameRecords,
++} from "./branch-policy.js"
++import { validateDeclaredBranchName } from "./branch-taxonomy.js"
++
++export type DeclaredBranchResolution = {
++  ok: boolean
++  branch: string
++  /** True only when this call created the branch. */
++  created: boolean
++  currentBranch: string
++  baseCommit: string
++  code?: string
++  error?: string
++  suggestion?: string
++}
++
++export type DeclareBranchOptions = {
++  root: string
++  role: "mission" | "expedition"
++  entityId: string
++  branch: string
++  noCreate?: boolean
++  /** Ledger records used for the live-owner rule; omit to skip the check. */
++  state?: ExecutionNameRecords | null
++}
++
++function gitOut(root: string, args: string[]): string {
++  try {
++    return execFileSync("git", args, { cwd: root, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }).trim()
++  } catch {
++    return ""
++  }
++}
++
++function branchExistsLocally(root: string, branch: string): boolean {
++  return gitOut(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`]) !== ""
++}
++
++function branchExistsOnOrigin(root: string, branch: string): boolean {
++  return gitOut(root, ["rev-parse", "--verify", "--quiet", `refs/remotes/origin/${branch}`]) !== ""
++}
++
++/**
++ * Resolve `--branch` for one entity. Pure with respect to governance state:
++ * the only side effects are git checkout / branch creation.
++ */
++export function resolveDeclaredBranch(options: DeclareBranchOptions): DeclaredBranchResolution {
++  const { root, role, entityId, branch } = options
++  const noCreate = options.noCreate === true
++  const fail = (code: string, error: string, suggestion?: string): DeclaredBranchResolution => ({
++    ok: false,
++    branch,
++    created: false,
++    currentBranch: gitOut(root, ["rev-parse", "--abbrev-ref", "HEAD"]),
++    baseCommit: gitOut(root, ["rev-parse", "HEAD"]),
++    code,
++    error,
++    ...(suggestion ? { suggestion } : {}),
++  })
++
++  const invalid = validateDeclaredBranchName(branch)
++  if (!invalid.valid) {
++    return fail("INVALID_BRANCH_NAME", invalid.errors.join("; "))
++  }
++  try {
++    execFileSync("git", ["check-ref-format", "--branch", branch], { cwd: root, stdio: ["pipe", "pipe", "pipe"] })
++  } catch {
++    return fail("INVALID_BRANCH_NAME", `git rejects the branch name ${branch}`)
++  }
++
++  const owner = findLiveBranchBindingOwner(options.state, role, entityId, branch)
++  if (owner) {
++    return fail(
++      "DECLARED_BRANCH_IN_USE",
++      `${owner.kind} ${owner.id} is already bound to ${branch}`,
++      `Use another branch, or finish ${owner.id} first`,
++    )
++  }
++
++  const currentBranch = gitOut(root, ["rev-parse", "--abbrev-ref", "HEAD"])
++  const baseCommit = gitOut(root, ["rev-parse", "HEAD"])
++  const localExists = branchExistsLocally(root, branch)
++  const remoteExists = !localExists && branchExistsOnOrigin(root, branch)
++
++  if (currentBranch !== branch) {
++    try {
++      if (localExists) {
++        gitOut(root, ["checkout", branch])
++      } else if (remoteExists) {
++        // The branch pre-exists on origin: materialize a tracking branch.
++        gitOut(root, ["checkout", "-b", branch, "--track", `origin/${branch}`])
++      } else if (noCreate) {
++        return fail(
++          "DECLARED_BRANCH_MISSING",
++          `Branch ${branch} does not exist locally or on origin, and --no-create was given`,
++          `Create it first: git branch ${branch} <base> && git checkout ${branch}`,
++        )
++      } else {
++        gitOut(root, ["checkout", "-b", branch, baseCommit])
++      }
++    } catch (err) {
++      return fail("BRANCH_DECLARATION_FAILED", err instanceof Error ? err.message : String(err))
++    }
++    const after = gitOut(root, ["rev-parse", "--abbrev-ref", "HEAD"])
++    if (after !== branch) {
++      return fail("BRANCH_DECLARATION_FAILED", `Failed to check out ${branch}; HEAD is ${after || "detached"}`)
++    }
++  }
++
++  return {
++    ok: true,
++    branch,
++    // A branch that existed before this call is never reported as created.
++    created: !localExists && !remoteExists,
++    currentBranch: gitOut(root, ["rev-parse", "--abbrev-ref", "HEAD"]),
++    baseCommit,
++  }
++}
+diff --git a/src/repository/branch-policy.ts b/src/repository/branch-policy.ts
+index 75a10e8..399887b 100644
+--- a/src/repository/branch-policy.ts
++++ b/src/repository/branch-policy.ts
+@@ -16,7 +16,12 @@
+ import fs from "fs"
+ import path from "path"
+ import { load as loadYaml } from "js-yaml"
+-import { canonicalBranchCandidates, classifyBranch, validateBranchName } from "./branch-taxonomy.js"
++import {
++  canonicalBranchCandidates,
++  classifyBranch,
++  isCanonicalBranchForRole,
++  validateBranchName,
++} from "./branch-taxonomy.js"
+ 
+ export type BranchPolicyMode = "off" | "enforce"
+ export type BranchStrategy = "featured" | "trunk" | "observed"
+@@ -26,6 +31,12 @@ export type BranchPolicy = {
+   strategy: BranchStrategy
+   allowChoreOnMain: boolean
+   choreCapabilities: string[]
++  /**
++   * ADR-056 §2.4: branch patterns pre-approved as declared execution targets
++   * (`arena/*`). A match softens the override warning; it never binds anything
++   * implicitly — the binding still has to be declared and recorded.
++   */
++  declaredPatterns: string[]
+ }
+ 
+ export type ExecutionRole = "mission" | "expedition" | "chore" | "internal"
+@@ -36,6 +47,8 @@ export type ExecutionBranchContext = {
+   missionName?: string
+   expeditionName?: string
+   capability?: string
++  /** ADR-056 §2.1: the operator-declared binding, consulted before the taxonomy. */
++  declaredBranch?: string
+ }
+ 
+ export type ExecutionBranchResult = {
+@@ -44,13 +57,22 @@ export type ExecutionBranchResult = {
+   strategy: BranchStrategy
+   requiredBranch?: string
+   reason?: string
++  /** Set when the decision came from an operator declaration (ADR-056). */
++  declaredBranch?: string
++  /** True when the declared branch is not a canonical branch for the role. */
++  overridden?: boolean
++  /** True when the declared branch matched `declaredPatterns` (no warning). */
++  patternMatched?: boolean
+ }
+ 
+ // Canonical-state records consulted when enriching a branch context with
+ // human-readable names. Structural subset — any canonical state satisfies it.
+ export type ExecutionNameRecords = {
+-  missions?: Record<string, { name?: string } | undefined>
+-  expeditions?: Record<string, { name?: string; missionId?: string } | undefined>
++  missions?: Record<string, { name?: string; status?: string; executionBranch?: string } | undefined>
++  expeditions?: Record<
++    string,
++    { name?: string; missionId?: string; status?: string; executionBranch?: string } | undefined
++  >
+ }
+ 
+ // Single source of name enrichment for candidate resolution: fills missing
+@@ -68,6 +90,7 @@ export function enrichExecutionBranchContext(
+       ...base,
+       missionId: requestId,
+       missionName: base?.missionName ?? records?.missions?.[requestId]?.name,
++      declaredBranch: base?.declaredBranch ?? records?.missions?.[requestId]?.executionBranch,
+     }
+   }
+   const expedition = records?.expeditions?.[requestId]
+@@ -78,6 +101,12 @@ export function enrichExecutionBranchContext(
+     missionId: missionId || undefined,
+     expeditionName: base?.expeditionName ?? expedition?.name,
+     missionName: base?.missionName ?? (missionId ? records?.missions?.[missionId]?.name : undefined),
++    // ADR-056: a recorded binding is consulted before the taxonomy, so the
++    // resolution survives replays and later commands can omit --branch.
++    declaredBranch:
++      base?.declaredBranch ??
++      expedition?.executionBranch ??
++      (missionId ? records?.missions?.[missionId]?.executionBranch : undefined),
+   }
+ }
+ 
+@@ -87,9 +116,56 @@ function defaultBranchPolicy(): BranchPolicy {
+     strategy: "featured",
+     allowChoreOnMain: false,
+     choreCapabilities: [],
++    declaredPatterns: [],
+   }
+ }
+ 
++/**
++ * Glob-style match for `declaredPatterns` (ADR-056 §2.4). `*` matches any run
++ * of characters, including `/`; everything else is literal.
++ */
++export function matchesDeclaredBranchPattern(
++  branch: string,
++  patterns: readonly string[] | undefined | null,
++): boolean {
++  const list = Array.isArray(patterns) ? patterns : []
++  return list.some((pattern) => {
++    if (typeof pattern !== "string" || pattern.length === 0) return false
++    const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")
++    return new RegExp(`^${escaped}$`).test(branch)
++  })
++}
++
++/**
++ * A live entity that already owns a branch (ADR-056 §2.3). Exclusivity is per
++ * role: a live mission binding does not block its expeditions from declaring
++ * the same branch (the operator-owned workspace case).
++ */
++export function findLiveBranchBindingOwner(
++  records: ExecutionNameRecords | null | undefined,
++  role: "mission" | "expedition",
++  entityId: string,
++  branch: string,
++): { kind: "mission" | "expedition"; id: string } | undefined {
++  if (!branch) return undefined
++  if (role === "mission") {
++    const live = new Set(["projected", "draft", "active"])
++    for (const [id, mission] of Object.entries(records?.missions ?? {})) {
++      if (!mission || mission.executionBranch !== branch || id === entityId) continue
++      if (!live.has(String((mission as { status?: string }).status))) continue
++      return { kind: "mission", id }
++    }
++    return undefined
++  }
++  const live = new Set(["draft", "approved", "committed", "executing", "paused"])
++  for (const [id, expedition] of Object.entries(records?.expeditions ?? {})) {
++    if (!expedition || expedition.executionBranch !== branch || id === entityId) continue
++    if (!live.has(String((expedition as { status?: string }).status))) continue
++    return { kind: "expedition", id }
++  }
++  return undefined
++}
++
+ export function loadBranchPolicyConfig(cwd: string): BranchPolicy {
+   const configPath = path.join(cwd, ".synth", "config.yaml")
+   let parsed: Record<string, unknown> = {}
+@@ -116,6 +192,9 @@ export function loadBranchPolicyConfig(cwd: string): BranchPolicy {
+   if (Array.isArray(policy.choreCapabilities)) {
+     config.choreCapabilities = policy.choreCapabilities.filter((c: unknown): c is string => typeof c === "string")
+   }
++  if (Array.isArray(policy.declaredPatterns)) {
++    config.declaredPatterns = policy.declaredPatterns.filter((p: unknown): p is string => typeof p === "string")
++  }
+   return config
+ }
+ 
+@@ -173,6 +252,54 @@ export function resolveExecutionBranch(
+     return { ...base, reason: "Internal operations are exempt from branch enforcement" }
+   }
+ 
++  // Operator-declared execution branch (ADR-056 §2.1). The binding is
++  // consulted before the naming taxonomy: the convention becomes a default
++  // rather than a law, and the override is explicit — never silent.
++  if (context.declaredBranch) {
++    const declared = context.declaredBranch
++    // A binding is not a bypass: the checked-out branch must be the declared
++    // one. Resolution then comes from the binding, not from the name taxonomy.
++    if (currentBranch !== declared) {
++      return {
++        ...base,
++        ok: false,
++        requiredBranch: declared,
++        declaredBranch: declared,
++        reason: `${role} execution is bound to ${declared} (ADR-056); current branch is ${currentBranch}`,
++      }
++    }
++    const canonical =
++      role === "mission" || role === "expedition"
++        ? isCanonicalBranchForRole(role, declared, {
++            missionId: context.missionId,
++            missionName: context.missionName,
++            expeditionId: role === "expedition" ? context.expeditionId : undefined,
++            expeditionName: role === "expedition" ? context.expeditionName : undefined,
++          })
++        : false
++    const patternMatched = matchesDeclaredBranchPattern(declared, policy.declaredPatterns)
++    if (canonical) {
++      return {
++        ...base,
++        requiredBranch: declared,
++        declaredBranch: declared,
++        overridden: false,
++        patternMatched,
++        reason: `Declared ${role} branch ${declared} is canonical`,
++      }
++    }
++    return {
++      ...base,
++      requiredBranch: declared,
++      declaredBranch: declared,
++      overridden: true,
++      patternMatched,
++      reason: patternMatched
++        ? `Declared branch ${declared} matches a configured declaredPattern`
++        : `BRANCH_POLICY_OVERRIDDEN: declared branch ${declared} is not a canonical ${role} branch; recorded as an operator decision`,
++    }
++  }
++
+   // Mission/expedition roles require a canonical branch matching their id.
+   const branchType = classifyBranch(currentBranch)
+   const canonicalNames = canonicalBranchCandidates(role === "mission" ? "mission" : "expedition", {
+diff --git a/src/repository/branch-taxonomy.ts b/src/repository/branch-taxonomy.ts
+index e72e1a1..9d631a9 100644
+--- a/src/repository/branch-taxonomy.ts
++++ b/src/repository/branch-taxonomy.ts
+@@ -201,3 +201,36 @@ export function generateBranchName(
+ 
+   return parts.join("/")
+ }
++
++/**
++ * Sanity check for an operator-declared branch name (ADR-056 §2.1). This is
++ * the pure subset of `git check-ref-format --branch`; the CLI additionally
++ * asks git itself before touching the repository, because ref rules evolve.
++ */
++export function validateDeclaredBranchName(name: string): { valid: boolean; errors: string[] } {
++  const errors: string[] = []
++  const value = String(name ?? "").trim()
++  if (value.length === 0) errors.push("Branch name must not be empty")
++  if (/\s/.test(value)) errors.push("Branch name must not contain whitespace")
++  if (value.startsWith("-")) errors.push("Branch name must not start with '-'")
++  if (value.startsWith("/") || value.endsWith("/")) errors.push("Branch name must not start or end with '/'")
++  if (value.endsWith(".")) errors.push("Branch name must not end with '.'")
++  if (value.includes("..")) errors.push("Branch name must not contain '..'")
++  if (value.includes("@{")) errors.push("Branch name must not contain '@{'")
++  if (value === "@") errors.push("Branch name must not be '@'")
++  if (/[~^:?*\[\\]/.test(value)) errors.push("Branch name must not contain ~ ^ : ? * [ or \\")
++  if (value.endsWith(".lock") || value.split("/").some((part) => part.endsWith(".lock"))) {
++    errors.push("Branch name components must not end with '.lock'")
++  }
++  return { valid: errors.length === 0, errors }
++}
++
++/** True when `name` is a canonical <role> branch for this entity (and only this entity). */
++export function isCanonicalBranchForRole(
++  role: "mission" | "expedition",
++  name: string,
++  options: BranchNameOptions = {},
++): boolean {
++  if (classifyBranch(name) !== role) return false
++  return canonicalBranchCandidates(role, options).includes(name)
++}
+diff --git a/src/runtime/replay.ts b/src/runtime/replay.ts
+index 7815258..b2138f7 100644
+--- a/src/runtime/replay.ts
++++ b/src/runtime/replay.ts
+@@ -252,6 +252,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
+       }
+       break
+     }
++    case "MISSION_BRANCH_BOUND": {
++      const missionId = String(payload.missionId)
++      if (state.missions[missionId]) {
++        state.missions[missionId] = {
++          ...state.missions[missionId],
++          executionBranch: String(payload.branch),
++          updatedAt: event.timestamp,
++        }
++      }
++      break
++    }
+     case "MISSION_ARCHIVED": {
+       const missionId = String(payload.id)
+       if (state.missions[missionId]) {
+@@ -304,6 +315,17 @@ export function applyEvent(state: CanonicalState, event: SynthEvent): CanonicalS
+       }
+       break
+     }
++    case "EXPEDITION_BRANCH_BOUND": {
++      const expeditionId = String(payload.expeditionId)
++      if (state.expeditions[expeditionId]) {
++        state.expeditions[expeditionId] = {
++          ...state.expeditions[expeditionId],
++          executionBranch: String(payload.branch),
++          updatedAt: event.timestamp,
++        }
++      }
++      break
++    }
+     case "EXPEDITION_STARTED": {
+       const expeditionId = String(payload.id)
+       const existing = state.expeditions[expeditionId]
+diff --git a/src/types/event.ts b/src/types/event.ts
+index 0ea0a4e..5adbff1 100644
+--- a/src/types/event.ts
++++ b/src/types/event.ts
+@@ -132,6 +132,10 @@ export type StateEvent =
+   // Repository governance lifecycle (EXP-PROGRAM-028)
+   | { type: "REPOSITORY_INITIALIZED"; repositoryId: string; defaultBranch: string; forgeProvider: string; versionStrategy: string }
+   | { type: "BRANCH_CREATED"; branchName: string; branchType: string; baseBranch?: string; missionId?: string; expeditionId?: string }
++  // Operator-declared execution branches (ADR-056): the binding is recorded so
++  // resolution is replayable instead of derived from a naming convention.
++  | { type: "MISSION_BRANCH_BOUND"; missionId: string; branch: string; declared: boolean; created: boolean; baseCommit: string; declaredBy: string }
++  | { type: "EXPEDITION_BRANCH_BOUND"; expeditionId: string; branch: string; declared: boolean; created: boolean; baseCommit: string; declaredBy: string }
+   | { type: "PULL_REQUEST_OPENED"; pullRequestId: string; forgeId: string; url: string; number: number; headBranch: string; baseBranch: string; missionId?: string; expeditionId?: string }
+   | { type: "PULL_REQUEST_UPDATED"; pullRequestId: string; state: "open" | "closed" | "merged"; title?: string }
+   | { type: "PULL_REQUEST_MERGED"; pullRequestId: string; commit: string; strategy: string }
+diff --git a/src/types/state.ts b/src/types/state.ts
+index e64f520..707c97a 100644
+--- a/src/types/state.ts
++++ b/src/types/state.ts
+@@ -76,6 +76,8 @@ export type Mission = {
+   id: string
+   name: string
+   purpose: string
++  /** ADR-056: operator-declared execution branch (recorded, replayable). */
++  executionBranch?: string
+   status: "projected" | "draft" | "active" | "completed" | "archived"
+   projectionStatus?: "projected" | "certified" | "failed"
+   expeditions: string[]
+@@ -116,6 +118,8 @@ export type Expedition = {
+   missionId: string
+   name: string
+   goal: string
++  /** ADR-056: operator-declared execution branch (recorded, replayable). */
++  executionBranch?: string
+   status: "draft" | "approved" | "committed" | "executing" | "paused" | "completed" | "cancelled" | "archived"
+   objectives: string[]
+   discoveries: string[]
+diff --git a/tests/declared-branch-binding.test.js b/tests/declared-branch-binding.test.js
+new file mode 100644
+index 0000000..2805a2c
+--- /dev/null
++++ b/tests/declared-branch-binding.test.js
+@@ -0,0 +1,212 @@
++// ============================================================
++// ADR-056 (slice 2) — Declared Execution Branch Bindings
++// ============================================================
++// Verifies that an operator declaration is *recorded* (MISSION_BRANCH_BOUND /
++// EXPEDITION_BRANCH_BOUND) and that the ExecutionGate then resolves the bound
++// branch from the ledger alone:
++//   - the binding survives replay (rebuildState),
++//   - ApproveMission passes on the bound branch for a non-canonical name,
++//   - StartExpedition passes on the bound branch under enforce,
++//   - the same commands are denied from any other branch (a binding is not a
++//     bypass: HEAD must be the bound branch),
++//   - the live-owner rule blocks a second live entity from claiming a branch.
++// ============================================================
++
++import { strict as assert } from "assert"
++import { execFileSync } from "child_process"
++import fs from "fs"
++import path from "path"
++import { bootstrap } from "../dist/core/bootstrap.js"
++import { rebuildState } from "../dist/runtime/replay.js"
++import { createAlignedContract } from "./helpers/alignment-fixture.js"
++import { withoutLifecycleContinuation } from "./helpers/context.js"
++import { createExecutingExpedition } from "./helpers/governance-intent.js"
++import { makeTempDirSync, gitInitWithCommit } from "./helpers/workspace.js"
++
++const DECLARED = "arena/declared-workspace"
++
++function writeConfig(root, mode) {
++  fs.mkdirSync(path.join(root, ".synth"), { recursive: true })
++  fs.writeFileSync(
++    path.join(root, ".synth", "config.yaml"),
++    `git:\n  branchStrategy: featured\n  branchPolicy:\n    mode: ${mode}\n`,
++    "utf-8",
++  )
++}
++
++function git(root, args) {
++  return execFileSync("git", args, { cwd: root, encoding: "utf-8" }).trim()
++}
++
++function currentBranch(root) {
++  return git(root, ["rev-parse", "--abbrev-ref", "HEAD"])
++}
++
++function checkout(root, branch) {
++  execFileSync("git", ["checkout", "-b", branch], { cwd: root, stdio: "pipe" })
++}
++
++function switchTo(root, branch) {
++  execFileSync("git", ["checkout", branch], { cwd: root, stdio: "pipe" })
++}
++
++async function makeCtx(root) {
++  fs.mkdirSync(path.join(root, ".synth", "data"), { recursive: true })
++  const dataDir = path.join(root, ".synth", "data")
++  const ctx = await bootstrap({
++    infra: {
++      eventLogPath: path.join(dataDir, "event-log.jsonl"),
++      statePath: path.join(dataDir, "canonical-state.json"),
++      checkpointPath: path.join(dataDir, "checkpoint.json"),
++    },
++    genesis: { projectName: "Declared Branch Test", systemId: "declared-branch", partitions: 1 },
++    skipGenesis: false,
++  })
++  return withoutLifecycleContinuation(ctx)
++}
++
++async function bind(ctx, role, entityId, branch) {
++  const result = await ctx.api.handleIntent({
++    actor: "test",
++    capability: "BindExecutionBranch",
++    payload: { role, entityId, branch, declared: true, created: false, baseCommit: "0".repeat(40), declaredBy: "operator" },
++  })
++  assert.equal(result.status, "ok", `BindExecutionBranch should succeed: ${result.error}`)
++  return result
++}
++
++async function testBindingIsRecordedAndReplayed() {
++  const root = makeTempDirSync("synth-declared-bind-")
++  writeConfig(root, "off")
++  gitInitWithCommit(root, "main")
++  const ctx = await makeCtx(root)
++
++  let result = await ctx.api.handleIntent({
++    actor: "test",
++    capability: "CreateMission",
++    payload: { id: "m-bind", name: "Mission m-bind", purpose: "Binding replay" },
++  })
++  assert.equal(result.status, "ok", `CreateMission should succeed: ${result.error}`)
++
++  checkout(root, DECLARED)
++  await bind(ctx, "mission", "m-bind", DECLARED)
++
++  const events = await ctx.runtime.loadEvents()
++  const bound = events.filter((e) => e.type === "MISSION_BRANCH_BOUND")
++  assert.equal(bound.length, 1, "exactly one MISSION_BRANCH_BOUND event must be recorded")
++  assert.equal(bound[0].payload.branch, DECLARED)
++  assert.equal(bound[0].payload.declared, true)
++  assert.equal(bound[0].payload.created, false)
++
++  const state = await ctx.runtime.getState()
++  assert.equal(state.missions["m-bind"].executionBranch, DECLARED, "state must carry the binding")
++
++  // Replay from the event stream reproduces the binding (it is not a side file).
++  const replayed = rebuildState(events)
++  assert.equal(replayed.missions["m-bind"].executionBranch, DECLARED, "replay must reproduce the binding")
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] a declared mission branch is recorded, reflected in state, and replayed")
++}
++
++async function testGateResolvesRecordedMissionBinding() {
++  const root = makeTempDirSync("synth-declared-gate-")
++  writeConfig(root, "off")
++  gitInitWithCommit(root, "main")
++  const ctx = await makeCtx(root)
++
++  await ctx.api.handleIntent({
++    actor: "test",
++    capability: "CreateMission",
++    payload: { id: "m-gate", name: "Mission m-gate", purpose: "Gate replay" },
++  })
++  const { contractId } = await createAlignedContract(ctx)
++  checkout(root, DECLARED)
++  await bind(ctx, "mission", "m-gate", DECLARED)
++
++  // Enforcement is switched on *after* the declaration: the gate must pass on
++  // the bound branch although the name is not a canonical mission branch.
++  writeConfig(root, "enforce")
++  let result = await ctx.api.handleIntent({
++    actor: "test",
++    capability: "ApproveMission",
++    payload: { id: "m-gate", alignmentContractId: contractId },
++  })
++  assert.equal(result.status, "ok", `ApproveMission should pass on the bound branch: ${result.error}`)
++
++  // A binding is not a bypass: from another branch the same approval is denied,
++  // and the denial cites the bound branch.
++  await ctx.api.handleIntent({
++    actor: "test",
++    capability: "CreateMission",
++    payload: { id: "m-gate-2", name: "Mission m-gate-2", purpose: "Gate replay" },
++  })
++  const second = await createAlignedContract(ctx)
++  switchTo(root, "main")
++  await bind(ctx, "mission", "m-gate-2", DECLARED)
++  result = await ctx.api.handleIntent({
++    actor: "test",
++    capability: "ApproveMission",
++    payload: { id: "m-gate-2", alignmentContractId: second.contractId },
++  })
++  assert.equal(result.status, "error", "ApproveMission from off-branch must be denied")
++  assert.ok(
++    result.error.includes("BRANCH_POLICY_DENIED") && result.error.includes(DECLARED),
++    `denial must cite the bound branch, got: ${result.error}`,
++  )
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] the gate resolves a recorded mission binding and still requires HEAD on it")
++}
++
++async function testGateResolvesRecordedExpeditionBinding() {
++  const root = makeTempDirSync("synth-declared-exp-")
++  writeConfig(root, "off")
++  gitInitWithCommit(root, "main")
++  const ctx = await makeCtx(root)
++
++  await ctx.api.handleIntent({
++    actor: "test",
++    capability: "CreateMission",
++    payload: { id: "m-exp", name: "Mission m-exp", purpose: "Expedition binding" },
++  })
++  const { contractId } = await createAlignedContract(ctx)
++  checkout(root, DECLARED)
++  await bind(ctx, "mission", "m-exp", DECLARED)
++
++  const approve = await ctx.api.handleIntent({
++    actor: "test",
++    capability: "ApproveMission",
++    payload: { id: "m-exp", alignmentContractId: contractId },
++  })
++  assert.equal(approve.status, "ok", `ApproveMission should succeed: ${approve.error}`)
++
++  // Expedition is created on the mission branch, then declares the same
++  // operator-owned branch (the arena workflow: one branch, per-role ownership).
++  await createExecutingExpedition(ctx, "m-exp", "e-exp-1", { start: false })
++  await bind(ctx, "expedition", "e-exp-1", DECLARED)
++
++  writeConfig(root, "enforce")
++  assert.equal(currentBranch(root), DECLARED)
++  let result = await ctx.api.handleIntent({ actor: "test", capability: "StartExpedition", payload: { id: "e-exp-1" } })
++  assert.equal(result.status, "ok", `StartExpedition should pass on the bound branch: ${result.error}`)
++
++  const state = await ctx.runtime.getState()
++  assert.equal(state.expeditions["e-exp-1"].executionBranch, DECLARED)
++  assert.equal(state.missions["m-exp"].executionBranch, DECLARED, "mission and expedition may share a branch across roles")
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] the gate resolves a recorded expedition binding under enforce")
++}
++
++async function main() {
++  await testBindingIsRecordedAndReplayed()
++  await testGateResolvesRecordedMissionBinding()
++  await testGateResolvesRecordedExpeditionBinding()
++  console.log("\nAll declared-branch binding tests passed.")
++}
++
++main().catch((err) => {
++  console.error(err)
++  process.exit(1)
++})
+diff --git a/tests/declared-branch-git.test.js b/tests/declared-branch-git.test.js
+new file mode 100644
+index 0000000..454ac59
+--- /dev/null
++++ b/tests/declared-branch-git.test.js
+@@ -0,0 +1,197 @@
++// ============================================================
++// ADR-056 — `--branch` / `--no-create` git mechanics
++// ============================================================
++// Covers src/repository/branch-declaration.ts (the git- and state-facing half
++// of the declaration):
++//   - a pre-existing branch is checked out, never recreated,
++//   - --no-create refuses a branch that exists nowhere (DECLARED_BRANCH_MISSING),
++//   - without --no-create a missing branch is created from HEAD,
++//   - a branch that only exists on origin is materialized as a tracking branch,
++//   - a branch owned by another live entity is refused (DECLARED_BRANCH_IN_USE),
++//   - invalid refs are refused before any git side effect.
++// ============================================================
++
++import { strict as assert } from "assert"
++import { execFileSync } from "child_process"
++import fs from "fs"
++import path from "path"
++import { resolveDeclaredBranch } from "../dist/repository/branch-declaration.js"
++import { makeTempDirSync, gitInitWithCommit } from "./helpers/workspace.js"
++
++function git(root, args) {
++  return execFileSync("git", args, { cwd: root, encoding: "utf-8" }).trim()
++}
++
++function currentBranch(root) {
++  return git(root, ["rev-parse", "--abbrev-ref", "HEAD"])
++}
++
++function localBranches(root) {
++  return git(root, ["branch", "--list", "--format=%(refname:short)"]).split("\n").filter(Boolean).sort()
++}
++
++function testExistingBranchIsCheckedOutNotRecreated() {
++  const root = makeTempDirSync("synth-declare-git-")
++  gitInitWithCommit(root, "main")
++  git(root, ["branch", "arena/existing"])
++  const before = localBranches(root)
++
++  const result = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-1",
++    branch: "arena/existing",
++    noCreate: true,
++  })
++  assert.equal(result.ok, true, result.error)
++  assert.equal(result.created, false, "a pre-existing branch is never reported as created")
++  assert.equal(currentBranch(root), "arena/existing", "the declared branch is checked out")
++  assert.deepEqual(localBranches(root), before, "no branch was added")
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] --no-create checks out a pre-existing branch without recreating it")
++}
++
++function testNoCreateRefusesMissingBranch() {
++  const root = makeTempDirSync("synth-declare-git-")
++  gitInitWithCommit(root, "main")
++  const before = localBranches(root)
++
++  const result = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-1",
++    branch: "arena/never-created",
++    noCreate: true,
++  })
++  assert.equal(result.ok, false)
++  assert.equal(result.code, "DECLARED_BRANCH_MISSING")
++  assert.match(result.suggestion, /git branch arena\/never-created/)
++  assert.equal(currentBranch(root), "main", "a refused declaration never moves HEAD")
++  assert.deepEqual(localBranches(root), before, "a refused declaration never creates a branch")
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] --no-create refuses a branch that exists nowhere and reports the git next step")
++}
++
++function testMissingBranchIsCreatedWithoutNoCreate() {
++  const root = makeTempDirSync("synth-declare-git-")
++  gitInitWithCommit(root, "main")
++  const base = git(root, ["rev-parse", "HEAD"])
++
++  const result = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-1",
++    branch: "arena/created-here",
++  })
++  assert.equal(result.ok, true, result.error)
++  assert.equal(result.created, true, "a branch created by this call is reported as created")
++  assert.equal(currentBranch(root), "arena/created-here")
++  assert.equal(git(root, ["rev-parse", "arena/created-here"]), base, "the branch starts at HEAD")
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] without --no-create a missing branch is created from HEAD")
++}
++
++function testRemoteOnlyBranchIsMaterialized() {
++  const root = makeTempDirSync("synth-declare-git-")
++  gitInitWithCommit(root, "main")
++  const origin = makeTempDirSync("synth-declare-origin-")
++  execFileSync("git", ["init", "--bare", "-b", "main", origin], { stdio: "pipe" })
++  git(root, ["remote", "add", "origin", origin])
++  git(root, ["push", "origin", "main:arena/remote-only"])
++  git(root, ["fetch", "origin"])
++
++  const result = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-1",
++    branch: "arena/remote-only",
++    noCreate: true,
++  })
++  assert.equal(result.ok, true, result.error)
++  assert.equal(result.created, false, "a branch that pre-exists on origin is not created")
++  assert.equal(currentBranch(root), "arena/remote-only")
++  assert.match(git(root, ["rev-parse", "--abbrev-ref", "arena/remote-only@{upstream}"]), /origin\/arena\/remote-only/)
++
++  fs.rmSync(root, { recursive: true, force: true })
++  fs.rmSync(origin, { recursive: true, force: true })
++  console.log("[PASS] a remote-only branch is materialized as a tracking branch under --no-create")
++}
++
++function testLiveOwnerBlocksTheDeclaration() {
++  const root = makeTempDirSync("synth-declare-git-")
++  gitInitWithCommit(root, "main")
++  git(root, ["branch", "arena/owned"])
++
++  const result = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-2",
++    branch: "arena/owned",
++    state: {
++      missions: {},
++      expeditions: {
++        "e-1": { name: "Executing One", status: "executing", missionId: "m-1", executionBranch: "arena/owned" },
++      },
++    },
++  })
++  assert.equal(result.ok, false)
++  assert.equal(result.code, "DECLARED_BRANCH_IN_USE")
++  assert.match(result.error, /expedition e-1/)
++  assert.equal(currentBranch(root), "main", "a refused declaration never moves HEAD")
++
++  // The owner itself may re-declare the same branch (idempotent re-runs).
++  const same = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-1",
++    branch: "arena/owned",
++    state: {
++      expeditions: { "e-1": { status: "executing", executionBranch: "arena/owned" } },
++    },
++  })
++  assert.equal(same.ok, true, same.error)
++
++  // A completed owner releases the branch.
++  const released = resolveDeclaredBranch({
++    root,
++    role: "expedition",
++    entityId: "e-2",
++    branch: "arena/owned",
++    state: { expeditions: { "e-1": { status: "completed", executionBranch: "arena/owned" } } },
++  })
++  assert.equal(released.ok, true, released.error)
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] a branch owned by another live expedition is refused; completion releases it")
++}
++
++function testInvalidNameIsRefusedBeforeAnySideEffect() {
++  const root = makeTempDirSync("synth-declare-git-")
++  gitInitWithCommit(root, "main")
++
++  for (const branch of ["has space", "bad..name", ""]) {
++    const result = resolveDeclaredBranch({ root, role: "mission", entityId: "m-1", branch, noCreate: true })
++    assert.equal(result.ok, false, branch)
++    assert.equal(result.code, "INVALID_BRANCH_NAME", branch)
++  }
++  assert.equal(currentBranch(root), "main")
++  assert.deepEqual(localBranches(root), ["main"])
++
++  fs.rmSync(root, { recursive: true, force: true })
++  console.log("[PASS] invalid branch names are refused before any git side effect")
++}
++
++function main() {
++  testExistingBranchIsCheckedOutNotRecreated()
++  testNoCreateRefusesMissingBranch()
++  testMissingBranchIsCreatedWithoutNoCreate()
++  testRemoteOnlyBranchIsMaterialized()
++  testLiveOwnerBlocksTheDeclaration()
++  testInvalidNameIsRefusedBeforeAnySideEffect()
++  console.log("\nAll declared-branch git tests passed.")
++}
++
++main()
+diff --git a/tests/execution-branch-policy.test.js b/tests/execution-branch-policy.test.js
+index ecbe385..35fa22a 100644
+--- a/tests/execution-branch-policy.test.js
++++ b/tests/execution-branch-policy.test.js
+@@ -15,9 +15,16 @@ import path from "node:path"
+ import test from "node:test"
+ 
+ import {
++  enrichExecutionBranchContext,
++  findLiveBranchBindingOwner,
+   loadBranchPolicyConfig,
++  matchesDeclaredBranchPattern,
+   resolveExecutionBranch,
+ } from "../dist/repository/branch-policy.js"
++import {
++  isCanonicalBranchForRole,
++  validateDeclaredBranchName,
++} from "../dist/repository/branch-taxonomy.js"
+ import { createGitRepositoryAdapter } from "../dist/adapters/repository/git.js"
+ 
+ function makeProject(withConfig = false, configYaml = "") {
+@@ -235,4 +242,174 @@ git:
+     expeditionId: "e-1",
+   })
+   assert.strictEqual(result.ok, true)
+-})
+\ No newline at end of file
++})
++// ------------------------------------------------------------
++// ADR-056 — operator-declared execution branches
++// ------------------------------------------------------------
++
++test("loadBranchPolicyConfig: parses declaredPatterns", () => {
++  const root = makeProject(true, `
++git:
++  branchStrategy: featured
++  branchPolicy:
++    mode: enforce
++    declaredPatterns: ["arena/*", "fix/*"]
++`)
++  const p = loadBranchPolicyConfig(root)
++  assert.deepStrictEqual(p.declaredPatterns, ["arena/*", "fix/*"])
++})
++
++test("loadBranchPolicyConfig: declaredPatterns defaults to empty", () => {
++  const p = loadBranchPolicyConfig(makeProject(false))
++  assert.deepStrictEqual(p.declaredPatterns, [])
++})
++
++test("validateDeclaredBranchName: accepts operator names, rejects invalid refs", () => {
++  for (const name of ["arena/c5db653e-synth", "fix/login-flow", "expedition/m-1/e-1"]) {
++    assert.strictEqual(validateDeclaredBranchName(name).valid, true, name)
++  }
++  for (const name of ["", "has space", "bad..name", "trailing.", "/leading", "ends.lock", "weird~ref"]) {
++    assert.strictEqual(validateDeclaredBranchName(name).valid, false, name)
++  }
++})
++
++test("matchesDeclaredBranchPattern: `*` spans slashes, everything else is literal", () => {
++  assert.strictEqual(matchesDeclaredBranchPattern("arena/c5db653e-synth", ["arena/*"]), true)
++  assert.strictEqual(matchesDeclaredBranchPattern("fix/login-flow", ["arena/*"]), false)
++  assert.strictEqual(matchesDeclaredBranchPattern("fix/login-flow", ["fix/*", "arena/*"]), true)
++  assert.strictEqual(matchesDeclaredBranchPattern("anything", undefined), false)
++  // A pattern is not a regex: dots are literal.
++  assert.strictEqual(matchesDeclaredBranchPattern("arenaXc5db", ["arena.c5db"]), false)
++})
++
++test("resolveExecutionBranch: a declared branch is consulted before the taxonomy", () => {
++  const policy = makePolicy({ mode: "enforce" })
++  const result = resolveExecutionBranch("expedition", "arena/c5db653e-synth", policy, {
++    missionId: "m-1",
++    expeditionId: "e-1",
++    declaredBranch: "arena/c5db653e-synth",
++  })
++  assert.strictEqual(result.ok, true, result.reason)
++  assert.strictEqual(result.declaredBranch, "arena/c5db653e-synth")
++  assert.strictEqual(result.overridden, true)
++  assert.strictEqual(result.patternMatched, false)
++  assert.match(result.reason, /BRANCH_POLICY_OVERRIDDEN/)
++})
++
++test("resolveExecutionBranch: declaredPatterns soften the override warning", () => {
++  const policy = makePolicy({ mode: "enforce", declaredPatterns: ["arena/*"] })
++  const result = resolveExecutionBranch("mission", "arena/c5db653e-synth", policy, {
++    missionId: "m-1",
++    declaredBranch: "arena/c5db653e-synth",
++  })
++  assert.strictEqual(result.ok, true)
++  assert.strictEqual(result.overridden, true)
++  assert.strictEqual(result.patternMatched, true)
++  assert.doesNotMatch(result.reason, /BRANCH_POLICY_OVERRIDDEN/)
++})
++
++test("resolveExecutionBranch: a canonical declared branch is not an override", () => {
++  const policy = makePolicy({ mode: "enforce" })
++  const name = "expedition/m-1/e-1"
++  assert.strictEqual(isCanonicalBranchForRole("expedition", name, { missionId: "m-1", expeditionId: "e-1" }), true)
++  const result = resolveExecutionBranch("expedition", name, policy, {
++    missionId: "m-1",
++    expeditionId: "e-1",
++    declaredBranch: name,
++  })
++  assert.strictEqual(result.ok, true)
++  assert.strictEqual(result.overridden, false)
++})
++
++test("resolveExecutionBranch: without a declaration the taxonomy still governs", () => {
++  const policy = makePolicy({ mode: "enforce" })
++  const result = resolveExecutionBranch("expedition", "arena/c5db653e-synth", policy, {
++    missionId: "m-1",
++    expeditionId: "e-1",
++  })
++  assert.strictEqual(result.ok, false)
++  assert.strictEqual(result.requiredBranch, "expedition/m-1/e-1")
++})
++
++test("enrichExecutionBranchContext: a persisted binding becomes the declared branch", () => {
++  const records = {
++    missions: {
++      "m-1": { name: "Mission One", status: "active", executionBranch: "arena/mission-one" },
++    },
++    expeditions: {
++      "e-1": { name: "Expedition One", status: "executing", missionId: "m-1", executionBranch: "arena/expedition-one" },
++      "e-2": { name: "Expedition Two", status: "executing", missionId: "m-1" },
++    },
++  }
++
++  const missionCtx = enrichExecutionBranchContext("mission", "m-1", records)
++  assert.strictEqual(missionCtx.declaredBranch, "arena/mission-one")
++
++  // An expedition binding wins over the mission's own binding.
++  const ownBinding = enrichExecutionBranchContext("expedition", "e-1", records)
++  assert.strictEqual(ownBinding.declaredBranch, "arena/expedition-one")
++
++  // Without its own binding an expedition inherits the mission binding: the
++  // arena workflow keeps both roles on one operator-owned branch.
++  const inherited = enrichExecutionBranchContext("expedition", "e-2", records)
++  assert.strictEqual(inherited.declaredBranch, "arena/mission-one")
++
++  // An explicit context value always wins over the record.
++  const explicit = enrichExecutionBranchContext("mission", "m-1", records, { declaredBranch: "arena/typed" })
++  assert.strictEqual(explicit.declaredBranch, "arena/typed")
++})
++
++test("resolveExecutionBranch: HEAD must be the bound branch (a binding is not a bypass)", () => {
++  const policy = makePolicy({ mode: "enforce" })
++  const bound = resolveExecutionBranch("mission", "arena/bound", policy, {
++    missionId: "m-1",
++    declaredBranch: "arena/bound",
++  })
++  assert.strictEqual(bound.ok, true)
++
++  const drifted = resolveExecutionBranch("mission", "main", policy, {
++    missionId: "m-1",
++    declaredBranch: "arena/bound",
++  })
++  assert.strictEqual(drifted.ok, false)
++  assert.strictEqual(drifted.requiredBranch, "arena/bound")
++  assert.match(drifted.reason, /bound to arena\/bound/)
++})
++
++test("findLiveBranchBindingOwner: exclusivity is per role and per live entity", () => {
++  const records = {
++    missions: {
++      "m-1": { status: "active", executionBranch: "arena/shared" },
++      "m-9": { status: "active", executionBranch: "arena/shared" },
++    },
++    expeditions: {
++      "e-1": { status: "executing", missionId: "m-1", executionBranch: "arena/shared" },
++      "e-2": { status: "executing", missionId: "m-1", executionBranch: "arena/shared" },
++      "e-3": { status: "completed", missionId: "m-1", executionBranch: "arena/freed" },
++      "e-4": { status: "executing", missionId: "m-1", executionBranch: "arena/freed" },
++    },
++  }
++
++  // Second live mission on the same branch is a conflict; itself is not.
++  assert.deepStrictEqual(findLiveBranchBindingOwner(records, "mission", "m-1", "arena/shared"), {
++    kind: "mission",
++    id: "m-9",
++  })
++  assert.strictEqual(findLiveBranchBindingOwner(records, "mission", "m-9", "arena/shared").id, "m-1")
++
++  // Second live expedition on the same branch is a conflict.
++  assert.deepStrictEqual(findLiveBranchBindingOwner(records, "expedition", "e-1", "arena/shared"), {
++    kind: "expedition",
++    id: "e-2",
++  })
++
++  // A completed expedition releases the branch for a new live one.
++  assert.strictEqual(findLiveBranchBindingOwner(records, "expedition", "e-4", "arena/freed"), undefined)
++
++  // A live mission binding does not block an expedition from the same branch
++  // (mission and expedition ownership are separate roles).
++  assert.strictEqual(findLiveBranchBindingOwner(records, "expedition", "e-9", "arena/unused"), undefined)
++
++  // Unknown roles/branches never conflict.
++  assert.strictEqual(findLiveBranchBindingOwner(records, "expedition", "e-9", ""), undefined)
++})

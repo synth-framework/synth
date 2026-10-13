@@ -1,0 +1,14 @@
+{
+  "id": "test:ledger-doctor",
+  "description": "npm script migration: test:ledger-doctor",
+  "command": "node tests/ledger-doctor.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

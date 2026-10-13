@@ -11,7 +11,6 @@ import path from "path"
 import { runStatus } from "./status-light.js"
 import { runExplainReplay, parseReplayFlags } from "./explain-replay-light.js"
 import { parseExplainFlags } from "./explain-flags.js"
-import { telemetry, installTelemetryHandlers } from "../infra/telemetry.js"
 
 const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
 
@@ -68,7 +67,6 @@ function printHelp(): void {
 }
 
 export async function run(): Promise<void> {
-  installTelemetryHandlers()
   const command = process.argv[2] ?? "help"
 
   // `explain replay` and the read-only `explain identity|resume|governance`
@@ -123,11 +121,9 @@ const isMainModule = (): boolean => {
 
 if (isMainModule()) {
 run().catch((err: unknown) => {
-  telemetry.error(err, { command: process.argv[2] })
-  telemetry.flushOpen()
   const message = err instanceof Error ? err.message : String(err)
-  process.stderr.write(`[telemetry] command failed: ${message}\n`)
-  if (err instanceof Error && err.stack) process.stderr.write(`[telemetry] ${err.stack}\n`)
+  process.stderr.write(`synth: ${message}\n`)
+  if (err instanceof Error && err.stack) process.stderr.write(`${err.stack}\n`)
   process.exit(1)
 })
 }

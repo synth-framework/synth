@@ -1,0 +1,14 @@
+{
+  "id": "test:auto-commit-ignored-paths",
+  "description": "npm script migration: test:auto-commit-ignored-paths",
+  "command": "node tests/auto-commit-ignored-paths.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

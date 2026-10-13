@@ -1,0 +1,14 @@
+{
+  "id": "test:ledger-writer",
+  "description": "npm script migration: test:ledger-writer",
+  "command": "node tests/ledger-writer.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

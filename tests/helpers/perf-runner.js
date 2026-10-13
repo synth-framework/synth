@@ -4,7 +4,6 @@
 // DRY replacement for the duplicated `runSynth` timing block that
 // was copy-pasted into every CLI integration test. Captures:
 //   - per-command wall-clock elapsed time (PERFCMD ...)
-//   - the CLI's own [telemetry] spans (phase breakdowns)
 // to a perf log file (one per test suite).
 //
 // Usage:
@@ -34,12 +33,6 @@ export function createPerfRunner({ cliPath, logPath, timeout = 60000 }) {
     const elapsed = Date.now() - t0
     const key = (args[0] || "") + " " + (args[1] || "")
     perfLog(`PERFCMD ${key} elapsedMs=${elapsed} status=${result.status}`)
-    const tel = (result.stderr || "")
-      .split("\n")
-      .filter((l) => l.includes("[telemetry]"))
-      .map((l) => "  " + l.trim())
-      .join("\n")
-    if (tel) perfLog(tel)
     return {
       stdout: result.stdout || "",
       stderr: result.stderr || "",

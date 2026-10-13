@@ -26,6 +26,25 @@ import { detectRecommendedAdapters } from "./detect-adapters.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
+import {
+  AUTO_COMMIT_INCLUDE_ROOTS,
+  autoCommitExcludePathspecs,
+  isCommittableArtifact,
+  isExcludedFromCompletionGate,
+  isGovernedArtifact,
+} from "../state/artifact-policy.js"
+import { checkLedger, repairLedger } from "../ledger/doctor.js"
+import { ceremonyForCapability, commitCeremony, commitCeremonySync } from "../ledger/ceremony.js"
+import {
+  abandonmentRef,
+  createAbandonmentRef,
+  deliveryState,
+  discardAbandoned,
+  handoffState,
+  pushBranch,
+  resolveCommit,
+  verifySeal,
+} from "../ledger/delivery.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
 import {
@@ -100,11 +119,13 @@ import {
 } from "./first-contact.js"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
 import { GitSnapshotAdapter, loadSnapshotConfig } from "../adapter/git-snapshot.js"
-import { branchNameCandidates } from "../repository/branch-taxonomy.js"
+import { branchNameCandidates, validateDeclaredBranchName } from "../repository/branch-taxonomy.js"
+import { resolveDeclaredBranch } from "../repository/branch-declaration.js"
 import { analyzeEventLogLineage } from "./event-log-lineage.js"
 import {
   enrichExecutionBranchContext,
   loadBranchPolicyConfig,
+  resolveExecutionBranch,
   type ExecutionBranchContext,
   type ExecutionNameRecords,
 } from "../repository/branch-policy.js"
@@ -254,7 +275,108 @@ async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]
   }
   // EXP-IDENTITY-001: ensure every handleIntent call carries the CLI identity.
   injectIdentityContext(ctx.api)
+  // ADR-055 rev 2 §R2.1 · AC1/AC10: the single choke point where every
+  // governance mutation lands a ledger commit. Verbs that commit themselves
+  // (verbLevel) and non-ceremony capabilities are skipped; everything else is
+  // committed through the Ledger Writer with the normative message shape.
+  wrapHandleIntentWithCeremony(ctx.api)
   return ctx
+}
+
+/**
+ * The ceremony a `handleIntent` call started, waiting to be committed. Marking
+ * at the choke point (instead of committing there) is what makes one verb one
+ * commit: the verb may write draft files, snapshots or decisions after the
+ * capability returns, and all of it belongs to the same ceremony commit.
+ */
+let pendingCeremony: { key: string; entityId?: string } | undefined
+
+function markCeremony(key: string, entityId?: string): void {
+  pendingCeremony = { key, entityId }
+  installExitFlush()
+}
+
+/**
+ * A verb may mutate governance state and *then* fail — `printError` exits the
+ * process, so the deferred flush in `main()` never runs. This last-resort hook
+ * commits the pending ceremony synchronously at exit so a failure cannot leave
+ * the ledger dirty (it refuses to commit from a checkout that is not on the
+ * ledger branch; that would recreate the cross-branch bleed, F12).
+ */
+let exitFlushInstalled = false
+function installExitFlush(): void {
+  if (exitFlushInstalled) return
+  exitFlushInstalled = true
+  process.on("exit", () => {
+    const pending = pendingCeremony
+    pendingCeremony = undefined
+    if (!pending) return
+    // `--no-auto-commit` (global, mirrored into autoCommitDisabledByFlag in
+    // main()) disables the exit flush too: the operator asked for no writes.
+    if (!isAutoCommitEnabled()) return
+    const result = commitCeremonySync(process.cwd(), pending.key, pending.entityId)
+    if (result.committed) {
+      process.stderr.write(`ledger: recorded ${result.message} on exit (${result.commitHash.slice(0, 8)})\n`)
+    } else if (result.reason && result.reason !== "no ledger changes") {
+      process.stderr.write(`ledger: the pending ceremony could not be committed on exit — ${result.reason}\n`)
+    }
+  })
+}
+
+/**
+ * Commit the pending ceremony (ADR-055 rev 2 §R2.1 · AC1/AC10). Called by the
+ * handlers that want the commit in their response envelope, and by `main()`
+ * after every command so no verb can end with an uncommitted ledger.
+ */
+async function flushPendingCeremony(): Promise<LedgerCommitInfo | undefined> {
+  const pending = pendingCeremony
+  pendingCeremony = undefined
+  if (!pending || !isAutoCommitEnabled()) return undefined
+
+  const ceremony = await commitCeremony(process.cwd(), pending.key, pending.entityId)
+  if (!ceremony.committed && ceremony.code) {
+    // No silent `{committed:false}`: a ceremony whose ledger commit was
+    // refused fails loudly with the writer's code and next step.
+    printError(ceremony.reason ?? "The ledger commit for this ceremony failed", {
+      code: ceremony.code,
+      category: "ledger",
+      suggestion: ceremony.nextStep,
+    })
+  }
+  return {
+    committed: ceremony.committed,
+    ...(ceremony.commitHash ? { commitHash: ceremony.commitHash } : {}),
+    message: ceremony.message,
+    files: ceremony.files,
+    ...(ceremony.reason ? { reason: ceremony.reason } : {}),
+  }
+}
+
+type LedgerCommitInfo = {
+  committed: boolean
+  commitHash?: string
+  message: string
+  files: string[]
+  reason?: string
+}
+
+/**
+ * Wrap `api.handleIntent` so a successful governance capability marks the
+ * ceremony the verb must commit. Verb-level ceremonies keep their own commit
+ * call sites; this closes the verbs that previously committed nothing at all.
+ */
+function wrapHandleIntentWithCeremony(api: { handleIntent: (request: any) => Promise<any> }): void {
+  const original = api.handleIntent.bind(api)
+  api.handleIntent = async (request: any) => {
+    const result = await original(request)
+    if (result?.status !== "ok") return result
+
+    const ceremony = ceremonyForCapability(request?.capability, request?.payload)
+    if (!ceremony || ceremony.spec.verbLevel) return result
+
+    markCeremony(ceremony.key, ceremony.entityId)
+    return result
+  }
 }
 
 async function gateDecision(action: AgentAction, state: import("../types/index.js").CanonicalState, runtime?: import("../runtime/engine.js").RuntimeEngine) {
@@ -341,7 +463,7 @@ async function getUntrackedSourcePaths(): Promise<string[]> {
         .split("\n")
         .filter((line) => line.startsWith("?? "))
         .map((line) => line.slice(3))
-        .filter((p) => !isDerivedStateFile(p))
+        .filter((p) => !isGovernedArtifact(p))
       resolve(paths)
     })
     child.on("error", () => resolve([]))
@@ -358,13 +480,34 @@ async function getUntrackedSourcePaths(): Promise<string[]> {
 // manually between steps.
 // ============================================================
 
-const DERIVED_STATE_PATTERNS = [
-  ".synth/data/",
-  "proof/expeditions/",
-  "data/event-log.jsonl",
-  "data/canonical-state.json",
-  "AGENTS.md",
-]
+// Auto-commit scope and exclusions come from the artifact policy
+// (src/state/artifact-policy.ts). The include roots are directory pathspecs:
+// `git add -A -- <dir>` stages additions, modifications and deletions, and
+// never fails on ignored content the way an explicit file list does (audit D1).
+
+/** Existing subset of the include roots (a missing pathspec fails `git add`). */
+async function existingAutoCommitPathspecs(cwd: string): Promise<string[]> {
+  const existing: string[] = []
+  for (const relPath of AUTO_COMMIT_INCLUDE_ROOTS) {
+    try {
+      await fs.access(path.join(cwd, relPath))
+      existing.push(relPath)
+    } catch {
+      // path does not exist in this workspace
+    }
+  }
+  return existing
+}
+
+/** True when `relPath` is in the index. */
+function isTrackedPath(cwd: string, relPath: string): boolean {
+  try {
+    const listing = execFileSync("git", ["ls-files", "--", relPath], { cwd, encoding: "utf-8" })
+    return listing.trim().length > 0
+  } catch {
+    return false
+  }
+}
 
 type AutoCommitResult = {
   committed: boolean
@@ -388,15 +531,9 @@ function isScratchFile(relPath: string): boolean {
   )
 }
 
-function isDerivedStateFile(relPath: string): boolean {
-  for (const pattern of DERIVED_STATE_PATTERNS) {
-    if (pattern.endsWith("/")) {
-      if (relPath.startsWith(pattern)) return true
-    } else if (relPath === pattern) {
-      return true
-    }
-  }
-  return isScratchFile(relPath)
+/** Governed artifacts and scratch files never count as source changes. */
+function isNonSourcePath(relPath: string): boolean {
+  return isExcludedFromCompletionGate(relPath) || isScratchFile(relPath)
 }
 
 /**
@@ -421,7 +558,7 @@ async function getNonDerivedWorkingTreeStatus(): Promise<{
   const nonDerivedLines: string[] = []
   for (const line of allLines) {
     const relPath = line.slice(3)
-    if (isDerivedStateFile(relPath)) {
+    if (isNonSourcePath(relPath)) {
       derivedLines.push(line)
     } else {
       nonDerivedLines.push(line)
@@ -441,7 +578,13 @@ async function getNonDerivedWorkingTreeStatus(): Promise<{
   }
 }
 
+// `--no-auto-commit` is a global flag parsed once in main(); ceremonies run
+// from the handleIntent choke point do not receive the per-command flags, so
+// the parsed value is mirrored here.
+let autoCommitDisabledByFlag = false
+
 function isAutoCommitEnabled(flags?: Record<string, string | boolean>): boolean {
+  if (autoCommitDisabledByFlag) return false
   if (flags && (flags["no-auto-commit"] === true || flags["no-auto-commit"] === "true")) {
     return false
   }
@@ -454,7 +597,6 @@ async function collectDerivedStateFiles(cwd: string): Promise<string[]> {
   const files: string[] = []
   const dirs = [sdk.paths.dataDir(cwd), path.join(cwd, "proof", "expeditions")]
   const rootFiles = [
-    sdk.paths.eventLogFile(cwd),
     sdk.paths.stateFile(cwd),
     path.join(cwd, "AGENTS.md"),
   ]
@@ -492,94 +634,150 @@ async function collectDerivedStateFilesRecursive(dir: string, cwd: string, out: 
   }
 }
 
-async function filterIgnoredFiles(cwd: string, files: string[]): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const child = spawn("git", ["check-ignore", "--stdin"], { cwd })
+/**
+ * Paths that .gitignore excludes, *including* tracked ones (`--no-index`).
+ * Plain `git check-ignore` hides indexed paths — the root cause of audit D2:
+ * the old filter never removed the ignored-but-tracked drafts from the
+ * staging batch, so `git add` refused the whole list (D1).
+ */
+async function listIgnoredPaths(cwd: string, files: string[]): Promise<Set<string>> {
+  return new Promise((resolve) => {
+    if (files.length === 0) {
+      resolve(new Set())
+      return
+    }
+    const child = spawn("git", ["check-ignore", "--no-index", "--stdin"], { cwd })
     let stdout = ""
-    let stderr = ""
     child.stdout.on("data", (data: Buffer) => {
       stdout += data.toString("utf-8")
-    })
-    child.stderr.on("data", (data: Buffer) => {
-      stderr += data.toString("utf-8")
     })
     child.on("close", (code) => {
       // git check-ignore exits 1 when none of the inputs are ignored.
       if (code !== 0 && code !== 1) {
-        reject(new Error(stderr || `git check-ignore exited with ${code}`))
+        resolve(new Set())
         return
       }
-      const ignored = new Set(stdout.trim().split("\n").filter(Boolean))
-      resolve(files.filter((f) => !ignored.has(f)))
+      resolve(new Set(stdout.trim().split("\n").map((line) => line.trim()).filter(Boolean)))
     })
-    child.on("error", reject)
+    child.on("error", () => resolve(new Set()))
     child.stdin.end(files.join("\n"))
   })
+}
+
+/** Auto-commit only ever stages committable artifacts (durable + input). */
+function isAutoCommitScoped(relPath: string): boolean {
+  return isCommittableArtifact(relPath)
+}
+
+/**
+ * Stage auto-commit content with a resilient three-step strategy:
+ *   1. one `git add -A` over directory pathspecs (stages deletions too, and
+ *      never fails because an ignored path was named explicitly);
+ *   2. per-path adds, retrying ignored-but-tracked paths with `-f`;
+ *   3. report the paths that still failed instead of aborting the commit.
+ * Returns the staged paths within the auto-commit scope.
+ */
+async function stageAutoCommitPaths(cwd: string): Promise<{ staged: string[]; failures: string[] }> {
+  const failures: string[] = []
+  const pathspecs = await existingAutoCommitPathspecs(cwd)
+
+  let primaryOk = false
+  if (pathspecs.length > 0) {
+    try {
+      execFileSync("git", ["add", "-A", "--", ...pathspecs, ...autoCommitExcludePathspecs()], {
+        cwd,
+        stdio: ["pipe", "pipe", "pipe"],
+      })
+      primaryOk = true
+    } catch {
+      // Fall back to per-path staging so one bad path cannot kill the commit.
+    }
+  }
+
+  if (!primaryOk) {
+    // Per-path fallback: ignored *and untracked* paths are never staged;
+    // ignored *and tracked* paths are staged with `-f` (they are legitimate
+    // content — e.g. draft inputs — and explicit pathspecs need the flag).
+    const candidates = (await collectDerivedStateFiles(cwd)).filter((relPath) =>
+      isAutoCommitScoped(relPath),
+    )
+    const ignored = await listIgnoredPaths(cwd, candidates)
+    for (const relPath of candidates) {
+      const isIgnored = ignored.has(relPath)
+      if (isIgnored && !isTrackedPath(cwd, relPath)) continue
+      const attempts = isIgnored ? [["-f"], []] : [[], ["-f"]]
+      let staged = false
+      for (const extra of attempts) {
+        try {
+          execFileSync("git", ["add", ...extra, "-A", "--", relPath], { cwd, stdio: ["pipe", "pipe", "pipe"] })
+          staged = true
+          break
+        } catch {
+          // try the next strategy
+        }
+      }
+      if (!staged) failures.push(relPath)
+    }
+  }
+
+  const stdout = execFileSync("git", ["diff", "--cached", "--name-only"], { cwd, encoding: "utf-8" })
+  const staged = stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && isAutoCommitScoped(line))
+  return { staged, failures }
 }
 
 /**
  * Best-effort commit of derived SYNTH state files. Never throws; failures are
  * returned in `reason` so lifecycle commands can warn without aborting.
  */
+/**
+ * Commit the ceremony's governance state on the ledger branch (ADR-055 §2.3).
+ *
+ * This replaces the former best-effort `git add` sweep on the current branch:
+ * the commit goes through the Ledger Writer (lock → residue check → commit →
+ * CAS), and a refusal is loud — the CLI prints the `LEDGER_*` code and its next
+ * step and exits non-zero instead of reporting success with
+ * `{committed:false}`.
+ */
 async function autoCommitDerivedState(
   cwd: string,
   transition: string,
   expeditionId?: string,
 ): Promise<AutoCommitResult> {
-  const message = `chore(synth): record ${transition}${expeditionId ? ` for expedition ${expeditionId}` : ""}`
-
   try {
     await fs.access(path.join(cwd, ".git"))
   } catch {
-    return { committed: false, message, files: [], reason: "Not a git repository" }
+    return { committed: false, message: `chore(synth): record ${transition}`, files: [], reason: "Not a git repository" }
   }
 
-  const allFiles = await collectDerivedStateFiles(cwd)
-  if (allFiles.length === 0) {
-    return { committed: false, message, files: [], reason: "No derived state files present" }
-  }
-
-  let stageableFiles: string[]
-  try {
-    stageableFiles = await filterIgnoredFiles(cwd, allFiles)
-  } catch {
-    stageableFiles = allFiles
-  }
-  if (stageableFiles.length === 0) {
-    return { committed: false, message, files: allFiles, reason: "Derived state files are ignored by git" }
-  }
-
-  try {
-    execFileSync("git", ["add", "--", ...stageableFiles], { cwd, stdio: ["pipe", "pipe", "pipe"] })
-  } catch (err: any) {
-    return { committed: false, message, files: stageableFiles, reason: `Failed to stage derived state: ${err.message || err}` }
-  }
-
-  const stagedNames = await new Promise<string>((resolve, reject) => {
-    const child = spawn("git", ["diff", "--cached", "--name-only"], { cwd })
-    let stdout = ""
-    child.stdout.on("data", (data: Buffer) => {
-      stdout += data.toString("utf-8")
+  const ceremony = await commitCeremony(cwd, transition, expeditionId)
+  if (!ceremony.committed && ceremony.code) {
+    printError(ceremony.reason ?? "The ledger commit failed", {
+      code: ceremony.code,
+      category: "ledger",
+      suggestion: ceremony.nextStep,
     })
-    child.on("close", (code) => {
-      if (code !== 0) reject(new Error(`git diff --cached exited with ${code}`))
-      else resolve(stdout.trim())
-    })
-    child.on("error", reject)
-  })
-
-  const stagedFiles = stagedNames.split("\n").filter(Boolean)
-  if (stagedFiles.length === 0) {
-    return { committed: false, message, files: stageableFiles, reason: "No derived state changes to commit" }
   }
 
-  try {
-    execFileSync("git", ["commit", "-m", message, "--", ...stagedFiles], { cwd, stdio: ["pipe", "pipe", "pipe"] })
-    const commitHash = execFileSync("git", ["rev-parse", "HEAD"], { cwd, encoding: "utf-8" }).trim()
-    return { committed: true, commitHash, message, files: stagedFiles }
-  } catch (err: any) {
-    return { committed: false, message, files: stagedFiles, reason: `Commit failed: ${err.message || err}` }
+  return {
+    committed: ceremony.committed,
+    ...(ceremony.commitHash ? { commitHash: ceremony.commitHash } : {}),
+    message: ceremony.message,
+    files: ceremony.files,
+    ...(ceremony.reason ? { reason: ceremony.reason } : {}),
   }
+}
+
+/**
+ * Commit an intake ceremony (draft creation/update, artifact retirement) that
+ * has no capability to hang a choke-point commit on. Loud on refusal, exactly
+ * like the capability path.
+ */
+async function commitDraftCeremony(transition: string, entityId?: string): Promise<LedgerCommitInfo | undefined> {
+  markCeremony(transition, entityId)
+  return flushPendingCeremony()
 }
 
 async function getVersion(): Promise<string> {
@@ -750,7 +948,7 @@ async function verifyDiscoveryBaseline(): Promise<DoctorCheckResult> {
   }
 }
 
-async function cmdDoctor() {
+async function cmdDoctor(flags: Record<string, string | boolean> = {}) {
   const REQUIRED_NODE_MAJOR = 20
   const version = await getVersion()
 
@@ -796,14 +994,46 @@ async function cmdDoctor() {
     discoveryBaseline: await verifyDiscoveryBaseline(),
   }
 
+  // Ledger Health — ADR-055 AC6/AC13: the four silent-failure classes of the
+  // ceremony ledger. --fix repairs the anchor and commits a stalled ceremony.
+  const fixRequested = flags.fix === true || flags.fix === "true"
+  let repair: Awaited<ReturnType<typeof repairLedger>> | undefined
+  if (fixRequested) {
+    repair = await repairLedger(process.cwd())
+  }
+  const ledger = await checkLedger(process.cwd())
+  const ledgerHealth: Record<string, DoctorCheckResult> = {
+    ledgerBranch: ledger.repo
+      ? {
+          ok: Boolean(ledger.branch),
+          detail: ledger.branch
+            ? `Ledger branch: ${ledger.branch}${ledger.branchSource ? ` (${ledger.branchSource})` : ""}`
+            : "Detached HEAD with no recorded ledger branch — ceremonies cannot commit",
+          ...(ledger.branch
+            ? ledger.branchSource === "inferred"
+              ? { nextStep: "Name the ledger branch: set git.ledgerBranch in .synth/config.yaml (the next ceremony records it otherwise)." }
+              : {}
+            : { nextStep: "Check out the ledger branch before running ceremonies." }),
+        }
+      : { ok: true, detail: "Not a git repository" },
+    ledgerAnchor: { ...ledger.anchor },
+    ledgerCeremony: { ...ledger.ceremony },
+    ledgerSync: { ...ledger.sync },
+  }
+
   const runtimeOk = Object.values(runtimeHealth).every((c) => c.ok)
   const projectOk = Object.values(projectHealth).every((c) => c.ok)
-  const allOk = runtimeOk && projectOk
+  const ledgerOk = Object.values(ledgerHealth).every((c) => c.ok)
+  const allOk = runtimeOk && projectOk && ledgerOk
 
   const runtimeNextSteps = Object.values(runtimeHealth)
     .filter((c) => !c.ok && c.nextStep)
     .map((c) => c.nextStep as string)
   const projectNextSteps = Object.values(projectHealth)
+    .filter((c) => !c.ok && c.nextStep)
+    .map((c) => c.nextStep as string)
+
+  const ledgerNextSteps = Object.values(ledgerHealth)
     .filter((c) => !c.ok && c.nextStep)
     .map((c) => c.nextStep as string)
 
@@ -816,6 +1046,10 @@ async function cmdDoctor() {
     nextSteps.push("[Project Health]")
     nextSteps.push(...projectNextSteps)
   }
+  if (ledgerNextSteps.length > 0) {
+    nextSteps.push("[Ledger Health]")
+    nextSteps.push(...ledgerNextSteps)
+  }
   if (nextSteps.length === 0) {
     if (hasManifest) {
       nextSteps.push("synth status", "synth mission create --subject '...' --purpose '...'")
@@ -827,7 +1061,7 @@ async function cmdDoctor() {
   // Maintain a backward-compatible `checks` view that flattens runtime and
   // project health signals. Some consumers (e.g. TaskPRO regression) read
   // individual checks from this top-level map.
-  const checks: Record<string, DoctorCheckResult> = { ...runtimeHealth, ...projectHealth }
+  const checks: Record<string, DoctorCheckResult> = { ...runtimeHealth, ...projectHealth, ...ledgerHealth }
 
   printJson({
     status: allOk ? "ok" : "warning",
@@ -836,6 +1070,8 @@ async function cmdDoctor() {
     healthy: allOk,
     runtimeHealth,
     projectHealth,
+    ledgerHealth,
+    ...(repair ? { ledgerRepair: repair } : {}),
     checks,
     nextSteps,
   })
@@ -2407,7 +2643,8 @@ async function cmdExpeditionApproveHelp() {
 
 async function cmdDoctorHelp() {
   printJson(namespaceHelp("doctor", "Verify installation and project health", [
-    { name: "synth doctor", description: "Report Runtime Health and Project Health sections" },
+    { name: "synth doctor", description: "Report Runtime, Project and Ledger health sections" },
+    { name: "synth doctor --fix", description: "Repair the ledger: recreate a stale anchor, commit a stalled ceremony" },
   ]))
 }
 
@@ -3121,10 +3358,10 @@ async function cmdStatus() {
   await sdk.paths.ensureDataDir(sdk.workspace.root())
   const logger = new Logger("status")
   logger.info("Resolving governance context for operator briefing")
-  // EXP-AI-003: keep .synth/ai/ metadata synchronized with canonical state so
-  // agent orientation is always current when the operator asks for status.
-  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
-  await refreshAiMetadata(synthDir)
+  // EXP-AI-003 superseded (ADR-055 §2.8): `status` is a pure read. It used to
+  // rewrite .synth/ai/*.json on every invocation, which made a read-only
+  // command dirty the working tree. `synth ai refresh` is the explicit
+  // regenerator, and the bootstrap path still refreshes on init.
   const briefing = await buildOperatorBriefing(process.cwd())
   const validation = await buildStatusValidationSummary()
   if (briefing.status === "ok" && validation) {
@@ -3291,6 +3528,10 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     }
   }
 
+  // The draft and its integrity record are this ceremony's ledger payload; the
+  // verb that writes them commits them (§R2.1 · AC9).
+  const ledger = await commitDraftCeremony("mission-draft", session.id)
+
   printJson({
     status: "ok",
     kind: "MissionDraft",
@@ -3305,6 +3546,7 @@ async function cmdMissionCreate(flags: Record<string, string | boolean>) {
     unknowns: session.unknowns,
     questions: session.questions,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : [],
+    ...(ledger ? { ledger } : {}),
     nextStep: `synth mission approve --draft-id ${session.id}`,
   })
 }
@@ -3365,6 +3607,9 @@ async function materializeApprovedMission(
 
 async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
+  const declaredBranchFlag = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
+  const noCreateFlag = flags["no-create"] === true || flags["no-create"] === "true"
+  if (noCreateFlag && !declaredBranchFlag) printError("--no-create requires --branch")
   if (!draftId) printError("--draft-id is required")
 
   let alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
@@ -3485,8 +3730,27 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   const missionNode = Array.from(session.worldModel.nodes.values()).find(
     (n: import("../mission-studio/types.js").WorldModelNode): n is MissionNode => n.kind === "mission",
   )
+  let declaredMissionBranch: DeclaredBranchInfo | undefined
   if (missionNode) {
-    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id })
+    if (declaredBranchFlag) {
+      // ADR-056 §2.2: the operator declares the execution branch; the CLI
+      // materializes or checks it out before the mission is approved.
+      declaredMissionBranch = await declareExecutionBranch("mission", {
+        branch: declaredBranchFlag,
+        noCreate: noCreateFlag,
+        entityId: missionNode.id,
+        missionId: missionNode.id,
+        missionName: missionNode.name,
+      })
+      if (!declaredMissionBranch.ok) {
+        printError(declaredMissionBranch.error || "The declared execution branch is not usable", {
+          code: declaredMissionBranch.code,
+          category: "governance",
+          ...(declaredMissionBranch.suggestion ? { suggestion: declaredMissionBranch.suggestion } : {}),
+        })
+      }
+    }
+    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id }, declaredBranchFlag)
   }
 
   const ctx = await bootstrap({
@@ -3562,6 +3826,12 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     printError(err instanceof Error ? err.message : String(err))
   }
 
+  // ADR-056 §2.5: record the binding once the mission exists in the ledger, so
+  // every later resolution (gate + CLI guard) replays the same branch.
+  if (declaredMissionBranch?.ok && missionNode) {
+    await recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
+  }
+
   // Persist the approved snapshot as an immutable, certified artifact.
   let snapshotPersisted = false
   let snapshotNote: string | undefined
@@ -3611,6 +3881,15 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
       created: runtimeResult.created,
       approved: runtimeResult.approved,
     },
+    ...(declaredMissionBranch?.ok
+      ? {
+          executionBranch: {
+            branch: declaredMissionBranch.branch,
+            created: declaredMissionBranch.created,
+            ...(declaredMissionBranch.warning ? { warning: declaredMissionBranch.warning } : {}),
+          },
+        }
+      : {}),
     proposals: approvedData.proposals,
     nextStep: `synth mission snapshot ${approvedData.id} to inspect the persisted snapshot`,
   })
@@ -3768,11 +4047,14 @@ async function cmdMissionDelete(flags: Record<string, string | boolean>) {
     printError(result.error || "Unknown execution gate error", "MissionDeleteFailed")
   }
 
+  const ledger = await commitDraftCeremony("mission-delete", id)
+
   printJson({
     status: "ok",
     kind: "MissionDeleted",
     missionId: id,
     result: result.result,
+    ...(ledger ? { ledger } : {}),
   })
 }
 
@@ -3877,6 +4159,8 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
   await fs.writeFile(successorPath, JSON.stringify(serialized, null, 2), "utf-8")
   await writeDraftIntegrityRecord(draftsDir, session.id, serialized)
 
+  const ledger = await commitDraftCeremony("mission-evidence", session.id)
+
   printJson({
     status: "ok",
     kind: "MissionDraft",
@@ -3887,6 +4171,7 @@ async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
     confidence: session.confidence,
     unknowns: session.unknowns,
     questions: session.questions,
+    ...(ledger ? { ledger } : {}),
     nextStep: `synth mission approve --draft-id ${session.id}`,
   })
 }
@@ -4214,6 +4499,370 @@ async function cmdProgramShow(flags: Record<string, string | boolean>) {
   })
 }
 
+/**
+ * `synth expedition abandon --id <id> --reason <text> [--branch <name>] [--discard]`
+ * ADR-055 §2.7 / AC5 (record half): nothing is wiped by default. The event lands
+ * on the ledger first, the tip is preserved under `refs/synth/abandoned/<id8>`,
+ * and the expedition record gains the handoff block. `--discard` is the only
+ * deletion path and it is itself a recorded ceremony.
+ */
+async function cmdExpeditionAbandon(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  const reason = typeof flags.reason === "string" ? flags.reason.trim() : ""
+  if (!id || !reason) {
+    printError("Usage: synth expedition abandon --id <expedition-id> --reason <text> [--branch <name>] [--discard]", {
+      code: "MissingAbandonArguments",
+      category: "validation",
+      suggestion: "Abandonment needs a reason — it is the note your successor reads.",
+    })
+  }
+
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const discard = flags.discard === true || flags.discard === "true"
+
+  const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+  const expedition = (await ctx.runtime.getState()).expeditions[id]
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+  }
+  const handoff = handoffState(expedition)
+  // Already abandoned, and the operator now wants the deletion done: that is a
+  // second act (the discard), not a second abandonment. Everything else about
+  // an already-terminal expedition is refused.
+  const discardOnly = Boolean(handoff) && discard
+  if (!discardOnly && (expedition.status === "cancelled" || expedition.status === "archived")) {
+    printError(`Expedition ${id} is already ${expedition.status} — nothing to abandon.`, {
+      code: "ExpeditionNotAbandonable",
+      category: "governance",
+      suggestion: handoff
+        ? `The handoff is recorded. To delete the branch and ref: synth expedition abandon --id ${id} --reason "${handoff.reason}" --discard`
+        : `Run 'synth expedition show --id ${id}' to see its state.`,
+    })
+  }
+
+  const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+  const tipCommit = branch ? resolveCommit(process.cwd(), branch) : undefined
+  const delivery = deliveryState(expedition)
+  const ref = abandonmentRef(id)
+
+  if (dryRun) {
+    printJson({
+      status: "ok",
+      kind: "ExpeditionAbandonDryRun",
+      expeditionId: id,
+      reason,
+      branch: branch || undefined,
+      tipCommit,
+      delivered: delivery.delivered,
+      merged: delivery.integrated,
+      wouldPreserve: tipCommit ? ref : undefined,
+      wouldDiscard: discard ? { branch: branch || undefined, ref } : undefined,
+      note: discardOnly
+        ? "Dry-run: the abandonment is already recorded; only the discard would run"
+        : "Dry-run: no event, no ref, no deletion",
+      nextStep: `synth expedition abandon --id ${id} --reason "${reason}"${discard ? " --discard" : ""}`,
+    })
+    return
+  }
+
+  // 1a. Preserve the tip first (default). Creating a tag deletes nothing, and
+  //     the record must only name a ref that actually exists: a record that
+  //     points at nothing would make the work's location a lie (AC5).
+  let preserved: { ok: boolean; ref?: string; detail: string } | undefined
+  if (tipCommit && !discard && !discardOnly) {
+    preserved = createAbandonmentRef(process.cwd(), {
+      expeditionId: id,
+      tipCommit,
+      reason,
+      timestamp: Date.now(),
+    })
+  }
+
+  // 1b. Record the abandonment on the canonical ledger, with the ref it made.
+  let ledger: LedgerCommitInfo | undefined
+  if (!discardOnly) {
+    const payload: Record<string, unknown> = { id, reason }
+    if (branch) payload.branch = branch
+    if (tipCommit) payload.tipCommit = tipCommit
+    if (preserved?.ok && preserved.ref) payload.ref = preserved.ref
+    if (delivery.delivered) payload.delivered = true
+    if (delivery.integrated) payload.merged = true
+
+    const result = await ctx.api.handleIntent({ actor: "synth-cli", capability: "AbandonExpedition", payload })
+    if (result?.status !== "ok") {
+      printError(`Abandon refused: ${JSON.stringify(result?.error ?? result)}`, {
+        code: "ABANDON_REFUSED",
+        category: "governance",
+        suggestion: `Run 'synth expedition show --id ${id}' to check its state.`,
+      })
+    }
+    ledger = await flushPendingCeremony()
+  }
+
+
+  // 3. Discard is a second, separately recorded ceremony: it may only claim a
+  //    deletion that actually happened.
+  let discarded: { ok: boolean; deleted: string[]; detail: string } | undefined
+  let discardLedger: LedgerCommitInfo | undefined
+  if (discard) {
+    const discardBranch = branch || handoff?.branch || ""
+    const outcome = discardAbandoned(process.cwd(), {
+      expeditionId: id,
+      ...(discardBranch ? { branch: discardBranch } : {}),
+    })
+    discarded = { ok: outcome.ok, deleted: outcome.deleted, detail: outcome.detail }
+    // Record whatever really got deleted, even when another step was refused
+    // (e.g. the branch we stand on). Gating on `outcome.ok` left a deleted ref
+    // unrecorded: exactly the missing-deletion case ADR-055 forbids.
+    if (outcome.deleted.length > 0) {
+      const discardPayload: Record<string, unknown> = { id }
+      if (discardBranch) discardPayload.branch = discardBranch
+      discardPayload.ref = ref
+      if (tipCommit ?? handoff?.tipCommit) discardPayload.tipCommit = tipCommit ?? handoff?.tipCommit
+      discardPayload.deleted = outcome.deleted
+      const discardResult = await ctx.api.handleIntent({
+        actor: "synth-cli",
+        capability: "DiscardExpedition",
+        payload: discardPayload,
+      })
+      if (discardResult?.status === "ok") {
+        discardLedger = await flushPendingCeremony()
+      } else {
+        printError(`The discard happened but could not be recorded: ${JSON.stringify(discardResult?.error ?? discardResult)}`, {
+          code: "DISCARD_UNRECORDED",
+          category: "ledger",
+          suggestion: "Record it by hand; the ledger must not be missing a deletion that happened.",
+        })
+      }
+    }
+  }
+
+  const after = handoffState((await ctx.runtime.getState()).expeditions[id])
+  const response: Record<string, unknown> = {
+    status: "ok",
+    kind: discardOnly ? "ExpeditionDiscarded" : "ExpeditionAbandoned",
+    expeditionId: id,
+    reason,
+    ...(branch ? { branch } : {}),
+    ...(tipCommit ? { tipCommit } : {}),
+    delivered: delivery.delivered,
+    merged: delivery.integrated,
+    ...(after?.ref ? { recoveryRef: after.ref } : {}),
+    ...(preserved && !preserved.ok ? { preservationError: preserved.detail } : {}),
+    ...(preserved?.ok ? { preservedTo: preserved.ref } : {}),
+    ...(discarded ? { discarded: discarded.deleted, discardDetail: discarded.detail } : {}),
+    ...(ledger ? { ledger } : {}),
+    ...(discardLedger ? { discardLedger } : {}),
+    nextStep: "Then update the plan/branch bookkeeping so the abandoned work is not mistaken for live work.",
+  }
+  if (preserved && !preserved.ok) {
+    response.preservationNextStep = `Create the recovery ref by hand: git update-ref ${ref} ${tipCommit}`
+  }
+  printJson(response)
+}
+
+/**
+ * `synth expedition deliver --id <id> [--remote origin] [--pr <ref>] [--no-push]`
+ * ADR-055 §2.6: deliver is what makes a finished branch reachable — push the
+ * execution branch, record where it landed, and mark the ceremony committed.
+ */
+async function cmdExpeditionDeliver(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  if (!id) {
+    printError("Usage: synth expedition deliver --id <expedition-id> [--remote <remote>] [--pr <ref>] [--no-push]", {
+      code: "MissingExpeditionId",
+      category: "validation",
+      suggestion: "Run 'synth expedition show --id <id>' first.",
+    })
+    return
+  }
+
+  const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const noPush = flags["no-push"] === true || flags["no-push"] === "true"
+  const remote = typeof flags.remote === "string" ? flags.remote : "origin"
+
+  const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+  if (dryRun) {
+    const state = await ctx.runtime.getState()
+    const expedition = state.expeditions[id]
+    if (!expedition) {
+      printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+      return
+    }
+    const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+    const tip = branch ? resolveCommit(process.cwd(), branch) : undefined
+    printJson({
+      status: "ok",
+      kind: "ExpeditionDeliverDryRun",
+      expeditionId: id,
+      expeditionStatus: expedition.status,
+      branch,
+      tipCommit: tip,
+      remote,
+      wouldPush: !noPush && Boolean(branch && tip),
+      note: "Dry-run: nothing pushed, no ledger event written",
+      nextStep: `synth expedition deliver --id ${id}${branch ? "" : "  # create/start the expedition first"}`,
+    })
+    return
+  }
+
+  const state = await ctx.runtime.getState()
+  const expedition = state.expeditions[id]
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, {
+      code: "ExpeditionNotFound",
+      category: "validation",
+      suggestion: "Run 'synth expedition list' to see available expeditions.",
+    })
+    return
+  }
+
+  const branch = typeof flags.branch === "string" ? flags.branch : (expedition.executionBranch ?? "")
+  if (!branch) {
+    printError(`Expedition ${id} has no recorded execution branch to deliver.`, {
+      code: "NoExecutionBranch",
+      category: "validation",
+      suggestion: `Name the branch explicitly (--branch <name>) or run 'synth expedition start --id ${id}' first.`,
+    })
+    return
+  }
+
+  let pushDetail: string | undefined
+  let pushed = false
+  if (!noPush) {
+    const result = pushBranch(process.cwd(), remote, branch)
+    if (!result.ok) {
+      printError(`Could not push ${branch} to ${remote}: ${result.detail}`, {
+        code: "DELIVERY_PUSH_FAILED",
+        category: "delivery",
+        suggestion: "Push the branch manually (or re-run with --no-push to record an existing delivery), then retry.",
+      })
+      return
+    }
+    pushDetail = result.detail
+    pushed = result.pushed === true
+  }
+
+  const tipCommit = resolveCommit(process.cwd(), branch)
+  if (!tipCommit) {
+    printError(`Could not resolve the tip commit of ${branch}.`, {
+      code: "DELIVERY_TIP_UNRESOLVED",
+      category: "delivery",
+      suggestion: "Check the branch name (`git branch --list`) and retry.",
+    })
+    return
+  }
+
+  const payload: Record<string, unknown> = { id, branch, tipCommit }
+  if (!noPush) payload.remote = remote
+  if (typeof flags.pr === "string") payload.prRef = flags.pr
+
+  const result = await ctx.api.handleIntent({ actor: "synth-cli", capability: "DeliverExpedition", payload })
+  if (result?.status !== "ok") {
+    printError(`Deliver refused: ${JSON.stringify(result?.error ?? result)}`, {
+      code: "DELIVERY_REFUSED",
+      category: "delivery",
+      suggestion: "Verify the expedition is completed or executing, then retry.",
+    })
+    return
+  }
+
+  const ledger = await flushPendingCeremony()
+  const after = deliveryState((await ctx.runtime.getState()).expeditions[id])
+  printJson({
+    status: "ok",
+    kind: "ExpeditionDelivered",
+    expeditionId: id,
+    branch,
+    tipCommit,
+    ...(pushed ? { remote } : {}),
+    ...(pushDetail ? { pushDetail } : {}),
+    ...(typeof flags.pr === "string" ? { prRef: flags.pr } : {}),
+    deliveryPending: after.deliveryPending,
+    ...(ledger ? { ledger } : {}),
+    nextStep: `synth expedition seal --id ${id} --merge-commit <sha>   (after the merge lands on the base branch)`,
+  })
+}
+
+/**
+ * `synth expedition seal --id <id> --merge-commit <sha> [--base main]`
+ * ADR-055 §2.6 / AC12: sealing proves the delivered tip is contained in the
+ * merge commit. A tip outside the merge commit is refused — a seal is evidence,
+ * never an assertion.
+ */
+async function cmdExpeditionSeal(flags: Record<string, string | boolean>) {
+  const id = typeof flags.id === "string" ? flags.id : undefined
+  const mergeCommit = typeof flags["merge-commit"] === "string" ? flags["merge-commit"] : undefined
+  if (!id || !mergeCommit) {
+    printError("Usage: synth expedition seal --id <expedition-id> --merge-commit <sha> [--base <branch>]", {
+      code: "MissingSealArguments",
+      category: "validation",
+      suggestion: "Get the merge commit from the PR that landed the expedition branch.",
+    })
+    return
+  }
+
+  const ctx = await bootstrapWithCapabilities({ skipGenesis: true, infra: { persistence: "file" } })
+  const expedition = (await ctx.runtime.getState()).expeditions[id]
+  if (!expedition) {
+    printError(`Expedition ${id} not found.`, { code: "ExpeditionNotFound", category: "validation" })
+    return
+  }
+
+  const delivery = deliveryState(expedition)
+  const baseBranch = typeof flags.base === "string" ? flags.base : undefined
+  const verification = verifySeal(process.cwd(), {
+    ...(delivery.delivery?.tipCommit ? { tipCommit: delivery.delivery.tipCommit } : {}),
+    mergeCommit,
+    ...(baseBranch ? { baseBranch } : {}),
+  })
+
+  if (!verification.ok) {
+    // A refused seal is a failure, not a result: non-zero exit so scripts stop,
+    // with the structured envelope still machine-readable.
+    printError(verification.detail, {
+      code: "ExpeditionSealRefused",
+      category: "delivery",
+      suggestion: "Confirm the merge commit and re-run seal; a seal that cannot be verified is never recorded.",
+      expeditionId: id,
+      mergeCommit: verification.mergeCommit ?? mergeCommit,
+      ...(verification.tipCommit ? { tipCommit: verification.tipCommit } : {}),
+      delivered: delivery.delivered,
+    })
+  }
+
+  const payload: Record<string, unknown> = { id, mergeCommit: verification.mergeCommit }
+  if (delivery.delivery?.branch) payload.branch = delivery.delivery.branch
+  if (verification.tipCommit) payload.tipCommit = verification.tipCommit
+  if (baseBranch) payload.baseBranch = baseBranch
+
+  const result = await ctx.api.handleIntent({ actor: "synth-cli", capability: "SealExpedition", payload })
+  if (result?.status !== "ok") {
+    printError(`Seal refused: ${JSON.stringify(result?.error ?? result)}`, {
+      code: "SEAL_REFUSED",
+      category: "delivery",
+      suggestion: "Verify the expedition exists and the merge commit is reachable, then retry.",
+    })
+    return
+  }
+
+  const ledger = await flushPendingCeremony()
+  const after = deliveryState((await ctx.runtime.getState()).expeditions[id])
+  printJson({
+    status: "ok",
+    kind: "ExpeditionSealed",
+    expeditionId: id,
+    mergeCommit: verification.mergeCommit,
+    ...(verification.tipCommit ? { tipCommit: verification.tipCommit } : {}),
+    ...(baseBranch ? { baseBranch } : {}),
+    ...(verification.onBaseBranch !== undefined ? { onBaseBranch: verification.onBaseBranch } : {}),
+    detail: verification.detail,
+    deliveryPending: after.deliveryPending,
+    ...(ledger ? { ledger } : {}),
+    nextStep: `synth expedition complete --id ${id}   (if not already complete)`,
+  })
+}
+
 async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   const id = typeof flags.id === "string" ? flags.id : undefined
   if (!id) {
@@ -4269,6 +4918,13 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
   }
 
   const { missionId, ...publicExpedition } = expedition
+  const runtimeResolved = await resolveGovernanceContext(process.cwd())
+  const runtimeExpedition = !isGovernanceResolutionFailure(runtimeResolved)
+    ? runtimeResolved.authoritative.replayedState.expeditions[id]
+    : undefined
+  const record = (runtimeExpedition ?? expedition) as { status?: string; metadata?: Record<string, unknown> }
+  const delivery = deliveryState(record)
+  const handoff = handoffState(record)
   printJson({
     status: "ok",
     kind: "ExpeditionShow",
@@ -4277,6 +4933,14 @@ async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
     missionId,
     upstream,
     downstream,
+    delivery: {
+      delivered: delivery.delivered,
+      integrated: delivery.integrated,
+      deliveryPending: delivery.deliveryPending,
+      ...(delivery.delivery ? { record: delivery.delivery } : {}),
+      ...(delivery.integration ? { integration: delivery.integration } : {}),
+    },
+    ...(handoff ? { handoff } : {}),
   })
 }
 
@@ -5356,6 +6020,11 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     },
   })
 
+  // The draft + integrity record join the ceremony commit (the CreateExpedition
+  // capability may already have committed the runtime entity; the draft files
+  // were written by this verb, so this verb commits them).
+  const draftLedger = await commitDraftCeremony("expedition-draft", expeditionId)
+
   if (createResult.status !== "ok") {
     printError(`Failed to create expedition runtime entity: ${createResult.error || JSON.stringify(createResult)}`)
   }
@@ -5371,6 +6040,7 @@ async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
     goal,
     similar,
     proposals: proposalsResult.status === "ok" ? proposalsResult.proposals : undefined,
+    ...(draftLedger ? { ledger: draftLedger } : {}),
     nextStep: `synth expedition approve --draft-id ${expeditionId}`,
   })
 }
@@ -5548,18 +6218,53 @@ async function commitOneExpedition(
   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   proposalId: string,
   dryRun: boolean,
+  declaredBranch?: string,
+  noCreate = false,
 ): Promise<Record<string, unknown>> {
   if (dryRun) {
-    return runLifecycleDryRun(ctx, {
+    const preview = await runLifecycleDryRun(ctx, {
       capability: "CommitExpedition",
       payload: { id: proposalId },
       eventType: "EXPEDITION_COMMITTED",
       expeditionId: proposalId,
       targetStatus: "committed",
     })
+    if (declaredBranch) {
+      const nameCheck = validateDeclaredBranchName(declaredBranch)
+      return {
+        ...preview,
+        declaredBranch: { branch: declaredBranch, valid: nameCheck.valid, errors: nameCheck.errors },
+      }
+    }
+    return preview
   }
 
   const state = await ctx.runtime.getState()
+  let declared: DeclaredBranchInfo | undefined
+  if (declaredBranch) {
+    const record = state.expeditions?.[proposalId]
+    if (!record) {
+      return { status: "error", proposalId, code: "ExpeditionNotFound", error: `Expedition ${proposalId} is not in the ledger` }
+    }
+    declared = await declareExecutionBranch("expedition", {
+      branch: declaredBranch,
+      noCreate,
+      entityId: proposalId,
+      missionId: record.missionId,
+      missionName: record.missionId ? state.missions?.[record.missionId]?.name : undefined,
+      expeditionName: record.name,
+    })
+    if (!declared.ok) {
+      return {
+        status: "error",
+        proposalId,
+        code: declared.code,
+        error: declared.error,
+        ...(declared.suggestion ? { suggestion: declared.suggestion } : {}),
+      }
+    }
+  }
+
   const intake = await gateDecision({ kind: "expedition.commit", expeditionId: proposalId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
     return {
@@ -5592,11 +6297,24 @@ async function commitOneExpedition(
     draftRetirementError = err instanceof Error ? err.message : String(err)
   }
 
+  if (declared?.ok) {
+    await recordExecutionBranchBinding(ctx, "expedition", proposalId, declared)
+  }
+
   return {
     status: "ok",
     kind: "ExpeditionCommitted",
     proposalId,
     result: result.result,
+    ...(declared?.ok
+      ? {
+          executionBranch: {
+            branch: declared.branch,
+            created: declared.created,
+            ...(declared.warning ? { warning: declared.warning } : {}),
+          },
+        }
+      : {}),
     ...(draftRetired ? { draftRetired } : {}),
     ...(draftRetirementError ? { draftRetirementError } : {}),
     nextStep: `synth expedition start --id ${proposalId}`,
@@ -5608,6 +6326,12 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
   const allApproved = flags["all-approved"] === true || flags["all-approved"] === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
+  const declaredBranch = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
+  const noCreate = flags["no-create"] === true || flags["no-create"] === "true"
+  if (noCreate && !declaredBranch) printError("--no-create requires --branch")
+  // Two expeditions cannot share one branch (ADR-056 §2.3), so a batch commit
+  // cannot carry a single declaration.
+  if (allApproved && declaredBranch) printError("--branch cannot be combined with --all-approved")
 
   if (allApproved) {
     if (!missionId) printError("--all-approved requires --mission")
@@ -5659,7 +6383,7 @@ async function cmdExpeditionCommit(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
-  const result = await commitOneExpedition(ctx, proposalId, dryRun)
+  const result = await commitOneExpedition(ctx, proposalId, dryRun, declaredBranch, noCreate)
   printJson(result)
   if (result.status === "error") process.exit(1)
 }
@@ -5772,6 +6496,110 @@ async function ensureExpeditionBranch(
   return { branch: canonical, created: true }
 }
 
+// ------------------------------------------------------------
+// ADR-056 — operator-declared execution branches
+// ------------------------------------------------------------
+
+type DeclaredBranchInfo = {
+  ok: boolean
+  branch: string
+  created: boolean
+  baseCommit: string
+  warning?: string
+  code?: string
+  error?: string
+  suggestion?: string
+}
+
+/** Read canonical state for the live-owner rule; degrade to no records. */
+async function readStateRecords(): Promise<unknown | undefined> {
+  try {
+    return (await sdk.state.readState(process.cwd())) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Resolve an operator-declared execution branch (ADR-056 §2.1/§2.2): git
+ * mechanics live in repository/branch-declaration; the policy verdict and its
+ * warning class are added here.
+ */
+async function declareExecutionBranch(
+  role: "mission" | "expedition",
+  options: {
+    branch: string
+    noCreate: boolean
+    entityId: string
+    missionId?: string
+    missionName?: string
+    expeditionName?: string
+  },
+): Promise<DeclaredBranchInfo> {
+  const state = await readStateRecords()
+  const resolution = resolveDeclaredBranch({
+    root: process.cwd(),
+    role,
+    entityId: options.entityId,
+    branch: options.branch,
+    noCreate: options.noCreate,
+    state: state as ExecutionNameRecords | undefined,
+  })
+  if (!resolution.ok) {
+    return {
+      ok: false,
+      branch: resolution.branch,
+      created: false,
+      baseCommit: resolution.baseCommit,
+      ...(resolution.code ? { code: resolution.code } : {}),
+      ...(resolution.error ? { error: resolution.error } : {}),
+      ...(resolution.suggestion ? { suggestion: resolution.suggestion } : {}),
+    }
+  }
+
+  const policy = loadBranchPolicyConfig(process.cwd())
+  const verdict = resolveExecutionBranch(role, resolution.currentBranch, policy, {
+    missionId: options.missionId,
+    expeditionId: role === "expedition" ? options.entityId : undefined,
+    missionName: options.missionName,
+    expeditionName: options.expeditionName,
+    declaredBranch: options.branch,
+  })
+  const warning = verdict.overridden && !verdict.patternMatched ? verdict.reason : undefined
+  return {
+    ok: true,
+    branch: resolution.branch,
+    created: resolution.created,
+    baseCommit: resolution.baseCommit,
+    ...(warning ? { warning } : {}),
+  }
+}
+
+/** Record the binding in the ledger so later commands agree without flags. */
+async function recordExecutionBranchBinding(
+  ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
+  role: "mission" | "expedition",
+  entityId: string,
+  info: DeclaredBranchInfo,
+): Promise<void> {
+  const result = await ctx.api.handleIntent({
+    actor: "synth-cli",
+    capability: "BindExecutionBranch",
+    payload: {
+      role,
+      entityId,
+      branch: info.branch,
+      declared: true,
+      created: info.created,
+      baseCommit: info.baseCommit,
+      declaredBy: "operator",
+    },
+  })
+  if (result.status !== "ok") {
+    printError(`Failed to record the branch binding for ${role} ${entityId}: ${result.error || JSON.stringify(result)}`)
+  }
+}
+
 // CLI fail-fast branch guard (ECOSYSTEM-001): surface a branch-policy
 // violation before heavy lifecycle work runs. The ExecutionGate enforces the
 // same policy inside handleIntent; this gives the operator an early, specific
@@ -5780,6 +6608,7 @@ async function assertExecutionBranch(
   capability: string,
   role: "mission" | "expedition" | "chore",
   context: { missionId?: string; expeditionId?: string; missionName?: string; expeditionName?: string; capability?: string },
+  declaredBranch?: string,
 ): Promise<void> {
   const { createGitRepositoryAdapter } = await import("../adapters/repository/git.js")
   const adapter = createGitRepositoryAdapter({ path: process.cwd() })
@@ -5795,6 +6624,11 @@ async function assertExecutionBranch(
         // than blocking. The ExecutionGate still enforces at the boundary.
       }
     }
+  }
+  if (declaredBranch) {
+    // ADR-056: the operator declaration is consulted before the taxonomy, so
+    // the fail-fast guard and the ExecutionGate agree on one resolution order.
+    enriched = { ...enriched, declaredBranch }
   }
   const result = await adapter.validateExecutionBranch(role, enriched)
   if (result.ok) return
@@ -5817,19 +6651,29 @@ async function startOneExpedition(
   expeditionId: string,
   dryRun: boolean,
   autoCommit = false,
+  declaredBranch?: string,
+  noCreate = false,
 ): Promise<Record<string, unknown>> {
   const baselineCommit = getCurrentGitCommit()
   const startPayload: Record<string, unknown> = { id: expeditionId }
   if (baselineCommit) startPayload.baselineCommit = baselineCommit
 
   if (dryRun) {
-    return runLifecycleDryRun(ctx, {
+    const preview = await runLifecycleDryRun(ctx, {
       capability: "StartExpedition",
       payload: startPayload,
       eventType: "EXPEDITION_STARTED",
       expeditionId,
       targetStatus: "executing",
     })
+    if (declaredBranch) {
+      const nameCheck = validateDeclaredBranchName(declaredBranch)
+      return {
+        ...preview,
+        declaredBranch: { branch: declaredBranch, valid: nameCheck.valid, errors: nameCheck.errors },
+      }
+    }
+    return preview
   }
 
   const initialState = await ctx.runtime.getState()
@@ -5854,10 +6698,21 @@ async function startOneExpedition(
     currentStatus = "approved"
   }
 
+  let declaredInfo: DeclaredBranchInfo | undefined
   if (currentStatus === "approved") {
-    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun)
+    const commitResult = await commitOneExpedition(ctx, expeditionId, dryRun, declaredBranch, noCreate)
     if (commitResult.status !== "ok") {
       return commitResult
+    }
+    // The commit-time declaration already checked out the branch and recorded
+    // the binding; reuse it so start does not declare twice.
+    if (commitResult.executionBranch) {
+      declaredInfo = {
+        ok: true,
+        branch: String((commitResult.executionBranch as Record<string, unknown>).branch),
+        created: (commitResult.executionBranch as Record<string, unknown>).created === true,
+        baseCommit: "",
+      }
     }
     currentStatus = "committed"
   }
@@ -5870,14 +6725,42 @@ async function startOneExpedition(
   const expeditionRecord = state.expeditions?.[expeditionId]
   let autoCreatedBranch: { branch: string; created: boolean } | undefined
   if (expeditionRecord?.missionId) {
-    const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
-    if (branchInfo.created) autoCreatedBranch = branchInfo
+    if (declaredBranch && !declaredInfo) {
+      // The expedition was already committed: declare now, before the guard.
+      declaredInfo = await declareExecutionBranch("expedition", {
+        branch: declaredBranch,
+        noCreate,
+        entityId: expeditionId,
+        missionId: expeditionRecord.missionId,
+        missionName: state.missions?.[expeditionRecord.missionId]?.name,
+        expeditionName: expeditionRecord.name,
+      })
+      if (!declaredInfo.ok) {
+        return {
+          status: "error",
+          expeditionId,
+          code: declaredInfo.code,
+          error: declaredInfo.error,
+          ...(declaredInfo.suggestion ? { suggestion: declaredInfo.suggestion } : {}),
+        }
+      }
+      await recordExecutionBranchBinding(ctx, "expedition", expeditionId, declaredInfo)
+    }
+    if (!declaredInfo) {
+      const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
+      if (branchInfo.created) autoCreatedBranch = branchInfo
+    }
     // ECOSYSTEM-001: fail fast when the current branch cannot host this
     // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
-    await assertExecutionBranch("StartExpedition", "expedition", {
-      expeditionId,
-      missionId: expeditionRecord.missionId,
-    })
+    await assertExecutionBranch(
+      "StartExpedition",
+      "expedition",
+      {
+        expeditionId,
+        missionId: expeditionRecord.missionId,
+      },
+      declaredInfo?.ok ? declaredInfo.branch : declaredBranch,
+    )
   }
   const intake = await gateDecision({ kind: "expedition.start", expeditionId }, state, ctx.runtime)
   if (intake.decision === "BLOCK") {
@@ -5907,7 +6790,14 @@ async function startOneExpedition(
     result: result.result,
     nextStep: `synth expedition complete --id ${expeditionId}`,
   }
-  if (autoCreatedBranch) {
+  if (declaredInfo?.ok) {
+    response.executionBranch = {
+      branch: declaredInfo.branch,
+      created: declaredInfo.created,
+      declared: true,
+      ...(declaredInfo.warning ? { warning: declaredInfo.warning } : {}),
+    }
+  } else if (autoCreatedBranch) {
     response.executionBranch = {
       branch: autoCreatedBranch.branch,
       created: true,
@@ -5934,6 +6824,10 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
   const allCommitted = flags["all-committed"] === true || flags["all-committed"] === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
   const autoCommit = isAutoCommitEnabled(flags)
+  const declaredBranch = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
+  const noCreate = flags["no-create"] === true || flags["no-create"] === "true"
+  if (noCreate && !declaredBranch) printError("--no-create requires --branch")
+  if (allCommitted && declaredBranch) printError("--branch cannot be combined with --all-committed")
 
   if (allCommitted) {
     if (!missionId) printError("--all-committed requires --mission")
@@ -5984,7 +6878,7 @@ async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
     skipGenesis: true,
     infra: { persistence: "file" },
   })
-  const result = await startOneExpedition(ctx, expeditionId, dryRun, autoCommit)
+  const result = await startOneExpedition(ctx, expeditionId, dryRun, autoCommit, declaredBranch, noCreate)
   printJson(result)
   if (result.status === "error") process.exit(1)
 }
@@ -6341,6 +7235,9 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     ? await autoCommitDerivedState(process.cwd(), "expedition-complete", expeditionId)
     : undefined
 
+  // ADR-055 §2.6 / AC12: a completed-but-undelivered expedition is *pending*,
+  // and the response says so instead of letting the next agent assume done.
+  const pendingAfter = deliveryState((await ctx.runtime.getState()).expeditions[expeditionId])
   const response: Record<string, unknown> = {
     status,
     kind: "ExpeditionCompleted",
@@ -6348,7 +7245,11 @@ async function cmdExpeditionComplete(flags: Record<string, string | boolean>) {
     evidencePath: finalEvidencePath,
     force: finalForce,
     forceReason: finalForceReason,
+    deliveryPending: pendingAfter.deliveryPending,
     result,
+  }
+  if (pendingAfter.deliveryPending) {
+    response.nextStep = `synth expedition deliver --id ${expeditionId}   (deliver/seal is what closes the loop)`
   }
   if (autoCommit) {
     response.autoCommit = {
@@ -6447,6 +7348,12 @@ async function cmdExpeditionFinish(flags: Record<string, string | boolean>) {
     manifestPath: path.relative(process.cwd(), manifestPath),
     result: completeResult,
     steps: ["evidence-attached", "convergence-certified", "expedition-completed"],
+  }
+  // ADR-055 §2.6 / AC12: finishing locally is not delivering. Say so.
+  const pendingAfter = deliveryState((await ctx.runtime.getState()).expeditions[expeditionId])
+  response.deliveryPending = pendingAfter.deliveryPending
+  if (pendingAfter.deliveryPending) {
+    response.nextStep = `synth expedition deliver --id ${expeditionId}   (then seal --merge-commit <sha> once the merge lands)`
   }
   if (warnings.length > 0) {
     response.warnings = warnings
@@ -6579,6 +7486,8 @@ async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
     draftRetirementError = err instanceof Error ? err.message : String(err)
   }
 
+  const ledger = await commitDraftCeremony("draft-retire", expeditionId)
+
   printJson({
     status: "ok",
     kind: "ExpeditionDeleted",
@@ -6586,6 +7495,7 @@ async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
     result: result.result,
     ...(draftRetired ? { draftRetired } : {}),
     ...(draftRetirementError ? { draftRetirementError } : {}),
+    ...(ledger ? { ledger } : {}),
   })
 }
 
@@ -7654,6 +8564,7 @@ export async function main() {
     arg !== "--summary"
   )
   const { positional, flags } = parseArgs(["node", process.argv[1], ...filteredArgs])
+  autoCommitDisabledByFlag = flags["no-auto-commit"] === true || flags["no-auto-commit"] === "true"
 
   // Propagate the global --json flag to subcommands that need to know it
   // (e.g., synth explain ... --json), while still keeping it out of the
@@ -7711,7 +8622,7 @@ export async function main() {
       break
 
     case "doctor":
-      await cmdDoctor()
+      await cmdDoctor(flags)
       break
 
     case "checkpoint":
@@ -7843,7 +8754,7 @@ export async function main() {
 
     case "expedition": {
       const sub = positional[1]
-      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel"].includes(sub)) {
+      if (["approve", "commit", "start", "finish", "complete", "archive", "cancel", "deliver", "seal", "abandon"].includes(sub)) {
         await guardEventLogLineage(flags)
       }
       if (sub === "create") await cmdExpeditionCreate(flags)
@@ -7858,6 +8769,9 @@ export async function main() {
       else if (sub === "delete") await cmdExpeditionDelete(flags)
       else if (sub === "move") await cmdExpeditionMove(flags)
       else if (sub === "evidence") await cmdExpeditionEvidence(flags)
+      else if (sub === "abandon") await cmdExpeditionAbandon(flags)
+      else if (sub === "deliver") await cmdExpeditionDeliver(flags)
+      else if (sub === "seal") await cmdExpeditionSeal(flags)
       else if (sub === "refine") await cmdExpeditionRefine(flags)
       else if (sub === "certify") await cmdExpeditionCertify(flags)
       else if (sub === "list") await cmdExpeditionList(flags)
@@ -8014,6 +8928,11 @@ export async function main() {
     default:
       printError(`Unknown command: ${command}. Run 'synth --help' for available commands.`)
   }
+
+  // ADR-055 rev 2 §R2.1: no verb may end with an uncommitted ceremony. The
+  // handlers that report the commit in their envelope have already flushed;
+  // this is the guarantee for every other verb.
+  await flushPendingCeremony()
 }
 
 // SYNTH-LOADER-001: only run when executed directly (not when imported lazily by

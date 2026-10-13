@@ -1,0 +1,14 @@
+{
+  "id": "test:ledger-ceremony",
+  "description": "npm script migration: test:ledger-ceremony",
+  "command": "node tests/ledger-ceremony.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

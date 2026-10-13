@@ -1,0 +1,223 @@
+diff --git a/src/cli/ai-metadata.ts b/src/cli/ai-metadata.ts
+index c557c4c..d3f4d73 100644
+--- a/src/cli/ai-metadata.ts
++++ b/src/cli/ai-metadata.ts
+@@ -282,25 +282,57 @@ async function deriveAiMetadata(
+   }
+ }
+ 
++export type AiMetadataWriteResult = {
++  /** True when at least one file on disk was actually rewritten. */
++  changed: boolean
++  /** Relative paths that changed (empty when nothing needed writing). */
++  files: string[]
++}
++
++/**
++ * Persist the AI metadata bundle, writing each file only when its content
++ * differs from disk. Read-only commands (notably `synth status`) must not
++ * touch this directory at all: `synth ai refresh` is the explicit
++ * regenerator (ADR-055 §2.8, audit D5).
++ */
+ export async function writeAiMetadata(
+   synthDir: string,
+   state: CanonicalState,
+   manifest: { name?: string; governanceVersion?: string },
+   force = false,
+-): Promise<void> {
++): Promise<AiMetadataWriteResult> {
+   const aiDir = path.join(synthDir, AI_METADATA_DIR)
+-  await fs.mkdir(aiDir, { recursive: true })
+-
+   const bundle = await deriveAiMetadata(state, manifest, synthDir)
+ 
+-  await fs.writeFile(path.join(aiDir, "discovery.json"), JSON.stringify(bundle.discovery, null, 2), "utf-8")
+-  await fs.writeFile(path.join(aiDir, "capabilities.json"), JSON.stringify(bundle.capabilities, null, 2), "utf-8")
+-  await fs.writeFile(path.join(aiDir, "lifecycle.json"), JSON.stringify(bundle.lifecycle, null, 2), "utf-8")
+-  await fs.writeFile(path.join(aiDir, "protocols.json"), JSON.stringify(bundle.protocols, null, 2), "utf-8")
+-  await fs.writeFile(path.join(aiDir, "skills.json"), JSON.stringify(bundle.skills, null, 2), "utf-8")
++  const outputs: Array<[string, unknown]> = [
++    ["discovery.json", bundle.discovery],
++    ["capabilities.json", bundle.capabilities],
++    ["lifecycle.json", bundle.lifecycle],
++    ["protocols.json", bundle.protocols],
++    ["skills.json", bundle.skills],
++  ]
+ 
+-  // EXP-AI-004: interaction manifest is derived from the same canonical state.
++  const changedFiles: string[] = []
++  for (const [name, value] of outputs) {
++    const target = path.join(aiDir, name)
++    const serialized = JSON.stringify(value, null, 2)
++    let current: string | null = null
++    try {
++      current = await fs.readFile(target, "utf-8")
++    } catch {
++      current = null
++    }
++    if (!force && current === serialized) continue
++    await fs.mkdir(aiDir, { recursive: true })
++    await fs.writeFile(target, serialized, "utf-8")
++    changedFiles.push(path.join(AI_METADATA_DIR, name))
++  }
++
++  // EXP-AI-004: interaction manifest is derived from the same canonical state
++  // and already compares before writing (unless forced).
+   await writeAiInteractionManifest(synthDir, state, manifest, force)
++
++  return { changed: changedFiles.length > 0, files: changedFiles }
+ }
+ 
+ export async function refreshAiMetadata(synthDir: string, force = false): Promise<void> {
+diff --git a/src/cli/status-light.ts b/src/cli/status-light.ts
+index 4125bff..3708e27 100644
+--- a/src/cli/status-light.ts
++++ b/src/cli/status-light.ts
+@@ -4,16 +4,16 @@
+ // pulls in bootstrap-free modules (ai-metadata, status-briefing,
+ // status-validation), so it skips both the eager core/bootstrap import and the
+ // 13-step bootstrap that every heavy command pays for.
++//
++// EXP-AI-003 superseded (ADR-055 §2.8): `status` is a pure read and must not
++// regenerate .synth/ai/. Use `synth ai refresh` for explicit regeneration.
+ import * as sdk from "../sdk/index.js"
+-import { refreshAiMetadata } from "./ai-metadata.js"
+ import { buildOperatorBriefing } from "./status-briefing.js"
+ import { buildStatusValidationSummary } from "./status-validation.js"
+ import { printJson } from "./print.js"
+ 
+ export async function runStatus(): Promise<void> {
+   await sdk.paths.ensureDataDir(sdk.workspace.root())
+-  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
+-  await refreshAiMetadata(synthDir)
+ 
+   const briefing = await buildOperatorBriefing(process.cwd())
+   const validation = await buildStatusValidationSummary()
+diff --git a/src/cli/synth.ts b/src/cli/synth.ts
+index 5729712..f612f8d 100644
+--- a/src/cli/synth.ts
++++ b/src/cli/synth.ts
+@@ -3251,10 +3251,10 @@ async function cmdStatus() {
+   await sdk.paths.ensureDataDir(sdk.workspace.root())
+   const logger = new Logger("status")
+   logger.info("Resolving governance context for operator briefing")
+-  // EXP-AI-003: keep .synth/ai/ metadata synchronized with canonical state so
+-  // agent orientation is always current when the operator asks for status.
+-  const synthDir = sdk.paths.synthDir(sdk.workspace.root())
+-  await refreshAiMetadata(synthDir)
++  // EXP-AI-003 superseded (ADR-055 §2.8): `status` is a pure read. It used to
++  // rewrite .synth/ai/*.json on every invocation, which made a read-only
++  // command dirty the working tree. `synth ai refresh` is the explicit
++  // regenerator, and the bootstrap path still refreshes on init.
+   const briefing = await buildOperatorBriefing(process.cwd())
+   const validation = await buildStatusValidationSummary()
+   if (briefing.status === "ok" && validation) {
+diff --git a/src/governance/dependency-graph.ts b/src/governance/dependency-graph.ts
+index ab6b007..94b66f4 100644
+--- a/src/governance/dependency-graph.ts
++++ b/src/governance/dependency-graph.ts
+@@ -1,5 +1,6 @@
+ import fs from "fs/promises"
+ import path from "path"
++import { createHash } from "node:crypto"
+ import type { Policy, PolicyEngine } from "../policy/policy-engine.js"
+ import type { CanonicalState, CapabilityInvocation, ConvergenceCertificationState, DerivedState } from "../types/index.js"
+ 
+@@ -56,20 +57,33 @@ export function parseDependencyRecord(expeditionId: string, charterContent: stri
+   return { expeditionId, dependsOn, blocks }
+ }
+ 
+-/** Parse all expedition charters from a directory into dependency records */
++/**
++ * Parse all expedition charters from a directory into dependency records.
++ *
++ * The cache is keyed on content digests, stored outside the index
++ * (`.synth/cache/`, gitignored) and written only when the digest map or the
++ * records actually change. Keying on mtimes made the cache machine-local
++ * state that rewrote itself on every fresh clone (audit D7); a cache is a
++ * cache — never committed, never load-bearing.
++ */
+ export async function parseCharterDirectory(charterDir: string): Promise<DependencyRecord[]> {
+-  const cachePath = path.join(charterDir, "..", "..", ".synth", "data", "dependency-records-cache.json")
+-  
++  const cachePath = path.join(charterDir, "..", "..", ".synth", "cache", "dependency-records.json")
++
+   let cache: {
+-    mtimes: Record<string, number>
++    digests: Record<string, string>
+     records: Record<string, DependencyRecord>
+-  } = { mtimes: {}, records: {} }
++  } = { digests: {}, records: {} }
+ 
+   try {
+-    const cacheData = await fs.readFile(cachePath, "utf-8")
+-    cache = JSON.parse(cacheData)
++    const parsed = JSON.parse(await fs.readFile(cachePath, "utf-8")) as {
++      digests?: Record<string, string>
++      records?: Record<string, DependencyRecord>
++    }
++    if (parsed && typeof parsed === "object" && parsed.digests && typeof parsed.digests === "object") {
++      cache = { digests: parsed.digests, records: parsed.records ?? {} }
++    }
+   } catch {
+-    // Cache missing or invalid
++    // Cache missing or invalid: recompute everything.
+   }
+ 
+   let files: string[]
+@@ -80,32 +94,30 @@ export async function parseCharterDirectory(charterDir: string): Promise<Depende
+   }
+ 
+   const records: DependencyRecord[] = []
+-  const newMtimes: Record<string, number> = {}
++  const newDigests: Record<string, string> = {}
+   const newRecords: Record<string, DependencyRecord> = {}
+   let cacheDirty = false
+ 
+   const parsePromises = files.map(async (file) => {
+     if (!file.endsWith(".md")) return null
+     const filePath = path.join(charterDir, file)
+-    
+-    let mtime = 0
++
++    let content: string
+     try {
+-      const stat = await fs.stat(filePath)
+-      mtime = stat.mtimeMs
++      content = await fs.readFile(filePath, "utf-8")
+     } catch {
+-      // If stat fails, we can't cache
++      return null
+     }
+ 
+-    newMtimes[file] = mtime
++    const digest = createHash("sha256").update(content).digest("hex")
++    newDigests[file] = digest
+ 
+-    if (cache.mtimes && cache.mtimes[file] === mtime && cache.records && cache.records[file]) {
++    if (cache.digests[file] === digest && cache.records[file]) {
+       newRecords[file] = cache.records[file]
+       return cache.records[file]
+     }
+ 
+     cacheDirty = true
+-    const content = await fs.readFile(filePath, "utf-8")
+-
+     const subjectMatch = content.match(/^#\s+(.*)$/m)
+     const expeditionId = subjectMatch
+       ? subjectMatch[1].trim()
+@@ -121,12 +133,12 @@ export async function parseCharterDirectory(charterDir: string): Promise<Depende
+     if (result) records.push(result)
+   }
+ 
+-  if (cacheDirty || Object.keys(cache.mtimes || {}).length !== Object.keys(newMtimes).length) {
++  if (cacheDirty || Object.keys(cache.digests).length !== Object.keys(newDigests).length) {
+     try {
+       await fs.mkdir(path.dirname(cachePath), { recursive: true })
+       await fs.writeFile(
+         cachePath,
+-        JSON.stringify({ mtimes: newMtimes, records: newRecords }, null, 2),
++        JSON.stringify({ digests: newDigests, records: newRecords }, null, 2),
+         "utf-8"
+       )
+     } catch {

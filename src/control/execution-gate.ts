@@ -16,7 +16,6 @@
 
 import crypto from "crypto"
 import { performance } from "node:perf_hooks"
-import { telemetry } from "../infra/telemetry.js"
 import type {
   CapabilityInvocation,
   CanonicalState,
@@ -173,8 +172,6 @@ export class ExecutionGate {
       identity: invocation.context?.identity as import("../types/index.js").AgentIdentity | undefined,
     }
 
-    const rootSpan = telemetry.start("handleIntent:" + invocation.capability)
-
     try {
       // === PHASE 1: VALIDATE ===
       const validation = await this.runPhase("VALIDATE", () => {
@@ -317,9 +314,7 @@ export class ExecutionGate {
       phases.push(resolveCap)
 
       // === PHASE 4: EXECUTE DOMAIN ===
-      const execSpan = telemetry.start("EXECUTE_DOMAIN")
       const executionResult = await this.runtime.execute(invocation, context)
-      telemetry.end(execSpan)
       phases.push({
         phase: "EXECUTE_DOMAIN",
         passed: true,
@@ -455,7 +450,6 @@ export class ExecutionGate {
         finalState: "COMMITTED",
       }
 
-      telemetry.end(rootSpan)
       return { result: { ...executionResult, transaction: tx }, contract }
 
     } catch (err) {
@@ -484,7 +478,6 @@ export class ExecutionGate {
         finalState: "REJECTED",
       }
 
-      telemetry.end(rootSpan, err)
       throw new ExecutionGateError(
         failedPhase,
         message,
@@ -942,15 +935,12 @@ export class ExecutionGate {
   }
 
   private async runPhase<T>(phase: ExecutionPhase, fn: () => T | Promise<T>): Promise<PhaseResult<T>> {
-    const span = telemetry.start("phase:" + phase)
     const started = performance.now()
     try {
       const output = await fn()
-      telemetry.end(span)
       return { phase, passed: true, output, durationMs: Math.round((performance.now() - started) * 100) / 100 }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
-      telemetry.end(span, err)
       // Record the failed phase, then rethrow so the outer contract handler catches it
       throw new PhaseFailedError(phase, error)
     }

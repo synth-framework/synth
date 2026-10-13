@@ -27,17 +27,25 @@ coverage/
 # Runtime
 # =============================================================================
 
+# SYNTH artifacts by class. The classification table lives in
+# src/state/artifact-policy.ts (durable, input, derived, cache, legacy);
+# scripts/check-artifact-policy.js fails CI when the index or these rules
+# disagree with it. Do not hand-edit one half of the table.
+#
+# cache + legacy (never committed). Projections under .synth/ai/, context.json and
+# discovery/ are durable and tracked; they must never be ignored (check-artifact-policy).
 .synth/cache/
-# SYNTH derived runtime artifacts (NOT the durable replay source)
+.synth/anchor/
+.synth/worktrees/
 .synth/data/cli-errors.jsonl
-.synth/data/drafts/
-*.integrity.json
-.synth/ai/
-.synth/context.json
-.synth/discovery/
-# Durable replay source stays tracked (chunked event stream + derived state):
+.synth/data/event-log.jsonl
+.synth/data/dependency-records-cache.json
+# durable replay source stays tracked: chunked event stream + canonical state
 !.synth/data/event-stream/
 !.synth/data/canonical-state.json
+# inputs stay tracked: mission/expedition drafts and their integrity records
+# (the .synth/data/drafts/ and *.integrity.json rules were removed here — they
+#  hid load-bearing planning inputs from every other clone; audit D6)
 data-test/
 data-test-alignment/
 data-test-proposal-evaluation/

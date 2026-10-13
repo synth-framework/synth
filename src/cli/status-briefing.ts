@@ -11,6 +11,7 @@ import {
   isGovernanceResolutionFailure,
 } from "../runtime/governance-resolver.js"
 import { deriveValidTransition } from "../runtime/transition-engine.js"
+import { deliveryState } from "../ledger/delivery.js"
 import { toOperatorBriefing } from "../runtime/status-projection.js"
 import { createCapabilityRegistry } from "../capability/registry.js"
 import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
@@ -98,5 +99,34 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
   )
 
   const transition = deriveValidTransition(result)
-  return toOperatorBriefing(result, transition)
+  const briefing = toOperatorBriefing(result, transition)
+  if (briefing.status !== "ok") return briefing
+  return { ...briefing, warnings: [...briefing.warnings, ...deliveryWarnings(result)] }
+}
+
+/**
+ * ADR-055 §2.6: a finished expedition is not delivered until its merge is
+ * sealed. `deliveryState` (ledger/delivery) is the one definition of "pending",
+ * so status and `expedition show` cannot disagree.
+ */
+function deliveryWarnings(ctx: { authoritative: { replayedState: { expeditions?: Record<string, any> } } }): Blocker[] {
+  return Object.values(ctx.authoritative.replayedState.expeditions || {})
+    .map((e) => ({ e, d: deliveryState(e) }))
+    .filter(({ d }) => d.deliveryPending)
+    .map(({ e, d }) => {
+      const id8 = String(e.id).slice(0, 8)
+      const tip = d.delivery?.tipCommit
+      if (tip) {
+        return {
+          kind: "delivery-pending",
+          description: `Expedition ${id8} (${e.name}) was delivered from ${d.delivery?.branch} at ${tip.slice(0, 8)}, but no merge is sealed yet.`,
+          remediation: `Merge the delivered branch, then record the merge: \`synth expedition seal --id ${e.id} --merge-commit <sha>\`.`,
+        }
+      }
+      return {
+        kind: "delivery-pending",
+        description: `Expedition ${id8} (${e.name}) is finished but not delivered: its work is not yet merged or sealed.`,
+        remediation: `Deliver it: \`synth expedition deliver --id ${e.id}\`. Then merge and record the merge: \`synth expedition seal --id ${e.id} --merge-commit <sha>\`.`,
+      }
+    })
 }

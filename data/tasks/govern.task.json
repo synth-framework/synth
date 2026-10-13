@@ -1,10 +1,19 @@
 {
   "id": "govern",
-  "description": "Run the full canonical governance pipeline: build, test, replay verification, adversarial audits, and proof generation.",
-  "command": "node scripts/govern-profiler.js --full",
+  "description": "Run the full canonical governance pipeline: build, test, replay verification, adversarial audits, and proof generation. Artifact-policy guard and the reads-never-write regression run first (E3).",
+  "command": "node scripts/check-artifact-policy.js && node tests/no-write-on-read.test.js && node scripts/govern-profiler.js --full",
   "group": "governance",
-  "dependsOn": ["build"],
-  "tags": ["governance", "proof", "acceptance"],
+  "dependsOn": [
+    "build"
+  ],
+  "tags": [
+    "governance",
+    "proof",
+    "acceptance"
+  ],
   "estimatedDurationMs": 300000,
-  "capabilities": ["Governance", "Proof"]
+  "capabilities": [
+    "Governance",
+    "Proof"
+  ]
 }

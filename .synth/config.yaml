@@ -2,7 +2,13 @@
 # Derived from expedition ee4874cdcadaf218: enforce the expedition branch
 # workflow at start by auto-creating and staying on canonical expedition
 # branches (ECOSYSTEM-001).
+#
+# Bootstrap window closed (2026-10-12): `mode: enforce` is restored together
+# with ADR-056 (`--branch` / `--no-create`). Operator-owned workspaces declare
+# their branch explicitly; declaredPatterns keeps the arena branch warning-free.
+# See docs/plans/master-delivery-plan.md.
 git:
   branchStrategy: featured
   branchPolicy:
     mode: enforce
+    declaredPatterns: ["arena/*"]

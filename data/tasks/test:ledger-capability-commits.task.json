@@ -1,0 +1,14 @@
+{
+  "id": "test:ledger-capability-commits",
+  "description": "npm script migration: test:ledger-capability-commits",
+  "command": "node tests/ledger-capability-commits.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 120000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

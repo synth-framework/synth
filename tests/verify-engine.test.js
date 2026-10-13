@@ -19,6 +19,10 @@ async function writeEventLog(cwd, events) {
   // `.synth/data/` (EXP-ENV-013).
   const dataDir = path.join(cwd, ".synth", "data")
   await fs.mkdir(dataDir, { recursive: true })
+  // The fixture IS the log. Appending onto a stream that `init` already wrote
+  // (a hashed PROJECT_INITIALIZED at timestamp 0) splices unhashed events after
+  // a hash chain, and verify correctly reports a chain gap.
+  await fs.rm(path.join(dataDir, "event-stream"), { recursive: true, force: true })
   const lines = events.map((e) => JSON.stringify(e)).join("\n") + "\n"
   const seededEvents = lines.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l))
   await seedEventLog(dataDir, seededEvents)

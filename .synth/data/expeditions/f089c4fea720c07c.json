@@ -1,0 +1,39 @@
+{
+  "id": "f089c4fea720c07c",
+  "missionId": "b536ecc7ceb9217a",
+  "name": "No write-on-read: content-keyed cache and pure status",
+  "goal": "Make read-only commands read-only: key the charter dependency cache on content hashes instead of mtimes and relocate it to .synth/cache/ (untracked), make synth status compute AI metadata without persisting it while synth ai refresh remains the explicit regenerator, and extend the derived classification to .synth/ai/, .synth/cache/ and cli-errors.jsonl. Deliverable: status, doctor and capabilities leave a pristine tree clean.",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/governance/dependency-graph.ts",
+      "src/cli/ai-metadata.ts",
+      "src/cli/status-light.ts",
+      "src/cli/synth.ts"
+    ],
+    "identity": {
+      "agentId": "synth-cli-20163",
+      "sessionId": "e277544f-b537-4d8b-91a4-11d3076621e4",
+      "approvalMode": "autonomous",
+      "issuedAt": 364
+    }
+  },
+  "createdAt": 336,
+  "updatedAt": 369,
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/f089c4fea720c07c/git-diff.patch",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/f089c4fea720c07c/attachments/e2-source.patch",
+      "hash": "d53baf583f3402e6e18cd4a46b3ed288c4be42cbb0d8098febc171c49058aa16"
+    }
+  ]
+}

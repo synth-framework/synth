@@ -1,5 +1,6 @@
 import fs from "fs/promises"
 import path from "path"
+import { createHash } from "node:crypto"
 import type { Policy, PolicyEngine } from "../policy/policy-engine.js"
 import type { CanonicalState, CapabilityInvocation, ConvergenceCertificationState, DerivedState } from "../types/index.js"
 
@@ -56,20 +57,33 @@ export function parseDependencyRecord(expeditionId: string, charterContent: stri
   return { expeditionId, dependsOn, blocks }
 }
 
-/** Parse all expedition charters from a directory into dependency records */
+/**
+ * Parse all expedition charters from a directory into dependency records.
+ *
+ * The cache is keyed on content digests, stored outside the index
+ * (`.synth/cache/`, gitignored) and written only when the digest map or the
+ * records actually change. Keying on mtimes made the cache machine-local
+ * state that rewrote itself on every fresh clone (audit D7); a cache is a
+ * cache — never committed, never load-bearing.
+ */
 export async function parseCharterDirectory(charterDir: string): Promise<DependencyRecord[]> {
-  const cachePath = path.join(charterDir, "..", "..", ".synth", "data", "dependency-records-cache.json")
-  
+  const cachePath = path.join(charterDir, "..", "..", ".synth", "cache", "dependency-records.json")
+
   let cache: {
-    mtimes: Record<string, number>
+    digests: Record<string, string>
     records: Record<string, DependencyRecord>
-  } = { mtimes: {}, records: {} }
+  } = { digests: {}, records: {} }
 
   try {
-    const cacheData = await fs.readFile(cachePath, "utf-8")
-    cache = JSON.parse(cacheData)
+    const parsed = JSON.parse(await fs.readFile(cachePath, "utf-8")) as {
+      digests?: Record<string, string>
+      records?: Record<string, DependencyRecord>
+    }
+    if (parsed && typeof parsed === "object" && parsed.digests && typeof parsed.digests === "object") {
+      cache = { digests: parsed.digests, records: parsed.records ?? {} }
+    }
   } catch {
-    // Cache missing or invalid
+    // Cache missing or invalid: recompute everything.
   }
 
   let files: string[]
@@ -80,32 +94,30 @@ export async function parseCharterDirectory(charterDir: string): Promise<Depende
   }
 
   const records: DependencyRecord[] = []
-  const newMtimes: Record<string, number> = {}
+  const newDigests: Record<string, string> = {}
   const newRecords: Record<string, DependencyRecord> = {}
   let cacheDirty = false
 
   const parsePromises = files.map(async (file) => {
     if (!file.endsWith(".md")) return null
     const filePath = path.join(charterDir, file)
-    
-    let mtime = 0
+
+    let content: string
     try {
-      const stat = await fs.stat(filePath)
-      mtime = stat.mtimeMs
+      content = await fs.readFile(filePath, "utf-8")
     } catch {
-      // If stat fails, we can't cache
+      return null
     }
 
-    newMtimes[file] = mtime
+    const digest = createHash("sha256").update(content).digest("hex")
+    newDigests[file] = digest
 
-    if (cache.mtimes && cache.mtimes[file] === mtime && cache.records && cache.records[file]) {
+    if (cache.digests[file] === digest && cache.records[file]) {
       newRecords[file] = cache.records[file]
       return cache.records[file]
     }
 
     cacheDirty = true
-    const content = await fs.readFile(filePath, "utf-8")
-
     const subjectMatch = content.match(/^#\s+(.*)$/m)
     const expeditionId = subjectMatch
       ? subjectMatch[1].trim()
@@ -121,12 +133,12 @@ export async function parseCharterDirectory(charterDir: string): Promise<Depende
     if (result) records.push(result)
   }
 
-  if (cacheDirty || Object.keys(cache.mtimes || {}).length !== Object.keys(newMtimes).length) {
+  if (cacheDirty || Object.keys(cache.digests).length !== Object.keys(newDigests).length) {
     try {
       await fs.mkdir(path.dirname(cachePath), { recursive: true })
       await fs.writeFile(
         cachePath,
-        JSON.stringify({ mtimes: newMtimes, records: newRecords }, null, 2),
+        JSON.stringify({ digests: newDigests, records: newRecords }, null, 2),
         "utf-8"
       )
     } catch {
