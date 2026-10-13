@@ -1,6 +1,6 @@
 {
-  "version": 399,
-  "stateHash": "248082726",
+  "version": 400,
+  "stateHash": "188459015",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -115,10 +115,12 @@
       "name": "Verification Coverage Truthfulness",
       "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
       "status": "active",
-      "expeditions": [],
+      "expeditions": [
+        "87e6515de3815bea"
+      ],
       "metadata": {},
       "createdAt": 396,
-      "updatedAt": 398,
+      "updatedAt": 399,
       "executionBranch": "arena/92bee2da-synth",
       "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
     }
@@ -1605,6 +1607,20 @@
       },
       "createdAt": 395,
       "updatedAt": 395
+    },
+    "87e6515de3815bea": {
+      "id": "87e6515de3815bea",
+      "missionId": "b6ff1be26d13a677",
+      "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
+      "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 399,
+      "updatedAt": 399
     }
   },
   "objectives": {},
@@ -1630,5 +1646,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 399
+  "lastEventOffset": 400
 }

@@ -1,0 +1,14 @@
+{
+  "id": "87e6515de3815bea",
+  "missionId": "b6ff1be26d13a677",
+  "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
+  "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 399,
+  "updatedAt": 399
+}
