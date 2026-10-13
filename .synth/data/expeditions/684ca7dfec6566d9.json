@@ -3,7 +3,7 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "Dull status inbox for deliver/seal",
   "goal": "Make synth status print exact copy-pasteable deliver --branch and seal --merge-commit commands, fixing NoExecutionBranch fallback, ledgerBranch missing fallback, and shallow-clone hint, so fresh Arena sessions can seal after pull without extra queries.",
-  "status": "approved",
+  "status": "committed",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -17,5 +17,6 @@
     ]
   },
   "createdAt": 431,
-  "updatedAt": 432
+  "updatedAt": 434,
+  "executionBranch": "arena/a3a7925a-synth"
 }
