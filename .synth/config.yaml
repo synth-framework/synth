@@ -8,6 +8,10 @@
 # their branch explicitly; declaredPatterns keeps the arena branch warning-free.
 # See docs/plans/master-delivery-plan.md.
 git:
+  # This Arena checkout is the declared, single-writer ledger branch for the
+  # verification-coverage expedition. The historical recorded branch
+  # (arena/c5db653e-synth) was merged and no longer exists locally.
+  ledgerBranch: arena/92bee2da-synth
   branchStrategy: featured
   branchPolicy:
     mode: enforce

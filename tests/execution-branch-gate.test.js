@@ -26,7 +26,7 @@ import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { withoutLifecycleContinuation } from "./helpers/context.js"
 import { createExecutingExpedition as createExecutingExpeditionIntent } from "./helpers/governance-intent.js"
 import { generateBranchName } from "../dist/repository/branch-taxonomy.js"
-import { CLI_PATH } from "./helpers/cli-harness.js"
+import { CLI_PATH, readEventLog } from "./helpers/cli-harness.js"
 
 // Canonical names for the seeded fixtures: the preferred slug form and
 // the legacy raw-ID form. Enforcement must accept BOTH; reporting cites
@@ -414,10 +414,9 @@ async function testCliAutoCreatesCanonicalBranchOnMainUnderEnforce() {
     `CLI should report the auto-created execution branch: ${JSON.stringify(output.executionBranch)}`,
   )
 
-  const logPath = path.join(root, ".synth", "data", "event-log.jsonl")
-  const log = fs.readFileSync(logPath, "utf-8").trim().split("\n").map((l) => JSON.parse(l))
+  const events = await readEventLog(root)
   assert.ok(
-    log.some((e) => e.type === "EXPEDITION_BRANCH_CREATED" && e.payload?.expeditionId === expeditionId && e.payload?.branch === names.slug),
+    events.some((e) => e.type === "EXPEDITION_BRANCH_CREATED" && e.payload?.expeditionId === expeditionId && e.payload?.branch === names.slug),
     "EXPEDITION_BRANCH_CREATED should be recorded for the auto-created branch",
   )
 
@@ -436,8 +435,7 @@ async function testCliStartOnCanonicalBranchDoesNotRecreate() {
   await seedMissionAndExpedition(ctx, root, missionId, expeditionId)
   checkout(root, `expedition/${missionId}/${expeditionId}`)
 
-  const logPath = path.join(root, ".synth", "data", "event-log.jsonl")
-  const before = fs.readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean).length
+  const before = (await readEventLog(root)).length
 
   const proc = spawnSync("node", [CLI_PATH, "expedition", "start", "--id", expeditionId], {
     cwd: root,
@@ -448,8 +446,8 @@ async function testCliStartOnCanonicalBranchDoesNotRecreate() {
   assert.equal(proc.status, 0, `expedition start should succeed on the canonical branch: ${output.error || JSON.stringify(output)}`)
   assert.ok(!output.executionBranch, "No executionBranch report when already on the canonical branch")
 
-  const log = fs.readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l))
-  const createdCount = log.slice(before).filter((e) => e.type === "EXPEDITION_BRANCH_CREATED").length
+  const events = await readEventLog(root)
+  const createdCount = events.slice(before).filter((e) => e.type === "EXPEDITION_BRANCH_CREATED").length
   assert.strictEqual(createdCount, 0, "EXPEDITION_BRANCH_CREATED must not be emitted when already on the canonical branch")
 
   fs.rmSync(root, { recursive: true, force: true })

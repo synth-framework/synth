@@ -16,7 +16,8 @@ import fs from "fs/promises"
 import path from "path"
 import os from "os"
 import { execSync } from "child_process"
-import { runSynth, parseJson, writeEventLog } from "./helpers/cli-harness.js"
+import { runSynth, parseJson, readEventLog, writeEventLog } from "./helpers/cli-harness.js"
+import { rebuildState } from "../dist/runtime/replay.js"
 
 const TEST_TIMEOUT = 120000
 
@@ -48,23 +49,21 @@ async function writePolicyFile(dir, name, content) {
   await fs.writeFile(path.join(policyDir, name), content, "utf-8")
 }
 
-async function readEventLog(dir) {
-  const logPath = path.join(dir, ".synth", "data", "event-log.jsonl")
-  try {
-    const raw = await fs.readFile(logPath, "utf-8")
-    return raw.split("\n").filter(Boolean).map(JSON.parse)
-  } catch {
-    return []
-  }
+async function refreshCanonicalState(dir) {
+  const events = await readEventLog(dir)
+  const state = rebuildState(events)
+  await fs.writeFile(
+    path.join(dir, ".synth", "data", "canonical-state.json"),
+    JSON.stringify(state, null, 2),
+    "utf-8",
+  )
+  return state
 }
 
 async function makeExecutingExpedition(dir, expeditionId = "EXP-GIT-001-TEST") {
   const missionId = "M-GIT-001-TEST"
-  const events = await readEventLog(dir)
   const ts = Date.now()
-  const base = events.length > 0 ? events[events.length - 1].eventHash : "genesis"
   await writeEventLog(dir, [
-    ...events,
     {
       id: "evt-mission-created",
       type: "MISSION_CREATED",
@@ -136,6 +135,7 @@ async function makeExecutingExpedition(dir, expeditionId = "EXP-GIT-001-TEST") {
       },
     },
   ])
+  await refreshCanonicalState(dir)
   return expeditionId
 }
 
@@ -227,7 +227,7 @@ test("snapshot list returns synth tags", { timeout: TEST_TIMEOUT }, async () => 
   }
 })
 
-test("snapshot verify replays event log consistently", { timeout: TEST_TIMEOUT }, async () => {
+test("snapshot verify replays the partitioned event stream consistently", { timeout: TEST_TIMEOUT }, async () => {
   const dir = await createTempProject()
   try {
     const createResult = runSynth(["snapshot", "create", "--message", "Verify test"], dir)
@@ -239,6 +239,34 @@ test("snapshot verify replays event log consistently", { timeout: TEST_TIMEOUT }
     const verifyOutput = parseJson(verifyResult.stdout)
     assert.strictEqual(verifyOutput.kind, "GovernanceSnapshotVerification")
     assert.strictEqual(verifyOutput.consistent, true, `verify should report consistent: ${verifyOutput.reason}`)
+  } finally {
+    await cleanup(dir)
+  }
+})
+
+test("snapshot stages changed event-stream segments and verifies their replay", { timeout: TEST_TIMEOUT }, async () => {
+  const dir = await createTempProject()
+  try {
+    await makeExecutingExpedition(dir, "EXP-GIT-STREAM-TEST")
+    const expectedEventCount = (await readEventLog(dir)).length
+
+    const createResult = runSynth(["snapshot", "create", "--message", "Partitioned stream snapshot"], dir)
+    assert.strictEqual(createResult.status, 0, `snapshot create must succeed: ${createResult.stderr}`)
+    const createOutput = parseJson(createResult.stdout)
+    assert.strictEqual(createOutput.eventOffset, expectedEventCount, "snapshot offset should count parsed stream events")
+
+    const committedFiles = git(dir, ["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+    assert.match(
+      committedFiles,
+      /\.synth\/data\/event-stream\/.*\/segment-.*\.jsonl/,
+      `snapshot commit must include a partitioned event-stream segment, got: ${committedFiles}`,
+    )
+
+    const verifyResult = runSynth(["snapshot", "verify", "--tag", createOutput.tagName], dir)
+    assert.strictEqual(verifyResult.status, 0, `snapshot verify must succeed: ${verifyResult.stderr}`)
+    const verifyOutput = parseJson(verifyResult.stdout)
+    assert.strictEqual(verifyOutput.eventCount, expectedEventCount, "verification should replay every stream event")
+    assert.strictEqual(verifyOutput.consistent, true, `stream replay should match state: ${verifyOutput.reason}`)
   } finally {
     await cleanup(dir)
   }

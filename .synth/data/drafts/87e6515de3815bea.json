@@ -1,0 +1,209 @@
+{
+  "id": "87e6515de3815bea",
+  "createdAt": 1791862685713,
+  "observations": [
+    {
+      "id": "obs-mission-verification-coverage-truthfulness",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Verification Coverage Truthfulness",
+        "name": "Verification Coverage Truthfulness",
+        "id": "b6ff1be26d13a677",
+        "purpose": "Referenced existing mission"
+      },
+      "evidenceReference": "evidence-mission-Verification Coverage Truthfulness",
+      "confidence": "high",
+      "timestamp": 1791862685713
+    },
+    {
+      "id": "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+      "sourceAdapter": "synth-cli",
+      "type": "expedition",
+      "payload": {
+        "subject": "Verification coverage truthfulness: F1, F7–F10, and F15",
+        "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
+        "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
+        "missionSubject": "b6ff1be26d13a677"
+      },
+      "evidenceReference": "evidence-expedition-Verification coverage truthfulness: F1, F7–F10, and F15",
+      "confidence": "high",
+      "timestamp": 1791862685713
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "61237615100ed10d",
+        "observationId": "obs-mission-verification-coverage-truthfulness",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"id\":\"b6ff1be26d13a677\",\"purpose\":\"Referenced existing mission\"}",
+        "fingerprint": "79cdb591b9488a01",
+        "immutable": true
+      },
+      {
+        "id": "2c13075b6a02862f",
+        "observationId": "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+        "source": "synth-cli",
+        "description": "expedition observation from synth-cli",
+        "snippet": "{\"subject\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"name\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"goal\":\"Make govern execute the canonical test:all task chain or f",
+        "fingerprint": "594340a141434078",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-verification-coverage-truthfulness",
+        {
+          "id": "61237615100ed10d",
+          "observationId": "obs-mission-verification-coverage-truthfulness",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"id\":\"b6ff1be26d13a677\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "79cdb591b9488a01",
+          "immutable": true
+        }
+      ],
+      [
+        "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+        {
+          "id": "2c13075b6a02862f",
+          "observationId": "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"name\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"goal\":\"Make govern execute the canonical test:all task chain or f",
+          "fingerprint": "594340a141434078",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.6900000000000001,
+    "observationCoverage": 0.2,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "6738d63ec7a34e91",
+        {
+          "id": "6738d63ec7a34e91",
+          "kind": "mission",
+          "name": "Verification Coverage Truthfulness",
+          "description": "Referenced existing mission",
+          "purpose": "Referenced existing mission",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-verification-coverage-truthfulness"
+          ],
+          "evidenceRefs": [
+            "61237615100ed10d"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      [
+        "760e3548fc8f3a95",
+        {
+          "id": "760e3548fc8f3a95",
+          "kind": "expedition",
+          "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
+          "description": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
+          "missionId": "6738d63ec7a34e91",
+          "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
+          "objectiveIds": [],
+          "observationIds": [
+            "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15"
+          ],
+          "evidenceRefs": [
+            "2c13075b6a02862f"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [
+      {
+        "id": "b6eda7e365419062",
+        "source": "760e3548fc8f3a95",
+        "target": "6738d63ec7a34e91",
+        "relation": "parent_of",
+        "observationIds": [
+          "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15"
+        ]
+      }
+    ],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "61237615100ed10d",
+          "observationId": "obs-mission-verification-coverage-truthfulness",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"id\":\"b6ff1be26d13a677\",\"purpose\":\"Referenced existing mission\"}",
+          "fingerprint": "79cdb591b9488a01",
+          "immutable": true
+        },
+        {
+          "id": "2c13075b6a02862f",
+          "observationId": "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+          "source": "synth-cli",
+          "description": "expedition observation from synth-cli",
+          "snippet": "{\"subject\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"name\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"goal\":\"Make govern execute the canonical test:all task chain or f",
+          "fingerprint": "594340a141434078",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-verification-coverage-truthfulness",
+          {
+            "id": "61237615100ed10d",
+            "observationId": "obs-mission-verification-coverage-truthfulness",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Verification Coverage Truthfulness\",\"name\":\"Verification Coverage Truthfulness\",\"id\":\"b6ff1be26d13a677\",\"purpose\":\"Referenced existing mission\"}",
+            "fingerprint": "79cdb591b9488a01",
+            "immutable": true
+          }
+        ],
+        [
+          "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+          {
+            "id": "2c13075b6a02862f",
+            "observationId": "obs-expedition-verification-coverage-truthfulness:-f1,-f7–f10,-and-f15",
+            "source": "synth-cli",
+            "description": "expedition observation from synth-cli",
+            "snippet": "{\"subject\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"name\":\"Verification coverage truthfulness: F1, F7–F10, and F15\",\"goal\":\"Make govern execute the canonical test:all task chain or f",
+            "fingerprint": "594340a141434078",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.6900000000000001,
+      "observationCoverage": 0.2,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}

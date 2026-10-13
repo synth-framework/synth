@@ -20,7 +20,7 @@ import { ProofStore } from "../scripts/governance/proof-store.js"
 import { computeFingerprint } from "../scripts/governance/fingerprint.js"
 import { mapFileToModule } from "../scripts/governance/module-mapper.js"
 
-async function withTempPackage(testAll, fn) {
+async function withTempPackage(testAll, fn, canonicalTask) {
   const tmpDir = await makeTempDir("synth-govern-profiler-")
   const pkgPath = path.join(tmpDir, "package.json")
   await fs.writeFile(
@@ -28,6 +28,11 @@ async function withTempPackage(testAll, fn) {
     JSON.stringify({ name: "test", scripts: { "test:all": testAll } }) + "\n",
     "utf-8",
   )
+  if (canonicalTask) {
+    const tasksDir = path.join(tmpDir, "data", "tasks")
+    await fs.mkdir(tasksDir, { recursive: true })
+    await fs.writeFile(path.join(tasksDir, "test:all.task.json"), JSON.stringify(canonicalTask) + "\n", "utf-8")
+  }
   try {
     return await fn(pkgPath)
   } finally {
@@ -81,6 +86,31 @@ async function testLoadGovernChecksIgnoresNonNpmRun() {
     assert.ok(!checks.some((c) => c.checkId === "node scripts/something.js"))
   })
   console.log("[PASS] loadGovernChecks ignores non-npm-run steps")
+}
+
+async function testLoadGovernChecksUsesCanonicalTaskChainForShimmedScript() {
+  await withTempPackage(
+    "node scripts/task-adapter-shim.js test:all",
+    async (pkgPath) => {
+      const checks = await loadGovernChecks(pkgPath)
+      assert.deepStrictEqual(checks.map((check) => check.checkId), ["build", "test:canonical", "test:second", "proof"])
+    },
+    {
+      id: "test:all",
+      command: "npm run test:canonical && npm run test:second",
+    },
+  )
+  console.log("[PASS] loadGovernChecks expands the canonical task chain behind the adapter shim")
+}
+
+async function testLoadGovernChecksRejectsShimWithoutCanonicalTask() {
+  await withTempPackage("node scripts/task-adapter-shim.js test:all", async (pkgPath) => {
+    await assert.rejects(
+      () => loadGovernChecks(pkgPath),
+      /Canonical test:all task definition is required/,
+    )
+  })
+  console.log("[PASS] loadGovernChecks rejects a shimmed test:all without its canonical task definition")
 }
 
 async function testDryRunProducesSummary() {
@@ -285,6 +315,8 @@ async function testRunGovernProfileRespectsFullFlag() {
 async function main() {
   await testLoadGovernChecksDecomposesTestAll()
   await testLoadGovernChecksIgnoresNonNpmRun()
+  await testLoadGovernChecksUsesCanonicalTaskChainForShimmedScript()
+  await testLoadGovernChecksRejectsShimWithoutCanonicalTask()
   await testDryRunProducesSummary()
   await testPercentagesSumToOneHundred()
   await testDependencyGraphDetectsCycles()

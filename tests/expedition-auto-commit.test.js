@@ -172,7 +172,10 @@ async function main() {
     const gateCtx = await bootstrap({
       skipGenesis: true,
       infra: {
-        eventLogPath: path.join(projectDir, ".synth", "data", "event-log.jsonl"),
+        // Certification must replay the same partitioned event stream written
+        // by the CLI, rather than naming the retired monolithic log solely to
+        // derive its sibling directory.
+        streamDir: path.join(projectDir, ".synth", "data", "event-stream"),
         statePath: path.join(projectDir, ".synth", "data", "canonical-state.json"),
       },
     })

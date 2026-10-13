@@ -1,6 +1,6 @@
 {
-  "version": 396,
-  "stateHash": "68959374",
+  "version": 409,
+  "stateHash": "1441753214",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -108,6 +108,20 @@
       "metadata": {},
       "createdAt": 331,
       "updatedAt": 390,
+      "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
+    },
+    "b6ff1be26d13a677": {
+      "id": "b6ff1be26d13a677",
+      "name": "Verification Coverage Truthfulness",
+      "purpose": "Make SYNTH verification truthful: govern must execute the canonical registered test chain or fail loudly; remaining legacy event-log readers must migrate to event-stream; stale unregistered tests and evidence-manifest semantics must be resolved; and the expedition auto-commit convergence helper must complete so failures cannot remain hidden.",
+      "status": "completed",
+      "expeditions": [
+        "87e6515de3815bea"
+      ],
+      "metadata": {},
+      "createdAt": 396,
+      "updatedAt": 406,
+      "executionBranch": "arena/92bee2da-synth",
       "alignmentContractId": "alignment-contract-mv533f89-0ytu7j"
     }
   },
@@ -1593,6 +1607,55 @@
       },
       "createdAt": 395,
       "updatedAt": 395
+    },
+    "87e6515de3815bea": {
+      "id": "87e6515de3815bea",
+      "missionId": "b6ff1be26d13a677",
+      "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
+      "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-2921",
+          "sessionId": "128dd550-e837-4137-9c81-fff84dd6dc22",
+          "approvalMode": "autonomous",
+          "issuedAt": 403
+        }
+      },
+      "createdAt": 399,
+      "updatedAt": 407,
+      "executionBranch": "arena/92bee2da-synth",
+      "attachments": [
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/87e6515de3815bea/git-diff.patch",
+          "hash": "2a93758848b110b340d869d57a749065ef095a6486eeba0e95e4e112832e843f"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/87e6515de3815bea/attachments/govern-baseline.json",
+          "hash": "b55a74b8bae1cf10ca6d299f72729a39a54fb9d2814473e537ffa86b45ddc0e8"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/87e6515de3815bea/attachments/govern-dependency-graph.json",
+          "hash": "b0b2f932422e279f505e7c4b643fe7650d6296ffa211b6b39b101f855d2a01c2"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/87e6515de3815bea/attachments/proof-2026-10-13T04-13-49-600Z.json",
+          "hash": "747d0cb6e1ab5c65e090c3373030643faa92f90ca0040f76dcc5bf91733d4100"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/87e6515de3815bea/attachments/graph-integrity-proof-2026-10-13T04-13-50-071Z.json",
+          "hash": "bc28cdde640a09d171f78e8fc9b53a1365507b7c13ddf863a7e444c3ad5ce1b5"
+        }
+      ]
     }
   },
   "objectives": {},
@@ -1618,5 +1681,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 396
+  "lastEventOffset": 409
 }

@@ -81,15 +81,16 @@ async function testLoadRegistryRejectsUnknownDependency() {
   }
 }
 
-async function testLoadRegistryRejectsDuplicate() {
+async function testLoadRegistryUsesLaterTaskForDuplicate() {
   const tempDir = "tests/fixtures/task-registry-duplicate"
   await fs.mkdir(tempDir, { recursive: true })
-  await fs.writeFile(path.join(tempDir, "a.task.json"), JSON.stringify(makeTask({ id: "dup" })))
-  await fs.writeFile(path.join(tempDir, "b.task.json"), JSON.stringify(makeTask({ id: "dup" })))
+  await fs.writeFile(path.join(tempDir, "a.task.json"), JSON.stringify(makeTask({ id: "dup", description: "first definition" })))
+  await fs.writeFile(path.join(tempDir, "b.task.json"), JSON.stringify(makeTask({ id: "dup", description: "replacement definition" })))
 
   try {
-    await assert.rejects(() => loadTaskRegistry({ dirs: [tempDir] }), /Duplicate task id/)
-    console.log("  [PASS] loadTaskRegistry: rejects duplicate ids")
+    const registry = await loadTaskRegistry({ dirs: [tempDir] })
+    assert.equal(registry.tasks.get("dup")?.description, "replacement definition")
+    console.log("  [PASS] loadTaskRegistry: later task definitions override earlier ones deterministically")
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true })
   }
@@ -158,7 +159,7 @@ testValidateLifecycle()
 testAssertTaskThrows()
 await testLoadRegistryFromDisk()
 await testLoadRegistryRejectsUnknownDependency()
-await testLoadRegistryRejectsDuplicate()
+await testLoadRegistryUsesLaterTaskForDuplicate()
 await testLoadRegistryRejectsInvalidTask()
 testGetTasksByGroup()
 testGetTasksByTag()
