@@ -3,9 +3,9 @@
   "schemaVersion": "1.0.0",
   "mode": "full",
   "changedFiles": [],
-  "totalDurationMs": 209936,
-  "executedDurationMs": 209936,
-  "checkCount": 2,
+  "totalDurationMs": 338494,
+  "executedDurationMs": 338494,
+  "checkCount": 116,
   "skippedCount": 0,
   "checks": [
     {
@@ -13,10 +13,10 @@
       "status": "passed",
       "action": "run",
       "reason": "full-run",
-      "durationMs": 64946,
-      "percentage": 30.9,
-      "startTime": "2026-10-11T05:34:17.359Z",
-      "endTime": "2026-10-11T05:35:22.305Z",
+      "durationMs": 7693,
+      "percentage": 2.3,
+      "startTime": "2026-10-13T04:08:12.034Z",
+      "endTime": "2026-10-13T04:08:19.727Z",
       "module": "kernel",
       "inputs": [
         "src/**",
@@ -29,17 +29,2861 @@
       "dependencies": [],
       "cacheability": "deterministic",
       "protectedAssets": [],
-      "fingerprint": "7eeaf82d3a072b0db6349745a9e466e16062ffb54f529e58402367581e303a99"
+      "fingerprint": "0b3189501b504a78cfd6e58883cacbde469d2b56e3134deb11204cdac847911f"
+    },
+    {
+      "checkId": "test",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 9684,
+      "percentage": 2.9,
+      "startTime": "2026-10-13T04:08:19.730Z",
+      "endTime": "2026-10-13T04:08:29.414Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "066763842214b394c9e395287171d256aedf232e12779087fbb7c3518f96e7f1"
+    },
+    {
+      "checkId": "test:governance-quiet-output",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1658,
+      "percentage": 0.5,
+      "startTime": "2026-10-13T04:08:29.416Z",
+      "endTime": "2026-10-13T04:08:31.074Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "d79279deecb342a142b874b7d8ab0bf8c39d8d955ed095d56aa39156f828d412"
+    },
+    {
+      "checkId": "test:expedition-reuse-and-templates",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 2419,
+      "percentage": 0.7,
+      "startTime": "2026-10-13T04:08:31.075Z",
+      "endTime": "2026-10-13T04:08:33.494Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a8196b231bbe9b935e5b28d85f9e9b6701fa0a8263f2ca05dc4f6e89eecd839a"
+    },
+    {
+      "checkId": "test:skr",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 655,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:08:33.496Z",
+      "endTime": "2026-10-13T04:08:34.151Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "583a0b0599ee0fa42c34b5d198ddf637ad9ebe6d5214071db10f67ec5abe7622"
+    },
+    {
+      "checkId": "test:audit",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 398,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:34.153Z",
+      "endTime": "2026-10-13T04:08:34.551Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "b1d018a11b2f5ac16e18090cfad6a77c987adfa5ec6e490296cac76902128c29"
+    },
+    {
+      "checkId": "test:replay",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 543,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:08:34.554Z",
+      "endTime": "2026-10-13T04:08:35.097Z",
+      "module": "runtime",
+      "inputs": [
+        "data/event-log.jsonl",
+        "src/runtime/**",
+        "src/core/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [
+        "Replay"
+      ],
+      "fingerprint": "fb74074405377758beab6e2c564e23a13a720df270cf9a8c6d07847e0f1534c2"
+    },
+    {
+      "checkId": "test:replay-graph-integrity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 926,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:08:35.098Z",
+      "endTime": "2026-10-13T04:08:36.024Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a455d8666d1912ae5514746bbc0c86e24455f022f7ad1f50b62608d0d277bd57"
+    },
+    {
+      "checkId": "test:execution-intent",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 408,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:36.026Z",
+      "endTime": "2026-10-13T04:08:36.434Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "1923927e354582de624de390b9b69ba2883e840121ee7d600c2d82bc173bb81e"
+    },
+    {
+      "checkId": "test:execution-runtime",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 378,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:36.436Z",
+      "endTime": "2026-10-13T04:08:36.814Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "53779823f3794cab979d9bed81c7075df7adfadf3d474c2b6aa96334e5bf36d8"
+    },
+    {
+      "checkId": "test:execution-branch",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 367,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:36.816Z",
+      "endTime": "2026-10-13T04:08:37.183Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "186e40137f8ce23e0a0d707a23c4a97664b2eaf96c217e35339dec234af8e1f1"
+    },
+    {
+      "checkId": "test:execution-commit",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 360,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:37.185Z",
+      "endTime": "2026-10-13T04:08:37.545Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "8410951cf0932b061278a2abe936e052d5b2ed0e8c55f40ab8daeb3f6d1a5feb"
+    },
+    {
+      "checkId": "test:execution-projection",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 430,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:37.547Z",
+      "endTime": "2026-10-13T04:08:37.977Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "6aaf734e46cbdd819adf5cf0e40099643ddafd1e7beff413c5a2bec69bc87e97"
+    },
+    {
+      "checkId": "test:graph-integrity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 928,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:08:37.980Z",
+      "endTime": "2026-10-13T04:08:38.908Z",
+      "module": "runtime",
+      "inputs": [
+        "data/event-log.jsonl",
+        "src/runtime/**",
+        "tests/graph-integrity.test.js"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [
+        "Replay"
+      ],
+      "fingerprint": "04ed7733c91cff7ba0e8cf9c7128947adee0fefc33233d9594bb2eaf72d95cdb"
+    },
+    {
+      "checkId": "test:explain-observability",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 11650,
+      "percentage": 3.4,
+      "startTime": "2026-10-13T04:08:38.910Z",
+      "endTime": "2026-10-13T04:08:50.560Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "afde072b1b6ec9c73a40568941225ff2f4954f22e98e99c81eed0354c79d6d10"
+    },
+    {
+      "checkId": "test:determinism",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 579,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:08:50.563Z",
+      "endTime": "2026-10-13T04:08:51.142Z",
+      "module": "runtime",
+      "inputs": [
+        "src/runtime/**",
+        "src/core/**",
+        "scripts/verify-determinism.js"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [
+        "Replay"
+      ],
+      "fingerprint": "dd4c8f71b4ae27cfa7deafd9f3e96c4ee0fa7424e75030968e760065d4f6e58b"
+    },
+    {
+      "checkId": "test:adversarial",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 771,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:08:51.144Z",
+      "endTime": "2026-10-13T04:08:51.915Z",
+      "module": "governance",
+      "inputs": [
+        "src/**",
+        "scripts/audit-adversarial.js"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [
+        "ExecutionGate",
+        "Replay"
+      ],
+      "fingerprint": "715dbdcec191dfbfa5663df0a0ab925caa7fe9b9c8a16fec2ce5ef63eba0b8e4"
+    },
+    {
+      "checkId": "test:adapter",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 556,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:08:51.917Z",
+      "endTime": "2026-10-13T04:08:52.473Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "d985345b5d4d7df8acb30a842113b517af5710ffd113d9b8b21593d00da51eb3"
+    },
+    {
+      "checkId": "test:github",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 397,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:52.475Z",
+      "endTime": "2026-10-13T04:08:52.872Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "d7a7b4db7345a9207cc71b2658d07473cbc6815f7d8fc2e980dc814938244dfc"
+    },
+    {
+      "checkId": "test:tdd",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 674,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:08:52.875Z",
+      "endTime": "2026-10-13T04:08:53.549Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "ed9f944bc75024c25f6eb5c5c6bb1e1d26c9857ff35625e4f71a215aa26ba62b"
+    },
+    {
+      "checkId": "test:bdd",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 490,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:53.550Z",
+      "endTime": "2026-10-13T04:08:54.040Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "7d5877a139eb77ca9d2501858c593bacc2295ab542d3975380921dc4166f1a89"
+    },
+    {
+      "checkId": "test:conversation",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 398,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:54.042Z",
+      "endTime": "2026-10-13T04:08:54.440Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "1d76539f63adef755979d55d39ac70b0f445c707caa375e1c9f34d356bf4de2f"
+    },
+    {
+      "checkId": "test:document",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 421,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:54.443Z",
+      "endTime": "2026-10-13T04:08:54.864Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "e7acf1f88a9c4159c0c58f4646bc5b03cafa1e42d425c93f5643c4eb40aa6b30"
+    },
+    {
+      "checkId": "test:filesystem",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 376,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:54.866Z",
+      "endTime": "2026-10-13T04:08:55.242Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "e4df450817c5583fa0af273f01de63073040f5f50fc7bb03d7286907069b904d"
+    },
+    {
+      "checkId": "test:specification",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 406,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:55.243Z",
+      "endTime": "2026-10-13T04:08:55.649Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "98570aa746850d954de0cd0c3c42e46e18391426c89c5f69e6ec357832c86b68"
+    },
+    {
+      "checkId": "test:knowledge-extraction",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 386,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:55.651Z",
+      "endTime": "2026-10-13T04:08:56.037Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "4fe39053d34be2ddf3b5405ad00e5051c15ab9b0772808bd4c72b7d4de556106"
+    },
+    {
+      "checkId": "test:confidence",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 426,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:56.038Z",
+      "endTime": "2026-10-13T04:08:56.464Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "64ec7f796c9420b82cf50e75696fca5488bda23ced8fe72613a35be756bc9280"
+    },
+    {
+      "checkId": "test:dependency",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 403,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:56.466Z",
+      "endTime": "2026-10-13T04:08:56.869Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "0fd2045b5d599c6c037b1cbb16270f3c9f852618e4ff761a9fae060536b3b41d"
+    },
+    {
+      "checkId": "test:architecture",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 423,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:56.871Z",
+      "endTime": "2026-10-13T04:08:57.294Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a7c1f55b645b61ad5ae3dd3be2c0e7507b04b661c70fa26d9d1774ce02ecab1d"
+    },
+    {
+      "checkId": "test:mission-builder",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 412,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:57.296Z",
+      "endTime": "2026-10-13T04:08:57.708Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "88506f661bd4d89c94dc1630756b9167eb75d36aaee5330eec4133dad4a35961"
+    },
+    {
+      "checkId": "test:expedition-builder",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 405,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:57.710Z",
+      "endTime": "2026-10-13T04:08:58.115Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "6126e0a0c9dbff31045b58402bf175731020b0f89075e7a477178ef23e0fb509"
+    },
+    {
+      "checkId": "test:objective-builder",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 393,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:58.117Z",
+      "endTime": "2026-10-13T04:08:58.510Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "05a84a0a0d3f2966ebbd7dbf823b6d0a0c860843b63be1a5638876c84a16dcd2"
+    },
+    {
+      "checkId": "test:wizard",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 386,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:58.512Z",
+      "endTime": "2026-10-13T04:08:58.898Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "bc1ddc7f33674eb08eb66e005d1cbb3d2063caf9270888a588a112f340706a02"
+    },
+    {
+      "checkId": "test:mission-studio",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 386,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:58.900Z",
+      "endTime": "2026-10-13T04:08:59.286Z",
+      "module": "missions",
+      "inputs": [
+        "src/mission-studio/**",
+        "tests/mission-studio.test.js"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [],
+      "cacheability": "deterministic",
+      "protectedAssets": [
+        "Mission Studio"
+      ],
+      "fingerprint": "13b5d9d24e1bd31ce485e607937bf5a9e158488f842c690594f917fb9d613767"
+    },
+    {
+      "checkId": "test:mission-studio-snapshot-lineage",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 391,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:59.289Z",
+      "endTime": "2026-10-13T04:08:59.680Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "de1e0dc3fa2b184d2591d3f54acad42583067377345268986e7436f86e871c18"
+    },
+    {
+      "checkId": "test:mission-studio-proposal-graph",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 368,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:08:59.682Z",
+      "endTime": "2026-10-13T04:09:00.050Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "0c03499fe14faa32b993ad1259d1ea96c6daeb769d23fb8a428a3317f73c7a27"
+    },
+    {
+      "checkId": "test:mission-studio-snapshot-integrity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1220,
+      "percentage": 0.4,
+      "startTime": "2026-10-13T04:09:00.051Z",
+      "endTime": "2026-10-13T04:09:01.271Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "7007b899ee6f38972ddb13effac9c121f7de72fe5f82a33044f581ae1dc12563"
+    },
+    {
+      "checkId": "test:documentation-expedition",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 405,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:01.274Z",
+      "endTime": "2026-10-13T04:09:01.679Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "5493e755c0620d33012712dad35f8979bf70b39aece8a86ae17d77bc3b75f7b3"
+    },
+    {
+      "checkId": "test:operator-journey",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1257,
+      "percentage": 0.4,
+      "startTime": "2026-10-13T04:09:01.681Z",
+      "endTime": "2026-10-13T04:09:02.938Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "52aec68b603445caa2df6596aa42c707f0840e1886e0b9b66ee4e3906bb44b04"
+    },
+    {
+      "checkId": "test:public-vocabulary-audit",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 377,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:02.939Z",
+      "endTime": "2026-10-13T04:09:03.316Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "eb82ffe094dfa19dbfbf94e57dd0bcb12381a40780ec307609ee0c6a8e7acb6d"
+    },
+    {
+      "checkId": "test:freeze-certification",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1105,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:09:03.318Z",
+      "endTime": "2026-10-13T04:09:04.423Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "83d643529beb6d49e7caf91200c125f56cc2b45b801b78e9ca7ea0803a6ee0ac"
+    },
+    {
+      "checkId": "test:mission-studio-adapter-mapper",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 364,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:04.425Z",
+      "endTime": "2026-10-13T04:09:04.789Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "50cd19a159f62e28f040478927f01ce27f9e96c89a006e2d5883e8cc1f7a3d86"
+    },
+    {
+      "checkId": "test:mission-studio-adapter-collector",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 413,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:04.791Z",
+      "endTime": "2026-10-13T04:09:05.204Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "17c736ae9ccb76bae987b227c6dd23e4f5245dd72eba5dc96ea928b276789ecd"
+    },
+    {
+      "checkId": "test:mission-studio-duplicate-detection",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 399,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:05.206Z",
+      "endTime": "2026-10-13T04:09:05.605Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "e65867080b12c037ad2507ad577005be2a53dd96d0c01f22faf35ae728c39aea"
+    },
+    {
+      "checkId": "test:cli-duplicate-advisory",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 2924,
+      "percentage": 0.9,
+      "startTime": "2026-10-13T04:09:05.607Z",
+      "endTime": "2026-10-13T04:09:08.531Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "fca7644b9fa4679ae257eac8196cfb3fa6d25e789c7db0a98187984f6dc80e26"
+    },
+    {
+      "checkId": "test:genesis-snapshot-bridge",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 382,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:08.533Z",
+      "endTime": "2026-10-13T04:09:08.915Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "abed8cfb69a410d7b513c162b3d5ae441da9c405267d7a0b057ed0457d44288b"
+    },
+    {
+      "checkId": "test:genesis-hardening",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 821,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:09:08.917Z",
+      "endTime": "2026-10-13T04:09:09.738Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "057ee2f29acf827ba29d588be840a73fc43d79b27f17d1af731872adf3e3e609"
+    },
+    {
+      "checkId": "test:api-adapter-integration",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 889,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:09:09.740Z",
+      "endTime": "2026-10-13T04:09:10.629Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "14750acc22ed182f7cb5738510086730136f35bb568b795fb5c7f1c31a822d51"
+    },
+    {
+      "checkId": "test:validation-expansion",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1517,
+      "percentage": 0.4,
+      "startTime": "2026-10-13T04:09:10.631Z",
+      "endTime": "2026-10-13T04:09:12.148Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "8be57d0c00c31b4a711955fc69db7fe3464c20098934c34d9a731d4025b4460b"
+    },
+    {
+      "checkId": "test:continuous-publication",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 542,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:09:12.151Z",
+      "endTime": "2026-10-13T04:09:12.693Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "98ced4cb8f49d3501f5206dc3fb6d36d65f4faab7f49a704aa4b0736a641bcad"
+    },
+    {
+      "checkId": "test:documentation-integrity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 778,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:09:12.696Z",
+      "endTime": "2026-10-13T04:09:13.474Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "871c2b9a996c3af148194f2bcd4be44cae334697c095f17568c56bfb613e17fe"
+    },
+    {
+      "checkId": "test:documentation-projections",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 5493,
+      "percentage": 1.6,
+      "startTime": "2026-10-13T04:09:13.476Z",
+      "endTime": "2026-10-13T04:09:18.969Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "0a9ef61a0b729b6fb25a4d49229bbac72de5f69fcb035f2c638231cc00b86578"
+    },
+    {
+      "checkId": "test:first-contact-patterns",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 354,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:18.972Z",
+      "endTime": "2026-10-13T04:09:19.326Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "ff6aa5512295ee16837e36168f43394bb8616494fd579eaf87b4df528f1b783b"
+    },
+    {
+      "checkId": "test:first-contact-quickstart",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 510,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:09:19.329Z",
+      "endTime": "2026-10-13T04:09:19.839Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "f0df66d9547dee5cd9f50a94549d61ec6196cb2cd288f19f278f5b7d0b00b53d"
+    },
+    {
+      "checkId": "test:first-contact-archive-a",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 341,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:09:19.843Z",
+      "endTime": "2026-10-13T04:09:20.184Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "93664fec8cc46d7b13a1425b617f4d50468239a526edd51017085680502ed8d4"
+    },
+    {
+      "checkId": "test:first-operator-experience",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 5007,
+      "percentage": 1.5,
+      "startTime": "2026-10-13T04:09:20.186Z",
+      "endTime": "2026-10-13T04:09:25.193Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a0f58e4f35b1f2db3cba435190b1cc059dc5246eaff06b52234aa6e1a9633cc5"
+    },
+    {
+      "checkId": "test:brownfield",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 38510,
+      "percentage": 11.4,
+      "startTime": "2026-10-13T04:09:25.196Z",
+      "endTime": "2026-10-13T04:10:03.706Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "96b27d3d7ec9d387dd7a4119be2ace2d0377a4f772e6cef619b21370ef07d4f8"
+    },
+    {
+      "checkId": "test:adoption-validation",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 2387,
+      "percentage": 0.7,
+      "startTime": "2026-10-13T04:10:03.708Z",
+      "endTime": "2026-10-13T04:10:06.095Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "2dbcca95b2c696579e8a556472bcbf77710fbad69baa367c7ccf39507c84af34"
+    },
+    {
+      "checkId": "test:ai-benchmark",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 16690,
+      "percentage": 4.9,
+      "startTime": "2026-10-13T04:10:06.097Z",
+      "endTime": "2026-10-13T04:10:22.787Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "061f702764cc901eb9ab360bc63ba6ed877800e735bc3e17b2cb3dfd3d6e1722"
+    },
+    {
+      "checkId": "test:expedition-governance",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 422,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:22.790Z",
+      "endTime": "2026-10-13T04:10:23.212Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "56e4a422b33d65252adb5ba6b4e7511e01c80e02197e4e9821d8c21812e39792"
+    },
+    {
+      "checkId": "test:environment-discovery",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 415,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:23.214Z",
+      "endTime": "2026-10-13T04:10:23.629Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "863e952af0bdeb63cec0e3176e34d310c30244ccdbb5091e4f9924bcab09ce19"
+    },
+    {
+      "checkId": "test:environment-capability-graph",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 448,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:23.632Z",
+      "endTime": "2026-10-13T04:10:24.080Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "3ced42510b68c656453826b1c2f174e8f1c923d4ee8db431780b844b073212c3"
+    },
+    {
+      "checkId": "test:environment-filesystem",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 400,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:24.083Z",
+      "endTime": "2026-10-13T04:10:24.483Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "90af85e80e26a7b003bafe713c54b918847a6f0fea9ea8adb2538a205ce3e801"
+    },
+    {
+      "checkId": "test:environment-discovery-evidence",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 395,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:24.486Z",
+      "endTime": "2026-10-13T04:10:24.881Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "bfd6c75f698ea07fc72edf2b9b071e346e4891964fc5a43af6eadd81a631b5ad"
+    },
+    {
+      "checkId": "test:environment-capability-report",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 402,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:24.883Z",
+      "endTime": "2026-10-13T04:10:25.285Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "314b78c2a17f39d867ef52bd75d5ed854f500414267f631a2f9770865ff54154"
+    },
+    {
+      "checkId": "test:core-boundary",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 598,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:10:25.287Z",
+      "endTime": "2026-10-13T04:10:25.885Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "f46964b54ac739f1ec17a4fc9993977b0646b8220482feea9d555162f4902746"
+    },
+    {
+      "checkId": "test:impact-analyzer",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 362,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:25.888Z",
+      "endTime": "2026-10-13T04:10:26.250Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "7de9397a7fd60dc136070c33098ea0f212a10b50ef90409036969f1e8ab1301b"
+    },
+    {
+      "checkId": "test:validation-mapping",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 545,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:10:26.253Z",
+      "endTime": "2026-10-13T04:10:26.798Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "453890b1d79da5108291bc1e1de755fba8357ffc8e3cc5d679acd959c89757b0"
+    },
+    {
+      "checkId": "test:validation-planner",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 416,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:26.800Z",
+      "endTime": "2026-10-13T04:10:27.216Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "1ce3e48418ad881423dcd8b8ad217e6f1ab7187a9c2e022addf5959e352e95ff"
+    },
+    {
+      "checkId": "test:protected-asset-escalation",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 419,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:27.219Z",
+      "endTime": "2026-10-13T04:10:27.638Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "22b9d80b2579a7c6aa48a7498d23917a8002799ae949f44ca29a6745370ca15e"
+    },
+    {
+      "checkId": "test:installer-contract",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 3216,
+      "percentage": 1,
+      "startTime": "2026-10-13T04:10:27.640Z",
+      "endTime": "2026-10-13T04:10:30.856Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "ac4bf22c7207f5c99e1e69d739f464fce2a9964700d7e96f1f36ca861f446693"
+    },
+    {
+      "checkId": "test:installer-environment",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1998,
+      "percentage": 0.6,
+      "startTime": "2026-10-13T04:10:30.858Z",
+      "endTime": "2026-10-13T04:10:32.856Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "faa43989b03df75c67ae1e9f0b759f4623a1767b9291bbc33e34153da608d058"
+    },
+    {
+      "checkId": "test:installer-distribution",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1262,
+      "percentage": 0.4,
+      "startTime": "2026-10-13T04:10:32.859Z",
+      "endTime": "2026-10-13T04:10:34.121Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "d0ae06e985551894bd91a1463bb0f7a986cacf283140902451c7384524bfccbe"
+    },
+    {
+      "checkId": "test:installer-engine",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 13010,
+      "percentage": 3.8,
+      "startTime": "2026-10-13T04:10:34.124Z",
+      "endTime": "2026-10-13T04:10:47.134Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "bc2cd0cb5e332f8aeee44fc7dc2664345cec4226fac96743b2e19b237c7cbfc4"
+    },
+    {
+      "checkId": "test:installer-verify",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 506,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:10:47.137Z",
+      "endTime": "2026-10-13T04:10:47.643Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "82d9f5a22681d146000bf3562f187ed3139a1773fb51744ed183f0e088fb52b4"
+    },
+    {
+      "checkId": "test:installer-manifest",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 600,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:10:47.646Z",
+      "endTime": "2026-10-13T04:10:48.246Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "2168675e2bb72a23624ac666adafce829127df8e305361e84bd02ecbd7c42f26"
+    },
+    {
+      "checkId": "test:installer-upgrade",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 6965,
+      "percentage": 2.1,
+      "startTime": "2026-10-13T04:10:48.248Z",
+      "endTime": "2026-10-13T04:10:55.213Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "4b698fd99c7263ec4afc62d24f2ada4d537fa498561d41286dcd13f0f45ad7b0"
+    },
+    {
+      "checkId": "test:synth-cli",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 7217,
+      "percentage": 2.1,
+      "startTime": "2026-10-13T04:10:55.215Z",
+      "endTime": "2026-10-13T04:11:02.432Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a17544a8c2b2990841277da2a0efa34c4a0ce092007806d6dde53f857d170d5e"
+    },
+    {
+      "checkId": "test:govern-recursion-guard",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1381,
+      "percentage": 0.4,
+      "startTime": "2026-10-13T04:11:02.436Z",
+      "endTime": "2026-10-13T04:11:03.817Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "e89eb334298aae71107f4aee74f1c3894ecb416b69c536de3beafe0f8f1f3533"
+    },
+    {
+      "checkId": "test:draft-integrity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 3959,
+      "percentage": 1.2,
+      "startTime": "2026-10-13T04:11:03.820Z",
+      "endTime": "2026-10-13T04:11:07.779Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "401a8872f041f83699b546dfb5f770f7693f678e6c1f9befef95a0aee3ec0863"
+    },
+    {
+      "checkId": "test:evidence-path",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 5057,
+      "percentage": 1.5,
+      "startTime": "2026-10-13T04:11:07.781Z",
+      "endTime": "2026-10-13T04:11:12.838Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "8ef55652384b0cb786567435d66b8d83d2180d204cf8772424a0c76f7179a27c"
+    },
+    {
+      "checkId": "test:decision-events",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 7783,
+      "percentage": 2.3,
+      "startTime": "2026-10-13T04:11:12.840Z",
+      "endTime": "2026-10-13T04:11:20.623Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "44f86f5a46905a3e6d4f94bdaab8db924b4c54274b14b5c33d833c58e3957ced"
+    },
+    {
+      "checkId": "test:operator-briefing",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 2178,
+      "percentage": 0.6,
+      "startTime": "2026-10-13T04:11:20.626Z",
+      "endTime": "2026-10-13T04:11:22.804Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "5a0d63b9fdcfeb4324097234b2f23d5fffff94bd4a68f8e52b2e87bec71dcea5"
+    },
+    {
+      "checkId": "test:clean-machine-output",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1614,
+      "percentage": 0.5,
+      "startTime": "2026-10-13T04:11:22.807Z",
+      "endTime": "2026-10-13T04:11:24.421Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "93df33d80becddab7c3b8715dd1dcb1e2c1fcf86c231198bf3c7c5aea2c1bc84"
+    },
+    {
+      "checkId": "test:adapter-introspection",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1147,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:11:24.425Z",
+      "endTime": "2026-10-13T04:11:25.572Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "f519a62ac1273d1b5f708ce74190f897374cd6a70d543160071337e939d65326"
+    },
+    {
+      "checkId": "test:extraction-reporting",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1093,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:11:25.575Z",
+      "endTime": "2026-10-13T04:11:26.668Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "7e96a9ad4d8ecea6417abfe0cb29302c63a05c9ae9e34f4aed2bf13ee06f4b01"
+    },
+    {
+      "checkId": "test:runtime-integrity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1069,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:11:26.671Z",
+      "endTime": "2026-10-13T04:11:27.740Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "eb2ccb7eef87e4eb08e5c88a485220ebfda55cbdefffdbdcdce83d3c1affc279"
+    },
+    {
+      "checkId": "test:repository-identity",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1015,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:11:27.743Z",
+      "endTime": "2026-10-13T04:11:28.758Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "528404ee88e42381fe4c13cfa3cf0d7f6b7d291658f86235e355f385dfe258d6"
+    },
+    {
+      "checkId": "test:resume-briefing",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1678,
+      "percentage": 0.5,
+      "startTime": "2026-10-13T04:11:28.760Z",
+      "endTime": "2026-10-13T04:11:30.438Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "cb5a3bd62ac30204a5f922c15ef1a6a1b08e3c74e90b5d8ddd4f5bca96440a71"
+    },
+    {
+      "checkId": "test:taskpro-regression",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 3778,
+      "percentage": 1.1,
+      "startTime": "2026-10-13T04:11:30.440Z",
+      "endTime": "2026-10-13T04:11:34.218Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "c009a190958a15c12c25a5ce74de749b01dcb329d0ec6064668972b8993dea94"
+    },
+    {
+      "checkId": "bench:interruption",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 8221,
+      "percentage": 2.4,
+      "startTime": "2026-10-13T04:11:34.221Z",
+      "endTime": "2026-10-13T04:11:42.442Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "3ef375acfbd6b69d27354b62d939378dc6a271a0e3cd529f9a02fd4c8de08fe0"
+    },
+    {
+      "checkId": "test:governance-record",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 657,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:11:42.445Z",
+      "endTime": "2026-10-13T04:11:43.102Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "731ae67bb1d66f6a61fc0595a4afd4c5e63586722dbfede768b3cabfd3ae2849"
+    },
+    {
+      "checkId": "test:verify-engine",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1842,
+      "percentage": 0.5,
+      "startTime": "2026-10-13T04:11:43.105Z",
+      "endTime": "2026-10-13T04:11:44.947Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "337ae940339050070e16c63ab5ea29e65b82ee073c07d97f318ac5661176eec5"
+    },
+    {
+      "checkId": "test:discovery",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 2037,
+      "percentage": 0.6,
+      "startTime": "2026-10-13T04:11:44.949Z",
+      "endTime": "2026-10-13T04:11:46.986Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "39a166927155dd69c8b187e1c063fb5eda26df3b0547bb165f17a3801b539f03"
+    },
+    {
+      "checkId": "test:govern-profiler",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 451,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:11:46.989Z",
+      "endTime": "2026-10-13T04:11:47.440Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "904fdba653df4c8f2f1a31267771c9d68d8766ee329aacb6fc5b2d41f228ccfd"
+    },
+    {
+      "checkId": "test:task-npm-adapter",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 364,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:11:47.443Z",
+      "endTime": "2026-10-13T04:11:47.807Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "ea2ae217ed2c8fe9ba650f2a376660a83734f88730a05a719d440ffd30c8c074"
+    },
+    {
+      "checkId": "test:task-schema-registry",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 442,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:11:47.809Z",
+      "endTime": "2026-10-13T04:11:48.251Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "4af24ebad2f7fc95e8350061b241e32f554b905904d835298609b5686c1ec55b"
+    },
+    {
+      "checkId": "test:governance-incremental",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 706,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:11:48.254Z",
+      "endTime": "2026-10-13T04:11:48.960Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "73faa17b1155c8d4a445001a4ba8a8b253ff1a4994800d757e48238df4e4d3d1"
+    },
+    {
+      "checkId": "test:governance-optimization",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 494,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:11:48.962Z",
+      "endTime": "2026-10-13T04:11:49.456Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "709ba124bcafa17644ee690bcaba76cf1702b555ebe8c1cbfbeb6730d4ae1fc1"
+    },
+    {
+      "checkId": "test:runtime-repair",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 5962,
+      "percentage": 1.8,
+      "startTime": "2026-10-13T04:11:49.459Z",
+      "endTime": "2026-10-13T04:11:55.421Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "6c78231bedee94d3efec48c2a8d47b16431f19ccad2ce6642ebc733899c2e9d8"
+    },
+    {
+      "checkId": "test:certification-framework",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 18278,
+      "percentage": 5.4,
+      "startTime": "2026-10-13T04:11:55.424Z",
+      "endTime": "2026-10-13T04:12:13.702Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "e358619ed0215381941d5717398a0082bdf8b610df82a7cd7136182ec87d2d19"
+    },
+    {
+      "checkId": "test:expedition-auto-commit",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 8048,
+      "percentage": 2.4,
+      "startTime": "2026-10-13T04:12:13.705Z",
+      "endTime": "2026-10-13T04:12:21.753Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a1b8632c20a1d7234a3ec3a9d3169655f41b1383b347d5a55e48f8aa25291efd"
+    },
+    {
+      "checkId": "test:expedition-evidence",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 2266,
+      "percentage": 0.7,
+      "startTime": "2026-10-13T04:12:21.755Z",
+      "endTime": "2026-10-13T04:12:24.021Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "c2aac5a61d87fbf15f7ed1ca6ab70e1b104460fa3b092d11a64bbf84f0cb8eb5"
+    },
+    {
+      "checkId": "test:declared-branch",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 3292,
+      "percentage": 1,
+      "startTime": "2026-10-13T04:12:24.024Z",
+      "endTime": "2026-10-13T04:12:27.316Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "dc92fee529865d5a2186c1b240f3b95f9743efa70b462698ea08b88e0b61fd98"
+    },
+    {
+      "checkId": "test:ledger-writer",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 18868,
+      "percentage": 5.6,
+      "startTime": "2026-10-13T04:12:27.319Z",
+      "endTime": "2026-10-13T04:12:46.187Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "6ae0ecf19e405785fd6c8ec034aa5a6c9b2df43876bcb7c2cac466d29a89830a"
+    },
+    {
+      "checkId": "test:ledger-doctor",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 1096,
+      "percentage": 0.3,
+      "startTime": "2026-10-13T04:12:46.190Z",
+      "endTime": "2026-10-13T04:12:47.286Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "77ff7c910208cf96544ad76fc788789930afba99de665f635f04405351f02698"
+    },
+    {
+      "checkId": "test:ledger-ceremony",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 648,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:12:47.289Z",
+      "endTime": "2026-10-13T04:12:47.937Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "935246fbf16247a37b08159024973684e9c1a7f3ab0087f8839a83c5cd715b2d"
+    },
+    {
+      "checkId": "test:ledger-capability-commits",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 9299,
+      "percentage": 2.7,
+      "startTime": "2026-10-13T04:12:47.939Z",
+      "endTime": "2026-10-13T04:12:57.238Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "cded2ff857ab26ef84b6f8be2ee51a15f8c55627b3e36059c6b39db10933deef"
+    },
+    {
+      "checkId": "test:ledger-delivery",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 15271,
+      "percentage": 4.5,
+      "startTime": "2026-10-13T04:12:57.240Z",
+      "endTime": "2026-10-13T04:13:12.511Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "3edad4960dddd2d8fa77c98d24cd066d3c013db277ef03251260913520317a8e"
+    },
+    {
+      "checkId": "test:ledger-abandonment",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 17152,
+      "percentage": 5.1,
+      "startTime": "2026-10-13T04:13:12.514Z",
+      "endTime": "2026-10-13T04:13:29.666Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "1edba6bc7b299da4da5027d0a73ac169a93e13e6f8c6cc35b77d52543e2ec704"
+    },
+    {
+      "checkId": "test:artifact-policy",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 517,
+      "percentage": 0.2,
+      "startTime": "2026-10-13T04:13:29.668Z",
+      "endTime": "2026-10-13T04:13:30.185Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "1b664d3d16ca941cdbce9d184a5591f6884e03e95309c791e1cbb5c01c4c06b8"
+    },
+    {
+      "checkId": "test:auto-commit-ignored-paths",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 3855,
+      "percentage": 1.1,
+      "startTime": "2026-10-13T04:13:30.188Z",
+      "endTime": "2026-10-13T04:13:34.043Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "78fe315070784dc9d0c1d9c89145fef5f5b05471cf35d2de122a0071f4b90339"
+    },
+    {
+      "checkId": "test:no-write-on-read",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 4647,
+      "percentage": 1.4,
+      "startTime": "2026-10-13T04:13:34.045Z",
+      "endTime": "2026-10-13T04:13:38.692Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "a82d0689e0024077086b3a0cc37814b9095aba75d74d29690060ed1f578f76d7"
+    },
+    {
+      "checkId": "check:artifact-policy",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 463,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:13:38.694Z",
+      "endTime": "2026-10-13T04:13:39.157Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "1e85ccdf5ac6ac64300ef551278eaeab7e41d15e90174e0e6e6033c28171ab08"
+    },
+    {
+      "checkId": "test:adr",
+      "status": "passed",
+      "action": "run",
+      "reason": "full-run",
+      "durationMs": 378,
+      "percentage": 0.1,
+      "startTime": "2026-10-13T04:13:39.160Z",
+      "endTime": "2026-10-13T04:13:39.538Z",
+      "module": "tests",
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "scripts/**",
+        "docs/**"
+      ],
+      "outputs": [],
+      "filesTouched": [],
+      "dependencies": [
+        "build"
+      ],
+      "cacheability": "deterministic",
+      "protectedAssets": [],
+      "fingerprint": "ebad8604e8a55042c2204f1c3cf76c558b781390d984b135ece136555542389e"
     },
     {
       "checkId": "proof",
-      "status": "failed",
+      "status": "passed",
       "action": "run",
       "reason": "full-run",
-      "durationMs": 144990,
-      "percentage": 69.1,
-      "startTime": "2026-10-11T05:35:22.333Z",
-      "endTime": "2026-10-11T05:37:47.323Z",
+      "durationMs": 11263,
+      "percentage": 3.3,
+      "startTime": "2026-10-13T04:13:39.542Z",
+      "endTime": "2026-10-13T04:13:50.805Z",
       "module": "governance",
       "inputs": [
         "dist/**",
@@ -56,7 +2900,7 @@
         "Genesis",
         "Replay"
       ],
-      "fingerprint": "197eec60661b4d16e7ce3c1ec49adc7ae8c16aa6f14a663f785dd3626c060836"
+      "fingerprint": "d05959115695733d99103beeba7b8f5cd6d86373b4504cc66e25d0d81bc2261e"
     }
   ]
 }
