@@ -35,10 +35,15 @@
     "integration": {
       "mergeCommit": "8b8dce2692588417764630e6c2bb6aad116d6d05",
       "integratedAt": 457
+    },
+    "delivery": {
+      "branch": "origin/arena/841cc45d-synth",
+      "tipCommit": "64ea89c3626992fc49323aea3b17784686d60023",
+      "deliveredAt": 462
     }
   },
   "createdAt": 442,
-  "updatedAt": 457,
+  "updatedAt": 462,
   "executionBranch": "arena/841cc45d-synth",
   "attachments": [
     {
