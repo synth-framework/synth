@@ -3555,6 +3555,7 @@ async function materializeApprovedMission(
   gateCtx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   snapshot: import("../mission-studio/types.js").ApprovedMissionModelSnapshot,
   alignmentContractId?: string,
+  beforeApproval?: () => Promise<void>,
 ): Promise<{ missionId: string; name: string; purpose: string; created: boolean; approved: boolean }> {
   const state = await gateCtx.runtime.getState()
   const missionNode = Array.from(snapshot.worldModel.nodes.values()).find(
@@ -3581,6 +3582,14 @@ async function materializeApprovedMission(
   }
 
   if (!existingMission || existingMission.status === "draft") {
+    // A declared mission branch must be recorded after the mission exists but
+    // before ApproveMission reaches the ExecutionGate. Otherwise an
+    // operator-owned branch passes the CLI preflight yet the gate only sees
+    // the taxonomy-derived branch and rejects the approval.
+    if (beforeApproval) {
+      await beforeApproval()
+    }
+
     const approvePayload: Record<string, unknown> = { id: missionNode.id }
     if (alignmentContractId) {
       approvePayload.alignmentContractId = alignmentContractId
@@ -3814,6 +3823,20 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
     printError("Mission Studio approved the model but produced no snapshot data")
   }
 
+  // ADR-056 §2.5: a mission needs to exist before it can receive a replayable
+  // branch binding, but the binding must exist before ApproveMission crosses
+  // the ExecutionGate. Keep the callback idempotent because re-approving a
+  // legacy mission is also the supported way to declare its branch.
+  let missionBranchBindingRecorded = false
+  const recordDeclaredMissionBranch = async () => {
+    if (!declaredMissionBranch?.ok || !missionNode || missionBranchBindingRecorded) return
+    const latestState = await gateCtx.runtime.getState()
+    if (latestState.missions[missionNode.id]?.executionBranch !== declaredMissionBranch.branch) {
+      await recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
+    }
+    missionBranchBindingRecorded = true
+  }
+
   // EXP-RUNTIME-001: Runtime events must precede snapshot persistence.
   // If the runtime mission cannot be materialized, the snapshot must not be
   // certified and the decision must not be recorded. This keeps planning and
@@ -3821,16 +3844,20 @@ async function cmdMissionApprove(flags: Record<string, string | boolean>) {
   // runtime events.
   let runtimeResult: Awaited<ReturnType<typeof materializeApprovedMission>>
   try {
-    runtimeResult = await materializeApprovedMission(gateCtx, approvedData, alignmentContractId)
+    runtimeResult = await materializeApprovedMission(
+      gateCtx,
+      approvedData,
+      alignmentContractId,
+      recordDeclaredMissionBranch,
+    )
   } catch (err) {
     printError(err instanceof Error ? err.message : String(err))
   }
 
-  // ADR-056 §2.5: record the binding once the mission exists in the ledger, so
-  // every later resolution (gate + CLI guard) replays the same branch.
-  if (declaredMissionBranch?.ok && missionNode) {
-    await recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
-  }
+  // An already-active legacy mission has no approval transition to hook, so
+  // bind it after materialization. New and draft missions are bound by the
+  // callback above before their approval reaches the gate.
+  await recordDeclaredMissionBranch()
 
   // Persist the approved snapshot as an immutable, certified artifact.
   let snapshotPersisted = false

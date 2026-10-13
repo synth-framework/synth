@@ -21,7 +21,9 @@ import { rebuildState } from "../dist/runtime/replay.js"
 import { createAlignedContract } from "./helpers/alignment-fixture.js"
 import { withoutLifecycleContinuation } from "./helpers/context.js"
 import { createExecutingExpedition } from "./helpers/governance-intent.js"
-import { makeTempDirSync, gitInitWithCommit } from "./helpers/workspace.js"
+import { makeTempDirSync, gitInitWithCommit, runGit } from "./helpers/workspace.js"
+import { runSynth, parseJson } from "./helpers/cli-harness.js"
+import { setupGitBackedProject } from "./helpers/mission-lifecycle.js"
 
 const DECLARED = "arena/declared-workspace"
 
@@ -199,10 +201,113 @@ async function testGateResolvesRecordedExpeditionBinding() {
   console.log("[PASS] the gate resolves a recorded expedition binding under enforce")
 }
 
+async function testCliApprovesMissionOnDeclaredExistingBranch() {
+  const root = await setupGitBackedProject("synth-declared-cli-")
+  const branch = "arena/declared-cli-workspace"
+  try {
+    runGit(["checkout", "-b", branch], root)
+    fs.writeFileSync(
+      path.join(root, ".synth", "config.yaml"),
+      [
+        "git:",
+        `  ledgerBranch: ${branch}`,
+        "  branchStrategy: featured",
+        "  branchPolicy:",
+        "    mode: enforce",
+        '    declaredPatterns: ["arena/*"]',
+        "",
+      ].join("\n"),
+      "utf-8",
+    )
+    runGit(["add", ".synth/config.yaml"], root)
+    runGit(["commit", "-m", "test: configure declared operator branch"], root)
+
+    const create = runSynth(
+      [
+        "mission",
+        "create",
+        "--subject",
+        "CLI declared branch mission",
+        "--purpose",
+        "Verify branch binding is recorded before mission approval reaches the execution gate.",
+        "--quiet",
+      ],
+      root,
+    )
+    assert.equal(create.status, 0, `mission create should succeed: ${create.stderr}`)
+    let draft = parseJson(create.stdout)
+    let draftId = draft.draftId
+    assert.ok(draftId, "mission create should return a draft id")
+
+    // Bring the proposal over the Mission Studio approval threshold without
+    // depending on a hard-coded number of evidence additions.
+    for (let index = 1; draft.confidence?.overall < 0.7 && index <= 5; index += 1) {
+      const evidence = runSynth(
+        [
+          "mission",
+          "evidence",
+          "add",
+          "--draft-id",
+          draftId,
+          "--subject",
+          `Declared branch evidence ${index}`,
+          "--purpose",
+          "The operator branch must be bound before the approval gate evaluates it.",
+          "--confidence",
+          "high",
+          "--quiet",
+        ],
+        root,
+      )
+      assert.equal(evidence.status, 0, `mission evidence add should succeed: ${evidence.stderr}`)
+      draft = parseJson(evidence.stdout)
+      draftId = draft.draftId
+    }
+    assert.ok(draft.confidence?.overall >= 0.7, "evidence should satisfy the approval threshold")
+
+    const alignment = runSynth(["alignment", "prepare", "--quiet"], root)
+    assert.equal(alignment.status, 0, `alignment prepare should succeed: ${alignment.stderr}`)
+    const contractId = parseJson(alignment.stdout).contractId
+    assert.ok(contractId, "alignment prepare should return a contract id")
+
+    const approval = runSynth(
+      [
+        "mission",
+        "approve",
+        "--draft-id",
+        draftId,
+        "--alignment-contract-id",
+        contractId,
+        "--branch",
+        branch,
+        "--no-create",
+        "--quiet",
+      ],
+      root,
+    )
+    assert.equal(approval.status, 0, `mission approve should accept the declared branch: ${approval.stderr}`)
+    const output = parseJson(approval.stdout)
+    assert.equal(output.runtime?.approved, true, "mission should be approved")
+    assert.equal(output.executionBranch?.branch, branch, "response should report the declared branch")
+    assert.equal(output.executionBranch?.created, false, "--no-create must preserve the existing branch")
+
+    const state = JSON.parse(fs.readFileSync(path.join(root, ".synth", "data", "canonical-state.json"), "utf-8"))
+    assert.equal(
+      state.missions[output.runtime.missionId]?.executionBranch,
+      branch,
+      "the replayed mission state should persist the declared branch",
+    )
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+  console.log("[PASS] CLI mission approval binds an existing operator branch before gate evaluation")
+}
+
 async function main() {
   await testBindingIsRecordedAndReplayed()
   await testGateResolvesRecordedMissionBinding()
   await testGateResolvesRecordedExpeditionBinding()
+  await testCliApprovesMissionOnDeclaredExistingBranch()
   console.log("\nAll declared-branch binding tests passed.")
 }
 
