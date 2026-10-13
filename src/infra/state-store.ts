@@ -8,7 +8,6 @@ import type { CanonicalState, Transaction, CapabilityInvocation } from "../types
 import { computeStateHash } from "../runtime/replay.js"
 import { dataDir } from "../sdk/paths/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
-import { telemetry } from "./telemetry.js"
 
 const STATE_FILE = path.join(dataDir(process.cwd()), "canonical-state.json")
 const SNAPSHOTS_DIR = path.join(dataDir(process.cwd()), "snapshots")
@@ -81,16 +80,9 @@ export class StateStore implements IStateStore {
 
   async save(state: CanonicalState): Promise<void> {
     this.ensureAuthorized()
-    const span = telemetry.start("stateStore.save")
     const serialized = JSON.stringify(state, null, 2)
-    try {
-      await fs.writeFile(this.filePath, serialized)
-      await this.writePerEntityState(state)
-      telemetry.end(span)
-    } catch (err) {
-      telemetry.end(span, err)
-      throw err
-    }
+    await fs.writeFile(this.filePath, serialized)
+    await this.writePerEntityState(state)
   }
 
   /** Split the canonical state into per-entity derived files under

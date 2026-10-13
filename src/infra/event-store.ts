@@ -8,7 +8,6 @@ import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
 import { dataDir } from "../sdk/paths/index.js"
-import { telemetry } from "./telemetry.js"
 
 const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
 const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
@@ -66,15 +65,8 @@ export class EventStore {
   async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     if (events.length === 0) return
-    const span = telemetry.start("eventStore.appendBatch")
     const lines = events.map((e: SynthEvent) => JSON.stringify(e)).join("\n") + "\n"
-    try {
-      await fs.appendFile(this.filePath, lines)
-      telemetry.end(span)
-    } catch (err) {
-      telemetry.end(span, err)
-      throw err
-    }
+    await fs.appendFile(this.filePath, lines)
   }
 
   async loadAll(): Promise<SynthEvent[]> {
@@ -433,15 +425,8 @@ export class PartitionedEventStore extends EventStore {
   override async appendBatch(events: SynthEvent[], _authToken?: symbol): Promise<void> {
     this.ensureAuthorized()
     if (events.length === 0) return
-    const span = telemetry.start("eventStore.appendBatch")
-    try {
-      for (const event of events) {
-        await this.appendInternal(event)
-      }
-      telemetry.end(span)
-    } catch (err) {
-      telemetry.end(span, err)
-      throw err
+    for (const event of events) {
+      await this.appendInternal(event)
     }
   }
 

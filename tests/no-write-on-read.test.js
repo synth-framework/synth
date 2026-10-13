@@ -66,7 +66,11 @@ test("read-only commands never modify the working tree", { concurrency: false },
     fs.rmSync(pristine, { recursive: true, force: true })
   })
 
-  assert.ok(!fs.existsSync(path.join(pristine, ".synth", "ai")), "pristine tree must not ship .synth/ai/")
+  // .synth/ai/ is durable (docs/artifact-removals.json, artifact-policy): a
+  // committed tree must ship it, and the read-only commands below must leave
+  // it untouched. Assert the shipped state, not its absence.
+  const shipped = git(pristine, ["ls-files", ".synth/ai"]).trim().split("\n").filter(Boolean)
+  assert.ok(shipped.length > 0, "committed tree must track durable .synth/ai/ artifacts")
 
   /** Restore the pristine baseline so each command is judged independently. */
   function resetTree() {
@@ -92,9 +96,8 @@ test("read-only commands never modify the working tree", { concurrency: false },
       // 2. HEAD may not move.
       assert.strictEqual(git(pristine, ["rev-parse", "HEAD"]).trim(), baseline, "HEAD moved")
 
-      // 3. The .synth/ai/ projection must not be written — it is ignored by
-      //    git, so `status` alone cannot see it (audit D5).
-      assert.ok(!fs.existsSync(path.join(pristine, ".synth", "ai")), "read-only command created .synth/ai/")
+      // 3. .synth/ai/ is tracked (durable), so step 1 covers it: any write
+      //    there shows up in `git status`. It is no longer hidden by an ignore rule.
     })
   }
 
