@@ -1,6 +1,6 @@
 {
-  "version": 430,
-  "stateHash": "1666465433",
+  "version": 431,
+  "stateHash": "1987205567",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1117,14 +1117,16 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Fix derived-state auto-commit (EXP-AUTO-COMMIT-001) to skip gitignored paths",
       "goal": "autoCommitDerivedState (src/cli/synth.ts ~351) builds an explicit git add path list that includes .synth/data/drafts/ (gitignored), causing the whole git add to error and the derived-state commit to abort, leaving event-log.jsonl/canonical-state.json staged-but-uncommitted after lifecycle transitions. Fix: exclude gitignored/derived-excluded paths before git add (filter via git check-ignore, or use git add -A which skips ignored). See attached finding.",
-      "status": "draft",
+      "status": "cancelled",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "cancelReason": "Premise no longer holds: .synth/data/drafts/ is tracked, not gitignored (git check-ignore exits 1), and completed expedition ecc3688796be0545 'Derived-state staging correctness (auto-commit + ignore filtering)' delivered the ignore-filtering fix. Ceremony commits now stage draft files successfully, so the EXP-AUTO-COMMIT-001 failure mode is gone."
+      },
       "createdAt": 246,
-      "updatedAt": 247,
+      "updatedAt": 430,
       "attachments": [
         {
           "kind": "attachment",
@@ -1805,5 +1807,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 430
+  "lastEventOffset": 431
 }
