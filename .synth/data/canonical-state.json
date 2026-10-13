@@ -1,6 +1,6 @@
 {
-  "version": 423,
-  "stateHash": "1845356907",
+  "version": 424,
+  "stateHash": "312750448",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -76,11 +76,12 @@
         "220f6163a7b55b45",
         "f0f81e358899d8f2",
         "e9a83ffda86ca767",
-        "f6420030064a6f70"
+        "f6420030064a6f70",
+        "328c0147b49d2743"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 422,
+      "updatedAt": 423,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     },
     "b536ecc7ceb9217a": {
@@ -1736,6 +1737,26 @@
       },
       "createdAt": 422,
       "updatedAt": 422
+    },
+    "328c0147b49d2743": {
+      "id": "328c0147b49d2743",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-003 Parallelize independent checks",
+      "goal": "Use ParallelRunner for deterministic checks with no dependencies after build; keep contextual/non-deterministic sequential; measure speedup for govern --full; ensure no flakiness; add retry for non-deterministic.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "scripts/governance/parallel-runner.js",
+          "scripts/govern-profiler.js",
+          "scripts/governance/**"
+        ]
+      },
+      "createdAt": 423,
+      "updatedAt": 423
     }
   },
   "objectives": {},
@@ -1761,5 +1782,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 423
+  "lastEventOffset": 424
 }
