@@ -1,6 +1,6 @@
 {
-  "version": 461,
-  "stateHash": "84962574",
+  "version": 462,
+  "stateHash": "1892934069",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -2020,10 +2020,13 @@
           "data/tasks/**",
           "package.json",
           "docs/adr/**"
-        ]
+        ],
+        "refinementId": "d4d8be8beefcc0e3",
+        "refinementNote": "MEASURED CENSUS, replacing the static estimate in the goal. The goal said 758 CLI-spawn call-sites and called it a lower bound; the real number is more than double. Instrumented dist/cli/synth.js and dist/cli/entry.js IN PLACE (after the shebang, filenames unchanged - renaming breaks the `path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)` entry guard, and prepending before the shebang is a SyntaxError; both mistakes were made and corrected) and ran all 242 suites in a throwaway copy at /tmp/sweep3, 2-way parallel on 2 cores, 252s wall. Verified behaviour-preserving first: expedition-lifecycle rc=0 at 31.9s against a 37.7s clean baseline. RESULT: 1572 CLI PROCESS INVOCATIONS per full suite run = 2.07x the 758 static call-sites. ENTRY POINT: 1536 of 1572 (98%) spawn dist/cli/synth.js - the monolith. Only 35 (2%) spawn dist/cli/entry.js, the light dispatcher. The light path is effectively unused by the suite. VERBS: mission 427, expedition 394 (together 52% - governance ceremony), bootstrap 118, first-contact 113, explain 112, init 71, status 60, alignment 38, task 34, then validate/project/doctor/capabilities/log at 14-17 each. TIME: in-process execution AFTER the module graph has loaded is median 55.8 ms, p90 188.2 ms, total 158s. Priced at the independently measured wall cost of a synth.js invocation (152 ms in the copy, 175.7 ms in the real repo), the 1572 calls account for 239-276s = 4.0-4.6 min of the 8m20s full serial suite, of which roughly 2.5-3.1 min is module loading alone. So 30-37% of the entire suite's wall time is spent re-loading the same 2.27 MB, and the commands' own work is the minority of each call. TWO CONSEQUENCES FOR SEQUENCING. (a) The one-line harness change - point tests/helpers/cli-harness.js:24 at entry.js instead of synth.js - moves 1536 calls onto the dispatcher and saves about 75.6 ms each (175.7 -> 100.1 ms measured), i.e. roughly 116s = 1.9 min per full run BEFORE any decomposition happens. It is the cheapest large win available and should not wait for phase 3. (b) Hitting the proposed <=45 ms budget would save 1572 x (152-45) to (176-45) ms = 2.8-3.4 min per full run, about 35-40% of the suite, and cut every interactive call by 3-4x. This also sharpens the EXP-TEST-003 note: with 1572 process spawns, per-process cost dominates process count, so merging suites (EXP-TEST-002) or sharding them (EXP-TEST-003) cannot recover what loading the monolith 1572 times costs.",
+        "refinementAt": 461
       },
       "createdAt": 458,
-      "updatedAt": 458
+      "updatedAt": 461
     },
     "73c5c033360fecf3": {
       "id": "73c5c033360fecf3",
@@ -2072,5 +2075,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 461
+  "lastEventOffset": 462
 }
