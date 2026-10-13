@@ -3,6 +3,7 @@
 // ============================================================
 
 import { promises as fs } from "fs"
+import { existsSync, readdirSync, statSync } from "fs"
 import os from "os"
 import path from "path"
 import type { SynthEvent, PartitionedEvent } from "../types/index.js"
@@ -11,6 +12,100 @@ import { dataDir } from "../sdk/paths/index.js"
 
 const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
 const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
+
+// ------------------------------------------------------------
+// Event-log location: ONE authority for "is there a log, and where"
+// ------------------------------------------------------------
+// Three layouts exist in the wild, and callers used to guess among them:
+//
+//   1. segmented        <data>/event-stream/partition-<n>/segment-XXXX.jsonl  (current)
+//   2. partitioned-flat <data>/event-stream/partition-<n>.jsonl               (PartitionStore)
+//   3. legacy-file      <data>/event-log.jsonl                                (pre-chunking)
+//
+// Testing only (3) is what made `synth checkpoint` report "No event log present;
+// replay skipped" for a ledger holding 448 events: the events were in (1), and
+// the check was looking at a path that has not existed since the log was
+// chunked. Presence and location are answered here and nowhere else. Callers
+// that need to *read* events still go through the store (which migrates a legacy
+// file into the chunked layout); callers that need to *know whether a log
+// exists, and in which layout* use locateEventLog.
+//
+// Note: the EVENT_LOG_FILE / EVENT_STREAM_DIR constants above are bound to
+// process.cwd() at module load. locateEventLog takes the root explicitly so a
+// caller inspecting another project (or a fixture) gets that project's answer.
+
+/** Which of the three on-disk event-log layouts a project actually uses. */
+export type EventLogLayout = "segmented" | "partitioned-flat" | "legacy-file" | "none"
+
+export type EventLogLocation = {
+  /** True when any layout holds events. */
+  present: boolean
+  layout: EventLogLayout
+  /** Absolute paths holding events for `layout` (segments, partitions, or the legacy file). */
+  paths: string[]
+  /** The legacy monolithic path, whether or not it exists. Reported so callers can say what they looked for. */
+  legacyPath: string
+  /** Directory of the chunked store. */
+  streamDir: string
+}
+
+/**
+ * Resolve where a project's event log lives, across all three layouts.
+ *
+ * Never throws: a missing or unreadable directory yields `layout: "none"`.
+ * Precedence is segmented > partitioned-flat > legacy-file, so a project that
+ * has been migrated reports the layout it actually reads from, not the file it
+ * was migrated from.
+ */
+export function locateEventLog(root: string): EventLogLocation {
+  const data = dataDir(root)
+  const legacyPath = path.join(data, "event-log.jsonl")
+  const streamDir = path.join(data, "event-stream")
+
+  const segments: string[] = []
+  const flat: string[] = []
+  let entries: string[] = []
+  try {
+    entries = readdirSync(streamDir)
+  } catch {
+    entries = []
+  }
+  for (const entry of entries) {
+    const full = path.join(streamDir, entry)
+    let isDir = false
+    try {
+      isDir = statSync(full).isDirectory()
+    } catch {
+      continue
+    }
+    if (isDir) {
+      if (!/^partition-\d+$/.test(entry)) continue
+      let segs: string[] = []
+      try {
+        segs = readdirSync(full)
+      } catch {
+        segs = []
+      }
+      for (const seg of segs) {
+        if (seg.endsWith(".jsonl")) segments.push(path.join(full, seg))
+      }
+    } else if (/^partition-\d+\.jsonl$/.test(entry)) {
+      flat.push(full)
+    }
+  }
+
+  const base = { legacyPath, streamDir }
+  if (segments.length > 0) {
+    return { present: true, layout: "segmented", paths: segments.sort(), ...base }
+  }
+  if (flat.length > 0) {
+    return { present: true, layout: "partitioned-flat", paths: flat.sort(), ...base }
+  }
+  if (existsSync(legacyPath)) {
+    return { present: true, layout: "legacy-file", paths: [legacyPath], ...base }
+  }
+  return { present: false, layout: "none", paths: [], ...base }
+}
 
 /** Module-private authorization token for EventStore writes.
  *  Only createGuardedEventStore can obtain it, ensuring writes flow
@@ -158,6 +253,16 @@ export class PartitionStore {
     await fs.mkdir(this.baseDir, { recursive: true })
   }
 
+  /**
+   * Flat per-partition file path: <baseDir>/partition-<p>.jsonl
+   *
+   * LEGACY READ PATH. The current write layout is
+   * <baseDir>/partition-<p>/segment-XXXX.jsonl (SegmentStore, see the class
+   * comment below), so this naming survives only to read pre-segmentation
+   * stores. locateEventLog recognises both and reports which one a project
+   * actually uses - do not test this path's existence directly to decide
+   * whether an event log is present.
+   */
   private filePath(partition: number): string {
     return path.join(this.baseDir, `partition-${partition}.jsonl`)
   }

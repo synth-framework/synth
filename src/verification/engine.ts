@@ -57,6 +57,7 @@ export async function runVerification(cwd: string): Promise<VerificationReport> 
     pass: checks.filter((c) => c.status === "pass").length,
     fail: checks.filter((c) => c.status === "fail").length,
     warn: checks.filter((c) => c.status === "warn").length,
+    skipped: checks.filter((c) => c.status === "skipped").length,
   }
 
   const hasFailure = checks.some((c) => c.status === "fail")

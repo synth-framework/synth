@@ -14,6 +14,7 @@ import type {
   VerificationCheckResult,
   VerificationViolation,
   VerificationContext,
+  CheckStatus,
 } from "./types.js"
 import { formatWarningMessage } from "./warning-catalog.js"
 
@@ -26,11 +27,12 @@ function v(
 
 function result(
   name: string,
-  status: "pass" | "fail" | "warn",
+  status: CheckStatus,
   message: string,
   violations: VerificationViolation[] = [],
+  extra: Partial<VerificationCheckResult> = {},
 ): VerificationCheckResult {
-  return { name, status, message, violations }
+  return { name, status, message, violations, ...extra }
 }
 
 /**
@@ -41,7 +43,15 @@ function result(
  */
 const checkReplayIntegrity: VerificationCheck = async (ctx) => {
   if (!ctx.hasEventLog) {
-    return result("ReplayIntegrity", "pass", "No event log present; replay integrity is vacuously satisfied.")
+    // Not a pass, and not "vacuously satisfied": nothing was examined. An empty
+    // project reports a skipped check so the summary cannot read as verified.
+    return result(
+      "ReplayIntegrity",
+      "skipped",
+      "No event log present (checked the chunked event-stream store and the legacy monolithic file); replay integrity was not checked.",
+      [],
+      { skippedReason: "no-event-log" },
+    )
   }
 
   const r = ctx.replayResult

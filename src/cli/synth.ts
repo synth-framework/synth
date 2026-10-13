@@ -24,6 +24,7 @@ import { createFilesystemInitializationAdapter } from "../adapters/filesystem-in
 import { createDefaultAdapterCatalog } from "../adapters/adapter-catalog.js"
 import { detectRecommendedAdapters } from "./detect-adapters.js"
 import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/filesystem-provider.js"
+import { locateEventLog } from "../infra/event-store.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
 import {
@@ -863,8 +864,12 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
   try {
     const root = sdk.workspace.root()
     await sdk.paths.ensureDataDir(root)
-    const logPath = sdk.paths.eventLogFile(root)
-    if (!(await sdk.files.exists(logPath))) {
+    // One authority for "is there a log, and where". Testing only the legacy
+    // monolithic path made this report "No event log present; replay skipped"
+    // for a ledger whose events live in the chunked event-stream store - an
+    // ok:true that certified nothing while 448 events went unexamined.
+    const located = locateEventLog(root)
+    if (!located.present) {
       return { ok: true, detail: "No event log present; replay skipped" }
     }
     const ctx = await bootstrap({
@@ -881,7 +886,7 @@ async function verifyReplayHealth(): Promise<DoctorCheckResult> {
     return {
       ok: result.consistent,
       detail: result.consistent
-        ? `Event log consistent (${result.eventCount} events)`
+        ? `Event log consistent (${result.eventCount} events, ${located.layout} layout)`
         : `Replay inconsistent: ${result.explanation}`,
       ...(result.consistent ? {} : { nextStep: "Run 'synth explain replay' to diagnose the inconsistency, then repair or replay from a known-good snapshot." }),
     }
@@ -898,13 +903,25 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
   try {
     const root = sdk.workspace.root()
     await sdk.paths.ensureDataDir(root)
-    const logPath = sdk.paths.eventLogFile(root)
-    if (!(await sdk.files.exists(logPath))) {
+    const located = locateEventLog(root)
+    if (!located.present) {
       return { ok: true, detail: "No event log present; chain skipped" }
     }
-    const events = await sdk.events.readEvents(root)
+    // sdk.events.readEvents reads the chunked store. A project that still holds
+    // only the legacy monolithic file would come back empty, which is the same
+    // lie as the guard above, so read that layout directly - as a pure read, no
+    // migration write from a health check.
+    const events = located.layout === "legacy-file"
+      ? (await fs.readFile(located.legacyPath, "utf-8"))
+          .split("\n")
+          .filter((line) => line.trim().length > 0)
+          .map((line) => JSON.parse(line) as { previousHash: string; eventHash: string })
+      : await sdk.events.readEvents(root)
     if (events.length === 0) {
-      return { ok: true, detail: "Event log is empty" }
+      return {
+        ok: true,
+        detail: `Event log is empty (${located.layout} layout, ${located.paths.length} file(s) present)`,
+      }
     }
     let previousHash = "genesis"
     for (let i = 0; i < events.length; i++) {
@@ -918,7 +935,7 @@ async function verifyEventChain(): Promise<DoctorCheckResult> {
       }
       previousHash = event.eventHash
     }
-    return { ok: true, detail: `${events.length} event(s) chained` }
+    return { ok: true, detail: `${events.length} event(s) chained (${located.layout} layout)` }
   } catch (err) {
     return {
       ok: false,
@@ -2768,20 +2785,37 @@ async function cmdLogHelp() {
 }
 
 async function cmdLog(flags: Record<string, string | boolean>) {
-  const logPath = sdk.paths.eventLogFile(process.cwd())
-  let raw = ""
-  try {
-    raw = await fs.readFile(logPath, "utf-8")
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code
-    if (code === "ENOENT") {
-      printError(
-        `No event log found at ${logPath}. Run 'synth init' or 'synth bootstrap' first.`,
-        { nextStep: "synth bootstrap . --approve" },
-      )
-      return
+  // One authority for "is there a log, and where" (EXP 2c9c6c62). This verb read
+  // only the legacy monolithic file, so on any chunked project it told the
+  // operator their ledger did not exist and to re-bootstrap it - while the
+  // events were sitting in <data>/event-stream/.
+  const located = locateEventLog(process.cwd())
+  if (!located.present) {
+    printError(
+      `No event log found (looked for the chunked store at ${located.streamDir} and the legacy file at ${located.legacyPath}). Run 'synth init' or 'synth bootstrap' first.`,
+      { nextStep: "synth bootstrap . --approve" },
+    )
+    return
+  }
+  // The legacy layout is still read line-by-line so offsets and malformed-line
+  // skipping behave exactly as before. Chunked layouts must go through the
+  // store: partitions are routed by aggregate key, so concatenating segment
+  // files is not global log order and every `offset` would lie.
+  let raw: string | null = null
+  if (located.layout === "legacy-file") {
+    try {
+      raw = await fs.readFile(located.legacyPath, "utf-8")
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code
+      if (code === "ENOENT") {
+        printError(
+          `No event log found at ${located.legacyPath}. Run 'synth init' or 'synth bootstrap' first.`,
+          { nextStep: "synth bootstrap . --approve" },
+        )
+        return
+      }
+      throw err
     }
-    throw err
   }
 
   const expeditionId = typeof flags.expedition === "string" ? flags.expedition : typeof flags["expedition-id"] === "string" ? flags["expedition-id"] : undefined
@@ -2801,14 +2835,21 @@ async function cmdLog(flags: Record<string, string | boolean>) {
     return
   }
 
-  const lines = raw.split("\n").filter(Boolean)
   const events: Array<SynthEvent & { offset: number }> = []
-  for (let i = 0; i < lines.length; i++) {
-    try {
-      const event = JSON.parse(lines[i]) as SynthEvent
-      events.push({ ...event, offset: i + 1 })
-    } catch {
-      // Skip malformed lines; they cannot be attributed safely.
+  if (raw !== null) {
+    const lines = raw.split("\n").filter(Boolean)
+    for (let i = 0; i < lines.length; i++) {
+      try {
+        const event = JSON.parse(lines[i]) as SynthEvent
+        events.push({ ...event, offset: i + 1 })
+      } catch {
+        // Skip malformed lines; they cannot be attributed safely.
+      }
+    }
+  } else {
+    const all = await sdk.events.readEvents(process.cwd())
+    for (let i = 0; i < all.length; i++) {
+      events.push({ ...all[i], offset: i + 1 })
     }
   }
 
@@ -2846,6 +2887,7 @@ async function cmdLog(flags: Record<string, string | boolean>) {
   printJson({
     status: "ok",
     kind: "EventLogQuery",
+    layout: located.layout,
     total: events.length,
     matched: filtered.length,
     returned: page.length,
@@ -4059,7 +4101,7 @@ async function cmdMissionDelete(flags: Record<string, string | boolean>) {
         type: "MISSION_DELETED",
         payload: { id },
       },
-      verifyResult: { pass: 0, fail: 0, warn: 0 },
+      verifyResult: { pass: 0, fail: 0, warn: 0, skipped: 0 },
       stateDelta: `mission ${id} removed from governance state`,
     })
     return
@@ -6515,7 +6557,7 @@ async function runLifecycleDryRun(
   status: "ok"
   kind: "LifecycleDryRun"
   wouldAppend: { type: string; payload: Record<string, unknown> }
-  verifyResult: { pass: number; fail: number; warn: number }
+  verifyResult: { pass: number; fail: number; warn: number; skipped: number }
   stateDelta: string
 }> {
   const state = await ctx.runtime.getState()
@@ -6526,6 +6568,9 @@ async function runLifecycleDryRun(
   const pass = checks.filter((c: any) => c.status === "ok" || c.status === "pass").length
   const fail = checks.filter((c: any) => c.status === "error" || c.status === "fail").length
   const warn = checks.filter((c: any) => c.status === "warning" || c.status === "warn").length
+  // A check that could not run is reported as such instead of silently
+  // shrinking the pass count (EXP 2c9c6c62).
+  const skipped = checks.filter((c: any) => c.status === "skipped").length
 
   return {
     status: "ok",
@@ -6534,7 +6579,7 @@ async function runLifecycleDryRun(
       type: input.eventType,
       payload: input.payload,
     },
-    verifyResult: { pass, fail, warn },
+    verifyResult: { pass, fail, warn, skipped },
     stateDelta: input.targetStatus
       ? `expedition ${input.expeditionId} status: ${beforeStatus} → ${input.targetStatus}`
       : `expedition ${input.expeditionId} metadata updated (${input.eventType})`,
