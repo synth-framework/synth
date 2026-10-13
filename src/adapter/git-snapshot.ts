@@ -73,20 +73,64 @@ export type CanSnapshotResult = {
   suggestedCommit?: string
 }
 
+const EVENT_STREAM_DIR = ".synth/data/event-stream"
+const SEGMENT_FILE_RE = /^segment-.*\.jsonl$/
+
 const SNAPSHOT_FILES = [
-  ".synth/data/event-log.jsonl",
   ".synth/data/canonical-state.json",
   ".synth/manifest.json",
   ".synth/keys/*.pub",
   ".synth/policy/*.yaml",
 ]
 
-const OPTIONAL_SNAPSHOT_FILES = [
-  "data/event-log.jsonl",
-  "AGENTS.md",
-]
+const OPTIONAL_SNAPSHOT_FILES = ["AGENTS.md"]
 
 const PROOF_GLOBS = ["proof/*.json", "proof/*.jsonl"]
+
+/** Return every canonical event-stream segment in deterministic path order. */
+function eventStreamSegments(cwd: string): string[] {
+  const root = path.join(cwd, EVENT_STREAM_DIR)
+  if (!fs.existsSync(root)) return []
+
+  const segments: string[] = []
+  const visit = (directory: string) => {
+    const entries = fs.readdirSync(directory, { withFileTypes: true })
+      .sort((left, right) => left.name.localeCompare(right.name))
+    for (const entry of entries) {
+      const absolute = path.join(directory, entry.name)
+      if (entry.isDirectory()) {
+        visit(absolute)
+      } else if (entry.isFile() && SEGMENT_FILE_RE.test(entry.name)) {
+        segments.push(path.relative(cwd, absolute))
+      }
+    }
+  }
+
+  visit(root)
+  return segments.sort()
+}
+
+/** Read canonical segment events and restore their global event ordering. */
+function readEventStreamEvents(cwd: string): any[] {
+  const events: any[] = []
+  for (const segment of eventStreamSegments(cwd)) {
+    const raw = fs.readFileSync(path.join(cwd, segment), "utf-8")
+    for (const [index, line] of raw.split("\n").entries()) {
+      if (!line.trim()) continue
+      try {
+        events.push(JSON.parse(line))
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err)
+        throw new Error(`Invalid event in ${segment} at line ${index + 1}: ${detail}`)
+      }
+    }
+  }
+  return events.sort((left, right) => {
+    const leftOffset = typeof left?.offset === "number" ? left.offset : Number.MAX_SAFE_INTEGER
+    const rightOffset = typeof right?.offset === "number" ? right.offset : Number.MAX_SAFE_INTEGER
+    return leftOffset - rightOffset
+  })
+}
 
 function git(cwd: string, args: string[]): string {
   try {
@@ -126,7 +170,10 @@ function hasUncommittedChanges(cwd: string): boolean {
 }
 
 function resolveFiles(cwd: string, includeProofs: boolean): string[] {
-  const files: string[] = []
+  // The stream is partitioned below a directory, so it cannot be represented
+  // by the flat file globs below. Stage every segment explicitly instead of
+  // reviving the retired monolithic event log.
+  const files: string[] = [...eventStreamSegments(cwd)]
   for (const pattern of SNAPSHOT_FILES) {
     if (pattern.includes("*")) {
       const dir = path.dirname(pattern)
@@ -168,6 +215,7 @@ function resolveFiles(cwd: string, includeProofs: boolean): string[] {
 }
 
 function isGovernanceFile(cwd: string, relPath: string): boolean {
+  if (relPath === EVENT_STREAM_DIR || relPath.startsWith(`${EVENT_STREAM_DIR}/`)) return true
   const core = SNAPSHOT_FILES.some((p) => {
     if (p.includes("*")) {
       const dir = path.dirname(p)
@@ -221,15 +269,15 @@ function getStateHash(cwd: string): string {
 
 function getEventOffset(cwd: string): number {
   try {
-    const logPath = path.join(cwd, ".synth", "data", "event-log.jsonl")
-    if (fs.existsSync(logPath)) {
-      const lines = fs.readFileSync(logPath, "utf-8").split("\n").filter(Boolean)
-      return lines.length
-    }
+    // Offsets count parsed canonical events, not physical lines in a retired
+    // monolithic log. This remains correct when the stream spans partitions.
+    return readEventStreamEvents(cwd).length
   } catch {
-    // fall through
+    // Preserve snapshot creation's historical best-effort fallback when
+    // runtime state is incomplete or corrupt; verification reports the
+    // stream-specific failure with details.
+    return 0
   }
-  return 0
 }
 
 function uniqueSnapshotId(trigger: string, expeditionId?: string): string {
@@ -266,7 +314,7 @@ function buildCommitMessage(options: SnapshotOptions, snapshotId: string): strin
   const lines = [
     `[synth] snapshot ${snapshotId}`,
     "",
-    `- Event log offset: ${offset}`,
+    `- Event stream offset: ${offset}`,
     `- State hash: ${stateHash}`,
     `- Trigger: ${options.trigger}`,
   ]
@@ -458,14 +506,17 @@ export class GitSnapshotAdapter {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "synth-snapshot-"))
     try {
       git(cwd, ["worktree", "add", "--detach", tmpDir, tagName])
-      const logPath = path.join(tmpDir, ".synth", "data", "event-log.jsonl")
+      const streamPath = path.join(tmpDir, EVENT_STREAM_DIR)
       const statePath = path.join(tmpDir, ".synth", "data", "canonical-state.json")
-      if (!fs.existsSync(logPath)) {
-        return { ok: false, tagName, commitHash, consistent: false, eventCount: 0, replayHash: "", reason: "Event log missing at tagged state" }
+      if (!fs.existsSync(streamPath)) {
+        return { ok: false, tagName, commitHash, consistent: false, eventCount: 0, replayHash: "", reason: "Event stream missing at tagged state" }
       }
-      const raw = fs.readFileSync(logPath, "utf-8")
-      const lines = raw.split("\n").filter(Boolean)
-      const events = lines.map((line) => JSON.parse(line))
+      if (eventStreamSegments(tmpDir).length === 0) {
+        return { ok: false, tagName, commitHash, consistent: false, eventCount: 0, replayHash: "", reason: "Event stream has no segments at tagged state" }
+      }
+      // Segments are stored by partition, not global chronology. Replay must
+      // be ordered by each event's global offset to produce the tagged state.
+      const events = readEventStreamEvents(tmpDir)
       const replayedState = rebuildState(events)
       const replayHash = replayedState.stateHash
       const expectedHash = fs.existsSync(statePath)

@@ -1,0 +1,11 @@
+{
+  "id": "test:expedition-evidence",
+  "description": "Verify cumulative expedition evidence capture",
+  "command": "node tests/expedition-evidence.test.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": ["governance", "test"],
+  "estimatedDurationMs": 60000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

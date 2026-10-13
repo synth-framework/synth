@@ -7606,6 +7606,65 @@ async function cmdExpeditionMove(flags: Record<string, string | boolean>) {
 
 type EvidenceAttachment = { kind: string; path: string; hash: string }
 
+type EvidenceManifest = {
+  expeditionId: string
+  capturedAt: number
+  note?: string
+  attachments: EvidenceAttachment[]
+}
+
+function evidenceAttachmentKey(attachment: EvidenceAttachment): string {
+  return `${attachment.kind}:${attachment.path}:${attachment.hash}`
+}
+
+function validateManifestAttachment(value: unknown, manifestPath: string): EvidenceAttachment {
+  if (!value || typeof value !== "object") {
+    throw new Error(`Evidence manifest contains an invalid attachment: ${manifestPath}`)
+  }
+  const record = value as Record<string, unknown>
+  if (typeof record.kind !== "string" || typeof record.path !== "string" || typeof record.hash !== "string") {
+    throw new Error(`Evidence manifest contains an invalid attachment: ${manifestPath}`)
+  }
+  return { kind: record.kind, path: record.path, hash: record.hash }
+}
+
+async function readManifestAttachments(manifestPath: string, expeditionId: string): Promise<EvidenceAttachment[]> {
+  let raw: string
+  try {
+    raw = await fs.readFile(manifestPath, "utf-8")
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return []
+    throw err
+  }
+
+  let manifest: Partial<EvidenceManifest>
+  try {
+    manifest = JSON.parse(raw) as Partial<EvidenceManifest>
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err)
+    throw new Error(`Evidence manifest is invalid JSON and cannot be merged: ${manifestPath}: ${detail}`)
+  }
+  if (manifest.expeditionId !== expeditionId) {
+    throw new Error(`Evidence manifest belongs to a different expedition and cannot be merged: ${manifestPath}`)
+  }
+  if (!Array.isArray(manifest.attachments)) {
+    throw new Error(`Evidence manifest has no valid attachments array and cannot be merged: ${manifestPath}`)
+  }
+  return manifest.attachments.map((attachment) => validateManifestAttachment(attachment, manifestPath))
+}
+
+function mergeEvidenceAttachments(existing: EvidenceAttachment[], captured: EvidenceAttachment[]): EvidenceAttachment[] {
+  const merged: EvidenceAttachment[] = []
+  const seen = new Set<string>()
+  for (const attachment of [...existing, ...captured]) {
+    const key = evidenceAttachmentKey(attachment)
+    if (seen.has(key)) continue
+    seen.add(key)
+    merged.push(attachment)
+  }
+  return merged
+}
+
 async function attachExpeditionEvidence(
   ctx: Awaited<ReturnType<typeof bootstrapWithCapabilities>>,
   expeditionId: string,
@@ -7720,11 +7779,15 @@ async function attachExpeditionEvidence(
   }
 
   const manifestPath = path.join(baseDir, "manifest.json")
-  const manifest = {
+  // The runtime reducer accumulates unique evidence across EVIDENCE_ATTACHED
+  // events. Keep the durable proof manifest in lockstep rather than replacing
+  // it with only the artifacts from the most recent CLI invocation.
+  const existingAttachments = await readManifestAttachments(manifestPath, expeditionId)
+  const manifest: EvidenceManifest = {
     expeditionId,
     capturedAt: Date.now(),
     note,
-    attachments: captured,
+    attachments: mergeEvidenceAttachments(existingAttachments, captured),
   }
   await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2))
 

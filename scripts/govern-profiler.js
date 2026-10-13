@@ -26,33 +26,80 @@ const __dirname = path.dirname(__filename)
 
 const REPO_ROOT = path.resolve(__dirname, "..")
 
-/** Parse package.json scripts into a check list matching the old `npm run govern` pipeline. */
+function taskAdapterDelegatesToTestAll(command) {
+  return /(?:^|\s)(?:node\s+)?(?:[^\s/]+\/)*task-adapter-shim\.js\s+test:all(?:\s|$)/.test(command)
+}
+
+function parseNpmRunChecks(command, source) {
+  const scripts = command
+    .split("&&")
+    .map((step) => step.trim())
+    .filter((step) => step.startsWith("npm run "))
+    .map((step) => step.replace(/^npm run\s+/, "").trim())
+    .filter(Boolean)
+
+  if (scripts.length === 0) {
+    throw new Error(`${source} contains no runnable npm scripts; govern cannot truthfully expand test:all`)
+  }
+  if (scripts.includes("test:all")) {
+    throw new Error(`${source} recursively invokes test:all; govern cannot truthfully expand it`)
+  }
+  return scripts
+}
+
+async function readCanonicalTestAllCommand(pkgPath, packageScript) {
+  const taskPath = path.join(path.dirname(pkgPath), "data", "tasks", "test:all.task.json")
+  let raw
+  try {
+    raw = await fsp.readFile(taskPath, "utf-8")
+  } catch (err) {
+    if (taskAdapterDelegatesToTestAll(packageScript)) {
+      throw new Error(
+        `Canonical test:all task definition is required when package.json delegates through the task adapter: ${taskPath}`,
+      )
+    }
+    return { command: packageScript, source: "package.json scripts.test:all" }
+  }
+
+  let task
+  try {
+    task = JSON.parse(raw)
+  } catch (err) {
+    throw new Error(`Canonical test:all task definition is invalid JSON: ${taskPath}`)
+  }
+  if (task?.id !== "test:all" || typeof task.command !== "string" || task.command.trim().length === 0) {
+    throw new Error(`Canonical test:all task definition is invalid: ${taskPath}`)
+  }
+  return { command: task.command, source: taskPath }
+}
+
+/**
+ * Load the checks that the Proof Gate will actually execute.
+ *
+ * In a task-adapter project package.json deliberately contains only the shim;
+ * the task definition is the canonical test chain. Falling back to the shim
+ * would silently reduce govern to build + proof, so an absent or malformed
+ * task definition is a loud configuration error instead.
+ */
 export async function loadGovernChecks(pkgPath = path.join(REPO_ROOT, "package.json")) {
   const pkg = JSON.parse(await fsp.readFile(pkgPath, "utf-8"))
-  const testAll = pkg.scripts["test:all"]
-  if (!testAll) {
+  const packageScript = pkg.scripts?.["test:all"]
+  if (typeof packageScript !== "string" || packageScript.trim().length === 0) {
     throw new Error("package.json is missing the test:all script")
   }
 
-  const checks = []
+  const { command: testAllCommand, source } = await readCanonicalTestAllCommand(pkgPath, packageScript)
+  const testScripts = parseNpmRunChecks(testAllCommand, source)
+  const checks = [{ checkId: "build", command: "npm", args: ["run", "build"] }]
 
-  // Build is the first stage.
-  checks.push({ checkId: "build", command: "npm", args: ["run", "build"] })
-
-  // Decompose test:all into individual npm run <script> invocations.
-  const testScripts = testAll
-    .split("&&")
-    .map((s) => s.trim())
-    .filter((s) => s.startsWith("npm run "))
-    .map((s) => s.replace(/^npm run\s+/, "").trim())
-
+  // Build and proof are controlled boundary stages. Do not run either twice
+  // when a legacy direct test:all script happens to list one of them.
   for (const script of testScripts) {
+    if (script === "build" || script === "proof") continue
     checks.push({ checkId: script, command: "npm", args: ["run", script] })
   }
 
-  // Proof is the final stage.
   checks.push({ checkId: "proof", command: "npm", args: ["run", "proof"] })
-
   return checks
 }
 

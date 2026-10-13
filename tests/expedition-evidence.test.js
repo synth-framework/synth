@@ -9,7 +9,8 @@ import fs from "node:fs"
 import os from "os"
 import path from "node:path"
 import { spawnSync } from "node:child_process"
-import { runSynth, parseJson, CLI_PATH } from "./helpers/cli-harness.js"
+import { runSynth, parseJson, readEventLog } from "./helpers/cli-harness.js"
+import { seedEventLog } from "./helpers/seed-event-log.js"
 import { seedEvent, seedGenesisEvents } from "./helpers/kernel-event-fixtures.js"
 import { runGit } from "./helpers/workspace.js"
 
@@ -19,9 +20,9 @@ function makeTempProjectRoot() {
 }
 
 /** Fresh project with seeded events + committed tracked.txt. */
-function setupTrackedProject() {
+async function setupTrackedProject() {
   const dir = makeTempProjectRoot()
-  seedEvents(dir)
+  await seedEvents(dir)
   initGitIdentity(dir)
   fs.writeFileSync(path.join(dir, "tracked.txt"), "content")
   spawnSync("git", ["add", "."], { cwd: dir })
@@ -44,7 +45,7 @@ function initGitIdentity(dir) {
   runGit(["config", "user.name", "Test"], dir)
 }
 
-function seedEvents(projectRoot, opts = {}) {
+async function seedEvents(projectRoot, opts = {}) {
   const dataDir = path.join(projectRoot, ".synth", "data")
   fs.mkdirSync(dataDir, { recursive: true })
   fs.writeFileSync(path.join(projectRoot, ".synth", "manifest.json"), "{}\n")
@@ -83,23 +84,14 @@ function seedEvents(projectRoot, opts = {}) {
       }),
   ]
 
-  fs.writeFileSync(path.join(dataDir, "event-log.jsonl"), events.map((e) => JSON.stringify(e)).join("\n") + "\n")
+  await seedEventLog(projectRoot, events)
 }
 
 
-
-function eventLog(projectRoot) {
-  const logPath = path.join(projectRoot, ".synth", "data", "event-log.jsonl")
-  return fs.readFileSync(logPath, "utf-8")
-    .trim()
-    .split("\n")
-    .filter((line) => line.length > 0)
-    .map((line) => JSON.parse(line))
-}
 
 test("expedition evidence --git-diff captures patch and appends EVIDENCE_ATTACHED", { concurrency: false }, async () => {
   const dir = makeTempProjectRoot()
-  seedEvents(dir)
+  await seedEvents(dir)
   fs.writeFileSync(path.join(dir, "tracked.txt"), "change")
   initGitIdentity(dir)
   runGit(["add", "."], dir)
@@ -125,7 +117,7 @@ test("expedition evidence --git-diff captures patch and appends EVIDENCE_ATTACHE
   assert.strictEqual(manifest.attachments.length, 1)
   assert.strictEqual(manifest.attachments[0].kind, "git-diff")
 
-  const events = eventLog(dir)
+  const events = await readEventLog(dir)
   const evidenceEvent = events.find((e) => e.type === "EVIDENCE_ATTACHED")
   assert.ok(evidenceEvent, "EVIDENCE_ATTACHED event should be appended")
   assert.strictEqual(evidenceEvent.payload.expeditionId, "e1")
@@ -134,7 +126,7 @@ test("expedition evidence --git-diff captures patch and appends EVIDENCE_ATTACHE
 
 test("expedition evidence --attach copies explicit files", { concurrency: false }, async () => {
   const dir = makeTempProjectRoot()
-  seedEvents(dir)
+  await seedEvents(dir)
   fs.writeFileSync(path.join(dir, "artifact.txt"), "artifact content")
 
   const result = runSynth(["expedition", "evidence", "--id", "e1", "--attach", "artifact.txt"], dir)
@@ -147,20 +139,46 @@ test("expedition evidence --attach copies explicit files", { concurrency: false 
 
 test("expedition evidence is idempotent across repeated invocations", { concurrency: false }, async () => {
   const dir = makeTempProjectRoot()
-  seedEvents(dir)
+  await seedEvents(dir)
   fs.writeFileSync(path.join(dir, "a.txt"), "a")
 
-  runSynth(["expedition", "evidence", "--id", "e1", "--attach", "a.txt"], dir)
-  runSynth(["expedition", "evidence", "--id", "e1", "--attach", "a.txt"], dir)
+  const first = runSynth(["expedition", "evidence", "--id", "e1", "--attach", "a.txt"], dir)
+  const second = runSynth(["expedition", "evidence", "--id", "e1", "--attach", "a.txt"], dir)
+  assert.strictEqual(first.status, 0, first.stderr)
+  assert.strictEqual(second.status, 0, second.stderr)
 
-  const events = eventLog(dir)
+  const events = await readEventLog(dir)
   const evidenceEvents = events.filter((e) => e.type === "EVIDENCE_ATTACHED")
   assert.strictEqual(evidenceEvents.length, 2, "each invocation should append an event")
+
+  const manifest = JSON.parse(fs.readFileSync(path.join(dir, "proof", "expeditions", "e1", "manifest.json"), "utf-8"))
+  assert.strictEqual(manifest.attachments.length, 1, "the manifest should mirror runtime attachment de-duplication")
+})
+
+test("expedition evidence manifest accumulates distinct attachments across invocations", { concurrency: false }, async () => {
+  const dir = makeTempProjectRoot()
+  await seedEvents(dir)
+  fs.writeFileSync(path.join(dir, "first.txt"), "first")
+  fs.writeFileSync(path.join(dir, "second.txt"), "second")
+
+  const first = runSynth(["expedition", "evidence", "--id", "e1", "--attach", "first.txt", "--note", "first capture"], dir)
+  const second = runSynth(["expedition", "evidence", "--id", "e1", "--attach", "second.txt", "--note", "second capture"], dir)
+  assert.strictEqual(first.status, 0, first.stderr)
+  assert.strictEqual(second.status, 0, second.stderr)
+
+  const manifest = JSON.parse(fs.readFileSync(path.join(dir, "proof", "expeditions", "e1", "manifest.json"), "utf-8"))
+  assert.strictEqual(manifest.expeditionId, "e1")
+  assert.strictEqual(manifest.note, "second capture", "the manifest should retain the latest capture note")
+  assert.deepStrictEqual(
+    manifest.attachments.map((attachment) => path.basename(attachment.path)).sort(),
+    ["first.txt", "second.txt"],
+    "manifest must retain attachments captured by both invocations",
+  )
 })
 
 test("expedition evidence --git-diff falls back to baseline..HEAD when working tree is clean", { concurrency: false }, async () => {
   const dir = makeTempProjectRoot()
-  seedEvents(dir)
+  await seedEvents(dir)
   fs.writeFileSync(path.join(dir, "tracked.txt"), "initial")
   initGitIdentity(dir)
   spawnSync("git", ["add", "."], { cwd: dir })
@@ -185,7 +203,7 @@ test("expedition evidence --git-diff falls back to baseline..HEAD when working t
 })
 
 test("expedition evidence --git-diff warns when patch is empty", { concurrency: false }, async () => {
-  const dir = setupTrackedProject()
+  const dir = await setupTrackedProject()
 
   const output = attachGitDiff(dir)
   assert.ok(Array.isArray(output.warnings), "should include warnings")
@@ -193,7 +211,7 @@ test("expedition evidence --git-diff warns when patch is empty", { concurrency: 
 })
 
 test("expedition evidence --git-diff captures untracked source files and restores the index", { concurrency: false }, async () => {
-  const dir = setupTrackedProject()
+  const dir = await setupTrackedProject()
   fs.writeFileSync(path.join(dir, "new-source.ts"), "const brandNew = true\n")
   fs.writeFileSync(path.join(dir, ".synth", "data", "canonical-state.json"), "derived")
 

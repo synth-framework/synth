@@ -109,7 +109,7 @@ export async function loadTaskRegistry(options: RegistryLoadOptions = {}): Promi
 /**
  * Return tasks in a specific group.
  */
-function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
+export function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
   const ids = registry.groups.get(group) ?? []
   return ids.map((id) => registry.tasks.get(id)!).filter(Boolean)
 }
@@ -117,7 +117,7 @@ function getTasksByGroup(registry: TaskRegistry, group: string): Task[] {
 /**
  * Return tasks with a specific tag.
  */
-function getTasksByTag(registry: TaskRegistry, tag: string): Task[] {
+export function getTasksByTag(registry: TaskRegistry, tag: string): Task[] {
   const ids = registry.tags.get(tag) ?? []
   return ids.map((id) => registry.tasks.get(id)!).filter(Boolean)
 }
