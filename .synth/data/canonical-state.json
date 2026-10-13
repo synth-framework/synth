@@ -1,6 +1,6 @@
 {
-  "version": 463,
-  "stateHash": "1549533822",
+  "version": 464,
+  "stateHash": "163022581",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -2051,10 +2051,13 @@
           "tests/**",
           "data/tasks/**",
           "docs/adr/**"
-        ]
+        ],
+        "refinementId": "3fc0422b57a66a20",
+        "refinementNote": "RESOLUTION AND THREE FURTHER FINDINGS, after the operator restored branch arena/841cc45d-synth on origin (2026-10-13). The delivery record that finding B said could not be produced honestly now exists, and the containment claim finding D called unverifiable is now CORROBORATED by independent git evidence. WHAT WORKED, exactly: (1) `git fetch origin arena/841cc45d-synth:refs/remotes/origin/arena/841cc45d-synth` - a plain `git fetch origin <branch>` was NOT enough, because this clone's refspec is single-branch and the fetch only populated FETCH_HEAD, leaving the name unresolvable. The explicit refspec creates a remote-tracking ref without creating a local branch or moving HEAD. (2) `expedition deliver --id 2c9c6c62a727ece8 --branch origin/arena/841cc45d-synth --no-push` succeeded: EXPEDITION_DELIVERED, commit c7651ce342bb1fc240d00bcd50d23e6d2c3b76c2, tipCommit 64ea89c3626992fc49323aea3b17784686d60023, deliveryPending false. resolveDeliveryBranch's documented origin/ path is the right mechanism and worked as written. (3) Containment was STILL unverifiable at that point: `git merge-base --is-ancestor <tip> <merge>` exited 1 because merge commit 8b8dce26 was grafted with an empty parent list in this shallow clone - the tip object being present is not sufficient. (4) `git fetch --deepen 30 origin` exposed the parents: 8b8dce26 now reports parents [bb8809ae 64ea89c3], and `git merge-base --is-ancestor 64ea89c3... 8b8dce26...` exits 0. CORROBORATED. So deliverable 4 has a concrete recipe to encode: resolve the tip, then test ancestry; if the merge commit is grafted, report 'unavailable (shallow clone; parents not fetched)' with the deepen command as the next step, and only report 'corroborated' when is-ancestor actually exits 0. Never assert containment from the presence of a tip alone. FINDING F - lifecycle order is not enforced in either direction. deliver succeeded on an expedition that was already sealed/integrated. The record now timestamps the inversion: metadata.integration.integratedAt = 457 precedes metadata.delivery.deliveredAt = 462. Nothing refused, warned, or flagged it. Either order must be enforced, or the out-of-order case must be recorded as an anomaly on the face of the record. FINDING G - the delivery record names a REF PATH, not a branch. metadata.delivery.branch was stored as 'origin/arena/841cc45d-synth' (the remote-tracking form used to resolve it) while metadata.executionBranch already holds the canonical 'arena/841cc45d-synth'. resolveDeliveryBranch computes canonicalBranch for exactly this case and the ledger discards it. A delivery record should name the branch; the ref path is how it was found, not what it is. FINDING H - restoring branches is not a scalable fix for the backlog. This one closed because the operator manually recreated the branch on origin. The other 24 derivable delivery-pending expeditions had their head branches auto-deleted and cannot be restored one by one, so deliverable 3 (deliver by commit-ish, recording a COMMIT, shallow-safe and offline against main's own history) remains the only path that scales. Note also that this run re-verified deliver --dry-run as genuinely read-only (HEAD and the 462-line event count unchanged before and after), which sharpens finding A: seal is the only verb in the family that writes during --dry-run. INVARIANTS HELD throughout: no local branch was created for arena/841cc45d-synth (only refs/remotes/origin/...), HEAD stayed on the session branch arena/15e0fc51-synth, main stayed at 8b8dce26, the working tree stayed clean, and nothing was pushed to any branch.",
+        "refinementAt": 463
       },
       "createdAt": 459,
-      "updatedAt": 459
+      "updatedAt": 463
     }
   },
   "objectives": {},
@@ -2080,5 +2083,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 463
+  "lastEventOffset": 464
 }
