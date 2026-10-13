@@ -1,6 +1,6 @@
 {
-  "version": 410,
-  "stateHash": "1950267711",
+  "version": 411,
+  "stateHash": "50852025",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1629,10 +1629,16 @@
           "branch": "arena/92bee2da-synth",
           "tipCommit": "12fc3390101b44dae4e69297b7dc664e9657c6ae",
           "deliveredAt": 409
+        },
+        "integration": {
+          "mergeCommit": "12f1bce56b73832b182888dae32a1963756930e1",
+          "branch": "arena/92bee2da-synth",
+          "tipCommit": "12fc3390101b44dae4e69297b7dc664e9657c6ae",
+          "integratedAt": 410
         }
       },
       "createdAt": 399,
-      "updatedAt": 409,
+      "updatedAt": 410,
       "executionBranch": "arena/92bee2da-synth",
       "attachments": [
         {
@@ -1686,5 +1692,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 410
+  "lastEventOffset": 411
 }
