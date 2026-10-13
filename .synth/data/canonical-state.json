@@ -1,6 +1,6 @@
 {
-  "version": 420,
-  "stateHash": "767499874",
+  "version": 421,
+  "stateHash": "1840642833",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1617,10 +1617,16 @@
           "branch": "expedition/framework-maturation-v2-4ab7e9d/revisit-testing-and-reporting-infrastructure-f0f81e3",
           "tipCommit": "afd5a2291f6078af47450f3c71f180e4bd894d14",
           "deliveredAt": 419
+        },
+        "integration": {
+          "mergeCommit": "21ffc64986e633393ec98818f3e5744e32b9bec4",
+          "branch": "expedition/framework-maturation-v2-4ab7e9d/revisit-testing-and-reporting-infrastructure-f0f81e3",
+          "tipCommit": "afd5a2291f6078af47450f3c71f180e4bd894d14",
+          "integratedAt": 420
         }
       },
       "createdAt": 395,
-      "updatedAt": 419,
+      "updatedAt": 420,
       "attachments": [
         {
           "kind": "attachment",
@@ -1713,5 +1719,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 420
+  "lastEventOffset": 421
 }
