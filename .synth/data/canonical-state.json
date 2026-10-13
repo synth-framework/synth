@@ -1,6 +1,6 @@
 {
-  "version": 453,
-  "stateHash": "176460908",
+  "version": 454,
+  "stateHash": "315020570",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1949,10 +1949,13 @@
           "tests/first-contact-verify.test.js",
           "tests/first-contact-replay.test.js",
           "tests/**"
-        ]
+        ],
+        "refinementId": "614e66e306c440f6",
+        "refinementNote": "CORRECTION to this draft's opening figure, measured properly after drafting. The claim '149 of the 242 files in tests/ have no test:<name> script and are not members of data/tasks/test:all.task.json' was computed naively: it checked for a literal filename in test:all.task.json, which misses indirection. test:all's command is a chain of `npm run test:X`, each resolving to a task whose own command runs the files, so reachability must be resolved transitively. Resolved correctly: 242 test files, 127 reachable from test:all, 115 unreachable - 108 with no test:<name> script at all and 7 that have a script but are not in the chain (agent-sdk, ai-capability-projection, governance-orchestration, mcp-server, package-distribution, release, synth-cli-govern-explain). Of the 108, 107 were executed in a throwaway copy: 36 red, 71 green, 0 timeouts; the 42 reachable files swept as a control were all green, so the governed chain itself is not red. NONE of this changes the three defects this draft exists for - each was reproduced directly and independently of the counting (lifecycle-dry-run 4 failures, first-contact-verify dead barrel export, first-contact-replay eventCount 0). The corrected inventory, the red-suite taxonomy and the file-level ownership guard are the subject of a separate draft, EXP-TEST-005, which this expedition must not duplicate.",
+        "refinementAt": 453
       },
       "createdAt": 452,
-      "updatedAt": 452
+      "updatedAt": 453
     }
   },
   "objectives": {},
@@ -1978,5 +1981,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 453
+  "lastEventOffset": 454
 }
