@@ -23,10 +23,15 @@
     },
     "refinementId": "3282c184975ae033",
     "refinementNote": "Reviewed plan produced: docs/plans/testing-and-reporting-infrastructure-review.md covers canonical test chain (114 steps), governance profiler decomposition (collection/scheduling/execution/reporting), test/report/logging surfaces, decision matrix for distinct/merge/retire (target ~70 checks), and failure identification with environment explicit. No broad refactor in this expedition; plan ready for follow-up expeditions EXP-TEST-001 to 004.",
-    "refinementAt": 416
+    "refinementAt": 416,
+    "delivery": {
+      "branch": "expedition/framework-maturation-v2-4ab7e9d/revisit-testing-and-reporting-infrastructure-f0f81e3",
+      "tipCommit": "afd5a2291f6078af47450f3c71f180e4bd894d14",
+      "deliveredAt": 419
+    }
   },
   "createdAt": 395,
-  "updatedAt": 417,
+  "updatedAt": 419,
   "attachments": [
     {
       "kind": "attachment",
