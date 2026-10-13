@@ -1,0 +1,22 @@
+{
+  "expeditionId": "2c9c6c62a727ece8",
+  "capturedAt": 1791922372608,
+  "note": "Event-log presence and location unified behind locateEventLog across all three on-disk layouts (segmented / partitioned-flat / legacy-file). Fixed three operator-facing lies caused by private existence tests against the legacy monolithic path: `synth log` reported 'No event log found ... run synth init' for a healthy 449-event ledger; `synth checkpoint`'s replay step and `synth doctor`'s chain check returned ok:true with 'No event log present' while certifying nothing. A genuinely log-less project now reports ReplayIntegrity as skipped with skippedReason no-event-log instead of a vacuous pass (CheckStatus and VerificationSummary gained the value; verify still exits 0 and the EXP-GATE-014 completion gate stays fail-based). The drafted diagnosis was wrong about verification/context.ts and was corrected by refine before implementation; see attachment section 0.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/2c9c6c62a727ece8/git-diff.patch",
+      "hash": "4996bb34ef1f92c3984daf89466afa20a79f08e266d06ebb1575377dea510224"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/2c9c6c62a727ece8/test-results.txt",
+      "hash": "4ba51d1fce1f1d3c1ec447f03d0e1b3aa18ca9e30322ce4acde209b311c90496"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/2c9c6c62a727ece8/attachments/evidence-2c9c6c62.md",
+      "hash": "27201f25ddbf931c0233e51ed8c6d3c30faab85a40a9a35e5d4a98590b3f7081"
+    }
+  ]
+}
