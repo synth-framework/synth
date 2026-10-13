@@ -3,7 +3,7 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "EXP-TEST-004 Environment explicit",
   "goal": "Add environment field to GovernanceCheck and GovernSummary, surface environment-capability-report guidance in failures, make t.skip emit structured reason {environment:{baseBranch:missing}} with nextStep 'git fetch origin main --unshallow', introduce SYNTH_ENV=ci|local|container.",
-  "status": "draft",
+  "status": "approved",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -16,5 +16,5 @@
     ]
   },
   "createdAt": 424,
-  "updatedAt": 424
+  "updatedAt": 428
 }
