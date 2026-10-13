@@ -1,6 +1,6 @@
 {
-  "version": 422,
-  "stateHash": "2024268622",
+  "version": 423,
+  "stateHash": "1845356907",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -75,11 +75,12 @@
         "9ab1218c6f872c60",
         "220f6163a7b55b45",
         "f0f81e358899d8f2",
-        "e9a83ffda86ca767"
+        "e9a83ffda86ca767",
+        "f6420030064a6f70"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 421,
+      "updatedAt": 422,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     },
     "b536ecc7ceb9217a": {
@@ -1715,6 +1716,26 @@
       },
       "createdAt": 421,
       "updatedAt": 421
+    },
+    "f6420030064a6f70": {
+      "id": "f6420030064a6f70",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-TEST-002 Merge suites 114→~70",
+      "goal": "Implement decision matrix from docs/plans/testing-and-reporting-infrastructure-review.md: keep ledger 6 distinct, execution 5, installer 7, documentation 3, governance 4; merge mission-studio 8→3, discovery 8→2, adapter 16→4, environment 5→4; add registration guard that every test:* task is in test:all or marked standalone.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "data/tasks/**",
+          "tests/**",
+          "package.json"
+        ]
+      },
+      "createdAt": 422,
+      "updatedAt": 422
     }
   },
   "objectives": {},
@@ -1740,5 +1761,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 422
+  "lastEventOffset": 423
 }
