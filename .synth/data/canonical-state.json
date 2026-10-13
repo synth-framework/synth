@@ -1,6 +1,6 @@
 {
-  "version": 402,
-  "stateHash": "1307817110",
+  "version": 404,
+  "stateHash": "2062675821",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1613,14 +1613,22 @@
       "missionId": "b6ff1be26d13a677",
       "name": "Verification coverage truthfulness: F1, F7–F10, and F15",
       "goal": "Make govern execute the canonical test:all task chain or fail loudly; migrate snapshot verification and branch-gate test assertions from legacy event-log.jsonl to event-stream; make explicit decisions for stale task tests; make evidence manifests cumulative or document per-call semantics; repair expedition-auto-commit convergence; and preserve the approved artifact and runtime-state policy.",
-      "status": "committed",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "identity": {
+          "agentId": "synth-cli-2921",
+          "sessionId": "128dd550-e837-4137-9c81-fff84dd6dc22",
+          "approvalMode": "autonomous",
+          "issuedAt": 403
+        }
+      },
       "createdAt": 399,
-      "updatedAt": 401
+      "updatedAt": 403,
+      "executionBranch": "arena/92bee2da-synth"
     }
   },
   "objectives": {},
@@ -1646,5 +1654,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 402
+  "lastEventOffset": 404
 }
