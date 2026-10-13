@@ -1,6 +1,6 @@
 {
-  "version": 431,
-  "stateHash": "1987205567",
+  "version": 432,
+  "stateHash": "672932753",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -78,11 +78,12 @@
         "e9a83ffda86ca767",
         "f6420030064a6f70",
         "328c0147b49d2743",
-        "a33ac4392da04d0e"
+        "a33ac4392da04d0e",
+        "684ca7dfec6566d9"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 424,
+      "updatedAt": 431,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     },
     "b536ecc7ceb9217a": {
@@ -1782,6 +1783,27 @@
       },
       "createdAt": 424,
       "updatedAt": 428
+    },
+    "684ca7dfec6566d9": {
+      "id": "684ca7dfec6566d9",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "Dull status inbox for deliver/seal",
+      "goal": "Make synth status print exact copy-pasteable deliver --branch and seal --merge-commit commands, fixing NoExecutionBranch fallback, ledgerBranch missing fallback, and shallow-clone hint, so fresh Arena sessions can seal after pull without extra queries.",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/cli/status-briefing.ts",
+          "src/cli/synth.ts",
+          "src/ledger/branch.ts",
+          "src/ledger/delivery.ts"
+        ]
+      },
+      "createdAt": 431,
+      "updatedAt": 431
     }
   },
   "objectives": {},
@@ -1807,5 +1829,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 431
+  "lastEventOffset": 432
 }

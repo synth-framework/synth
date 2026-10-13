@@ -1,0 +1,21 @@
+{
+  "id": "684ca7dfec6566d9",
+  "missionId": "4ab7e9d2cc7b1b66",
+  "name": "Dull status inbox for deliver/seal",
+  "goal": "Make synth status print exact copy-pasteable deliver --branch and seal --merge-commit commands, fixing NoExecutionBranch fallback, ledgerBranch missing fallback, and shallow-clone hint, so fresh Arena sessions can seal after pull without extra queries.",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {
+    "scope": [
+      "src/cli/status-briefing.ts",
+      "src/cli/synth.ts",
+      "src/ledger/branch.ts",
+      "src/ledger/delivery.ts"
+    ]
+  },
+  "createdAt": 431,
+  "updatedAt": 431
+}
