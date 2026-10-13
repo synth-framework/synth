@@ -1,6 +1,6 @@
 {
-  "version": 435,
-  "stateHash": "1110689689",
+  "version": 437,
+  "stateHash": "1170784137",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1789,7 +1789,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Dull status inbox for deliver/seal",
       "goal": "Make synth status print exact copy-pasteable deliver --branch and seal --merge-commit commands, fixing NoExecutionBranch fallback, ledgerBranch missing fallback, and shallow-clone hint, so fresh Arena sessions can seal after pull without extra queries.",
-      "status": "committed",
+      "status": "executing",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1800,10 +1800,16 @@
           "src/cli/synth.ts",
           "src/ledger/branch.ts",
           "src/ledger/delivery.ts"
-        ]
+        ],
+        "identity": {
+          "agentId": "synth-cli-3385",
+          "sessionId": "2b00e9e1-0e88-433f-a994-17a0dca44176",
+          "approvalMode": "autonomous",
+          "issuedAt": 436
+        }
       },
       "createdAt": 431,
-      "updatedAt": 434,
+      "updatedAt": 436,
       "executionBranch": "arena/a3a7925a-synth"
     }
   },
@@ -1830,5 +1836,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 435
+  "lastEventOffset": 437
 }
