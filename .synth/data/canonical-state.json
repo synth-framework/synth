@@ -1,6 +1,6 @@
 {
-  "version": 460,
-  "stateHash": "1969059809",
+  "version": 461,
+  "stateHash": "84962574",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1768,10 +1768,13 @@
           "scripts/governance/parallel-runner.js",
           "scripts/govern-profiler.js",
           "scripts/governance/**"
-        ]
+        ],
+        "refinementId": "e802b0e1c98a4df9",
+        "refinementNote": "PREMISE CONTRADICTION recorded by measurement before this expedition is started (operator decision 2026-10-13). This expedition is scoped to 'Use ParallelRunner for deterministic checks with no dependencies after build ... measure speedup for govern --full', which frames parallelism as an OPTIMIZATION INSIDE the incremental-selection model: select a subset by blast radius, then parallelize the deterministic ones. Measurement says selection is the broken part and parallelism should be the primary strategy over the whole suite. EVIDENCE 1 - the selector narrows when it should widen. For a change to src/verification/{checks,context,engine,types}.ts, src/cli/synth.ts and src/infra/event-store.ts, `govern-profiler.js --dry-run --explain --profile pull-request` returned risk high, affectedClasses [kernel], checkCount 8, run 5, skip 3: it ran `test` (which is 4 files: synth, proposal-evaluation, governance-evaluation-enforcement, convergence-certification), test:adversarial, test:freeze-certification, typecheck and build, and SKIPPED test:all, govern and proof. The suite that guards the edited dry-run code (tests/lifecycle-dry-run.test.js) is neither in the chain nor selected. High risk produced a narrower run. EVIDENCE 2 - the map behind it is nearly empty: scripts/governance/check-registry.js holds 7 checks with 22 input globs, only 3 of which name a test file; 10 of 169 tasks declare `capabilities`; test:all declares none and estimates 600000 ms against 334 s measured. The engine around it is 3191 lines across 17 modules. EVIDENCE 3 - exhaustive is already cheaper than selective. `npm run test:all` (127 of 242 files, 117 `npm run` invocations) took 5m34s and exited 0. All 242 files run serially took 8m20s. All 242 at 8-way parallel on a 2-core box took 4m11s - i.e. running EVERYTHING in parallel is faster than the current chain running 52% of the files. 183 of 242 files finish in under 2s; the top 3 are 20% of total time and the top 10 are 43%, so duration-balanced sharding, not selection, is what buys the wall clock. RE-SCOPE: ParallelRunner should shard the whole suite by measured duration; selection should be reserved for the expensive or environment-dependent tail (3 files over 30s, benchmarks, certification, and the suites needing sibling workspace packages built). EXP-TEST-005 (74c33996d5e7cf32) owns the file inventory and ownership guard that any sharder needs; do not build a file-level inventory here. MEASUREMENT METHOD, corrected after getting it wrong once: 'measure speedup' must record nproc and the parallelism factor, and must say whether per-file durations were taken solo or contended. A first pass at P=8 on 2 cores inflated per-file durations roughly 4x and produced a false '18.7 min serial for the chain' against a true solo figure of 4.7 min. NEW DEPENDENCY: EXP-CLI-001 (2c13ca22fb8c4e6c) changes the per-process term by about 3x (175.7 ms to load the CLI monolith today, target <=45 ms) and the suite contains 758 CLI-spawn call-sites across 106 files, so per-process cost dominates process count. Any speedup measurement taken before EXP-CLI-001 lands will be obsolete; re-take it after.",
+        "refinementAt": 460
       },
       "createdAt": 423,
-      "updatedAt": 427
+      "updatedAt": 460
     },
     "a33ac4392da04d0e": {
       "id": "a33ac4392da04d0e",
@@ -2069,5 +2072,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 460
+  "lastEventOffset": 461
 }
