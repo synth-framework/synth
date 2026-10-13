@@ -1,6 +1,6 @@
 {
-  "version": 429,
-  "stateHash": "297432670",
+  "version": 430,
+  "stateHash": "1666465433",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1154,14 +1154,16 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Chunk event log and decouple monolithic canonical-state into per-entity derived files",
       "goal": "Resolve the monolithic-state problem at both layers. (1) EVENT LOG: implement the already-designed PartitionedEvent chunking (src/infra/event-store.ts append(partition,event)/readPartition/readSegment) into .synth/data/event-stream/<partition>/<segment>.jsonl with an offset-ordered manifest, preserving deterministic replay. (2) PROJECTION: change StateStore.save (src/infra/state-store.ts:66) to write per-entity derived files (.synth/data/expeditions/<id>.json, .synth/data/missions/<id>.json) instead of one canonical-state.json; canonical-state.json becomes a generated aggregate (amend contract tracking rule). (3) dependsOn: make it a settable canonical attribute via expedition refine --depends-on (writes event, materialized into per-entity file). (4) Archive: relocate per-entity file to .synth/data/expeditions/archived/<id>.json (status marker), not a monolith shuffle. Single source of truth (event log) preserved; merge/review/scale improved.",
-      "status": "draft",
+      "status": "cancelled",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
       "dependsOn": [],
-      "metadata": {},
+      "metadata": {
+        "cancelReason": "Superseded by completed expedition 886dc15e19a8e587, whose goal explicitly lands this feature ('Land the partitioned event-store + per-entity derived-state feature from expedition 01604a3df9d2785d'). Artifacts verified present at HEAD: .synth/data/event-stream/partition-0..3, 60 per-entity expedition files, 5 mission files. Retiring the duplicate draft so it cannot be approved as fresh work."
+      },
       "createdAt": 251,
-      "updatedAt": 251
+      "updatedAt": 429
     },
     "bfe9b21ecfd8074d": {
       "id": "bfe9b21ecfd8074d",
@@ -1803,5 +1805,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 429
+  "lastEventOffset": 430
 }
