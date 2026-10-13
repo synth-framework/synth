@@ -9,6 +9,12 @@
 //      (written by the first ceremony that had to infer one)
 //   3. the attached checkout                       (inferred; always warned)
 //
+// A branch named by 1 or 2 that does not exist *in this clone* (a fresh agent
+// session, or a value left behind by a branch that was merged and deleted)
+// falls back to `main`, then to the checkout, and says so in `warning`. Naming
+// a branch is still the answer; a stale name is not a reason to refuse every
+// ceremony with LEDGER_UNAVAILABLE.
+//
 // A detached HEAD with no config and no record resolves to nothing, and every
 // caller must treat that as a loud refusal — never as "commit where I stand".
 // ============================================================
@@ -31,12 +37,30 @@ export type LedgerBranchResolution = {
 
 export const LEDGER_RECORD_PATH = [".synth", "data", "ledger.json"] as const
 
+/** Where each answer comes from, as a repo-relative path (for `from`). */
+const CONFIG_PATH = ".synth/config.yaml"
+const RECORD_PATH = LEDGER_RECORD_PATH.join("/")
+
+/**
+ * The branch ceremonies fall back to when the named one is absent from this
+ * clone. `main` is the canonical ledger branch (ADR-055 §2.9); the checkout is
+ * the last resort, and both are reported in the resolution warning.
+ */
+export const LEDGER_FALLBACK_BRANCH = "main"
+
 function git(root: string, args: string[]): string | undefined {
   try {
     return execFileSync("git", args, { cwd: root, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }).trim()
   } catch {
     return undefined
   }
+}
+
+/** Does `refs/heads/<branch>` exist in this clone? (Remote refs do not count.) */
+export function branchExistsLocally(root: string, branch: string): boolean {
+  if (!branch) return false
+  const resolved = git(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`])
+  return typeof resolved === "string" && resolved.length > 0
 }
 
 /** The branch the operator's checkout is on (undefined when detached). */
@@ -81,12 +105,39 @@ export function readRecordedLedgerBranch(root: string): LedgerBranchRecord {
 export function resolveLedgerBranch(root: string): LedgerBranchResolution {
   const configured = readConfiguredLedgerBranch(root)
   if (configured) {
-    return { branch: configured, source: "config", from: ".synth/config.yaml" }
+    if (branchExistsLocally(root, configured)) {
+      return { branch: configured, source: "config", from: CONFIG_PATH }
+    }
+    // A configured branch this clone does not have — a fresh agent session, or
+    // a stale value left behind by a branch that was merged and deleted — must
+    // not turn every ceremony into a loud LEDGER_UNAVAILABLE. Fall back to the
+    // canonical base branch (else the checkout) and say so in the warning.
+    const fallback = [LEDGER_FALLBACK_BRANCH, currentBranch(root)].find((name) => branchExistsLocally(root, name ?? ""))
+    if (fallback) {
+      return {
+        branch: fallback,
+        source: "config",
+        from: CONFIG_PATH,
+        warning: `git.ledgerBranch (${configured}) does not exist in this clone; committing ceremonies on ${fallback} instead. Fetch it ('git fetch origin ${configured}') or point git.ledgerBranch at a branch that exists.`,
+      }
+    }
+    // Nothing to fall back to: continue to the recorded branch / inference.
   }
 
   const record = readRecordedLedgerBranch(root)
   if (record.branch) {
-    return { branch: record.branch, source: "recorded", from: ".synth/data/ledger.json" }
+    if (branchExistsLocally(root, record.branch)) {
+      return { branch: record.branch, source: "recorded", from: RECORD_PATH }
+    }
+    const fallback = [LEDGER_FALLBACK_BRANCH, currentBranch(root)].find((name) => branchExistsLocally(root, name ?? ""))
+    if (fallback) {
+      return {
+        branch: fallback,
+        source: "recorded",
+        from: RECORD_PATH,
+        warning: `The recorded ledger branch (${record.branch}) does not exist in this clone; committing ceremonies on ${fallback} instead.`,
+      }
+    }
   }
 
   const current = currentBranch(root)

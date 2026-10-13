@@ -15,6 +15,14 @@ import path from "path"
 import test from "node:test"
 import { runSynth, parseJson } from "./helpers/cli-harness.js"
 import { setupGitBackedProject, createAndApproveMission } from "./helpers/mission-lifecycle.js"
+import { makeTempDirSync } from "./helpers/workspace.js"
+import {
+  isShallowRepository,
+  lastBranchCreatedBranch,
+  resolveDeliveryBranch,
+  resolveIntegrationCandidate,
+  verifySeal,
+} from "../dist/ledger/delivery.js"
 
 function git(root, args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf-8" }).trim()
@@ -252,6 +260,216 @@ test("status: a finished expedition warns it is undelivered, then delivered-but-
     assert.equal(sealed.status, 0, sealed.stderr)
 
     assert.equal(deliveryWarnings().length, 0, "a sealed expedition no longer warns")
+  } finally {
+    fs.rmSync(projectDir, { recursive: true, force: true })
+  }
+})
+
+// ============================================================
+// THE DULL INBOX — `status` prints commands that work when pasted
+// ============================================================
+// A fresh clone must not need three queries (status, show, and a grep of the
+// event stream for EXPEDITION_BRANCH_CREATED) to assemble two commands, and a
+// shallow clone must not report a true ancestry as a false refusal. These tests
+// pin the resolution order, the shallow hint, and the shape of the warning.
+// ============================================================
+
+/** A throwaway git repo on `main` with two commits, for the resolution tests. */
+function makeDeliveryRepo(prefix = "synth-delivery-unit-") {
+  const root = makeTempDirSync(prefix)
+  fs.writeFileSync(path.join(root, "README.md"), "# fixture\n")
+  execFileSync("git", ["init", "-b", "main", root], { stdio: "pipe" })
+  git(root, ["config", "user.email", "delivery@test"])
+  git(root, ["config", "user.name", "Delivery Test"])
+  git(root, ["add", "-A"])
+  git(root, ["commit", "-m", "c1"])
+  const first = git(root, ["rev-parse", "HEAD"])
+  fs.writeFileSync(path.join(root, "SECOND.md"), "second\n")
+  git(root, ["add", "-A"])
+  git(root, ["commit", "-m", "c2"])
+  return { root, first, second: git(root, ["rev-parse", "HEAD"]) }
+}
+
+test("delivery: verifySeal names a shallow clone and the fetch that fixes it", () => {
+  const { root, first, second } = makeDeliveryRepo()
+  const parentDir = makeTempDirSync("synth-delivery-shallow-")
+  const clone = path.join(parentDir, "clone")
+  try {
+    execFileSync("git", ["clone", "--depth", "1", `file://${root}`, clone], { stdio: "pipe" })
+    assert.equal(isShallowRepository(clone), true, "the depth-1 clone is shallow")
+    assert.equal(isShallowRepository(root), false, "the source repo is not")
+
+    // The parent commit is absent from a depth-1 clone, so the proof cannot be
+    // made — and the refusal must say that the clone, not history, is at fault.
+    const refused = verifySeal(clone, { tipCommit: first, mergeCommit: second })
+    assert.equal(refused.ok, false)
+    assert.match(refused.detail, /shallow/i, refused.detail)
+    assert.match(refused.hint, /git fetch origin main --unshallow/)
+
+    // The same proof succeeds in the full clone.
+    const full = verifySeal(root, { tipCommit: first, mergeCommit: second })
+    assert.equal(full.ok, true, full.detail)
+    assert.equal(full.hint, undefined)
+
+    // The hint is the fix: deepen, and the shallow clone proves it too.
+    execFileSync("git", ["fetch", "--deepen=1"], { cwd: clone, stdio: "pipe" })
+    const deepened = verifySeal(clone, { tipCommit: first, mergeCommit: second })
+    assert.equal(deepened.ok, true, deepened.detail)
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+    fs.rmSync(parentDir, { recursive: true, force: true })
+  }
+})
+
+test("delivery: resolveDeliveryBranch falls back from the record to the event to a remote ref", () => {
+  const { root } = makeDeliveryRepo()
+  const expeditionId = "abc12345deadbeef"
+  const branchName = "expedition/m1/revisit-testing-abc12345"
+  try {
+    git(root, ["branch", branchName])
+    const tip = git(root, ["rev-parse", branchName])
+    const events = [
+      { type: "EXPEDITION_BRANCH_CREATED", timestamp: 5, payload: { expeditionId, branch: "expedition/m1/older-abc12345" } },
+      { type: "EXPEDITION_BRANCH_CREATED", timestamp: 9, payload: { expeditionId, branch: branchName } },
+      { type: "EXPEDITION_CREATED", timestamp: 3, payload: { expedition: { id: expeditionId } } },
+    ]
+
+    // The newest branch-created event wins; other event types are ignored.
+    assert.equal(lastBranchCreatedBranch(events, expeditionId), branchName)
+    assert.equal(lastBranchCreatedBranch(events, "ffffffffffffffff"), undefined)
+
+    // 1. A recorded binding beats the event.
+    const bound = resolveDeliveryBranch(root, { expeditionId, executionBranch: "main", events })
+    assert.equal(bound.branch, "main")
+    assert.equal(bound.source, "executionBranch")
+
+    // 2. No binding: the ledger's branch-created event supplies the name — the
+    //    case that used to fail with NoExecutionBranch.
+    const fromEvent = resolveDeliveryBranch(root, { expeditionId, events })
+    assert.equal(fromEvent.branch, branchName)
+    assert.equal(fromEvent.source, "branchCreatedEvent")
+    assert.equal(fromEvent.tipCommit, tip)
+
+    // 3. Neither: a remote ref naming the expedition.
+    git(root, ["update-ref", `refs/remotes/origin/${branchName}`, tip])
+    const fromRemote = resolveDeliveryBranch(root, { expeditionId })
+    assert.equal(fromRemote.source, "remoteScan")
+    assert.equal(fromRemote.tipCommit, tip)
+
+    // 4. A recorded name this clone cannot resolve loses to one that can: the
+    //    point is a command that works, not fidelity to a stale binding.
+    const staleBinding = resolveDeliveryBranch(root, { expeditionId, executionBranch: "merged-and-deleted" })
+    assert.equal(staleBinding.branch, `origin/${branchName}`)
+    assert.equal(staleBinding.source, "remoteScan")
+    assert.equal(staleBinding.canonicalBranch, branchName, "the canonical name survives the origin/ form")
+
+    // A name nothing in this clone resolves is reported with the fetch that
+    // would fix it — never printed as a command that would fail.
+    const missing = resolveDeliveryBranch(root, { expeditionId: "beef1234beef1234", executionBranch: "merged-and-deleted" })
+    assert.equal(missing.branch, "merged-and-deleted")
+    assert.equal(missing.unresolved, "merged-and-deleted")
+    assert.equal(missing.fetchHint, "git fetch origin merged-and-deleted")
+    assert.equal(missing.tipCommit, undefined)
+
+    // Nothing known at all: no branch is invented.
+    assert.deepEqual(resolveDeliveryBranch(root, { expeditionId: "0000000000000000" }), {})
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test("delivery: resolveIntegrationCandidate names the base head that contains the tip, and nothing otherwise", () => {
+  const { root } = makeDeliveryRepo()
+  try {
+    git(root, ["checkout", "-q", "-b", "feat"])
+    fs.writeFileSync(path.join(root, "FEAT.md"), "feat\n")
+    git(root, ["add", "-A"])
+    git(root, ["commit", "-m", "feat: work"])
+    const tip = git(root, ["rev-parse", "HEAD"])
+
+    assert.deepEqual(
+      resolveIntegrationCandidate(root, { tipCommit: tip, baseBranches: ["main"] }),
+      {},
+      "main does not contain the tip yet, so nothing is named",
+    )
+    assert.deepEqual(resolveIntegrationCandidate(root, { baseBranches: ["main"] }), {}, "no tip, no guess")
+
+    git(root, ["checkout", "-q", "main"])
+    git(root, ["merge", "--no-ff", "-q", "-m", "Merge feat", "feat"])
+    assert.deepEqual(
+      resolveIntegrationCandidate(root, { tipCommit: tip, baseBranches: ["main"] }),
+      { mergeCommit: git(root, ["rev-parse", "HEAD"]), base: "main" },
+    )
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test("status: a pending expedition warns with copy-pasteable commands, and deliver works bare", async () => {
+  const projectDir = await setupGitBackedProject("synth-delivery-inbox-")
+  try {
+    const { missionId } = await createAndApproveMission(projectDir, {
+      subject: "Inbox Mission",
+      purpose: "Prove status prints working commands",
+      returnGateContext: true,
+    })
+    const branch = git(projectDir, ["rev-parse", "--abbrev-ref", "HEAD"])
+
+    const created = runSynth(
+      ["expedition", "create", "--mission", missionId, "--subject", "Inbox Expedition", "--goal", "Prove the inbox"],
+      projectDir,
+    )
+    assert.equal(created.status, 0, created.stderr)
+    const expeditionId = parseJson(created.stdout).draftId
+    assert.equal(runSynth(["expedition", "approve", "--draft-id", expeditionId], projectDir).status, 0)
+
+    // Declare the branch (ADR-056) so the record carries it. This is what a
+    // fresh session has, and what `deliver --id <id>` needs to work bare.
+    const committed = runSynth(
+      ["expedition", "commit", "--proposal-id", expeditionId, "--branch", branch, "--no-create"],
+      projectDir,
+    )
+    assert.equal(committed.status, 0, committed.stderr)
+    const started = runSynth(["expedition", "start", "--id", expeditionId, "--branch", branch, "--no-create"], projectDir)
+    assert.equal(started.status, 0, started.stderr)
+
+    fs.writeFileSync(path.join(projectDir, "INBOX.md"), "inbox payload\n")
+    git(projectDir, ["add", "INBOX.md"])
+    git(projectDir, ["commit", "-m", "feat: inbox payload"])
+    const finished = runSynth(["expedition", "finish", "--id", expeditionId, "--note", "inbox test"], projectDir)
+    assert.equal(finished.status, 0, finished.stderr)
+
+    const warning = parseBriefing(runSynth(["status"], projectDir).stdout).warnings.find(
+      (w) => w.kind === "delivery-pending",
+    )
+    assert.ok(warning, "the finished expedition warns")
+    assert.ok(Array.isArray(warning.commands), `the warning carries commands, not prose to parse: ${warning.remediation}`)
+    assert.equal(warning.commands[0], `synth expedition deliver --id ${expeditionId} --branch ${branch} --no-push`)
+    assert.match(warning.commands[1], new RegExp(`^synth expedition seal --id ${expeditionId} --merge-commit \\S+$`))
+
+    // Whatever commit the seal command names must really contain the tip.
+    const named = warning.commands[1].split("--merge-commit ")[1]
+    if (named !== "<sha>") {
+      const contains = (() => {
+        try {
+          execFileSync("git", ["merge-base", "--is-ancestor", git(projectDir, ["rev-parse", branch]), named], {
+            cwd: projectDir,
+            stdio: "pipe",
+          })
+          return true
+        } catch {
+          return false
+        }
+      })()
+      assert.equal(contains, true, `${named} does not contain the delivered tip`)
+    }
+
+    // The printed deliver command works as printed — bare, with no --branch.
+    const delivered = runSynth(["expedition", "deliver", "--id", expeditionId, "--no-push"], projectDir)
+    assert.equal(delivered.status, 0, delivered.stderr)
+    const deliveredJson = parseJson(delivered.stdout)
+    assert.equal(deliveredJson.branch, branch)
+    assert.equal(deliveredJson.branchSource, "executionBranch")
   } finally {
     fs.rmSync(projectDir, { recursive: true, force: true })
   }

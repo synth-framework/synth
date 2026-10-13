@@ -103,12 +103,43 @@ test("ledger ceremony: config names the ledger branch and wins over the record",
       { branch: "main", source: "recorded" },
     )
 
-    // Config wins over the record.
+    // Config wins over the record. The named branch exists in this clone, so
+    // the answer is the configured name with nothing to warn about.
+    git(root, ["branch", "trunk-ledger"])
     fs.writeFileSync(path.join(root, ".synth", "config.yaml"), "git:\n  ledgerBranch: trunk-ledger\n")
     assert.deepEqual(
       { branch: resolveLedgerBranch(root).branch, source: resolveLedgerBranch(root).source },
       { branch: "trunk-ledger", source: "config" },
     )
+    assert.equal(resolveLedgerBranch(root).warning, undefined, "a configured branch this clone has needs no warning")
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test("ledger ceremony: a named ledger branch missing from this clone falls back instead of refusing", () => {
+  const root = makeLedgerRepo()
+  try {
+    // The fresh-session case: config names a branch left behind by a session
+    // whose branch was merged and deleted, so this clone does not have it.
+    // Every ceremony used to fail LEDGER_UNAVAILABLE here.
+    fs.writeFileSync(path.join(root, ".synth", "config.yaml"), "git:\n  ledgerBranch: arena/previous-session\n")
+    const resolution = resolveLedgerBranch(root)
+    assert.equal(resolution.branch, "main", "falls back to the canonical ledger branch")
+    assert.equal(resolution.source, "config", "the answer still came from config")
+    assert.match(resolution.warning, /arena\/previous-session/, "the warning names the branch that is missing")
+    assert.match(resolution.warning, /main/, "and the branch it fell back to")
+
+    // A recorded branch that is missing falls back the same way.
+    fs.rmSync(path.join(root, ".synth", "config.yaml"))
+    fs.writeFileSync(
+      path.join(root, ".synth", "data", "ledger.json"),
+      JSON.stringify({ branch: "gone-after-merge", recordedAt: "2026-10-12T00:00:00.000Z" }) + "\n",
+    )
+    const fromRecord = resolveLedgerBranch(root)
+    assert.equal(fromRecord.branch, "main")
+    assert.equal(fromRecord.source, "recorded")
+    assert.match(fromRecord.warning, /gone-after-merge/)
   } finally {
     fs.rmSync(root, { recursive: true, force: true })
   }
