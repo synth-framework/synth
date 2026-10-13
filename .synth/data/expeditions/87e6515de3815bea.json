@@ -14,10 +14,15 @@
       "sessionId": "128dd550-e837-4137-9c81-fff84dd6dc22",
       "approvalMode": "autonomous",
       "issuedAt": 403
+    },
+    "delivery": {
+      "branch": "arena/92bee2da-synth",
+      "tipCommit": "12fc3390101b44dae4e69297b7dc664e9657c6ae",
+      "deliveredAt": 409
     }
   },
   "createdAt": 399,
-  "updatedAt": 407,
+  "updatedAt": 409,
   "executionBranch": "arena/92bee2da-synth",
   "attachments": [
     {
