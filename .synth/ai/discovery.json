@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "supportedInputTypes": [
+    "natural_language",
+    "repository",
+    "document",
+    "url",
+    "diagram",
+    "image"
+  ],
+  "supportedOutputArtifacts": [
+    "DiscoveryArtifact",
+    "IntentModel",
+    "DomainModel",
+    "MissionProposal",
+    "UncertaintyReport"
+  ],
+  "discoveryModes": [
+    {
+      "name": "greenfield",
+      "repositoryType": "greenfield",
+      "command": "synth first-contact start --intent '<intent>'",
+      "description": "Start from raw intent and produce a Discovery artifact."
+    },
+    {
+      "name": "brownfield",
+      "repositoryType": "brownfield",
+      "command": "synth discover [--export]",
+      "description": "Capture baseline from an existing repository."
+    },
+    {
+      "name": "hybrid",
+      "repositoryType": "hybrid",
+      "command": "synth first-contact start --intent '<intent>' && synth discover [--export]",
+      "description": "Combine intent and repository baseline."
+    }
+  ]
+}

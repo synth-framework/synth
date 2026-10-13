@@ -4,8 +4,8 @@
 // Not a full APM — just phase timing + structured error capture + a
 // synchronous stderr trail so a hung command shows the last phase it entered.
 import { performance } from "node:perf_hooks"
-import { appendFileSync } from "node:fs"
-import { fileURLToPath } from "node:url"
+import { appendFileSync, mkdirSync } from "node:fs"
+import path from "node:path"
 
 export interface Span {
   name: string
@@ -21,16 +21,12 @@ class Telemetry {
 
   constructor() {
     this.enabled = process.env.SYNTH_TELEMETRY !== "0"
+    // File sink is opt-in only (SYNTH_TELEMETRY_SINK). By default telemetry
+    // goes to stderr and writes NO file: any file under the governed project
+    // would appear as an uncommitted source change to the completion gate and
+    // to auto-commit, and nothing reads a default sink file.
     const sinkEnv = process.env.SYNTH_TELEMETRY_SINK
-    if (sinkEnv) {
-      this.sink = sinkEnv
-    } else {
-      try {
-        this.sink = fileURLToPath(new URL("../../.synth/ai/telemetry.jsonl", import.meta.url))
-      } catch {
-        this.sink = undefined
-      }
-    }
+    this.sink = sinkEnv ? sinkEnv : undefined
   }
 
   start(name: string): Span {
@@ -73,6 +69,7 @@ class Telemetry {
     process.stderr.write(`[telemetry] ${line}\n`)
     if (this.sink) {
       try {
+        mkdirSync(path.dirname(this.sink), { recursive: true })
         appendFileSync(this.sink, line + "\n")
       } catch {
         // sink writes are best-effort

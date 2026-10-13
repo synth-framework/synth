@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "protocols": [
+    {
+      "name": "genesis",
+      "version": "1.0.0",
+      "url": "docs/reference/genesis-protocol.md"
+    }
+  ]
+}

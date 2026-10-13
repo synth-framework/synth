@@ -32,11 +32,8 @@ coverage/
 # scripts/check-artifact-policy.js fails CI when the index or these rules
 # disagree with it. Do not hand-edit one half of the table.
 #
-# derived projections (never committed)
-.synth/ai/
-.synth/context.json
-.synth/discovery/
-# cache + legacy (never committed)
+# cache + legacy (never committed). Projections under .synth/ai/, context.json and
+# discovery/ are durable and tracked; they must never be ignored (check-artifact-policy).
 .synth/cache/
 .synth/anchor/
 .synth/worktrees/

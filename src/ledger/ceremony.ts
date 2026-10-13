@@ -346,7 +346,11 @@ export function commitCeremonySync(
   }
 
   try {
-    execFileSync("git", ["add", "-A", "--", ...existing], { cwd: root, stdio: ["pipe", "pipe", "pipe"] })
+    // Deletions are staged only for ceremonies that declare them (the delete
+    // verbs). Any other removal of a tracked ledger file is not a ceremony, so
+    // it must not become a commit (ADR-055 I5; see the writer's restore loop).
+    const addMode = spec?.deletesArtifacts ? "-A" : "--no-all"
+    execFileSync("git", ["add", addMode, "--", ...existing], { cwd: root, stdio: ["pipe", "pipe", "pipe"] })
     const staged = execFileSync("git", ["diff", "--cached", "--name-only", "--", ...existing], {
       cwd: root,
       encoding: "utf-8",

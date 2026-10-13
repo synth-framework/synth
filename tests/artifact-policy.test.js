@@ -15,6 +15,7 @@
 import { test } from "node:test"
 import assert from "node:assert"
 import { execFileSync } from "node:child_process"
+import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -56,9 +57,6 @@ test("artifact policy: classification", async (t) => {
 
   await t.test("derived, cache and legacy artifacts are never committable", () => {
     for (const [relPath, klass] of [
-      [".synth/ai/lifecycle.json", "derived"],
-      [".synth/context.json", "derived"],
-      [".synth/discovery/baseline.json", "derived"],
       ["docs/generated/README.md", "derived"],
       [".synth/cache/dependency-records.json", "cache"],
       [".synth/anchor/HEAD", "cache"],
@@ -69,6 +67,17 @@ test("artifact policy: classification", async (t) => {
     ]) {
       assert.strictEqual(classifyArtifact(relPath), klass, relPath)
       assert.strictEqual(isCommittableArtifact(relPath), false, relPath)
+    }
+  })
+
+  await t.test("agent projections, context and discovery baselines are durable and tracked", () => {
+    for (const relPath of [
+      ".synth/ai/lifecycle.json",
+      ".synth/context.json",
+      ".synth/discovery/baseline-2026-08-04T04-09-52-238Z-e72dc6e1a986c57e.json",
+    ]) {
+      assert.strictEqual(classifyArtifact(relPath), "durable", relPath)
+      assert.strictEqual(isCommittableArtifact(relPath), true, relPath)
     }
   })
 
@@ -121,4 +130,71 @@ test("artifact policy: the repository obeys it", async (t) => {
     })
     assert.match(result, /check-artifact-policy: PASS/)
   })
+})
+
+// ------------------------------------------------------------
+// Removal guard and ignore rules against the base branch
+// ------------------------------------------------------------
+
+const { findUnmanifestedRemovals, validateRemovalManifest } = await import(
+  path.join(REPO_ROOT, "scripts", "lib", "removal-guard.js")
+)
+
+test("removal guard: a removal without a manifest entry is a problem", () => {
+  const problems = findUnmanifestedRemovals(["a.json", "b.json"], ["a.json"], [])
+  assert.strictEqual(problems.length, 1)
+  assert.match(problems[0], /^b\.json/)
+})
+
+test("removal guard: an approved removal passes", () => {
+  const manifest = [{ path: "b.json", reason: "superseded", approvedBy: "owner" }]
+  assert.deepStrictEqual(findUnmanifestedRemovals(["a.json", "b.json"], ["a.json"], manifest), [])
+})
+
+test("removal guard: a manifest entry without approvedBy does not count", () => {
+  const manifest = [{ path: "b.json", reason: "superseded" }]
+  const problems = findUnmanifestedRemovals(["b.json"], [], manifest)
+  assert.strictEqual(problems.length, 1)
+  assert.match(problems[0], /approvedBy/)
+})
+
+test("removal guard: a file added on this branch is never a removal", () => {
+  assert.deepStrictEqual(findUnmanifestedRemovals(["a.json"], ["a.json", "new.json"], []), [])
+})
+
+test("removal manifest must be an array of entries with a path", () => {
+  assert.deepStrictEqual(validateRemovalManifest([{ path: "x", reason: "r", approvedBy: "a" }]), [])
+  assert.ok(validateRemovalManifest({}).length > 0)
+  assert.ok(validateRemovalManifest([{ reason: "no path" }]).length > 0)
+})
+
+test("no .gitignore rule hides a path the base branch tracks", (t) => {
+  let base = null
+  for (const ref of ["origin/main", "main"]) {
+    try {
+      git(["rev-parse", "--verify", "--quiet", `${ref}^{commit}`])
+      base = ref
+      break
+    } catch {
+      // try the next ref
+    }
+  }
+  if (base === null) {
+    t.skip("no base branch in this checkout (CI fetches full history)")
+    return
+  }
+  const approvedRemovals = new Set(
+    JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "docs", "artifact-removals.json"), "utf-8")).map((e) => e.path),
+  )
+  const baseTracked = git(["ls-tree", "-r", "--name-only", base])
+    .split("\n")
+    .filter(Boolean)
+    .filter((relPath) => !approvedRemovals.has(relPath))
+  let ignored = ""
+  try {
+    ignored = git(["check-ignore", "--no-index", "--stdin"], { input: baseTracked.join("\n") })
+  } catch (error) {
+    if (error?.status !== 1) throw error
+  }
+  assert.strictEqual(ignored.trim(), "", `ignored although tracked on ${base}:\n${ignored}`)
 })

@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "capabilities": [
+    {
+      "name": "Mission",
+      "description": "Create and approve Missions",
+      "availability": "available"
+    },
+    {
+      "name": "Expedition",
+      "description": "Create and execute Expeditions",
+      "availability": "available"
+    },
+    {
+      "name": "Discovery",
+      "description": "Run Discovery workflows",
+      "availability": "available"
+    },
+    {
+      "name": "Governance",
+      "description": "Validate governance state",
+      "availability": "available"
+    },
+    {
+      "name": "Replay",
+      "description": "Inspect replayed state",
+      "availability": "available"
+    },
+    {
+      "name": "Knowledge",
+      "description": "Access canonical knowledge graph",
+      "availability": "available"
+    },
+    {
+      "name": "Execution",
+      "description": "Perform execution mutations",
+      "availability": "available"
+    }
+  ]
+}

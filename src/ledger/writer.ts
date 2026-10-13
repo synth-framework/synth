@@ -512,7 +512,8 @@ export async function advanceCanonicalBranch(root: string, options: AdvanceOptio
     }
   }
 
-  gitQuiet(writerPath, ["add", "-A", "--", ...existingPaths])
+  // Stage deletions only when the ceremony declares them (see the restore loop above).
+  gitQuiet(writerPath, ["add", options.deletesArtifacts ? "-A" : "--no-all", "--", ...existingPaths])
   const staged = gitQuiet(writerPath, ["diff", "--cached", "--name-only", "--", ...existingPaths])
   const files = staged.ok ? staged.out.split("\n").map((line) => line.trim()).filter(Boolean) : []
   if (files.length === 0) {

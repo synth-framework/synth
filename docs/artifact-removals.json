@@ -1,0 +1,17 @@
+[
+  {
+    "path": ".synth/data/event-log.jsonl",
+    "reason": "Legacy monolithic event log. All 262 events are present with identical content in .synth/data/event-stream/ (verified 2026-10-12). Classified legacy; not committable.",
+    "approvedBy": "user (chat, 2026-10-12)"
+  },
+  {
+    "path": ".synth/data/cli-errors.jsonl",
+    "reason": "Debug log appended by printError on every CLI error. Tracking it would make failing read commands dirty the tree. Classified legacy; not committable.",
+    "approvedBy": "user (chat, 2026-10-12)"
+  },
+  {
+    "path": ".synth/data/dependency-records-cache.json",
+    "reason": "Superseded mtime cache with no writer; the live cache is .synth/cache/dependency-records.json. Classified cache; not committable.",
+    "approvedBy": "user (chat, 2026-10-12)"
+  }
+]

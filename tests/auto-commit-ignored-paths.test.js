@@ -68,7 +68,22 @@ async function main() {
     `the untracked ignored draft must never be committed:\n${lastCommit}`,
   )
 
+  // Deletion regression: a tracked artifact that disappears from disk must NOT
+  // be committed as a deletion by auto-commit. Before the fix, `git add -A`
+  // over .synth/data staged the removal and the transition recorded it.
+  await fs.rm(trackedDraft, { force: true })
+  const deleteProbe = runSynth(["expedition", "refine", "--id", expeditionId, "--note", "deletion probe"], projectDir)
+  assert(deleteProbe.status === 0, `refine must exit 0 after an out-of-band deletion:\n${deleteProbe.stderr}`)
+  const deletionCommit = runGit(["show", "--name-status", "--format=", "HEAD"], projectDir)
+  assert(
+    !deletionCommit.split("\n").some((line) => line.startsWith("D\t") && line.includes("tracked-draft.json")),
+    `auto-commit must not record an out-of-band deletion of a tracked artifact:\n${deletionCommit}`,
+  )
+  const stillTracked = runGit(["ls-files", ".synth/data/drafts/tracked-draft.json"], projectDir).trim()
+  assert(stillTracked.length > 0, "the tracked draft must remain in the index after the transition")
+
   console.log("[PASS] auto-commit survives tracked-but-ignored paths and skips untracked ignored files")
+  console.log("[PASS] auto-commit does not commit an out-of-band deletion of a tracked artifact")
 }
 
 main().catch((err) => {

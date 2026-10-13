@@ -12,6 +12,20 @@ import type { CanonicalState } from "../types/index.js"
 import type { ExecutionGate } from "../control/execution-gate.js"
 import { writeAiMetadata } from "./ai-metadata.js"
 
+/** True when the file already holds `value` once `generatedAt` is ignored. */
+async function sameIgnoringTimestamp(file: string, value: Record<string, unknown>): Promise<boolean> {
+  try {
+    const existing = JSON.parse(await fs.readFile(file, "utf-8")) as Record<string, unknown>
+    const strip = (v: Record<string, unknown>) => {
+      const { generatedAt: _ignored, ...rest } = v
+      return JSON.stringify(rest)
+    }
+    return strip(existing) === strip(value)
+  } catch {
+    return false
+  }
+}
+
 /**
  * Write agent orientation artifacts.
  *
@@ -55,20 +69,28 @@ When in doubt, run \`synth status\` and ask the human for the next step.
     generatedAt: new Date().toISOString(),
   }
 
+  // context.json is tracked. Rewrite it only when its content changes apart
+  // from generatedAt, so re-running init does not create a commit of churn.
+  const contextChanged = !(await sameIgnoringTimestamp(contextPath, context))
+
   if (gate) {
     await gate.execute({
       actor: "synth-cli",
       capability: "FilesystemWrite",
       payload: { path: contractPath, content: contract },
     })
-    await gate.execute({
-      actor: "synth-cli",
-      capability: "FilesystemWrite",
-      payload: { path: contextPath, content: JSON.stringify(context, null, 2) },
-    })
+    if (contextChanged) {
+      await gate.execute({
+        actor: "synth-cli",
+        capability: "FilesystemWrite",
+        payload: { path: contextPath, content: JSON.stringify(context, null, 2) },
+      })
+    }
   } else {
     await fs.writeFile(contractPath, contract, "utf-8")
-    await fs.writeFile(contextPath, JSON.stringify(context, null, 2), "utf-8")
+    if (contextChanged) {
+      await fs.writeFile(contextPath, JSON.stringify(context, null, 2), "utf-8")
+    }
   }
 
   if (state) {

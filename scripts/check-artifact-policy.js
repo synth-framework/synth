@@ -12,6 +12,9 @@
 //   4. every non-committable class IS ignored
 //   5. --ci: the branch policy is back at `mode: enforce` (no suspended
 //      window may reach main)
+//   6. no .gitignore rule hides a path the base branch tracks
+//   7. every path the base branch tracks and this index does not is listed,
+//      with a reason and an approver, in docs/artifact-removals.json
 //
 // Usage: node scripts/check-artifact-policy.js [--ci]
 // Exit: 0 = policy holds, 1 = violations (printed as a report)
@@ -37,6 +40,8 @@ try {
 
 const { ARTIFACT_RULES, classifyArtifact, isCommittableArtifact } = policy
 
+const { findUnmanifestedRemovals, validateRemovalManifest } = await import("./lib/removal-guard.js")
+
 function git(args, { input } = {}) {
   return execFileSync("git", args, {
     cwd: ROOT,
@@ -60,6 +65,28 @@ function ignoredAmong(paths) {
     // git check-ignore exits 1 when nothing is ignored.
     if (error?.status === 1) return new Set()
     throw error
+  }
+}
+
+/** origin/main if present, else main; undefined when neither exists. */
+function resolveBase() {
+  for (const ref of ["origin/main", "main"]) {
+    try {
+      git(["rev-parse", "--verify", "--quiet", `${ref}^{commit}`])
+      return ref
+    } catch {
+      // try the next ref
+    }
+  }
+  return undefined
+}
+
+/** docs/artifact-removals.json, or [] when absent. Malformed input is reported by the removal check. */
+function manifestForIgnore() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(ROOT, "docs", "artifact-removals.json"), "utf-8"))
+  } catch {
+    return []
   }
 }
 
@@ -88,7 +115,7 @@ if (misclassified.length > 0) {
   failures.push({
     check: "tracked non-committable artifacts",
     detail: misclassified,
-    hint: "git rm --cached <path> (keep the file on disk; it is regenerable/legacy)",
+    hint: "reclassify the path in src/state/artifact-policy.ts. A derived projection becomes durable and is committed; a cache or legacy file stays ignored. Never untrack a file to satisfy this check.",
   })
 }
 
@@ -99,6 +126,57 @@ if (ignoredTracked.length > 0) {
     detail: ignoredTracked,
     hint: "remove the .gitignore rule (a tracked file must never be ignored) or untrack the file",
   })
+}
+
+// 6 + 7 — compare against the base branch: what main tracks must still be
+// tracked here, unless the removal is reviewed in docs/artifact-removals.json.
+const base = resolveBase()
+if (base === undefined) {
+  if (ci) {
+    failures.push({
+      check: "base branch unavailable",
+      detail: ["neither origin/main nor main exists, so removals cannot be checked"],
+      hint: "fetch the base branch (actions/checkout with fetch-depth: 0)",
+    })
+  } else {
+    notes.push("removal guard skipped: no base branch (origin/main or main) in this checkout")
+  }
+} else {
+  const baseTracked = git(["ls-tree", "-r", "--name-only", base]).split("\n").filter(Boolean)
+  // Paths whose removal is approved in the manifest are meant to be ignored.
+  const approvedRemovals = new Set(
+    (Array.isArray(manifestForIgnore()) ? manifestForIgnore() : []).map((entry) => entry.path),
+  )
+  const ignoredBase = [...ignoredAmong(baseTracked.filter((relPath) => !approvedRemovals.has(relPath)))].sort()
+  if (ignoredBase.length > 0) {
+    failures.push({
+      check: `ignored by .gitignore but tracked on ${base}`,
+      detail: ignoredBase,
+      hint: "remove the .gitignore rule. A rule that hides a tracked artifact is how untracking happens silently.",
+    })
+  }
+  const manifestPath = path.join(ROOT, "docs", "artifact-removals.json")
+  let manifest = []
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"))
+  } catch (error) {
+    if (error?.code !== "ENOENT") {
+      failures.push({ check: "artifact removal manifest", detail: [String(error.message)], hint: "fix docs/artifact-removals.json" })
+    }
+  }
+  const manifestProblems = validateRemovalManifest(manifest)
+  if (manifestProblems.length > 0) {
+    failures.push({ check: "artifact removal manifest", detail: manifestProblems, hint: "fix docs/artifact-removals.json" })
+  }
+  const removals = findUnmanifestedRemovals(baseTracked, tracked, Array.isArray(manifest) ? manifest : [])
+  if (removals.length > 0) {
+    failures.push({
+      check: `tracked on ${base}, untracked here`,
+      detail: removals,
+      hint: "restore the file to the index. If the removal is intended, record it in docs/artifact-removals.json with a reason and approvedBy.",
+    })
+  }
+  notes.push(`removal guard: compared with ${base} (${baseTracked.length} tracked on base)`)
 }
 
 // 3 + 4 — .gitignore must agree with the policy, class by class.

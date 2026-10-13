@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "skills": [
+    {
+      "id": "genesis",
+      "name": "Genesis Skill",
+      "trigger": "User expresses raw product intent",
+      "description": "Begin a structured Discovery process."
+    },
+    {
+      "id": "brownfield-discovery",
+      "name": "Brownfield Discovery Skill",
+      "trigger": "Repository exists and is SYNTH-governed",
+      "description": "Capture baseline before proposing transformation."
+    },
+    {
+      "id": "mission-authoring",
+      "name": "Mission Authoring Skill",
+      "trigger": "Discovery artifact is approved",
+      "description": "Refine and approve a Mission draft."
+    },
+    {
+      "id": "expedition-planning",
+      "name": "Expedition Planning Skill",
+      "trigger": "Mission is active",
+      "description": "Propose Expeditions for the active Mission."
+    },
+    {
+      "id": "governance-verification",
+      "name": "Governance Verification Skill",
+      "trigger": "Before any state mutation",
+      "description": "Verify the action complies with governance."
+    },
+    {
+      "id": "replay-inspection",
+      "name": "Replay Inspection Skill",
+      "trigger": "Need to understand previous decisions",
+      "description": "Inspect replay output for context."
+    }
+  ]
+}
