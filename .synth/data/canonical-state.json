@@ -1,6 +1,6 @@
 {
-  "version": 415,
-  "stateHash": "281946062",
+  "version": 416,
+  "stateHash": "197787571",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1612,7 +1612,14 @@
         }
       },
       "createdAt": 395,
-      "updatedAt": 414
+      "updatedAt": 415,
+      "attachments": [
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/f0f81e358899d8f2/attachments/testing-and-reporting-infrastructure-review.md",
+          "hash": "3895dc24fc6f2f328e2b806fb527950c150cdb28f35d5d374c444c696f55679c"
+        }
+      ]
     },
     "87e6515de3815bea": {
       "id": "87e6515de3815bea",
@@ -1698,5 +1705,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 415
+  "lastEventOffset": 416
 }
