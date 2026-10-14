@@ -7,7 +7,14 @@
   "objectives": [],
   "discoveries": [],
   "decisions": [],
-  "dependsOn": [],
+  "dependsOn": [
+    "e9a83ffda86ca767",
+    "f6420030064a6f70",
+    "328c0147b49d2743",
+    "a33ac4392da04d0e",
+    "74c33996d5e7cf32",
+    "e47a186cb472a20a"
+  ],
   "metadata": {
     "scope": [
       "src/**",
@@ -19,8 +26,11 @@
       "package.json",
       "tsconfig.json",
       "CHANGELOG.md"
-    ]
+    ],
+    "refinementId": "9c20a2c2b7fe517b",
+    "refinementNote": "Sequencing per operator decision 2026-10-13: cleanup runs AFTER the testing work and after EXP-CLI-003 restructures src/cli. Dependencies added at draft time because 'expedition create' takes no --depends-on flag.",
+    "refinementAt": 475
   },
   "createdAt": 474,
-  "updatedAt": 474
+  "updatedAt": 475
 }
