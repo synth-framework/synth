@@ -26,6 +26,23 @@
     }
   },
   "createdAt": 473,
-  "updatedAt": 489,
-  "executionBranch": "arena/d5e4625c-synth"
+  "updatedAt": 493,
+  "executionBranch": "arena/d5e4625c-synth",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "3fa18359773ca8bf088f53eb8c737fa7be36c43874e2256962694505353bb2bf"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "d589610461f9de67d908d31d62ba839e6fbc1f2956c3e04aef221d6c58a42aff"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-phase2.md",
+      "hash": "32a788b44041180b126610db702503b7a2a08e138c61170e16ee22ed926ed58a"
+    }
+  ]
 }

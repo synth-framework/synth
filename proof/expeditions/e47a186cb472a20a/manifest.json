@@ -1,0 +1,22 @@
+{
+  "expeditionId": "e47a186cb472a20a",
+  "capturedAt": 1791983589942,
+  "note": "Phase 2 complete: the five module-scope process.cwd() captures (checkpoint-store.ts:11, event-store.ts:13-14, state-store.ts:12-13) are call-time resolvers taking an explicit root. Guarded by tests/ambient-root-resolution.test.js (6 tests, static scan + chdir behaviour + byte-equivalence), registered as a task and appended to test:all (115 -> 116 segments). Deterministic: eager module counts unchanged at entry.js 147 / main.js 171 / synth.js 298, unreachable unchanged at 44 of 348, +4 KB per graph; no new unused-export candidates. No timing claim: the control-adjusted compare moved the bare-process floor 4.8 ms on a 2-core box, so the load budgets stay unmet and belong to Phases 3-4. One deliberate behaviour change: StateStore snapshots now co-locate with the store's own state file instead of writing into the operator's checkout from a temp-rooted store. Two tests fail identically before and after (first-contact-replay state divergence; execution-gate-regression ERR_MODULE_NOT_FOUND), proven by rebuilding from the stashed pre-change source.",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "3fa18359773ca8bf088f53eb8c737fa7be36c43874e2256962694505353bb2bf"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "d589610461f9de67d908d31d62ba839e6fbc1f2956c3e04aef221d6c58a42aff"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-phase2.md",
+      "hash": "32a788b44041180b126610db702503b7a2a08e138c61170e16ee22ed926ed58a"
+    }
+  ]
+}
