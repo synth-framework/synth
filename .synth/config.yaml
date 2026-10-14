@@ -18,7 +18,7 @@ git:
   # removing the key entirely (infer the ledger branch from the checkout when it
   # matches branchPolicy.declaredPatterns) is the fix, drafted as expedition
   # "Adapter configuration consolidated".
-  ledgerBranch: arena/15e0fc51-synth
+  ledgerBranch: arena/d5e4625c-synth
   branchStrategy: featured
   branchPolicy:
     mode: enforce
