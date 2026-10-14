@@ -1,6 +1,6 @@
 {
-  "version": 492,
-  "stateHash": "18511756",
+  "version": 493,
+  "stateHash": "1578616071",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -1852,7 +1852,7 @@
       "missionId": "4ab7e9d2cc7b1b66",
       "name": "Adapter configuration consolidated: declared vs detected",
       "goal": "Adapter configuration has no home. It is spread across five places with no authority order and no schema. (a) .synth/config.yaml holds a single `git:` block, parsed ad hoc by three independent modules (ledger/branch.ts:74, adapter/git-snapshot.ts:338, repository/branch-policy.ts) with no type, no loader module and no validation, so an unknown or misspelled key is silently ignored. (b) `synth init` writes detection results into the generated manifest under `adapters: {selected, config, diagnostics}` (cli/synth.ts:3070-3090) - a regenerable document, and absent from this repository manifest altogether. (c) .synth/context.json persists a repository classification (`repositoryType: brownfield-polyglot`, confidence, derivedFrom) but no adapter configuration. (d) `synth adapter configure repository path=. remote=origin defaultBranch=main promotionMode=direct` (cli/adapter.ts:11,74-86) is accepted and then lost: GitRepositoryAdapter.configure (adapters/repository/git.ts:187-199) merges into in-memory state and never writes, so the verb has no durable effect across a process restart. (e) Forge credentials are split between env GITHUB_TOKEN and a config schema that declares `token` required (adapters/github/adapter.ts:72), which invites a personal access token into tracked YAML. The consequence is measured, not theoretical: detectRecommendedAdapters already computes defaultBranch and remote (cli/detect-adapters.ts:113-119) and both are dropped, so the same fact is hardcoded three separate times (ledger/delivery.ts:347 defaults baseBranches to [\"origin/main\",\"main\"] and no caller ever passes the option; ledger/branch.ts:49 LEDGER_FALLBACK_BRANCH = \"main\"; cli/adapter.ts:81 defaultBranch || \"main\"). Outcome required: (1) a typed `adapters:` section in .synth/config.yaml - adapters.repository.{provider,remote,baseBranch,snapshots,hooks} and adapters.forge.{provider,owner,repo,baseUrl} - read through one new loader module with schema validation that warns on unknown keys. (2) Detected observations written to .synth/cache/adapters.json (gitignored, artifact class `cache` per state/artifact-policy.ts:58, same precedent as dependency-records.json), each carrying value, confidence and derivedFrom, and including a git BINARY probe so that \"git is not installed\" is distinguishable from \"git is installed but this directory is not a repository\". Today first-contact onboard:detect returns byte-identical output for both cases and advises `synth adapter init` even when git is absent, which is advice the operator cannot follow. (3) A documented and tested authority order: CLI flag, then config.yaml, then cached detection, then built-in default - where the built-in default is provider none declaring no capabilities, never origin/main. (4) The three hardcoded branch defaults deleted and fed from configuration through the baseBranches option ledger/delivery.ts:347 already accepts. (5) `synth adapter configure --approve` promotes a detection proposal into config.yaml, plan-then-approve in the same shape as first-contact onboard --approve; this single mechanism is what makes the greenfield offer (\"git is installed, this is not a repository - initialise it?\") and the brownfield offer (\"a repository and a GitHub remote were detected - configure the forge adapter?\") the same code path. (6) Credentials resolved from env or a secret store only, with `token` removed from the GitHub adapter required config schema. (7) The existing `git:` block migrated to adapters.repository.* with a deprecation warning on read, and `git.ledgerBranch` retired: the ledger branch is inferred from the checkout when it matches branchPolicy.declaredPatterns, with trunk as the last resort rather than the first. (8) The ledger-branch fallback order corrected - a stale configured value plus a stale .synth/data/ledger.json record (currently arena/c5db653e-synth) resolve to local `main` today, which would commit governance state onto the trunk branch instead of the declared operator checkout; a checkout matching a declared pattern must win over trunk. Acceptance: the three-system matrix (no git at all / git installed without a repository / git installed with a repository) yields distinct, truthful recognition output and identical ledger behaviour in all three; no repository or branch value is hardcoded outside the loader documented defaults; `synth adapter configure` survives a process restart; no secret can be written into .synth/config.yaml; and the ledger records ceremonies with zero VCS present, reporting verification as unavailable rather than failing.",
-      "status": "draft",
+      "status": "cancelled",
       "objectives": [],
       "discoveries": [],
       "decisions": [],
@@ -1875,10 +1875,11 @@
           "src/repository/branch-policy.ts",
           "src/state/artifact-policy.ts",
           "tests/**"
-        ]
+        ],
+        "cancelReason": "Folded into EXP-LIFE-002 (f0912d1aeee16213) by operator decision 2026-10-14. Same defect class: names and configuration carried forward without factual verification. All five configuration sites, the measured consequence (detectRecommendedAdapters computes defaultBranch and remote at cli/detect-adapters.ts:113-119 and both are dropped, so the fact is hardcoded three times), the eight required outcomes and the acceptance matrix are reproduced in that expedition's refinement note as deliverable D7, where outcomes 7 and 8 are now backed by an observed incident rather than a prediction: git.ledgerBranch named the previous session's branch, resolution fell back to local main, and eight ceremony commits landed on the trunk during this session. This record is retained, not deleted; its 4579-char goal remains the detailed source."
       },
       "createdAt": 441,
-      "updatedAt": 441
+      "updatedAt": 492
     },
     "2c9c6c62a727ece8": {
       "id": "2c9c6c62a727ece8",
@@ -2219,5 +2220,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 492
+  "lastEventOffset": 493
 }
