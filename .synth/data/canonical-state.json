@@ -1,6 +1,6 @@
 {
-  "version": 479,
-  "stateHash": "606830993",
+  "version": 481,
+  "stateHash": "1669546503",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -2036,10 +2036,22 @@
           "sessionId": "5ea249ec-ac83-4c85-b217-7122a7225440",
           "approvalMode": "autonomous",
           "issuedAt": 468
+        },
+        "delivery": {
+          "branch": "origin/arena/15e0fc51-synth",
+          "tipCommit": "78777068eab506f30cf4468811406ff2c2057b54",
+          "deliveredAt": 479
+        },
+        "integration": {
+          "mergeCommit": "12884da29307f26a5bc80834c5d34ca6275bc93b",
+          "branch": "origin/arena/15e0fc51-synth",
+          "tipCommit": "78777068eab506f30cf4468811406ff2c2057b54",
+          "baseBranch": "main",
+          "integratedAt": 480
         }
       },
       "createdAt": 458,
-      "updatedAt": 471,
+      "updatedAt": 480,
       "executionBranch": "arena/15e0fc51-synth",
       "attachments": [
         {
@@ -2169,5 +2181,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 479
+  "lastEventOffset": 481
 }
