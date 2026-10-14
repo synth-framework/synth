@@ -1,0 +1,30 @@
+EXP-CLI-001 (2c13ca22fb8c4e6c) Phase 0 — test results
+recorded 2026-10-13, branch arena/15e0fc51-synth, nproc=2, node v22.22.3
+
+### npm run test:all (canonical chain, 115 && segments) ###
+rc=0  wall=407s  (baseline 334s)
+resolved command tail: n/a
+
+### per-suite results (node --test / node tests/<f>.test.js) ###
+  GREEN (post-change):
+    loader-entrypoint            23 pass / 0 fail   ~6.0s   (was 10 pass / 3 fail, orphaned; now chain segment #115)
+    governance-quiet-output       5 PASS lines      1.5s    (chain #2; assertion inverted to the new contract)
+    clean-machine-output          rc=0              1.5s    (chain #83; assertion inverted to the new contract)
+    human-output-mode             6 pass / 0 fail   1.8s    (orphan; assertion inverted)
+    synth-cli, command-safety, first-operator-experience, homepage-public-vocabulary, agent-guide,
+    capabilities-cli, installer-contract, brownfield-certification, repo-local-synth-shim,
+    environment-capability-report, environment-discovery-evidence, environment-discovery,
+    installer-distribution, installer-upgrade, installer-verify, dry-run-readonly,
+    verify-engine, no-write-on-read, capability-registry-accuracy, synth-cli-govern-explain,
+    cli-contract, explain-status-actionable                      all rc=0
+  RED — PRE-EXISTING (identical failure on the stashed pre-change build; all orphans, none chained):
+    synth-cli-repo          'repo branch create should exit 0'
+    migration               ENOENT on a temp archive dir
+    first-contact-cli       rc=1
+    governance-report-cli   'expedition report falls back to runtime state for CLI-created expedition'
+
+### gates ###
+  synth verify : status ok | 6 total / 6 pass / 0 fail / 0 warn / 0 skipped
+  synth doctor : 11 of 12 checks ok | only not-ok = ledgerSync (anchor 11 commits behind; remedy: doctor --fix)
+  distIntegrity: 1050 dist file(s) verified
+  replay/chain : 470 events, segmented layout (was 462 at turn start)
