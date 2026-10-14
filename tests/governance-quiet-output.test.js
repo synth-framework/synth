@@ -21,15 +21,17 @@ async function main() {
   console.log("Running quiet/summary output tests...")
   const projectDir = await setupProject()
   try {
-    // Default status emits JSON with diagnostic INFO logs to stderr.
-    // Force verbose even when CI sets SYNTH_QUIET_LOGS=1, so this test
-    // still validates the default-verbose contract independently of env.
+    // Default status emits JSON on stdout and no diagnostic chatter on stderr.
+    // EXP-CLI-001: the operator decided `status` must not write an INFO line to
+    // stderr, so the light path (entry.js -> status-light) and the heavy path
+    // (synth.js -> cmdStatus) stay byte-identical. SYNTH_QUIET_LOGS=0 is still
+    // forced so this asserts the contract independently of the environment.
     const defaultResult = runSynth(["status"], projectDir, {
       env: { ...process.env, SYNTH_QUIET_LOGS: "0" },
     })
     assert(defaultResult.status === 0, `default status must exit 0: ${defaultResult.stderr}`)
     assert(defaultResult.stdout.trim().startsWith("{"), "default status should emit JSON to stdout")
-    assert(defaultResult.stderr.includes('"level":"INFO"'), "default status should emit INFO logs to stderr")
+    assert(!defaultResult.stderr.includes('"level":"INFO"'), "default status should not emit INFO logs to stderr")
 
     // --quiet suppresses diagnostic INFO logs to stderr.
     const quietResult = runSynth(["status", "--quiet"], projectDir)
@@ -56,7 +58,7 @@ async function main() {
     assert(!combinedResult.stderr.includes('"level":"INFO"'), "quiet+summary should suppress INFO logs")
     assert(combinedResult.stdout.includes("status:"), "quiet+summary should include status line")
 
-    console.log("[PASS] default status emits JSON and INFO logs")
+    console.log("[PASS] default status emits JSON and no INFO chatter on stderr")
     console.log("[PASS] --quiet suppresses INFO logs")
     console.log("[PASS] --no-bootstrap-logs suppresses INFO logs")
     console.log("[PASS] --summary emits condensed summary")

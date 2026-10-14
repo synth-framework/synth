@@ -27,6 +27,8 @@ import { createPosixFilesystemProvider, FILESYSTEM_WRITE_TOKEN } from "../infra/
 import { locateEventLog } from "../infra/event-store.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
+import { COMMANDS, PUBLIC_VOCABULARY, printHelp } from "./usage.js"
+import { printVersion } from "./version.js"
 import {
   AUTO_COMMIT_INCLUDE_ROOTS,
   autoCommitExcludePathspecs,
@@ -160,51 +162,11 @@ import type { SynthEvent } from "../types/index.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const DEFAULT_PROJECT_NAME = "Synth Project"
-const PUBLIC_VOCABULARY = [
-  "Mission",
-  "Expedition",
-  "Evidence",
-  "Plan",
-  "Event",
-  "State",
-  "Replay",
-]
-
-const COMMANDS = [
-  { name: "version", description: "Print the installed Synth version" },
-  { name: "doctor", description: "Verify installation and project health" },
-  { name: "checkpoint", description: "Run pre-flight checkpoint before implementation work" },
-  { name: "init", description: "Initialize the current directory as a Synth project" },
-  { name: "bootstrap", description: "Transform a repository into a Synth project" },
-  { name: "discover", description: "Produce a read-only analysis of a repository" },
-  { name: "govern", description: "Run the full governance pipeline" },
-  { name: "validate", description: "Analyze changes, plan validations, and execute them (--dry-run, --full)" },
-  { name: "verify", description: "Verify governance invariants, projection consistency, and event-log signatures" },
-  { name: "approval", description: "Two-party approval operations (request, grant, deny, list, show)" },
-  { name: "status", description: "Report the current project state" },
-  { name: "report", description: "Print a global human-readable project report" },
-  { name: "mission", description: "Mission Studio operations (create, approve, snapshot)" },
-  { name: "program", description: "Governance program inventory (list)" },
-  { name: "project", description: "Project-level derived artifacts" },
-  { name: "intent", description: "Intent model operations (create)" },
-  { name: "alignment", description: "Intent alignment and divergence governance (prepare)" },
-  { name: "expedition", description: "Expedition lifecycle (create, approve, commit, start, complete, archive, list)" },
-  { name: "docs", description: "Documentation operations (generate)" },
-  { name: "explain", description: "Explain operations (replay, lineage, proposals, snapshots, graph, diagnostics, status, identity, resume, governance, all)" },
-  { name: "repair", description: "Repair operations (replay)" },
-  { name: "release", description: "Deterministic, operator-approved release versioning" },
-  { name: "certify", description: "Run failure and recovery certification scenarios" },
-  { name: "capabilities", description: "List installed and missing CLI capabilities" },
-  { name: "first-contact", description: "Guided onboarding entry point (greenfield, brownfield, legacy) and greenfield workflow (start, clarify, project, verify, approve, materialize, status)" },
-  { name: "genesis", description: "Alias for the greenfield onboarding workflow (first-contact)" },
-  { name: "ai", description: "AI agent interoperability (refresh)" },
-  { name: "repo", description: "Repository and release governance operations" },
-  { name: "snapshot", description: "Create, list, show, and verify git-anchored governance snapshots" },
-  { name: "adapter", description: "Delegate to the adapter management CLI" },
-  { name: "log", description: "Query the governance event log (read-only)" },
-  { name: "task", description: "Canonical task orchestration (list, explain, graph, doctor)" },
-  { name: "migrate", description: "Detect, plan, archive, and import legacy Synth state (detect, plan, archive, import)" },
-]
+// EXP-CLI-001: PUBLIC_VOCABULARY and COMMANDS moved to ./usage.js, the single
+// canonical description of the CLI surface shared with the light dispatcher in
+// ./entry.js. They were duplicated here and there, and the copies had drifted:
+// the dispatcher's list omitted `verify`, `task`, `release` and `report`, and
+// 21 of the 29 shared names carried different descriptions.
 
 
 // Wraps shared setAgentTelemetry to parse CLI flags into telemetry data.
@@ -794,8 +756,10 @@ async function getVersion(): Promise<string> {
 }
 
 async function cmdVersion() {
-  const version = await getVersion()
-  printJson({ status: "ok", version, name: "synth", schema: "synth-cli-v1" })
+  // EXP-CLI-001: one implementation, shared with the light dispatcher. The JSON
+  // envelope is canonical for every caller (operator decision 2026-10-13); the
+  // documented global --human flag opts into the bare version string.
+  printVersion(await getVersion(), process.argv.includes("--human"))
 }
 
 type DoctorCheckResult = { ok: boolean; detail: string; nextStep?: string }
@@ -1670,25 +1634,14 @@ async function executeValidationPlan(scripts: string[], taskRegistry?: TaskRegis
 }
 
 async function cmdHelp() {
-  printJson({
-    status: "ok",
-    name: "synth",
-    description: "AI-native operator CLI for SYNTH v2",
-    usage: "synth <command> [options]",
-    commands: COMMANDS,
-    vocabulary: PUBLIC_VOCABULARY,
-    globalOptions: [
-      { name: "--json", description: "Emit machine-clean JSON and suppress diagnostic logs to stderr" },
-      { name: "--human", description: "Emit prose summaries instead of JSON" },
-      { name: "--quiet", description: "Suppress bootstrap and diagnostic INFO/WARN/DEBUG logs" },
-      { name: "--no-bootstrap-logs", description: "Alias for --quiet; suppress bootstrap and diagnostic logs" },
-      { name: "--summary", description: "Emit a condensed summary: status, kind, id, and next step" },
-      { name: "--discovery-mode", description: "Reject mutating commands; safe for read-only exploration" },
-    ],
-    note: "All output is JSON by default for agent consumption.",
-  })
+  // EXP-CLI-001: one help renderer, shared with the light dispatcher. Prose on a
+  // TTY, JSON envelope when piped (operator decision 2026-10-13); --json and
+  // --human override the heuristic. The piped payload is byte-identical to the
+  // pre-EXP-CLI-001 output, so agent consumers see no change.
+  const argv = process.argv.slice(2)
+  const human = argv.includes("--json") ? false : argv.includes("--human") ? true : undefined
+  printHelp(await getVersion(), human)
 }
-
 function namespaceHelp(
   namespace: string,
   description: string,
@@ -3413,24 +3366,22 @@ async function cmdGovern(flags: Record<string, string | boolean>) {
 }
 
 async function cmdStatus() {
-  await sdk.paths.ensureDataDir(sdk.workspace.root())
-  const logger = new Logger("status")
-  logger.info("Resolving governance context for operator briefing")
-  // EXP-AI-003 superseded (ADR-055 §2.8): `status` is a pure read. It used to
-  // rewrite .synth/ai/*.json on every invocation, which made a read-only
-  // command dirty the working tree. `synth ai refresh` is the explicit
-  // regenerator, and the bootstrap path still refreshes on init.
-  const briefing = await buildOperatorBriefing(process.cwd())
-  const validation = await buildStatusValidationSummary()
-  if (briefing.status === "ok" && validation) {
-    ;(briefing as Record<string, unknown>).validation = validation
-  }
-  printJson(briefing)
-  if (briefing.status === "error") {
-    process.exit(1)
-  }
+  // EXP-CLI-001: delegate to the single `status` implementation instead of
+  // keeping a second copy. ./status-light.ts was a line-by-line duplicate of
+  // this function minus its Logger, and the two had already drifted: the copy
+  // emitted an INFO line on stderr that the light path did not.
+  //
+  // Operator decision 2026-10-13: drop that line from both paths. `status` is a
+  // pure read (EXP-AI-003 superseded, ADR-055 §2.8) and the line carried no
+  // information a caller could act on. Use `synth ai refresh` for explicit
+  // regeneration of .synth/ai/.
+  //
+  // Loaded lazily so the heavy graph does not grow; human/summary/quiet modes
+  // are already set by main() before dispatch, and printJson inside runStatus
+  // honours them — which is how `status --human` renders prose on both paths.
+  const { runStatus } = await import("./status-light.js")
+  await runStatus()
 }
-
 function parseTokenList(value: string | boolean | undefined): string[] {
   if (typeof value !== "string" || value.length === 0) return []
   return value
@@ -8831,6 +8782,12 @@ export async function main() {
   }
 
   switch (command) {
+    case "help":
+      // EXP-CLI-001: bare `help` used to fall through to `Unknown command` and
+      // exit 1 here, while the shipped dispatcher served it as usage text. Both
+      // entry points now agree: rc=0 and the same renderer.
+      await cmdHelp()
+      break
     case "version":
       await cmdVersion()
       break

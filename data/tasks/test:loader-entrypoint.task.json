@@ -1,0 +1,14 @@
+{
+  "id": "test:loader-entrypoint",
+  "description": "npm script migration: test:loader-entrypoint",
+  "command": "node tests/loader-entrypoint.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

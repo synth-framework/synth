@@ -128,6 +128,7 @@
     "test:installer-certification": "node scripts/task-adapter-shim.js test:installer-certification",
     "test:first-operator-experience": "node scripts/task-adapter-shim.js test:first-operator-experience",
     "test:synth-cli": "node scripts/task-adapter-shim.js test:synth-cli",
+    "test:loader-entrypoint": "node scripts/task-adapter-shim.js test:loader-entrypoint",
     "test:release": "node scripts/task-adapter-shim.js test:release",
     "test:govern-recursion-guard": "node scripts/task-adapter-shim.js test:govern-recursion-guard",
     "test:draft-integrity": "node scripts/task-adapter-shim.js test:draft-integrity",

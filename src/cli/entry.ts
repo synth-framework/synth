@@ -1,73 +1,58 @@
 #!/usr/bin/env node
 // SYNTH-LOADER-001: thin CLI entrypoint.
 //
-// Light commands (version / help) are served inline so they never load the
-// heavy synth.js module graph (which eagerly imports core/bootstrap.js and runs
-// the 13-step bootstrap on every invocation). Every other command is lazily
+// Light commands (version / help / status) are served inline so they never load
+// the heavy synth.js module graph (which eagerly imports core/bootstrap.js and
+// runs the 13-step bootstrap on every invocation). Every other command is lazily
 // imported, so the heavy machinery only loads when actually needed.
-import { readFileSync } from "fs"
+//
+// EXP-CLI-001: the light handlers no longer carry their own copy of the CLI
+// surface. Version and help come from ./version.js and ./usage.js, which the
+// monolith imports as well, so both entry points answer identically. Before this
+// they had drifted in four measurable ways: this file printed a bare semver
+// where synth.js printed a JSON envelope; it printed prose help where synth.js
+// printed a JSON envelope; its 30-command list omitted `verify`, `task`,
+// `release` and `report`; and it ignored the global --human / --json / --quiet /
+// --summary flags entirely, so `synth status --human` answered with JSON.
 import { fileURLToPath } from "url"
 import path from "path"
 import { runStatus } from "./status-light.js"
 import { runExplainReplay, parseReplayFlags } from "./explain-replay-light.js"
 import { parseExplainFlags } from "./explain-flags.js"
+import { projectVersion, printVersion } from "./version.js"
+import { printHelp } from "./usage.js"
+import { setHumanMode, setQuietMode, setSummaryMode } from "./output.js"
 
 const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
 
-function projectVersion(): string {
-  const pkgPath = fileURLToPath(new URL("../../package.json", import.meta.url))
-  const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string }
-  return pkg.version ?? "0.0.0"
-}
+/**
+ * Apply the global output flags on the light path exactly as synth.js's main()
+ * applies them on the heavy path.
+ *
+ * Returns the caller's explicit request for prose (true) or JSON (false), or
+ * undefined when they asked for neither — which lets a TTY heuristic decide for
+ * help. Precedence is `--json` over `--human` over the TTY, so an explicit flag
+ * always beats the heuristic and a piped invocation is always machine-readable.
+ */
+function applyOutputFlags(argv: readonly string[]): boolean | undefined {
+  if (argv.includes("--quiet") || argv.includes("--no-bootstrap-logs")) setQuietMode(true)
+  if (argv.includes("--summary")) setSummaryMode(true)
 
-const COMMAND_LIST: ReadonlyArray<readonly [string, string]> = [
-  ["init", "Initialize a repository as a Synth project"],
-  ["status", "Inspect current mission / expedition state"],
-  ["explain", "Explain operations (replay, lineage, proposals, snapshots, graph)"],
-  ["log", "Query the governance event log (read-only)"],
-  ["doctor", "Verify installation and project health"],
-  ["capabilities", "Expose what the installed CLI can and cannot do"],
-  ["validate", "Analyze changes, plan, and run validations"],
-  ["govern", "Run the full governance pipeline"],
-  ["mission", "Mission Studio operations"],
-  ["expedition", "Expedition lifecycle and inventory operations"],
-  ["program", "Governance program inventory"],
-  ["project", "Project-level derived artifacts (AGENTS.md)"],
-  ["alignment", "Intent alignment and divergence governance"],
-  ["intent", "Intent model operations"],
-  ["discover", "Produce a read-only analysis of a repository"],
-  ["bootstrap", "Transform a repository into a Synth project"],
-  ["first-contact", "Guided onboarding entry point"],
-  ["genesis", "Alias of first-contact"],
-  ["adapter", "Delegate to the adapter management CLI"],
-  ["ai", "AI agent interoperability"],
-  ["repo", "Repository release and branch operations"],
-  ["snapshot", "Git-anchored governance state snapshots"],
-  ["docs", "Documentation operations"],
-  ["repair", "Runtime repair operations"],
-  ["certify", "Run failure and recovery certification scenarios"],
-  ["approval", "Two-party approval operations"],
-  ["checkpoint", "Run pre-flight checkpoint before implementation"],
-  ["migrate", "Legacy migration subsystem"],
-  ["help", "Show this help"],
-  ["version", "Print the installed Synth version"],
-]
+  const json = argv.includes("--json")
+  const human = argv.includes("--human")
+  // EXP-DISC-004: --json requests machine-clean output, so diagnostic logs are
+  // suppressed on stderr. Mirrors the heavy path.
+  if (json) process.env.SYNTH_QUIET_LOGS = "1"
+  if (human) setHumanMode(true)
 
-function printHelp(): void {
-  const version = projectVersion()
-  const lines = COMMAND_LIST.map(([name, desc]) => `  ${name.padEnd(14)} ${desc}`)
-  console.log(
-    `synth v${version}\n` +
-      `AI-Native Operator CLI.\n\n` +
-      `Usage: synth <command> [options]\n\n` +
-      `Commands:\n${lines.join("\n")}\n\n` +
-      `Run 'synth <command> --help' for command-specific usage.\n` +
-      `Use 'synth status' to inspect the current mission / expedition state.\n`,
-  )
+  if (json) return false
+  if (human) return true
+  return undefined
 }
 
 export async function run(): Promise<void> {
   const command = process.argv[2] ?? "help"
+  const argv = process.argv.slice(2)
 
   // `explain replay` and the read-only `explain identity|resume|governance`
   // subcommands are bootstrap-free, so they are served without loading the
@@ -96,14 +81,22 @@ export async function run(): Promise<void> {
   }
 
   if (LIGHT_COMMANDS.has(command)) {
+    const human = applyOutputFlags(argv)
+
     if (command === "status") {
+      // runStatus() renders through printJson, which honours the human/summary
+      // modes set above — this is what makes `status --human` work here.
       await runStatus()
       return
     }
     if (command === "help" || command === "--help" || command === "-h") {
-      printHelp()
+      // Operator decision 2026-10-13: prose on a TTY, JSON envelope when piped.
+      printHelp(projectVersion(), human)
     } else {
-      console.log(projectVersion())
+      // Operator decision 2026-10-13: the JSON envelope is canonical for every
+      // caller; --human opts into the bare string. No TTY heuristic here, so a
+      // human at a terminal still gets machine-readable output by default.
+      printVersion(projectVersion(), human === true)
     }
     return
   }
