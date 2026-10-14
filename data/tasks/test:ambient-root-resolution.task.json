@@ -1,0 +1,14 @@
+{
+  "id": "test:ambient-root-resolution",
+  "description": "EXP-CLI-003 Phase 2 guard: the infra stores resolve their root per call, never at module import, and snapshots co-locate with the store",
+  "command": "node tests/ambient-root-resolution.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

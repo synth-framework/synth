@@ -9,8 +9,29 @@ import { computeStateHash } from "../runtime/replay.js"
 import { dataDir } from "../sdk/paths/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
 
-const STATE_FILE = path.join(dataDir(process.cwd()), "canonical-state.json")
-const SNAPSHOTS_DIR = path.join(dataDir(process.cwd()), "snapshots")
+/** Resolve the canonical state file for `root` at call time (EXP-CLI-003 Phase 2).
+ *
+ *  This was a module-scope constant, `path.join(dataDir(process.cwd()), ...)`,
+ *  which froze the ambient working directory at import time: a store built after
+ *  a `process.chdir()`, or by a caller inspecting another project, silently
+ *  pointed at whichever directory happened to be current when this module was
+ *  first loaded. Callers that know their root pass it explicitly; callers that do
+ *  not get the working directory as of the call, never as of the import. */
+export function stateFile(root: string = process.cwd()): string {
+  return path.join(dataDir(root), "canonical-state.json")
+}
+
+/** Resolve the snapshot directory for `root` at call time (EXP-CLI-003 Phase 2).
+ *
+ *  This was a module-scope constant, `path.join(dataDir(process.cwd()), ...)`,
+ *  which froze the ambient working directory at import time: a store built after
+ *  a `process.chdir()`, or by a caller inspecting another project, silently
+ *  pointed at whichever directory happened to be current when this module was
+ *  first loaded. Callers that know their root pass it explicitly; callers that do
+ *  not get the working directory as of the call, never as of the import. */
+export function snapshotsDir(root: string = process.cwd()): string {
+  return path.join(dataDir(root), "snapshots")
+}
 
 /** Top-level Record collections in CanonicalState that are split into
  *  per-entity derived files (e.g. .synth/data/expeditions/<id>.json). */
@@ -55,9 +76,16 @@ export class StateStore implements IStateStore {
   private filePath: string
   private authorized: boolean
 
-  constructor(filePath: string = STATE_FILE, authToken?: symbol) {
-    this.filePath = filePath
+  constructor(filePath?: string, authToken?: symbol) {
+    this.filePath = filePath ?? stateFile()
     this.authorized = authToken === STATE_STORE_WRITE_TOKEN
+  }
+
+  /** Where this store reads and writes. Mirrors EventStore.getFilePath(): a caller
+   *  (or a test) must be able to verify which root a store resolved to without
+   *  reaching into private state. EXP-CLI-003 Phase 2. */
+  getFilePath(): string {
+    return this.filePath
   }
 
   /** Create an authorized StateStore instance for the infrastructure layer. */
@@ -202,22 +230,31 @@ export class StateStore implements IStateStore {
     return computeStateHash(state)
   }
 
+  /** Snapshots live beside THIS store's state file, never beside the ambient
+   *  working directory: a store constructed against a fixture or a temp root must
+   *  not write into the operator's checkout. Byte-identical to the previous
+   *  behaviour for a default-constructed store, whose state file is
+   *  `<dataDir(cwd)>/canonical-state.json`. */
+  private get snapshotsRoot(): string {
+    return path.join(path.dirname(this.filePath), "snapshots")
+  }
+
   async snapshot(state: CanonicalState, name: string): Promise<void> {
     this.ensureAuthorized()
-    await fs.mkdir(SNAPSHOTS_DIR, { recursive: true })
-    const file = path.join(SNAPSHOTS_DIR, `snapshot-${name}-${Date.now()}.json`)
+    await fs.mkdir(this.snapshotsRoot, { recursive: true })
+    const file = path.join(this.snapshotsRoot, `snapshot-${name}-${Date.now()}.json`)
     await fs.writeFile(file, JSON.stringify(state, null, 2))
   }
 
   async loadSnapshot(name: string): Promise<CanonicalState | null> {
     try {
-      const files = await fs.readdir(SNAPSHOTS_DIR)
+      const files = await fs.readdir(this.snapshotsRoot)
       const snapshotFile = files
         .filter((f: string) => f.startsWith(`snapshot-${name}`))
         .sort()
         .pop()
       if (!snapshotFile) return null
-      const raw = await fs.readFile(path.join(SNAPSHOTS_DIR, snapshotFile), "utf-8")
+      const raw = await fs.readFile(path.join(this.snapshotsRoot, snapshotFile), "utf-8")
       return JSON.parse(raw) as CanonicalState
     } catch {
       return null

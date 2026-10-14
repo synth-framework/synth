@@ -8,7 +8,17 @@ import type { ConsumerCheckpoint } from "../types/index.js"
 import { dataDir } from "../sdk/paths/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
 
-const CHECKPOINT_FILE = path.join(dataDir(process.cwd()), "checkpoints.json")
+/** Resolve the checkpoint file for `root` at call time (EXP-CLI-003 Phase 2).
+ *
+ *  This was a module-scope constant, `path.join(dataDir(process.cwd()), ...)`,
+ *  which froze the ambient working directory at import time: a store built after
+ *  a `process.chdir()`, or by a caller inspecting another project, silently
+ *  pointed at whichever directory happened to be current when this module was
+ *  first loaded. Callers that know their root pass it explicitly; callers that do
+ *  not get the working directory as of the call, never as of the import. */
+export function checkpointFile(root: string = process.cwd()): string {
+  return path.join(dataDir(root), "checkpoints.json")
+}
 
 /** Module-private authorization token for CheckpointStore writes.
  *  Only createInfra() can obtain it, ensuring checkpoint mutations flow
@@ -31,9 +41,16 @@ export class CheckpointStore implements ICheckpointStore {
   private dirty = false
   private authorized: boolean
 
-  constructor(filePath: string = CHECKPOINT_FILE, authToken?: symbol) {
-    this.filePath = filePath
+  constructor(filePath?: string, authToken?: symbol) {
+    this.filePath = filePath ?? checkpointFile()
     this.authorized = authToken === CHECKPOINT_STORE_WRITE_TOKEN
+  }
+
+  /** Where this store reads and writes. Mirrors EventStore.getFilePath(): a caller
+   *  (or a test) must be able to verify which root a store resolved to without
+   *  reaching into private state. EXP-CLI-003 Phase 2. */
+  getFilePath(): string {
+    return this.filePath
   }
 
   /** Create an authorized CheckpointStore instance for the infrastructure layer. */
