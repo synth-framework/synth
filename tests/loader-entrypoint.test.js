@@ -14,6 +14,12 @@ function runEntry(args, opts = {}) {
   return { ...r, ms: performance.now() - start }
 }
 
+function runHeavy(args, opts = {}) {
+  const start = performance.now()
+  const r = spawnSync(process.execPath, [SYNTH, ...args], { encoding: "utf8", ...opts })
+  return { ...r, ms: performance.now() - start }
+}
+
 // Subprocess tests prove correctness / byte-identical output to the heavy
 // path. They intentionally do NOT assert wall-clock timing: the sandbox adds
 // node-startup + FS variance that makes subprocess durations flaky. The
@@ -41,22 +47,79 @@ function isolatedCli(body) {
 // tests (the runner writes its protocol there too), so "no synth.js load" is
 // proven purely by stable in-process timing vs. the heavy path's known cost.
 test("loader entrypoint decoupling (light commands skip synth.js)", { timeout: 180000 }, async (t) => {
-  await t.test("entry[subprocess]: `version` prints semver and stays light", () => {
+  // ---- Unified CLI surface -------------------------------------------------
+  // `bin.synth` is entry.js, yet a full test run spawns synth.js directly for
+  // 1536 of its 1572 CLI invocations (98%) -- so the suite was exercising an
+  // entry point that is not shipped. Measured before unification, the two
+  // paths diverged on 7 of 9 invocations: `version` printed a bare semver on
+  // one and a JSON envelope on the other, `help` printed prose on one and
+  // exited 1 with a CLIError on the other, and `status --human` returned JSON
+  // on one and prose on the other. Both now render through the shared
+  // src/cli/usage.ts and src/cli/version.ts modules, so the durable guard is
+  // byte-identity across the whole surface: whichever path grows a private
+  // output contract again, this fails.
+  const SURFACE = [
+    ["version"],
+    ["--version"],
+    ["-v"],
+    ["help"],
+    ["--help"],
+    ["-h"],
+    ["status"],
+    ["status", "--json"],
+    ["status", "--human"],
+  ]
+
+  for (const args of SURFACE) {
+    const label = args.join(" ")
+    await t.test(`entry[subprocess]: \`${label}\` matches the heavy path byte-for-byte`, () => {
+      const light = runEntry(args)
+      const heavy = runHeavy(args)
+      assert.equal(light.status, 0, light.stderr || `exit ${light.status}`)
+      assert.equal(heavy.status, 0, heavy.stderr || `exit ${heavy.status}`)
+      assert.equal(
+        light.stdout,
+        heavy.stdout,
+        `\`${label}\` stdout diverged between entry.js and synth.js`,
+      )
+    })
+  }
+
+  // The contract itself, asserted once so a shared-module regression that
+  // changes BOTH paths identically still fails.
+  await t.test("entry[subprocess]: `version` prints the JSON envelope", () => {
     const r = runEntry(["version"])
     assert.equal(r.status, 0, r.stderr || `exit ${r.status}`)
-    assert.match(r.stdout.trim(), /^\d+\.\d+\.\d+/, `stdout=${JSON.stringify(r.stdout)}`)
+    const parsed = JSON.parse(r.stdout)
+    assert.equal(parsed.status, "ok")
+    assert.match(parsed.version, /^\d+\.\d+\.\d+/, `version field=${JSON.stringify(parsed.version)}`)
   })
 
-  await t.test("entry[subprocess]: `--version` prints semver", () => {
-    const r = runEntry(["--version"])
+  await t.test("entry[subprocess]: `version --human` prints the bare semver", () => {
+    const r = runEntry(["version", "--human"])
     assert.equal(r.status, 0, r.stderr || `exit ${r.status}`)
-    assert.match(r.stdout.trim(), /^\d+\.\d+\.\d+/)
+    assert.match(r.stdout.trim(), /^\d+\.\d+\.\d+$/, `stdout=${JSON.stringify(r.stdout)}`)
   })
 
-  await t.test("entry[subprocess]: `help` prints usage", () => {
+  await t.test("entry[subprocess]: `help` lists every verb when piped", () => {
     const r = runEntry(["help"])
     assert.equal(r.status, 0, r.stderr || `exit ${r.status}`)
-    assert.ok(r.stdout.toLowerCase().includes("synth"), `stdout=${JSON.stringify(r.stdout)}`)
+    const parsed = JSON.parse(r.stdout)
+    const names = parsed.commands.map((c) => c.name)
+    // The shipped help used to omit four verbs the heavy path accepted.
+    for (const verb of ["verify", "task", "release", "report"]) {
+      assert.ok(names.includes(verb), `help omits \`${verb}\`; got ${names.join(", ")}`)
+    }
+    assert.ok(names.includes("version") && names.includes("status"), "help omits a core verb")
+    assert.equal(parsed.name, "synth")
+    assert.ok(parsed.usage.includes("synth"), `usage=${JSON.stringify(parsed.usage)}`)
+  })
+
+  await t.test("entry[subprocess]: `help --human` renders prose when asked", () => {
+    const r = runEntry(["help", "--human"])
+    assert.equal(r.status, 0, r.stderr || `exit ${r.status}`)
+    assert.match(r.stdout, /^synth v\d+\.\d+\.\d+/, `stdout=${JSON.stringify(r.stdout.slice(0, 120))}`)
+    assert.ok(r.stdout.includes("Usage: synth"), "expected a usage line in the prose rendering")
   })
 
   await t.test("entry[subprocess]: `status --json` is valid JSON", () => {

@@ -39,16 +39,21 @@ async function testJsonFlagBeforeCommand() {
 async function testWithoutJsonFlagLogsRemain() {
   await withTempDir("synth-clean-logs-", async (tmpDir) => {
     runSynth(["init", "--name", "Clean Output Test"], tmpDir)
-    // Force verbose output: CI sets SYNTH_QUIET_LOGS=1 globally to keep
-    // logs quiet, but this test verifies the default (non-quiet) contract.
+    // EXP-CLI-001: the operator decided `status` writes no diagnostic line to
+    // stderr at all, so the light path (entry.js -> status-light) and the heavy
+    // path (synth.js -> cmdStatus) stay byte-identical. stderr is therefore
+    // clean with AND without --json. The --json suppression contract for verbs
+    // that genuinely log (e.g. bootstrap) is still covered by
+    // tests/bootstrap-output.test.js. SYNTH_QUIET_LOGS=0 is forced so this
+    // asserts the default contract independently of the environment.
     const { stdout, stderr, status } = runSynth(["status"], tmpDir, {
       env: { ...process.env, SYNTH_QUIET_LOGS: "0" },
     })
     assert(status === 0, "status should exit 0")
     assert(stdout.trim().startsWith("{"), "stdout should be JSON object")
-    assert(hasDiagnosticLog(stderr), `stderr should still contain INFO/WARN/DEBUG logs without --json: ${stderr}`)
+    assert(!hasDiagnosticLog(stderr), `default status should emit no INFO/WARN/DEBUG logs on stderr: ${stderr}`)
   })
-  console.log("[PASS] status without --json still emits diagnostic logs")
+  console.log("[PASS] status without --json also emits no diagnostic logs")
 }
 
 async function testJsonFlagPreservesErrors() {

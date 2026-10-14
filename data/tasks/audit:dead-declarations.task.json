@@ -1,0 +1,13 @@
+{
+  "id": "audit:dead-declarations",
+  "description": "dead-code and load audit tooling (EXP-CLEAN-001 / EXP-CLI-003): audit:dead-declarations",
+  "command": "node scripts/audit-dead-declarations.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance"
+  ],
+  "estimatedDurationMs": 20000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

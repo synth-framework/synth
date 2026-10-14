@@ -144,6 +144,27 @@ After a Mission is approved, create Expeditions:
 synth expedition create --mission "Mission Name" --subject "Expedition Subject" --goal "What this expedition proves or builds"
 ```
 
+## Delivery, seal and branch durability
+
+`delete_branch_on_merge` is **false** on this repository: the operator disabled head-branch
+auto-deletion on 2026-10-14, after PR #344's head branch was auto-deleted on merge and had to be
+restored by hand before `synth expedition deliver` could resolve it.
+
+- `synth expedition deliver --branch origin/<name>` now stays resolvable after a merge, so a delivery
+  record may be written before or after the merge. There is no deadline.
+- This is a GitHub setting, not a ledger guarantee. It is invisible to `synth status` and
+  `synth doctor` (reads stay offline) and anyone with admin can flip it back, so verify before
+  relying on a branch name: `gh api repos/synth-framework/synth --jq .delete_branch_on_merge`.
+- It is not retroactive. Branches deleted before 2026-10-14 are gone, so expeditions whose delivery
+  was pending against them still need a commit-ish rather than a name.
+- Delivery remains an explicit assertion and `seal` still means someone with authority accepted the
+  work. An adapter may enrich a lifecycle transition, never authorize one.
+
+The open design defects behind this — `deliver` keying on a mutable name, the delivery-pending
+expeditions whose branches no longer exist, and delivery records storing a ref path where
+`resolveDeliveryBranch` computes a canonical branch — are recorded in EXP-LIFE-001 (`73c5c033360fecf3`),
+findings B, G, H and I.
+
 ## Environment capability planning
 
 Before planning a Mission or Expedition, read the Environment Capability Report:

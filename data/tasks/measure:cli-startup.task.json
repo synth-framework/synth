@@ -1,0 +1,13 @@
+{
+  "id": "measure:cli-startup",
+  "description": "dead-code and load audit tooling (EXP-CLEAN-001 / EXP-CLI-003): measure:cli-startup",
+  "command": "node scripts/measure-cli-startup.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

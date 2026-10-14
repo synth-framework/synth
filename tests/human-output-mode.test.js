@@ -76,9 +76,18 @@ test("status --human emits prose and no JSON on stdout", () => {
   assert.ok(result.stdout.includes("Phase:"), "expected phase line")
 })
 
-test("status logs go to stderr so stdout stays clean", () => {
+test("status keeps stdout clean and writes no log chatter to stderr", () => {
   const result = runSynth(["status"], process.cwd())
-  assert.ok(result.stderr.includes("Resolving governance context"), "expected INFO log on stderr")
+  assert.strictEqual(result.status, 0, result.stderr)
+  // EXP-CLI-001: the operator decided `status` must not emit an INFO line on
+  // stderr, so the light path (entry.js -> status-light) and the heavy path
+  // (synth.js -> cmdStatus) produce byte-identical output. The point of this
+  // test was always that stdout stays parseable; that now holds for stderr too.
+  assert.doesNotThrow(() => JSON.parse(result.stdout), `stdout is not JSON: ${result.stdout.slice(0, 200)}`)
+  assert.ok(
+    !result.stderr.includes("Resolving governance context"),
+    `expected no INFO chatter on stderr, got: ${result.stderr.slice(0, 200)}`,
+  )
 })
 
 test("bootstrap --approve emits exactly one JSON object on stdout", () => {
