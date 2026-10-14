@@ -1,0 +1,13 @@
+{
+  "id": "audit:module-graph",
+  "description": "dead-code and load audit tooling (EXP-CLEAN-001 / EXP-CLI-003): audit:module-graph",
+  "command": "node scripts/audit-module-graph.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance"
+  ],
+  "estimatedDurationMs": 5000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

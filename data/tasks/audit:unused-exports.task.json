@@ -1,0 +1,13 @@
+{
+  "id": "audit:unused-exports",
+  "description": "dead-code and load audit tooling (EXP-CLEAN-001 / EXP-CLI-003): audit:unused-exports",
+  "command": "node scripts/audit-unused-exports.js",
+  "group": "governance",
+  "dependsOn": [],
+  "tags": [
+    "governance"
+  ],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
