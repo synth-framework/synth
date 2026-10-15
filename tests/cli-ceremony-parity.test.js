@@ -17,6 +17,14 @@ const LEGACY = path.join(REPO, "dist/cli/synth.js")
 const SHIPPED = path.join(REPO, JSON.parse(await fs.readFile(path.join(REPO, "package.json"), "utf8")).bin.synth)
 const INPUTS = fileURLToPath(new URL("./helpers/cli-parity-inputs.js", import.meta.url))
 
+// These are disposable test fixtures, not the operator's repository. Node's
+// recursive rm can still hit transient ENOTEMPTY while Git or the filesystem
+// finishes updating .git/info. Retry only its documented transient errors;
+// do not delete .git/info in the CLI or hide a persistent cleanup failure.
+async function removeFixtureTree(dir, remove = fs.rm) {
+  await remove(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+}
+
 async function filesAt(root) {
   const files = {}
   async function walk(dir, relative = "") {
@@ -73,7 +81,7 @@ async function withFixture(t, git, body) {
   async function pair(args, { status = 0, kind, ceremony, readonly = false } = {}) {
     const label = args.join(" ")
     await t.test(label, () => reportParityFailure(label, async () => {
-      await fs.rm(snapshot, { recursive: true, force: true })
+      await removeFixtureTree(snapshot)
       await fs.cp(root, snapshot, { recursive: true })
       const before = await filesAt(root)
       const beforeGit = gitState()
@@ -103,7 +111,7 @@ async function withFixture(t, git, body) {
       const legacy = invoke(LEGACY)
       const legacyFiles = await filesAt(root)
       const legacyGit = gitState()
-      await fs.rm(root, { recursive: true, force: true })
+      await removeFixtureTree(root)
       await fs.cp(snapshot, root, { recursive: true })
       const shipped = invoke(SHIPPED)
       assert.deepEqual(shipped, legacy, `${label}: output/exit differs`)
@@ -130,8 +138,23 @@ async function withFixture(t, git, body) {
     return output
   }
   try { await reportParityFailure(git ? "git-backed parity fixture" : "non-git parity fixture", () => body({ root, pair })) }
-  finally { await fs.rm(outer, { recursive: true, force: true }) }
+  finally { await removeFixtureTree(outer) }
 }
+
+test("fixture cleanup configures bounded ENOTEMPTY retries without swallowing other errors", async () => {
+  const root = await makeTempDir("synth-parity-cleanup-")
+  await fs.mkdir(path.join(root, ".git", "info"), { recursive: true })
+  await fs.writeFile(path.join(root, ".git", "info", "exclude"), "fixture\n")
+  await removeFixtureTree(root, (dir, options) => {
+    assert.equal(dir, root)
+    assert.deepEqual(options, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+    return fs.rm(dir, options)
+  })
+  await assert.rejects(fs.stat(root), { code: "ENOENT" })
+  await assert.rejects(removeFixtureTree(root, async () => {
+    throw Object.assign(new Error("permission denied"), { code: "EACCES" })
+  }), { code: "EACCES" })
+})
 
 test("entry parity: initialization, first-contact proposals, task and read-only routes", { timeout: 180000 }, async (t) => {
   await withFixture(t, false, async ({ root, pair }) => {
