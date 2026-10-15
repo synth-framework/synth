@@ -26,7 +26,7 @@
     }
   },
   "createdAt": 473,
-  "updatedAt": 494,
+  "updatedAt": 495,
   "executionBranch": "arena/d5e4625c-synth",
   "attachments": [
     {
@@ -58,6 +58,21 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item2.md",
       "hash": "0ea0d1148a20d9cd4d8dafdbba089422d715033ebdff819c45a43444b66de043"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "c9daea57ccd34dba8c8f5882459c5bbc5b04e50136421a4041162dba48dae810"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "3ab2dac7b5d2e6841740377ad4e036f3afaaedbb5f61c3c67fafe300e49bfe01"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item3a.md",
+      "hash": "563176694fac96d3cb462e576d61a8a3661fb1a5caeccf8ca6dcff47f7ca7419"
     }
   ]
 }
