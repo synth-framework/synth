@@ -35,6 +35,21 @@ async function filesAt(root) {
   return files
 }
 
+async function reportParityFailure(label, body) {
+  try {
+    await body()
+  } catch (error) {
+    // Preserve node:test's failure while making the exact assertion retrievable
+    // through GitHub's check-run annotations when CI job logs are inaccessible.
+    if (process.env.GITHUB_ACTIONS === "true") {
+      const message = `${label}: ${error instanceof Error ? error.stack : String(error)}`
+        .replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A")
+      console.error(`::error title=CLI parity failure::${message}`)
+    }
+    throw error
+  }
+}
+
 async function withFixture(t, git, body) {
   const outer = await makeTempDir("synth-entry-parity-")
   const root = path.join(outer, "project")
@@ -57,7 +72,7 @@ async function withFixture(t, git, body) {
 
   async function pair(args, { status = 0, kind, ceremony, readonly = false } = {}) {
     const label = args.join(" ")
-    await t.test(label, async () => {
+    await t.test(label, () => reportParityFailure(label, async () => {
       await fs.rm(snapshot, { recursive: true, force: true })
       await fs.cp(root, snapshot, { recursive: true })
       const before = await filesAt(root)
@@ -106,7 +121,7 @@ async function withFixture(t, git, body) {
         assert.equal(runGit(["status", "--porcelain", "--", ".synth/data", "proof"], root), "", `${label}: ledger must be clean`)
       }
       pair.last = json
-    })
+    }))
     // A failed subtest must stop the scenario, not silently feed stale IDs to
     // subsequent commands (node:test records failures without throwing here).
     assert.ok(pair.last, `${label}: did not produce a successful comparison`)
@@ -114,7 +129,7 @@ async function withFixture(t, git, body) {
     pair.last = undefined
     return output
   }
-  try { await body({ root, pair }) }
+  try { await reportParityFailure(git ? "git-backed parity fixture" : "non-git parity fixture", () => body({ root, pair })) }
   finally { await fs.rm(outer, { recursive: true, force: true }) }
 }
 
