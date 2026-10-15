@@ -16,9 +16,7 @@
 // --summary flags entirely, so `synth status --human` answered with JSON.
 import { fileURLToPath } from "url"
 import path from "path"
-import { runStatus } from "./status-light.js"
-import { runExplainReplay, parseReplayFlags } from "./explain-replay-light.js"
-import { parseExplainFlags } from "./explain-flags.js"
+import { resolveLightExplain, runExplainFromArgv } from "./verb-registry.js"
 import { projectVersion, printVersion } from "./version.js"
 import { printHelp } from "./usage.js"
 import { setHumanMode, setQuietMode, setSummaryMode } from "./output.js"
@@ -53,29 +51,18 @@ function applyOutputFlags(argv: readonly string[]): boolean | undefined {
 export async function run(): Promise<void> {
   const command = process.argv[2] ?? "help"
   const argv = process.argv.slice(2)
-
   // `explain replay` and the read-only `explain identity|resume|governance`
   // subcommands are bootstrap-free, so they are served without loading the
-  // heavy synth.js graph. Other `explain` subcommands stay heavy.
+  // heavy synth.js graph. Other `explain` subcommands stay heavy. Which subs
+  // exist, which are light, which module serves each, and how each parses its
+  // flags now live in verb-registry.ts: one routing authority shared with
+  // synth.ts's dispatch, instead of two hand-written if-chains that had
+  // drifted (this one knew four subcommands, synth.ts knew twelve).
+  // EXP-CLI-003 item 3.
   if (command === "explain") {
-    const sub = process.argv[3]
-    if (!sub || sub === "replay") {
-      await runExplainReplay(parseReplayFlags(process.argv))
-      return
-    }
-    if (sub === "identity") {
-      const { cmdExplainIdentity } = await import("./repository-identity.js")
-      await cmdExplainIdentity(parseExplainFlags(process.argv))
-      return
-    }
-    if (sub === "resume") {
-      const { cmdExplainResume } = await import("./resume-briefing.js")
-      await cmdExplainResume(parseExplainFlags(process.argv))
-      return
-    }
-    if (sub === "governance") {
-      const { cmdExplainGovernance } = await import("./explain-governance.js")
-      await cmdExplainGovernance(parseExplainFlags(process.argv))
+    const light = resolveLightExplain(process.argv[3])
+    if (light) {
+      await runExplainFromArgv(light, process.argv)
       return
     }
   }
@@ -84,8 +71,12 @@ export async function run(): Promise<void> {
     const human = applyOutputFlags(argv)
 
     if (command === "status") {
+      // status-light is imported here, not at module scope: `--version` and
+      // `help` must not pay for the 33 modules / 151 KB that `status` genuinely
+      // needs (the governance resolver alone is 119 modules / 820 KB behind it).
       // runStatus() renders through printJson, which honours the human/summary
       // modes set above — this is what makes `status --human` work here.
+      const { runStatus } = await import("./status-light.js")
       await runStatus()
       return
     }

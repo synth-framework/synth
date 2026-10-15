@@ -57,14 +57,9 @@ import {
   findSimilarExpeditions,
   type SimilarMatch,
 } from "../mission-studio/duplicate-detection.js"
-import { cmdExplainObservability } from "./explain-observability.js"
 import { resolveExplainPaths } from "./explain-paths.js"
 import { EXPECTED_CAPABILITIES, buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
-import { cmdExplainIdentity } from "./repository-identity.js"
-import { cmdExplainResume } from "./resume-briefing.js"
-import { cmdExplainGovernance } from "./explain-governance.js"
-import { cmdExplainAgents } from "./agent-guide.js"
 import { cmdRelease } from "./release.js"
 import { cmdVerify } from "./verify.js"
 import { cmdVerifySignatures } from "./signatures.js"
@@ -97,6 +92,10 @@ import {
 } from "./repo.js"
 import { runVerification } from "../verification/engine.js"
 import { buildOperatorBriefing } from "./status-briefing.js"
+// EXP-CLI-003 item 3: five explain handler modules were imported statically
+// above, so every verb paid for all of them. Routing goes through the registry
+// now, which imports each module when its own verb actually runs.
+import { isExplainSub, EXPLAIN_USAGE, callExplainHandler } from "./verb-registry.js"
 import { buildStatusValidationSummary, buildConfidenceAnalysis } from "./status-validation.js"
 import {
   resolveGovernanceContext,
@@ -8461,16 +8460,20 @@ export async function main() {
 
     case "explain": {
       const sub = positional[1]
-      const usage = "Usage: synth explain <replay|lineage|proposals|snapshots|graph|diagnostics|status|all>"
-      const valid = ["replay", "lineage", "proposals", "snapshots", "graph", "diagnostics", "status", "all", "identity", "resume", "governance", "agents"]
-      if (!sub || !valid.includes(sub)) {
-        printError(usage)
-      } else if (sub === "replay") await cmdExplainReplay(flags)
-      else if (sub === "identity") await cmdExplainIdentity(flags)
-      else if (sub === "resume") await cmdExplainResume(flags)
-      else if (sub === "governance") await cmdExplainGovernance(flags)
-      else if (sub === "agents") await cmdExplainAgents(flags)
-      else await cmdExplainObservability(sub, flags)
+      // The valid-sub list, the usage text and every handler module live in
+      // verb-registry.ts, shared with the light dispatcher in entry.ts.
+      if (!isExplainSub(sub)) {
+        printError(EXPLAIN_USAGE)
+      } else if (sub === "replay") {
+        // The heavy path still runs its own replay implementation. Unifying it
+        // with explain-replay-light runExplainReplay, which the light path serves
+        // through the registry, is a behaviour change and gets its own commit;
+        // tests/loader-entrypoint.test.js already asserts the two agree
+        // byte-for-byte on this invocation.
+        await cmdExplainReplay(flags)
+      } else {
+        await callExplainHandler(sub, flags)
+      }
       break
     }
 
