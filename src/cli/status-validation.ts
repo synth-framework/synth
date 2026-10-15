@@ -8,12 +8,15 @@
 import fs from "fs/promises"
 import path from "path"
 import { analyzeFiles, getWorkingTreeDiff, parseDiff } from "../governance/impact-analyzer.js"
-import {
-  buildValidationPlan,
-  type CapabilityValidationMap,
-  type ValidationPlan,
-} from "../validation/planner.js"
-import { loadTaskRegistry, type TaskRegistry } from "../task/task-registry.js"
+import type { CapabilityValidationMap, ValidationPlan } from "../validation/planner.js"
+import type { TaskRegistry } from "../task/task-registry.js"
+
+// EXP-CLI-003 item 2 — validation/planner.js (58 modules / 353 KB) and
+// task/task-registry.js (55 / 332 KB) are loaded at CALL time inside
+// buildStatusValidationSummary. Only the TYPES stay static: they are erased at
+// compile time and add no runtime edge. The header comment above claimed this
+// module was "bootstrap-free" and read "only the working tree and a capability
+// map"; it was statically pulling 61 modules / 373 KB.
 
 export function buildConfidenceAnalysis(
   report: ReturnType<typeof analyzeFiles>,
@@ -85,6 +88,10 @@ export function buildConfidenceAnalysis(
 }
 
 export async function buildStatusValidationSummary(): Promise<Record<string, unknown> | undefined> {
+  const [{ loadTaskRegistry }, { buildValidationPlan }] = await Promise.all([
+    import("../task/task-registry.js"),
+    import("../validation/planner.js"),
+  ])
   const diffText = getWorkingTreeDiff()
   const files = parseDiff(diffText)
   if (files.length === 0) {

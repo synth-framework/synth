@@ -6,10 +6,6 @@
 // model produced by the Governance Resolver.
 // ============================================================
 
-import {
-  resolveGovernanceContext,
-  isGovernanceResolutionFailure,
-} from "../runtime/governance-resolver.js"
 import { deriveValidTransition } from "../runtime/transition-engine.js"
 import {
   deliveryState,
@@ -20,9 +16,23 @@ import {
   type BranchCreatedEventLike,
 } from "../ledger/delivery.js"
 import { toOperatorBriefing } from "../runtime/status-projection.js"
-import { createCapabilityRegistry } from "../capability/registry.js"
-import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
+
+// EXP-CLI-003 item 2 — the three heavy edges below are loaded at CALL time inside
+// buildOperatorBriefing, not at import time:
+//
+//   runtime/governance-resolver.js         119 modules / 820 KB
+//   capability/registry.js                  64 modules / 429 KB
+//   mission-studio/adapter-registry.js      54 modules / 331 KB
+//
+// `status` genuinely needs all three — the briefing IS a projection of the
+// governance resolver — so the fix is WHEN they load, not whether. This module is
+// imported statically by status-light.ts, which entry.ts imports statically, so
+// these three edges were 89% of the "light" path's 134-module / 918 KB eager
+// graph and were paid for by every invocation of the shipped dispatcher,
+// including --version and help. Output is unchanged; the eager graph is not.
+// The cheap edges stay static: ledger/delivery 1/17, transition-engine 2/6,
+// status-projection 2/20, capabilities-data 2/32.
 
 export type MissionBrief = {
   id: string
@@ -86,6 +96,9 @@ export type OperatorBriefing =
  * the Governance Resolver. No mutable status file is consulted.
  */
 export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBriefing> {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import(
+    "../runtime/governance-resolver.js"
+  )
   const result = await resolveGovernanceContext(rootDir)
 
   if (isGovernanceResolutionFailure(result)) {
@@ -102,6 +115,10 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
   // CLI command-surface wiring. Re-project capability availability here using
   // the same command-surface detection used by `synth capabilities` so status
   // warnings match the installed CLI.
+  const [{ createCapabilityRegistry }, { createAdapterRegistry }] = await Promise.all([
+    import("../capability/registry.js"),
+    import("../mission-studio/adapter-registry.js"),
+  ])
   const installedCapabilities = new Set(createCapabilityRegistry().list())
   const installedAdapters = new Set(createAdapterRegistry().list())
   const implementedCommands = buildImplementedCommandSet()
