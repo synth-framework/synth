@@ -11,11 +11,16 @@ export const ENTRY_BUDGETS = {
   // and 139-module ordinary ceiling do not change.
   "dist/main.js": { modules: 172, bytes: 1110 * 1024 },
   "dist/distribution/mcp-server.js": { modules: 1, bytes: 11 * 1024 },
-  "dist/cli/status-light.js": { modules: 33, bytes: 160 * 1024 },
+  // Direct SDK leaf imports keep the light status entry off unrelated SDK
+  // event-store/identity barrels. Pin the smaller eager graph, not 33 modules.
+  "dist/cli/status-light.js": { modules: 23, bytes: 130 * 1024 },
 }
 
 // Exceptions are invocation-specific, bounded, and tied to work actually
-// observed in the trace/output. Merely loading bootstrap is NOT justification.
+// observed in the trace/output. Checkpoint loads the new canonical runtime
+// capability-name module when composing its real briefing (+1 only); its
+// replay and execution-branch validation requirements are unchanged.
+// Merely loading bootstrap is NOT justification.
 // In particular, repo status has no exemption: it is a state projection.
 export const PROBES = [
   { id: "version", args: ["--version"], modules: 25, bytes: 150 * 1024, field: "version" },
@@ -36,7 +41,7 @@ export const PROBES = [
     replayPath: ["checks", "replay"],
   },
   {
-    id: "checkpoint", args: ["checkpoint"], modules: 206, kind: "AgentCheckpoint", statuses: ["ok", "blocked"],
+    id: "checkpoint", args: ["checkpoint"], modules: 207, kind: "AgentCheckpoint", statuses: ["ok", "blocked"],
     exception: "Compose operator briefing, actual persisted replay verification, and repository-adapter execution-branch validation. A lifecycle/branch refusal is valid coverage, but failed or skipped replay is not.",
     replayPath: ["steps", "replay"],
   },

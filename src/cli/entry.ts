@@ -71,8 +71,8 @@ export async function run(): Promise<void> {
     if (command === "status") {
       setAgentTelemetryFromFlags(parseArgs(process.argv).flags)
       // status-light is imported here, not at module scope: `--version` and
-      // `help` must not pay for the 33 modules / 151 KB that `status` genuinely
-      // needs (the governance resolver alone is 119 modules / 820 KB behind it).
+      // `help` must not pay for status's 23-module / 124 KB eager graph;
+      // governance replay and projections are loaded only for the status call.
       // runStatus() renders through printJson, which honours the human/summary
       // modes set above — this is what makes `status --human` work here.
       const { runStatus } = await import("./status-light.js")

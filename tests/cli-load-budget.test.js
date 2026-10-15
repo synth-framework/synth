@@ -54,11 +54,27 @@ test("ordinary denominator never increases with module extraction; byte and modu
   assert.equal(ORIGINAL_MODULES, 348)
   assert.equal(ORDINARY_LIMIT, 139)
   assert.equal(ENTRY_BUDGETS["dist/main.js"].modules, 172)
-  for (const [id, bound] of [["doctor", 193], ["checkpoint", 206], ["bootstrap-plan", 220]]) {
+  assert.equal(ENTRY_BUDGETS["dist/cli/status-light.js"].modules, 23)
+  assert.equal(ENTRY_BUDGETS["dist/cli/status-light.js"].bytes, 130 * 1024)
+  for (const [id, bound] of [["doctor", 193], ["checkpoint", 207], ["bootstrap-plan", 220]]) {
     assert.equal(PROBES.find((p) => p.id === id)?.modules, bound)
   }
   assert.equal(budgetFailures("fixture", { modules: 26, bytes: 153601 }, { modules: 25, bytes: 153600 }).length, 2)
   assert.deepEqual(budgetFailures("fixture", { modules: 25, bytes: 153600 }, { modules: 25, bytes: 153600 }), [])
+})
+
+test("read-only runtime capability names exactly match the default executable registry", async () => {
+  const { DEFAULT_CAPABILITY_NAMES } = await import("../dist/capability/default-names.js")
+  const { createCapabilityRegistry } = await import("../dist/capability/registry.js")
+  assert.ok(Object.isFrozen(DEFAULT_CAPABILITY_NAMES))
+  assert.deepEqual([...DEFAULT_CAPABILITY_NAMES], createCapabilityRegistry().list())
+  const { graph } = readModuleGraph(ROOT)
+  const resolver = closure(["dist/runtime/governance-resolver.js"], graph)
+  assert.ok(!resolver.has("dist/capability/registry.js"))
+  assert.ok(resolver.has("dist/capability/default-names.js"))
+  // Status must not load the all-SDK barrel just to call two leaf functions.
+  const status = closure(["dist/cli/status-light.js"], graph)
+  assert.ok(!status.has("dist/sdk/index.js"))
 })
 
 test("even a tiny eager dispatcher handler fails below the numeric budget", () => {

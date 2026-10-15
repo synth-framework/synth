@@ -19,11 +19,11 @@ import { toOperatorBriefing } from "../runtime/status-projection.js"
 import { buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 
 // EXP-CLI-003: the resolver is loaded at call time, not on the shipped
-// dispatcher's eager path. Status needs the resolver's replay and the real
-// capability registry, but only the *names* of the default planning adapters.
-// Their canonical name list is shared with AdapterRegistry's factory map, so
-// status no longer loads Git/discovery adapter implementations to answer a
-// read-only availability question. The cheap delivery and projection edges
+// dispatcher's eager path. Status needs the resolver's replay, but only the
+// *names* of default runtime capabilities and planning adapters. The ordered
+// capability list is checked against the real registry in the load-budget
+// test; the adapter list is also shared with AdapterRegistry's factory map.
+// Neither executable registry is loaded just to answer a read-only question. The cheap delivery and projection edges
 // stay static.
 
 export type MissionBrief = {
@@ -107,11 +107,11 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
   // CLI command-surface wiring. Re-project capability availability here using
   // the same command-surface detection used by `synth capabilities` so status
   // warnings match the installed CLI.
-  const [{ createCapabilityRegistry }, { PLANNING_ADAPTER_NAMES }] = await Promise.all([
-    import("../capability/registry.js"),
+  const [{ DEFAULT_CAPABILITY_NAMES }, { PLANNING_ADAPTER_NAMES }] = await Promise.all([
+    import("../capability/default-names.js"),
     import("../mission-studio/adapter-names.js"),
   ])
-  const installedCapabilities = new Set(createCapabilityRegistry().list())
+  const installedCapabilities = new Set<string>(DEFAULT_CAPABILITY_NAMES)
   const installedAdapters = new Set<string>(PLANNING_ADAPTER_NAMES)
   const implementedCommands = buildImplementedCommandSet()
   result.derived.capabilities = buildCapabilityEntries(

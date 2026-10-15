@@ -40,7 +40,7 @@ import type { ReferenceResolutionNotice } from "./reference-resolver.js"
 import type { FilesystemProvider } from "../infra/filesystem-provider.js"
 import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import { loadHistoricalAliasRegistry, type HistoricalAliasRegistry } from "./historical-aliases.js"
-import { createCapabilityRegistry } from "../capability/registry.js"
+import { DEFAULT_CAPABILITY_NAMES } from "../capability/default-names.js"
 import { PLANNING_ADAPTER_NAMES } from "../mission-studio/adapter-names.js"
 import { buildCapabilityEntries } from "../cli/capabilities-data.js"
 
@@ -391,7 +391,7 @@ export async function resolveGovernanceContext(
       (e) => e.status === "approved" || e.status === "executing",
     ) ?? null
 
-  const installedCapabilities = new Set(createCapabilityRegistry().list())
+  const installedCapabilities = new Set<string>(DEFAULT_CAPABILITY_NAMES)
   const installedAdapters = new Set<string>(PLANNING_ADAPTER_NAMES)
   const capabilities = buildCapabilityEntries(installedCapabilities, installedAdapters)
 
