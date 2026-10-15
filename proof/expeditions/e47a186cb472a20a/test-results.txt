@@ -1,61 +1,272 @@
-EXP-CLI-003 item 4 — test results
+EXP-CLI-003 item 5 validation record
+Source guard implementation 719e774; certification rebaseline 16616e3.
+Full test:all exit 0; 118 command segments, not 118 separately captured reports.
+Additional consumers: 32 green / 14 pre-existing red; zero green-to-red regressions.
+Deliberate eager-handler regression: guard exit 1; exact restoration/rebuild: exit 0.
 
-Prerequisite 301a39d: 37 paired invocations (39 node:test results), passed before harness switch.
-Initial shipped harness full test:all: rc=1 in test:synth-cli/cli-contract: discovery-safety throw yielded empty stdout. Fixed at shared error boundary, test unchanged.
-After boundary fix 41555f0: test:all rc=0, 260506 ms; parity 42/42. Additional consumer A/B found four green-to-red regressions, not considered acceptable.
-Final fca4a30: test:all rc=0, 263733 ms. Literal test:all command has 117 && segments; shim emits one aggregate result.
-Final parity: 43 paired invocations + 3 scenario parents + harness/bin assertion + recursive resolver guard = 48 passed, 0 failed, 0 skipped.
-Four source-path guard suites rc=0: verify-engine, artifact-policy, governance-orchestration, impact-analyzer. Loader-entrypoint and ledger-capability-commits also green.
+=== Full chain ===
 
-Additional consumers, compatibility / initial shipped / final shipped exit codes:
-tests/agent-certification.test.js: 1 / 1 / 1
-tests/agent-guide.test.js: 0 / 0 / 0
-tests/agents-md-sync.test.js: 0 / 0 / 0
-tests/bootstrap-human.test.js: 0 / 0 / 0
-tests/bootstrap-output.test.js: 0 / 0 / 0
-tests/capabilities-cli.test.js: 0 / 0 / 0
-tests/capability-registry-accuracy.test.js: 0 / 0 / 0
-tests/captrans-missing-capability.test.js: 0 / 0 / 0
-tests/cli-error-hints.test.js: 0 / 0 / 0
-tests/cli-mission-expedition-rank.test.js: 0 / 0 / 0
-tests/execution-branch-gate.test.js: 0 / 0 / 0
-tests/expedition-batch-operations.test.js: 0 / 0 / 0
-tests/expedition-completion-gates.test.js: 0 / 0 / 0
-tests/expedition-draft-retirement.test.js: 0 / 0 / 0
-tests/expedition-finish.test.js: 1 / 1 / 1
-tests/expedition-lineage-guard.test.js: 0 / 0 / 0
-tests/first-contact-adapter-surface.test.js: 0 / 1 / 0
-tests/first-contact-certification.test.js: 0 / 0 / 0
-tests/first-contact-cli.test.js: 1 / 1 / 1
-tests/first-contact-experiment.test.js: 0 / 1 / 0
-tests/first-contact-onboard.test.js: 1 / 1 / 1
-tests/first-contact-recommendation.test.js: 1 / 1 / 1
-tests/govern-router.test.js: 1 / 1 / 1
-tests/governance-complete-force.test.js: 1 / 1 / 1
-tests/governance-evaluation-schema.test.js: 0 / 0 / 0
-tests/governance-git-snapshot.test.js: 0 / 0 / 0
-tests/governance-inventory-cli.test.js: 1 / 1 / 1
-tests/governance-mission-cli.test.js: 1 / 1 / 1
-tests/governance-report-cli.test.js: 1 / 1 / 1
-tests/governance-resolver.test.js: 0 / 0 / 0
-tests/governance-show-cli.test.js: 1 / 1 / 1
-tests/identity-in-events.test.js: 0 / 1 / 0
-tests/initialization-evidence.test.js: 0 / 0 / 0
-tests/initialization-lifecycle.test.js: 0 / 0 / 0
-tests/initialization-replay.test.js: 0 / 0 / 0
-tests/migration.test.js: 1 / 1 / 1
-tests/release.test.js: 0 / 0 / 0
-tests/repair-state.test.js: 1 / 1 / 1
-tests/stale-state.test.js: 0 / 0 / 0
-tests/state-lag-no-repair.test.js: 0 / 0 / 0
-tests/synth-bootstrap.test.js: 0 / 0 / 0
-tests/synth-cli-govern-explain.test.js: 0 / 0 / 0
-tests/synth-cli-repo.test.js: 1 / 1 / 1
-tests/synth-log-identity-filters.test.js: 0 / 1 / 0
-tests/synth-verify-signatures.test.js: 0 / 0 / 0
-tests/validate-confidence-transparency.test.js: 0 / 0 / 0
+> @synth-framework/synth@2.6.1 test:all
+> node scripts/task-adapter-shim.js test:all
 
-Final build 1203 files, rootHash 3fdf3593aded5adf; before item 4: 1200 files, rootHash 267cb1342a16e0b6.
-Final eager roots: entry.js 18 modules/50 KB; synth.js 40/177; status-light 33/151; main.js 171/1103; MCP 1/10.
-Pre-evidence repository health: verify 6/6, doctor 12/12, checkpoint ok, log total498; replay and chain actually examined 498 segmented events.
-Current absolute timing medians (9 runs, 2 cores, Node v22.22.3): shipped version28.7 ms, status123.2 ms, replay80.8 ms; node process floor17.1 ms. This is not a before/after speedup claim.
+{
+  "status": "ok",
+  "kind": "TaskRunReport",
+  "dryRun": false,
+  "target": "test:all",
+  "isGroup": false,
+  "results": [
+    {
+      "taskId": "test:all",
+      "status": 0,
+      "durationMs": 275096
+    }
+  ],
+  "totalDurationMs": 275096
+}
+
+=== Guard tests (18) ===
+TAP version 13
+# Subtest: AST graph handles multiline imports, reexports, side effects and literal dynamic imports, not comments/strings
+ok 1 - AST graph handles multiline imports, reexports, side effects and literal dynamic imports, not comments/strings
+  ---
+  duration_ms: 9.34306
+  type: 'test'
+  ...
+# Subtest: missing roots and static/dynamic edges fail closed; cycles and Unicode bytes are measured exactly
+ok 2 - missing roots and static/dynamic edges fail closed; cycles and Unicode bytes are measured exactly
+  ---
+  duration_ms: 2.067755
+  type: 'test'
+  ...
+# Subtest: ordinary denominator never increases with module extraction; byte and module limits both reject excess
+ok 3 - ordinary denominator never increases with module extraction; byte and module limits both reject excess
+  ---
+  duration_ms: 0.198226
+  type: 'test'
+  ...
+# Subtest: even a tiny eager dispatcher handler fails below the numeric budget
+ok 4 - even a tiny eager dispatcher handler fails below the numeric budget
+  ---
+  duration_ms: 0.385918
+  type: 'test'
+  ...
+# Subtest: whole-invocation trace is deduplicated but must include all static dependencies
+ok 5 - whole-invocation trace is deduplicated but must include all static dependencies
+  ---
+  duration_ms: 0.519389
+  type: 'test'
+  ...
+# Subtest: probe fails closed on nonzero exit
+ok 6 - probe fails closed on nonzero exit
+  ---
+  duration_ms: 0.109633
+  type: 'test'
+  ...
+# Subtest: probe fails closed on signal
+ok 7 - probe fails closed on signal
+  ---
+  duration_ms: 0.105364
+  type: 'test'
+  ...
+# Subtest: probe fails closed on timeout
+ok 8 - probe fails closed on timeout
+  ---
+  duration_ms: 0.067028
+  type: 'test'
+  ...
+# Subtest: probe fails closed on empty output
+ok 9 - probe fails closed on empty output
+  ---
+  duration_ms: 0.206173
+  type: 'test'
+  ...
+# Subtest: probe fails closed on error envelope
+ok 10 - probe fails closed on error envelope
+  ---
+  duration_ms: 0.273077
+  type: 'test'
+  ...
+# Subtest: probe fails closed on wrong command
+ok 11 - probe fails closed on wrong command
+  ---
+  duration_ms: 0.114139
+  type: 'test'
+  ...
+# Subtest: probe fails closed on empty trace
+ok 12 - probe fails closed on empty trace
+  ---
+  duration_ms: 0.062391
+  type: 'test'
+  ...
+# Subtest: probe fails closed on truncated trace
+ok 13 - probe fails closed on truncated trace
+  ---
+  duration_ms: 0.0774
+  type: 'test'
+  ...
+# Subtest: probe fails closed on out-of-build module
+ok 14 - probe fails closed on out-of-build module
+  ---
+  duration_ms: 0.119582
+  type: 'test'
+  ...
+# Subtest: probe fails closed on non-module record
+ok 15 - probe fails closed on non-module record
+  ---
+  duration_ms: 0.075984
+  type: 'test'
+  ...
+# Subtest: a skipped/empty replay cannot satisfy a work-based exception
+ok 16 - a skipped/empty replay cannot satisfy a work-based exception
+  ---
+  duration_ms: 0.474652
+  type: 'test'
+  ...
+# Subtest: repository projection matches full-bootstrap replay without loading its mutation plane
+ok 17 - repository projection matches full-bootstrap replay without loading its mutation plane
+  ---
+  duration_ms: 555.133841
+  type: 'test'
+  ...
+# Subtest: derived guard measures every declared entry and all real representative invocations
+ok 18 - derived guard measures every declared entry and all real representative invocations
+  ---
+  duration_ms: 4129.207169
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4725.203435
+
+=== Registered guard task ===
+
+> @synth-framework/synth@2.6.1 test:cli-load-budget
+> node scripts/task-adapter-shim.js test:cli-load-budget
+
+{
+  "status": "ok",
+  "kind": "TaskRunReport",
+  "dryRun": false,
+  "target": "test:cli-load-budget",
+  "isGroup": false,
+  "results": [
+    {
+      "taskId": "test:cli-load-budget",
+      "status": 0,
+      "durationMs": 12044
+    }
+  ],
+  "totalDurationMs": 12044
+}
+
+=== cli-ceremony-parity; exit 0; final log tail ===
+  duration_ms: 1657.323886
+  type: 'test'
+  ...
+# Subtest: recursive CLI resolution recognizes both entry points and symlinks, with an installation-relative fallback
+ok 5 - recursive CLI resolution recognizes both entry points and symlinks, with an installation-relative fallback
+  ---
+  duration_ms: 2.540836
+  type: 'test'
+  ...
+1..5
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16180.202321
+
+=== verify-engine; exit 0; final log tail ===
+[PASS] synth verify on uninitialized project reports a skipped replay check
+[PASS] synth verify on initialized project with no events
+[PASS] synth verify on valid mission/expedition/objective graph
+[PASS] synth verify detects broken aggregate graph
+[PASS] synth --help lists verify command
+[PASS] locateEventLog resolves all three layouts, segmented wins precedence
+[PASS] locateEventLog reports none for an absent project instead of throwing
+[PASS] chunked ledger is visible to log (1 events), checkpoint and doctor
+[PASS] legacy single-file layout is still located and still queryable
+[PASS] no legacy-only event-log presence guard remains in the CLI
+
+[VERIFY ENGINE] All tests passed
+
+=== artifact-policy; exit 0; final log tail ===
+  duration_ms: 0.10212
+  type: 'test'
+  ...
+# Subtest: no .gitignore rule hides a path the base branch tracks
+ok 8 - no .gitignore rule hides a path the base branch tracks
+  ---
+  duration_ms: 14.815476
+  type: 'test'
+  ...
+1..8
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 148.817078
+
+=== governance-orchestration; exit 0; final log tail ===
+[PASS] governance class mapping
+[PASS] file governance class mapping
+[PASS] governance classes aggregation
+[PASS] profile resolution
+[PASS] profile class filtering
+[PASS] validator profile scope
+[PASS] explain reasons
+[PASS] explanation report
+[PASS] benchmark
+[PASS] orchestrator documentation-only plan
+[PASS] orchestrator runtime change escalates
+[PASS] orchestrator main-branch profile requires all classes
+
+[GOVERNANCE ORCHESTRATION] All tests passed
+
+=== impact-analyzer; exit 0; final log tail ===
+[PASS] analyzeFiles classifies adapter and test files
+[PASS] Protected Asset change escalates to high risk
+[PASS] Runtime change is high risk
+[PASS] Documentation-only change is low risk
+[PASS] Brownfield common files map to relevant capabilities
+[PASS] .synth/ai metadata files map to ProjectConfig
+[PASS] Next.js/React/Node server files map to relevant capabilities
+[PASS] Polyglot project files map to relevant capabilities
+[PASS] parseDiff handles git name-status output
+[PASS] analyzeDiff produces report from diff text
+[PASS] getWorkingTreeDiff returns git diff output
+
+[IMPACT ANALYZER] All tests passed
+
+=== no-write-on-read; exit 0; final log tail ===
+      duration_ms: 414.684653
+      type: 'test'
+      ...
+    1..10
+ok 1 - read-only commands never modify the working tree
+  ---
+  duration_ms: 3751.668238
+  type: 'test'
+  ...
+1..1
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3759.540661

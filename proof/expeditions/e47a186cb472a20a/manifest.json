@@ -1,7 +1,7 @@
 {
   "expeditionId": "e47a186cb472a20a",
-  "capturedAt": 1792035741086,
-  "note": "Item 4: ceremony parity proved before shared-harness switch; final 43 paired invocations/48 test results. Full chain rc=0 in 263733 ms. Additional 46-consumer A/B found four green-to-red regressions, fixed via shared telemetry and one installation-relative recursive CLI resolver; final 32 baseline-green suites all green, same 14 baseline reds. Dist 1203 files rootHash 3fdf3593aded5adf, dispatcher 18 modules/50 KB. Current absolute medians version28.7/status123.2/replay80.8 ms; no speedup claim. Item 5 guard and deliberate regression proof remain outstanding.",
+  "capturedAt": 1792037340315,
+  "note": "Item 5 derived load guard: 15 probes, original 139 limit, bounded replay/planning exceptions, deliberate eager-handler failure and exact restoration. Full 118-segment chain passes; 46 extra consumers unchanged. Clean timing targets met; dirty status 164.3 ms miss explicitly retained; not an unconditional latency or expedition-completion claim.",
   "attachments": [
     {
       "kind": "git-diff",
@@ -107,6 +107,56 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item4-timing.json",
       "hash": "9877df86eb2077c2c28dfa4c54f579335e39341a0a262028dae9180d7185faa3"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "24c88efd04bd799d44e49803c9c1bd4aa60b9d301bb9c5405a687d54d5ea5167"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "3328947d8f256b27013b6769748a52de94190e06ebfca6b5a397db50fcee2088"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item5.md",
+      "hash": "857e77ddf0fcb8137ea83e87b632a2695275f4aa88779b3a283c704fd78f95f7"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-final-load-budget.json",
+      "hash": "48653b2539007a2f4df53f8352cd515c9c3bcd03665ac425fe5689f6346c1986"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-final-graph.json",
+      "hash": "200c9d0b33de7063c96c45c3d36cadcd758acffaf7114174fb20471843282f50"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-regression-demonstration.json",
+      "hash": "7715fecf4290dfe47c46f1b88e96cda0566fb9496f39f0ef610b72b9e2fae5ea"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-regression-guard.json",
+      "hash": "f85bc38def9af7168f2995dd3cb05b37ea4aec481c77f0c020c11ffeac65fce6"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-additional-results.json",
+      "hash": "733b12aeb90534accc1c92a5d40a992ec4ded4baf6495c2a79d4f9b60a92f33c"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-final-timing.json",
+      "hash": "829bb6a7c81051dd108738d69f104d61343fdab6083faf715942527726033d2e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-clean-timing.json",
+      "hash": "0741c61b53c5689f947a650da528d3a28a8653625a5822ce66fec9822c9f1e3a"
     }
   ]
 }

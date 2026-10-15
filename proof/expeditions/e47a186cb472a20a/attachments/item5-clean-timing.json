@@ -1,0 +1,67 @@
+{
+  "kind": "CliStartupMeasurement",
+  "label": "cli003-item5-clean",
+  "at": "2026-10-15T04:06:58.377Z",
+  "cores": 2,
+  "node": "v22.22.3",
+  "runs": 9,
+  "control": "entry.js explain replay",
+  "measurements": [
+    {
+      "label": "floor node -e '1'",
+      "ms": 18,
+      "min": 15.4,
+      "max": 19.7,
+      "runs": 9
+    },
+    {
+      "label": "entry.js --version",
+      "ms": 27.8,
+      "min": 25.7,
+      "max": 34.8,
+      "runs": 9
+    },
+    {
+      "label": "entry.js help",
+      "ms": 28.8,
+      "min": 27.4,
+      "max": 30.2,
+      "runs": 9
+    },
+    {
+      "label": "entry.js status",
+      "ms": 126.5,
+      "min": 121.4,
+      "max": 131.4,
+      "runs": 9
+    },
+    {
+      "label": "synth.js --version",
+      "ms": 43.1,
+      "min": 42.1,
+      "max": 48.1,
+      "runs": 9
+    },
+    {
+      "label": "synth.js help",
+      "ms": 43.3,
+      "min": 40.9,
+      "max": 48,
+      "runs": 9
+    },
+    {
+      "label": "synth.js status",
+      "ms": 138.6,
+      "min": 123.3,
+      "max": 185.5,
+      "runs": 9
+    },
+    {
+      "label": "entry.js explain replay",
+      "ms": 87,
+      "min": 78.6,
+      "max": 104.4,
+      "runs": 9
+    }
+  ]
+}
