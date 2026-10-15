@@ -57,7 +57,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth mission evidence add --draft-id 27fc80139955f361 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+          "reason": "explicit next action: synth mission evidence add --draft-id 5ffd2d239af8d31c --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
         },
         {
           "name": "Confidence",
@@ -89,7 +89,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission 5f2a91362a32288e --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission 10432343405447bb --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
