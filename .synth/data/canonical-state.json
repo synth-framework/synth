@@ -1,6 +1,6 @@
 {
-  "version": 503,
-  "stateHash": "672825068",
+  "version": 504,
+  "stateHash": "1532138400",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -88,11 +88,12 @@
         "73c5c033360fecf3",
         "e47a186cb472a20a",
         "3ba2a3f886e87d29",
-        "f0912d1aeee16213"
+        "f0912d1aeee16213",
+        "90a06965f6a67849"
       ],
       "metadata": {},
       "createdAt": 20,
-      "updatedAt": 481,
+      "updatedAt": 503,
       "alignmentContractId": "alignment-contract-msuvn8o1-qrlimc"
     },
     "b536ecc7ceb9217a": {
@@ -2410,6 +2411,40 @@
       },
       "createdAt": 481,
       "updatedAt": 491
+    },
+    "90a06965f6a67849": {
+      "id": "90a06965f6a67849",
+      "missionId": "4ab7e9d2cc7b1b66",
+      "name": "EXP-STATE-001 Optimize canonical state, derived projections and dependants",
+      "goal": "EXP-STATE-001 — Optimize canonical state, derived projections and dependent read/write paths\n\nGOAL\nMake state storage and access scale with the data an operation actually needs, rather than repeatedly reading, replaying, serializing and rewriting the entire project. Optimize the logical-state representation, persisted projections and their consumers together; shrinking one JSON file while leaving the same whole-state work elsewhere is not success.\n\nOBSERVED BASELINE (040a7c0, before creating this draft)\n.synth/data/canonical-state.json: 243594 bytes, 2439 lines, 5 missions and 70 expeditions. The 70 expedition projection files total another 227009 bytes. Within serialized expedition fields, goals account for roughly 102 KB and metadata 75 KB (field-wise JSON serialization, not an additive breakdown of the pretty-printed aggregate). Large goals/refinement notes and evidence metadata warrant investigation, not automatic truncation. This is about duplicated data and work amplification, not a claim that 244 KB alone proves the latency bottleneck.\n\nEarlier expedition 886dc15e19a8e587 already landed segmented event storage and per-entity projections; 01604a3df9d2785d was cancelled as superseded. Do not repeat that split. Current StateStore.save still writes the complete aggregate and then rewrites each entity; load reads the aggregate. The governance resolver reads persisted aggregate state and also reconstructs state from the event log. Audit actual semantics before changing either verification or authority. CLI-003's timing investigation is supporting evidence, not proof that this file alone causes its remaining timing miss.\n\nDELIVERABLES\n1. Reproducible audit of state producers, persistence, replicas and dependants: canonical aggregate, per-entity and archived records, derived-state builders, indexes/checkpoints/snapshots, SDK reads, runtime replay and resolution, verification/signatures, CLI status/list/show/report/doctor/checkpoint, and ledger staging/commit policies. Trace actual call sites, consumers, bytes read/written, files touched, replay work, serialization and latency. Separate retained authoritative history, durable documents, regenerable projections and disposable caches.\n2. ADR selecting the simplest sufficient representation and access model. Keep the event log as the durable authority and preserve the complete logical CanonicalState contract where required. Decide whether the aggregate should become an on-demand compatibility/export artifact rather than a mandatory routine read/write target. Evaluate compact operational records and references to large immutable narrative/evidence documents without losing information or creating a second authority. No automatic database, new public verb, or general migration framework just because storage changes.\n3. Implement targeted reads and incremental projection writes through one owned state-access boundary. A normal single-entity update must not rewrite unrelated entity files or a full aggregate. Targeted entity lookups must not require loading every entity or an unchecked stale aggregate. Full graph/replay verification may legitimately do whole-state work; make that distinction explicit. Any index, snapshot or checkpoint fast path must validate its version, source offset/hash and freshness and safely rebuild/fall back when invalid.\n4. Migrate dependent readers/writers, not just the storage layer. Preserve state, hashes/signature semantics, public outputs and existing safety checks, or explicitly version and document an approved contract change. Preserve archive/delete behavior, root isolation, Windows-portable paths and the single mutation authority. Readers must not silently repair/write state. Update artifact classification and commit scope consistently with LIFE-002's ownership; no parallel commit authority or configuration loader.\n5. Prove crash-safe projection publication and recovery: interrupted writes, mixed generations, missing/corrupt/stale entity files, damaged indexes, concurrent readers/writers, legacy supported inputs and reconstruction with derived artifacts removed. Never silently serve a mixed generation or treat an empty read as successful verification. Recovery must not rewrite immutable event history.\n6. Commit scalable measurement tooling and regression tests. Use the actual repository plus deterministic 10x/100x fixtures generated through supported APIs. Compare equivalent outputs and event/state hashes with full replay. Record cold/warm and clean/dirty cases, CPU/Node/environment and a same-session control. Before implementation, record explicit byte/file/work budgets and justified exceptions from the audit; enforce them in the task chain. Do not invent a speedup or inflate limits after observing a regression.\n\nACCEPTANCE\n- Exact semantic equivalence and truthful event counts/layouts, with referential integrity for any separated large documents; no truncation of goals, notes or evidence to meet a size target.\n- Demonstrated elimination of unrelated entity rewrites for a single-entity change and of aggregate-file dependence for targeted reads. Deterministic work/byte budgets pass at baseline and scaled fixture sizes; report latency results and limitations separately.\n- Missing/stale/corrupt derived data cannot become truth; explicit rebuild reproduces the logical state from authoritative inputs. Crash and concurrency tests pass.\n- CLI-003's load/portability/parity guards, the full chain and previously green affected consumers remain green. verify/doctor/checkpoint stay truthful. Rebaseline distribution, determinism and proof deliberately with counts and hashes recorded.\n- No hand-edited canonical ledger, destructive event compaction, hidden read-time mutation, unsupported deletion of history or weakened verification.\n\nBOUNDARIES AND SEQUENCING\nDraft for Framework Maturation v2; creation does not approve or start implementation. Reuse the already-landed CLI-003 architecture. Do NOT make this depend on CLI-003's completion merely to move its timing blocker here and create a dependency cycle; any eventual transfer of acceptance ownership must be explicit, not assumed. Existing CLI-003 timing criteria remain on its record. LIFE-002 retains lifecycle/commit and adapter-configuration consolidation; CLEAN-001 retains the full CLI value/complexity audit and general dead-code removal. This expedition owns state representation/access optimization and the directly necessary dependant changes only.\n",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {
+        "scope": [
+          "src/infra/**",
+          "src/runtime/**",
+          "src/state/**",
+          "src/sdk/**",
+          "src/types/**",
+          "src/core/**",
+          "src/control/**",
+          "src/verification/**",
+          "src/signing/**",
+          "src/cli/**",
+          "src/ledger/**",
+          "src/mission-studio/**",
+          "tests/**",
+          "scripts/**",
+          "docs/**",
+          "data/tasks/**",
+          "package.json"
+        ]
+      },
+      "createdAt": 503,
+      "updatedAt": 503
     }
   },
   "objectives": {},
@@ -2435,5 +2470,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 503
+  "lastEventOffset": 504
 }
