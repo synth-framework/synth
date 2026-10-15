@@ -10,6 +10,7 @@ if (process.env.SYNTH_CLI_PARITY_FIXTURE !== "1") {
 }
 const instant = Number(process.env.SYNTH_CLI_PARITY_TIME)
 if (!Number.isFinite(instant)) throw new Error("CLI parity fixture requires a finite clock")
+const seed = `${instant}:${JSON.stringify(process.argv.slice(2))}`
 const WallClock = Date
 class FixtureClock extends WallClock {
   constructor(...args) {
@@ -20,11 +21,11 @@ class FixtureClock extends WallClock {
 globalThis.Date = FixtureClock
 let sequence = 0
 crypto.randomUUID = () => {
-  const hex = crypto.createHash("sha256").update(`${instant}:${sequence++}`).digest("hex")
+  const hex = crypto.createHash("sha256").update(`${seed}:${sequence++}`).digest("hex")
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`
 }
 syncBuiltinESMExports()
 // Domain alignment IDs use Math.random rather than sdk.identity.uuid.
 let randomSequence = 0
 Math.random = () => crypto.createHash("sha256")
-  .update(`math:${instant}:${randomSequence++}`).digest().readUInt32BE(0) / 0x100000000
+  .update(`math:${seed}:${randomSequence++}`).digest().readUInt32BE(0) / 0x100000000

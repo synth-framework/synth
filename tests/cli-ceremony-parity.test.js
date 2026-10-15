@@ -65,6 +65,8 @@ async function withFixture(t, git, body) {
       const time = Date.UTC(2026, 0, 1) + (++turn * 1000)
       const env = {
         ...process.env,
+        // Propagate the controlled inputs through real onboarding/task children.
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS || ""} --import ${JSON.stringify(INPUTS)}`.trim(),
         SYNTH_CLI_PARITY_FIXTURE: "1",
         SYNTH_CLI_PARITY_TIME: String(time),
         SYNTH_QUIET_LOGS: "1",
@@ -126,6 +128,11 @@ test("entry parity: initialization, first-contact proposals, task and read-only 
     await pair(["first-contact", "clarify"], { readonly: true })
     await pair(["first-contact", "status"], { readonly: true })
     await pair(["status"], { readonly: true })
+    for (const command of [["status"], ["explain", "replay"], ["explain", "identity"]]) {
+      const telemetry = await pair([...command, "--agent-session", "parity-agent", "--agent-reasoning-state", '{"understoodAs":"parity fixture"}'], { readonly: true })
+      assert.equal(telemetry.agentSession, "parity-agent")
+      assert.deepEqual(telemetry.agentReasoningState, { understoodAs: "parity fixture" })
+    }
     for (const sub of ["replay", "identity", "resume", "governance", "agents", "lineage", "proposals", "snapshots", "graph", "diagnostics", "status", "all"]) {
       await pair(["explain", sub], { readonly: true })
     }
@@ -180,4 +187,30 @@ test("entry parity: bootstrap, alignment and real git-backed lifecycle ceremonie
 
 test("shared CLI harness targets package.json bin.synth", () => {
   assert.equal(CLI_PATH, SHIPPED)
+})
+
+test("entry parity: approved first-contact resolves task children outside the installation", { timeout: 180000 }, async (t) => {
+  await withFixture(t, false, async ({ root, pair }) => {
+    await fs.rm(path.join(root, "package.json"))
+    const onboarded = await pair(["first-contact", "--approve", "--name", "Onboarding parity"], { kind: "FirstContactOnboardCompleted" })
+    assert.ok(onboarded.missionId, "onboarding must actually create its baseline mission")
+  })
+})
+
+test("recursive CLI resolution recognizes both entry points and symlinks, with an installation-relative fallback", async () => {
+  const { resolveSynthCli } = await import("../dist/distribution/cli-path.js")
+  const outer = await makeTempDir("synth-cli-resolution-")
+  try {
+    assert.equal(resolveSynthCli(LEGACY), LEGACY)
+    assert.equal(resolveSynthCli(SHIPPED), SHIPPED)
+    const link = path.join(outer, "synth")
+    await fs.symlink(SHIPPED, link)
+    assert.equal(resolveSynthCli(link), SHIPPED)
+    assert.equal(resolveSynthCli(path.join(outer, "nonexistent-launcher")), SHIPPED)
+    const unrelated = path.join(outer, "entry.js")
+    await fs.writeFile(unrelated, "// Not this installation's CLI\n")
+    assert.equal(resolveSynthCli(unrelated), SHIPPED)
+  } finally {
+    await fs.rm(outer, { recursive: true, force: true })
+  }
 })

@@ -17,6 +17,7 @@
 import { fileURLToPath } from "url"
 import path from "path"
 import { resolveLightExplain, runExplainFromArgv } from "./verb-registry.js"
+import { parseArgs, setAgentTelemetryFromFlags } from "./cli-args.js"
 import { projectVersion, printVersion } from "./version.js"
 import { printHelp } from "./usage.js"
 import { printError, setHumanMode, setQuietMode, setSummaryMode } from "./output.js"
@@ -58,6 +59,7 @@ export async function run(): Promise<void> {
   if (command === "explain") {
     const light = resolveLightExplain(process.argv[3])
     if (light) {
+      setAgentTelemetryFromFlags(parseArgs(process.argv).flags)
       await runExplainFromArgv(light, process.argv)
       return
     }
@@ -67,6 +69,7 @@ export async function run(): Promise<void> {
     const human = applyOutputFlags(argv)
 
     if (command === "status") {
+      setAgentTelemetryFromFlags(parseArgs(process.argv).flags)
       // status-light is imported here, not at module scope: `--version` and
       // `help` must not pay for the 33 modules / 151 KB that `status` genuinely
       // needs (the governance resolver alone is 119 modules / 820 KB behind it).
