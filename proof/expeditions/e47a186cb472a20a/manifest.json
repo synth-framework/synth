@@ -1,7 +1,7 @@
 {
   "expeditionId": "e47a186cb472a20a",
-  "capturedAt": 1792030605111,
-  "note": "Item 3 first step: the four helper clusters the goal names are extracted ONCE out of synth.ts (9121 -> 8609 lines) into cli-args.ts (76), auto-commit-ceremony.ts (140), gate-reporting.ts (41) and working-tree.ts (364), from one contiguous 524-line region containing no cmd* handler. Imports were resolved by tsc rather than by hand (78 errors, 24 names) then pruned to 1/5/3/5 of the monolith's 77 statements, so no new module inherits its graph; two type declarations that travelled unexported were exported and imported back; final tsc 0 errors. No cycles: working-tree imports none of the four, ceremony imports working-tree, the rest only print. One API change: autoCommitDisabledByFlag moved beside its only reader and is set through an exported setter, so one authority owns the flag. No eager graph shrank and none was expected to - synth.js 298 -> 302 modules (the four new homes), entry.js still 60/273, status-light still 33/151; the dispatcher budget is closed by the registry and handler moves that follow. test:all rc=0 in 298.7 s (the shim reports the 116-segment && chain as one task, so rc=0 is the proof, not a segment count) plus a 12-suite targeted battery green, including the four source-path guards the goal names. Also found and fixed a guard that was already red on this branch before item 3: artifact-policy flagged the retired EXP-CLI-003 draft as an unrecorded removal; verified absent from 337a72f/550a581/eabbb47 alike and removed by the recovery commit 1423d53 because the commit ceremony retires drafts per ADR-055 2. Recorded as removals entry 5 rather than reverted. dist-manifest 1050 -> 1062 files, rootHash 850e7aa08f79bbec -> 76191d7beaa888d1.",
+  "capturedAt": 1792033602084,
+  "note": "Item 3 registry/namespace extraction and lazy call-site imports. 97 handlers in single homes; shipped eager graph 17 modules/47 KB; all namespace roots <=134 modules. Full test chain green twice; final dist 1200 files rootHash 267cb1342a16e0b6. Timing status 141.1 ms remains above 130 ms; item 4 harness and item 5 DERIVED guard still outstanding. Includes append-only corrections and two pre-existing unchained reds reproduced on pre-extraction build.",
   "attachments": [
     {
       "kind": "git-diff",
@@ -47,6 +47,21 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item3a.md",
       "hash": "563176694fac96d3cb462e576d61a8a3661fb1a5caeccf8ca6dcff47f7ca7419"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "ebd24b0f98212efde986f42ab0cd15288d4556fe08c1a62f625a6a26aa07f1bc"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "b3ea38145f684be86ddce06db92742620e77357af18dff23932d7ca509adb56b"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-timing.json",
+      "hash": "5893aee53b13ee64c95603e0e25dd0814ee2af4c545edefe0c69cc25c387ac16"
     }
   ]
 }
