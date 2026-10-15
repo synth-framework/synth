@@ -18,6 +18,13 @@ git:
   # removing the key entirely (infer the ledger branch from the checkout when it
   # matches branchPolicy.declaredPatterns) is the fix, drafted as expedition
   # "Adapter configuration consolidated".
+  # CORRECTION 2026-10-15 (design only): the above checkout-inference fix was
+  # superseded. Git-native publication keeps records branch-local until their
+  # ordinary PR merges into main; do not treat this session-scoped value as a
+  # permanent project-wide authority or flip it to main as a shortcut. See the
+  # dated update in docs/adr/ADR-055-ceremonial-events.md and the append-only
+  # EXP-LIFE-002 draft refinement. This configured value remains unchanged until
+  # an explicitly verified migration is implemented.
   ledgerBranch: arena/d5e4625c-synth
   branchStrategy: featured
   branchPolicy:
