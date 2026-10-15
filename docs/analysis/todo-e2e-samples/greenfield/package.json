@@ -1,0 +1,12 @@
+{
+  "name": "greenfield-todo-e2e",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "govern": "npm test"
+  },
+  "bin": {
+    "todo": "./src/cli.js"
+  }
+}

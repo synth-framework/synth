@@ -18,5 +18,845 @@
     "path": "src/infra/telemetry.ts",
     "reason": "In-repo telemetry module removed by user decision: it was not real telemetry (stderr lines plus a file sink that dirtied governed projects). Span instrumentation removed from execution-gate, event-store, state-store and cli/entry. Any future telemetry goes to an external logger/service, not the repo.",
     "approvedBy": "user (chat, 2026-10-13)"
+  },
+  {
+    "path": ".synth/data/drafts/e47a186cb472a20a.json",
+    "reason": "Draft retired by the lifecycle itself, not by hand: ADR-055 \u00a72 retires a draft via git rm at commit/abandon so the deletion is part of the ceremony commit. EXP-CLI-003 was approved and committed on 2026-10-14, which retired this draft; the deletion reached this branch in the ceremony consolidation commit 1423d53 while the file was still tracked on origin/main, so check-artifact-policy reported it as an unrecorded removal. The expedition record at .synth/data/expeditions/e47a186cb472a20a.json is the live authority and is unaffected.",
+    "approvedBy": "user (chat, 2026-10-14: \"Approve EXP-CLI-003\") \u2014 retirement is the documented consequence of that approval, recorded by the agent 2026-10-15"
+  },
+  {
+    "path": "data/tasks/ai:benchmark.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/ai%3Abenchmark.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/ai:benchmark:dry-run.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/ai%3Abenchmark%3Adry-run.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/audit:dead-declarations.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/audit%3Adead-declarations.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/audit:module-graph.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/audit%3Amodule-graph.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/audit:repository.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/audit%3Arepository.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/audit:unused-exports.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/audit%3Aunused-exports.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/bench:interruption.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/bench%3Ainterruption.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/build:agent-sdk.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/build%3Aagent-sdk.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/check:adr.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/check%3Aadr.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/check:artifact-policy.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/check%3Aartifact-policy.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/distribution:project.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/distribution%3Aproject.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/distribution:verify-freshness.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/distribution%3Averify-freshness.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:check-links.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Acheck-links.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:generate-capability-list.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Agenerate-capability-list.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:generate-first-contact-quickstart.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Agenerate-first-contact-quickstart.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:generate-first-contact.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Agenerate-first-contact.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:generate.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Agenerate.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:validate-projections.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Avalidate-projections.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:verify-first-contact-projection.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Averify-first-contact-projection.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:verify-first-contact-quickstart.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Averify-first-contact-quickstart.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:verify-freshness.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Averify-freshness.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:verify-metadata.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Averify-metadata.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:verify-projection.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Averify-projection.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/docs:verify-website-sync.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/docs%3Averify-website-sync.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/govern:benchmark.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/govern%3Abenchmark.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/govern:ci.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/govern%3Aci.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/govern:full.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/govern%3Afull.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/govern:watch.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/govern%3Awatch.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/mcp:bin.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/mcp%3Abin.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/mcp:start.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/mcp%3Astart.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/measure:cli-startup.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/measure%3Acli-startup.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/onboarding:archive.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/onboarding%3Aarchive.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/onboarding:bootstrap.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/onboarding%3Abootstrap.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/onboarding:detect.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/onboarding%3Adetect.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/onboarding:govern.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/onboarding%3Agovern.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/onboarding:init.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/onboarding%3Ainit.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/onboarding:mission.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/onboarding%3Amission.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/proof:verify.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/proof%3Averify.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:adapter-introspection.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aadapter-introspection.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:adapter.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aadapter.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:adoption-validation.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aadoption-validation.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:adr.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aadr.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:adversarial.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aadversarial.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:agent-sdk.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aagent-sdk.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ai-benchmark.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aai-benchmark.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ai-capability-projection.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aai-capability-projection.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:all.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aall.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ambient-root-resolution.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aambient-root-resolution.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:api-adapter-integration.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aapi-adapter-integration.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:architecture.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aarchitecture.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:artifact-policy.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aartifact-policy.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:audit.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aaudit.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:auto-commit-ignored-paths.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aauto-commit-ignored-paths.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:bdd.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Abdd.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:brownfield.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Abrownfield.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:certification-framework.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Acertification-framework.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:clean-machine-output.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aclean-machine-output.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:cli-ceremony-parity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Acli-ceremony-parity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:cli-duplicate-advisory.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Acli-duplicate-advisory.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:cli-load-budget.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Acli-load-budget.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:confidence.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aconfidence.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:continuous-publication.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Acontinuous-publication.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:conversation.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aconversation.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:core-boundary.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Acore-boundary.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:decision-events.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adecision-events.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:declared-branch.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adeclared-branch.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:dependency.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adependency.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:determinism.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adeterminism.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:discovery.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adiscovery.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:document.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adocument.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:documentation-expedition.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adocumentation-expedition.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:documentation-integrity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adocumentation-integrity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:documentation-projections.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adocumentation-projections.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:draft-integrity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Adraft-integrity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:environment-capability-graph.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aenvironment-capability-graph.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:environment-capability-report.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aenvironment-capability-report.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:environment-discovery-evidence.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aenvironment-discovery-evidence.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:environment-discovery.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aenvironment-discovery.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:environment-filesystem.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aenvironment-filesystem.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:evidence-path.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aevidence-path.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:execution-branch.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexecution-branch.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:execution-commit.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexecution-commit.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:execution-gate-regression.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexecution-gate-regression.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:execution-intent.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexecution-intent.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:execution-projection.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexecution-projection.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:execution-runtime.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexecution-runtime.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:expedition-auto-commit.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexpedition-auto-commit.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:expedition-builder.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexpedition-builder.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:expedition-evidence.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexpedition-evidence.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:expedition-governance.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexpedition-governance.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:expedition-reuse-and-templates.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexpedition-reuse-and-templates.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:explain-observability.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aexplain-observability.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:extraction-reporting.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aextraction-reporting.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:filesystem.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Afilesystem.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:first-contact-archive-a.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Afirst-contact-archive-a.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:first-contact-patterns.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Afirst-contact-patterns.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:first-contact-quickstart.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Afirst-contact-quickstart.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:first-operator-experience.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Afirst-operator-experience.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:freeze-certification.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Afreeze-certification.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:genesis-hardening.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agenesis-hardening.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:genesis-snapshot-bridge.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agenesis-snapshot-bridge.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:github.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agithub.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:govern-profiler.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovern-profiler.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:govern-recursion-guard.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovern-recursion-guard.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:governance-evaluation-enforcement.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovernance-evaluation-enforcement.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:governance-incremental.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovernance-incremental.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:governance-optimization.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovernance-optimization.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:governance-orchestration.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovernance-orchestration.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:governance-quiet-output.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovernance-quiet-output.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:governance-record.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agovernance-record.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:graph-integrity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Agraph-integrity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:impact-analyzer.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aimpact-analyzer.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-certification.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-certification.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-contract.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-contract.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-distribution.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-distribution.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-engine.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-engine.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-environment.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-environment.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-manifest.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-manifest.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-upgrade.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-upgrade.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:installer-verify.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ainstaller-verify.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:knowledge-extraction.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aknowledge-extraction.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ledger-abandonment.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aledger-abandonment.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ledger-capability-commits.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aledger-capability-commits.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ledger-ceremony.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aledger-ceremony.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ledger-delivery.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aledger-delivery.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ledger-doctor.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aledger-doctor.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:ledger-writer.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aledger-writer.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:loader-entrypoint.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aloader-entrypoint.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mcp-server.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amcp-server.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-builder.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-builder.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio-adapter-collector.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio-adapter-collector.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio-adapter-mapper.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio-adapter-mapper.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio-duplicate-detection.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio-duplicate-detection.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio-proposal-graph.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio-proposal-graph.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio-snapshot-integrity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio-snapshot-integrity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio-snapshot-lineage.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio-snapshot-lineage.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:mission-studio.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Amission-studio.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:no-write-on-read.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ano-write-on-read.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:objective-builder.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aobjective-builder.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:operator-briefing.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aoperator-briefing.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:operator-journey.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aoperator-journey.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:package-distribution.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Apackage-distribution.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:proof.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aproof.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:proposal-evaluation.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aproposal-evaluation.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:protected-asset-escalation.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aprotected-asset-escalation.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:public-vocabulary-audit.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Apublic-vocabulary-audit.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:release.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Arelease.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:replay-graph-integrity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Areplay-graph-integrity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:replay.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Areplay.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:repository-identity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Arepository-identity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:resume-briefing.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aresume-briefing.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:runtime-integrity.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aruntime-integrity.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:runtime-repair.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aruntime-repair.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:skr.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Askr.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:specification.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Aspecification.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:synth-cli-govern-explain.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Asynth-cli-govern-explain.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:synth-cli.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Asynth-cli.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:task-npm-adapter.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Atask-npm-adapter.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:task-schema-registry.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Atask-schema-registry.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:taskpro-regression.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Ataskpro-regression.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:tdd.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Atdd.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:validation-expansion.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Avalidation-expansion.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:validation-mapping.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Avalidation-mapping.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:validation-planner.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Avalidation-planner.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:verify-engine.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Averify-engine.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/test:wizard.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/test%3Awizard.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
+  },
+  {
+    "path": "data/tasks/version:verify.task.json",
+    "reason": "Renamed without changing task identity to data/tasks/version%3Averify.task.json; colon-bearing paths prevent Windows checkout (EXP-CLI-003 Windows scope extension).",
+    "approvedBy": "user (chat, 2026-10-14: fix Windows-incompatible filenames in CLI-003)"
   }
 ]

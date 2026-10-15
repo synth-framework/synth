@@ -4,7 +4,7 @@
 
 import {
   EXPEDITION_STATUSES,
-} from "../types/index.js"
+} from "../types/state.js"
 import { sortKeys } from "../sdk/json/index.js"
 import type {
   SynthEvent,

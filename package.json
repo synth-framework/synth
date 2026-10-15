@@ -129,6 +129,7 @@
     "test:first-operator-experience": "node scripts/task-adapter-shim.js test:first-operator-experience",
     "test:synth-cli": "node scripts/task-adapter-shim.js test:synth-cli",
     "test:loader-entrypoint": "node scripts/task-adapter-shim.js test:loader-entrypoint",
+    "test:ambient-root-resolution": "node scripts/task-adapter-shim.js test:ambient-root-resolution",
     "test:release": "node scripts/task-adapter-shim.js test:release",
     "test:govern-recursion-guard": "node scripts/task-adapter-shim.js test:govern-recursion-guard",
     "test:draft-integrity": "node scripts/task-adapter-shim.js test:draft-integrity",
@@ -190,7 +191,10 @@
     "test:declared-branch": "node scripts/task-adapter-shim.js test:declared-branch",
     "test:task-npm-adapter": "node scripts/task-adapter-shim.js test:task-npm-adapter",
     "test:task-schema-registry": "node scripts/task-adapter-shim.js test:task-schema-registry",
-    "test:expedition-evidence": "node scripts/task-adapter-shim.js test:expedition-evidence"
+    "test:expedition-evidence": "node scripts/task-adapter-shim.js test:expedition-evidence",
+    "test:cli-ceremony-parity": "node scripts/task-adapter-shim.js test:cli-ceremony-parity",
+    "test:cli-load-budget": "node scripts/task-adapter-shim.js test:cli-load-budget",
+    "test:portable-paths": "node scripts/task-adapter-shim.js test:portable-paths"
   },
   "keywords": [
     "event-sourcing",

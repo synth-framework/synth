@@ -382,9 +382,18 @@ async function testLegacyLayoutStillReads() {
 async function testNoLegacyOnlyPresenceGuardRemains() {
   // Source-level guard: the bug was a presence test against the legacy path.
   // If that pattern comes back, the operator-visible lies come back with it.
-  const src = await fs.readFile(path.join(REPO_ROOT, "src", "cli", "synth.ts"), "utf-8")
-  assert(/from "\.\.\/infra\/event-store\.js"/.test(src), "synth.ts must import the event-log authority from infra/event-store.js")
-  assert(/locateEventLog\(/.test(src), "synth.ts must consult locateEventLog")
+  const cliDir = path.join(REPO_ROOT, "src", "cli")
+  // EXP-CLI-003: keep the positive checks at each implementation's new home;
+  // scan all CLI files below, not the now-small dispatcher, for regressions.
+  for (const file of ["commands-log.ts", "commands-doctor.ts", "command-replay-health.ts"]) {
+    const source = await fs.readFile(path.join(cliDir, file), "utf-8")
+    assert(/from "\.\.\/infra\/event-store\.js"/.test(source), `${file} must import the event-log authority`)
+    assert(/locateEventLog\(/.test(source), `${file} must consult locateEventLog`)
+  }
+  const sources = await Promise.all((await fs.readdir(cliDir))
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => fs.readFile(path.join(cliDir, file), "utf-8")))
+  const src = sources.join("\n")
   assert(
     !/const logPath = sdk\.paths\.eventLogFile\(/.test(src),
     "no check may test the legacy monolithic path for existence to decide whether an event log is present (use locateEventLog)",

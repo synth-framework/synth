@@ -6,6 +6,7 @@
 // ============================================================
 
 import fs from "fs/promises"
+import { readFileSync } from "node:fs"
 import path from "path"
 import { fileURLToPath } from "url"
 import { assertTask, type Task } from "./task-schema.js"
@@ -56,7 +57,11 @@ export async function loadTaskRegistry(options: RegistryLoadOptions = {}): Promi
     for (const entry of entries) {
       if (!entry.endsWith(".task.json")) continue
       const filePath = path.join(dir, entry)
-      const raw = await fs.readFile(filePath, "utf-8")
+      // These small metadata files are consumed immediately, in order. A
+      // separate open/read/close promise round-trip for every task dominates
+      // CLI validation startup; read synchronously without caching or changing
+      // override/error order. Directory discovery retains the async API.
+      const raw = readFileSync(filePath, "utf-8")
       let parsed: unknown
       try {
         parsed = JSON.parse(raw)

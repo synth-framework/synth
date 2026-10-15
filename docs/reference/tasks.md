@@ -156,7 +156,7 @@ Returns the set of tasks transitively affected by changes to the named tasks.
 synth task generate lint --group certification --command "npx eslint src/"
 ```
 
-Writes a new `data/tasks/<id>.task.json` file. Refuses to overwrite an existing task unless `--force` is passed.
+Writes a new `data/tasks/<encoded-id>.task.json` file. Refuses to overwrite an existing task unless `--force` is passed.
 
 ## npm scripts as adapters
 
@@ -190,7 +190,7 @@ npm becomes a local convenience; CI delegates orchestration to Synth. This avoid
 
 To migrate an existing npm script:
 
-1. Create `data/tasks/<script-name>.task.json` with the appropriate group and dependencies.
+1. Create `data/tasks/<encoded-script-name>.task.json` with the appropriate group and dependencies.
 2. Run `synth task doctor` to validate the registry.
 3. Replace the `package.json` script with `node dist/cli/synth.js task run <id>`.
 4. Verify `npm run <name>` and `synth task run <name>` produce the same result.
@@ -210,3 +210,31 @@ Do not mark the original npm script `deprecated` until the adapter migration is 
 - [Public Vocabulary](public-vocabulary.md)
 - [Operator Guide](../operator/14-local-vs-ci-validation.md)
 - `docs/expeditions/EXP-PROGRAM-034.md`
+
+## Portable task filenames (EXP-CLI-003)
+
+Task identity is the JSON `id`, not the filename. Keep identifiers such as
+`test:all` in npm scripts, dependency lists and CLI arguments. Since literal
+colons prevent Windows checkout, its file is `data/tasks/test%3Aall.task.json`.
+The shared `taskFileName` function in `src/task/task-schema.ts` escapes UTF-8
+bytes other than lower-case ASCII letters, digits, `_` and `-`. It also escapes
+reserved Windows device names; uppercase and literal percent signs are encoded
+so IDs do not collide on case-insensitive filesystems. Overlong encoded names
+are rejected rather than truncated. No new command vocabulary is introduced.
+
+Use `synth task generate <id> --group <group>` rather than constructing paths
+from IDs. The npm migration generator requires `npm run build` first and shares
+this encoding. Registry discovery still reads `*.task.json` and uses their IDs;
+hand-authored task files need not be named after their IDs. Framework copying
+selects `onboarding:` by JSON ID, not by filename, and removes stale generated
+framework filenames during incremental builds.
+
+`npm run test:portable-paths` rejects invalid Windows path components and
+case-insensitive collisions in Git's index, and tests task generation and
+distribution. Historical expedition records and hashed proof attachments may
+refer to the old colon-bearing paths; these are historical names, not current
+checkout instructions. The rename is not deletion of task definitions.
+
+These checks establish pathname portability, not certification that every CLI
+command and shell script runs on Windows. Native Windows execution must be
+reported separately from Linux tests and package inspections.

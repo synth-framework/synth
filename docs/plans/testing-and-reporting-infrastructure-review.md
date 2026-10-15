@@ -11,7 +11,7 @@
 
 ## 0. Executive summary
 
-The canonical test chain (`test:all`) currently expands to **114 npm-run steps** defined in `data/tasks/test:all.task.json` and executed via `scripts/task-adapter-shim.js` → `dist/cli/synth.js task run <script>` → governance profiler → proof. The profiler (`scripts/govern-profiler.js`) decomposes the chain truthfully after the Verification Coverage Truthfulness fix (F1), produces `GovernSummary`, `GovernanceDependencyGraph`, baselines, and timing.
+The canonical test chain (`test:all`) currently expands to **114 npm-run steps** defined in `data/tasks/test%3Aall.task.json` and executed via `scripts/task-adapter-shim.js` → `dist/cli/synth.js task run <script>` → governance profiler → proof. The profiler (`scripts/govern-profiler.js`) decomposes the chain truthfully after the Verification Coverage Truthfulness fix (F1), produces `GovernSummary`, `GovernanceDependencyGraph`, baselines, and timing.
 
 There are **252 test files** and **124 `test:*` npm scripts** (161 total scripts, 169 task definitions). 14 task-defined checks are not in `test:all` (intentionally or by drift). The test surface grew ad-hoc while taming the codebase; many suites overlap, some are environment-dependent, and failure reporting does not always name the exact check.
 
@@ -31,7 +31,7 @@ No broad refactor is performed in this expedition; this document is the reviewed
 
 ### 1.1 Current state
 
-- **Definition:** `data/tasks/test:all.task.json` — `id: test:all`, `command: npm run test && npm run test:governance-quiet-output && ... && npm run test:adr` (114 steps)
+- **Definition:** `data/tasks/test%3Aall.task.json` — `id: test:all`, `command: npm run test && npm run test:governance-quiet-output && ... && npm run test:adr` (114 steps)
 - **Package.json delegation:** `test:all` script is `node scripts/task-adapter-shim.js test:all` — shim builds `dist/` if missing then delegates to `node dist/cli/synth.js task run test:all`
 - **Governance profiler:** `scripts/govern-profiler.js` → `loadGovernChecks()` reads canonical task definition (after F1 fix) or fails loudly; previously it parsed `package.json` shim and yielded zero checks (build+proof only). Now it:
   - Parses `test:all` command via `parseNpmRunChecks` (splits on `&&`, extracts `npm run <script>`)
@@ -104,7 +104,7 @@ Collection (check-registry + task registry)
 Single source of truth: data/tasks/*.task.json + package.json scripts
 ```
 
-- **Collection:** `loadGovernChecks` reads `data/tasks/test:all.task.json` (canonical) — already fixed. Extend to read `governance-classes.json` or `capability-validation-map.json` to enrich `module`, `inputs`, `outputs`, `determinism` for each check, not just 7 explicit.
+- **Collection:** `loadGovernChecks` reads `data/tasks/test%3Aall.task.json` (canonical) — already fixed. Extend to read `governance-classes.json` or `capability-validation-map.json` to enrich `module`, `inputs`, `outputs`, `determinism` for each check, not just 7 explicit.
 - **Scheduling:** `Scheduler` should be the only place that decides `run` vs `skip`; `orchestrator.js` should delegate to it, not re-implement class filtering.
 - **Execution:** `ParallelRunner` should be used for `test:all` when `profile.allowSkip=false` (main-branch/release) and checks have no inter-dependencies. For now, sequential is safer but slower.
 - **Reporting:** Standardize on `GovernSummary` + `GovernanceDependencyGraph` + `proof` + `explain` report. Every failure should emit:
@@ -346,7 +346,7 @@ Currently all 4 stages are in `govern-profiler.js` and `orchestrator.js` with ov
 
 1. **EXP-TEST-001 — Normalize logging and failure envelope** (scope: `tests/helpers/*`, `scripts/governance/*`, `src/cli/task-runner`)
    - Deliverable: Every failure names `checkId`, file, assertion, environment
-2. **EXP-TEST-002 — Merge suites per matrix** (scope: `data/tasks/test:all.task.json`, `data/tasks/*.task.json`, `tests/*`)
+2. **EXP-TEST-002 — Merge suites per matrix** (scope: `data/tasks/test%3Aall.task.json`, `data/tasks/*.task.json`, `tests/*`)
    - Deliverable: 114 → ~70 checks, same coverage, registration guard
 3. **EXP-TEST-003 — Parallelize independent checks** (scope: `scripts/governance/parallel-runner.js`, `scripts/govern-profiler.js`)
    - Deliverable: `govern --full` uses parallel runner, measured speedup, no flakiness
@@ -359,7 +359,7 @@ Each expedition should be **draft → approved → committed → executing → c
 
 ## 9. Appendix — Current test chain breakdown
 
-See `data/tasks/test:all.task.json` for full list. Grouped:
+See `data/tasks/test%3Aall.task.json` for full list. Grouped:
 
 - **Core:** `test`, `test:governance-quiet-output`, `test:skr`, `test:audit`, `test:replay`, `test:replay-graph-integrity`, `test:graph-integrity`, `test:explain-observability`, `test:determinism`, `test:adversarial`
 - **Adapters:** `test:adapter`, `test:tdd`, `test:bdd`, `test:conversation`, `test:document`, `test:filesystem`, `test:specification`, `test:knowledge-extraction`, `test:confidence`, `test:dependency`, `test:architecture`, `test:mission-builder`, `test:expedition-builder`, `test:objective-builder`, `test:wizard`, `test:mission-studio*` (8), `test:cli-duplicate-advisory`, `test:api-adapter-integration`, `test:adapter-introspection`

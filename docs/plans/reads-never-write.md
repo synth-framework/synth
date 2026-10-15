@@ -164,7 +164,7 @@ rm -f .synth/data/dependency-records-cache.json .synth/data/event-log.jsonl
 - **`scripts/check-artifact-policy.js`** (new): asserts (a) every tracked path that the policy classes as non-`durable`/non-`input` is **not** in the index, (b) every policy `tracked` path exists or is optional, (c) `.gitignore` agrees with the policy for every class. Exit non-zero with a diff-style report. Wire into `npm run govern` and the Proof Gate.
 - **`tests/no-write-on-read.test.js`** (new): `git archive HEAD | tar -x -C $(mktemp -d)` (the pristine-tree recipe from `.agents/AGENTS.md`), then for each read-only command — `status`, `explain replay`, `explain lineage`, `doctor`, `capabilities`, `expedition list`, `mission list`, `program list`, `log --tail 1`, `validate --dry-run` — assert `git status --porcelain` is **empty** afterwards, resetting between commands. Fails today on `status`, `doctor`, `capabilities`.
 - **`tests/derived-state-commit.test.js`** (new, or extend the existing `tests/expedition-auto-commit.test.js`): in a temp repo, drive a lifecycle transition and assert exactly one `chore(synth): record …` commit containing the durable files, with a clean tree afterwards.
-- **Registration:** `data/tasks/test:no-write-on-read.task.json`, `data/tasks/test:derived-state-commit.task.json`, `data/tasks/check:artifact-policy.task.json` + `package.json` scripts + `test:all` chain (or the governance tier list).
+- **Registration:** `data/tasks/test%3Ano-write-on-read.task.json`, `data/tasks/test:derived-state-commit.task.json`, `data/tasks/check%3Aartifact-policy.task.json` + `package.json` scripts + `test:all` chain (or the governance tier list).
 
 ---
 

@@ -9,6 +9,20 @@ ADR-054-proposed (unified lifecycle state machine — states; this ADR is the gi
 
 ---
 
+## 2026-10-15 design update — Git-native publication (not implemented)
+
+This is a later operator decision about the *desired* user flow. The historical audit, reproduced hash-chain failures, and E5 implementation record below remain intact; they must not be read as evidence that this update has already shipped. Where the earlier proposed decision requires a governance ceremony to land immediately on `main`, mandates a permanent central ledger branch/host, or treats cross-branch visibility before merge as a requirement (§2.1–§2.3, §2.9–§2.10, §R2.1–§R2.3), **this update supersedes that proposed end-state**. In particular, the `synth/ledger` fallback in §2.9 is not the default new feature to build.
+
+- **Git is the publication boundary.** A record created, approved, or updated on a work branch is branch-local, even if that branch is pushed. The operator may make the branch available to others to fetch or review; it is not published on `main` until an ordinary reviewed PR merges. Other branches see the published record when they fetch/update from `main`. A branch-local approval is not a claim of publication or permission to bypass execution-branch binding.
+- **One review, not a promotion ritual.** The existing PR is the operator's decision to integrate records and/or code. If a charter must be available on `main` before the code lands, a small governance-only PR can land first. Do not add a permanent governing branch, a second approval prompt, a promotion inbox, automatic network reconciliation on reads, or another public CLI verb solely to make branch-local state appear global.
+- **The event-chain conflict is still real.** Two branches that each append to the same global `previousHash` cannot be merged by Git's file merge. Initially serialize ledger-bearing integrations and fail closed when a PR's event history does not extend the latest published chain. Any later integration/reconstruction must go through the ExecutionGate, retain provenance of the original *published branch history*, and prove exact replay; do not hand-merge event files, rewrite published claims, or silently mark the losing branch as integrated. This is an acceptance requirement for a future implementation, **not** an ability of today's Ledger Writer or CI. A smaller aggregate alone does not solve it.
+- **Read and mutation truth must be explicit.** Status/show/report on a checkout may describe its own branch-local state; they must not present it as published on `main`. Offline reads remain read-only and must not fetch, repair, or claim remote freshness they have not checked. Delivery/seal continue to verify integration against the actual `main` ref. Execution-branch ownership remains a separate policy.
+- **Migration is required.** The existing session-valued `git.ledgerBranch` and the folded EXP-LIFE-002 D7 proposal to infer a globally authoritative ledger branch from the current checkout are neither this publication model nor a finished solution. Before approval/implementation, correct that draft append-only, reconcile staging/configuration/consumer contracts, and add a guarded two-branch PR/replay test. Do not flip a config line and claim the migration is done.
+
+This direction prefers the dull Git contract over premature shared-before-merge visibility; it does **not** claim every existing ADR-055 deliverable is obsolete or that the runtime has changed.
+
+---
+
 ## 1. Context
 
 The audit reproduced three failures that are all the same failure seen from three angles:

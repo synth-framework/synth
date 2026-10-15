@@ -12,7 +12,7 @@
 import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { injectIdentityContext } from "./identity-context.js"
 import {
   branchNameCandidates,
@@ -30,7 +30,7 @@ const BRANCH_TYPES: BranchType[] = ["main", "release", "mission", "expedition", 
 import { printJson, printError } from "./print.js"
 
 async function bootstrapWithCapabilities() {
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "file" },
   })
@@ -383,8 +383,17 @@ export async function cmdRepoReleaseCreate(flags: Record<string, string | boolea
 }
 
 export async function cmdRepoStatus() {
-  const ctx = await bootstrapWithCapabilities()
-  const state = await ctx.runtime.getState()
+  // A repository projection needs the data plane, not mutation capabilities,
+  // policies, planning adapters or an ExecutionGate. Keep the same infra
+  // factory and RuntimeEngine.getState replay used by bootstrap; do not add
+  // a second state interpreter or read a potentially stale state snapshot.
+  const [{ createInfra }, { RuntimeEngine }] = await Promise.all([
+    import("../infra/index.js"),
+    import("../runtime/engine.js"),
+  ])
+  const infra = await createInfra({ persistence: "file" })
+  const runtime = new RuntimeEngine(infra.eventStore, infra.stateStore, infra.checkpointStore)
+  const state = await runtime.getState()
 
   printJson({
     status: "ok",

@@ -8,18 +8,18 @@
 import fs from "fs/promises"
 import path from "node:path"
 import crypto from "crypto"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { injectIdentityContext } from "./identity-context.js"
 import { printJson, printError } from "./print.js"
 import { captureIdentity } from "../identity/index.js"
 import { detectLegacyState } from "../migration/detect.js"
 import { buildMigrationPlan, resolveLegacyEventLogPath } from "../migration/plan.js"
-import { runBootstrap } from "./bootstrap-apply.js"
+
 import * as sdk from "../sdk/index.js"
 
 async function bootstrapWithCapabilities(targetDir?: string) {
   const root = targetDir ? path.resolve(targetDir) : process.cwd()
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: {
       persistence: "file",
@@ -126,7 +126,7 @@ export async function cmdMigrateArchive(args: string[], flags: Record<string, st
   }
 
   // Bootstrap a fresh Synth v2 project in the same directory.
-  const bootstrapResult = await runBootstrap(targetDir, {
+  const bootstrapResult = await (await import("./bootstrap-apply.js")).runBootstrap(targetDir, {
     approve: true,
     dryRun: false,
     withWebsite: false,

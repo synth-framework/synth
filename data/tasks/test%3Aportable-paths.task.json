@@ -1,0 +1,14 @@
+{
+  "id": "test:portable-paths",
+  "description": "Guard Windows-portable tracked paths and task filename generation/distribution",
+  "command": "node scripts/check-portable-paths.js && node tests/portable-paths.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 5000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

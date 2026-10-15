@@ -3,6 +3,7 @@
 // ============================================================
 
 import path from "node:path"
+import type { DefaultCapabilityName } from "./default-names.js"
 import type { Capability, CapabilityInvocation, CapabilityResult, CanonicalState, DerivedState, DomainContext } from "../types/index.js"
 import type { AgentIdentity } from "../identity/types.js"
 import { applyDomain } from "../domain/execution.js"
@@ -125,7 +126,7 @@ export function createCapabilityRegistry(): Registry {
   return registry
 }
 
-function createDefaultCapabilities(): Capability[] {
+function createDefaultCapabilities(): Array<Capability & { name: DefaultCapabilityName }> {
   return [
     // Canonical WorkItem capabilities
     {

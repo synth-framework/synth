@@ -21,7 +21,8 @@ import { makeTempDir } from "./workspace.js"
 
 export { parseJson }
 
-export const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "synth.js")
+// EXP-CLI-003: exercise the shipped bin, not the compatibility entry point.
+export const CLI_PATH = path.resolve(process.cwd(), "dist", "cli", "entry.js")
 
 /** Make a temp dir and run `synth init` with args; returns { tmpDir, initResult }. */
 export async function initProject(prefix, args) {

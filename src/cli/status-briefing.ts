@@ -6,10 +6,6 @@
 // model produced by the Governance Resolver.
 // ============================================================
 
-import {
-  resolveGovernanceContext,
-  isGovernanceResolutionFailure,
-} from "../runtime/governance-resolver.js"
 import { deriveValidTransition } from "../runtime/transition-engine.js"
 import {
   deliveryState,
@@ -20,9 +16,15 @@ import {
   type BranchCreatedEventLike,
 } from "../ledger/delivery.js"
 import { toOperatorBriefing } from "../runtime/status-projection.js"
-import { createCapabilityRegistry } from "../capability/registry.js"
-import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
 import { buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
+
+// EXP-CLI-003: the resolver is loaded at call time, not on the shipped
+// dispatcher's eager path. Status needs the resolver's replay, but only the
+// *names* of default runtime capabilities and planning adapters. The ordered
+// capability list is checked against the real registry in the load-budget
+// test; the adapter list is also shared with AdapterRegistry's factory map.
+// Neither executable registry is loaded just to answer a read-only question. The cheap delivery and projection edges
+// stay static.
 
 export type MissionBrief = {
   id: string
@@ -86,6 +88,9 @@ export type OperatorBriefing =
  * the Governance Resolver. No mutable status file is consulted.
  */
 export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBriefing> {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import(
+    "../runtime/governance-resolver.js"
+  )
   const result = await resolveGovernanceContext(rootDir)
 
   if (isGovernanceResolutionFailure(result)) {
@@ -102,8 +107,12 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
   // CLI command-surface wiring. Re-project capability availability here using
   // the same command-surface detection used by `synth capabilities` so status
   // warnings match the installed CLI.
-  const installedCapabilities = new Set(createCapabilityRegistry().list())
-  const installedAdapters = new Set(createAdapterRegistry().list())
+  const [{ DEFAULT_CAPABILITY_NAMES }, { PLANNING_ADAPTER_NAMES }] = await Promise.all([
+    import("../capability/default-names.js"),
+    import("../mission-studio/adapter-names.js"),
+  ])
+  const installedCapabilities = new Set<string>(DEFAULT_CAPABILITY_NAMES)
+  const installedAdapters = new Set<string>(PLANNING_ADAPTER_NAMES)
   const implementedCommands = buildImplementedCommandSet()
   result.derived.capabilities = buildCapabilityEntries(
     installedCapabilities,

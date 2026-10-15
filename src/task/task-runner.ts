@@ -8,7 +8,7 @@
 // ============================================================
 
 import { spawn } from "child_process"
-import { realpathSync } from "fs"
+import { resolveSynthCli } from "../distribution/cli-path.js"
 import path from "path"
 import { captureIdentity, identityEnvVars } from "../identity/index.js"
 import type { TaskRegistry } from "./task-registry.js"
@@ -37,25 +37,7 @@ export type TaskRunReport = {
   totalDurationMs: number
 }
 
-function resolveSynthCli(): string {
-  // Use the currently running synth CLI entry point if available. Resolve
-  // symlinks so global npm installs (where the user-facing binary is a
-  // symlink to dist/cli/synth.js) dispatch to the real entry point.
-  if (process.argv[1]) {
-    try {
-      const resolved = realpathSync(process.argv[1])
-      if (resolved.endsWith("synth.js")) {
-        return path.resolve(resolved)
-      }
-    } catch {
-      // If realpath fails, fall back to the literal argv[1] check.
-      if (process.argv[1].endsWith("synth.js")) {
-        return path.resolve(process.argv[1])
-      }
-    }
-  }
-  return path.resolve(process.cwd(), "dist", "cli", "synth.js")
-}
+
 
 function resolveTaskCommand(command: string): string {
   // Framework tasks use `synth <subcommand>` so they work from PATH in normal

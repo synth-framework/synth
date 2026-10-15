@@ -3,7 +3,7 @@
   "missionId": "4ab7e9d2cc7b1b66",
   "name": "EXP-CLI-003 Make the light path light and enforce the load budgets",
   "goal": "EXP-CLI-003 — Make the light path light, and make the load budgets enforced\n\n(Numbering note: EXP-CLI-002 is skipped because that label already appears in the header comment of\ntests/human-output-mode.test.js for the historical human-output work; reusing it would make two\ndifferent bodies of work answer to one name.)\n\nWHERE THIS STARTS — CORRECTION OF RECORD\nEXP-CLI-001 (2c13ca22fb8c4e6c) was marked completed at 103ee921 having landed only its Phase 1 audit\nplus a Phase 0 output-contract unification (source commit 39f2243c). Its goal spanned five phases and\nits ACCEPTANCE section was NOT satisfied. `expedition refine --id 2c13ca22fb8c4e6c` cannot annotate\nit: \"Expedition 2c13ca22fb8c4e6c is completed; cannot refine a terminal expedition\" (LifecycleBlocked)\n— which is EXP-LIFE-001 finding E, hit again from the other side. So the unmet criteria are restated\nhere as THIS expedition's acceptance criteria, and the ledger carries the correction forward\nappend-only instead of leaving a completion that reads as convergence. The full qualification is\nalready hashed into proof/expeditions/2c13ca22fb8c4e6c/attachments/evidence-2c13ca22.md §6 and §9.\n`expedition complete` returned status ok because the gate verifies evidence presence and working-tree\nstate, not prose acceptance criteria — that gate gap is itself worth noting to whoever owns the\nlifecycle (EXP-LIFE-001, 73c5c033360fecf3).\n\nALREADY TRUE — DO NOT REDO\n  * One output contract. src/cli/usage.ts (COMMANDS = 33 verbs, PUBLIC_VOCABULARY, GLOBAL_OPTIONS,\n    helpPayload/renderHelpText/printHelp with the TTY rule) and src/cli/version.ts\n    (projectVersion/printVersion) are shared by entry.ts and synth.ts. All nine invocations of the\n    measured surface — version, --version, -v, help, --help, -h, status, status --json,\n    status --human — are byte-identical across both entry points with matching exit codes. Precedence\n    is --json > --human > TTY, and help is the only verb whose default depends on the TTY.\n  * src/cli/status-light.ts is the single status implementation, reached from both paths; cmdStatus\n    delegates to runStatus() and no longer constructs a Logger. The duplicated copy is gone.\n  * tests/loader-entrypoint.test.js is chained (segment #115 of 115) and carries nine byte-identity\n    guards plus contract assertions on the envelope, --human and the 33-verb list. It was previously\n    orphaned: green, never run, asserting a bare semver the shipped binary no longer printed.\n  * Phase 1 audit result: across 347 src/**/*.ts there are exactly 5 module-scope process.cwd()\n    captures, 0 module-scope process.env reads, 0 module-scope process.on() registrations. The 20\n    top-level new Set/Map are immutable lookup tables and are benign.\n\nMEASURED STATE TO BEAT (2-core sandbox; method and medians in the evidence file)\n  eager graph, transitive closure of STATIC imports only:\n    dist/cli/entry.js            147 modules /  972 KB   (was 145 / 964 before Phase 0)\n    dist/cli/synth.js            298 modules / 2275 KB   (was 296 / 2272)\n    dist/cli/status-light.js     134 modules /  916 KB   (unchanged by Phase 0)\n    dist/core/bootstrap.js       170 modules / 1091 KB\n    dist/cli/usage.js             12 modules /   31 KB   (new, deliberately narrow)\n    dist/cli/version.js           12 modules /   26 KB   (new, deliberately narrow)\n    dist/cli/explain-replay-light.js  45 modules / 154 KB  <- what \"light\" looks like when the module\n                                                              is actually narrow; this is the pattern\n    dist/cli/explain-flags.js      1 module\n  wall clock (medians; the process floor swings 20-36 ms in this sandbox):\n    entry.js --version 87-94 ms | entry.js status 207-238 ms | entry.js explain replay 135-143 ms\n  dist manifest: 1050 files, rootHash 3a59324b...\n  src/cli/synth.ts: 9121 lines (was 9163), 97 cmd* handlers + 85 top-level helpers, 70 static imports.\n  full test run: 115 chain segments, 407 s; the CLI census counts 1572 CLI process invocations per\n  full run, of which 1536 (98%) spawn dist/cli/synth.js and only 35 spawn the shipped entry.js.\n\nTHE FIVE THINGS LEFT\n  1. Make the five import-time captures resolve per call, BEFORE making anything lazy:\n     infra/event-store.ts:13 EVENT_LOG_FILE, infra/event-store.ts:14 EVENT_STREAM_DIR,\n     infra/state-store.ts:12 STATE_FILE, infra/state-store.ts:13 SNAPSHOTS_DIR,\n     infra/checkpoint-store.ts:11 CHECKPOINT_FILE. Laziness changes WHEN a module is first imported,\n     so any verb that resolves roots or changes cwd later would otherwise observe paths captured from\n     a different directory. This is the correctness hazard of the whole expedition, not the line count.\n     Note locateEventLog(root) in src/infra/event-store.ts is already the single authority for\n     event-log layout (segmented > partitioned-flat > legacy-file, never throws) and is the model.\n  2. Slim status-light.js below its 134-module / 916 KB graph so the dispatcher approaches budget.\n     It is 45% of the monolith's graph and is statically imported by entry.ts, which is why the\n     \"light\" path is not light. explain-replay-light.js at 45 modules proves the target is reachable.\n  3. Turn synth.ts dispatch into a verb -> loader registry with per-namespace dynamic imports\n     (mission, expedition, ledger deliver/seal, explain, first-contact, task, repo, adapter,\n     doctor/checkpoint, log, validate, governance). Extract the helper clusters ONCE into modules of\n     their own so handlers move without duplicating them — duplication is exactly how entry.ts and\n     synth.ts drifted apart in the first place:\n       git / working tree: getWorkingTreeStatus, isWorkingTreeDirty, runGitSpawn,\n         getUntrackedSourcePaths, existingAutoCommitPathspecs, isTrackedPath, isScratchFile,\n         isNonSourcePath, getNonDerivedWorkingTreeStatus, collectDerivedStateFiles, isAutoCommitEnabled\n       ceremony / auto-commit: markCeremony, installExitFlush, flushPendingCeremony,\n         wrapHandleIntentWithCeremony, bootstrapWithCapabilities\n       gates: gateDecision, printGateBlock\n       telemetry / args: setAgentTelemetryFromFlags, parseArgs\n     Largest modules loaded eagerly but not needed by the light path: synth.js 357 KB,\n     explain-observability.js 41 KB, first-contact.js 40 KB, control/execution-gate.js 38 KB,\n     discovery/projections/project-model-capability.js 33 KB, state/derived/build-derived-state.js 27 KB.\n  4. Repoint tests/helpers/cli-harness.js:24 from dist/cli/synth.js at the shipped dispatcher, so the\n     suite exercises bin.synth. Phase 0 made this safe for the nine-invocation surface; the census\n     says which verbs must be proven equivalent BEFORE the switch (mission 427, expedition 394 —\n     52% of all invocations are ceremony — bootstrap 118, first-contact 113, explain 112, init 71,\n     status 60, alignment 38, task 34). In-process work after module load is median 55.8 ms /\n     p90 188.2 ms, so the win is in loading, not in the handlers.\n  5. Add the DERIVED load-budget guard: a test that recomputes the eager graph per entry point and\n     re-measures the representative verbs, failing on regression, so re-monolithization is caught by\n     a number rather than by a review. Prove it works with a deliberate temporary regression, then\n     remove that regression and say so in the evidence.\n\nACCEPTANCE (restated from EXP-CLI-001, unmet there)\n  * synth --version <= 45 ms; synth status <= 130 ms; synth explain replay <= 110 ms.\n  * dispatcher eager graph <= 25 modules / <= 150 KB.\n  * no verb loads more than 40% of the total module graph unless its work genuinely requires it.\n  * npm run test:all stays green (115 segments, 407 s at Phase 0) and no currently-green orphan turns\n    red. All spawn call-sites pass unchanged except the harness path and the four source-path guards\n    (tests/verify-engine, tests/artifact-policy, tests/governance-orchestration,\n    tests/impact-analyzer), which reference src/cli/synth.ts BY PATH and must move with the code and\n    never be deleted.\n  * the load-budget guard fails when a handler is added to the dispatcher's eager graph.\n  * synth verify ok; synth log / checkpoint / doctor still report real counts and layouts on this\n    repository (at Phase 0: verify 6/6 ok, doctor 12/12 after --fix, 470 events, segmented layout).\n  * dist-manifest, determinism and proof re-baselined deliberately, with the new file count and\n    rootHash stated in the evidence rather than left to be discovered.\n\nMEASUREMENT HONESTY — the rule this expedition must follow, learned in Phase 0\nWall-clock deltas in this 2-core sandbox are not trustworthy unless an untouched control invocation\nis measured in the SAME session, and the control's drift bounds every claim. In the Phase 0 A/B the\ncontrol (entry.js explain replay, code untouched) moved +3.1 ms in one run and +8.0 ms in another\nwhile the process floor swung 20-36 ms — larger than most deltas being measured — so Phase 0\ndeliberately published NO speed claim and reported deterministic module counts instead. Two further\ntraps, both hit and both recorded: cross-session baselines are not comparable (the floor moved\n25.2 -> 36.4 ms between sessions), and a build-revert control must be probed behaviourally\n(entry.js version prints a bare semver on the old build and \"{\" on the new) because a probe aimed at\nsynth.js cannot distinguish them. Prefer counts, bytes and module graphs — they are deterministic —\nand treat any millisecond claim as guilty until a same-session control acquits it.\n\nKNOWN PRE-EXISTING REDS (orphans, none chained; each verified identical on the pre-change build)\n  synth-cli-repo (repo branch create should exit 0), migration (ENOENT on a temp archive dir),\n  first-contact-cli, governance-report-cli (expedition report falls back to runtime state).\nThey are not this expedition's scope, but they must not be mistaken for regressions, and they are\npart of the red-orphan population that EXP-TEST-005 (74c33996d5e7cf32) and draft 03f9134a5ecbde03\nown.\n\nNON-GOALS\n  * No further output-contract changes: the four operator decisions (JSON envelope for --version with\n    --human for the bare string; no status INFO line on stderr from either path; TTY-aware help with\n    --human/--json overrides; one unified 33-verb list) are settled and now guarded by tests.\n  * Not shrinking core/bootstrap.js (170 modules / 1091 KB, 13 eager steps) — this makes it lazily\n    REACHABLE so only verbs that need it pay for it; making it smaller is a separate lever.\n  * Not the test inventory or file-ownership guard (EXP-TEST-005), not suite merging (EXP-TEST-002),\n    not the sharded runner (EXP-TEST-003), not the logging/failure envelope (EXP-TEST-001), not\n    explicit-environment fields (EXP-TEST-004).\n  * Not the ledger lifecycle defects themselves (EXP-LIFE-001, 73c5c033360fecf3), though this\n    expedition is a fresh instance of finding E and should be cited there.\n\nSEQUENCING (operator decision, 2026-10-13): the monolith work runs BEFORE the testing-strategy work.\nAfter this lands, EXP-TEST-002's merge arithmetic and EXP-TEST-003's speedup measurements must be\nre-taken, because the per-process term they were implicitly optimizing changes by roughly 3x.",
-  "status": "draft",
+  "status": "executing",
   "objectives": [],
   "discoveries": [],
   "decisions": [],
@@ -17,8 +17,230 @@
       "data/tasks/**",
       "package.json",
       "docs/adr/**"
-    ]
+    ],
+    "identity": {
+      "agentId": "synth-cli-2923",
+      "sessionId": "ed0ffac9-d558-4b82-ab67-de5e261cb24a",
+      "approvalMode": "autonomous",
+      "issuedAt": 489
+    },
+    "refinementId": "eee7b52365593dbb",
+    "refinementNote": "\n\nSCOPE EXTENSION — WINDOWS-CHECKOUT-SAFE TASK FILENAMES (operator request 2026-10-14)\nThe operator reports that cloning on Windows fails because tracked filenames contain colons. At 38f5f446896339eda0077ff20544e88d2327613a, git ls-files confirms 167 tracked colon-bearing paths, all under data/tasks/. Examples: test:all.task.json, onboarding:bootstrap.task.json, ai:benchmark:dry-run.task.json. This is a checkout/install defect on the actual CLI/task distribution, not cosmetic cleanup; fix it within CLI-003 before acceptance/closure.\n\nExtend the authorized change surface to src/task/**, scripts/**, documentation and the narrowly necessary task/CLI fixtures, consumers and portability guards. Existing CLI decomposition/output contracts and task IDs remain unchanged. Task IDs and npm script names may keep colons; filesystem paths may not. Rename the tracked task files collision-safely; update generators, framework distribution copying and path-based consumers. Verify task IDs, dependency edges and commands survive the rename unchanged, and preserve existing task precedence/registration behavior. Historical immutable evidence may retain the old path spelling with a documented correction; current instructions and executable references must use the new paths.\n\nAcceptance: no Windows-invalid tracked path components or case-fold collisions; generated task files and packaged framework tasks are portable too; a chained cross-platform pathname guard catches deliberate forbidden-path/collision fixtures without creating such paths on Windows. Test task generation with namespaced IDs and path-like/reserved names, task lookup/execution, onboarding task copying, profiler expansion, and the full existing chain. Verify a fresh checkout from Git and inspect the npm package contents. Where no Windows runner is available, explicitly distinguish deterministic pathname checks/Linux checkout from actual Windows execution—do not claim the latter. Preserve original IDs rather than changing the public command vocabulary merely to repair storage names.\n\nThis extension does not take over CLEAN-001's full CLI value/complexity audit or LIFE-002's lifecycle redesign. It authorizes the necessary filesystem-path fixture/reference changes in addition to the original narrow harness/source-path allowance; assertions and guards must not be weakened or deleted. Continue to resolve the dirty-status timing qualification, then record a truthful final acceptance verdict. Completion/delivery/seal require their actual checks and integration evidence, never just a successful push.\n",
+    "refinementAt": 501
   },
   "createdAt": 473,
-  "updatedAt": 473
+  "updatedAt": 502,
+  "executionBranch": "arena/d5e4625c-synth",
+  "attachments": [
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "3fa18359773ca8bf088f53eb8c737fa7be36c43874e2256962694505353bb2bf"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "d589610461f9de67d908d31d62ba839e6fbc1f2956c3e04aef221d6c58a42aff"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-phase2.md",
+      "hash": "32a788b44041180b126610db702503b7a2a08e138c61170e16ee22ed926ed58a"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "8b0552bb4d6b39edadb7e34bf4dcd4b09382c59d03155368f23afd3b36a0f551"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "f593dc8d988f99c7472d8bfb4786683d52459c6a632c1a3dbfeabb85e46fffba"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item2.md",
+      "hash": "0ea0d1148a20d9cd4d8dafdbba089422d715033ebdff819c45a43444b66de043"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "c9daea57ccd34dba8c8f5882459c5bbc5b04e50136421a4041162dba48dae810"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "3ab2dac7b5d2e6841740377ad4e036f3afaaedbb5f61c3c67fafe300e49bfe01"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item3a.md",
+      "hash": "563176694fac96d3cb462e576d61a8a3661fb1a5caeccf8ca6dcff47f7ca7419"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "ebd24b0f98212efde986f42ab0cd15288d4556fe08c1a62f625a6a26aa07f1bc"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "b3ea38145f684be86ddce06db92742620e77357af18dff23932d7ca509adb56b"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-timing.json",
+      "hash": "5893aee53b13ee64c95603e0e25dd0814ee2af4c545edefe0c69cc25c387ac16"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item3b.md",
+      "hash": "73a67720ddd1f9e81ab2ed13a96da811c6f9658e10ca8828f8847806d47d4b66"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-graphs.json",
+      "hash": "65927cc79d24b9e270d9228851f961a8afbed5fdccd12d5a2426292f571facd5"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/registry-output-comparison.json",
+      "hash": "1eb27d39bd61ed914075705276d2b5ce1ab6f351277b0e644cfa4be65aef5eb0"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "ff8aab2589f56ae05262512fc154a3370e857105bd75739ea9052609f3cd5e71"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "1c43b0505e155c6dafb6d291919139e54227160beda4892bf49d98c6318d426e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item4.md",
+      "hash": "e21eeb52dba53f6631d4b6ce5e0cc77109f7d906771245e78f0441f31f32a5ad"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item4-consumers.json",
+      "hash": "e70ae9b13c3fbb0d95957c11d590650177957acca77f142eb38ba435f64d0612"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item4-graph.json",
+      "hash": "4bda5779e8dfdc6e4b21edfcede4b5045be5939f5dab395142e68c0e560d8463"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item4-timing.json",
+      "hash": "9877df86eb2077c2c28dfa4c54f579335e39341a0a262028dae9180d7185faa3"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "24c88efd04bd799d44e49803c9c1bd4aa60b9d301bb9c5405a687d54d5ea5167"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "3328947d8f256b27013b6769748a52de94190e06ebfca6b5a397db50fcee2088"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item5.md",
+      "hash": "857e77ddf0fcb8137ea83e87b632a2695275f4aa88779b3a283c704fd78f95f7"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-final-load-budget.json",
+      "hash": "48653b2539007a2f4df53f8352cd515c9c3bcd03665ac425fe5689f6346c1986"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-final-graph.json",
+      "hash": "200c9d0b33de7063c96c45c3d36cadcd758acffaf7114174fb20471843282f50"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-regression-demonstration.json",
+      "hash": "7715fecf4290dfe47c46f1b88e96cda0566fb9496f39f0ef610b72b9e2fae5ea"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-regression-guard.json",
+      "hash": "f85bc38def9af7168f2995dd3cb05b37ea4aec481c77f0c020c11ffeac65fce6"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-additional-results.json",
+      "hash": "733b12aeb90534accc1c92a5d40a992ec4ded4baf6495c2a79d4f9b60a92f33c"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-final-timing.json",
+      "hash": "829bb6a7c81051dd108738d69f104d61343fdab6083faf715942527726033d2e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-clean-timing.json",
+      "hash": "0741c61b53c5689f947a650da528d3a28a8653625a5822ce66fec9822c9f1e3a"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "40c561912049cfaeac6f2737ca03e22e4877546967fb55f9f0bbf3191843cb21"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "069f8a28da44fc7218511292b419c842112469f008c778ed07d7c2724e22c812"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-windows-and-timing.md",
+      "hash": "fc5de7bcd5ccb902f5339fedd0316af8658cf2488fc4990340dfa9df3bd050a3"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-task-renames.json",
+      "hash": "0476ede4a61710fc6636da153c4a7812e7fec2e607a99ce0fedbfe44b2e0f207"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-native-ci-final.json",
+      "hash": "26242a9038a782634b6f8d7844c686b1441fbd6e42d10b5813fed158b28307d0"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-fresh-checkout.json",
+      "hash": "876dadfb14bb8d779395e02dd238ddf9fb56014a9aadc06d500f20f1c068940e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-path-regression.json",
+      "hash": "152749111e59677fdc6d870071541e60c5f04f2730fcc6dde5a879441531f499"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-final-load-budget.json",
+      "hash": "7fef1a17d9b20daef9c07cc86b224f95c98ce9608dc65bb602eb33890926e70f"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-status-timing.json",
+      "hash": "90130cc836d5757b42683fcab5564e9ee440b2613ee5dec89ce2609c0ed11b27"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-additional-results.json",
+      "hash": "f3f8dd5c7bbc5df01a5d9a9ef29982a382711b51917b6080cc5374edaed4309b"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-pack-actual.json",
+      "hash": "a2a7c1144d5ca3ae9d116331ee829da0d1979a6f447094ef4672eb5f97e5b231"
+    }
+  ]
 }

@@ -9,15 +9,12 @@ import { strict as assert } from "assert"
 import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
+import { taskFileName } from "../dist/task/task-schema.js"
 import { loadTaskRegistry } from "../dist/task/task-registry.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const packagePath = path.resolve(__dirname, "..", "package.json")
 const tasksDir = path.resolve(__dirname, "..", "data", "tasks")
-
-function sanitizeFileName(name) {
-  return name.replace(/[^a-zA-Z0-9:-]/g, "_")
-}
 
 async function testEveryNpmScriptHasTask() {
   const packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
@@ -26,7 +23,7 @@ async function testEveryNpmScriptHasTask() {
 
   const missing = []
   for (const name of scripts) {
-    const fileName = `${sanitizeFileName(name)}.task.json`
+    const fileName = taskFileName(name)
     const filePath = path.join(tasksDir, fileName)
     let hasFile = false
     try {

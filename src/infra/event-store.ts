@@ -10,8 +10,29 @@ import type { SynthEvent, PartitionedEvent } from "../types/index.js"
 import { IllegalMutationError } from "../sdk/errors/index.js"
 import { dataDir } from "../sdk/paths/index.js"
 
-const EVENT_LOG_FILE = path.join(dataDir(process.cwd()), "event-log.jsonl")
-const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
+/** Resolve the legacy single-file event log for `root` at call time (EXP-CLI-003 Phase 2).
+ *
+ *  This was a module-scope constant, `path.join(dataDir(process.cwd()), ...)`,
+ *  which froze the ambient working directory at import time: a store built after
+ *  a `process.chdir()`, or by a caller inspecting another project, silently
+ *  pointed at whichever directory happened to be current when this module was
+ *  first loaded. Callers that know their root pass it explicitly; callers that do
+ *  not get the working directory as of the call, never as of the import. */
+export function eventLogFile(root: string = process.cwd()): string {
+  return path.join(dataDir(root), "event-log.jsonl")
+}
+
+/** Resolve the chunked event-stream directory for `root` at call time (EXP-CLI-003 Phase 2).
+ *
+ *  This was a module-scope constant, `path.join(dataDir(process.cwd()), ...)`,
+ *  which froze the ambient working directory at import time: a store built after
+ *  a `process.chdir()`, or by a caller inspecting another project, silently
+ *  pointed at whichever directory happened to be current when this module was
+ *  first loaded. Callers that know their root pass it explicitly; callers that do
+ *  not get the working directory as of the call, never as of the import. */
+export function eventStreamDir(root: string = process.cwd()): string {
+  return path.join(dataDir(root), "event-stream")
+}
 
 // ------------------------------------------------------------
 // Event-log location: ONE authority for "is there a log, and where"
@@ -30,9 +51,10 @@ const EVENT_STREAM_DIR = path.join(dataDir(process.cwd()), "event-stream")
 // file into the chunked layout); callers that need to *know whether a log
 // exists, and in which layout* use locateEventLog.
 //
-// Note: the EVENT_LOG_FILE / EVENT_STREAM_DIR constants above are bound to
-// process.cwd() at module load. locateEventLog takes the root explicitly so a
-// caller inspecting another project (or a fixture) gets that project's answer.
+// Note: eventLogFile() / eventStreamDir() above resolve process.cwd() at CALL
+// time, and locateEventLog takes the root explicitly, so a caller inspecting
+// another project (or a fixture) gets that project's answer. No path in this
+// module is frozen at import any more (EXP-CLI-003 Phase 2).
 
 /** Which of the three on-disk event-log layouts a project actually uses. */
 export type EventLogLayout = "segmented" | "partitioned-flat" | "legacy-file" | "none"
@@ -118,7 +140,7 @@ export class EventStore {
   private authorized: boolean
 
   constructor(filePath?: string, authToken?: symbol) {
-    this.filePath = filePath ?? EVENT_LOG_FILE
+    this.filePath = filePath ?? eventLogFile()
     this.authorized = authToken === EVENT_STORE_WRITE_TOKEN
   }
 
@@ -243,9 +265,15 @@ export class PartitionStore {
   private partitionCount: number
   private authorized: boolean
 
-  constructor(partitionCount: number = 4, baseDir: string = EVENT_STREAM_DIR, authToken?: symbol) {
+  /** Which directory this store reads and writes. Mirrors EventStore.getFilePath().
+   *  EXP-CLI-003 Phase 2. */
+  getBaseDir(): string {
+    return this.baseDir
+  }
+
+  constructor(partitionCount: number = 4, baseDir?: string, authToken?: symbol) {
     this.partitionCount = partitionCount
-    this.baseDir = baseDir
+    this.baseDir = baseDir ?? eventStreamDir()
     this.authorized = authToken === PARTITION_STORE_WRITE_TOKEN
   }
 
@@ -330,9 +358,15 @@ export class SegmentStore {
   private maxSegmentSize: number
   private authorized: boolean
 
-  constructor(maxSegmentSize: number = 1000, baseDir: string = EVENT_STREAM_DIR, authToken?: symbol) {
+  /** Which directory this store reads and writes. Mirrors EventStore.getFilePath().
+   *  EXP-CLI-003 Phase 2. */
+  getBaseDir(): string {
+    return this.baseDir
+  }
+
+  constructor(maxSegmentSize: number = 1000, baseDir?: string, authToken?: symbol) {
     this.maxSegmentSize = maxSegmentSize
-    this.baseDir = baseDir
+    this.baseDir = baseDir ?? eventStreamDir()
     this.authorized = authToken === SEGMENT_STORE_WRITE_TOKEN
   }
 

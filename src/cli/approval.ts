@@ -5,7 +5,7 @@
 // ============================================================
 
 import crypto from "crypto"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { printJson } from "./print.js"
 import { captureIdentity } from "../identity/index.js"
 import type { AgentIdentity } from "../identity/types.js"
@@ -20,7 +20,7 @@ function expiresAtIso(hours: number): string {
 }
 
 async function getApi() {
-  const ctx = await bootstrap({ skipGenesis: true, infra: { persistence: "file" } })
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({ skipGenesis: true, infra: { persistence: "file" } })
   return ctx.api
 }
 

@@ -1,0 +1,14 @@
+{
+  "id": "test:cli-ceremony-parity",
+  "description": "Compare shipped and compatibility CLI output, durable files and ceremony commits under controlled fixture inputs",
+  "command": "node tests/cli-ceremony-parity.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 20000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

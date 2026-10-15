@@ -7,12 +7,12 @@
 // until approval / materialization.
 // ============================================================
 
-import { realpathSync } from "fs"
+import { resolveSynthCli } from "../distribution/cli-path.js"
 import fs from "fs/promises"
 import { spawn, execSync } from "child_process"
 import path from "path"
 import * as sdk from "../sdk/index.js"
-import { runBootstrap } from "./bootstrap-apply.js"
+
 import { injectIdentityContext, identityEnvVars, getCliIdentity } from "./identity-context.js"
 import { extractIntent } from "../first-contact/extract/index.js"
 import type { IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
@@ -919,25 +919,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
 // retains state-based dispatch and delegates execution to the task engine.
 // ============================================================
 
-function resolveSynthCli(): string {
-  // Use the currently running synth CLI entry point if available. Resolve
-  // symlinks so global npm installs (where the user-facing binary is a
-  // symlink to dist/cli/synth.js) dispatch to the real entry point.
-  if (process.argv[1]) {
-    try {
-      const resolved = realpathSync(process.argv[1])
-      if (resolved.endsWith("synth.js")) {
-        return path.resolve(resolved)
-      }
-    } catch {
-      // If realpath fails, fall back to the literal argv[1] check.
-      if (process.argv[1].endsWith("synth.js")) {
-        return path.resolve(process.argv[1])
-      }
-    }
-  }
-  return path.resolve(process.cwd(), "dist", "cli", "synth.js")
-}
+
 
 function runTask(taskId: string, targetDir: string, envOverrides: Record<string, string> = {}): Promise<number> {
   return new Promise((resolve) => {
@@ -1061,7 +1043,7 @@ export async function cmdFirstContactOnboardBootstrap(args: string[], flags: Rec
     printError(`Bootstrap is only valid for brownfield or post-archive legacy state, detected: ${state.kind}`)
   }
 
-  const bootstrapResult = await runBootstrap(targetDir, {
+  const bootstrapResult = await (await import("./bootstrap-apply.js")).runBootstrap(targetDir, {
     approve: true,
     dryRun: false,
     withWebsite: false,

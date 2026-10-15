@@ -1,0 +1,246 @@
+{
+  "kind": "ModuleGraphAudit",
+  "eager": [
+    {
+      "root": "dist/cli/entry.js",
+      "modules": 18,
+      "kb": 50
+    },
+    {
+      "root": "dist/distribution/mcp-server.js",
+      "modules": 1,
+      "kb": 10
+    },
+    {
+      "root": "dist/main.js",
+      "modules": 171,
+      "kb": 1103
+    },
+    {
+      "root": "dist/cli/synth.js",
+      "modules": 40,
+      "kb": 177
+    },
+    {
+      "root": "dist/cli/status-light.js",
+      "modules": 33,
+      "kb": 151
+    }
+  ],
+  "unreachable": [
+    {
+      "view": "shipped only (dist/cli/entry.js, dist/distribution/mcp-server.js, dist/main.js, dist/cli/status-light.js)",
+      "totalModules": 399,
+      "reachable": 355,
+      "unreachable": 44,
+      "unreachableLines": 2855,
+      "byDirectory": [
+        [
+          "dist/first-contact",
+          881
+        ],
+        [
+          "dist/environment",
+          722
+        ],
+        [
+          "dist/execution",
+          421
+        ],
+        [
+          "dist/cli",
+          299
+        ],
+        [
+          "dist/environment/providers",
+          152
+        ],
+        [
+          "dist/discovery",
+          84
+        ],
+        [
+          "dist/core",
+          44
+        ],
+        [
+          "dist/mutation",
+          19
+        ],
+        [
+          "dist/capabilities",
+          16
+        ],
+        [
+          "dist/documentation",
+          16
+        ],
+        [
+          "dist/types",
+          13
+        ],
+        [
+          "dist/planning",
+          12
+        ]
+      ],
+      "largest": [
+        {
+          "file": "dist/environment/rules.js",
+          "lines": 333
+        },
+        {
+          "file": "dist/first-contact/experiment.js",
+          "lines": 316
+        },
+        {
+          "file": "dist/cli/adapter.js",
+          "lines": 299
+        },
+        {
+          "file": "dist/execution/runtime.js",
+          "lines": 287
+        },
+        {
+          "file": "dist/environment/orchestrator.js",
+          "lines": 245
+        },
+        {
+          "file": "dist/first-contact/patterns.js",
+          "lines": 239
+        },
+        {
+          "file": "dist/first-contact/scenarios.js",
+          "lines": 197
+        },
+        {
+          "file": "dist/environment/providers/reference.js",
+          "lines": 152
+        },
+        {
+          "file": "dist/first-contact/evidence.js",
+          "lines": 129
+        },
+        {
+          "file": "dist/execution/intent-synthesizer.js",
+          "lines": 128
+        },
+        {
+          "file": "dist/environment/evidence.js",
+          "lines": 120
+        },
+        {
+          "file": "dist/discovery/node-context.js",
+          "lines": 84
+        }
+      ]
+    },
+    {
+      "view": "shipped + harness (dist/cli/synth.js)",
+      "totalModules": 399,
+      "reachable": 355,
+      "unreachable": 44,
+      "unreachableLines": 2855,
+      "byDirectory": [
+        [
+          "dist/first-contact",
+          881
+        ],
+        [
+          "dist/environment",
+          722
+        ],
+        [
+          "dist/execution",
+          421
+        ],
+        [
+          "dist/cli",
+          299
+        ],
+        [
+          "dist/environment/providers",
+          152
+        ],
+        [
+          "dist/discovery",
+          84
+        ],
+        [
+          "dist/core",
+          44
+        ],
+        [
+          "dist/mutation",
+          19
+        ],
+        [
+          "dist/capabilities",
+          16
+        ],
+        [
+          "dist/documentation",
+          16
+        ],
+        [
+          "dist/types",
+          13
+        ],
+        [
+          "dist/planning",
+          12
+        ]
+      ],
+      "largest": [
+        {
+          "file": "dist/environment/rules.js",
+          "lines": 333
+        },
+        {
+          "file": "dist/first-contact/experiment.js",
+          "lines": 316
+        },
+        {
+          "file": "dist/cli/adapter.js",
+          "lines": 299
+        },
+        {
+          "file": "dist/execution/runtime.js",
+          "lines": 287
+        },
+        {
+          "file": "dist/environment/orchestrator.js",
+          "lines": 245
+        },
+        {
+          "file": "dist/first-contact/patterns.js",
+          "lines": 239
+        },
+        {
+          "file": "dist/first-contact/scenarios.js",
+          "lines": 197
+        },
+        {
+          "file": "dist/environment/providers/reference.js",
+          "lines": 152
+        },
+        {
+          "file": "dist/first-contact/evidence.js",
+          "lines": 129
+        },
+        {
+          "file": "dist/execution/intent-synthesizer.js",
+          "lines": 128
+        },
+        {
+          "file": "dist/environment/evidence.js",
+          "lines": 120
+        },
+        {
+          "file": "dist/discovery/node-context.js",
+          "lines": 84
+        }
+      ]
+    }
+  ]
+}

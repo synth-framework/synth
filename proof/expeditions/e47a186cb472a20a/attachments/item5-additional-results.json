@@ -1,0 +1,324 @@
+[
+  {
+    "file": "tests/agent-certification.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 0.87,
+    "log": "/home/user/item5-additional-logs/agent-certification.test.js.log"
+  },
+  {
+    "file": "tests/agent-guide.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.37,
+    "log": "/home/user/item5-additional-logs/agent-guide.test.js.log"
+  },
+  {
+    "file": "tests/agents-md-sync.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.82,
+    "log": "/home/user/item5-additional-logs/agents-md-sync.test.js.log"
+  },
+  {
+    "file": "tests/bootstrap-human.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.57,
+    "log": "/home/user/item5-additional-logs/bootstrap-human.test.js.log"
+  },
+  {
+    "file": "tests/bootstrap-output.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.23,
+    "log": "/home/user/item5-additional-logs/bootstrap-output.test.js.log"
+  },
+  {
+    "file": "tests/capabilities-cli.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.97,
+    "log": "/home/user/item5-additional-logs/capabilities-cli.test.js.log"
+  },
+  {
+    "file": "tests/capability-registry-accuracy.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.82,
+    "log": "/home/user/item5-additional-logs/capability-registry-accuracy.test.js.log"
+  },
+  {
+    "file": "tests/captrans-missing-capability.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.63,
+    "log": "/home/user/item5-additional-logs/captrans-missing-capability.test.js.log"
+  },
+  {
+    "file": "tests/cli-error-hints.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.02,
+    "log": "/home/user/item5-additional-logs/cli-error-hints.test.js.log"
+  },
+  {
+    "file": "tests/cli-mission-expedition-rank.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.48,
+    "log": "/home/user/item5-additional-logs/cli-mission-expedition-rank.test.js.log"
+  },
+  {
+    "file": "tests/execution-branch-gate.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.39,
+    "log": "/home/user/item5-additional-logs/execution-branch-gate.test.js.log"
+  },
+  {
+    "file": "tests/expedition-batch-operations.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.99,
+    "log": "/home/user/item5-additional-logs/expedition-batch-operations.test.js.log"
+  },
+  {
+    "file": "tests/expedition-completion-gates.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 22.45,
+    "log": "/home/user/item5-additional-logs/expedition-completion-gates.test.js.log"
+  },
+  {
+    "file": "tests/expedition-draft-retirement.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 6.67,
+    "log": "/home/user/item5-additional-logs/expedition-draft-retirement.test.js.log"
+  },
+  {
+    "file": "tests/expedition-finish.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 1.68,
+    "log": "/home/user/item5-additional-logs/expedition-finish.test.js.log"
+  },
+  {
+    "file": "tests/expedition-lineage-guard.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.22,
+    "log": "/home/user/item5-additional-logs/expedition-lineage-guard.test.js.log"
+  },
+  {
+    "file": "tests/first-contact-adapter-surface.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.43,
+    "log": "/home/user/item5-additional-logs/first-contact-adapter-surface.test.js.log"
+  },
+  {
+    "file": "tests/first-contact-certification.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.28,
+    "log": "/home/user/item5-additional-logs/first-contact-certification.test.js.log"
+  },
+  {
+    "file": "tests/first-contact-cli.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 1.22,
+    "log": "/home/user/item5-additional-logs/first-contact-cli.test.js.log"
+  },
+  {
+    "file": "tests/first-contact-experiment.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 3.75,
+    "log": "/home/user/item5-additional-logs/first-contact-experiment.test.js.log"
+  },
+  {
+    "file": "tests/first-contact-onboard.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 1.27,
+    "log": "/home/user/item5-additional-logs/first-contact-onboard.test.js.log"
+  },
+  {
+    "file": "tests/first-contact-recommendation.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 1.22,
+    "log": "/home/user/item5-additional-logs/first-contact-recommendation.test.js.log"
+  },
+  {
+    "file": "tests/govern-router.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 0.62,
+    "log": "/home/user/item5-additional-logs/govern-router.test.js.log"
+  },
+  {
+    "file": "tests/governance-complete-force.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 2.03,
+    "log": "/home/user/item5-additional-logs/governance-complete-force.test.js.log"
+  },
+  {
+    "file": "tests/governance-evaluation-schema.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.78,
+    "log": "/home/user/item5-additional-logs/governance-evaluation-schema.test.js.log"
+  },
+  {
+    "file": "tests/governance-git-snapshot.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 6.12,
+    "log": "/home/user/item5-additional-logs/governance-git-snapshot.test.js.log"
+  },
+  {
+    "file": "tests/governance-inventory-cli.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 1.38,
+    "log": "/home/user/item5-additional-logs/governance-inventory-cli.test.js.log"
+  },
+  {
+    "file": "tests/governance-mission-cli.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 0.42,
+    "log": "/home/user/item5-additional-logs/governance-mission-cli.test.js.log"
+  },
+  {
+    "file": "tests/governance-report-cli.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 2.59,
+    "log": "/home/user/item5-additional-logs/governance-report-cli.test.js.log"
+  },
+  {
+    "file": "tests/governance-resolver.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.11,
+    "log": "/home/user/item5-additional-logs/governance-resolver.test.js.log"
+  },
+  {
+    "file": "tests/governance-show-cli.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 1.78,
+    "log": "/home/user/item5-additional-logs/governance-show-cli.test.js.log"
+  },
+  {
+    "file": "tests/identity-in-events.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.93,
+    "log": "/home/user/item5-additional-logs/identity-in-events.test.js.log"
+  },
+  {
+    "file": "tests/initialization-evidence.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.52,
+    "log": "/home/user/item5-additional-logs/initialization-evidence.test.js.log"
+  },
+  {
+    "file": "tests/initialization-lifecycle.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.22,
+    "log": "/home/user/item5-additional-logs/initialization-lifecycle.test.js.log"
+  },
+  {
+    "file": "tests/initialization-replay.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.42,
+    "log": "/home/user/item5-additional-logs/initialization-replay.test.js.log"
+  },
+  {
+    "file": "tests/migration.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 0.62,
+    "log": "/home/user/item5-additional-logs/migration.test.js.log"
+  },
+  {
+    "file": "tests/release.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.52,
+    "log": "/home/user/item5-additional-logs/release.test.js.log"
+  },
+  {
+    "file": "tests/repair-state.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 0.77,
+    "log": "/home/user/item5-additional-logs/repair-state.test.js.log"
+  },
+  {
+    "file": "tests/stale-state.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.11,
+    "log": "/home/user/item5-additional-logs/stale-state.test.js.log"
+  },
+  {
+    "file": "tests/state-lag-no-repair.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.24,
+    "log": "/home/user/item5-additional-logs/state-lag-no-repair.test.js.log"
+  },
+  {
+    "file": "tests/synth-bootstrap.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.03,
+    "log": "/home/user/item5-additional-logs/synth-bootstrap.test.js.log"
+  },
+  {
+    "file": "tests/synth-cli-govern-explain.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.37,
+    "log": "/home/user/item5-additional-logs/synth-cli-govern-explain.test.js.log"
+  },
+  {
+    "file": "tests/synth-cli-repo.test.js",
+    "item4Rc": 1,
+    "item5Rc": 1,
+    "seconds": 0.77,
+    "log": "/home/user/item5-additional-logs/synth-cli-repo.test.js.log"
+  },
+  {
+    "file": "tests/synth-log-identity-filters.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 2.74,
+    "log": "/home/user/item5-additional-logs/synth-log-identity-filters.test.js.log"
+  },
+  {
+    "file": "tests/synth-verify-signatures.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 0.62,
+    "log": "/home/user/item5-additional-logs/synth-verify-signatures.test.js.log"
+  },
+  {
+    "file": "tests/validate-confidence-transparency.test.js",
+    "item4Rc": 0,
+    "item5Rc": 0,
+    "seconds": 1.07,
+    "log": "/home/user/item5-additional-logs/validate-confidence-transparency.test.js.log"
+  }
+]

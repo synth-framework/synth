@@ -15,12 +15,10 @@
 //      computed specifier, imported directly by a test, or shipped as a
 //      distribution artifact not listed in bin.
 //
-// Roots default to package.json `bin` + `main`. dist/cli/synth.js is added by
-// default as a HARNESS root, because tests/helpers/cli-harness.js spawns it
-// for 1536 of the 1572 CLI invocations in a full test run: a module reachable
-// only from synth.js is not dead, it is merely unreachable from the shipped
-// bin. Pass --no-harness-root for the shipped-only view; both views are
-// reported by default so the difference is visible.
+// Roots default to package.json `bin` + `main`. dist/cli/synth.js is added as
+// a compatibility root: the shared CLI harness now uses the shipped entry.js,
+// but the task adapter shim and some direct consumers still use synth.js.
+// --no-harness-root is retained as a compatibility spelling for excluding it.
 //
 // SELF-CHECK: this resolver has already been wrong twice in one session — once
 // by counting a mention in docs/*.md as a reference, once by matching module
@@ -42,59 +40,10 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { readModuleGraph, closure } from "./lib/module-graph.js"
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const HARNESS_ROOT = "dist/cli/synth.js"
-
-function rel(abs) {
-  return path.relative(ROOT, abs).split(path.sep).join("/")
-}
-
-function walk(dir, out = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) walk(full, out)
-    else if (entry.name.endsWith(".js")) out.push(full)
-  }
-  return out
-}
-
-// Relative specifiers only. Bare specifiers are node builtins or packages, and
-// counting them as edges is how a resolver starts inventing dependencies.
-const STATIC_RE = /(?:\bimport\b|\bexport\b)[^"'()\n]*?\bfrom\s*["'](\.[^"']+)["']|\bimport\s*["'](\.[^"']+)["']/g
-const DYNAMIC_RE = /\bimport\(\s*["'](\.[^"']+)["']\s*\)/g
-
-function edgesOf(file, source) {
-  const staticEdges = new Set()
-  const dynamicEdges = new Set()
-  for (const m of source.matchAll(STATIC_RE)) {
-    const spec = m[1] || m[2]
-    if (spec) staticEdges.add(spec)
-  }
-  for (const m of source.matchAll(DYNAMIC_RE)) dynamicEdges.add(m[1])
-  const resolve = (spec) => {
-    if (!spec.endsWith(".js")) return null
-    const target = rel(path.resolve(path.dirname(file), spec))
-    return target
-  }
-  return {
-    static: [...staticEdges].map(resolve).filter(Boolean),
-    dynamic: [...dynamicEdges].map(resolve).filter(Boolean),
-  }
-}
-
-function closure(startFiles, graph, kinds) {
-  const seen = new Set()
-  const stack = [...startFiles]
-  while (stack.length) {
-    const f = stack.pop()
-    if (seen.has(f) || !graph.has(f)) continue
-    seen.add(f)
-    for (const kind of kinds) {
-      for (const t of graph.get(f)[kind]) if (!seen.has(t)) stack.push(t)
-    }
-  }
-  return seen
-}
 
 function lines(source) {
   return source.split("\n").length
@@ -115,12 +64,9 @@ function main() {
   const declared = [...Object.values(pkg.bin || {}), pkg.main].filter(Boolean)
   const roots = [...new Set([...declared, ...(includeHarness ? [HARNESS_ROOT] : []), ...extraRoots])]
     .map((r) => r.replace(/^\.\//, ""))
-    .filter((r) => fs.existsSync(path.join(ROOT, r)))
 
-  const files = walk(distDir)
-  const sources = new Map(files.map((f) => [rel(f), fs.readFileSync(f, "utf8")]))
-  const graph = new Map()
-  for (const [name, source] of sources) graph.set(name, edgesOf(path.join(ROOT, name), source))
+
+  const { sources, graph } = readModuleGraph(ROOT)
 
   // --- self-check -------------------------------------------------------
   // The bug signature is a graph that is technically consistent and almost
@@ -135,7 +81,7 @@ function main() {
     console.error(
       `SELF-CHECK FAILED: only ${all.size} of ${sources.size} modules are reachable from ` +
         `${roots.length} root(s). That is the signature of a broken resolver ` +
-        `(absolute-vs-relative keys, or a regex that matches no edge), not of dead code. ` +
+        `(absolute-vs-relative keys, or a parser that matches no edge), not of dead code. ` +
         `Refusing to report.`,
     )
     process.exit(2)
@@ -154,7 +100,7 @@ function main() {
   const shipped = closure(shippedRoots, graph, ["static", "dynamic"])
   const views = [
     { label: `shipped only (${shippedRoots.join(", ")})`, reachable: shipped },
-    { label: `shipped + harness (${HARNESS_ROOT})`, reachable: all },
+    { label: `shipped + compatibility (${HARNESS_ROOT})`, reachable: all },
   ]
   const report = views.map((v) => {
     const dead = [...sources.keys()].filter((f) => !v.reachable.has(f))
@@ -195,7 +141,7 @@ function main() {
     "\nCANDIDATES, NOT VERDICTS. Before deleting any module above, prove it is not\n" +
       "  (a) loaded through a computed specifier, (b) imported directly by a test,\n" +
       "  (c) a distribution entry point absent from package.json bin,\n" +
-      "  (d) reachable only from dist/cli/synth.js, which the test harness spawns.\n" +
+      "  (d) reachable only from dist/cli/synth.js, which compatibility consumers still spawn.\n" +
       "Spot-check the resolver against one module known alive and one known dead.",
   )
 }

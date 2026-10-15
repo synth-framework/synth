@@ -1,0 +1,278 @@
+[
+  {
+    "file": "tests/agent-certification.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 1.12
+  },
+  {
+    "file": "tests/agent-guide.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.47
+  },
+  {
+    "file": "tests/agents-md-sync.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.02
+  },
+  {
+    "file": "tests/bootstrap-human.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.72
+  },
+  {
+    "file": "tests/bootstrap-output.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.52
+  },
+  {
+    "file": "tests/capabilities-cli.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.27
+  },
+  {
+    "file": "tests/capability-registry-accuracy.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.07
+  },
+  {
+    "file": "tests/captrans-missing-capability.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.42
+  },
+  {
+    "file": "tests/cli-error-hints.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.37
+  },
+  {
+    "file": "tests/cli-mission-expedition-rank.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.02
+  },
+  {
+    "file": "tests/execution-branch-gate.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.07
+  },
+  {
+    "file": "tests/expedition-batch-operations.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.68
+  },
+  {
+    "file": "tests/expedition-completion-gates.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 28.86
+  },
+  {
+    "file": "tests/expedition-draft-retirement.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 8.79
+  },
+  {
+    "file": "tests/expedition-finish.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 2.12
+  },
+  {
+    "file": "tests/expedition-lineage-guard.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.52
+  },
+  {
+    "file": "tests/first-contact-adapter-surface.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.87
+  },
+  {
+    "file": "tests/first-contact-certification.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.13
+  },
+  {
+    "file": "tests/first-contact-cli.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 1.72
+  },
+  {
+    "file": "tests/first-contact-experiment.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 4.98
+  },
+  {
+    "file": "tests/first-contact-onboard.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 1.52
+  },
+  {
+    "file": "tests/first-contact-recommendation.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 1.62
+  },
+  {
+    "file": "tests/govern-router.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 0.82
+  },
+  {
+    "file": "tests/governance-complete-force.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 2.77
+  },
+  {
+    "file": "tests/governance-evaluation-schema.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.42
+  },
+  {
+    "file": "tests/governance-git-snapshot.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 7.54
+  },
+  {
+    "file": "tests/governance-inventory-cli.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 1.57
+  },
+  {
+    "file": "tests/governance-mission-cli.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 0.52
+  },
+  {
+    "file": "tests/governance-report-cli.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 3.38
+  },
+  {
+    "file": "tests/governance-resolver.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.16
+  },
+  {
+    "file": "tests/governance-show-cli.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 2.17
+  },
+  {
+    "file": "tests/identity-in-events.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 2.32
+  },
+  {
+    "file": "tests/initialization-evidence.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.67
+  },
+  {
+    "file": "tests/initialization-lifecycle.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.57
+  },
+  {
+    "file": "tests/initialization-replay.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.57
+  },
+  {
+    "file": "tests/migration.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 0.77
+  },
+  {
+    "file": "tests/release.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.62
+  },
+  {
+    "file": "tests/repair-state.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 0.87
+  },
+  {
+    "file": "tests/stale-state.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.11
+  },
+  {
+    "file": "tests/state-lag-no-repair.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 2.82
+  },
+  {
+    "file": "tests/synth-bootstrap.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 2.77
+  },
+  {
+    "file": "tests/synth-cli-govern-explain.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.42
+  },
+  {
+    "file": "tests/synth-cli-repo.test.js",
+    "baselineRc": 1,
+    "finalRc": 1,
+    "seconds": 1.07
+  },
+  {
+    "file": "tests/synth-log-identity-filters.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 3.48
+  },
+  {
+    "file": "tests/synth-verify-signatures.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 0.77
+  },
+  {
+    "file": "tests/validate-confidence-transparency.test.js",
+    "baselineRc": 0,
+    "finalRc": 0,
+    "seconds": 1.37
+  }
+]

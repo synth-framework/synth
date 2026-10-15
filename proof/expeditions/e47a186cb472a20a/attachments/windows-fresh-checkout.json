@@ -1,0 +1,8 @@
+{
+  "host": "Linux (not native Windows)",
+  "head": "14a7ad1dec5e79d953a7d00d715a0f7201719912",
+  "cloneExit": 0,
+  "core.protectNTFS": true,
+  "guardOutput": "Portable paths: PASS (2287 tracked paths; Win32 names and case collisions)\n",
+  "guardExit": 0
+}

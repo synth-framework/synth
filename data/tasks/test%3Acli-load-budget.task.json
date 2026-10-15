@@ -1,0 +1,14 @@
+{
+  "id": "test:cli-load-budget",
+  "description": "Rebuild and enforce derived eager-entry and actual-invocation load budgets, including fail-closed guard tests",
+  "command": "npm run build && node tests/cli-load-budget.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
