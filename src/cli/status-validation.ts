@@ -88,16 +88,19 @@ export function buildConfidenceAnalysis(
 }
 
 export async function buildStatusValidationSummary(): Promise<Record<string, unknown> | undefined> {
+  const diffText = getWorkingTreeDiff()
+  const files = parseDiff(diffText)
+  if (files.length === 0) {
+    // No planning or task inventory is needed for a clean tree. Previously we
+    // loaded both graphs before checking the diff, making every clean status
+    // invocation pay for modules whose results could never be used.
+    return { score: 1.0, risk: "low", reasons: ["No changed files detected."], nextSteps: ["No validation needed."] }
+  }
+
   const [{ loadTaskRegistry }, { buildValidationPlan }] = await Promise.all([
     import("../task/task-registry.js"),
     import("../validation/planner.js"),
   ])
-  const diffText = getWorkingTreeDiff()
-  const files = parseDiff(diffText)
-  if (files.length === 0) {
-    return { score: 1.0, risk: "low", reasons: ["No changed files detected."], nextSteps: ["No validation needed."] }
-  }
-
   const report = analyzeFiles(files)
   const packagePath = path.resolve(process.cwd(), "package.json")
   let packageJson: { scripts?: Record<string, string> } = {}

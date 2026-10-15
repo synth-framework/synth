@@ -99,6 +99,17 @@ test("a skipped/empty replay cannot satisfy a work-based exception", () => {
   assert.throws(() => validateProbeResult(probe, result, loaded, g, sources, ENTRY), /unexpectedly bootstrapped/)
 })
 
+test("repo status has no bootstrap INFO chatter in its normal stderr surface", () => temporary((root) => {
+  const r = spawnSync(process.execPath, [path.join(ROOT, ENTRY), "repo", "status"], {
+    cwd: root, encoding: "utf8", timeout: 30000,
+    env: { ...process.env, SYNTH_QUIET_LOGS: "0" },
+  })
+  assert.ifError(r.error)
+  assert.equal(r.status, 0, r.stderr)
+  assert.equal(JSON.parse(r.stdout).kind, "RepositoryStatus")
+  assert.doesNotMatch(r.stderr, /\[INFO\]|Starting Synth v2 bootstrap/)
+}))
+
 test("repository projection matches full-bootstrap replay without loading its mutation plane", () => temporary((root) => {
   const cli = (args) => {
     const r = spawnSync(process.execPath, [path.join(ROOT, ENTRY), ...args, "--json"], { cwd: root, encoding: "utf8", env: { ...process.env, SYNTH_QUIET_LOGS: "1" }, timeout: 30000 })

@@ -1,0 +1,18 @@
+# EXP-CLI-003 / PR #346 — review follow-up (2026-10-15)
+
+This is an **append-only correction and work log**, not a replacement for the hashed CLI-003 attachments or an acceptance/approval event. Review: https://github.com/synth-framework/synth/pull/346#issuecomment-6190103007. The expedition remains executing and the PR remains draft. Do not merge or seal on the strength of this note.
+
+## Corrections to previously published evidence
+
+- `proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-windows-and-timing.md` says 177 original task definitions, 176 byte-identical, one changed, and 178 after the new guard. The reviewed trees actually contain **174 original definitions, 172 byte-identical, two changed, four new, 178 final**. The changed originals are `test:all` (command) and `test:task-schema-registry` (command plus tags formatting). The 167 portable-path renames and preserved task IDs/dependency edges remain valid claims. The original hashed attachment is retained unchanged.
+- `proof/expeditions/e47a186cb472a20a/attachments/item5-additional-results.json` and the later Windows additional-results file classify `tests/agent-certification.test.js` as red on both sampled builds. The reviewer reproduced it **green on both trees** after building the gitignored `packages/synth-agent-sdk/dist/index.js` prerequisite. Its recorded failure is consistent with that build artifact being absent in the earlier samples. Therefore the 14-red statement is **not a reproducible 14-suite baseline**; with the prerequisite built the review found 13 red on both and one green on both. Keep the original samples as historical measurements, not as proof that this test is inherently red.
+- The earlier 126.5 ms status / 87.0 ms replay sample and the later 178.0 ms / 117.7 ms sample were taken **47 minutes apart on the same host/day/Node version**, not proven separate sessions. Neither sample erases the other; the latest recorded absolute limits still fail (status ≤130 ms, replay ≤110 ms). The 40.1 ms version limit passes.
+
+## Actions on this branch after review
+
+- Restored the old *skip* behavior when the framework task source directory is absent or contains no onboarding tasks, while leaving malformed definitions as errors. Added a subprocess regression test. This does not change the portable task naming contract.
+- Guarded `repo status`'s normal stderr against accidental bootstrap INFO chatter, consistent with the expedition's stated no-INFO non-goal; no legacy chatter was reintroduced. Its stdout/state replay test remains.
+- Deferred loading the task registry and validation planner until `status` actually sees changed files. This preserves the clean-tree validation envelope; it is **not a claimed timing pass**. On dirty trees the registry and planner are still loaded, and the reviewer-measured absolute limit cannot be waived by this change.
+- Added a GitHub Actions failure annotation naming executed failing governance check IDs (or a profiler exception) in `scripts/govern-profiler.js`. The older `execute` job failed inside incremental governance, but its logs/artifact redirect are inaccessible here; a check-run annotation only said exit 1. The new annotation is diagnostic, **not a repair or diagnosis of that failure**. The job and downstream `full-govern` must actually pass.
+
+The remaining ~62 orphan suites were not reverified in the review; the existing coverage statement remains partial. Do not upgrade it to a full no-regressions claim. Re-run current-branch timing on a clean build with controls, inspect the next CI annotations if `execute` fails, and preserve actual test results before deciding whether CLI-003 can converge.

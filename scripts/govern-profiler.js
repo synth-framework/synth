@@ -577,6 +577,21 @@ async function runOrchestratorPath(options) {
   return { summary, graph, failed }
 }
 
+// Emit a small, retrievable check-run annotation as well as the full baseline.
+// GitHub's downloadable job logs/artifacts are not always reachable from review
+// environments, but check-run annotations are available through the API.
+export function failedGovernChecks(summary) {
+  return summary.checks.filter((check) => check.action === "run" && check.status !== "passed").map((check) => check.checkId)
+}
+
+function annotateFailure(message) {
+  if (process.env.GITHUB_ACTIONS === "true") {
+    // Escape workflow-command data so check names/errors cannot inject lines.
+    const escaped = message.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A")
+    console.error(`::error title=Governance failure::${escaped}`)
+  }
+}
+
 async function main() {
   const options = parseCli(process.argv)
   if (options.watch) {
@@ -600,8 +615,11 @@ async function main() {
   }
 
   if (failed) {
+    const ids = failedGovernChecks(result.summary)
+    const detail = ids.length ? `Failed checks: ${ids.join(", ")}` : "Governance failed without a named failed check"
     console.error("")
-    console.error("[GOVERN] One or more checks failed.")
+    console.error(`[GOVERN] ${detail}`)
+    annotateFailure(detail)
     process.exit(1)
   }
 
@@ -611,6 +629,7 @@ async function main() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((err) => {
     console.error("[GOVERN PROFILER]", err.message)
+    annotateFailure(`Profiler error: ${err.message}`)
     process.exit(1)
   })
 }

@@ -11,7 +11,7 @@ import assert from "assert"
 import fs from "fs/promises"
 import os from "os"
 import path from "path"
-import { loadGovernChecks, runGovernProfile } from "../scripts/govern-profiler.js"
+import { loadGovernChecks, runGovernProfile, failedGovernChecks } from "../scripts/govern-profiler.js"
 import { buildDependencyGraph } from "../scripts/governance/dependency-graph.js"
 import { registerCheck, resolveCheck, GOVERNANCE_MODULES } from "../scripts/governance/check-registry.js"
 import { Scheduler } from "../scripts/governance/scheduler.js"
@@ -312,7 +312,17 @@ async function testRunGovernProfileRespectsFullFlag() {
   console.log("[PASS] runGovernProfile respects the full flag")
 }
 
+async function testFailureAnnotationSelectsOnlyExecutedFailures() {
+  assert.deepStrictEqual(failedGovernChecks({ checks: [
+    { checkId: "build", action: "run", status: "passed" },
+    { checkId: "test:cli-load-budget", action: "run", status: "failed" },
+    { checkId: "test:skip", action: "skip", status: "failed" },
+  ] }), ["test:cli-load-budget"])
+  console.log("[PASS] CI failure annotation names only executed failing checks")
+}
+
 async function main() {
+  await testFailureAnnotationSelectsOnlyExecutedFailures()
   await testLoadGovernChecksDecomposesTestAll()
   await testLoadGovernChecksIgnoresNonNpmRun()
   await testLoadGovernChecksUsesCanonicalTaskChainForShimmedScript()

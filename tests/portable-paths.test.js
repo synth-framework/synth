@@ -58,6 +58,26 @@ test("tracked paths and shipped framework tasks are Windows-name safe", async ()
   assert.equal(plan.status, 'ok')
 })
 
+test("framework task copy skips absent/empty source inventory but still rejects malformed definitions", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synth-framework-copy-'))
+  const script = path.join(ROOT, 'scripts/copy-framework-tasks.js')
+  const copy = () => spawnSync(process.execPath, [script], { cwd: root, encoding: 'utf8' })
+  try {
+    let result = copy()
+    assert.equal(result.status, 0, result.stderr)
+    assert.match(result.stdout, /No source tasks directory/)
+    fs.mkdirSync(path.join(root, 'data/tasks'), { recursive: true })
+    result = copy()
+    assert.equal(result.status, 0, result.stderr)
+    assert.match(result.stdout, /No framework tasks to copy/)
+    assert.ok(!fs.existsSync(path.join(root, 'dist/tasks')))
+
+    fs.writeFileSync(path.join(root, 'data/tasks/broken.task.json'), '{invalid')
+    result = copy()
+    assert.notEqual(result.status, 0, 'malformed source must not look like an empty inventory')
+  } finally { fs.rmSync(root, { recursive: true, force: true }) }
+})
+
 test("CLI generates, discovers, overwrites and runs a namespaced ID using a portable filename", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synth-portable-task-'))
   try {

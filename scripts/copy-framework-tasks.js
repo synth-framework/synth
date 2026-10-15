@@ -11,8 +11,16 @@ const DEST_DIR = path.resolve("dist", "tasks")
 const isFrameworkTask = (id) => id.startsWith("onboarding:")
 
 async function main() {
+  let files
+  try {
+    files = await fs.readdir(SOURCE_DIR)
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error
+    console.log("No source tasks directory; skipping framework task copy.")
+    return
+  }
   const tasks = new Map()
-  for (const file of await fs.readdir(SOURCE_DIR)) {
+  for (const file of files) {
     if (!file.endsWith(".task.json")) continue
     const raw = await fs.readFile(path.join(SOURCE_DIR, file), "utf8")
     const task = assertTask(JSON.parse(raw))
@@ -21,7 +29,10 @@ async function main() {
     if (tasks.has(name)) throw new Error(`Duplicate framework task: ${task.id}`)
     tasks.set(name, raw)
   }
-  if (tasks.size === 0) throw new Error("No framework onboarding tasks found")
+  if (tasks.size === 0) {
+    console.log("No framework tasks to copy.")
+    return
+  }
   await fs.mkdir(DEST_DIR, { recursive: true })
   for (const file of await fs.readdir(DEST_DIR)) {
     if (!file.endsWith(".task.json") || tasks.has(file)) continue
