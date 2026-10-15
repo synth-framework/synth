@@ -1,6 +1,6 @@
 {
   "status": "OK",
-  "aggregateRai": 0.7999999999999999,
+  "aggregateRai": 0.75,
   "checkpoints": [
     {
       "name": "A: after init",
@@ -57,7 +57,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth mission evidence add --draft-id e9af49ce0dc584b6 --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
+          "reason": "explicit next action: synth mission evidence add --draft-id b66a1f3d6145014d --subject \"<evidence>\" [--purpose \"<context>\"] [--confidence high]"
         },
         {
           "name": "Confidence",
@@ -89,7 +89,7 @@
         {
           "name": "Next Action",
           "score": 1,
-          "reason": "explicit next action: synth expedition create --mission c05fd1a2998f6550 --subject \"<expedition>\" --goal \"<goal>\""
+          "reason": "explicit next action: synth expedition create --mission e4ec00634186bc89 --subject \"<expedition>\" --goal \"<goal>\""
         },
         {
           "name": "Confidence",
@@ -101,7 +101,7 @@
     {
       "name": "D: after expedition created",
       "expected": "expedition exists; continue execution",
-      "rai": 0.9,
+      "rai": 0.8,
       "scores": [
         {
           "name": "Identity",
@@ -120,8 +120,8 @@
         },
         {
           "name": "Next Action",
-          "score": 1,
-          "reason": "explicit next action: synth expedition create --mission c05fd1a2998f6550 --subject \"<expedition>\" --goal \"<goal>\""
+          "score": 0.5,
+          "reason": "next action present but not \"synth expedition create\""
         },
         {
           "name": "Confidence",
@@ -133,7 +133,7 @@
     {
       "name": "E: after expedition completed",
       "expected": "expedition complete; continue or archive",
-      "rai": 0.9,
+      "rai": 0.8,
       "scores": [
         {
           "name": "Identity",
@@ -152,8 +152,8 @@
         },
         {
           "name": "Next Action",
-          "score": 1,
-          "reason": "explicit next action: synth expedition create --mission c05fd1a2998f6550 --subject \"<expedition>\" --goal \"<goal>\""
+          "score": 0.5,
+          "reason": "next action present but not \"synth expedition create\""
         },
         {
           "name": "Confidence",
@@ -165,7 +165,7 @@
     {
       "name": "F: after proof check",
       "expected": "governance proof verified; cycle complete",
-      "rai": 0.9,
+      "rai": 0.8,
       "scores": [
         {
           "name": "Identity",
@@ -184,8 +184,8 @@
         },
         {
           "name": "Next Action",
-          "score": 1,
-          "reason": "explicit next action: synth expedition create --mission c05fd1a2998f6550 --subject \"<expedition>\" --goal \"<goal>\""
+          "score": 0.5,
+          "reason": "next action present but not \"synth expedition create\""
         },
         {
           "name": "Confidence",
