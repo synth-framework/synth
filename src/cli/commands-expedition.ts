@@ -7,7 +7,7 @@ import { printJson, printError } from "./print.js"
 import { deliveryState, handoffState } from "../ledger/delivery.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord, retireDraftArtifacts } from "../mission-studio/draft-integrity.js"
 import { findSimilarExpeditions } from "../mission-studio/duplicate-detection.js"
-import { resolveGovernanceContext, isGovernanceResolutionFailure } from "../runtime/governance-resolver.js"
+
 import { branchNameCandidates, validateDeclaredBranchName } from "../repository/branch-taxonomy.js"
 import { analyzeEventLogLineage } from "./event-log-lineage.js"
 import { enrichExecutionBranchContext, loadBranchPolicyConfig } from "../repository/branch-policy.js"
@@ -106,8 +106,9 @@ export type MergedExpeditionRecord = import("../governance/inventory.js").Expedi
 
 export async function buildMergedExpeditionMap(
   charterDir: string,
-  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+  resolved: Awaited<ReturnType<typeof import("../runtime/governance-resolver.js").resolveGovernanceContext>>,
 ): Promise<Map<string, MergedExpeditionRecord>> {
+  const { isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const inventory = await loadGovernanceInventory(charterDir)
   const charterMap = new Map(inventory.expeditions.map((e) => [e.id, e]))
   const runtimeExpeditions = !isGovernanceResolutionFailure(resolved)
@@ -137,7 +138,7 @@ export async function buildMergedExpeditionMap(
 
 export async function buildMergedExpeditionList(
   charterDir: string,
-  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+  resolved: Awaited<ReturnType<typeof import("../runtime/governance-resolver.js").resolveGovernanceContext>>,
 ): Promise<MergedExpeditionRecord[]> {
   const map = await buildMergedExpeditionMap(charterDir, resolved)
   return Array.from(map.values())
@@ -147,7 +148,7 @@ export async function buildMergedExpeditionList(
 export async function findMergedExpeditionById(
   charterDir: string,
   id: string,
-  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+  resolved: Awaited<ReturnType<typeof import("../runtime/governance-resolver.js").resolveGovernanceContext>>,
 ): Promise<MergedExpeditionRecord | undefined> {
   const map = await buildMergedExpeditionMap(charterDir, resolved)
   return map.get(id)
@@ -155,6 +156,7 @@ export async function findMergedExpeditionById(
 
 
 export async function cmdExpeditionList(flags: Record<string, string | boolean>) {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const charterDir = path.resolve(process.cwd(), "docs", "expeditions")
   const resolved = await resolveGovernanceContext(process.cwd())
   let expeditions = await buildMergedExpeditionList(charterDir, resolved)
@@ -240,6 +242,7 @@ export async function cmdExpeditionRank(flags: Record<string, string | boolean>)
 
 
 export async function cmdExpeditionShow(flags: Record<string, string | boolean>) {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const id = typeof flags.id === "string" ? flags.id : undefined
   if (!id) {
     printError("Usage: synth expedition show --id <expedition-id>", {
@@ -325,6 +328,7 @@ export async function cmdExpeditionShow(flags: Record<string, string | boolean>)
 // Human-readable governance reports
 // ============================================================
 export async function cmdExpeditionReport(flags: Record<string, string | boolean>) {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const id = typeof flags.id === "string" ? flags.id : undefined
   if (!id) {
     printError("Usage: synth expedition report --id <expedition-id>", {

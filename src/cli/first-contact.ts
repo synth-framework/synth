@@ -12,7 +12,7 @@ import fs from "fs/promises"
 import { spawn, execSync } from "child_process"
 import path from "path"
 import * as sdk from "../sdk/index.js"
-import { runBootstrap } from "./bootstrap-apply.js"
+
 import { injectIdentityContext, identityEnvVars, getCliIdentity } from "./identity-context.js"
 import { extractIntent } from "../first-contact/extract/index.js"
 import type { IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
@@ -1061,7 +1061,7 @@ export async function cmdFirstContactOnboardBootstrap(args: string[], flags: Rec
     printError(`Bootstrap is only valid for brownfield or post-archive legacy state, detected: ${state.kind}`)
   }
 
-  const bootstrapResult = await runBootstrap(targetDir, {
+  const bootstrapResult = await (await import("./bootstrap-apply.js")).runBootstrap(targetDir, {
     approve: true,
     dryRun: false,
     withWebsite: false,

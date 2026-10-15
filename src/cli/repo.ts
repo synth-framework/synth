@@ -12,7 +12,7 @@
 import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { injectIdentityContext } from "./identity-context.js"
 import {
   branchNameCandidates,
@@ -30,7 +30,7 @@ const BRANCH_TYPES: BranchType[] = ["main", "release", "mission", "expedition", 
 import { printJson, printError } from "./print.js"
 
 async function bootstrapWithCapabilities() {
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "file" },
   })

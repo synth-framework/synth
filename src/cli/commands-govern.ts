@@ -5,8 +5,8 @@ import { printJson, printError } from "./print.js"
 import { cmdFirstContactStart, cmdFirstContactOnboardDetect } from "./first-contact.js"
 import * as sdk from "../sdk/index.js"
 import { runInternalGovernance, runNpmScript } from "./command-governance.js"
-import { cmdBootstrap } from "./command-bootstrap.js"
-import { cmdMissionCreate } from "./command-mission-create.js"
+
+
 import { cmdStatus } from "./command-status.js"
 
 
@@ -120,7 +120,7 @@ export async function cmdGovern(flags: Record<string, string | boolean>) {
       reason: "initialized_not_governed",
       route: "bootstrap --approve",
     })
-    return cmdBootstrap([rootDir], { ...flags, approve: true })
+    return (await import("./command-bootstrap.js")).cmdBootstrap([rootDir], { ...flags, approve: true })
   }
 
   // Already governed.
@@ -132,7 +132,7 @@ export async function cmdGovern(flags: Record<string, string | boolean>) {
       route: "mission create",
       intent,
     })
-    return cmdMissionCreate({ ...flags, subject: intent, purpose: `Governed intent captured via synth govern: ${intent}` })
+    return (await import("./command-mission-create.js")).cmdMissionCreate({ ...flags, subject: intent, purpose: `Governed intent captured via synth govern: ${intent}` })
   }
 
   printJson({

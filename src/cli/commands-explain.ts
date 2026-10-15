@@ -1,6 +1,6 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
 import fs from "fs/promises"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { printJson, printError } from "./print.js"
 import { resolveExplainPaths } from "./explain-paths.js"
@@ -42,7 +42,7 @@ export async function cmdExplainReplay(flags: Record<string, string | boolean>) 
       printError(`event log not found: ${flags.log}`)
     }
   }
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: {
       persistence: "file",

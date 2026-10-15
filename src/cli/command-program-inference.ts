@@ -1,5 +1,5 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
-import { resolveGovernanceContext, isGovernanceResolutionFailure } from "../runtime/governance-resolver.js"
+
 import { loadGovernanceInventory } from "../governance/inventory.js"
 
 
@@ -43,8 +43,9 @@ export function scoreProgramMatch(
 export async function inferMissionProgram(
   charterDir: string,
   missionId: string,
-  resolved: Awaited<ReturnType<typeof resolveGovernanceContext>>,
+  resolved: Awaited<ReturnType<typeof import("../runtime/governance-resolver.js").resolveGovernanceContext>>,
 ): Promise<{ id: string; name: string } | undefined> {
+  const { isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   if (isGovernanceResolutionFailure(resolved)) return undefined
   const inventory = await loadGovernanceInventory(charterDir)
   const missionExpeditions = Object.values(resolved.authoritative.replayedState.expeditions).filter(

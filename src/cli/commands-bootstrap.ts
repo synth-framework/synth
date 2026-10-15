@@ -1,7 +1,6 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
 import { printJson } from "./print.js"
 import { namespaceHelp } from "./command-help.js"
-import { cmdBootstrap } from "./command-bootstrap.js"
 
 
 export async function cmdBootstrapHelp() {
@@ -21,5 +20,5 @@ export async function cmdBootstrapHelp() {
 
 export async function run(positional: string[], flags: Record<string, string | boolean>): Promise<void> {
 
-  await cmdBootstrap(positional.slice(1), flags)
+  await (await import("./command-bootstrap.js")).cmdBootstrap(positional.slice(1), flags)
 }

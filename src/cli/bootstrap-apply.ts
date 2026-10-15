@@ -7,7 +7,7 @@
 
 import path from "path"
 import * as sdk from "../sdk/index.js"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { injectIdentityContext } from "./identity-context.js"
 import { analyzeRepository } from "./bootstrap-analyzer.js"
 import { checkGovernDelegation, governDelegationMessage, npmCommand } from "./govern-delegation.js"
@@ -83,7 +83,7 @@ function makeObservation(type: string, subject: string, timestamp: number, overr
 
 async function generateProposals(analysis: Awaited<ReturnType<typeof analyzeRepository>>) {
   const timestamp = Date.now()
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
@@ -228,7 +228,7 @@ async function initSynthProject(
   await sdk.json.writeJson(sdk.paths.manifestPath(root), manifest)
 
   // Record the initialization as a replayable governance event.
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: {
       persistence: "file",
@@ -490,7 +490,7 @@ async function generateDocs(targetDir: string) {
   const originalCwd = process.cwd()
   process.chdir(targetDir)
   try {
-    const ctx = await bootstrap({
+    const ctx = await (await import("../core/bootstrap.js")).bootstrap({
       skipGenesis: true,
       infra: { persistence: "memory" },
     })

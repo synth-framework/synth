@@ -14,7 +14,7 @@ import * as sdk from "../sdk/index.js"
 import { root } from "../sdk/workspace/index.js"
 import { ensureDataDir } from "../sdk/paths/index.js"
 import { printJson } from "./print.js"
-import { bootstrap } from "../core/bootstrap.js"
+
 
 interface AgentGuideSection {
   title: string
@@ -151,7 +151,7 @@ async function readCurrentState(): Promise<AgentGuide["currentState"] | undefine
   try {
     const cwd = root()
     await ensureDataDir(cwd)
-    const ctx = await bootstrap({ infra: { persistence: "file" } })
+    const ctx = await (await import("../core/bootstrap.js")).bootstrap({ infra: { persistence: "file" } })
     const state = await ctx.runtime.getState()
 
     const missions = Object.values(state.missions || {}).map((m: any) => ({

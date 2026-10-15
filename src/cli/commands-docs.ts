@@ -1,6 +1,6 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
 import path from "path"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { printJson, printError } from "./print.js"
 import { DOCUMENTATION_CAPABILITIES } from "../documentation/projections/engine.js"
 import { namespaceHelp } from "./command-help.js"
@@ -36,7 +36,7 @@ export async function cmdDocsGenerate(flags: Record<string, string | boolean>) {
   // an explicit no-op that confirms the behavior for scripts and CI.
   const provenance = true
 
-  const result = (await bootstrap({
+  const result = (await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   }).then((ctx) =>

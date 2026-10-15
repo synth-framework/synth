@@ -2,7 +2,7 @@
 import fs from "fs/promises"
 import path from "path"
 import crypto from "crypto"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { printJson, printError } from "./print.js"
 import { writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { findSimilarMissions } from "../mission-studio/duplicate-detection.js"
@@ -50,7 +50,7 @@ export async function cmdMissionCreate(flags: Record<string, string | boolean>) 
     })),
   )
 
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })

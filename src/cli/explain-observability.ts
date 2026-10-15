@@ -39,7 +39,7 @@
 
 import fs from "fs/promises"
 import path from "path"
-import { bootstrap } from "../core/bootstrap.js"
+import type { bootstrap } from "../core/bootstrap.js"
 import { createReplayVerifier, type ReplayCheckResult } from "../core/replay-verifier.js"
 import { validateGraphIntegrity } from "../core/graph-integrity.js"
 import { attributeReplay } from "../core/replay-attribution.js"
@@ -102,7 +102,7 @@ async function loadExplainContext(flags: Record<string, string | boolean>): Prom
   // skipGenesis only mkdir -p's existing project directories and never
   // appends. The sections below read through loadAll()/load()/list()
   // exclusively.
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: {
       persistence: "file",

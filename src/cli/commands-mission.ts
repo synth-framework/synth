@@ -1,11 +1,11 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
 import fs from "fs/promises"
 import path from "path"
-import { bootstrap } from "../core/bootstrap.js"
+
 import { printJson, printError } from "./print.js"
 import { verifyDraftIntegrity, writeDraftIntegrityRecord } from "../mission-studio/draft-integrity.js"
 import { appendDecision, latestDecision, listDecisions } from "../mission-studio/decision-log.js"
-import { resolveGovernanceContext, isGovernanceResolutionFailure } from "../runtime/governance-resolver.js"
+
 import * as sdk from "../sdk/index.js"
 import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
 import { buildDerivedState } from "../state/derived/index.js"
@@ -18,7 +18,6 @@ import { namespaceHelp } from "./command-help.js"
 import { cmdExpeditionComplete, DeclaredBranchInfo, declareExecutionBranch, assertExecutionBranch, recordExecutionBranchBinding } from "./command-lifecycle.js"
 import { commitDraftCeremony, makeObservation, serializePlanningSession } from "./command-planning.js"
 import { inferMissionProgram } from "./command-program-inference.js"
-import { cmdMissionCreate } from "./command-mission-create.js"
 
 
 export async function cmdMissionHelp() {
@@ -296,7 +295,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
     await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id }, declaredBranchFlag)
   }
 
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
@@ -706,7 +705,7 @@ export async function cmdMissionEvidenceAdd(flags: Record<string, string | boole
     printError(`This evidence is already present in draft "${draftId}"; nothing to add. Approve the draft, or add different evidence.`)
   }
 
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
@@ -745,6 +744,7 @@ export async function cmdMissionEvidenceAdd(flags: Record<string, string | boole
 
 
 export async function cmdMissionList(flags: Record<string, string | boolean>) {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const resolved = await resolveGovernanceContext(process.cwd())
   if (isGovernanceResolutionFailure(resolved)) {
     printError("Could not resolve governance context.", {
@@ -795,6 +795,7 @@ export async function cmdMissionList(flags: Record<string, string | boolean>) {
 
 
 export async function cmdMissionShow(flags: Record<string, string | boolean>) {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const id = typeof flags.id === "string" ? flags.id : undefined
   if (!id) {
     printError("Usage: synth mission show --id <mission-id>", {
@@ -856,6 +857,7 @@ export async function cmdMissionShow(flags: Record<string, string | boolean>) {
 
 
 export async function cmdMissionReport(flags: Record<string, string | boolean>) {
+  const { resolveGovernanceContext, isGovernanceResolutionFailure } = await import("../runtime/governance-resolver.js")
   const id = typeof flags.id === "string" ? flags.id : undefined
   if (!id) {
     printError("Usage: synth mission report --id <mission-id>", {
@@ -940,7 +942,7 @@ export async function cmdMissionSnapshot(args: string[], flags: Record<string, s
   const snapshotId =
     args[0] && args[0] !== "list" ? args[0] : typeof flags.id === "string" ? flags.id : ""
 
-  const ctx = await bootstrap({
+  const ctx = await (await import("../core/bootstrap.js")).bootstrap({
     skipGenesis: true,
     infra: { persistence: "memory" },
   })
@@ -1100,7 +1102,7 @@ export async function cmdMissionVerifyCharter(flags: Record<string, string | boo
 export async function run(positional: string[], flags: Record<string, string | boolean>): Promise<void> {
 
   const sub = positional[1]
-  if (sub === "create") await cmdMissionCreate(flags)
+  if (sub === "create") await (await import("./command-mission-create.js")).cmdMissionCreate(flags)
   else if (sub === "project") await cmdMissionProject(flags)
   else if (sub === "approve") await cmdMissionApprove(flags)
   else if (sub === "evidence" && positional[2] === "add") await cmdMissionEvidenceAdd(flags)

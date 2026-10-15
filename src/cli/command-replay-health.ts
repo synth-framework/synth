@@ -1,5 +1,5 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
-import { bootstrap } from "../core/bootstrap.js"
+
 import { createReplayVerifier } from "../core/replay-verifier.js"
 import { locateEventLog } from "../infra/event-store.js"
 import * as sdk from "../sdk/index.js"
@@ -20,7 +20,7 @@ export async function verifyReplayHealth(): Promise<DoctorCheckResult> {
     if (!located.present) {
       return { ok: true, detail: "No event log present; replay skipped" }
     }
-    const ctx = await bootstrap({
+    const ctx = await (await import("../core/bootstrap.js")).bootstrap({
       skipGenesis: true,
       infra: {
         persistence: "file",

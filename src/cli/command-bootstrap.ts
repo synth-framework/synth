@@ -1,6 +1,6 @@
 // EXP-CLI-003: extracted from synth.ts; handler behavior is unchanged.
 import path from "path"
-import { runBootstrap } from "./bootstrap-apply.js"
+
 import { printJson } from "./print.js"
 
 
@@ -23,7 +23,7 @@ export async function cmdBootstrap(args: string[], flags: Record<string, string 
         : undefined,
   }
 
-  const result = await runBootstrap(targetDir, options)
+  const result = await (await import("./bootstrap-apply.js")).runBootstrap(targetDir, options)
 
   if (flags.human === true || flags.human === "true") {
     console.log(`Bootstrapping ${result.projectName} at ${result.targetDir}`)
