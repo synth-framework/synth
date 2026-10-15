@@ -8,14 +8,14 @@ import { appendDecision, latestDecision, listDecisions } from "../mission-studio
 
 import * as sdk from "../sdk/index.js"
 import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
-import { buildDerivedState } from "../state/derived/index.js"
+
 import { isStrictContext, echoResolution, resolveInferredAlignmentContractId } from "./context.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 import { bootstrapWithCapabilities } from "./auto-commit-ceremony.js"
 import { gateDecision, printGateBlock } from "./gate-reporting.js"
 import { namespaceHelp } from "./command-help.js"
-import { cmdExpeditionComplete, DeclaredBranchInfo, declareExecutionBranch, assertExecutionBranch, recordExecutionBranchBinding } from "./command-lifecycle.js"
+import type { DeclaredBranchInfo } from "./command-lifecycle.js"
 import { commitDraftCeremony, makeObservation, serializePlanningSession } from "./command-planning.js"
 import { inferMissionProgram } from "./command-program-inference.js"
 
@@ -163,7 +163,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
       infra: { persistence: "file" },
     })
     const events = await lookupCtx.runtime.loadEvents()
-    const derived = buildDerivedState(events)
+    const derived = (await import("../state/derived/index.js")).buildDerivedState(events)
     const approvedContracts = Object.values(derived.alignmentContracts).filter(
       (c) => c.status === "approved"
     )
@@ -230,7 +230,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
         console.error(
           `[mission approve --complete-first] closing executing expedition ${blocking.id} (${blocking.name}) before approving the mission.`,
         )
-        await cmdExpeditionComplete({
+        await (await import("./command-lifecycle.js")).cmdExpeditionComplete({
           id: blocking.id,
           force: true,
           reason: "closed automatically via mission approve --complete-first",
@@ -277,7 +277,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
     if (declaredBranchFlag) {
       // ADR-056 §2.2: the operator declares the execution branch; the CLI
       // materializes or checks it out before the mission is approved.
-      declaredMissionBranch = await declareExecutionBranch("mission", {
+      declaredMissionBranch = await (await import("./command-lifecycle.js")).declareExecutionBranch("mission", {
         branch: declaredBranchFlag,
         noCreate: noCreateFlag,
         entityId: missionNode.id,
@@ -292,7 +292,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
         })
       }
     }
-    await assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id }, declaredBranchFlag)
+    await (await import("./command-lifecycle.js")).assertExecutionBranch("ApproveMission", "mission", { missionId: missionNode.id }, declaredBranchFlag)
   }
 
   const ctx = await (await import("../core/bootstrap.js")).bootstrap({
@@ -365,7 +365,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
     if (!declaredMissionBranch?.ok || !missionNode || missionBranchBindingRecorded) return
     const latestState = await gateCtx.runtime.getState()
     if (latestState.missions[missionNode.id]?.executionBranch !== declaredMissionBranch.branch) {
-      await recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
+      await (await import("./command-lifecycle.js")).recordExecutionBranchBinding(gateCtx, "mission", missionNode.id, declaredMissionBranch)
     }
     missionBranchBindingRecorded = true
   }

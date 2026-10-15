@@ -25,7 +25,7 @@ import { gateDecision, printGateBlock } from "./gate-reporting.js"
 import { isWorkingTreeDirty, runGitSpawn, getUntrackedSourcePaths, isAutoCommitEnabled } from "./working-tree.js"
 import { namespaceHelp } from "./command-help.js"
 import { parseTokenList, makeObservation, ensureDraftsDir, serializePlanningSession, commitDraftCeremony } from "./command-planning.js"
-import { runLifecycleDryRun, DeclaredBranchInfo, declareExecutionBranch, recordExecutionBranchBinding, assertExecutionBranch, autoCommitDerivedState, resolveExpeditionId, completeExpedition, cmdExpeditionComplete } from "./command-lifecycle.js"
+import type { DeclaredBranchInfo } from "./command-lifecycle.js"
 
 
 export async function cmdExpeditionHelp() {
@@ -675,7 +675,7 @@ export async function approveOneExpedition(
   dryRun: boolean,
 ): Promise<Record<string, unknown>> {
   if (dryRun) {
-    return runLifecycleDryRun(ctx, {
+    return (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "ApproveExpedition",
       payload: { id: draftId },
       eventType: "EXPEDITION_APPROVED",
@@ -838,7 +838,7 @@ export async function commitOneExpedition(
   noCreate = false,
 ): Promise<Record<string, unknown>> {
   if (dryRun) {
-    const preview = await runLifecycleDryRun(ctx, {
+    const preview = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "CommitExpedition",
       payload: { id: proposalId },
       eventType: "EXPEDITION_COMMITTED",
@@ -862,7 +862,7 @@ export async function commitOneExpedition(
     if (!record) {
       return { status: "error", proposalId, code: "ExpeditionNotFound", error: `Expedition ${proposalId} is not in the ledger` }
     }
-    declared = await declareExecutionBranch("expedition", {
+    declared = await (await import("./command-lifecycle.js")).declareExecutionBranch("expedition", {
       branch: declaredBranch,
       noCreate,
       entityId: proposalId,
@@ -914,7 +914,7 @@ export async function commitOneExpedition(
   }
 
   if (declared?.ok) {
-    await recordExecutionBranchBinding(ctx, "expedition", proposalId, declared)
+    await (await import("./command-lifecycle.js")).recordExecutionBranchBinding(ctx, "expedition", proposalId, declared)
   }
 
   return {
@@ -1082,7 +1082,7 @@ export async function startOneExpedition(
   if (baselineCommit) startPayload.baselineCommit = baselineCommit
 
   if (dryRun) {
-    const preview = await runLifecycleDryRun(ctx, {
+    const preview = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "StartExpedition",
       payload: startPayload,
       eventType: "EXPEDITION_STARTED",
@@ -1150,7 +1150,7 @@ export async function startOneExpedition(
   if (expeditionRecord?.missionId) {
     if (declaredBranch && !declaredInfo) {
       // The expedition was already committed: declare now, before the guard.
-      declaredInfo = await declareExecutionBranch("expedition", {
+      declaredInfo = await (await import("./command-lifecycle.js")).declareExecutionBranch("expedition", {
         branch: declaredBranch,
         noCreate,
         entityId: expeditionId,
@@ -1167,7 +1167,7 @@ export async function startOneExpedition(
           ...(declaredInfo.suggestion ? { suggestion: declaredInfo.suggestion } : {}),
         }
       }
-      await recordExecutionBranchBinding(ctx, "expedition", expeditionId, declaredInfo)
+      await (await import("./command-lifecycle.js")).recordExecutionBranchBinding(ctx, "expedition", expeditionId, declaredInfo)
     }
     if (!declaredInfo) {
       const branchInfo = await ensureExpeditionBranch(ctx, expeditionId, expeditionRecord.missionId)
@@ -1175,7 +1175,7 @@ export async function startOneExpedition(
     }
     // ECOSYSTEM-001: fail fast when the current branch cannot host this
     // expedition's execution. The ExecutionGate re-enforces inside handleIntent.
-    await assertExecutionBranch(
+    await (await import("./command-lifecycle.js")).assertExecutionBranch(
       "StartExpedition",
       "expedition",
       {
@@ -1228,7 +1228,7 @@ export async function startOneExpedition(
   }
 
   if (autoCommit) {
-    const commit = await autoCommitDerivedState(process.cwd(), "expedition-start", expeditionId)
+    const commit = await (await import("./command-lifecycle.js")).autoCommitDerivedState(process.cwd(), "expedition-start", expeditionId)
     response.autoCommit = {
       committed: commit.committed,
       commitHash: commit.commitHash,
@@ -1243,7 +1243,7 @@ export async function startOneExpedition(
 
 
 export async function cmdExpeditionStart(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   const missionId = typeof flags.mission === "string" ? flags.mission : undefined
   const allCommitted = flags["all-committed"] === true || flags["all-committed"] === "true"
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
@@ -1309,7 +1309,7 @@ export async function cmdExpeditionStart(flags: Record<string, string | boolean>
 
 
 export async function cmdExpeditionPause(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   if (flags["dry-run"] === true || flags["dry-run"] === "true") {
@@ -1317,7 +1317,7 @@ export async function cmdExpeditionPause(flags: Record<string, string | boolean>
       skipGenesis: true,
       infra: { persistence: "file" },
     })
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "PauseExpedition",
       payload: { id: expeditionId },
       eventType: "EXPEDITION_PAUSED",
@@ -1360,7 +1360,7 @@ export async function cmdExpeditionPause(flags: Record<string, string | boolean>
 
 
 export async function cmdExpeditionCancel(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const reason = typeof flags.reason === "string" ? flags.reason : ""
@@ -1371,7 +1371,7 @@ export async function cmdExpeditionCancel(flags: Record<string, string | boolean
       skipGenesis: true,
       infra: { persistence: "file" },
     })
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "CancelExpedition",
       payload: { id: expeditionId, reason },
       eventType: "EXPEDITION_CANCELLED",
@@ -1530,7 +1530,7 @@ export async function guardEventLogLineage(flags: Record<string, string | boolea
 // completing an expedition.
 // ============================================================
 export async function cmdExpeditionFinish(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const note = typeof flags.note === "string" ? flags.note : "Auto-attached by synth expedition finish"
@@ -1545,7 +1545,7 @@ export async function cmdExpeditionFinish(flags: Record<string, string | boolean
       skipGenesis: true,
       infra: { persistence: "file" },
     })
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "CompleteExpedition",
       payload: { id: expeditionId, force, forceReason },
       eventType: "EXPEDITION_COMPLETED",
@@ -1585,14 +1585,14 @@ export async function cmdExpeditionFinish(flags: Record<string, string | boolean
   // 3. Complete the expedition, reusing the same gate checks as `complete`.
   // The dirty-tree check is skipped because finish already captured the diff
   // as evidence in step 1.
-  const { result: completeResult } = await completeExpedition(ctx, expeditionId, {
+  const { result: completeResult } = await (await import("./command-lifecycle.js")).completeExpedition(ctx, expeditionId, {
     force,
     forceReason,
     skipDirtyCheck: true,
   })
 
   const autoCommit = isAutoCommitEnabled(flags)
-    ? await autoCommitDerivedState(process.cwd(), "expedition-finish", expeditionId)
+    ? await (await import("./command-lifecycle.js")).autoCommitDerivedState(process.cwd(), "expedition-finish", expeditionId)
     : undefined
 
   const response: Record<string, unknown> = {
@@ -1630,7 +1630,7 @@ export async function cmdExpeditionFinish(flags: Record<string, string | boolean
 
 
 export async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const reason = typeof flags.reason === "string" ? flags.reason : ""
@@ -1641,7 +1641,7 @@ export async function cmdExpeditionArchive(flags: Record<string, string | boolea
       skipGenesis: true,
       infra: { persistence: "file" },
     })
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "ArchiveExpedition",
       payload: { id: expeditionId, reason },
       eventType: "EXPEDITION_ARCHIVED",
@@ -1685,7 +1685,7 @@ export async function cmdExpeditionArchive(flags: Record<string, string | boolea
 
 
 export async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const reason = typeof flags.reason === "string" ? flags.reason : undefined
@@ -1700,7 +1700,7 @@ export async function cmdExpeditionDelete(flags: Record<string, string | boolean
     if (intake.decision === "BLOCK") {
       printGateBlock(intake)
     }
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "DeleteExpedition",
       payload: { id: expeditionId, ...(reason ? { reason } : {}) },
       eventType: "EXPEDITION_DELETED",
@@ -1761,7 +1761,7 @@ export async function cmdExpeditionDelete(flags: Record<string, string | boolean
 
 
 export async function cmdExpeditionMove(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const toMissionId =
@@ -1789,7 +1789,7 @@ export async function cmdExpeditionMove(flags: Record<string, string | boolean>)
     if (intake.decision === "BLOCK") {
       printGateBlock(intake)
     }
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "MoveExpedition",
       payload: { id: expeditionId, toMissionId },
       eventType: "EXPEDITION_MOVED",
@@ -2047,7 +2047,7 @@ export async function attachExpeditionEvidence(
 
 
 export async function cmdExpeditionEvidence(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const gitDiff = flags["git-diff"] === true || flags["git-diff"] === "true"
@@ -2087,7 +2087,7 @@ export async function cmdExpeditionEvidence(flags: Record<string, string | boole
       }
     }
     const baseDir = path.join("proof", "expeditions", expeditionId)
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "AttachEvidence",
       payload: { id: expeditionId, ...(note ? { note } : {}) },
       eventType: "EVIDENCE_ATTACHED",
@@ -2117,7 +2117,7 @@ export async function cmdExpeditionEvidence(flags: Record<string, string | boole
   })
 
   const autoCommit = isAutoCommitEnabled(flags)
-    ? await autoCommitDerivedState(process.cwd(), "evidence-attach", expeditionId)
+    ? await (await import("./command-lifecycle.js")).autoCommitDerivedState(process.cwd(), "evidence-attach", expeditionId)
     : undefined
 
   const response: Record<string, unknown> = {
@@ -2145,7 +2145,7 @@ export async function cmdExpeditionEvidence(flags: Record<string, string | boole
 
 
 export async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const note = typeof flags.note === "string" ? flags.note : ""
@@ -2165,7 +2165,7 @@ export async function cmdExpeditionRefine(flags: Record<string, string | boolean
       skipGenesis: true,
       infra: { persistence: "file" },
     })
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "RefineExpedition",
       payload: { id: expeditionId, note, ...(dependsOn.length > 0 ? { dependsOn } : {}) },
       eventType: "EXPEDITION_REFINED",
@@ -2200,7 +2200,7 @@ export async function cmdExpeditionRefine(flags: Record<string, string | boolean
   const refined = result.result as { metadata?: Record<string, unknown> } | undefined
 
   const autoCommit = isAutoCommitEnabled(flags)
-    ? await autoCommitDerivedState(process.cwd(), "expedition-refine", expeditionId)
+    ? await (await import("./command-lifecycle.js")).autoCommitDerivedState(process.cwd(), "expedition-refine", expeditionId)
     : undefined
 
   const response: Record<string, unknown> = {
@@ -2358,7 +2358,7 @@ export async function certifyExpedition(
 
 
 export async function cmdExpeditionCertify(flags: Record<string, string | boolean>) {
-  const expeditionId = resolveExpeditionId(flags)
+  const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
   const ctx = await bootstrapWithCapabilities({
@@ -2384,7 +2384,7 @@ export async function cmdExpeditionCertify(flags: Record<string, string | boolea
     }
     const evaluationPath = typeof flags.evaluation === "string" ? flags.evaluation : undefined
     const evidencePath = typeof flags.evidence === "string" ? flags.evidence : undefined
-    const dryRun = await runLifecycleDryRun(ctx, {
+    const dryRun = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "CertifyConvergence",
       payload: {
         expeditionId,
@@ -2413,7 +2413,7 @@ export async function cmdExpeditionCertify(flags: Record<string, string | boolea
   )
 
   const autoCommit = isAutoCommitEnabled(flags) && decision === "converged"
-    ? await autoCommitDerivedState(process.cwd(), "convergence-certification", expeditionId)
+    ? await (await import("./command-lifecycle.js")).autoCommitDerivedState(process.cwd(), "convergence-certification", expeditionId)
     : undefined
 
   const response: Record<string, unknown> = {
@@ -2452,7 +2452,7 @@ export async function run(positional: string[], flags: Record<string, string | b
   else if (sub === "start") await cmdExpeditionStart(flags)
   else if (sub === "pause") await cmdExpeditionPause(flags)
   else if (sub === "cancel") await cmdExpeditionCancel(flags)
-  else if (sub === "complete") await cmdExpeditionComplete(flags)
+  else if (sub === "complete") await (await import("./command-lifecycle.js")).cmdExpeditionComplete(flags)
   else if (sub === "finish") await cmdExpeditionFinish(flags)
   else if (sub === "archive") await cmdExpeditionArchive(flags)
   else if (sub === "delete") await cmdExpeditionDelete(flags)
