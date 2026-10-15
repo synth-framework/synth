@@ -1,10 +1,13 @@
 {
   "id": "test:task-schema-registry",
   "description": "Verify task registry schema loading and public query helpers",
-  "command": "node tests/task-schema-registry.test.js",
+  "command": "node tests/task-schema-registry.test.js && node tests/task-registry-io.test.js",
   "group": "runtime",
   "dependsOn": [],
-  "tags": ["runtime", "test"],
+  "tags": [
+    "runtime",
+    "test"
+  ],
   "estimatedDurationMs": 30000,
   "capabilities": [],
   "lifecycle": "accepted"

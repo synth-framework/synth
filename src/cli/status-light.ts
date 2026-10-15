@@ -15,8 +15,12 @@ import { printJson } from "./print.js"
 export async function runStatus(): Promise<void> {
   await sdk.paths.ensureDataDir(sdk.workspace.root())
 
-  const briefing = await buildOperatorBriefing(process.cwd())
-  const validation = await buildStatusValidationSummary()
+  // Independent read-only projections: overlap their I/O without skipping
+  // validation on dirty trees or caching state between invocations.
+  const [briefing, validation] = await Promise.all([
+    buildOperatorBriefing(process.cwd()),
+    buildStatusValidationSummary(),
+  ])
   if (briefing.status === "ok" && validation) {
     ;(briefing as Record<string, unknown>).validation = validation
   }

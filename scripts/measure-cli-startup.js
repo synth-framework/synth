@@ -64,10 +64,14 @@ function median(values) {
 
 function timeOnce(file, args) {
   const start = performance.now()
-  spawnSync(process.execPath, file ? [path.join(ROOT, file), ...args] : args, {
+  const result = spawnSync(process.execPath, file ? [path.join(ROOT, file), ...args] : args, {
     cwd: ROOT,
     stdio: ["ignore", "ignore", "ignore"],
+    timeout: 30000,
   })
+  if (result.error || result.signal || result.status !== 0) {
+    throw new Error(`Timing probe failed: ${file || "node"} ${args.join(" ")}: ${result.error || result.signal || result.status}`)
+  }
   return performance.now() - start
 }
 
