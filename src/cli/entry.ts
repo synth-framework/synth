@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // SYNTH-LOADER-001: thin CLI entrypoint.
 //
-// Light commands (version / help / status) are served inline so they never load
-// the heavy synth.js module graph (which eagerly imports core/bootstrap.js and
-// runs the 13-step bootstrap on every invocation). Every other command is lazily
-// imported, so the heavy machinery only loads when actually needed.
+// Version and help render directly; status and bootstrap-free explain routes
+// load their handlers on demand. Other commands enter synth.js for shared
+// preflight, then use the same registry to load only their namespace. Bootstrap
+// itself is deferred to the operations that call it.
 //
 // EXP-CLI-001: the light handlers no longer carry their own copy of the CLI
 // surface. Version and help come from ./version.js and ./usage.js, which the
@@ -51,14 +51,10 @@ function applyOutputFlags(argv: readonly string[]): boolean | undefined {
 export async function run(): Promise<void> {
   const command = process.argv[2] ?? "help"
   const argv = process.argv.slice(2)
-  // `explain replay` and the read-only `explain identity|resume|governance`
-  // subcommands are bootstrap-free, so they are served without loading the
-  // heavy synth.js graph. Other `explain` subcommands stay heavy. Which subs
-  // exist, which are light, which module serves each, and how each parses its
-  // flags now live in verb-registry.ts: one routing authority shared with
-  // synth.ts's dispatch, instead of two hand-written if-chains that had
-  // drifted (this one knew four subcommands, synth.ts knew twelve).
-  // EXP-CLI-003 item 3.
+  // The registry owns the bootstrap-free explain subset and all explain
+  // loaders. The other subcommands still go through synth.ts's preflight;
+  // four fast routes versus twelve accepted subs was an intentional fallback,
+  // not evidence by itself of divergent behavior.
   if (command === "explain") {
     const light = resolveLightExplain(process.argv[3])
     if (light) {
