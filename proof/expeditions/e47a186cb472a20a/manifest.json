@@ -1,7 +1,7 @@
 {
   "expeditionId": "e47a186cb472a20a",
-  "capturedAt": 1792033602084,
-  "note": "Item 3 registry/namespace extraction and lazy call-site imports. 97 handlers in single homes; shipped eager graph 17 modules/47 KB; all namespace roots <=134 modules. Full test chain green twice; final dist 1200 files rootHash 267cb1342a16e0b6. Timing status 141.1 ms remains above 130 ms; item 4 harness and item 5 DERIVED guard still outstanding. Includes append-only corrections and two pre-existing unchained reds reproduced on pre-extraction build.",
+  "capturedAt": 1792033624284,
+  "note": "Attach item-3 narrative, complete eager-graph table and full-output comparison results. Correct my preceding repeated --attach invocation: the parser retains the last flag, so only timing JSON was attached then; this uses the documented implementation's comma-separated list. No completion claim; status timing, harness migration and DERIVED guard remain.",
   "attachments": [
     {
       "kind": "git-diff",
@@ -62,6 +62,21 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-timing.json",
       "hash": "5893aee53b13ee64c95603e0e25dd0814ee2af4c545edefe0c69cc25c387ac16"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item3b.md",
+      "hash": "73a67720ddd1f9e81ab2ed13a96da811c6f9658e10ca8828f8847806d47d4b66"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-graphs.json",
+      "hash": "65927cc79d24b9e270d9228851f961a8afbed5fdccd12d5a2426292f571facd5"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/registry-output-comparison.json",
+      "hash": "1eb27d39bd61ed914075705276d2b5ce1ab6f351277b0e644cfa4be65aef5eb0"
     }
   ]
 }

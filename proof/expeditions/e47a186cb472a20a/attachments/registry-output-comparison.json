@@ -1,0 +1,1136 @@
+[
+  {
+    "entry": "entry.js",
+    "argv": [
+      "bootstrap",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1557,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "discover",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 678,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "mission",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 2339,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "program",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1323,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "project",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 568,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "intent",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1003,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "alignment",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 879,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "expedition",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 6387,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "doctor",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 547,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "checkpoint",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 460,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "certify",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 917,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "capabilities",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 572,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "log",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1961,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "docs",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 939,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "adapter",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 546,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "snapshot",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 827,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "repair",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 958,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "first-contact",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 3478,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "genesis",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 3478,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "validate",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 948,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "verify",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 755,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "approval",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1207,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "task",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1840,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 2035,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "ai",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 385,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "repo",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1669,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "migrate",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 762,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "mission",
+      "approve",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1240,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "expedition",
+      "approve",
+      "-h"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1501,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "replay",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 222,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "lineage",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 27864,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "proposals",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1607,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "snapshots",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1291,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "graph",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 30330,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "diagnostics",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 44407,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "status",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1120,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "all",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 114121,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "identity",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 705,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "resume",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 12743,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "governance",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 17858,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "explain",
+      "agents",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 7020,
+    "stdoutEqual": false,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "log",
+      "--limit",
+      "3",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 7975,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "status",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 32621,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "verify",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1237,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "__unknown__"
+    ],
+    "baselineRc": 1,
+    "currentRc": 1,
+    "stdoutBytes": 133,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "entry.js",
+    "argv": [
+      "expedition",
+      "__unknown__"
+    ],
+    "baselineRc": 1,
+    "currentRc": 1,
+    "stdoutBytes": 361,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "bootstrap",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1557,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "discover",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 678,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "mission",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 2339,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "program",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1323,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "project",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 568,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "intent",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1003,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "alignment",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 879,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "expedition",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 6387,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "doctor",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 547,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "checkpoint",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 460,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "certify",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 917,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "capabilities",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 572,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "log",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1961,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "docs",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 939,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "adapter",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 546,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "snapshot",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 827,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "repair",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 958,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "first-contact",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 3478,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "genesis",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 3478,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "validate",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 948,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "verify",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 755,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "approval",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1207,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "task",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1840,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 2035,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "ai",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 385,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "repo",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1669,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "migrate",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 762,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "mission",
+      "approve",
+      "--help"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1240,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "expedition",
+      "approve",
+      "-h"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1501,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "replay",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 222,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "lineage",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 27864,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "proposals",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1607,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "snapshots",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1291,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "graph",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 30330,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "diagnostics",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 44407,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "status",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1120,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "all",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 114121,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "identity",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 705,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "resume",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 12743,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "governance",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 17858,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "explain",
+      "agents",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 7020,
+    "stdoutEqual": false,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "log",
+      "--limit",
+      "3",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 7975,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "status",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 32621,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "verify",
+      "--json"
+    ],
+    "baselineRc": 0,
+    "currentRc": 0,
+    "stdoutBytes": 1237,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "__unknown__"
+    ],
+    "baselineRc": 1,
+    "currentRc": 1,
+    "stdoutBytes": 133,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  },
+  {
+    "entry": "synth.js",
+    "argv": [
+      "expedition",
+      "__unknown__"
+    ],
+    "baselineRc": 1,
+    "currentRc": 1,
+    "stdoutBytes": 361,
+    "stdoutEqual": true,
+    "stderrEqualExceptBootstrap": true
+  }
+]

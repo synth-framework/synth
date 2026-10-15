@@ -1,6 +1,6 @@
 {
-  "version": 497,
-  "stateHash": "434251276",
+  "version": 498,
+  "stateHash": "745473594",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -2127,7 +2127,7 @@
         }
       },
       "createdAt": 473,
-      "updatedAt": 496,
+      "updatedAt": 497,
       "executionBranch": "arena/d5e4625c-synth",
       "attachments": [
         {
@@ -2189,6 +2189,21 @@
           "kind": "attachment",
           "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-timing.json",
           "hash": "5893aee53b13ee64c95603e0e25dd0814ee2af4c545edefe0c69cc25c387ac16"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item3b.md",
+          "hash": "73a67720ddd1f9e81ab2ed13a96da811c6f9658e10ca8828f8847806d47d4b66"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item3-graphs.json",
+          "hash": "65927cc79d24b9e270d9228851f961a8afbed5fdccd12d5a2426292f571facd5"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/e47a186cb472a20a/attachments/registry-output-comparison.json",
+          "hash": "1eb27d39bd61ed914075705276d2b5ce1ab6f351277b0e644cfa4be65aef5eb0"
         }
       ]
     },
@@ -2282,5 +2297,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 497
+  "lastEventOffset": 498
 }

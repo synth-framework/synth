@@ -1,0 +1,416 @@
+{
+  "kind": "ModuleGraphAudit",
+  "eager": [
+    {
+      "root": "dist/cli/entry.js",
+      "modules": 17,
+      "kb": 47
+    },
+    {
+      "root": "dist/distribution/mcp-server.js",
+      "modules": 1,
+      "kb": 10
+    },
+    {
+      "root": "dist/main.js",
+      "modules": 171,
+      "kb": 1103
+    },
+    {
+      "root": "dist/cli/synth.js",
+      "modules": 40,
+      "kb": 177
+    },
+    {
+      "root": "dist/cli/commands-adapter.js",
+      "modules": 17,
+      "kb": 36
+    },
+    {
+      "root": "dist/cli/commands-ai.js",
+      "modules": 29,
+      "kb": 83
+    },
+    {
+      "root": "dist/cli/commands-alignment.js",
+      "modules": 37,
+      "kb": 151
+    },
+    {
+      "root": "dist/cli/commands-approval.js",
+      "modules": 22,
+      "kb": 48
+    },
+    {
+      "root": "dist/cli/commands-bootstrap.js",
+      "modules": 17,
+      "kb": 37
+    },
+    {
+      "root": "dist/cli/commands-capabilities.js",
+      "modules": 84,
+      "kb": 486
+    },
+    {
+      "root": "dist/cli/commands-certify.js",
+      "modules": 28,
+      "kb": 76
+    },
+    {
+      "root": "dist/cli/commands-checkpoint.js",
+      "modules": 52,
+      "kb": 243
+    },
+    {
+      "root": "dist/cli/commands-discover.js",
+      "modules": 29,
+      "kb": 87
+    },
+    {
+      "root": "dist/cli/commands-docs.js",
+      "modules": 19,
+      "kb": 50
+    },
+    {
+      "root": "dist/cli/commands-doctor.js",
+      "modules": 46,
+      "kb": 186
+    },
+    {
+      "root": "dist/cli/commands-expedition.js",
+      "modules": 90,
+      "kb": 574
+    },
+    {
+      "root": "dist/cli/commands-explain.js",
+      "modules": 45,
+      "kb": 155
+    },
+    {
+      "root": "dist/cli/commands-first-contact.js",
+      "modules": 96,
+      "kb": 477
+    },
+    {
+      "root": "dist/cli/commands-govern.js",
+      "modules": 115,
+      "kb": 571
+    },
+    {
+      "root": "dist/cli/commands-help.js",
+      "modules": 16,
+      "kb": 35
+    },
+    {
+      "root": "dist/cli/commands-init.js",
+      "modules": 89,
+      "kb": 490
+    },
+    {
+      "root": "dist/cli/commands-intent.js",
+      "modules": 36,
+      "kb": 143
+    },
+    {
+      "root": "dist/cli/commands-ledger.js",
+      "modules": 33,
+      "kb": 159
+    },
+    {
+      "root": "dist/cli/commands-log.js",
+      "modules": 27,
+      "kb": 72
+    },
+    {
+      "root": "dist/cli/commands-migrate.js",
+      "modules": 29,
+      "kb": 74
+    },
+    {
+      "root": "dist/cli/commands-mission.js",
+      "modules": 83,
+      "kb": 487
+    },
+    {
+      "root": "dist/cli/commands-program.js",
+      "modules": 20,
+      "kb": 62
+    },
+    {
+      "root": "dist/cli/commands-project.js",
+      "modules": 28,
+      "kb": 84
+    },
+    {
+      "root": "dist/cli/commands-release.js",
+      "modules": 14,
+      "kb": 35
+    },
+    {
+      "root": "dist/cli/commands-repair.js",
+      "modules": 134,
+      "kb": 925
+    },
+    {
+      "root": "dist/cli/commands-repo.js",
+      "modules": 22,
+      "kb": 61
+    },
+    {
+      "root": "dist/cli/commands-report.js",
+      "modules": 129,
+      "kb": 888
+    },
+    {
+      "root": "dist/cli/commands-snapshot.js",
+      "modules": 31,
+      "kb": 117
+    },
+    {
+      "root": "dist/cli/commands-status.js",
+      "modules": 2,
+      "kb": 1
+    },
+    {
+      "root": "dist/cli/commands-task.js",
+      "modules": 68,
+      "kb": 382
+    },
+    {
+      "root": "dist/cli/commands-validate.js",
+      "modules": 109,
+      "kb": 610
+    },
+    {
+      "root": "dist/cli/commands-verify.js",
+      "modules": 63,
+      "kb": 223
+    },
+    {
+      "root": "dist/cli/commands-version.js",
+      "modules": 16,
+      "kb": 35
+    },
+    {
+      "root": "dist/cli/status-light.js",
+      "modules": 33,
+      "kb": 151
+    }
+  ],
+  "unreachable": [
+    {
+      "view": "shipped only (dist/cli/entry.js, dist/distribution/mcp-server.js, dist/main.js, dist/cli/commands-adapter.js, dist/cli/commands-ai.js, dist/cli/commands-alignment.js, dist/cli/commands-approval.js, dist/cli/commands-bootstrap.js, dist/cli/commands-capabilities.js, dist/cli/commands-certify.js, dist/cli/commands-checkpoint.js, dist/cli/commands-discover.js, dist/cli/commands-docs.js, dist/cli/commands-doctor.js, dist/cli/commands-expedition.js, dist/cli/commands-explain.js, dist/cli/commands-first-contact.js, dist/cli/commands-govern.js, dist/cli/commands-help.js, dist/cli/commands-init.js, dist/cli/commands-intent.js, dist/cli/commands-ledger.js, dist/cli/commands-log.js, dist/cli/commands-migrate.js, dist/cli/commands-mission.js, dist/cli/commands-program.js, dist/cli/commands-project.js, dist/cli/commands-release.js, dist/cli/commands-repair.js, dist/cli/commands-repo.js, dist/cli/commands-report.js, dist/cli/commands-snapshot.js, dist/cli/commands-status.js, dist/cli/commands-task.js, dist/cli/commands-validate.js, dist/cli/commands-verify.js, dist/cli/commands-version.js, dist/cli/status-light.js)",
+      "totalModules": 398,
+      "reachable": 354,
+      "unreachable": 44,
+      "unreachableLines": 2855,
+      "byDirectory": [
+        [
+          "dist/first-contact",
+          881
+        ],
+        [
+          "dist/environment",
+          722
+        ],
+        [
+          "dist/execution",
+          421
+        ],
+        [
+          "dist/cli",
+          299
+        ],
+        [
+          "dist/environment/providers",
+          152
+        ],
+        [
+          "dist/discovery",
+          84
+        ],
+        [
+          "dist/core",
+          44
+        ],
+        [
+          "dist/mutation",
+          19
+        ],
+        [
+          "dist/capabilities",
+          16
+        ],
+        [
+          "dist/documentation",
+          16
+        ],
+        [
+          "dist/types",
+          13
+        ],
+        [
+          "dist/planning",
+          12
+        ]
+      ],
+      "largest": [
+        {
+          "file": "dist/environment/rules.js",
+          "lines": 333
+        },
+        {
+          "file": "dist/first-contact/experiment.js",
+          "lines": 316
+        },
+        {
+          "file": "dist/cli/adapter.js",
+          "lines": 299
+        },
+        {
+          "file": "dist/execution/runtime.js",
+          "lines": 287
+        },
+        {
+          "file": "dist/environment/orchestrator.js",
+          "lines": 245
+        },
+        {
+          "file": "dist/first-contact/patterns.js",
+          "lines": 239
+        },
+        {
+          "file": "dist/first-contact/scenarios.js",
+          "lines": 197
+        },
+        {
+          "file": "dist/environment/providers/reference.js",
+          "lines": 152
+        },
+        {
+          "file": "dist/first-contact/evidence.js",
+          "lines": 129
+        },
+        {
+          "file": "dist/execution/intent-synthesizer.js",
+          "lines": 128
+        },
+        {
+          "file": "dist/environment/evidence.js",
+          "lines": 120
+        },
+        {
+          "file": "dist/discovery/node-context.js",
+          "lines": 84
+        }
+      ]
+    },
+    {
+      "view": "shipped + harness (dist/cli/synth.js)",
+      "totalModules": 398,
+      "reachable": 354,
+      "unreachable": 44,
+      "unreachableLines": 2855,
+      "byDirectory": [
+        [
+          "dist/first-contact",
+          881
+        ],
+        [
+          "dist/environment",
+          722
+        ],
+        [
+          "dist/execution",
+          421
+        ],
+        [
+          "dist/cli",
+          299
+        ],
+        [
+          "dist/environment/providers",
+          152
+        ],
+        [
+          "dist/discovery",
+          84
+        ],
+        [
+          "dist/core",
+          44
+        ],
+        [
+          "dist/mutation",
+          19
+        ],
+        [
+          "dist/capabilities",
+          16
+        ],
+        [
+          "dist/documentation",
+          16
+        ],
+        [
+          "dist/types",
+          13
+        ],
+        [
+          "dist/planning",
+          12
+        ]
+      ],
+      "largest": [
+        {
+          "file": "dist/environment/rules.js",
+          "lines": 333
+        },
+        {
+          "file": "dist/first-contact/experiment.js",
+          "lines": 316
+        },
+        {
+          "file": "dist/cli/adapter.js",
+          "lines": 299
+        },
+        {
+          "file": "dist/execution/runtime.js",
+          "lines": 287
+        },
+        {
+          "file": "dist/environment/orchestrator.js",
+          "lines": 245
+        },
+        {
+          "file": "dist/first-contact/patterns.js",
+          "lines": 239
+        },
+        {
+          "file": "dist/first-contact/scenarios.js",
+          "lines": 197
+        },
+        {
+          "file": "dist/environment/providers/reference.js",
+          "lines": 152
+        },
+        {
+          "file": "dist/first-contact/evidence.js",
+          "lines": 129
+        },
+        {
+          "file": "dist/execution/intent-synthesizer.js",
+          "lines": 128
+        },
+        {
+          "file": "dist/environment/evidence.js",
+          "lines": 120
+        },
+        {
+          "file": "dist/discovery/node-context.js",
+          "lines": 84
+        }
+      ]
+    }
+  ]
+}
