@@ -1,8 +1,5 @@
-EXP-CLI-003 item 5 validation record
-Source guard implementation 719e774; certification rebaseline 16616e3.
-Full test:all exit 0; 118 command segments, not 118 separately captured reports.
-Additional consumers: 32 green / 14 pre-existing red; zero green-to-red regressions.
-Deliberate eager-handler regression: guard exit 1; exact restoration/rebuild: exit 0.
+EXP-CLI-003 Windows extension / status timing validation
+Full chain exit 0; 119 segments. Timing acceptance NOT MET; see narrative and attached samples.
 
 === Full chain ===
 
@@ -19,120 +16,192 @@ Deliberate eager-handler regression: guard exit 1; exact restoration/rebuild: ex
     {
       "taskId": "test:all",
       "status": 0,
-      "durationMs": 275096
+      "durationMs": 350814
     }
   ],
-  "totalDurationMs": 275096
+  "totalDurationMs": 350814
 }
 
-=== Guard tests (18) ===
+=== Portable paths ===
+TAP version 13
+# Subtest: forbidden-name and collision fixtures fail without creating uncheckoutable files
+ok 1 - forbidden-name and collision fixtures fail without creating uncheckoutable files
+  ---
+  duration_ms: 1.733072
+  type: 'test'
+  ...
+# Subtest: filename encoding keeps IDs distinct on case-insensitive filesystems and blocks path escape
+ok 2 - filename encoding keeps IDs distinct on case-insensitive filesystems and blocks path escape
+  ---
+  duration_ms: 0.997501
+  type: 'test'
+  ...
+# Subtest: tracked paths and shipped framework tasks are Windows-name safe
+ok 3 - tracked paths and shipped framework tasks are Windows-name safe
+  ---
+  duration_ms: 185.665715
+  type: 'test'
+  ...
+# Subtest: CLI generates, discovers, overwrites and runs a namespaced ID using a portable filename
+ok 4 - CLI generates, discovers, overwrites and runs a namespaced ID using a portable filename
+  ---
+  duration_ms: 618.188893
+  type: 'test'
+  ...
+# Subtest: npm migration generator uses the same encoding and preserves existing definitions
+ok 5 - npm migration generator uses the same encoding and preserves existing definitions
+  ---
+  duration_ms: 74.984998
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 887.343399
+
+=== Registry I/O ===
+TAP version 13
+# Subtest: task reads preserve directory/file override order and do not cache definitions
+ok 1 - task reads preserve directory/file override order and do not cache definitions
+  ---
+  duration_ms: 7.976426
+  type: 'test'
+  ...
+# Subtest: an earlier JSON failure wins over a later I/O failure
+ok 2 - an earlier JSON failure wins over a later I/O failure
+  ---
+  duration_ms: 3.955916
+  type: 'test'
+  ...
+# Subtest: unreadable task entries and unknown dependencies still reject
+ok 3 - unreadable task entries and unknown dependencies still reject
+  ---
+  duration_ms: 2.074454
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18.973895
+
+=== Load guard ===
 TAP version 13
 # Subtest: AST graph handles multiline imports, reexports, side effects and literal dynamic imports, not comments/strings
 ok 1 - AST graph handles multiline imports, reexports, side effects and literal dynamic imports, not comments/strings
   ---
-  duration_ms: 9.34306
+  duration_ms: 13.132557
   type: 'test'
   ...
 # Subtest: missing roots and static/dynamic edges fail closed; cycles and Unicode bytes are measured exactly
 ok 2 - missing roots and static/dynamic edges fail closed; cycles and Unicode bytes are measured exactly
   ---
-  duration_ms: 2.067755
+  duration_ms: 2.319824
   type: 'test'
   ...
 # Subtest: ordinary denominator never increases with module extraction; byte and module limits both reject excess
 ok 3 - ordinary denominator never increases with module extraction; byte and module limits both reject excess
   ---
-  duration_ms: 0.198226
+  duration_ms: 0.262023
   type: 'test'
   ...
 # Subtest: even a tiny eager dispatcher handler fails below the numeric budget
 ok 4 - even a tiny eager dispatcher handler fails below the numeric budget
   ---
-  duration_ms: 0.385918
+  duration_ms: 0.495632
   type: 'test'
   ...
 # Subtest: whole-invocation trace is deduplicated but must include all static dependencies
 ok 5 - whole-invocation trace is deduplicated but must include all static dependencies
   ---
-  duration_ms: 0.519389
+  duration_ms: 0.52942
   type: 'test'
   ...
 # Subtest: probe fails closed on nonzero exit
 ok 6 - probe fails closed on nonzero exit
   ---
-  duration_ms: 0.109633
+  duration_ms: 0.146073
   type: 'test'
   ...
 # Subtest: probe fails closed on signal
 ok 7 - probe fails closed on signal
   ---
-  duration_ms: 0.105364
+  duration_ms: 0.136793
   type: 'test'
   ...
 # Subtest: probe fails closed on timeout
 ok 8 - probe fails closed on timeout
   ---
-  duration_ms: 0.067028
+  duration_ms: 0.09295
   type: 'test'
   ...
 # Subtest: probe fails closed on empty output
 ok 9 - probe fails closed on empty output
   ---
-  duration_ms: 0.206173
+  duration_ms: 0.288538
   type: 'test'
   ...
 # Subtest: probe fails closed on error envelope
 ok 10 - probe fails closed on error envelope
   ---
-  duration_ms: 0.273077
+  duration_ms: 0.369269
   type: 'test'
   ...
 # Subtest: probe fails closed on wrong command
 ok 11 - probe fails closed on wrong command
   ---
-  duration_ms: 0.114139
+  duration_ms: 0.190438
   type: 'test'
   ...
 # Subtest: probe fails closed on empty trace
 ok 12 - probe fails closed on empty trace
   ---
-  duration_ms: 0.062391
+  duration_ms: 0.09906
   type: 'test'
   ...
 # Subtest: probe fails closed on truncated trace
 ok 13 - probe fails closed on truncated trace
   ---
-  duration_ms: 0.0774
+  duration_ms: 0.096798
   type: 'test'
   ...
 # Subtest: probe fails closed on out-of-build module
 ok 14 - probe fails closed on out-of-build module
   ---
-  duration_ms: 0.119582
+  duration_ms: 0.093325
   type: 'test'
   ...
 # Subtest: probe fails closed on non-module record
 ok 15 - probe fails closed on non-module record
   ---
-  duration_ms: 0.075984
+  duration_ms: 0.089332
   type: 'test'
   ...
 # Subtest: a skipped/empty replay cannot satisfy a work-based exception
 ok 16 - a skipped/empty replay cannot satisfy a work-based exception
   ---
-  duration_ms: 0.474652
+  duration_ms: 0.44228
   type: 'test'
   ...
 # Subtest: repository projection matches full-bootstrap replay without loading its mutation plane
 ok 17 - repository projection matches full-bootstrap replay without loading its mutation plane
   ---
-  duration_ms: 555.133841
+  duration_ms: 820.577044
   type: 'test'
   ...
 # Subtest: derived guard measures every declared entry and all real representative invocations
 ok 18 - derived guard measures every declared entry and all real representative invocations
   ---
-  duration_ms: 4129.207169
+  duration_ms: 5528.180183
   type: 'test'
   ...
 1..18
@@ -143,130 +212,4 @@ ok 18 - derived guard measures every declared entry and all real representative 
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4725.203435
-
-=== Registered guard task ===
-
-> @synth-framework/synth@2.6.1 test:cli-load-budget
-> node scripts/task-adapter-shim.js test:cli-load-budget
-
-{
-  "status": "ok",
-  "kind": "TaskRunReport",
-  "dryRun": false,
-  "target": "test:cli-load-budget",
-  "isGroup": false,
-  "results": [
-    {
-      "taskId": "test:cli-load-budget",
-      "status": 0,
-      "durationMs": 12044
-    }
-  ],
-  "totalDurationMs": 12044
-}
-
-=== cli-ceremony-parity; exit 0; final log tail ===
-  duration_ms: 1657.323886
-  type: 'test'
-  ...
-# Subtest: recursive CLI resolution recognizes both entry points and symlinks, with an installation-relative fallback
-ok 5 - recursive CLI resolution recognizes both entry points and symlinks, with an installation-relative fallback
-  ---
-  duration_ms: 2.540836
-  type: 'test'
-  ...
-1..5
-# tests 48
-# suites 0
-# pass 48
-# fail 0
-# cancelled 0
-# skipped 0
-# todo 0
-# duration_ms 16180.202321
-
-=== verify-engine; exit 0; final log tail ===
-[PASS] synth verify on uninitialized project reports a skipped replay check
-[PASS] synth verify on initialized project with no events
-[PASS] synth verify on valid mission/expedition/objective graph
-[PASS] synth verify detects broken aggregate graph
-[PASS] synth --help lists verify command
-[PASS] locateEventLog resolves all three layouts, segmented wins precedence
-[PASS] locateEventLog reports none for an absent project instead of throwing
-[PASS] chunked ledger is visible to log (1 events), checkpoint and doctor
-[PASS] legacy single-file layout is still located and still queryable
-[PASS] no legacy-only event-log presence guard remains in the CLI
-
-[VERIFY ENGINE] All tests passed
-
-=== artifact-policy; exit 0; final log tail ===
-  duration_ms: 0.10212
-  type: 'test'
-  ...
-# Subtest: no .gitignore rule hides a path the base branch tracks
-ok 8 - no .gitignore rule hides a path the base branch tracks
-  ---
-  duration_ms: 14.815476
-  type: 'test'
-  ...
-1..8
-# tests 18
-# suites 0
-# pass 18
-# fail 0
-# cancelled 0
-# skipped 0
-# todo 0
-# duration_ms 148.817078
-
-=== governance-orchestration; exit 0; final log tail ===
-[PASS] governance class mapping
-[PASS] file governance class mapping
-[PASS] governance classes aggregation
-[PASS] profile resolution
-[PASS] profile class filtering
-[PASS] validator profile scope
-[PASS] explain reasons
-[PASS] explanation report
-[PASS] benchmark
-[PASS] orchestrator documentation-only plan
-[PASS] orchestrator runtime change escalates
-[PASS] orchestrator main-branch profile requires all classes
-
-[GOVERNANCE ORCHESTRATION] All tests passed
-
-=== impact-analyzer; exit 0; final log tail ===
-[PASS] analyzeFiles classifies adapter and test files
-[PASS] Protected Asset change escalates to high risk
-[PASS] Runtime change is high risk
-[PASS] Documentation-only change is low risk
-[PASS] Brownfield common files map to relevant capabilities
-[PASS] .synth/ai metadata files map to ProjectConfig
-[PASS] Next.js/React/Node server files map to relevant capabilities
-[PASS] Polyglot project files map to relevant capabilities
-[PASS] parseDiff handles git name-status output
-[PASS] analyzeDiff produces report from diff text
-[PASS] getWorkingTreeDiff returns git diff output
-
-[IMPACT ANALYZER] All tests passed
-
-=== no-write-on-read; exit 0; final log tail ===
-      duration_ms: 414.684653
-      type: 'test'
-      ...
-    1..10
-ok 1 - read-only commands never modify the working tree
-  ---
-  duration_ms: 3751.668238
-  type: 'test'
-  ...
-1..1
-# tests 11
-# suites 0
-# pass 11
-# fail 0
-# cancelled 0
-# skipped 0
-# todo 0
-# duration_ms 3759.540661
+# duration_ms 6403.855193

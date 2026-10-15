@@ -1,7 +1,7 @@
 {
   "expeditionId": "e47a186cb472a20a",
-  "capturedAt": 1792037340315,
-  "note": "Item 5 derived load guard: 15 probes, original 139 limit, bounded replay/planning exceptions, deliberate eager-handler failure and exact restoration. Full 118-segment chain passes; 46 extra consumers unchanged. Clean timing targets met; dirty status 164.3 ms miss explicitly retained; not an unconditional latency or expedition-completion claim.",
+  "capturedAt": 1792040144680,
+  "note": "Windows scope extension implemented: 167 portable task renames, IDs preserved, native Windows CI passed, 119-segment chain green. Status I/O optimization preserves full output and improves repeated A/B medians; latest absolute status/replay targets still NOT MET. Formal acceptance verdict recorded without marking expedition complete or sealed.",
   "attachments": [
     {
       "kind": "git-diff",
@@ -157,6 +157,61 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/item5-clean-timing.json",
       "hash": "0741c61b53c5689f947a650da528d3a28a8653625a5822ce66fec9822c9f1e3a"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "40c561912049cfaeac6f2737ca03e22e4877546967fb55f9f0bbf3191843cb21"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "069f8a28da44fc7218511292b419c842112469f008c778ed07d7c2724e22c812"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-windows-and-timing.md",
+      "hash": "fc5de7bcd5ccb902f5339fedd0316af8658cf2488fc4990340dfa9df3bd050a3"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-task-renames.json",
+      "hash": "0476ede4a61710fc6636da153c4a7812e7fec2e607a99ce0fedbfe44b2e0f207"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-native-ci-final.json",
+      "hash": "26242a9038a782634b6f8d7844c686b1441fbd6e42d10b5813fed158b28307d0"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-fresh-checkout.json",
+      "hash": "876dadfb14bb8d779395e02dd238ddf9fb56014a9aadc06d500f20f1c068940e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-path-regression.json",
+      "hash": "152749111e59677fdc6d870071541e60c5f04f2730fcc6dde5a879441531f499"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-final-load-budget.json",
+      "hash": "7fef1a17d9b20daef9c07cc86b224f95c98ce9608dc65bb602eb33890926e70f"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-status-timing.json",
+      "hash": "90130cc836d5757b42683fcab5564e9ee440b2613ee5dec89ce2609c0ed11b27"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-additional-results.json",
+      "hash": "f3f8dd5c7bbc5df01a5d9a9ef29982a382711b51917b6080cc5374edaed4309b"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/windows-pack-actual.json",
+      "hash": "a2a7c1144d5ca3ae9d116331ee829da0d1979a6f447094ef4672eb5f97e5b231"
     }
   ]
 }

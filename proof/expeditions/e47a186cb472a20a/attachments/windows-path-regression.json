@@ -1,0 +1,7 @@
+{
+  "method": "isolated temporary Git index; no forbidden worktree file or commit created",
+  "rejectedExit": 1,
+  "rejectedOutput": "Portable paths: FAIL\nWindows-invalid component: deliberate:windows-regression.txt\n",
+  "realIndexExit": 0,
+  "realIndexOutput": "Portable paths: PASS (2287 tracked paths; Win32 names and case collisions)\n"
+}
