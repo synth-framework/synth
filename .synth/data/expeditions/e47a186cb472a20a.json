@@ -26,7 +26,7 @@
     }
   },
   "createdAt": 473,
-  "updatedAt": 497,
+  "updatedAt": 498,
   "executionBranch": "arena/d5e4625c-synth",
   "attachments": [
     {
@@ -103,6 +103,36 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/registry-output-comparison.json",
       "hash": "1eb27d39bd61ed914075705276d2b5ce1ab6f351277b0e644cfa4be65aef5eb0"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "ff8aab2589f56ae05262512fc154a3370e857105bd75739ea9052609f3cd5e71"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "1c43b0505e155c6dafb6d291919139e54227160beda4892bf49d98c6318d426e"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item4.md",
+      "hash": "e21eeb52dba53f6631d4b6ce5e0cc77109f7d906771245e78f0441f31f32a5ad"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item4-consumers.json",
+      "hash": "e70ae9b13c3fbb0d95957c11d590650177957acca77f142eb38ba435f64d0612"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/item4-graph.json",
+      "hash": "4bda5779e8dfdc6e4b21edfcede4b5045be5939f5dab395142e68c0e560d8463"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/cli003-item4-timing.json",
+      "hash": "9877df86eb2077c2c28dfa4c54f579335e39341a0a262028dae9180d7185faa3"
     }
   ]
 }

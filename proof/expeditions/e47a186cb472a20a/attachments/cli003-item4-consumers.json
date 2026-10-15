@@ -1,0 +1,292 @@
+{
+  "kind": "CliHarnessConsumerComparison",
+  "baselineHarnessCommit": "301a39d",
+  "initialShippedCommit": "41555f0",
+  "finalShippedCommit": "fca4a30",
+  "selection": "Literal relative imports through tests/helpers to cli-harness.js, excluding test paths directly named in resolved test:all task commands. This is the changed harness blast radius, not a complete orphan inventory.",
+  "consumersFound": 78,
+  "chainReferenced": 32,
+  "additionalCompared": 46,
+  "baselineGreen": 32,
+  "baselineRed": 14,
+  "initialRegressions": 4,
+  "finalRegressions": 0,
+  "results": [
+    {
+      "file": "tests/agent-certification.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/agent-guide.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/agents-md-sync.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/bootstrap-human.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/bootstrap-output.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/capabilities-cli.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/capability-registry-accuracy.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/captrans-missing-capability.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/cli-error-hints.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/cli-mission-expedition-rank.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/execution-branch-gate.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/expedition-batch-operations.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/expedition-completion-gates.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/expedition-draft-retirement.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/expedition-finish.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/expedition-lineage-guard.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/first-contact-adapter-surface.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 1,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/first-contact-certification.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/first-contact-cli.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/first-contact-experiment.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 1,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/first-contact-onboard.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/first-contact-recommendation.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/govern-router.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/governance-complete-force.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/governance-evaluation-schema.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/governance-git-snapshot.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/governance-inventory-cli.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/governance-mission-cli.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/governance-report-cli.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/governance-resolver.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/governance-show-cli.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/identity-in-events.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 1,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/initialization-evidence.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/initialization-lifecycle.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/initialization-replay.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/migration.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/release.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/repair-state.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/stale-state.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/state-lag-no-repair.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/synth-bootstrap.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/synth-cli-govern-explain.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/synth-cli-repo.test.js",
+      "compatibilityRc": 1,
+      "initialShippedRc": 1,
+      "finalShippedRc": 1
+    },
+    {
+      "file": "tests/synth-log-identity-filters.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 1,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/synth-verify-signatures.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    },
+    {
+      "file": "tests/validate-confidence-transparency.test.js",
+      "compatibilityRc": 0,
+      "initialShippedRc": 0,
+      "finalShippedRc": 0
+    }
+  ]
+}

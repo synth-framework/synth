@@ -1,67 +1,61 @@
-EXP-CLI-003 item 3 — recorded test/build results
+EXP-CLI-003 item 4 — test results
 
-Extraction full chain: npm run test:all rc=0; totalDurationMs=257989.
-Final executable full chain: npm run test:all rc=0; totalDurationMs=243284.
-Final comments-only build: rc=0; loader-entrypoint 25 passed, 0 failed, 0 skipped.
-Final dist: 1200 files; rootHash 267cb1342a16e0b6.
+Prerequisite 301a39d: 37 paired invocations (39 node:test results), passed before harness switch.
+Initial shipped harness full test:all: rc=1 in test:synth-cli/cli-contract: discovery-safety throw yielded empty stdout. Fixed at shared error boundary, test unchanged.
+After boundary fix 41555f0: test:all rc=0, 260506 ms; parity 42/42. Additional consumer A/B found four green-to-red regressions, not considered acceptable.
+Final fca4a30: test:all rc=0, 263733 ms. Literal test:all command has 117 && segments; shim emits one aggregate result.
+Final parity: 43 paired invocations + 3 scenario parents + harness/bin assertion + recursive resolver guard = 48 passed, 0 failed, 0 skipped.
+Four source-path guard suites rc=0: verify-engine, artifact-policy, governance-orchestration, impact-analyzer. Loader-entrypoint and ledger-capability-commits also green.
 
-Final targeted runs (direct node invocation; all rc=0): loader-entrypoint, verify-engine, artifact-policy, governance-orchestration, impact-analyzer, bootstrap-human, bootstrap-output, synth-bootstrap, repository-identity, resume-briefing.
-Post-extraction/pre-call-site battery rc=0: loader-entrypoint, synth, ambient-root-resolution, explain-observability, no-write-on-read, ledger-ceremony, expedition-auto-commit, execution-commit, auto-commit-ignored-paths; verify-engine source guard initially red, then relocated and rerun green.
-Tests after the failed intermediate build are excluded; test:all was rerun after a successful build.
-Unchained first-contact-onboard rc=1 (event log should be created) and task-cli rc=1 (8 !== 2); same failures reproduced on independent pre-extraction d29ef08 build 01b2544f8b0a6f01 and extraction build 17064c3c47665556.
+Additional consumers, compatibility / initial shipped / final shipped exit codes:
+tests/agent-certification.test.js: 1 / 1 / 1
+tests/agent-guide.test.js: 0 / 0 / 0
+tests/agents-md-sync.test.js: 0 / 0 / 0
+tests/bootstrap-human.test.js: 0 / 0 / 0
+tests/bootstrap-output.test.js: 0 / 0 / 0
+tests/capabilities-cli.test.js: 0 / 0 / 0
+tests/capability-registry-accuracy.test.js: 0 / 0 / 0
+tests/captrans-missing-capability.test.js: 0 / 0 / 0
+tests/cli-error-hints.test.js: 0 / 0 / 0
+tests/cli-mission-expedition-rank.test.js: 0 / 0 / 0
+tests/execution-branch-gate.test.js: 0 / 0 / 0
+tests/expedition-batch-operations.test.js: 0 / 0 / 0
+tests/expedition-completion-gates.test.js: 0 / 0 / 0
+tests/expedition-draft-retirement.test.js: 0 / 0 / 0
+tests/expedition-finish.test.js: 1 / 1 / 1
+tests/expedition-lineage-guard.test.js: 0 / 0 / 0
+tests/first-contact-adapter-surface.test.js: 0 / 1 / 0
+tests/first-contact-certification.test.js: 0 / 0 / 0
+tests/first-contact-cli.test.js: 1 / 1 / 1
+tests/first-contact-experiment.test.js: 0 / 1 / 0
+tests/first-contact-onboard.test.js: 1 / 1 / 1
+tests/first-contact-recommendation.test.js: 1 / 1 / 1
+tests/govern-router.test.js: 1 / 1 / 1
+tests/governance-complete-force.test.js: 1 / 1 / 1
+tests/governance-evaluation-schema.test.js: 0 / 0 / 0
+tests/governance-git-snapshot.test.js: 0 / 0 / 0
+tests/governance-inventory-cli.test.js: 1 / 1 / 1
+tests/governance-mission-cli.test.js: 1 / 1 / 1
+tests/governance-report-cli.test.js: 1 / 1 / 1
+tests/governance-resolver.test.js: 0 / 0 / 0
+tests/governance-show-cli.test.js: 1 / 1 / 1
+tests/identity-in-events.test.js: 0 / 1 / 0
+tests/initialization-evidence.test.js: 0 / 0 / 0
+tests/initialization-lifecycle.test.js: 0 / 0 / 0
+tests/initialization-replay.test.js: 0 / 0 / 0
+tests/migration.test.js: 1 / 1 / 1
+tests/release.test.js: 0 / 0 / 0
+tests/repair-state.test.js: 1 / 1 / 1
+tests/stale-state.test.js: 0 / 0 / 0
+tests/state-lag-no-repair.test.js: 0 / 0 / 0
+tests/synth-bootstrap.test.js: 0 / 0 / 0
+tests/synth-cli-govern-explain.test.js: 0 / 0 / 0
+tests/synth-cli-repo.test.js: 1 / 1 / 1
+tests/synth-log-identity-filters.test.js: 0 / 1 / 0
+tests/synth-verify-signatures.test.js: 0 / 0 / 0
+tests/validate-confidence-transparency.test.js: 0 / 0 / 0
 
-Full-output before/after comparison: 90/92 byte-equal stdout; all exit statuses equal; stderr equal after dropping only bootstrap diagnostic lines. Both explain agents cases differ only in generatedAt (verified field-by-field).
-
-Final eager graphs (modules, KB):
-dist/cli/entry.js: 17, 47
-dist/distribution/mcp-server.js: 1, 10
-dist/main.js: 171, 1103
-dist/cli/synth.js: 40, 177
-dist/cli/commands-adapter.js: 17, 36
-dist/cli/commands-ai.js: 29, 83
-dist/cli/commands-alignment.js: 37, 151
-dist/cli/commands-approval.js: 22, 48
-dist/cli/commands-bootstrap.js: 17, 37
-dist/cli/commands-capabilities.js: 84, 486
-dist/cli/commands-certify.js: 28, 76
-dist/cli/commands-checkpoint.js: 52, 243
-dist/cli/commands-discover.js: 29, 87
-dist/cli/commands-docs.js: 19, 50
-dist/cli/commands-doctor.js: 46, 186
-dist/cli/commands-expedition.js: 90, 574
-dist/cli/commands-explain.js: 45, 155
-dist/cli/commands-first-contact.js: 96, 477
-dist/cli/commands-govern.js: 115, 571
-dist/cli/commands-help.js: 16, 35
-dist/cli/commands-init.js: 89, 490
-dist/cli/commands-intent.js: 36, 143
-dist/cli/commands-ledger.js: 33, 159
-dist/cli/commands-log.js: 27, 72
-dist/cli/commands-migrate.js: 29, 74
-dist/cli/commands-mission.js: 83, 487
-dist/cli/commands-program.js: 20, 62
-dist/cli/commands-project.js: 28, 84
-dist/cli/commands-release.js: 14, 35
-dist/cli/commands-repair.js: 134, 925
-dist/cli/commands-repo.js: 22, 61
-dist/cli/commands-report.js: 129, 888
-dist/cli/commands-snapshot.js: 31, 117
-dist/cli/commands-status.js: 2, 1
-dist/cli/commands-task.js: 68, 382
-dist/cli/commands-validate.js: 109, 610
-dist/cli/commands-verify.js: 63, 223
-dist/cli/commands-version.js: 16, 35
-dist/cli/status-light.js: 33, 151
-
-Timing (absolute medians, 9 runs; NOT a speedup claim):
-floor node -e '1': 20.3 ms (min 16.2, max 22)
-entry.js --version: 30.9 ms (min 26.5, max 35.9)
-entry.js help: 30.9 ms (min 27.7, max 32.7)
-entry.js status: 141.1 ms (min 131.5, max 157.6)
-synth.js --version: 47 ms (min 42.7, max 51.6)
-synth.js help: 53.6 ms (min 43.3, max 63.4)
-synth.js status: 143.1 ms (min 138.6, max 153.9)
-entry.js explain replay: 78.3 ms (min 75.5, max 86.3)
-status <=130 ms acceptance NOT MET in this sample.
-
-Health before evidence attachment: verify 6/6; doctor 12/12; checkpoint ok; log total496 matched496 returned3; replay/chain 496 real events.
+Final build 1203 files, rootHash 3fdf3593aded5adf; before item 4: 1200 files, rootHash 267cb1342a16e0b6.
+Final eager roots: entry.js 18 modules/50 KB; synth.js 40/177; status-light 33/151; main.js 171/1103; MCP 1/10.
+Pre-evidence repository health: verify 6/6, doctor 12/12, checkpoint ok, log total498; replay and chain actually examined 498 segmented events.
+Current absolute timing medians (9 runs, 2 cores, Node v22.22.3): shipped version28.7 ms, status123.2 ms, replay80.8 ms; node process floor17.1 ms. This is not a before/after speedup claim.
