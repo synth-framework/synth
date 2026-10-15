@@ -1,0 +1,123 @@
+{
+  "id": "48007fcb591e5e16",
+  "createdAt": 1792054833835,
+  "observations": [
+    {
+      "id": "obs-mission-guided-human-agent-intent-to-outcome-journey",
+      "sourceAdapter": "synth-cli",
+      "type": "mission",
+      "payload": {
+        "subject": "Guided Human-Agent Intent-to-Outcome Journey",
+        "name": "Guided Human-Agent Intent-to-Outcome Journey",
+        "purpose": "Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-to-testable-brief-to-aligned-plan workflow for greenfield ideas, brownfield root projects, and docs/knowledge sources. Test it first with three-path fixtures and then an owner-run SVG-board pilot against an ordinary agent+spec+Git control. Guidance and traceability, not new pre-execution enforcement or a second Git publication ritual. Build and test charters: docs/plans/guided-journey-synth-build-charter.md and docs/plans/guided-journey-test-charter.md; no execution authorized by this draft."
+      },
+      "evidenceReference": "evidence-mission-Guided Human-Agent Intent-to-Outcome Journey",
+      "confidence": "high",
+      "timestamp": 1792054833835
+    }
+  ],
+  "evidence": {
+    "evidence": [
+      {
+        "id": "2cb12ad87798aac3",
+        "observationId": "obs-mission-guided-human-agent-intent-to-outcome-journey",
+        "source": "synth-cli",
+        "description": "mission observation from synth-cli",
+        "snippet": "{\"subject\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"name\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"purpose\":\"Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-",
+        "fingerprint": "9192f71da9c6bba1",
+        "immutable": true
+      }
+    ],
+    "byObservationId": [
+      [
+        "obs-mission-guided-human-agent-intent-to-outcome-journey",
+        {
+          "id": "2cb12ad87798aac3",
+          "observationId": "obs-mission-guided-human-agent-intent-to-outcome-journey",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"name\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"purpose\":\"Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-",
+          "fingerprint": "9192f71da9c6bba1",
+          "immutable": true
+        }
+      ]
+    ]
+  },
+  "questions": [],
+  "unknowns": [],
+  "confidence": {
+    "overall": 0.67,
+    "observationCoverage": 0.1,
+    "evidenceQuality": 0.8,
+    "consistency": 1,
+    "completeness": 1,
+    "inferenceDepth": 1,
+    "unknownImpact": 0,
+    "contradictionCount": 0
+  },
+  "worldModel": {
+    "version": 1,
+    "nodes": [
+      [
+        "068c0a9723a7b41c",
+        {
+          "id": "068c0a9723a7b41c",
+          "kind": "mission",
+          "name": "Guided Human-Agent Intent-to-Outcome Journey",
+          "description": "Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-to-testable-brief-to-aligned-plan workflow for greenfield ideas, brownfield root projects, and docs/knowledge sources. Test it first with three-path fixtures and then an owner-run SVG-board pilot against an ordinary agent+spec+Git control. Guidance and traceability, not new pre-execution enforcement or a second Git publication ritual. Build and test charters: docs/plans/guided-journey-synth-build-charter.md and docs/plans/guided-journey-test-charter.md; no execution authorized by this draft.",
+          "purpose": "Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-to-testable-brief-to-aligned-plan workflow for greenfield ideas, brownfield root projects, and docs/knowledge sources. Test it first with three-path fixtures and then an owner-run SVG-board pilot against an ordinary agent+spec+Git control. Guidance and traceability, not new pre-execution enforcement or a second Git publication ritual. Build and test charters: docs/plans/guided-journey-synth-build-charter.md and docs/plans/guided-journey-test-charter.md; no execution authorized by this draft.",
+          "expeditionIds": [],
+          "observationIds": [
+            "obs-mission-guided-human-agent-intent-to-outcome-journey"
+          ],
+          "evidenceRefs": [
+            "2cb12ad87798aac3"
+          ],
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "edges": [],
+    "evidence": {
+      "evidence": [
+        {
+          "id": "2cb12ad87798aac3",
+          "observationId": "obs-mission-guided-human-agent-intent-to-outcome-journey",
+          "source": "synth-cli",
+          "description": "mission observation from synth-cli",
+          "snippet": "{\"subject\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"name\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"purpose\":\"Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-",
+          "fingerprint": "9192f71da9c6bba1",
+          "immutable": true
+        }
+      ],
+      "byObservationId": [
+        [
+          "obs-mission-guided-human-agent-intent-to-outcome-journey",
+          {
+            "id": "2cb12ad87798aac3",
+            "observationId": "obs-mission-guided-human-agent-intent-to-outcome-journey",
+            "source": "synth-cli",
+            "description": "mission observation from synth-cli",
+            "snippet": "{\"subject\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"name\":\"Guided Human-Agent Intent-to-Outcome Journey\",\"purpose\":\"Restore SYNTH's guided, source-grounded evidence-to-options-to-human-choices-",
+            "fingerprint": "9192f71da9c6bba1",
+            "immutable": true
+          }
+        ]
+      ]
+    },
+    "unknowns": [],
+    "confidence": {
+      "overall": 0.67,
+      "observationCoverage": 0.1,
+      "evidenceQuality": 0.8,
+      "consistency": 1,
+      "completeness": 1,
+      "inferenceDepth": 1,
+      "unknownImpact": 0,
+      "contradictionCount": 0
+    },
+    "planningDecisions": []
+  },
+  "planningDecisions": [],
+  "approvalState": "draft"
+}
