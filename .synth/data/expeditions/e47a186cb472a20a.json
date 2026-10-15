@@ -23,10 +23,13 @@
       "sessionId": "ed0ffac9-d558-4b82-ab67-de5e261cb24a",
       "approvalMode": "autonomous",
       "issuedAt": 489
-    }
+    },
+    "refinementId": "eee7b52365593dbb",
+    "refinementNote": "\n\nSCOPE EXTENSION — WINDOWS-CHECKOUT-SAFE TASK FILENAMES (operator request 2026-10-14)\nThe operator reports that cloning on Windows fails because tracked filenames contain colons. At 38f5f446896339eda0077ff20544e88d2327613a, git ls-files confirms 167 tracked colon-bearing paths, all under data/tasks/. Examples: test:all.task.json, onboarding:bootstrap.task.json, ai:benchmark:dry-run.task.json. This is a checkout/install defect on the actual CLI/task distribution, not cosmetic cleanup; fix it within CLI-003 before acceptance/closure.\n\nExtend the authorized change surface to src/task/**, scripts/**, documentation and the narrowly necessary task/CLI fixtures, consumers and portability guards. Existing CLI decomposition/output contracts and task IDs remain unchanged. Task IDs and npm script names may keep colons; filesystem paths may not. Rename the tracked task files collision-safely; update generators, framework distribution copying and path-based consumers. Verify task IDs, dependency edges and commands survive the rename unchanged, and preserve existing task precedence/registration behavior. Historical immutable evidence may retain the old path spelling with a documented correction; current instructions and executable references must use the new paths.\n\nAcceptance: no Windows-invalid tracked path components or case-fold collisions; generated task files and packaged framework tasks are portable too; a chained cross-platform pathname guard catches deliberate forbidden-path/collision fixtures without creating such paths on Windows. Test task generation with namespaced IDs and path-like/reserved names, task lookup/execution, onboarding task copying, profiler expansion, and the full existing chain. Verify a fresh checkout from Git and inspect the npm package contents. Where no Windows runner is available, explicitly distinguish deterministic pathname checks/Linux checkout from actual Windows execution—do not claim the latter. Preserve original IDs rather than changing the public command vocabulary merely to repair storage names.\n\nThis extension does not take over CLEAN-001's full CLI value/complexity audit or LIFE-002's lifecycle redesign. It authorizes the necessary filesystem-path fixture/reference changes in addition to the original narrow harness/source-path allowance; assertions and guards must not be weakened or deleted. Continue to resolve the dirty-status timing qualification, then record a truthful final acceptance verdict. Completion/delivery/seal require their actual checks and integration evidence, never just a successful push.\n",
+    "refinementAt": 501
   },
   "createdAt": 473,
-  "updatedAt": 499,
+  "updatedAt": 501,
   "executionBranch": "arena/d5e4625c-synth",
   "attachments": [
     {
