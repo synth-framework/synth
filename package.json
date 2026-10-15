@@ -191,7 +191,8 @@
     "test:declared-branch": "node scripts/task-adapter-shim.js test:declared-branch",
     "test:task-npm-adapter": "node scripts/task-adapter-shim.js test:task-npm-adapter",
     "test:task-schema-registry": "node scripts/task-adapter-shim.js test:task-schema-registry",
-    "test:expedition-evidence": "node scripts/task-adapter-shim.js test:expedition-evidence"
+    "test:expedition-evidence": "node scripts/task-adapter-shim.js test:expedition-evidence",
+    "test:cli-ceremony-parity": "node scripts/task-adapter-shim.js test:cli-ceremony-parity"
   },
   "keywords": [
     "event-sourcing",
