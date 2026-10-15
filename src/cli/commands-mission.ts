@@ -13,7 +13,7 @@ import { isStrictContext, echoResolution, resolveInferredAlignmentContractId } f
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 import { bootstrapWithCapabilities } from "./auto-commit-ceremony.js"
-import { gateDecision, printGateBlock } from "./gate-reporting.js"
+
 import { namespaceHelp } from "./command-help.js"
 import type { DeclaredBranchInfo } from "./command-lifecycle.js"
 import { commitDraftCeremony, makeObservation, serializePlanningSession } from "./command-planning.js"
@@ -148,6 +148,7 @@ export async function materializeApprovedMission(
 
 
 export async function cmdMissionApprove(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   const declaredBranchFlag = typeof flags.branch === "string" && flags.branch.length > 0 ? flags.branch : undefined
   const noCreateFlag = flags["no-create"] === true || flags["no-create"] === "true"
@@ -552,6 +553,7 @@ export async function cmdMissionComplete(flags: Record<string, string | boolean>
 
 
 export async function cmdMissionDelete(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const id = typeof flags.id === "string" ? flags.id : ""
   if (!id) {
     printError("Usage: synth mission delete --id <mission-id> [--reason <text>]", {
@@ -645,6 +647,7 @@ export async function cmdMissionDecisions(flags: Record<string, string | boolean
 
 
 export async function cmdMissionEvidenceAdd(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const draftId = typeof flags["draft-id"] === "string" ? flags["draft-id"] : ""
   if (!draftId) printError("--draft-id is required")
   const subject = typeof flags.subject === "string" ? flags.subject : ""

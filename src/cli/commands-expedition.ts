@@ -16,12 +16,12 @@ import { loadGovernanceInventory, filterByValues, findProgramById, findExpeditio
 import { loadExpeditionCharterDetails } from "../governance/charter-report.js"
 import { rankExpeditions, rankExpeditionRecords } from "../governance/rank.js"
 import { validateEvaluationResult, formatEvaluationErrors } from "../domain/evaluation.js"
-import { generateConvergenceEvaluation } from "../governance/convergence-certification/auto-evaluation.js"
+
 import { isStrictContext, echoResolution, resolveInferredMissionId, resolveInferredDraftId } from "./context.js"
 import { findExpeditionTemplate, EXPEDITION_TEMPLATES } from "../governance/expedition-templates.js"
 import type { PlanningSession } from "../mission-studio/types.js"
 import { bootstrapWithCapabilities } from "./auto-commit-ceremony.js"
-import { gateDecision, printGateBlock } from "./gate-reporting.js"
+
 import { isWorkingTreeDirty, runGitSpawn, getUntrackedSourcePaths, isAutoCommitEnabled } from "./working-tree.js"
 import { namespaceHelp } from "./command-help.js"
 import { parseTokenList, makeObservation, ensureDraftsDir, serializePlanningSession, commitDraftCeremony } from "./command-planning.js"
@@ -484,6 +484,7 @@ export async function cmdExpeditionReport(flags: Record<string, string | boolean
 
 
 export async function cmdExpeditionCreate(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   let missionSubject = typeof flags.mission === "string" ? flags.mission : ""
   let subject = typeof flags.subject === "string" ? flags.subject : ""
   let goal = typeof flags.goal === "string" ? flags.goal : ""
@@ -674,6 +675,7 @@ export async function approveOneExpedition(
   draftId: string,
   dryRun: boolean,
 ): Promise<Record<string, unknown>> {
+  const { gateDecision } = await import("./gate-reporting.js")
   if (dryRun) {
     return (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "ApproveExpedition",
@@ -837,6 +839,7 @@ export async function commitOneExpedition(
   declaredBranch?: string,
   noCreate = false,
 ): Promise<Record<string, unknown>> {
+  const { gateDecision } = await import("./gate-reporting.js")
   if (dryRun) {
     const preview = await (await import("./command-lifecycle.js")).runLifecycleDryRun(ctx, {
       capability: "CommitExpedition",
@@ -1077,6 +1080,7 @@ export async function startOneExpedition(
   declaredBranch?: string,
   noCreate = false,
 ): Promise<Record<string, unknown>> {
+  const { gateDecision } = await import("./gate-reporting.js")
   const baselineCommit = getCurrentGitCommit()
   const startPayload: Record<string, unknown> = { id: expeditionId }
   if (baselineCommit) startPayload.baselineCommit = baselineCommit
@@ -1309,6 +1313,7 @@ export async function cmdExpeditionStart(flags: Record<string, string | boolean>
 
 
 export async function cmdExpeditionPause(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
@@ -1360,6 +1365,7 @@ export async function cmdExpeditionPause(flags: Record<string, string | boolean>
 
 
 export async function cmdExpeditionCancel(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
@@ -1630,6 +1636,7 @@ export async function cmdExpeditionFinish(flags: Record<string, string | boolean
 
 
 export async function cmdExpeditionArchive(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
@@ -1685,6 +1692,7 @@ export async function cmdExpeditionArchive(flags: Record<string, string | boolea
 
 
 export async function cmdExpeditionDelete(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
@@ -1761,6 +1769,7 @@ export async function cmdExpeditionDelete(flags: Record<string, string | boolean
 
 
 export async function cmdExpeditionMove(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
@@ -2145,6 +2154,7 @@ export async function cmdExpeditionEvidence(flags: Record<string, string | boole
 
 
 export async function cmdExpeditionRefine(flags: Record<string, string | boolean>) {
+  const { gateDecision, printGateBlock } = await import("./gate-reporting.js")
   const expeditionId = (await import("./command-lifecycle.js")).resolveExpeditionId(flags)
   if (!expeditionId) printError("--id is required")
 
@@ -2230,6 +2240,7 @@ export async function certifyExpedition(
   expeditionId: string,
   options: { evaluationPath?: string; evidencePath?: string } = {},
 ): Promise<{ decision: string; confidence?: unknown; certificationId?: string; result: unknown; missionId: string; alignmentContractId: string }> {
+  const { generateConvergenceEvaluation } = await import("../governance/convergence-certification/auto-evaluation.js")
   const state = await ctx.runtime.getState()
   const expedition = state.expeditions[expeditionId]
   if (!expedition) {
