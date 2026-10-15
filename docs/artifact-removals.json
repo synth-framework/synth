@@ -18,5 +18,10 @@
     "path": "src/infra/telemetry.ts",
     "reason": "In-repo telemetry module removed by user decision: it was not real telemetry (stderr lines plus a file sink that dirtied governed projects). Span instrumentation removed from execution-gate, event-store, state-store and cli/entry. Any future telemetry goes to an external logger/service, not the repo.",
     "approvedBy": "user (chat, 2026-10-13)"
+  },
+  {
+    "path": ".synth/data/drafts/e47a186cb472a20a.json",
+    "reason": "Draft retired by the lifecycle itself, not by hand: ADR-055 \u00a72 retires a draft via git rm at commit/abandon so the deletion is part of the ceremony commit. EXP-CLI-003 was approved and committed on 2026-10-14, which retired this draft; the deletion reached this branch in the ceremony consolidation commit 1423d53 while the file was still tracked on origin/main, so check-artifact-policy reported it as an unrecorded removal. The expedition record at .synth/data/expeditions/e47a186cb472a20a.json is the live authority and is unaffected.",
+    "approvedBy": "user (chat, 2026-10-14: \"Approve EXP-CLI-003\") \u2014 retirement is the documented consequence of that approval, recorded by the agent 2026-10-15"
   }
 ]
