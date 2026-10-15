@@ -9,6 +9,8 @@
 
 import fs from "fs/promises"
 import path from "path"
+// Run npm run build first; share the shipped task filename contract.
+import { taskFileName } from "../dist/task/task-schema.js"
 
 const packagePath = path.resolve(process.cwd(), "package.json")
 const tasksDir = path.resolve(process.cwd(), "data", "tasks")
@@ -71,10 +73,6 @@ function estimateDurationMs(name) {
   return 10000
 }
 
-function sanitizeFileName(name) {
-  return name.replace(/[^a-zA-Z0-9:-]/g, "_")
-}
-
 async function main() {
   const packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"))
   const scripts = packageJson.scripts || {}
@@ -85,7 +83,7 @@ async function main() {
   const skipped = []
 
   for (const [name, command] of Object.entries(scripts)) {
-    const fileName = `${sanitizeFileName(name)}.task.json`
+    const fileName = taskFileName(name)
     const filePath = path.join(tasksDir, fileName)
 
     try {

@@ -129,3 +129,26 @@ export function assertTask(task: unknown): Task {
   }
   return task as Task
 }
+
+/**
+ * Task IDs are not filesystem paths. Escape every byte except lower-case
+ * ASCII letters, digits, '-' and '_' so names remain distinct even on a
+ * case-insensitive Windows filesystem. Percent itself is escaped, too.
+ * The JSON id is unchanged; registry discovery never derives IDs from names.
+ */
+export function taskFileName(id: string): string {
+  if (!id) throw new Error("Task id must not be empty")
+  if (Buffer.from(id, "utf8").toString("utf8") !== id) throw new Error("Task id must be valid Unicode")
+  let stem = Array.from(Buffer.from(id, "utf8"), (byte) =>
+    (byte >= 97 && byte <= 122) || (byte >= 48 && byte <= 57) || byte === 45 || byte === 95
+      ? String.fromCharCode(byte)
+      : `%${byte.toString(16).toUpperCase().padStart(2, "0")}`,
+  ).join("")
+  // Windows reserves these basenames even when an extension is present.
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(stem)) {
+    stem = `%${stem.charCodeAt(0).toString(16).toUpperCase()}${stem.slice(1)}`
+  }
+  const file = `${stem}.task.json`
+  if (file.length > 255) throw new Error("Encoded task filename exceeds 255 bytes")
+  return file
+}

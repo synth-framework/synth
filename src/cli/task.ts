@@ -8,7 +8,7 @@ import {
   type TaskGraph,
 } from "../task/task-graph.js"
 import { runTasks, runTaskGroup } from "../task/task-runner.js"
-import type { Task } from "../task/task-schema.js"
+import { taskFileName, type Task } from "../task/task-schema.js"
 import { printError, printJson } from "./print.js"
 
 function namespaceHelp() {
@@ -429,7 +429,7 @@ async function cmdTaskGenerate(args: string[], flags: Record<string, string | bo
 
   const tasksDir = path.resolve(process.cwd(), "data", "tasks")
   await fs.mkdir(tasksDir, { recursive: true })
-  const filePath = path.join(tasksDir, `${id}.task.json`)
+  const filePath = path.join(tasksDir, taskFileName(id))
   await fs.writeFile(filePath, JSON.stringify(taskFile, null, 2) + "\n", "utf-8")
 
   printJson({

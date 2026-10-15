@@ -48,7 +48,7 @@ function parseNpmRunChecks(command, source) {
 }
 
 async function readCanonicalTestAllCommand(pkgPath, packageScript) {
-  const taskPath = path.join(path.dirname(pkgPath), "data", "tasks", "test:all.task.json")
+  const taskPath = path.join(path.dirname(pkgPath), "data", "tasks", "test%3Aall.task.json")
   let raw
   try {
     raw = await fsp.readFile(taskPath, "utf-8")

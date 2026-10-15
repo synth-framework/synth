@@ -193,7 +193,8 @@
     "test:task-schema-registry": "node scripts/task-adapter-shim.js test:task-schema-registry",
     "test:expedition-evidence": "node scripts/task-adapter-shim.js test:expedition-evidence",
     "test:cli-ceremony-parity": "node scripts/task-adapter-shim.js test:cli-ceremony-parity",
-    "test:cli-load-budget": "node scripts/task-adapter-shim.js test:cli-load-budget"
+    "test:cli-load-budget": "node scripts/task-adapter-shim.js test:cli-load-budget",
+    "test:portable-paths": "node scripts/task-adapter-shim.js test:portable-paths"
   },
   "keywords": [
     "event-sourcing",

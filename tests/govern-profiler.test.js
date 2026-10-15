@@ -31,7 +31,7 @@ async function withTempPackage(testAll, fn, canonicalTask) {
   if (canonicalTask) {
     const tasksDir = path.join(tmpDir, "data", "tasks")
     await fs.mkdir(tasksDir, { recursive: true })
-    await fs.writeFile(path.join(tasksDir, "test:all.task.json"), JSON.stringify(canonicalTask) + "\n", "utf-8")
+    await fs.writeFile(path.join(tasksDir, "test%3Aall.task.json"), JSON.stringify(canonicalTask) + "\n", "utf-8")
   }
   try {
     return await fn(pkgPath)
