@@ -1,7 +1,7 @@
 {
   "expeditionId": "e47a186cb472a20a",
-  "capturedAt": 1791983589942,
-  "note": "Phase 2 complete: the five module-scope process.cwd() captures (checkpoint-store.ts:11, event-store.ts:13-14, state-store.ts:12-13) are call-time resolvers taking an explicit root. Guarded by tests/ambient-root-resolution.test.js (6 tests, static scan + chdir behaviour + byte-equivalence), registered as a task and appended to test:all (115 -> 116 segments). Deterministic: eager module counts unchanged at entry.js 147 / main.js 171 / synth.js 298, unreachable unchanged at 44 of 348, +4 KB per graph; no new unused-export candidates. No timing claim: the control-adjusted compare moved the bare-process floor 4.8 ms on a 2-core box, so the load budgets stay unmet and belong to Phases 3-4. One deliberate behaviour change: StateStore snapshots now co-locate with the store's own state file instead of writing into the operator's checkout from a temp-rooted store. Two tests fail identically before and after (first-contact-replay state divergence; execution-gate-regression ERR_MODULE_NOT_FOUND), proven by rebuilding from the stashed pre-change source.",
+  "capturedAt": 1792028816719,
+  "note": "Item 2 complete: the light path loads its heavy graph at call time. status-light.js 134 modules/918 KB -> 33/151; entry.js 147/976 -> 60/273; synth.js and main.js unchanged. The weight was never the sdk barrel (20/44) — it was runtime/governance-resolver (119/820), capability/registry (64/429), validation/planner (58/353), task/task-registry (55/332) and mission-studio/adapter-registry (54/331), all statically imported by the two modules status-light delegates to. status genuinely needs them, so they moved to await import() at their single call sites, both already async; type-only imports stayed static. Output guarded byte-identical by tests/loader-entrypoint.test.js (nine light-vs-heavy guards) plus 7 more green suites. NO timing claim published: the A/B control drifted -15.5 ms, and an identical-build noise probe bounds per-invocation swing at ~9 ms. dist-manifest re-baselined 1050 files, rootHash 85a97f1c872cdb7c -> 850e7aa08f79bbec.",
   "attachments": [
     {
       "kind": "git-diff",
@@ -17,6 +17,21 @@
       "kind": "attachment",
       "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-phase2.md",
       "hash": "32a788b44041180b126610db702503b7a2a08e138c61170e16ee22ed926ed58a"
+    },
+    {
+      "kind": "git-diff",
+      "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+      "hash": "8b0552bb4d6b39edadb7e34bf4dcd4b09382c59d03155368f23afd3b36a0f551"
+    },
+    {
+      "kind": "test-results",
+      "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+      "hash": "f593dc8d988f99c7472d8bfb4786683d52459c6a632c1a3dbfeabb85e46fffba"
+    },
+    {
+      "kind": "attachment",
+      "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item2.md",
+      "hash": "0ea0d1148a20d9cd4d8dafdbba089422d715033ebdff819c45a43444b66de043"
     }
   ]
 }

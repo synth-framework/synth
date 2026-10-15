@@ -1,6 +1,6 @@
 {
-  "version": 494,
-  "stateHash": "492701367",
+  "version": 495,
+  "stateHash": "2102203165",
   "lifecycle": "uninitialized",
   "workItems": {},
   "plans": {},
@@ -2127,7 +2127,7 @@
         }
       },
       "createdAt": 473,
-      "updatedAt": 493,
+      "updatedAt": 494,
       "executionBranch": "arena/d5e4625c-synth",
       "attachments": [
         {
@@ -2144,6 +2144,21 @@
           "kind": "attachment",
           "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-phase2.md",
           "hash": "32a788b44041180b126610db702503b7a2a08e138c61170e16ee22ed926ed58a"
+        },
+        {
+          "kind": "git-diff",
+          "path": "proof/expeditions/e47a186cb472a20a/git-diff.patch",
+          "hash": "8b0552bb4d6b39edadb7e34bf4dcd4b09382c59d03155368f23afd3b36a0f551"
+        },
+        {
+          "kind": "test-results",
+          "path": "proof/expeditions/e47a186cb472a20a/test-results.txt",
+          "hash": "f593dc8d988f99c7472d8bfb4786683d52459c6a632c1a3dbfeabb85e46fffba"
+        },
+        {
+          "kind": "attachment",
+          "path": "proof/expeditions/e47a186cb472a20a/attachments/evidence-cli-003-item2.md",
+          "hash": "0ea0d1148a20d9cd4d8dafdbba089422d715033ebdff819c45a43444b66de043"
         }
       ]
     },
@@ -2237,5 +2252,5 @@
       "capturedAt": 1791799391786
     }
   },
-  "lastEventOffset": 494
+  "lastEventOffset": 495
 }

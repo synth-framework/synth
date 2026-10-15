@@ -1,73 +1,57 @@
-EXP-CLI-003 Phase 2 — test results
-captured 2026-10-14T13:08:24Z | source commit 3b12147 | baseline 2a7296c
-node v22.22.3 | cores 2
+EXP-CLI-003 item 2 — test results and measurements
+captured 2026-10-15T01:46:31Z | source 550a581 | baseline 337a72f
+node v22.22.3 | cores 2 | dist rootHash 850e7aa08f79bbec2dcd63d73d63f026bd1001ee07d8b72f6755a86cb2af15f0
 
-=== new guard: tests/ambient-root-resolution.test.js ===
-TAP version 13
-# Subtest: no module-scope process.cwd() capture survives in src/
-ok 1 - no module-scope process.cwd() capture survives in src/
-  ---
-  duration_ms: 20.178737
-  type: 'test'
-  ...
-# Subtest: no module-scope process.env or process.on() capture survives in src/
-ok 2 - no module-scope process.env or process.on() capture survives in src/
-  ---
-  duration_ms: 16.489806
-  type: 'test'
-  ...
-# Subtest: store paths follow the working directory at construction, not at import
-ok 3 - store paths follow the working directory at construction, not at import
-  ---
-  duration_ms: 1.59772
-  type: 'test'
-  ...
-# Subtest: an explicit root wins over the ambient working directory
-ok 4 - an explicit root wins over the ambient working directory
-  ---
-  duration_ms: 0.286336
-  type: 'test'
-  ...
-# Subtest: default-constructed paths are byte-identical to the old module constants
-ok 5 - default-constructed paths are byte-identical to the old module constants
-  ---
-  duration_ms: 0.290624
-  type: 'test'
-  ...
-# Subtest: snapshot() writes beside the store's own state file, never into the checkout
-ok 6 - snapshot() writes beside the store's own state file, never into the checkout
-  ---
-  duration_ms: 8.230983
-  type: 'test'
-  ...
-1..6
-# tests 6
-# suites 0
-# pass 6
-# fail 0
-# cancelled 0
-# skipped 0
-# todo 0
-# duration_ms 52.441626
-  guard rc=0
+=== correctness (byte-identity is the binding guard) ===
+  loader-entrypoint.test.js                      rc=0 pass~1 fail~0
+  ambient-root-resolution.test.js                rc=0 pass~6 fail~0
+  operator-briefing.test.js                      rc=0 pass~7 fail~0
+  validate-confidence-transparency.test.js       rc=0 pass~5 fail~0
+  explain-observability.test.js                  rc=0 pass~25 fail~0
+  no-write-on-read.test.js                       rc=0 pass~1 fail~0
+  clean-machine-output.test.js                   rc=0 pass~4 fail~0
+  synth.test.js                                  rc=0 pass~125 fail~0
 
-=== blast radius: tests that construct these stores ===
-  synth.test.js rc=0 passes~125 fails~0
-  replay-graph-integrity.test.js rc=0 passes~18 fails~0
-  graph-integrity.test.js rc=0 passes~15 fails~0
-  replay-verifier-status.test.js rc=0 passes~3 fails~0
-  first-contact-replay.test.js rc=1 passes~0 fails~1
-      Error: ASSERTION FAILED: replay should be consistent: State divergence detected (5 differences); first: stateHash, missions.mission-83c8b825-f03b-40e4-8f8e-eafed3ade1af, expeditions.expedition-fb874770-9eb6-4af5-b172-de12edd0685a
-  execution-gate-regression.test.js rc=1 passes~0 fails~0
-          throw new ERR_MODULE_NOT_FOUND(
-      Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/user/synth/tests/governance/helpers/workspace.js' imported from /home/user/synth/tests/governance/execution-gate-regression.test.js
+=== deterministic eager graphs (scripts/audit-module-graph.js) ===
+  after  (rootHash 850e7aa08f79bbec):
+    dist/cli/entry.js                        60 modules   273 KB
+    dist/distribution/mcp-server.js           1 modules    10 KB
+    dist/main.js                            171 modules  1103 KB
+    dist/cli/synth.js                       298 modules  2283 KB
+    dist/cli/status-light.js                 33 modules   151 KB
+    dist/cli/explain-replay-light.js         45 modules   159 KB
+  before (rootHash 85a97f1c872cdb7c, measured pre-change this session):
+    dist/cli/status-light.js                134 modules   918 KB
+    dist/cli/entry.js                       147 modules   976 KB
 
-=== module graph (deterministic) ===
-  EAGER GRAPH (transitive closure of static imports)
-     147 modules    976 KB  dist/cli/entry.js
-       1 modules     10 KB  dist/distribution/mcp-server.js
-     171 modules   1103 KB  dist/main.js
-     298 modules   2282 KB  dist/cli/synth.js
+=== A/B timing, control-adjusted (item2-before -> item2-after) ===
+  CONTROL-ADJUSTED DELTAS   A=item2-before  B=item2-after
+    cores 2->2 | node v22.22.3 | control "entry.js explain replay" drift: -15.5 ms
+    invocation                  A ms    B ms   delta     adj  verdict
+    floor node -e '1'           20.7    19.8    -0.9    14.6  NOT A CLAIM (within control drift)
+    entry.js --version          71.0    43.4   -27.6   -12.1  NOT A CLAIM (within control drift)
+    entry.js help               75.6    46.9   -28.7   -13.2  NOT A CLAIM (within control drift)
+    entry.js status            155.8   138.2   -17.6    -2.1  NOT A CLAIM (within control drift)
+    synth.js --version         117.0   119.1     2.1    17.6  slower
+    synth.js help              123.1   118.7    -4.4    11.1  NOT A CLAIM (within control drift)
+    synth.js status            208.8   170.8   -38.0   -22.5  faster
+    entry.js explain replay    115.7   100.2   -15.5     0.0  CONTROL (defines the noise floor)
   
-  UNREACHABLE — shipped only (dist/cli/entry.js, dist/distribution/mcp-server.js, dist/main.js)
-    44 of 348 modules, 2855 compiled lines
+  Module counts are deterministic and should carry any load-budget claim;
+  milliseconds here are advisory. See scripts/audit-module-graph.js.
+
+=== identical-build noise probe (run1 -> run2, same rootHash 850e7aa08f79bbec) ===
+  CONTROL-ADJUSTED DELTAS   A=run1  B=run2
+    cores 2->2 | node v22.22.3 | control "entry.js explain replay" drift: -0.8 ms
+    invocation                  A ms    B ms   delta     adj  verdict
+    floor node -e '1'           17.2    17.9     0.7     1.5  slower
+    entry.js --version          47.0    44.1    -2.9    -2.1  faster
+    entry.js help               44.8    40.8    -4.0    -3.2  faster
+    entry.js status            130.4   122.9    -7.5    -6.7  faster
+    synth.js --version         110.7   107.1    -3.6    -2.8  faster
+    synth.js help              108.3   116.2     7.9     8.7  slower
+    synth.js status            171.1   166.5    -4.6    -3.8  faster
+    entry.js explain replay     80.5    79.7    -0.8     0.0  CONTROL (defines the noise floor)
+  
+  Module counts are deterministic and should carry any load-budget claim;
+  milliseconds here are advisory. See scripts/audit-module-graph.js.
