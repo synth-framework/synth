@@ -41,7 +41,7 @@ import type { FilesystemProvider } from "../infra/filesystem-provider.js"
 import { createPosixFilesystemProvider } from "../infra/filesystem-provider.js"
 import { loadHistoricalAliasRegistry, type HistoricalAliasRegistry } from "./historical-aliases.js"
 import { createCapabilityRegistry } from "../capability/registry.js"
-import { createAdapterRegistry } from "../mission-studio/adapter-registry.js"
+import { PLANNING_ADAPTER_NAMES } from "../mission-studio/adapter-names.js"
 import { buildCapabilityEntries } from "../cli/capabilities-data.js"
 
 export type ResolveGovernanceContextOptions = {
@@ -392,7 +392,7 @@ export async function resolveGovernanceContext(
     ) ?? null
 
   const installedCapabilities = new Set(createCapabilityRegistry().list())
-  const installedAdapters = new Set(createAdapterRegistry().list())
+  const installedAdapters = new Set<string>(PLANNING_ADAPTER_NAMES)
   const capabilities = buildCapabilityEntries(installedCapabilities, installedAdapters)
 
   const context: ResolvedGovernanceContext = {

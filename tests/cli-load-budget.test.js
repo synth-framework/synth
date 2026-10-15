@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process"
 import { fileURLToPath, pathToFileURL } from "node:url"
 import { edgesOf, readModuleGraph, closure, measureModules } from "../scripts/lib/module-graph.js"
 import { budgetFailures, checkStaticEntries, validateProbeResult, runGuard } from "../scripts/check-cli-load-budget.js"
-import { ORIGINAL_MODULES, ORDINARY_LIMIT, PROBES } from "../scripts/lib/cli-load-budgets.js"
+import { ORIGINAL_MODULES, ORDINARY_LIMIT, ENTRY_BUDGETS, PROBES } from "../scripts/lib/cli-load-budgets.js"
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url))
 const ENTRY = "dist/cli/entry.js"
@@ -53,6 +53,10 @@ test("missing roots and static/dynamic edges fail closed; cycles and Unicode byt
 test("ordinary denominator never increases with module extraction; byte and module limits both reject excess", () => {
   assert.equal(ORIGINAL_MODULES, 348)
   assert.equal(ORDINARY_LIMIT, 139)
+  assert.equal(ENTRY_BUDGETS["dist/main.js"].modules, 172)
+  for (const [id, bound] of [["doctor", 193], ["checkpoint", 206], ["bootstrap-plan", 220]]) {
+    assert.equal(PROBES.find((p) => p.id === id)?.modules, bound)
+  }
   assert.equal(budgetFailures("fixture", { modules: 26, bytes: 153601 }, { modules: 25, bytes: 153600 }).length, 2)
   assert.deepEqual(budgetFailures("fixture", { modules: 25, bytes: 153600 }, { modules: 25, bytes: 153600 }), [])
 })
@@ -97,6 +101,15 @@ test("a skipped/empty replay cannot satisfy a work-based exception", () => {
   output.checks.replay.detail = "Event log consistent (5 events, segmented layout)"
   assert.equal(validateProbeResult(doctor, { ...result, stdout: JSON.stringify(output) }, loaded, g, sources, ENTRY).modules, 3)
   assert.throws(() => validateProbeResult(probe, result, loaded, g, sources, ENTRY), /unexpectedly bootstrapped/)
+})
+
+test("read-only planning adapter names exactly match the default live registry", async () => {
+  const { PLANNING_ADAPTER_NAMES } = await import("../dist/mission-studio/adapter-names.js")
+  const { createAdapterRegistry } = await import("../dist/mission-studio/adapter-registry.js")
+  assert.ok(Object.isFrozen(PLANNING_ADAPTER_NAMES))
+  assert.deepEqual([...PLANNING_ADAPTER_NAMES], createAdapterRegistry().list())
+  const { graph } = readModuleGraph(ROOT)
+  assert.ok(!closure(["dist/runtime/governance-resolver.js"], graph).has("dist/mission-studio/adapter-registry.js"))
 })
 
 test("repo status has no bootstrap INFO chatter in its normal stderr surface", () => temporary((root) => {

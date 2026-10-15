@@ -14,6 +14,7 @@
 
 import type { Adapter } from "../types/index.js"
 import type { AdapterDescriptor } from "../types/adapter.js"
+import { PLANNING_ADAPTER_NAMES, type PlanningAdapterName } from "./adapter-names.js"
 import {
   createDefaultAdapterCatalog,
   type AdapterCatalog,
@@ -38,7 +39,7 @@ import { createWizardAdapter, WizardAdapterImpl } from "../adapters/wizard/adapt
 export type AdapterConstructor = () => Adapter
 
 /** Canonical factory provider for Mission Studio catalog adapters. */
-const PLANNING_ADAPTER_FACTORIES: Record<string, AdapterConstructor> = {
+const PLANNING_ADAPTER_FACTORIES: Record<PlanningAdapterName, AdapterConstructor> = {
   repository: () => createGitRepositoryAdapter(),
   github: () => createGitHubAdapter(),
   tdd: () => createTddAdapter(),
@@ -70,8 +71,8 @@ export class AdapterRegistry {
   private seedFromFactoryMap(): void {
     // The factory map defines which adapters Mission Studio knows how to
     // instantiate. Metadata for each adapter comes from the catalog.
-    for (const [name, factory] of Object.entries(PLANNING_ADAPTER_FACTORIES)) {
-      this.registerFactory(name, factory)
+    for (const name of PLANNING_ADAPTER_NAMES) {
+      this.registerFactory(name, PLANNING_ADAPTER_FACTORIES[name])
     }
   }
 

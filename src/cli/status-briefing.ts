@@ -18,21 +18,13 @@ import {
 import { toOperatorBriefing } from "../runtime/status-projection.js"
 import { buildCapabilityEntries, buildImplementedCommandSet } from "./capabilities-data.js"
 
-// EXP-CLI-003 item 2 — the three heavy edges below are loaded at CALL time inside
-// buildOperatorBriefing, not at import time:
-//
-//   runtime/governance-resolver.js         119 modules / 820 KB
-//   capability/registry.js                  64 modules / 429 KB
-//   mission-studio/adapter-registry.js      54 modules / 331 KB
-//
-// `status` genuinely needs all three — the briefing IS a projection of the
-// governance resolver — so the fix is WHEN they load, not whether. This module is
-// imported statically by status-light.ts, which entry.ts imports statically, so
-// these three edges were 89% of the "light" path's 134-module / 918 KB eager
-// graph and were paid for by every invocation of the shipped dispatcher,
-// including --version and help. Output is unchanged; the eager graph is not.
-// The cheap edges stay static: ledger/delivery 1/17, transition-engine 2/6,
-// status-projection 2/20, capabilities-data 2/32.
+// EXP-CLI-003: the resolver is loaded at call time, not on the shipped
+// dispatcher's eager path. Status needs the resolver's replay and the real
+// capability registry, but only the *names* of the default planning adapters.
+// Their canonical name list is shared with AdapterRegistry's factory map, so
+// status no longer loads Git/discovery adapter implementations to answer a
+// read-only availability question. The cheap delivery and projection edges
+// stay static.
 
 export type MissionBrief = {
   id: string
@@ -115,12 +107,12 @@ export async function buildOperatorBriefing(rootDir: string): Promise<OperatorBr
   // CLI command-surface wiring. Re-project capability availability here using
   // the same command-surface detection used by `synth capabilities` so status
   // warnings match the installed CLI.
-  const [{ createCapabilityRegistry }, { createAdapterRegistry }] = await Promise.all([
+  const [{ createCapabilityRegistry }, { PLANNING_ADAPTER_NAMES }] = await Promise.all([
     import("../capability/registry.js"),
-    import("../mission-studio/adapter-registry.js"),
+    import("../mission-studio/adapter-names.js"),
   ])
   const installedCapabilities = new Set(createCapabilityRegistry().list())
-  const installedAdapters = new Set(createAdapterRegistry().list())
+  const installedAdapters = new Set<string>(PLANNING_ADAPTER_NAMES)
   const implementedCommands = buildImplementedCommandSet()
   result.derived.capabilities = buildCapabilityEntries(
     installedCapabilities,

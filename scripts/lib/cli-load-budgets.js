@@ -6,7 +6,10 @@ export const ORDINARY_LIMIT = Math.floor(ORIGINAL_MODULES * 0.4)
 export const ENTRY_BUDGETS = {
   "dist/cli/entry.js": { modules: 25, bytes: 150 * 1024 },
   "dist/cli/synth.js": { modules: 40, bytes: 180 * 1024 },
-  "dist/main.js": { modules: 171, bytes: 1110 * 1024 },
+  // The one small, canonical planning-adapter name module is shared by the
+  // runtime registry and read-only projections. The 348-module denominator
+  // and 139-module ordinary ceiling do not change.
+  "dist/main.js": { modules: 172, bytes: 1110 * 1024 },
   "dist/distribution/mcp-server.js": { modules: 1, bytes: 11 * 1024 },
   "dist/cli/status-light.js": { modules: 33, bytes: 160 * 1024 },
 }
@@ -28,17 +31,17 @@ export const PROBES = [
   { id: "log", args: ["log", "--limit", "1"], kind: "EventLogQuery" },
   { id: "validate", args: ["validate", "--diff", ""], kind: "ValidationPlan" },
   {
-    id: "doctor", args: ["doctor"], modules: 192, statuses: ["ok", "warning"],
+    id: "doctor", args: ["doctor"], modules: 193, statuses: ["ok", "warning"],
     exception: "Verify persisted state by replaying the real event store through the configured runtime infrastructure; also verify dist, event chain and ledger. Empty-log/skipped replay is not accepted as this measurement.",
     replayPath: ["checks", "replay"],
   },
   {
-    id: "checkpoint", args: ["checkpoint"], modules: 205, kind: "AgentCheckpoint", statuses: ["ok", "blocked"],
+    id: "checkpoint", args: ["checkpoint"], modules: 206, kind: "AgentCheckpoint", statuses: ["ok", "blocked"],
     exception: "Compose operator briefing, actual persisted replay verification, and repository-adapter execution-branch validation. A lifecycle/branch refusal is valid coverage, but failed or skipped replay is not.",
     replayPath: ["steps", "replay"],
   },
   {
-    id: "bootstrap-plan", args: ["bootstrap", ".", "--dry-run"], modules: 219, kind: "BootstrapPlan", statuses: ["pending-approval"],
+    id: "bootstrap-plan", args: ["bootstrap", ".", "--dry-run"], modules: 220, kind: "BootstrapPlan", statuses: ["pending-approval"],
     exception: "Analyze the repository and generate mission/expedition proposals through the in-memory bootstrap planning engine (bootstrap-apply.generateProposals). Dry-run does real planning, not a help response; it does not apply those proposals.",
   },
 ]
