@@ -688,6 +688,65 @@ function buildOnboardPlan(
   return base
 }
 
+// A read-only input inventory for the onboarding preview. It is intentionally
+// not a parser or an approval gate: a path is not evidence that its contents
+// were understood, and conflicting sources still need a human decision.
+async function previewSourceHandoff(targetDir: string): Promise<{
+  sourceStatus: "not-ingested"
+  files: string[]
+  truncated: boolean
+  selectionRequired: boolean
+  nextSteps: string[]
+  notice: string
+}> {
+  const files: string[] = []
+  const roots = ["docs", "knowledge", "src", "tests"] as const
+  const found = new Set<string>()
+  let truncated = false
+  for (const root of roots) {
+    let count = 0
+    const visit = async (relative: string, depth: number): Promise<void> => {
+      if (count >= 24) { truncated = true; return }
+      let entries
+      try {
+        entries = await fs.readdir(path.join(targetDir, relative), { withFileTypes: true })
+      } catch { return }
+      for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+        if (count >= 24) { truncated = true; break }
+        if (entry.name.startsWith(".") || entry.name === "generated" || entry.name === "node_modules") continue
+        const name = `${relative}/${entry.name}`
+        if (entry.isDirectory()) {
+          if (depth < 3) await visit(name, depth + 1)
+          else truncated = true
+        } else if (entry.isFile() && /\.(md|mdx|json|js|jsx|ts|tsx)$/i.test(entry.name)) {
+          files.push(name)
+          count++
+        }
+      }
+    }
+    await visit(root, 0)
+    if (count > 0) found.add(root)
+  }
+  try {
+    if ((await fs.stat(path.join(targetDir, "package.json"))).isFile()) {
+      files.push("package.json")
+      found.add("package.json")
+    }
+  } catch { /* absent */ }
+  const nextSteps: string[] = []
+  if (["src", "tests", "package.json"].some((name) => found.has(name))) nextSteps.push("synth discover . --export")
+  if (found.has("docs")) nextSteps.push("synth docs generate --knowledge-base ./docs")
+  if (found.has("knowledge")) nextSteps.push("synth docs generate --knowledge-base ./knowledge")
+  return {
+    sourceStatus: "not-ingested",
+    files: files.sort(),
+    truncated,
+    selectionRequired: found.has("docs") && found.has("knowledge"),
+    nextSteps,
+    notice: "Paths only: source contents, contradictions and decisions have not been reviewed. Select intended sources, inspect their evidence and resolve material conflicts with the operator before treating any brief as agreed.",
+  }
+}
+
 async function initializeEmptyProject(targetDir: string, projectName: string) {
   const governanceVersion = "2.1"
   const projectId = sdk.identity.uuid()
@@ -860,10 +919,17 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
   const approve = flags.approve === true || flags.approve === "true"
 
   if (dryRun || !approve) {
+    const sourceHandoff = state.kind === "initialized-v2" ? undefined : await previewSourceHandoff(targetDir)
     printJson({
       status: "pending-approval",
       kind: "FirstContactOnboardPlan",
       ...plan,
+      // Source inspection is the next *guided* step; applying the onboarding
+      // plan is not the same as agreeing to the project's product intent.
+      nextStep: sourceHandoff?.selectionRequired
+        ? "Review docs/ and knowledge/; choose the intended source before generating a brief."
+        : sourceHandoff?.nextSteps[0] ?? plan.nextStep,
+      ...(sourceHandoff ? { sourceHandoff } : {}),
       taskPlan,
       note: dryRun
         ? "Dry-run: no files were written."
