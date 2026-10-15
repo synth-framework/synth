@@ -1,0 +1,26 @@
+name: Windows checkout and task paths
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  portable-tasks:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/check-portable-paths.js
+      - run: node tests/portable-paths.test.js
+      - run: node tests/task-schema-registry.test.js
+      - run: node tests/task-npm-migration.test.js
