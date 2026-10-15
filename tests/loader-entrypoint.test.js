@@ -224,3 +224,41 @@ test("loader entrypoint decoupling (light commands skip synth.js)", { timeout: 1
     assert.equal(light.stdout, heavy.stdout, "light explain governance must match heavy byte-for-byte")
   })
 })
+
+// EXP-CLI-003: routing is data, and object prototype names are not CLI verbs.
+test("verb registry resolves namespaces and help without accepting inherited keys", async () => {
+  const { getNamespaceLoader, getNamespaceHelp, isExplainSub, resolveLightExplain, callExplainHandler } =
+    await import("../dist/cli/verb-registry.js")
+  for (const command of ["mission", "expedition", "explain", "first-contact", "genesis", "task", "repo", "adapter", "doctor", "checkpoint", "log", "validate", "govern"]) {
+    assert.equal(typeof getNamespaceLoader(command), "function", command)
+  }
+  for (const command of ["constructor", "toString", "__proto__", "missing-command"]) {
+    assert.equal(getNamespaceLoader(command), undefined)
+    assert.equal(getNamespaceHelp([command, "--help"]), undefined)
+    assert.equal(isExplainSub(command), false)
+    assert.equal(resolveLightExplain(command), undefined)
+    await assert.rejects(callExplainHandler(command, {}), /VERB_REGISTRY_UNKNOWN_SUB/)
+  }
+  assert.equal(getNamespaceHelp(["mission"]), undefined)
+  assert.equal(getNamespaceHelp(["mission", "list"]), undefined)
+  assert.equal(typeof getNamespaceHelp(["mission", "approve", "--help"]), "function")
+  assert.equal(typeof getNamespaceHelp(["expedition", "approve", "-h"]), "function")
+  assert.equal(resolveLightExplain(undefined), "replay")
+  assert.equal(resolveLightExplain(""), "replay")
+  assert.equal(resolveLightExplain("identity"), "identity")
+  assert.equal(resolveLightExplain("agents"), undefined)
+})
+
+test("namespace and approval help remain byte-identical across entry points", { timeout: 120000 }, () => {
+  const namespaces = ["bootstrap", "discover", "mission", "program", "project", "intent", "alignment", "expedition", "doctor", "checkpoint", "certify", "capabilities", "log", "docs", "adapter", "snapshot", "repair", "first-contact", "genesis", "validate", "verify", "approval", "task", "explain", "ai", "repo", "migrate"]
+  const invocations = namespaces.map((namespace) => [namespace, "--help"])
+  invocations.push(["mission", "approve", "--help"], ["expedition", "approve", "-h"])
+  for (const args of invocations) {
+    const light = runEntry(args)
+    const compatibility = runHeavy(args)
+    assert.equal(light.status, 0, `${args.join(" ")}: ${light.stderr}`)
+    assert.equal(compatibility.status, 0, compatibility.stderr)
+    assert.equal(light.stdout, compatibility.stdout, args.join(" "))
+    assert.equal(light.stderr, compatibility.stderr, args.join(" "))
+  }
+})

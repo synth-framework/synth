@@ -15,13 +15,13 @@
 // ============================================================
 
 import path from "path"
-import { bootstrap } from "../core/bootstrap.js"
 import { setAgentTelemetry, printJson, printError, setHumanMode, setQuietMode, setSummaryMode } from "./print.js"
 import { ceremonyForCapability, commitCeremony, commitCeremonySync } from "../ledger/ceremony.js"
 import { initCliIdentity, injectIdentityContext } from "./identity-context.js"
 import { isAutoCommitEnabled } from "./working-tree.js"
 
-export async function bootstrapWithCapabilities(config: Parameters<typeof bootstrap>[0]) {
+export async function bootstrapWithCapabilities(config: Parameters<typeof import("../core/bootstrap.js").bootstrap>[0]) {
+  const { bootstrap } = await import("../core/bootstrap.js")
   const ctx = await bootstrap(config)
   // Capabilities are registered during genesis; when genesis is skipped
   // (the normal CLI path) we register them explicitly so that the CLI
