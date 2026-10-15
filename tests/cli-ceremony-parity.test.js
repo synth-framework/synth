@@ -10,6 +10,7 @@ import crypto from "node:crypto"
 import { spawnSync } from "node:child_process"
 import { fileURLToPath } from "node:url"
 import { makeTempDir, runGit, gitInitWithCommit } from "./helpers/workspace.js"
+import { CLI_PATH } from "./helpers/cli-harness.js"
 
 const REPO = fileURLToPath(new URL("../", import.meta.url))
 const LEGACY = path.join(REPO, "dist/cli/synth.js")
@@ -130,6 +131,9 @@ test("entry parity: initialization, first-contact proposals, task and read-only 
     }
     await pair(["task", "list"], { kind: "TaskList", readonly: true })
     await pair(["task", "graph"], { readonly: true })
+    // These throw from main() before dispatch, unlike a handler's printError.
+    await pair(["--discovery-mode", "init", "--name", "Blocked"], { status: 1, kind: "CLIError" })
+    await pair(["--discovery-mode", "validate", "--full", "--dry-run"], { status: 1, kind: "CLIError" })
   })
 })
 
@@ -172,4 +176,8 @@ test("entry parity: bootstrap, alignment and real git-backed lifecycle ceremonie
     await pair(["mission", "delete", "--id", "missing-mission"], { status: 1 })
     assert.equal(runGit(["rev-parse", "HEAD"], root), head, "a refused operation must not commit")
   })
+})
+
+test("shared CLI harness targets package.json bin.synth", () => {
+  assert.equal(CLI_PATH, SHIPPED)
 })

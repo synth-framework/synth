@@ -19,7 +19,7 @@ import path from "path"
 import { resolveLightExplain, runExplainFromArgv } from "./verb-registry.js"
 import { projectVersion, printVersion } from "./version.js"
 import { printHelp } from "./usage.js"
-import { setHumanMode, setQuietMode, setSummaryMode } from "./output.js"
+import { printError, setHumanMode, setQuietMode, setSummaryMode } from "./output.js"
 
 const LIGHT_COMMANDS = new Set(["version", "--version", "-v", "help", "--help", "-h", "status"])
 
@@ -100,10 +100,10 @@ const isMainModule = (): boolean => {
 }
 
 if (isMainModule()) {
-run().catch((err: unknown) => {
-  const message = err instanceof Error ? err.message : String(err)
-  process.stderr.write(`synth: ${message}\n`)
-  if (err instanceof Error && err.stack) process.stderr.write(`${err.stack}\n`)
-  process.exit(1)
-})
+  run().catch((err: unknown) => {
+    // The compatibility entry point uses this same error boundary. Preflight
+    // failures (e.g. discovery-safety rejection) must keep the JSON contract,
+    // not become empty stdout plus an unstructured stack trace on the shipped bin.
+    printError(err instanceof Error ? err.message : String(err))
+  })
 }
