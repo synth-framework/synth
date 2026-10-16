@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-16T07:28:00.631Z",
+  "capturedAt": "2026-10-16T08:18:35.057Z",
   "workspace": "/home/user/trial-workspace",
   "helper": "scripts/guided-installed-trial-evidence.mjs",
   "requiredCases": [
@@ -129,6 +129,7 @@
           "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         },
         {
@@ -144,6 +145,7 @@
           "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         },
         {
@@ -159,6 +161,7 @@
           "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         }
       ],
@@ -278,12 +281,16 @@
           "hashRecorded": true,
           "kind": "file",
           "path": "src/board.js",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
           "line": 1,
+          "lineAsWritten": null,
           "pathAllowedByCli": true,
           "expectedLine": "export const render = label => `<text>${label}</text>`;",
           "recomputedSha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         },
         {
@@ -293,12 +300,16 @@
           "hashRecorded": true,
           "kind": "file",
           "path": "tests/board.test.js",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
           "line": 4,
+          "lineAsWritten": null,
           "pathAllowedByCli": true,
           "expectedLine": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
           "recomputedSha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         },
         {
@@ -308,12 +319,16 @@
           "hashRecorded": true,
           "kind": "file",
           "path": "docs/limitation.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
           "line": 1,
+          "lineAsWritten": null,
           "pathAllowedByCli": true,
           "expectedLine": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
           "recomputedSha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         }
       ],
@@ -422,12 +437,16 @@
           "hashRecorded": true,
           "kind": "file",
           "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
           "line": 1,
+          "lineAsWritten": null,
           "pathAllowedByCli": true,
           "expectedLine": "The first board exports one SVG from local data.",
           "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         },
         {
@@ -437,12 +456,16 @@
           "hashRecorded": true,
           "kind": "file",
           "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
           "line": 2,
+          "lineAsWritten": null,
           "pathAllowedByCli": true,
           "expectedLine": "Editing is requested, but its interaction style is undecided.",
           "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         },
         {
@@ -452,12 +475,16 @@
           "hashRecorded": true,
           "kind": "file",
           "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
           "line": 2,
+          "lineAsWritten": null,
           "pathAllowedByCli": true,
           "expectedLine": "Editing is requested, but its interaction style is undecided.",
           "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
           "hashMatches": true,
           "lineMatches": true,
+          "mismatchNote": null,
           "status": "matched"
         }
       ],
@@ -502,6 +529,7 @@
       "extras": []
     }
   ],
+  "rootExtras": [],
   "buildArtifactsInsideTestPath": [],
   "gitInside": [],
   "warnings": [
