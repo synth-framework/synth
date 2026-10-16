@@ -94,7 +94,7 @@ async function makeStaging({ tarballSha = "a".repeat(64) } = {}) {
  * offer file that omits the hashes the CLI adds to its own recorded copy, one
  * correct citation hash and one deliberately wrong one.
  */
-async function makeWorkspace({ condition = "guided", cases = ["green", "brown"], staging = null, tamper = null, reportExtra = "", omitInputs = [], environmentWorkspace = null } = {}) {
+async function makeWorkspace({ condition = "guided", cases = ["green", "brown"], staging = null, tamper = null, reportExtra = "", omitInputs = [], environmentWorkspace = null, offerShape = "guided" } = {}) {
   const lib = await loadLib()
   const setup = await loadSetup()
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), `trial-evidence-ws-${condition}-`))
@@ -157,8 +157,33 @@ async function makeWorkspace({ condition = "guided", cases = ["green", "brown"],
       "- ~9 minutes.",
       "",
     ].join("\n")
-    files[`${dirName}/offer.json`] = `${JSON.stringify(agentOffer, null, 2)}\n`
-    files[`${dirName}/.synth/first-contact/draft.json`] = `${JSON.stringify({
+    // The plain instruction set asks for `offer.json` "in whatever shape you
+    // consider clear", so a plain offer is written the way a real one came back.
+    const looseOffer = {
+      case_id: caseId,
+      directory: `${dirName}/`,
+      proposed_scope: `scope for ${caseId}`,
+      question: `question for ${caseId}?`,
+      task_text: lib.TASKS[caseId],
+      options: [{
+        label: "Option A",
+        description: "description",
+        tradeoff: "tradeoff",
+        shows_it_works: "an acceptance example",
+        grounded_in: caseId === "brown"
+          ? [
+            { path: "src/board.js", line: 1, quote: lib.FIXTURES.brown["src/board.js"].split(/\r?\n/)[0] },
+            { path: "docs/limitation.md", line: 1, quote: "a line that is not in the staged file" },
+          ]
+          : [
+            { source: "task_text", quote: lib.TASKS[caseId] },
+            { source: "task_text", quote: "a quote that is not this case's task text" },
+          ],
+      }],
+    }
+    files[`${dirName}/offer.json`] = `${JSON.stringify(offerShape === "loose-plain" ? looseOffer : agentOffer, null, 2)}\n`
+    // A plain run leaves no CLI state at all: no .synth, no transcript, no errors.
+    if (condition === "guided") files[`${dirName}/.synth/first-contact/draft.json`] = `${JSON.stringify({
       schema: "synth-first-contact-draft-v1",
       status: "draft",
       journeyId: recorded.journeyId,
@@ -168,11 +193,11 @@ async function makeWorkspace({ condition = "guided", cases = ["green", "brown"],
       sourceAnswers: [],
       updatedAt: "2026-10-15T10:00:01.000Z",
     }, null, 2)}\n`
-    files[`${dirName}/.synth/first-contact/transcript.jsonl`] = `${[
+    if (condition === "guided") files[`${dirName}/.synth/first-contact/transcript.jsonl`] = `${[
       JSON.stringify({ turn: 1, actor: "operator", type: "input", content: lib.TASKS[caseId], timestamp: "2026-10-15T09:59:00.000Z" }),
       JSON.stringify({ turn: 2, actor: "agent", type: "proposal", content: `Source offer ${recorded.id}: ${recorded.question}`, timestamp: "2026-10-15T10:00:00.000Z" }),
     ].join("\n")}\n`
-    files[`${dirName}/.synth/data/cli-errors.jsonl`] = `${JSON.stringify({ timestamp: "2026-10-15T09:59:30.000Z", kind: "CLIError", error: "Source offer was not recorded: option id must be nonempty text", exitCode: 1 })}\n`
+    if (condition === "guided") files[`${dirName}/.synth/data/cli-errors.jsonl`] = `${JSON.stringify({ timestamp: "2026-10-15T09:59:30.000Z", kind: "CLIError", error: "Source offer was not recorded: option id must be nonempty text", exitCode: 1 })}\n`
   }
 
   files["INSTRUCTIONS.md"] = condition === "guided"
@@ -432,6 +457,29 @@ test("--cases narrows the capture and --out refuses to write into TEST_PATH", as
     await fs.rm(repo, { recursive: true, force: true })
     await fs.rm(workspace, { recursive: true, force: true })
   }
+})
+
+test("a plain offer in whatever shape is re-checked line by line, without pretending a hash exists", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", offerShape: "loose-plain" })
+  const out = path.join(repo, "docs", "analysis", "plain-loose.md")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+
+  // Both plain cases carry two citations, one correct and one invented.
+  assert.ok(doc.includes("Re-checked here from `offer.json`"), "the capture must re-check plain grounding, not just quote it")
+  assert.match(doc, /2 citation\(s\), 1 matched \(1 file line\(s\), 0 task-text quote\(s\)\), 1 did NOT/, "the brownfield grounding must be counted by kind")
+  assert.match(doc, /2 citation\(s\), 1 matched \(0 file line\(s\), 1 task-text quote\(s\)\), 1 did NOT/, "the greenfield grounding must be counted by kind")
+  assert.ok(doc.includes("docs/limitation.md:1 — the staged file line reads"), "a wrong file line must be named with what the file actually reads")
+  assert.ok(doc.includes("not this case's staged task text"), "a wrong task-text quote must be flagged as such")
+  const noteLine = doc.split("Re-checked here from")[1].split("\n")[0]
+  assert.ok(noteLine.includes("the plain condition records no citation hashes"), "the note must say plainly that no hash exists to compare")
+  assert.equal(noteLine.includes("the hash the CLI recorded recomputes"), false, "the plain note must not imply a recorded hash exists")
+  assert.match(doc, /in the plain condition the capture re-checked 4 grounding citation\(s\)/, "the summary must count the plain citations it checked")
+
+  // Nothing about the plain run is upgraded into a guided claim.
+  assert.ok(doc.includes("no `ENVIRONMENT.md` (plain condition)"), "the plain condition must stay visible as such")
+  assert.ok(doc.includes("<to confirm — operator: your name>"), "operator-only rows stay placeholders")
 })
 
 test("staging that cannot be reached is reported instead of guessed", async () => {

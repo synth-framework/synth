@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-16T06:30:09.813Z",
+  "capturedAt": "2026-10-16T07:14:57.726Z",
   "workspace": "/home/user/trial-workspace",
   "helper": "scripts/guided-installed-trial-evidence.mjs",
   "requiredCases": [
@@ -190,6 +190,12 @@
         "choiceReviews": 0,
         "workingBriefStatus": null,
         "terminalState": null,
+        "draftStatus": "draft",
+        "lastEvent": {
+          "actor": "agent",
+          "type": "proposal",
+          "timestamp": "2026-10-16T05:38:53.461Z"
+        },
         "openAgentChoices": 0,
         "transcriptFirst": "2026-10-16T05:37:24.070Z",
         "transcriptLast": "2026-10-16T05:38:53.461Z",
@@ -328,6 +334,12 @@
         "choiceReviews": 0,
         "workingBriefStatus": null,
         "terminalState": null,
+        "draftStatus": "draft",
+        "lastEvent": {
+          "actor": "agent",
+          "type": "proposal",
+          "timestamp": "2026-10-16T05:39:44.577Z"
+        },
         "openAgentChoices": 0,
         "transcriptFirst": "2026-10-16T05:39:26.916Z",
         "transcriptLast": "2026-10-16T05:39:44.577Z",
@@ -464,6 +476,12 @@
         "choiceReviews": 0,
         "workingBriefStatus": null,
         "terminalState": null,
+        "draftStatus": "draft",
+        "lastEvent": {
+          "actor": "agent",
+          "type": "proposal",
+          "timestamp": "2026-10-16T05:40:30.247Z"
+        },
         "openAgentChoices": 0,
         "transcriptFirst": "2026-10-16T05:40:12.019Z",
         "transcriptLast": "2026-10-16T05:40:30.247Z",

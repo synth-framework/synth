@@ -21,6 +21,10 @@
 //
 // The division of labour is deliberate:
 //
+// A plain run leaves no CLI state and no hashes, so its offer is read by shape:
+// every quote with a path/line is compared with the live file line, and every quote
+// marked as the task text with the staged task text. No hash is implied.
+//
 //   machine-read   every fact the files already contain — artifact digests, input
 //                  revisions against the frozen E4 record, citation hashes
 //                  recomputed with the CLI's own rule, offer ids, recorded
@@ -539,11 +543,51 @@ export function integrityOf(caseData) {
     choiceReviews: choiceReviews.length,
     workingBriefStatus: workingBrief?.status ?? null,
     terminalState: workingBrief?.status ?? null,
+    draftStatus: typeof draft.status === 'string' ? draft.status : null,
+    lastEvent: events.length > 0
+      ? { actor: events[events.length - 1]?.actor ?? 'unknown', type: events[events.length - 1]?.type ?? 'unknown', timestamp: events[events.length - 1]?.timestamp ?? null }
+      : null,
     openAgentChoices: Array.isArray(draft.openAgentChoices) ? draft.openAgentChoices.length : null,
     transcriptFirst: events[0]?.timestamp ?? null,
     transcriptLast: events[events.length - 1]?.timestamp ?? null,
     spanSeconds: secondsBetween(events[0]?.timestamp, events[events.length - 1]?.timestamp),
   }
+}
+
+/**
+ * Grounding that is not in the guided schema.
+ *
+ * The plain instruction set deliberately asks for `offer.json` "in whatever shape
+ * you consider clear", so a plain offer cannot be parsed by key names. The walk
+ * below looks for anything shaped like a citation — a quote with a path, or a
+ * quote marked as the task text — anywhere in the file, and nothing else.
+ */
+export function looseGrounding(value) {
+  const found = []
+  const walk = (node, trail) => {
+    if (!node || typeof node !== 'object') return
+    if (Array.isArray(node)) {
+      node.forEach((item, index) => walk(item, [...trail, String(index)]))
+      return
+    }
+    const quote = typeof node.quote === 'string' ? node.quote : null
+    const relative = typeof node.path === 'string' ? node.path : null
+    const intentLike = node.source === 'task_text' || node.kind === 'operator-intent'
+    if (quote && (relative || intentLike)) {
+      found.push({
+        optionId: typeof node.id === 'string' ? node.id : null,
+        label: typeof node.label === 'string' ? node.label : null,
+        trail: trail.join('.'),
+        source: relative
+          ? { path: relative, line: Number.isSafeInteger(node.line) ? node.line : 1, quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined }
+          : { kind: 'operator-intent', quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined },
+      })
+      return
+    }
+    for (const [key, child] of Object.entries(node)) walk(child, [...trail, key])
+  }
+  walk(value, [])
+  return found
 }
 
 /** The CLI's own record of the accepted offer — the copy that carries the citation hashes. */
@@ -707,10 +751,14 @@ export async function collectCase({ caseId, dir, dirName }) {
 
   collected.recorded = latestRecordedOffer(collected.draft?.json)
   collected.offerAgreement = compareOffers(collected.offer.json ?? null, collected.recorded)
-  collected.originalIntent = collected.recorded?.originIntent
+  const intentFromCli = collected.recorded?.originIntent
     ?? collected.draft?.json?.artifact?.intent?.description
     ?? collected.transcript.events.find((event) => event.actor === 'operator' && typeof event.content === 'string')?.content
     ?? null
+  // Without the CLI the starting request is the task text the instruction set
+  // quotes — single-sourced in scripts/lib/guided-trial-fixtures.mjs.
+  collected.originalIntent = intentFromCli ?? TASKS[caseId] ?? null
+  collected.intentSource = intentFromCli ? 'recorded by the run' : 'the staged task text (scripts/lib/guided-trial-fixtures.mjs)'
   collected.offeredAt = collected.recorded?.offeredAt ?? null
   collected.attribution = collected.recorded?.attribution ?? null
   collected.offerId = collected.recorded?.id ?? offerIdFromTranscript(collected.transcript.events)
@@ -718,7 +766,24 @@ export async function collectCase({ caseId, dir, dirName }) {
   collected.citationSource = collected.recorded ? 'the CLI-recorded offer (draft.sourceOffers)' : collected.offer.json ? 'the agent offer file' : 'nothing — no offer was captured'
   collected.citations = []
   for (const option of citedOptions) {
+    // An option with no source object is not a citation; the guided schema always
+    // carries one, and the loose scan below is what reads everything else.
+    if (!option || typeof option.source !== 'object' || option.source === null) continue
     collected.citations.push(await verifyCitation({ dir, option, originalIntent: collected.originalIntent }))
+  }
+  collected.citationShape = 'schema'
+  if (collected.citations.length === 0 && collected.offer.json) {
+    // A plain offer has no schema to hold it to: the instruction set asks for
+    // "whatever shape you consider clear", so the citations are found by shape.
+    const loose = looseGrounding(collected.offer.json)
+    for (const candidate of loose) {
+      collected.citations.push(await verifyCitation({
+        dir,
+        option: { id: candidate.optionId ?? candidate.label ?? candidate.trail, source: candidate.source },
+        originalIntent: collected.originalIntent,
+      }))
+    }
+    if (loose.length > 0) collected.citationShape = 'loose'
   }
   collected.commands = commandsFromReport(collected.sections)
   collected.integrity = integrityOf(collected)
@@ -791,6 +856,23 @@ function bullet(label, value) {
   return `- ${label}: ${value}`
 }
 
+/**
+ * What the capture could re-check in a plain offer: no hashes exist there, so a
+ * quote is only ever compared with the live line, or with the staged task text.
+ */
+function plainCitationNote(entry) {
+  if (entry.citations.length === 0) return ''
+  const ok = (citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'
+  const matched = entry.citations.filter(ok)
+  const failed = entry.citations.filter((citation) => !ok(citation))
+  const matchedFile = matched.filter((citation) => citation.kind === 'file').length
+  const matchedText = matched.length - matchedFile
+  const detail = failed.map((citation) => citation.kind === 'file'
+    ? `${citation.path ?? '(no path)'}:${citation.line ?? '?'} — the staged file line reads ${JSON.stringify(citation.expectedLine ?? null)}`
+    : "a quote marked as the task text that is not this case's staged task text")
+  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s), ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}.`
+}
+
 /** One per-case cell, in the template's own bullet order. */
 function renderCell(entry, model) {
   const condition = model.condition.resolved
@@ -828,7 +910,7 @@ function renderCell(entry, model) {
       bullet('Commands and exit codes', sections.COMMANDS ? `${operator('confirm these are complete')} — as written in \`REPORT.md\`:\n\n${fenced(sections.COMMANDS)}` : operator('the commands run and their exit codes')),
       ...shared,
       bullet('Questions or options the agent raised', sections.OFFER ? `as written in \`REPORT.md\`:\n\n${fenced(sections.OFFER)}` : operator('the questions or options the agent raised')),
-      bullet('Grounding: which files/lines were actually read and cited', sections.CITATIONS ? `as written in \`REPORT.md\`:\n\n${fenced(sections.CITATIONS)}` : operator('what the agent actually read')),
+      bullet('Grounding: which files/lines were actually read and cited', `${sections.CITATIONS ? `as written in \`REPORT.md\`:\n\n${fenced(sections.CITATIONS)}` : operator('what the agent actually read')}${plainCitationNote(entry)}`),
       bullet('Unsupported assumptions', sections.ASSUMPTIONS ? `as written in \`REPORT.md\`:\n\n${fenced(sections.ASSUMPTIONS)}` : operator('unsupported assumptions')),
       bullet('Unresolved choices it left open', sections['STILL OPEN'] ? `as written in \`REPORT.md\`:\n\n${fenced(sections['STILL OPEN'])}` : operator('unresolved choices')),
       bullet('Application test command and exit (brown only)', sections['APPLICATION TESTS'] ? `as written in \`REPORT.md\`:\n\n${fenced(sections['APPLICATION TESTS'])}` : `not applicable or not reported; ${operator('the application test command and exit codes')}`),
@@ -1075,11 +1157,21 @@ export function renderEvidence(model) {
   out.push('## 7. What this evidence does and does not support')
   out.push('')
   const guidedCases = cases.filter((entry) => model.condition.resolved === 'guided')
+  const plainCitations = cases.filter((entry) => model.condition.resolved === 'plain').flatMap((entry) => entry.citations)
   const completed = guidedCases.filter((entry) => entry.citations.length > 0 && entry.citations.every((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'))
   const unreachable = guidedCases.filter((entry) => entry.citations.some((citation) => citation.status === 'file-missing'))
-  out.push(`- **Mechanically supported by this capture:** the installed CLI recorded an offer in ${guidedCases.filter((entry) => entry.recorded ?? entry.offer.present).length} of ${guidedCases.length} captured guided cell(s)${completed.length > 0 ? `, and in ${completed.length} of them every recorded citation recomputes to the live source` : ''}${unreachable.length > 0 ? ` (in ${unreachable.length} cell(s) the cited files were not part of this capture, so those citations could not be re-checked here — their recorded hashes are preserved)` : ''}; the captured CLI state records ${cases.reduce((sum, entry) => sum + entry.integrity.sourceAnswers + entry.integrity.choiceReviews, 0)} human response(s); no captured command list contains a lifecycle, approval, delivery or push command.`)
+  const plainClause = plainCitations.length > 0
+    ? `in the plain condition the capture re-checked ${plainCitations.length} grounding citation(s) found in the offer files, with ${plainCitations.filter((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed').length} matching the live file line or the staged task text`
+    : null
+  const guidedClause = guidedCases.length > 0
+    ? `the installed CLI recorded an offer in ${guidedCases.filter((entry) => entry.recorded ?? entry.offer.present).length} of ${guidedCases.length} captured guided cell(s)${completed.length > 0 ? `, and in ${completed.length} of them every recorded citation recomputes to the live source` : ''}${unreachable.length > 0 ? ` (in ${unreachable.length} cell(s) the cited files were not part of this capture, so those citations could not be re-checked here — their recorded hashes are preserved)` : ''}`
+    : null
+  out.push(`- **Mechanically supported by this capture:** ${[guidedClause, plainClause].filter(Boolean).join('; ') || 'nothing yet — no case directory carried an offer'}${guidedCases.length > 0 ? `; the captured CLI state records ${cases.reduce((sum, entry) => sum + entry.integrity.sourceAnswers + entry.integrity.choiceReviews, 0)} human response(s)` : '; the plain condition leaves no CLI state at all, so no recorded response, transcript or command list exists to check'}; no captured command list contains a lifecycle, approval, delivery or push command.`)
   out.push(`- **Not supported:** owner value, delivery, production readiness, human confirmation of any response, or a merged outcome.`)
-  out.push(`- **Not established by this capture, and yours to state:** whether any cell counts as \`pass\`, \`fail\` or \`blocked\`; the comparative §5 readings; and whether the captured inputs were matched (see §3 for the cases that could not be recomputed here).`)
+  const revisionLine = cases.length > 0
+    ? cases.map((entry) => `${entry.dirName} ${entry.inputs.matched ? 'matched' : entry.inputs.basis === 'partial-inputs' ? 'not computable (inputs incomplete)' : 'MISMATCHED'}`).join(', ')
+    : 'no case directory was captured, so no revision could be compared'
+  out.push(`- **Not established by this capture, and yours to state:** whether any cell counts as \`pass\`, \`fail\` or \`blocked\`; the comparative §5 readings${missingCells.length > 0 ? `; and the ${missingCells.length} cell(s) this TEST_PATH did not hold (${missingCells.map((cell) => inlineCode(cell)).join(', ')})` : ''}. §3 records what could be compared: ${revisionLine}.`)
   out.push(`- Recommendation for ordinary PR #347 review: ${operator('keep as is / change / simplify / stop — with reasons, submitted in your own review comment')}`)
   out.push('')
   return `${out.join('\n')}\n`
@@ -1222,7 +1314,14 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
   const lifecycle = model.cases.flatMap((entry) => entry.integrity.lifecycleCommands)
   const awaiting = model.cases
     .filter((entry) => model.condition.resolved === 'guided')
-    .map((entry) => `${entry.dirName}: ${entry.integrity.terminalState ? inlineCode(entry.integrity.terminalState) : 'no stored working-brief status — the report\'s `first-contact status` line is quoted in §4'}`)
+    .map((entry) => {
+      if (entry.integrity.terminalState) return `${entry.dirName}: ${inlineCode(entry.integrity.terminalState)}`
+      const draftStatus = entry.integrity.draftStatus ? `recording \`${entry.integrity.draftStatus}\`` : 'no draft captured'
+      const lastEvent = entry.integrity.lastEvent
+        ? `last recorded CLI event: ${entry.integrity.lastEvent.actor} ${inlineCode(entry.integrity.lastEvent.type)} at ${entry.integrity.lastEvent.timestamp ?? 'an unrecorded time'}`
+        : 'no transcript event recorded'
+      return `${entry.dirName}: no working brief stored (${draftStatus}); ${lastEvent} — the report\'s \`first-contact status\` line is quoted in §4`
+    })
   model.gaps.lifecycleNotChecked = model.cases.some((entry) => entry.commands.length === 0)
   model.integrityNote = [
     `Captured CLI state records ${humanResponses} human response(s)`,
