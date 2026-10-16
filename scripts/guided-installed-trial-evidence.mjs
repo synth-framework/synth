@@ -600,15 +600,29 @@ export async function verifyCitation({ dir, option, originalIntent, roots = null
   return { ...base, kind: source.kind ?? 'unknown', path: null, line: null, status: 'unsupported-source-kind' }
 }
 
-/** Commands are read out of the agent's report only; nothing else is treated as a command. */
+/**
+ * A line that says outright that nothing was run is not a command. The plain reports
+ * write this as a parenthetical sentence — `(no shell commands run for this test; …)`
+ * — and the section's own words are quoted in the operator gap instead.
+ */
+const NO_COMMANDS_RE = /^[(*\-\u2013\u2014\s]*(?:no|none|n\/a|not applicable)\b/i
+
+/**
+ * Commands are read out of the agent's report only; nothing else is treated as a
+ * command. Every non-empty line counts, not just a bulleted one: a plainly-written
+ * report records its commands inline (`npm test (before change) -> exit 0; …`), and
+ * reading only bullets made a report that lists them look like a report that says
+ * nothing.
+ */
 export function commandsFromReport(sections) {
   const text = sections?.COMMANDS
   if (!text) return []
   return text
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter((line) => line.startsWith('-') || line.startsWith('$'))
-    .map((line) => line.replace(/^[-$]\s*/, ''))
+    .filter((line) => line !== '')
+    .filter((line) => !NO_COMMANDS_RE.test(line))
+    .map((line) => line.replace(/^[-*$]\s*/, ''))
 }
 
 const LIFECYCLE_RE = /(?:^|[\s`"'])(?:--approve|--selection|--human-response|-approve|materialize|mission\s+(?:build|approve|start)|expedition\s+(?:start|complete)|deliver|seal|git\s+push)(?=$|[\s`"',;])/i
@@ -934,17 +948,33 @@ export async function collectCase({ caseId, dir, dirName, workspaceRoot = null }
     // A plain offer has no schema to hold it to: the instruction set asks for
     // "whatever shape you consider clear", so the citations are found by shape.
     const loose = looseGrounding(collected.offer.json)
+    // A free shape may record the same citation twice — once per option and once in a
+    // citations array. Both readings are reported; the repetition is counted so a
+    // reader is not told there are six citations when there are three.
+    const seen = new Set()
+    collected.citationRepeats = 0
     for (const candidate of loose) {
-      collected.citations.push(await verifyCitation({
+      const key = JSON.stringify([candidate.source.kind ?? 'file', candidate.source.path ?? null, candidate.source.line ?? null, candidate.source.quote ?? null])
+      const repeated = seen.has(key)
+      seen.add(key)
+      const verified = await verifyCitation({
         dir,
         option: { id: candidate.optionId ?? candidate.label ?? candidate.trail, source: candidate.source },
         originalIntent: collected.originalIntent,
         roots: citationRoots,
-      }))
+      })
+      if (repeated) collected.citationRepeats += 1
+      collected.citations.push({ ...verified, repeatedReading: repeated })
     }
     if (loose.length > 0) collected.citationShape = 'loose'
   }
   collected.commands = commandsFromReport(collected.sections)
+  // A COMMANDS section that records no command is not the same as one that was never
+  // written: the report's own words go into the operator gap, so the row quotes the
+  // agent instead of the capture asserting a silence the agent never claimed.
+  collected.commandsNote = collected.commands.length > 0 || !collected.sections.COMMANDS
+    ? null
+    : firstDetail(collected.sections.COMMANDS) ?? 'the section is empty'
   collected.integrity = integrityOf(collected)
   collected.dates = (collected.transcript.events ?? [])
     .map((event) => event.timestamp)
@@ -1183,7 +1213,8 @@ function plainCitationNote(entry) {
     fromRoot.length > 0 ? `${fromRoot.length} resolved against the TEST_PATH root rather than the case directory` : null,
     asText.length > 0 ? `${asText.length} wrote the line number as text and it was read as a number` : null,
   ].filter(Boolean)
-  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s), ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}${extra.length > 0 ? `. Of the citations read: ${extra.join('; ')}` : ''}.`
+  const repeats = entry.citationRepeats ?? 0
+  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s)${repeats > 0 ? ` — ${entry.citations.length - repeats} distinct, ${repeats} of them recorded twice` : ''}, ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}${extra.length > 0 ? `. Of the citations read: ${extra.join('; ')}` : ''}.`
 }
 
 /**
@@ -1507,7 +1538,7 @@ export function renderEvidence(model) {
   const completed = guidedCases.filter((entry) => entry.citations.length > 0 && entry.citations.every((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'))
   const unreachable = guidedCases.filter((entry) => entry.citations.some((citation) => citation.status === 'file-missing'))
   const plainClause = plainCitations.length > 0
-    ? `in the plain condition the capture re-checked ${plainCitations.length} grounding citation(s) found in the offer files, with ${plainCitations.filter((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed').length} matching the live file line or the staged task text`
+    ? `in the plain condition the capture re-checked ${plainCitations.length} grounding citation(s) found in the offer files${plainCitations.filter((citation) => citation.repeatedReading).length > 0 ? ` (${plainCitations.filter((citation) => !citation.repeatedReading).length} distinct — the rest record a path, line and quote already read)` : ''}, with ${plainCitations.filter((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed').length} matching the live file line or the staged task text`
     : null
   const guidedClause = guidedCases.length > 0
     ? `the installed CLI recorded an offer in ${guidedCases.filter((entry) => entry.recorded ?? entry.offer.present).length} of ${guidedCases.length} captured guided cell(s)${completed.length > 0 ? `, and in ${completed.length} of them every recorded citation recomputes to the live source` : ''}${unreachable.length > 0 ? ` (in ${unreachable.length} cell(s) the cited files were not part of this capture, so those citations could not be re-checked here — their recorded hashes are preserved)` : ''}`
@@ -1696,7 +1727,7 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
 export function collectOperatorGaps(model) {
   const gaps = new Set()
   for (const entry of model.cases) {
-    gaps.add(`§4 ${entry.dirName}: confirm the quoted command list and exit codes are the ones you saw${entry.commands.length === 0 ? entry.reportUnlabelled ? ' (no labelled COMMANDS section was recognised; the whole REPORT.md is quoted in the cell — paste the commands and exit codes you saw)' : entry.report.present ? ' (REPORT.md lists no commands — paste the commands and exit codes you saw)' : ' (no REPORT.md was captured — paste the commands and exit codes you saw)' : ''}`)
+    gaps.add(`§4 ${entry.dirName}: confirm the quoted command list and exit codes are the ones you saw${entry.commands.length === 0 ? entry.reportUnlabelled ? ' (no labelled COMMANDS section was recognised; the whole REPORT.md is quoted in the cell — paste the commands and exit codes you saw)' : entry.commandsNote ? ` (the report's own COMMANDS section records no command — it reads ${quote(entry.commandsNote)}, and the full section is quoted in the cell)` : entry.report.present ? ' (REPORT.md lists no commands — paste the commands and exit codes you saw)' : ' (no REPORT.md was captured — paste the commands and exit codes you saw)' : ''}`)
     gaps.add(`§4 ${entry.dirName}: the terminal state (pass / fail / blocked / not run) and its reason`)
   }
   gaps.add('§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box')

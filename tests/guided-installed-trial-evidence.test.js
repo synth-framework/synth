@@ -673,6 +673,61 @@ test("a file the agent left in TEST_PATH is copied into the raw bundle, never le
   assert.deepEqual(summary.rootExtras.map((entry) => entry.relative), ["TRANSCRIPT.md"], "the summary must name the root files it saw")
 })
 
+test("a report that lists its commands inline is read, and not reported as silent", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  await fs.writeFile(path.join(workspace, "greenfield", "REPORT.md"), [
+    "TEST: green / greenfield/",
+    "COMMANDS: npm test (before change) -> exit 0; npm test (after, no source change) -> exit 0. Both run with workdir greenfield/.",
+    "APPROACH: read first, then proposed.",
+    "STILL OPEN: the offer question.",
+    "",
+  ].join("\n"))
+  const out = path.join(repo, "docs", "analysis", "plain-inline-commands.md")
+  const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("npm test (before change) -> exit 0; npm test (after, no source change) -> exit 0"), "an inline command line must be quoted in the cell")
+  assert.equal(result.stdout.includes("REPORT.md lists no commands"), false, "a report that lists commands must not be reported as listing none")
+})
+
+test("a COMMANDS section that records no command is quoted, not called silent", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  await fs.writeFile(path.join(workspace, "greenfield", "REPORT.md"), [
+    "TEST: green / greenfield/",
+    "COMMANDS: (no shell commands run for this test; directory listing done via file read)",
+    "APPROACH: read first, then proposed.",
+    "",
+  ].join("\n"))
+  const out = path.join(repo, "docs", "analysis", "plain-no-commands.md")
+  const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  assert.match(result.stdout, /the report's own COMMANDS section records no command — it reads \(no shell commands run for this test/, "the gap must quote the agent's own words")
+  assert.equal(result.stdout.includes("REPORT.md lists no commands"), false, "the capture must not overrule the report's own sentence")
+})
+
+test("a citation recorded twice is counted once as distinct", async () => {
+  const repo = await makeRepo()
+  const lib = await loadLib()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["brown"], offerShape: "loose-plain" })
+  const grounding = [
+    { path: "src/board.js", line: 1, quote: lib.FIXTURES.brown["src/board.js"].split("\n")[0] },
+    { path: "tests/board.test.js", line: 4, quote: lib.FIXTURES.brown["tests/board.test.js"].split("\n")[3] },
+    { path: "docs/limitation.md", line: 1, quote: lib.FIXTURES.brown["docs/limitation.md"].trim() },
+  ]
+  await fs.writeFile(path.join(workspace, "brownfield", "offer.json"), `${JSON.stringify({
+    question: "How should the fill colour be accepted?",
+    options: grounding.map((entry, index) => ({ id: `option-${index}`, label: `Option ${index}`, grounded_in: entry })),
+    // The same three citations again, as a plain agent may well record them.
+    citations: grounding,
+  }, null, 2)}\n`)
+  const out = path.join(repo, "docs", "analysis", "plain-repeats.md")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("6 citation(s) — 3 distinct, 3 of them recorded twice"), "a repeated citation must be named as a repeat")
+  assert.match(doc, /6 citation\(s\) — 3 distinct, 3 of them recorded twice, 6 matched/, "both readings are still reported")
+  assert.ok(doc.includes("3 distinct — the rest record a path, line and quote already read"), "the summary clause must carry the distinct count too")
+})
+
 // #region source contract
 
 test("the capture script reads the workspace and writes only inside the repository", async () => {
