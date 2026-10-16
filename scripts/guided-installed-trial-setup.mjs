@@ -599,7 +599,7 @@ async function main(argv) {
       },
       condition: parsed.condition,
       testedRevision: { commit: assessment.commit, branch: assessment.branch, subject: assessment.subject, dirty: assessment.dirty, dirtyIgnored: assessment.dirty && parsed.allowDirty },
-      installedCli: cliManifest.installedCli ?? null,
+      installedCli: cliManifest.installedCli ?? { bin: layout.staging.installedCli, tarball: null, tarballSha256: null, version: null },
       stagingReused,
       revisions: expected,
       cases: parsed.cases,
