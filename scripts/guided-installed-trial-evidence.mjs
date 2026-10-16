@@ -673,6 +673,12 @@ export async function collectCase({ caseId, dir, dirName }) {
     ? { present: true, file: reportFile, bytes: reportBytes.length, sha256: sha256(reportBytes), text: reportBytes.toString('utf-8') }
     : { present: false, file: reportFile }
   collected.sections = parseReportSections(collected.report.text ?? '')
+  // Quote the whole report whenever any heading-like line was not recognised, so a
+  // plainly-written report is never half-read without saying so.
+  const reportDiagnostic = collected.report.present ? reportSectionsDiagnostic(collected.report.text) : null
+  collected.reportDiagnostic = reportDiagnostic
+  collected.reportUnlabelled = Boolean(reportDiagnostic)
+    && (Object.keys(collected.sections).length === 0 || reportDiagnostic.headings.length > 0)
 
   const offerFile = path.join(dir, 'offer.json')
   const offerBytes = await readBytes(offerFile)
@@ -730,9 +736,12 @@ export async function collectCase({ caseId, dir, dirName }) {
   // Every other CLI-stored file, so a re-run on the owner's machine captures state
   // this handoff copy does not have (working brief, manifest, further data logs).
   collected.stateFiles = []
+  const mtimes = []
   const stateFiles = await listFilesRecursive(path.join(dir, '.synth'))
   for (const file of stateFiles) {
     const bytes = await readBytes(file)
+    const stateStat = await statOrNull(file)
+    if (stateStat) mtimes.push(stateStat.mtime.toISOString())
     collected.stateFiles.push({
       file,
       relative: relativeTo(dir, file),
@@ -809,14 +818,106 @@ export async function collectCase({ caseId, dir, dirName }) {
     .map((event) => event.timestamp)
     .filter((value) => typeof value === 'string')
     .sort()
+  // Where no CLI timestamp exists (the plain condition), artifact mtimes are the only
+  // machine record of when a cell ran; they are reported as mtimes, never as a clock
+  // the operator set.
+  for (const file of [collected.report.file, collected.offer.file, collected.transcript.file, collected.draft.file]) {
+    if (!file) continue
+    const stat = await statOrNull(file)
+    if (stat) mtimes.push(stat.mtime.toISOString())
+  }
+  collected.mtimes = [...new Set(mtimes)].sort()
+  collected.mtimeRange = collected.mtimes.length > 0
+    ? { first: collected.mtimes[0], last: collected.mtimes[collected.mtimes.length - 1] }
+    : null
   return collected
 }
 
-/** The report shape is fixed by the instruction set (§6); extra headings are kept when they are unambiguous. */
+/** The report shape is fixed by the instruction set (§6); these labels are recognised. */
 export const KNOWN_REPORT_SECTIONS = new Set([
   'TEST', 'COMMANDS', 'CLI OUTPUT', 'OFFER', 'CITATIONS', 'APPLICATION TESTS',
   'ASSUMPTIONS', 'STILL OPEN', 'PROBLEMS', 'EFFORT',
 ])
+
+/**
+ * Common names for the same section in a report written for the plain condition,
+ * where the instruction set asks for "whatever shape you consider clear". A label
+ * must be one of these (or a known section name) to count; prose never becomes a
+ * section, and an unrecognised heading is reported instead of guessed at.
+ */
+const REPORT_SECTION_ALIASES = new Map([
+  ['STEP BY STEP', 'COMMANDS'], ['STEPS', 'COMMANDS'], ['WHAT I RAN', 'COMMANDS'], ['COMMANDS RUN', 'COMMANDS'],
+  ['COMMAND LIST', 'COMMANDS'], ['COMMANDS AND EXIT CODES', 'COMMANDS'], ['COMMANDS I RAN', 'COMMANDS'],
+  ['CLI OUTPUT', 'CLI OUTPUT'], ['TOOL OUTPUT', 'CLI OUTPUT'], ['SYNTH OUTPUT', 'CLI OUTPUT'],
+  ['QUESTION', 'OFFER'], ['QUESTIONS', 'OFFER'], ['QUESTION AND OPTIONS', 'OFFER'], ['OFFER QUESTION', 'OFFER'],
+  ['CITATIONS', 'CITATIONS'], ['GROUNDING', 'CITATIONS'], ['SOURCES', 'CITATIONS'], ['CITATIONS FOUND', 'CITATIONS'],
+  ['APPLICATION TESTS', 'APPLICATION TESTS'], ['APP TESTS', 'APPLICATION TESTS'], ['TEST RESULTS', 'APPLICATION TESTS'],
+  ['APP TEST RESULTS', 'APPLICATION TESTS'], ['APPLICATION TEST RESULTS', 'APPLICATION TESTS'],
+  ['ASSUMPTIONS AND UNKNOWNS', 'ASSUMPTIONS'], ['WHAT I ASSUMED', 'ASSUMPTIONS'], ['ASSUMED', 'ASSUMPTIONS'],
+  ['WHAT I COULD NOT DO', 'PROBLEMS'], ['WHAT WENT WRONG', 'PROBLEMS'], ['HOW I RAN IT', 'COMMANDS'],
+  ['HOW LONG IT TOOK', 'EFFORT'], ['TIME TAKEN', 'EFFORT'], ['WHAT I DID', 'COMMANDS'],
+  ['OPEN QUESTIONS', 'STILL OPEN'], ['UNRESOLVED', 'STILL OPEN'], ['UNRESOLVED CHOICES', 'STILL OPEN'],
+  ['PROBLEM', 'PROBLEMS'], ['ISSUES', 'PROBLEMS'], ['FAILURES', 'PROBLEMS'], ['BLOCKERS', 'PROBLEMS'],
+  ['TIME', 'EFFORT'], ['TIME SPENT', 'EFFORT'], ['EFFORT ESTIMATE', 'EFFORT'], ['WALL CLOCK', 'EFFORT'],
+])
+
+/** Upper-case, punctuation-free form used to match a label against those tables. */
+function normaliseReportLabel(value) {
+  return String(value ?? '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/[^A-Za-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase()
+}
+
+/** The canonical section a label names, or null — exact, alias, then word containment. */
+function resolveReportLabel(label) {
+  if (KNOWN_REPORT_SECTIONS.has(label)) return label
+  if (REPORT_SECTION_ALIASES.has(label)) return REPORT_SECTION_ALIASES.get(label)
+  const tokens = label.split(' ').filter(Boolean)
+  for (const name of KNOWN_REPORT_SECTIONS) {
+    const nameTokens = name.split(' ')
+    const contained = tokens.length >= nameTokens.length && tokens.some((_, start) =>
+      nameTokens.every((token, offset) => tokens[start + offset] === token))
+    if (contained) return name
+  }
+  return null
+}
+
+/**
+ * Recognise one report label: `LABEL:` at column 0, a markdown heading (`## Label`),
+ * or a bold label (`**Label**`, alone or as a bullet). Returns the canonical section
+ * name and any text written on the same line, or null when the line is not a label.
+ */
+function reportSectionLabel(line, previousLine) {
+  const raw = String(line ?? '').replace(/\s+$/, '')
+  if (raw.trim() === '') return null
+  const columnZero = raw.match(/^([A-Za-z][A-Za-z /-]*):\s*(.*)$/)
+  if (columnZero) {
+    const label = normaliseReportLabel(columnZero[1])
+    const standalone = previousLine === undefined || String(previousLine).trim() === ''
+    const name = KNOWN_REPORT_SECTIONS.has(label) ? label : standalone ? resolveReportLabel(label) : null
+    if (!name) return null
+    return { name, inline: columnZero[2].trim() }
+  }
+  let bare = null
+  let inline = ''
+  const heading = raw.match(/^#{1,6}\s+(.+?)\s*$/)
+  if (heading) {
+    const trailing = heading[1].match(/^(.*?):\s*(.*)$/)
+    bare = (trailing ? trailing[1] : heading[1]).trim()
+    inline = trailing ? trailing[2].trim() : ''
+  } else {
+    const bold = raw.match(/^(?:[-*]\s+)?\*\*(.+?)\*\*\s*:?\s*(.*)$/)
+    if (!bold) return null
+    bare = bold[1].trim()
+    inline = bold[2].trim()
+  }
+  const name = resolveReportLabel(normaliseReportLabel(bare))
+  if (!name) return null
+  return { name, inline }
+}
 
 export function parseReportSections(text) {
   const cleaned = String(text ?? '').replace(/\r\n/g, '\n')
@@ -824,19 +925,36 @@ export function parseReportSections(text) {
   const sections = {}
   let current = null
   for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]
-    const match = line.match(/^([A-Z][A-Z /-]*):\s*(.*)$/)
-    const isHeading = Boolean(match)
-      && match[1].trim().length <= 24
-      && (KNOWN_REPORT_SECTIONS.has(match[1].trim()) || lines[index - 1] === undefined || lines[index - 1].trim() === '')
-    if (isHeading) {
-      current = match[1].trim()
-      sections[current] = match[2].trim()
+    const label = reportSectionLabel(lines[index], lines[index - 1])
+    if (label) {
+      current = label.name
+      sections[current] = label.inline
     } else if (current) {
-      sections[current] = `${sections[current]}\n${line}`.trimEnd()
+      sections[current] = `${sections[current]}\n${lines[index]}`.trimEnd()
     }
   }
   return sections
+}
+
+/** What the capture looked for, and the heading-like lines the file actually holds. */
+export function reportSectionsDiagnostic(text) {
+  const lines = String(text ?? '').replace(/\r\n/g, '\n').split('\n')
+  const recognised = []
+  const headings = []
+  const firstContent = lines.findIndex((line) => line.trim() !== '')
+  for (let index = 0; index < lines.length; index += 1) {
+    const label = reportSectionLabel(lines[index], lines[index - 1])
+    if (label) {
+      recognised.push(label.name)
+      continue
+    }
+    const line = lines[index].trim()
+    if (line === '' || line.length > 60) continue
+    // A document title, a sentence or a list item is not an unrecognised section.
+    if (index === firstContent || /^#\s+\S/.test(line) || line.endsWith('.')) continue
+    if (/^(?:#{2,6}\s+\S|\*\*\S.*\*\*\s*:?\s*$|[A-Za-z][A-Za-z /-]{2,24}:\s*$)/.test(line)) headings.push(line)
+  }
+  return { recognised, headings: headings.slice(0, 12), lookedFor: [...KNOWN_REPORT_SECTIONS] }
 }
 
 /** Derive the evidence date: newest recorded trial event, else file mtime, else today. */
@@ -898,6 +1016,23 @@ function plainCitationNote(entry) {
   return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s), ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}.`
 }
 
+/**
+ * Why a report with no recognised label is quoted whole instead of summarised.
+ * The plain condition's report shape is the agent's own, so a miss here is normal
+ * and must not turn into an empty row or an invented section.
+ */
+function reportFallbackNote(entry) {
+  const diagnostic = entry.reportDiagnostic ?? { lookedFor: [...KNOWN_REPORT_SECTIONS], headings: [], recognised: [] }
+  const recognised = [...new Set(diagnostic.recognised)]
+  const found = diagnostic.headings.length > 0
+    ? ` Heading-like lines it did not recognise: ${diagnostic.headings.map((line) => quote(line)).join('; ')}.`
+    : ''
+  const seen = recognised.length > 0
+    ? ` Recognised: ${recognised.join(', ')} — the rows above use those.`
+    : ' It recognised none in this file.'
+  return `The capture looked for a labelled section — \`LABEL:\` at the start of a line, a \`## Label\` heading, or a bold \`**Label**\` — using these names: ${diagnostic.lookedFor.join(', ')}.${seen}${found} The report is quoted in full below so nothing has to be retyped, and the raw copy beside this document holds the same bytes.`
+}
+
 /** One per-case cell, in the template's own bullet order. */
 function renderCell(entry, model) {
   const condition = model.condition.resolved
@@ -905,7 +1040,9 @@ function renderCell(entry, model) {
   const span = humanSpan(entry.integrity.spanSeconds)
   const times = entry.dates.length > 0
     ? `first recorded CLI event \`${entry.dates[0]}\`, last \`${entry.dates[entry.dates.length - 1]}\` (recorded span ${span})`
-    : 'no timestamped CLI event was captured'
+    : entry.mtimeRange
+      ? `no CLI timestamp (this condition leaves no CLI state); artifact mtimes in TEST_PATH \`${entry.mtimeRange.first}\` → \`${entry.mtimeRange.last}\` — when the files were written on this machine's clock, not a start/end the operator set`
+      : 'no timestamped CLI event was captured'
   const changedNote = entry.inputs.changed.length > 0
     ? `${entry.inputs.changed.length} of them differ in bytes from the frozen fixture bodies (${entry.inputs.changed.map((item) => `\`${item}\``).join(', ')}), so the input was modified after staging — see §3`
     : 'all byte-identical to the frozen fixtures'
@@ -927,6 +1064,7 @@ function renderCell(entry, model) {
   const reportExtras = []
   if (sections['CLI OUTPUT']) reportExtras.push(bullet('CLI output the agent summarized (`REPORT.md` section CLI OUTPUT, verbatim)', fenced(sections['CLI OUTPUT'])))
   if (sections.PROBLEMS) reportExtras.push(bullet('What the agent reported as wrong or contradictory (`REPORT.md` section PROBLEMS, verbatim)', fenced(sections.PROBLEMS)))
+  if (entry.reportUnlabelled) reportExtras.push(bullet('The whole `REPORT.md`, verbatim (some of it was not labelled in a shape the capture reads)', `${reportFallbackNote(entry)}\n\n${fenced(entry.report.text ?? '')}`))
   const terminal = bullet('Terminal state: `pass` / `fail` / `blocked` / `not run` — reason', operator(`the terminal state for this cell, with the reason — the captured files prove what happened, not whether it counts as a pass (recorded for this cell: ${entry.integrity.terminalState ?? 'no machine-recorded terminal projection'})`))
 
   if (condition === 'plain') {
@@ -1034,10 +1172,13 @@ export function renderEvidence(model) {
   out.push(`| 5 | Matched agent/model/version, tools, starting request text | ${operator('the agent, model, version and tool access used in this condition')} | The starting request text per case is in the raw copies and quoted in §4; the staged instruction set is ${stagedInstruction.present ? `sha256 \`${stagedInstruction.sha256}\`` : 'missing'}. |`)
   out.push(`| 6 | Session plan and order (fresh session per test where possible; one session per condition at minimum) | ${operator('the actual order and session count')} | Recorded CLI timestamps: ${cases.map((entry) => `${entry.dirName} ${entry.dates[0] ?? 'no timestamp'}`).join('; ') || 'none'}. |`)
   out.push(`| 7 | Protocol, time box, expected observations and stop conditions pre-registered | ${operator('the time box and where the protocol was fixed')} | [guided-three-path-matched-comparison.md](guided-three-path-matched-comparison.md) and the runbook were in the repository before this run; the commits carrying them are in the branch history. |`)
-  out.push(`| 8 | Verbatim transcripts, wall-clock per cell, intervention log | ${operator('confirm nothing was tidied or withheld')} | CLI transcripts captured for ${cases.filter((entry) => entry.transcript.present).length} of ${cases.length} case(s); agent reports captured for ${cases.filter((entry) => entry.report.present).length} of ${cases.length}. |`)
-  out.push(`| 9 | Installed tarball pinned and identified (not a repo build) | ${operator('confirm the installed CLI is the one that ran')} | ${model.install.tarballSha256 ? `tarball sha256 \`${model.install.tarballSha256}\`${model.install.version ? `, \`synth --version\` → ${JSON.stringify(model.install.version)}` : ''}` : 'the staging directory was not reachable from this capture, so the tarball digest and version are in §2 as operator values.'} |`)
+  const transcriptNote = model.condition.resolved === 'plain'
+    ? `the plain condition stores no CLI state by design, so its record is the agent report (copied byte-for-byte into the raw bundle, and quoted in the cells where a section was not labelled); CLI transcripts captured`
+    : `CLI transcripts captured`
+  out.push(`| 8 | Verbatim transcripts, wall-clock per cell, intervention log | ${operator('confirm nothing was tidied or withheld')} | ${transcriptNote} for ${cases.filter((entry) => entry.transcript.present).length} of ${cases.length} case(s); agent reports captured for ${cases.filter((entry) => entry.report.present).length} of ${cases.length}. |`)
+  out.push(`| 9 | Installed tarball pinned and identified (not a repo build) | ${operator('confirm the installed CLI is the one that ran')} | ${model.condition.resolved === 'plain' ? 'not applicable to this arm — the plain condition installs nothing; the guided capture of the same trial carries the pin (see its §2).' : model.install.tarballSha256 ? `tarball sha256 \`${model.install.tarballSha256}\`${model.install.version ? `, \`synth --version\` → ${JSON.stringify(model.install.version)}` : ''}` : 'the staging directory was not reachable from this capture, so the tarball digest and version are in §2 as operator values.'} |`)
   out.push(`| 10 | No invented human words; guided cells ended \`awaiting-response\`; no lifecycle action; no push | ${operator('confirm from your own session')} | ${model.integrityNote} |`)
-  out.push(`| 11 | Operator coaching logged verbatim | ${operator('every intervention, verbatim — including any reminder that the tool exists')} | ${cases.reduce((sum, entry) => sum + entry.integrity.operatorInputEvents, 0)} operator input event(s) across the captured transcripts (the kickoff line each). |`)
+  out.push(`| 11 | Operator coaching logged verbatim | ${operator('every intervention, verbatim — including any reminder that the tool exists')} | ${model.condition.resolved === 'plain' ? `${cases.reduce((sum, entry) => sum + entry.integrity.operatorInputEvents, 0)} input event(s) — this condition records no CLI transcript, so a 0 here means nothing was recorded, not that nothing was said; the launch line is quoted in §1.` : `${cases.reduce((sum, entry) => sum + entry.integrity.operatorInputEvents, 0)} operator input event(s) across the captured transcripts (the kickoff line each).`} |`)
   out.push('')
   out.push(`Anything unmet, and why: ${operator('list every unmet item and the reason, or write "none"')}`)
   out.push('')
@@ -1053,11 +1194,15 @@ export function renderEvidence(model) {
     ['Setup command and exit code', model.setupCommand ?? `${operator('the setup command you ran and its exit code')}`],
     ['TEST_PATH state before setup', model.stateBefore ?? operator('missing, or empty')],
     ['Was TEST_PATH created by setup?', model.createdBySetup ?? operator('yes or no')],
-    ['Scratch directory (outside TEST_PATH)', model.staging.root ? `${inlineCode(model.staging.root)}${model.staging.present ? '' : ' — not reachable from this capture'} — tarball, installed CLI and transcripts` : operator('the staging directory setup used')],
+    ['Scratch directory (outside TEST_PATH)', model.condition.resolved === 'plain' ? 'not applicable — the plain condition builds nothing and writes nothing outside TEST_PATH' : model.staging.root ? `${inlineCode(model.staging.root)}${model.staging.present ? '' : ' — not reachable from this capture'} — tarball, installed CLI and transcripts` : operator('the staging directory setup used')],
     ['CLI manifest / setup manifest', model.manifestNote],
     ['Instruction file staged at TEST_PATH root', stagedInstruction.present ? `\`INSTRUCTIONS.md\` (${stagedInstruction.namesTool ? 'guided set — names the tool' : 'plain set — names no tool'}), sha256 \`${stagedInstruction.sha256}\`${model.environment.present ? ', plus `ENVIRONMENT.md`' : ', no `ENVIRONMENT.md` (plain condition)'}` : operator('which instruction file was staged')],
     ['Launch line given to the agent, verbatim', `recorded by setup: ${inlineCode(model.launch.recorded ?? '')}${model.launch.source === 'manifest' ? ' (from `setup-manifest.json`)' : model.launch.source === 'inferred' ? ' (the line this repository\'s script prints for this condition — the manifest was not reachable)' : ''}. ${operator('paste what you actually typed, and if you changed the wording, say exactly how')}`],
-    ['Date and timezone, start/end', `${cases.map((entry) => `\`${entry.dirName}\`: ${entry.dates[0] ?? 'no timestamp'} → ${entry.dates[entry.dates.length - 1] ?? 'no timestamp'}`).join('; ') || 'no recorded timestamps'}; filename date \`${model.date}\` (${model.dateSource}). ${operator('your local timezone and the wall-clock start/end')}`],
+    ['Date and timezone, start/end', `${cases.map((entry) => {
+      if (entry.dates.length > 0) return `\`${entry.dirName}\`: ${entry.dates[0]} → ${entry.dates[entry.dates.length - 1]} (CLI-recorded)`
+      if (entry.mtimeRange) return `\`${entry.dirName}\`: ${entry.mtimeRange.first} → ${entry.mtimeRange.last} (artifact mtimes — this condition records no CLI timestamps)`
+      return `\`${entry.dirName}\`: no timestamp`
+    }).join('; ') || 'no recorded timestamps'}; filename date \`${model.date}\` (${model.dateSource}). ${operator('your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set')}`],
     ['Running agent, model and version', operator('agent product, model and version; session ids')],
     ['Tool access given to the agent', operator('shell, editor, network, and anything else')],
     ['Pinned repository revision', model.revision.commit ? `\`${model.revision.commit}\`${model.revision.subject ? ` — ${quote(model.revision.subject)}` : ''}${model.revision.source ? ` (${model.revision.source})` : ''}` : operator('the commit the CLI was built from')],
@@ -1073,7 +1218,9 @@ export function renderEvidence(model) {
   out.push('')
   out.push('| Field | Value |')
   out.push('| --- | --- |')
-  const proof = [
+  const proof = model.condition.resolved === 'plain'
+    ? [['Build, pack and install', 'not applicable — the plain condition installs nothing and writes nothing outside TEST_PATH; its `INSTRUCTIONS.md` named no tool. The install proof of the same trial is in the guided capture.']]
+    : [
     ['Build command and exit', model.install.build],
     ['Pack command and exit', model.install.pack],
     ['Tarball name', model.install.tarballName ?? operator('the packed file name')],
@@ -1083,7 +1230,7 @@ export function renderEvidence(model) {
   ]
   for (const [field, value] of proof) out.push(`| ${field} | ${value} |`)
   out.push('')
-  if (model.staging.notes.length > 0) {
+  if (model.staging.notes.length > 0 && model.condition.resolved !== 'plain') {
     out.push(`Staging notes: ${model.staging.notes.map((note) => quote(note)).join('; ')}.`)
     out.push('')
   }
@@ -1348,17 +1495,22 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
       return `${entry.dirName}: no working brief stored (${draftStatus}); ${lastEvent} — the report\'s \`first-contact status\` line is quoted in §4`
     })
   model.gaps.lifecycleNotChecked = model.cases.some((entry) => entry.commands.length === 0)
+  const plainCondition = model.condition.resolved === 'plain'
   model.integrityNote = [
-    `Captured CLI state records ${humanResponses} human response(s)`,
+    plainCondition
+      ? 'the plain condition stores no CLI state, so nothing recorded a human response; the agent report is the only record of the session'
+      : `Captured CLI state records ${humanResponses} human response(s)`,
     lifecycle.length === 0 ? 'no lifecycle, selection or push command appears in a captured command list' : `lifecycle-looking commands found: ${lifecycle.map((item) => quote(item)).join(' | ')}`,
     awaiting.length > 0 ? `machine-recorded terminal projections: ${awaiting.join('; ')}` : null,
-    model.cases.some((entry) => !entry.transcript.present) ? 'a guided CLI transcript is missing for at least one case' : null,
+    !plainCondition && model.cases.some((entry) => !entry.transcript.present) ? 'a guided CLI transcript is missing for at least one case' : null,
   ].filter(Boolean).join('; ')
   const fabricated = []
   if (humanResponses > 0) fabricated.push(`${humanResponses} recorded response(s) — read them before repeating this statement`)
   if (lifecycle.length > 0) fabricated.push('a lifecycle-looking command was captured')
   model.humanWordsStatement = fabricated.length === 0
-    ? '`none` — required; the captured CLI state holds no recorded human response (sourceAnswers and choiceReviews are empty in every captured draft) and no captured command names a selection, approval or human response'
+    ? plainCondition
+      ? '`none` — required; the plain condition stores no CLI state at all, so nothing recorded a human response, and the offer and report files are quoted rather than paraphrased'
+      : '`none` — required; the captured CLI state holds no recorded human response (sourceAnswers and choiceReviews are empty in every captured draft) and no captured command names a selection, approval or human response'
     : `NOT VERIFIED — ${fabricated.join('; ')}. ${operator('resolve this before citing the evidence')}`
   model.autoFeed = '`none — the agent was launched by hand with a line that names SYNTH, as the current CLI requires; no skill, plugin or service announces the tool`'
   model.operatorGaps = collectOperatorGaps(model)
@@ -1369,14 +1521,15 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
 export function collectOperatorGaps(model) {
   const gaps = new Set()
   for (const entry of model.cases) {
-    gaps.add(`§4 ${entry.dirName}: confirm the quoted command list and exit codes are the ones you saw${entry.commands.length === 0 ? ' (no COMMANDS block was found in REPORT.md — write it yourself)' : ''}`)
+    gaps.add(`§4 ${entry.dirName}: confirm the quoted command list and exit codes are the ones you saw${entry.commands.length === 0 ? entry.reportUnlabelled ? ' (no labelled COMMANDS section was recognised; the whole REPORT.md is quoted in the cell — paste the commands and exit codes you saw)' : entry.report.present ? ' (REPORT.md lists no commands — paste the commands and exit codes you saw)' : ' (no REPORT.md was captured — paste the commands and exit codes you saw)' : ''}`)
     gaps.add(`§4 ${entry.dirName}: the terminal state (pass / fail / blocked / not run) and its reason`)
   }
   gaps.add('§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box')
   gaps.add('§0 the Met? column for all eleven independence items')
   gaps.add('§5 every comparative reading')
   gaps.add('§7 the recommendation for ordinary PR #347 review')
-  if (!model.install.tarballSha256) gaps.add('§2 the install proof — re-run the capture with --staging <dir> on the machine that holds the scratch directory')
+  if (model.condition.resolved !== 'plain' && !model.install.tarballSha256) gaps.add('§2 the install proof — re-run the capture with --staging <dir> on the machine that holds the scratch directory')
+  if (model.condition.resolved === 'plain') gaps.add('§1 the plain arm installs nothing, so §2 is not applicable here; the install proof belongs to the guided capture')
   for (const entry of model.cases.filter((candidate) => candidate.inputs.basis === 'partial-inputs')) {
     gaps.add(`§3 ${entry.dirName}: starting inputs missing from this capture (${entry.inputs.missing.join(', ')}) — copy them into the workspace copy or re-run on the machine that holds it`)
   }
@@ -1611,9 +1764,11 @@ async function main(argv) {
   console.log(`  evidence file      : ${relativeTo(repo, outPath)}  (${written.text.length} B)`)
   console.log(`  raw copies         : ${model.rawRelative}/  (${written.sources.length} entry/entries)`)
   for (const entry of model.cases) {
-    console.log(`  ${entry.dirName.padEnd(16)}: report ${entry.report.present ? 'yes' : 'NO '}  offer ${entry.offer.present ? 'yes' : 'NO '}  transcript ${entry.transcript.present ? 'yes' : 'NO '}  revision ${entry.inputs.matched ? 'matched' : entry.inputs.basis === 'partial-inputs' ? 'not computable' : 'MISMATCH'}  citations ${entry.citations.length > 0 ? `${entry.citations.filter((citation) => citation.status === 'matched').length}/${entry.citations.length} matched` : 'none captured'}`)
+    const verified = entry.citations.filter((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed').length
+    console.log(`  ${entry.dirName.padEnd(16)}: report ${entry.report.present ? 'yes' : 'NO '}  offer ${entry.offer.present ? 'yes' : 'NO '}  transcript ${entry.transcript.present ? 'yes' : 'NO '}  revision ${entry.inputs.matched ? 'matched' : entry.inputs.basis === 'partial-inputs' ? 'not computable' : 'MISMATCH'}  citations ${entry.citations.length > 0 ? `${verified}/${entry.citations.length} verified${verified < entry.citations.length ? ' — see §4' : ''}` : 'none captured'}`)
   }
-  if (!model.install.tarballSha256) console.log(`  install proof      : not reachable — re-run with --staging <dir> on the machine that holds the scratch directory`)
+  if (model.condition.resolved === 'plain') console.log(`  install proof      : not applicable (the plain condition installs nothing and writes nothing outside TEST_PATH)`)
+  else if (!model.install.tarballSha256) console.log(`  install proof      : not reachable — re-run with --staging <dir> on the machine that holds the scratch directory`)
   if (model.warnings.length > 0) for (const warning of model.warnings) console.log(`  warning            : ${warning}`)
   console.log('')
   console.log(`Operator-only rows still to fill (${OPERATOR_PREFIX} … in the evidence file):`)

@@ -94,7 +94,7 @@ async function makeStaging({ tarballSha = "a".repeat(64) } = {}) {
  * offer file that omits the hashes the CLI adds to its own recorded copy, one
  * correct citation hash and one deliberately wrong one.
  */
-async function makeWorkspace({ condition = "guided", cases = ["green", "brown"], staging = null, tamper = null, reportExtra = "", omitInputs = [], environmentWorkspace = null, offerShape = "guided" } = {}) {
+async function makeWorkspace({ condition = "guided", cases = ["green", "brown"], staging = null, tamper = null, reportExtra = "", omitInputs = [], environmentWorkspace = null, offerShape = "guided", reportShape = "labelled" } = {}) {
   const lib = await loadLib()
   const setup = await loadSetup()
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), `trial-evidence-ws-${condition}-`))
@@ -157,6 +157,26 @@ async function makeWorkspace({ condition = "guided", cases = ["green", "brown"],
       "- ~9 minutes.",
       "",
     ].join("\n")
+    if (reportShape === "markdown") {
+      files[`${dirName}/REPORT.md`] = [
+        `# Trial report for ${dirName}`,
+        "",
+        "## Commands",
+        "",
+        `- \`synth first-contact --dry-run\` -> exit 0`,
+        "",
+        "## What I assumed",
+        "",
+        "- nothing beyond the task text",
+        "",
+        "## Still open",
+        "",
+        "- the offer question",
+        "",
+      ].join("\n")
+    } else if (reportShape === "prose") {
+      files[`${dirName}/REPORT.md`] = `I read the directory, which was empty, and wrote offer.json with one question and three options.\n\nNo commands were needed. Everything is still open.\n`
+    }
     // The plain instruction set asks for `offer.json` "in whatever shape you
     // consider clear", so a plain offer is written the way a real one came back.
     const looseOffer = {
@@ -459,6 +479,51 @@ test("--cases narrows the capture and --out refuses to write into TEST_PATH", as
     await fs.rm(repo, { recursive: true, force: true })
     await fs.rm(workspace, { recursive: true, force: true })
   }
+})
+
+test("a plain report written with markdown headings is read, not quoted wholesale", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], reportShape: "markdown", offerShape: "loose-plain" })
+  const out = path.join(repo, "docs", "analysis", "plain-markdown.md")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("synth first-contact --dry-run"), "the heading-style COMMANDS section must be read")
+  assert.ok(doc.includes("- the offer question"), "the alias for STILL OPEN must be read")
+  assert.equal(doc.includes("The whole `REPORT.md`, verbatim"), false, "a fully labelled report must not be quoted wholesale")
+})
+
+test("a plain report with no labels at all is quoted in full, and the gap says why", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], reportShape: "prose", offerShape: "loose-plain" })
+  const out = path.join(repo, "docs", "analysis", "plain-prose-report.md")
+  const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("The whole `REPORT.md`, verbatim"), "an unlabelled report must be quoted whole")
+  assert.ok(doc.includes("I read the directory, which was empty, and wrote offer.json"), "the report text must appear verbatim")
+  assert.ok(doc.includes("It recognised none in this file"), "the note must say nothing was recognised")
+  assert.ok(result.stdout.includes("REPORT.md is quoted in the cell"), "the printed gap must point at the quoted report instead of asking for a retype")
+  assert.equal(result.stdout.includes("write it yourself"), false, "the old retype wording must be gone")
+})
+
+test("a plain capture marks the install proof not applicable and never asks for staging", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  const out = path.join(repo, "docs", "analysis", "plain-install.md")
+  const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("not applicable — the plain condition installs nothing"), "§2 must say the plain arm installs nothing")
+  assert.ok(doc.includes("(artifact mtimes — this condition records no CLI timestamps)"), "§1 must show artifact mtimes for the plain arm")
+  assert.equal(result.stdout.includes("--staging"), false, "the plain gap list must not ask for a scratch directory")
+  assert.match(result.stdout, /citations 1\/2 verified/, "the summary must count a recomputed citation as verified and show the one that failed")
+})
+
+test("--condition that contradicts the layout is refused", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  const out = path.join(repo, "docs", "analysis", "plain-mislabelled.md")
+  const result = runScript(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out, "--condition", "guided"])
+  assert.notEqual(result.status, 0, "a declared condition that contradicts the workspace must fail")
+  assert.match(result.stderr, /contradicts the layout/)
 })
 
 test("a plain offer whose grounding is prose says so instead of leaving the row empty", async () => {
