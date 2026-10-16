@@ -10,7 +10,7 @@ Checklist: [instructions, Appendix C](../plans/guided-installed-cli-trial-instru
 
 | # | Requirement | Met? | Note or evidence |
 | --- | --- | --- | --- |
-| 1 | Different agent and fresh session from the authoring agent | `<yes/no>` | `<...>` |
+| 1 | Cells run by a different agent and fresh session than the authoring agent (setup-only agent may be any agent; a plain cell must never be run by an agent that has seen this repository) | `<yes/no>` | `<...>` |
 | 2 | Agent had no access to the authoring repo (clone removed, workspace confined) | `<yes/no>` | `<...>` |
 | 3 | Agent blind to which condition is expected to win; plain prompt never mentioned SYNTH | `<yes/no>` | `<...>` |
 | 4 | Matched inputs; revisions recorded before the first cell | `<yes/no>` | `<...>` |
@@ -29,6 +29,11 @@ Anything unmet, and why: `<...>`
 | Field | Value |
 | --- | --- |
 | Operator (who ran the trial) | `<name>` |
+| Setup executed by (agent/tool, model, version) | `<...>` |
+| Setup command and exit code | `node scripts/guided-installed-trial-setup.mjs --root <...> --pin <...>` → `<exit>` |
+| Setup manifest path | `<TRIAL>/transcripts/setup-manifest.json` |
+| Kickoff files used, per cell | `<TRIAL>/kickoff/guided-<case>.md`, `<PLAIN>/kickoff-<case>.md` |
+| Kickoff issued by (who) and how (paste only?) | `<...>` |
 | Date and timezone, start/end | `<...>` |
 | Running agent, model and version | `<...>` |
 | Tool access given to the agent | `<shell, editor, network, ...>` |
@@ -66,6 +71,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 
 ### `<case>` / plain
 
+- Kickoff file pasted, session id, and start time: `<...>`
 - Commands and exit codes: `<...>`
 - Input revision at start / any file change during the cell: `<...>`
 - Questions or options the agent raised: `<...>`
@@ -78,6 +84,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 
 ### `<case>` / guided
 
+- Kickoff file pasted, session id, and start time: `<...>`
 - Commands and exit codes: `<...>`
 - Input revision at start / any file change during the cell: `<...>`
 - `first-contact status` terminal projection (`awaiting-response` required here): `<...>`
@@ -111,6 +118,8 @@ Fill one block per case and condition. Required cases produce six blocks; option
 - Pushes, pull requests or merges created by this trial: `none` (required).
 - Application tests weakened or skipped to make a cell pass: `none` (required).
 - Total operator effort and whether it exceeded the time box: `<...>`.
+- Was setup run before the cells by the same agent that ran them? `<yes/no + which cells>`.
+- Any auto-feed: `none — the kickoff was pasted by hand, as the current CLI requires`.
 
 ## 7. What this evidence does and does not support
 

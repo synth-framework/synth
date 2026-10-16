@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-installed-trial-setup",
+  "description": "Guards, kickoff text and fixture-revision constants for the installed-CLI trial setup executor",
+  "command": "node --test tests/guided-installed-trial-setup.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 15000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
