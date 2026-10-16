@@ -1,9 +1,0 @@
-{
-  "id": "evidence-mvaqk2ga-b8pbgb",
-  "kind": "image",
-  "uri": "file://test/reference.png",
-  "hash": "sha256:deadbeef",
-  "mimeType": "image/png",
-  "description": "Reference evidence for alignment fixture",
-  "capturedAt": 1792141130602
-}
