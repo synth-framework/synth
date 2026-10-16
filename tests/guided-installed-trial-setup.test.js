@@ -104,10 +104,63 @@ test("unknown or valueless flags fail rather than guessing", () => {
   assert(badCondition.stderr.includes("--condition must be guided or plain"), badCondition.stderr)
 })
 
-test("plain refuses a TEST_PATH that would reveal the tool", () => {
-  const result = runScript(["--workspace", path.join(os.tmpdir(), "synth-plain-leak"), "--condition", "plain"])
-  assert.notEqual(result.status, 0)
-  assert(result.stderr.includes("does not spell the tool's name"), result.stderr)
+test("plain refuses a TEST_PATH that would reveal the tool, and refuses --stage-only", () => {
+  const leaky = runScript(["--workspace", path.join(os.tmpdir(), "synth-plain-leak"), "--condition", "plain"])
+  assert.notEqual(leaky.status, 0)
+  assert(leaky.stderr.includes("does not spell the tool's name"), leaky.stderr)
+
+  const staging = runScript(["--repo", REPO_ROOT, "--workspace", path.join(os.tmpdir(), "board-plain-stage"), "--condition", "plain", "--stage-only"])
+  assert.notEqual(staging.status, 0)
+  assert(staging.stderr.includes("does not use"), staging.stderr)
+})
+
+test("the plain condition is staged from a checkout without building anything", async () => {
+  // A fake checkout carrying only the files the plain staging path reads: the
+  // instruction sets, the index and the fixture generator with its library.
+  const checkout = await makeCheckout("board-plain-src-")
+  const workspace = path.join(os.tmpdir(), `board-plain-${process.pid}-${Date.now()}`)
+  try {
+    const copies = [
+      ["docs/plans/guided-trial/instructions/guided.md", "docs/plans/guided-trial/instructions/guided.md"],
+      ["docs/plans/guided-trial/instructions/plain.md", "docs/plans/guided-trial/instructions/plain.md"],
+      ["docs/plans/guided-trial/README.md", "docs/plans/guided-trial/README.md"],
+      ["scripts/guided-installed-trial-fixtures.mjs", "scripts/guided-installed-trial-fixtures.mjs"],
+      ["scripts/lib/guided-trial-fixtures.mjs", "scripts/lib/guided-trial-fixtures.mjs"],
+    ]
+    for (const [from, to] of copies) {
+      const target = path.join(checkout, to)
+      await fs.mkdir(path.dirname(target), { recursive: true })
+      await fs.copyFile(path.join(REPO_ROOT, from), target)
+    }
+    git(["add", "."], checkout)
+    git(["commit", "-q", "-m", "trial sources"], checkout)
+
+    const result = runScript(["--repo", checkout, "--workspace", workspace, "--condition", "plain"])
+    assert.equal(result.status, 0, result.stderr)
+    assert(result.stdout.includes("does not run the tool"), "the banner must say the plain run builds nothing")
+    assert.equal(/npm-ci|npm run build/.test(result.stdout), false, "no build may run for the plain condition")
+    assert.equal(result.stdout.includes("installed CLI"), false, "the plain run must not claim an installed CLI")
+
+    const entries = (await fs.readdir(workspace)).sort()
+    assert.deepEqual(entries, ["INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])
+    const instruction = await fs.readFile(path.join(workspace, "INSTRUCTIONS.md"), "utf-8")
+    assert.equal(TOOL_WORD.test(instruction), false, "the plain root instruction must not name the tool")
+    assert.equal(/first-contact/.test(instruction), false, "the plain root instruction must not carry guided commands")
+    assert.deepEqual((await fs.readdir(path.join(workspace, "greenfield"))).length, 0, "greenfield starts empty")
+    assert.deepEqual((await fs.readdir(path.join(workspace, "documentation"))).sort(), ["docs"])
+    assert.deepEqual((await fs.readdir(path.join(workspace, "brownfield"))).sort(), ["docs", "package.json", "src", "tests"])
+    assert.equal(await fs.access(path.join(workspace, "ENVIRONMENT.md")).then(() => true, () => false), false, "no generated environment note in a plain run")
+
+    const manifest = JSON.parse(await fs.readFile(path.join(`${workspace}-cli`, "transcripts", "setup-manifest.json"), "utf-8"))
+    assert.equal(manifest.condition, "plain")
+    assert.equal(manifest.installedCli, null)
+    assert.equal(manifest.cliStagingUsed, false)
+    assert.deepEqual(manifest.productCommandsRun, ["synth --version"])
+  } finally {
+    await fs.rm(checkout, { recursive: true, force: true })
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(`${workspace}-cli`, { recursive: true, force: true })
+  }
 })
 
 test("a relative workspace is refused", () => {

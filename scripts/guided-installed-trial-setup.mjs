@@ -91,6 +91,7 @@ export const USAGE = `Usage: node scripts/guided-installed-trial-setup.mjs --wor
   --cli-root <dir>      advanced; default: the sibling directory <TEST_PATH>-cli, outside TEST_PATH
   --refresh-cli         rebuild even when a staged CLI for this revision already exists
   --condition <name>    guided (default) or plain; plain refuses a path that spells the tool's name
+                        and is staged without any CLI: it runs no product command at all
   --cases <a,b,c>       default ${REQUIRED_CASES.join(',')} (available: ${CASE_ORDER.join(', ')})
   --pin <ref>           advanced; default: the checkout's committed HEAD
   --allow-dirty         proceed although the checkout has uncommitted changes (the artifact still comes
@@ -180,6 +181,9 @@ export function parseArgs(argv) {
   }
   if (args.workspace && !path.isAbsolute(args.workspace)) throw new Error('--workspace must be an absolute path')
   if (args.cliRoot !== undefined && !path.isAbsolute(args.cliRoot)) throw new Error('--cli-root must be an absolute path')
+  if (args.condition === 'plain' && args.stageOnly) {
+    throw new Error('--stage-only stages a CLI, which the plain condition does not use; drop it or use --condition guided')
+  }
   if (args.condition === 'plain' && args.workspace && /synth/i.test(args.workspace)) {
     throw new Error(`--condition plain needs a TEST_PATH whose path does not spell the tool's name: ${args.workspace}`)
   }
@@ -330,6 +334,8 @@ export function stopBanner({ layout, manifest, assessment, cases, cliStaging, st
     lines.push(`  CLI staging        : ${layout.cliRoot}   (${stagingReused ? 'reused a CLI staged earlier' : 'built, packed and installed beforehand'})`)
     lines.push(`  installed CLI      : ${layout.cli.installedCli}   (setup invoked only: synth --version)`)
     lines.push(`  transcripts        : ${layout.cli.transcripts}`)
+  } else {
+    lines.push(`  CLI staging        : none — the plain condition does not run the tool, so nothing was built`)
   }
   lines.push(
     `  tests              : ${cases.map((caseId) => `${TEST_DIRS[caseId]}/`).join('  ')}`,
@@ -449,24 +455,47 @@ async function main(argv) {
     if (!assessment.ok) throw new Error(`${assessment.reason}${assessment.remedy ? `. ${assessment.remedy}` : ''}`)
   }
 
-  // --- CLI staging: beforehand, and always outside TEST_PATH ---
+  // --- CLI staging: beforehand, outside TEST_PATH, and only when the condition uses the CLI ---
   const stagedManifest = await readJsonOrNull(layout.cli.manifest)
-  let cliStaging = Boolean(assessment) || Boolean(stagedManifest)
+  let cliStaging = false
   let stagingReused = false
   let cliManifest = stagedManifest
-  if (assessment) {
-    const decision = shouldReuseCli(stagedManifest, assessment, {
-      installedCliExists: await exists(layout.cli.installedCli),
-      refresh: parsed.refreshCli,
-    })
-    if (decision.reuse) {
-      stagingReused = true
-      cliManifest = stagedManifest
-    } else {
-      cliManifest = await prepareCli({ repo, assessment, layout, run, runCapture, logger })
+  let instructionSource = null
+  let fixturesTool = null
+  if (parsed.condition === 'guided') {
+    if (!assessment && !stagedManifest) {
+      throw new Error(`no staged CLI at ${layout.cli.manifest}, and no --repo was given to build one`)
     }
-  } else if (!stagedManifest) {
-    throw new Error(`no staged CLI at ${layout.cli.manifest}, and no --repo was given to build one`)
+    if (assessment) {
+      const decision = shouldReuseCli(stagedManifest, assessment, {
+        installedCliExists: await exists(layout.cli.installedCli),
+        refresh: parsed.refreshCli,
+      })
+      if (decision.reuse) {
+        stagingReused = true
+        cliManifest = stagedManifest
+      } else {
+        cliManifest = await prepareCli({ repo, assessment, layout, run, runCapture, logger })
+      }
+    }
+    cliStaging = true
+    instructionSource = cliManifest.instructionsDir
+    fixturesTool = cliManifest.fixturesTool
+  } else {
+    // The plain condition never runs the tool, so nothing is built for it. Its
+    // instruction file and fixtures come from the staged pin when one matches,
+    // otherwise straight from the given checkout.
+    const stagedMatches = Boolean(stagedManifest) && (!assessment || stagedManifest.testedRevision?.commit === assessment.commit)
+    if (stagedMatches) {
+      instructionSource = stagedManifest.instructionsDir
+      fixturesTool = stagedManifest.fixturesTool
+    } else if (repo) {
+      instructionSource = path.join(repo, INSTRUCTION_SET_DIR, 'instructions')
+      fixturesTool = path.join(repo, FIXTURE_GENERATOR)
+    } else {
+      throw new Error('--condition plain needs --repo to read the instruction file, or an existing CLI staging directory for the same revision')
+    }
+    cliStaging = Boolean(cliManifest)
   }
 
   if (parsed.stageOnly) {
@@ -492,7 +521,6 @@ async function main(argv) {
   if (!(await pathIsEmptyOrMissing(layout.workspace))) throw new Error(`--workspace must be empty or nonexistent: ${layout.workspace}`)
   await fs.mkdir(layout.workspace, { recursive: true })
 
-  const instructionSource = cliManifest.instructionsDir
   const instructionText = {}
   for (const condition of ['guided', 'plain']) {
     instructionText[condition] = await fs.readFile(path.join(instructionSource, path.basename(INSTRUCTION_SETS[condition])), 'utf-8')
@@ -510,9 +538,9 @@ async function main(argv) {
   const fixturesDir = path.join(layout.cli.root, 'fixtures')
   await fs.rm(fixturesDir, { recursive: true, force: true })
   await fs.mkdir(fixturesDir, { recursive: true })
-  const generated = runCapture(process.execPath, [cliManifest.fixturesTool, fixturesDir], layout.cli.root)
+  const generated = runCapture(process.execPath, [fixturesTool, fixturesDir], layout.cli.root)
   if (generated.status !== 0) throw new Error(`fixtures failed (exit ${generated.status}): ${generated.stderr}`)
-  record('fixtures', `${process.execPath} ${cliManifest.fixturesTool} ${fixturesDir}`, generated, layout.cli.root)
+  record('fixtures', `${process.execPath} ${fixturesTool} ${fixturesDir}`, generated, layout.cli.root)
   const revisions = JSON.parse(generated.stdout).revisions
   const expected = caseRevisions()
   for (const caseId of CASE_ORDER) {
@@ -539,6 +567,7 @@ async function main(argv) {
     }))
   }
 
+  await fs.mkdir(layout.cli.transcripts, { recursive: true })
   const manifest = path.join(layout.cli.transcripts, 'setup-manifest.json')
   await fs.writeFile(manifest, `${JSON.stringify({
     status: 'setup-complete-stop-before-agent',
@@ -551,10 +580,13 @@ async function main(argv) {
       environmentFile: parsed.condition === 'guided' ? layout.environmentFile : null,
     },
     condition: parsed.condition,
-    testedRevision: cliManifest.testedRevision,
-    installedCli: cliManifest.installedCli,
+    testedRevision: cliManifest ? cliManifest.testedRevision : { commit: assessment.commit, branch: assessment.branch, subject: assessment.subject, dirty: assessment.dirty },
+    installedCli: cliManifest ? cliManifest.installedCli : null,
+    cliStagingUsed: parsed.condition === 'guided',
+    instructionSource,
+    fixturesTool,
     stagingReused,
-    stagingBuiltFrom: cliManifest.repo,
+    stagingBuiltFrom: cliManifest ? cliManifest.repo : null,
     revisions: expected,
     cases: parsed.cases,
     optionalCases: OPTIONAL_CASES,
