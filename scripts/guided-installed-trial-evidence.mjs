@@ -899,6 +899,10 @@ export function renderEvidence(model) {
   out.push(`Captured by \`node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>\` from \`${quote(model.workspace)}\` on ${model.capturedAt}${model.condition.declared ? `, condition \`${model.condition.declared}\`` : ''} (${model.dateSource}). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).`)
   out.push('')
   out.push(`Machine-read rows come from the finished workspace — \`REPORT.md\`, \`offer.json\`, \`.synth/first-contact/\` (including the CLI's own recorded offer with its citation hashes), any other CLI-stored file — and from the scratch directory when it was reachable. Quotes attributed to \`REPORT.md\` are the agent's own words, copied verbatim. Rows reading \`${OPERATOR_PREFIX}: …>\` are operator-only: this script has no way to know them and will not guess. Raw byte-for-byte copies: \`${model.rawRelative}/\`.`)
+  if (model.environment?.workspace && model.workspace) {
+    out.push('')
+    out.push(`This is a copy: the staged \`ENVIRONMENT.md\` records the workspace as \`${model.environment.workspace}\`, and the copy captured here ran at \`${model.workspace}\`. Every artifact below is byte-identical to that copy's files; the digests in \`${model.rawRelative}/SOURCES.json\` name both paths. The operator's own machine is the source of the run, not of these bytes.`)
+  }
   out.push('')
   out.push(`Cells captured here: ${captured.map((cell) => `\`${cell}\``).join(', ') || 'none'}. Not captured in this file: ${missingCells.map((cell) => `\`${cell}\``).join(', ') || 'none'}. The other condition needs its own TEST_PATH; capture that workspace separately with its own \`--out\`.`)
   out.push('')
@@ -1241,7 +1245,7 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
 export function collectOperatorGaps(model) {
   const gaps = new Set()
   for (const entry of model.cases) {
-    gaps.add(`§4 ${entry.dirName}: the exact commands and their exit codes, as you saw them`)
+    gaps.add(`§4 ${entry.dirName}: confirm the quoted command list and exit codes are the ones you saw${entry.commands.length === 0 ? ' (no COMMANDS block was found in REPORT.md — write it yourself)' : ''}`)
     gaps.add(`§4 ${entry.dirName}: the terminal state (pass / fail / blocked / not run) and its reason`)
   }
   gaps.add('§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box')

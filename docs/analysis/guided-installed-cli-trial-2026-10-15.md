@@ -1,8 +1,10 @@
 # Installed-CLI guided-journey trial — evidence (2026-10-15)
 
-Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `/home/user/trial-workspace` on 2026-10-16T06:27:43.675Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
+Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `/home/user/trial-workspace` on 2026-10-16T06:30:09.813Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
 
 Machine-read rows come from the finished workspace — `REPORT.md`, `offer.json`, `.synth/first-contact/` (including the CLI's own recorded offer with its citation hashes), any other CLI-stored file — and from the scratch directory when it was reachable. Quotes attributed to `REPORT.md` are the agent's own words, copied verbatim. Rows reading `<to confirm — operator: …>` are operator-only: this script has no way to know them and will not guess. Raw byte-for-byte copies: `docs/analysis/guided-installed-cli-trial-2026-10-15-raw/`.
+
+This is a copy: the staged `ENVIRONMENT.md` records the workspace as `C:\Users\j\Projects\board-test`, and the copy captured here ran at `/home/user/trial-workspace`. Every artifact below is byte-identical to that copy's files; the digests in `docs/analysis/guided-installed-cli-trial-2026-10-15-raw/SOURCES.json` name both paths. The operator's own machine is the source of the run, not of these bytes.
 
 Cells captured here: `greenfield/guided`, `brownfield/guided`, `documentation/guided`. Not captured in this file: `greenfield/plain`, `brownfield/plain`, `documentation/plain`, `knowledge-led/guided`, `knowledge-led/plain`, `conflicting-documents/guided`, `conflicting-documents/plain`. The other condition needs its own TEST_PATH; capture that workspace separately with its own `--out`.
 

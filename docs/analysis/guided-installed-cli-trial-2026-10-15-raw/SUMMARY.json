@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-16T06:27:43.675Z",
+  "capturedAt": "2026-10-16T06:30:09.813Z",
   "workspace": "/home/user/trial-workspace",
   "helper": "scripts/guided-installed-trial-evidence.mjs",
   "requiredCases": [
@@ -490,11 +490,11 @@
     "ENVIRONMENT.md points at C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\917d662a31bd, which is not reachable from this machine"
   ],
   "operatorGaps": [
-    "§4 greenfield: the exact commands and their exit codes, as you saw them",
+    "§4 greenfield: confirm the quoted command list and exit codes are the ones you saw",
     "§4 greenfield: the terminal state (pass / fail / blocked / not run) and its reason",
-    "§4 brownfield: the exact commands and their exit codes, as you saw them",
+    "§4 brownfield: confirm the quoted command list and exit codes are the ones you saw",
     "§4 brownfield: the terminal state (pass / fail / blocked / not run) and its reason",
-    "§4 documentation: the exact commands and their exit codes, as you saw them",
+    "§4 documentation: confirm the quoted command list and exit codes are the ones you saw",
     "§4 documentation: the terminal state (pass / fail / blocked / not run) and its reason",
     "§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box",
     "§0 the Met? column for all eleven independence items",

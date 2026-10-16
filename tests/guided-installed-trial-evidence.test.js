@@ -94,7 +94,7 @@ async function makeStaging({ tarballSha = "a".repeat(64) } = {}) {
  * offer file that omits the hashes the CLI adds to its own recorded copy, one
  * correct citation hash and one deliberately wrong one.
  */
-async function makeWorkspace({ condition = "guided", cases = ["green", "brown"], staging = null, tamper = null, reportExtra = "", omitInputs = [] } = {}) {
+async function makeWorkspace({ condition = "guided", cases = ["green", "brown"], staging = null, tamper = null, reportExtra = "", omitInputs = [], environmentWorkspace = null } = {}) {
   const lib = await loadLib()
   const setup = await loadSetup()
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), `trial-evidence-ws-${condition}-`))
@@ -180,7 +180,7 @@ async function makeWorkspace({ condition = "guided", cases = ["green", "brown"],
     : "# Trial instruction set\n\nFollow these steps with the tools you have.\n"
   if (condition === "guided") {
     files["ENVIRONMENT.md"] = setup.renderEnvironment({
-      workspace,
+      workspace: environmentWorkspace ?? workspace,
       testDirs,
       stagingRoot: staging ?? path.join(os.tmpdir(), "no-such-staging"),
       installedCli: path.join(staging ?? "/tmp/no-such-staging", process.platform === "win32" ? "global\\synth.cmd" : "global/bin/synth"),
@@ -367,6 +367,19 @@ test("a case whose starting inputs were not handed over is not computable, not a
   assert.match(doc, /input file\(s\) missing from this capture/)
   assert.match(doc, /package\.json/)
   assert.ok(!(await fs.readdir(path.join(repo, "docs", "analysis"))).some((name) => name.endsWith(".md.tmp")), "no scratch files are left behind")
+})
+
+test("a workspace that is a copy of the staged one says so, with both paths", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ environmentWorkspace: "C:\\Users\\j\\Projects\\board-test" })
+  const out = path.join(repo, "docs", "analysis", "copy.md")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.match(doc, /This is a copy: the staged `ENVIRONMENT\.md` records the workspace as `C:\\Users\\j\\Projects\\board-test`/)
+  assert.ok(doc.includes(workspace), "the copy path must be named too, so no reader confuses the two machines")
+  const copyParagraph = doc.split("\n").find((line) => line.startsWith("This is a copy:"))
+  assert.ok(copyParagraph, "the copy note must be its own paragraph")
+  assert.equal(copyParagraph.includes("<to confirm"), false, "the copy note is machine-read, not an operator row")
 })
 
 test("a plain workspace gets a -plain file and no ENVIRONMENT-derived condition", async () => {
