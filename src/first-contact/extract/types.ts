@@ -20,6 +20,18 @@ export interface AgentChoice {
   recordedAt: string
 }
 
+export interface ChoiceReview {
+  id: string
+  choiceId: string
+  impact: "trivial" | "material"
+  reason: string
+  disposition: "recorded-agent-choice" | "keep" | "change" | "defer"
+  /** The supplied words are preserved, but a CLI flag cannot authenticate a human. */
+  humanResponse?: string
+  attribution: "cli-caller-unverified" | "human-response-supplied-unverified"
+  reviewedAt: string
+}
+
 export interface TranscriptEntry {
   turn: number
   actor: "operator" | "system" | "agent"
@@ -28,6 +40,7 @@ export interface TranscriptEntry {
   timestamp: string
   /** A provisional agent choice is not an operator answer or an approval. */
   agentChoice?: AgentChoice
+  choiceReview?: ChoiceReview
 }
 
 export interface ExtractedIntent {

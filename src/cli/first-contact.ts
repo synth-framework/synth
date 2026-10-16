@@ -10,13 +10,13 @@
 import { resolveSynthCli } from "../distribution/cli-path.js"
 import fs from "fs/promises"
 import { constants as fsConstants } from "node:fs"
-import { spawn, execSync } from "child_process"
+import { spawn, execSync, execFileSync } from "child_process"
 import path from "path"
 import * as sdk from "../sdk/index.js"
 
 import { injectIdentityContext, identityEnvVars, getCliIdentity } from "./identity-context.js"
 import { extractIntent } from "../first-contact/extract/index.js"
-import type { AgentChoice, IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
+import type { AgentChoice, ChoiceReview, IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
 import { clarify, DefaultClarificationStrategy } from "../first-contact/clarify/index.js"
 import type { ClarificationAnswer, ClarificationQuestion } from "../first-contact/clarify/types.js"
 import { projectArchitecture } from "../first-contact/project/index.js"
@@ -36,6 +36,7 @@ interface DraftEnvelope {
   journeyId?: string
   /** Open agent-made choices are not approvals or settled product requirements. */
   openAgentChoices?: AgentChoice[]
+  choiceReviews?: ChoiceReview[]
   updatedAt: string
 }
 
@@ -48,6 +49,7 @@ interface ApprovedEnvelope {
   verificationReport: import("../first-contact/verify/types.js").CapabilityVerificationReport
   /** Snapshot of choices still open when structured-field approval ran. */
   openAgentChoices?: AgentChoice[]
+  choiceReviews?: ChoiceReview[]
   approvedAt: string
   artifactHash: string
 }
@@ -91,7 +93,7 @@ async function readDraft(cwd: string): Promise<DraftEnvelope> {
   return draft
 }
 
-async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices?: AgentChoice[], journeyId?: string): Promise<string> {
+async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices?: AgentChoice[], journeyId?: string, reviews?: ChoiceReview[]): Promise<string> {
   const { draftPath } = artifactDraftPaths(cwd)
   // Starting a new idea or answering a generic question must never silently
   // erase an open agent choice. Its originIntent keeps earlier scope visible.
@@ -103,6 +105,7 @@ async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices
     artifact,
     journeyId: journeyId ?? prior?.journeyId ?? uuid(),
     openAgentChoices: choices ?? prior?.openAgentChoices ?? [],
+    choiceReviews: reviews ?? prior?.choiceReviews ?? [],
     updatedAt: nowIso(),
   }
   await sdk.json.writeJsonNewline(draftPath, envelope)
@@ -143,6 +146,66 @@ function approvalMatchesDraft(approved: ApprovedEnvelope, draft: DraftEnvelope |
   return hashArtifact(draft.artifact as unknown as Record<string, unknown>) === approved.artifactHash
 }
 
+type ReviewPrBinding = {
+  status: "not-requested" | "unavailable" | "mismatch" | "verified-head"
+  number?: number
+  headCommit?: string
+  headBranch?: string
+  baseBranch?: string
+  url?: string
+  reason?: string
+}
+
+/** Read-only PR association. A number alone cannot attest branch or revision. */
+function reviewPrBinding(cwd: string, input: string | boolean | undefined): ReviewPrBinding {
+  if (input === undefined) return { status: "not-requested" }
+  if (typeof input !== "string" || !/^[1-9][0-9]*$/.test(input)) {
+    printError("--pr must be a positive pull request number.")
+  }
+  const number = Number(input)
+  if (!Number.isSafeInteger(number)) printError("--pr number is too large.")
+  try {
+    const opts = { cwd, encoding: "utf8" as const, timeout: 8000, stdio: ["ignore", "pipe", "pipe"] as ["ignore", "pipe", "pipe"] }
+    const branch = execFileSync("git", ["symbolic-ref", "--quiet", "--short", "HEAD"], opts).trim()
+    const head = execFileSync("git", ["rev-parse", "HEAD"], opts).trim()
+    const remote = execFileSync("git", ["remote", "get-url", "origin"], opts).trim()
+    const match = remote.match(/github\.com[:/]([^/]+)\/([^/\s]+)$/i)
+    if (!match) return { status: "unavailable", number, reason: "No GitHub origin remote can identify the PR repository." }
+    const repo = `${match[1]}/${match[2].replace(/\.git$/i, "")}`.toLowerCase()
+    const raw = execFileSync("gh", ["pr", "view", input, "--json", "number,state,headRefName,headRefOid,baseRefName,url"], opts).trim()
+    const pr = JSON.parse(raw) as { number?: number; state?: string; headRefName?: string; headRefOid?: string; baseRefName?: string; url?: string }
+    if (pr.number !== number || pr.state !== "OPEN" || pr.headRefName !== branch || pr.headRefOid !== head ||
+        pr.url?.toLowerCase() !== `https://github.com/${repo}/pull/${number}`) {
+      return { status: "mismatch", number, reason: "PR must belong to origin, be open, and match this checkout's branch and head commit." }
+    }
+    return { status: "verified-head", number, headBranch: branch, headCommit: head, baseBranch: pr.baseRefName, url: pr.url }
+  } catch {
+    return { status: "unavailable", number, reason: "Git checkout or PR metadata could not be verified here; no PR association was made." }
+  }
+}
+
+function choiceReviewStatus(choices: AgentChoice[], reviews: ChoiceReview[]) {
+  if (!choices.length) return "no-agent-choices"
+  const latest = new Map(reviews.map((r) => [r.choiceId, r]))
+  if (choices.some((choice) => !latest.has(choice.id))) return "unreviewed"
+  if (choices.some((choice) => latest.get(choice.id)?.impact === "material")) return "material-human-confirmation-needed"
+  return "trivial-assessments-recorded"
+}
+
+function choiceReviewPacket(choices: AgentChoice[], reviews: ChoiceReview[], pr: ReviewPrBinding) {
+  const latest = new Map(reviews.map((r) => [r.choiceId, r]))
+  return {
+    purpose: "Ordinary pre-merge review; this packet is not a PR approval, Git merge, or proof of human identity.",
+    pr,
+    choices: choices.map((choice) => ({
+      ...choice,
+      review: latest.get(choice.id) ?? null,
+      needsImpactAssessment: !latest.has(choice.id),
+      needsHumanConfirmation: latest.get(choice.id)?.impact === "material",
+    })),
+  }
+}
+
 export async function cmdFirstContactHelp(): Promise<void> {
   printJson({
     status: "ok",
@@ -158,12 +221,13 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
       { name: "synth first-contact clarify --agent-choice <choice> --reason <why> --scope <area>", description: "Record an agent's provisional choice as open, not human-approved", args: "--agent-choice <choice> --reason <why> --scope <area> [--alternative <option>]" },
+      { name: "synth first-contact clarify --review-choice <id> --impact <trivial|material> --reason <why>", description: "Record a pre-merge assessment without inferring reviewer identity", args: "--review-choice <id> --impact <trivial|material> --reason <why> [--decision <keep|change|defer> --human-response <text>]" },
       { name: "synth first-contact project", description: "Project architecture candidates from the draft" },
       { name: "synth first-contact verify", description: "Verify capability assumptions for the recommended architecture" },
-      { name: "synth first-contact approve", description: "Approve structured draft fields and capability checks; open agent choices remain unreviewed" },
+      { name: "synth first-contact approve", description: "Approve structured draft fields and capability checks; this does not confirm agent choices" },
       { name: "synth first-contact materialize --dry-run", description: "Preview materialization, including recommended adapters (pending approval) and workflow template", args: "--dry-run" },
       { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact and persist recommended adapters to .synth/manifest.json", args: "--approve [--name <project-name>]" },
-      { name: "synth first-contact status", description: "Report the current first-contact state" },
+      { name: "synth first-contact status", description: "Report current state and open-choice review packet; --pr verifies an optional open PR head", args: "[--pr <number>]" },
       { name: "synth first-contact onboard:detect", description: "Detect repository state for the task-engine onboarding flow" },
       { name: "synth first-contact onboard:archive", description: "Archive legacy Synth state" },
       { name: "synth first-contact onboard:init", description: "Initialize an empty directory as a Synth project" },
@@ -187,6 +251,7 @@ export async function cmdFirstContactStart(args: string[], flags: Record<string,
 
   const draftPath = await writeDraft(process.cwd(), artifact, undefined, context.sessionId)
   await appendTranscript(process.cwd(), artifact.transcript)
+  const persisted = await readDraft(process.cwd())
 
   printJson({
     status: "ok",
@@ -196,7 +261,8 @@ export async function cmdFirstContactStart(args: string[], flags: Record<string,
     intent: artifact.intent.description,
     confidence: artifact.confidence,
     unknowns: artifact.unknowns,
-    openAgentChoices: (await readDraft(process.cwd())).openAgentChoices ?? [],
+    openAgentChoices: persisted.openAgentChoices ?? [],
+    choiceReviews: persisted.choiceReviews ?? [],
     nextStep: "synth first-contact clarify",
   })
 }
@@ -207,6 +273,54 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
 
   const answerField = typeof flags.field === "string" ? flags.field : undefined
   const answerContent = typeof flags.answer === "string" ? flags.answer : undefined
+  if (Object.hasOwn(flags, "review-choice")) {
+    const choiceId = typeof flags["review-choice"] === "string" ? flags["review-choice"].trim() : ""
+    const impact = flags.impact
+    const reason = typeof flags.reason === "string" ? flags.reason.trim() : ""
+    const decision = flags.decision
+    const humanResponse = typeof flags["human-response"] === "string" ? flags["human-response"].trim() : ""
+    const choice = (draft.openAgentChoices ?? []).find((entry) => entry.id === choiceId)
+    if (!choice || !reason || (impact !== "trivial" && impact !== "material") ||
+        flags.field !== undefined || flags.answer !== undefined || flags["agent-choice"] !== undefined || flags.scope !== undefined || flags.alternative !== undefined ||
+        (impact === "trivial" && (decision !== undefined || flags["human-response"] !== undefined)) ||
+        (impact === "material" && (decision !== "keep" && decision !== "change" && decision !== "defer" || !humanResponse))) {
+      printError("Review an existing choice with --review-choice <id> --impact trivial|material --reason <why>. For material choices also supply --decision keep|change|defer and --human-response <text>. CLI attribution is not authenticated.")
+    }
+    const reviewedAt = nowIso()
+    const review: ChoiceReview = {
+      id: `review-${uuid()}`,
+      choiceId,
+      impact,
+      reason,
+      disposition: impact === "trivial" ? "recorded-agent-choice" : decision as "keep" | "change" | "defer",
+      ...(impact === "material" ? { humanResponse } : {}),
+      attribution: impact === "trivial" ? "cli-caller-unverified" : "human-response-supplied-unverified",
+      reviewedAt,
+    }
+    const entry: TranscriptEntry = {
+      turn: (draft.artifact.transcript.at(-1)?.turn ?? 0) + 1,
+      actor: "agent", // recording actor; the quoted response is not authenticated
+      type: "proposal",
+      content: `${choiceId}: ${reason}`,
+      timestamp: reviewedAt,
+      choiceReview: review,
+    }
+    const updated = { ...draft.artifact, transcript: [...draft.artifact.transcript, entry] }
+    const draftPath = await writeDraft(process.cwd(), updated, undefined, undefined, [...(draft.choiceReviews ?? []), review])
+    await appendTranscript(process.cwd(), [entry])
+    printJson({
+      status: "ok",
+      kind: "FirstContactChoiceReviewRecorded",
+      draftPath,
+      choice,
+      review,
+      note: "Review is recorded for ordinary pre-merge discussion. The CLI cannot authenticate the caller or the supplied human response; an actual reviewer must confirm material decisions.",
+    })
+    return
+  }
+  if (flags.impact !== undefined || flags.decision !== undefined || flags["human-response"] !== undefined) {
+    printError("--impact, --decision and --human-response require --review-choice.")
+  }
   const hasChoice = Object.hasOwn(flags, "agent-choice")
   if (hasChoice) {
     const choiceText = typeof flags["agent-choice"] === "string" ? flags["agent-choice"].trim() : ""
@@ -275,6 +389,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
       sourceHandoff,
       sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
       openAgentChoices: draft.openAgentChoices ?? [],
+      choiceReviews: draft.choiceReviews ?? [],
       readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts or open agent choices.",
       canApprove: nextClarification.canApprove,
       remainingQuestions: nextClarification.questions.length,
@@ -293,6 +408,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     sourceHandoff,
     sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
     openAgentChoices: draft.openAgentChoices ?? [],
+    choiceReviews: draft.choiceReviews ?? [],
     readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts or open agent choices.",
     draftPath: artifactDraftPaths(process.cwd()).draftPath,
     canApprove: clarification.canApprove,
@@ -364,6 +480,7 @@ export async function cmdFirstContactApprove(args: string[], flags: Record<strin
       ambiguities: clarification.ambiguities,
       questions: clarification.questions,
       openAgentChoices: draft.openAgentChoices ?? [],
+      choiceReviews: draft.choiceReviews ?? [],
       nextStep: "synth first-contact clarify --field <field> --answer <answer>",
     })
     process.exit(1)
@@ -391,6 +508,7 @@ export async function cmdFirstContactApprove(args: string[], flags: Record<strin
     selectedArchitecture: candidate,
     verificationReport: report,
     openAgentChoices: draft.openAgentChoices ?? [],
+    choiceReviews: draft.choiceReviews ?? [],
     approvedAt: nowIso(),
     artifactHash: hashArtifact(approvedArtifact as Record<string, unknown>),
   }
@@ -405,7 +523,8 @@ export async function cmdFirstContactApprove(args: string[], flags: Record<strin
     selectedArchitecture: candidate,
     verificationReport: report,
     openAgentChoices: envelope.openAgentChoices,
-    choiceReviewStatus: envelope.openAgentChoices?.length ? "unreviewed" : "no-agent-choices",
+    choiceReviews: envelope.choiceReviews ?? [],
+    choiceReviewStatus: choiceReviewStatus(envelope.openAgentChoices ?? [], envelope.choiceReviews ?? []),
     approvalScope: "This approves structured draft fields and capability verification, not open agent choices or source agreement.",
     nextStep: "synth first-contact materialize --dry-run",
   })
@@ -450,7 +569,8 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
       recommendedAdapters,
       workflowTemplate,
       openAgentChoices: approved.openAgentChoices ?? [],
-      choiceReviewStatus: approved.openAgentChoices?.length ? "unreviewed" : "no-agent-choices",
+      choiceReviews: approved.choiceReviews ?? [],
+      choiceReviewStatus: choiceReviewStatus(approved.openAgentChoices ?? [], approved.choiceReviews ?? []),
       note: "Dry-run: no files were written. Adapters are pending approval. Open agent choices are not human-confirmed. Run 'synth first-contact materialize --approve' to materialize.",
     })
     return
@@ -483,7 +603,8 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
     recommendedAdapters: result.recommendedAdapters,
     workflowTemplate: result.workflowTemplate,
     openAgentChoices: approved.openAgentChoices ?? [],
-    choiceReviewStatus: approved.openAgentChoices?.length ? "unreviewed" : "no-agent-choices",
+    choiceReviews: approved.choiceReviews ?? [],
+    choiceReviewStatus: choiceReviewStatus(approved.openAgentChoices ?? [], approved.choiceReviews ?? []),
     nextStep: "synth explain replay",
   })
 }
@@ -507,6 +628,9 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
   const state = currentApproved ? "approved" : draft ? "draft" : "unknown"
   const artifact = currentApproved?.artifact ?? draft?.artifact
   const strategy = artifact ? clarify(artifact, new DefaultClarificationStrategy()) : undefined
+  const choices = draft?.openAgentChoices ?? currentApproved?.openAgentChoices ?? []
+  const reviews = draft?.choiceReviews ?? currentApproved?.choiceReviews ?? []
+  const reviewPacket = choiceReviewPacket(choices, reviews, reviewPrBinding(process.cwd(), flags.pr))
 
   printJson({
     status: "ok",
@@ -518,8 +642,10 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     intent: artifact?.intent.description,
     confidence: artifact?.confidence,
     canApprove: strategy?.canApprove ?? false,
-    openAgentChoices: draft?.openAgentChoices ?? currentApproved?.openAgentChoices ?? [],
-    choiceReviewStatus: (draft?.openAgentChoices ?? currentApproved?.openAgentChoices ?? []).length ? "unreviewed" : "no-agent-choices",
+    openAgentChoices: choices,
+    choiceReviews: reviews,
+    reviewPacket,
+    choiceReviewStatus: choiceReviewStatus(choices, reviews),
     selectedArchitecture: currentApproved?.selectedArchitecture,
     artifactHash: currentApproved?.artifactHash,
     nextStep: currentApproved

@@ -92,6 +92,7 @@
     "test:first-contact-quickstart": "node scripts/task-adapter-shim.js test:first-contact-quickstart",
     "test:guided-source-excerpts": "node scripts/task-adapter-shim.js test:guided-source-excerpts",
     "test:guided-agent-choices": "node scripts/task-adapter-shim.js test:guided-agent-choices",
+    "test:guided-choice-review": "node scripts/task-adapter-shim.js test:guided-choice-review",
     "test:first-contact-archive-a": "node scripts/task-adapter-shim.js test:first-contact-archive-a",
     "test:brownfield": "node scripts/task-adapter-shim.js test:brownfield",
     "test:adoption-validation": "node scripts/task-adapter-shim.js test:adoption-validation",

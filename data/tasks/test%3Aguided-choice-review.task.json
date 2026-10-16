@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-choice-review",
+  "description": "Check provisional-choice triage, unverified human response attribution and read-only PR-head review context",
+  "command": "node tests/guided-choice-review.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
