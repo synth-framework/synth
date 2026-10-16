@@ -1,0 +1,70 @@
+{
+  "treatment": "plain-agent + concise spec + shell/Git-style file inspection and application test",
+  "attribution": "Agent-authored synthetic comparison output; no human reply",
+  "offers": {
+    "green": {
+      "input": "Build a small editable specimen-board exporter; board input and editing interaction are undecided.",
+      "observed": "No starting files.",
+      "question": "Should the first editable board take a dropped file as its source, or begin with manual entries?",
+      "options": [
+        { "id": "drop", "tradeoff": "Drop-and-parse makes reuse easier but needs an input format decision.", "acceptanceExample": "A supplied sample source produces one editable board." },
+        { "id": "manual", "tradeoff": "Manual entries defer the format decision but require re-entry later.", "acceptanceExample": "A typed entry appears on a board and exports without a source file." }
+      ],
+      "unresolved": "Which board input path to validate first; no GUI or stack is selected."
+    },
+    "brown": {
+      "input": "Keep the working synthetic label renderer. Propose the smallest next slice for selectable fill color, without replacing the existing behavior. Inspect actual source and run its application test first.",
+      "observed": [
+        "src/board.js:1: export const render = label => `<text>${label}</text>`;",
+        "tests/board.test.js:4: test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+        "docs/limitation.md:1: Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+        "npm test: exit 0; TAP pass 1 fail 0"
+      ],
+      "question": "Should the first color increment add a default-preserving optional fill argument, or take a separate configuration object?",
+      "options": [
+        { "id": "argument", "tradeoff": "Small additive signature; existing one-argument calls must keep their exact output.", "acceptanceExample": "render('A') is unchanged, and render('A', 'red') yields a color-bearing text element." },
+        { "id": "config", "tradeoff": "More extensible for future attributes but introduces a new input shape.", "acceptanceExample": "A config object can request fill, and existing label-only calls still pass their original test." }
+      ],
+      "unresolved": "Which additive API is wanted; neither implementation nor post-change app test was run."
+    },
+    "docs": {
+      "input": "Use the supplied docs/ requirements for a small board exporter. Ask about the next editing slice before committing to an interaction style.",
+      "observed": [
+        "docs/requirements.md:1: The first board exports one SVG from local data.",
+        "docs/requirements.md:2: Editing is requested, but its interaction style is undecided."
+      ],
+      "question": "Should the next slice edit labels in-place, or via a separate form before SVG export?",
+      "options": [
+        { "id": "in-place", "tradeoff": "Immediate visual feedback, but interaction details need review.", "acceptanceExample": "A label edit is visible on the board and in one exported SVG." },
+        { "id": "form", "tradeoff": "A simpler input surface, but less direct visual editing.", "acceptanceExample": "A form change updates the export without claiming in-place editing." }
+      ],
+      "unresolved": "The editing interaction is not decided by the document."
+    },
+    "knowledge": {
+      "input": "Use the supplied knowledge/ requirements for a small board exporter. Ask about the next editing slice before committing to an interaction style.",
+      "observed": [
+        "knowledge/requirements.md:1: The first board exports one SVG from local data.",
+        "knowledge/requirements.md:2: Editing is requested, but its interaction style is undecided."
+      ],
+      "question": "Should the next slice edit labels in-place, or via a separate form before SVG export?",
+      "options": [
+        { "id": "in-place", "tradeoff": "Immediate visual feedback, but interaction details need review.", "acceptanceExample": "A label edit is visible on the board and in one exported SVG." },
+        { "id": "form", "tradeoff": "A simpler input surface, but less direct visual editing.", "acceptanceExample": "A form change updates the export without claiming in-place editing." }
+      ],
+      "unresolved": "The editing interaction is not decided by the document."
+    },
+    "conflict": {
+      "input": "Use the supplied documents for a small board exporter; do not decide between contradictory distribution requirements without asking.",
+      "observed": [
+        "docs/scope.md:1: Exports must stay local-only.",
+        "knowledge/scope.md:1: Exports must be shared through cloud sync."
+      ],
+      "question": "Which requirement should the first export slice honor: local-only or cloud-synced sharing?",
+      "options": [
+        { "id": "local", "tradeoff": "Avoids a network service but does not provide cross-device sharing.", "acceptanceExample": "A local export works without a network and no upload is claimed." },
+        { "id": "sync", "tradeoff": "Adds sharing but needs a service and data-handling decisions.", "acceptanceExample": "A separately authorized sync path makes an export available on a second device." }
+      ],
+      "unresolved": "The two sources contradict; neither is adopted until the operator decides."
+    }
+  }
+}
