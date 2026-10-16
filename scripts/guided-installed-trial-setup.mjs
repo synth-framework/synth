@@ -496,7 +496,7 @@ async function main(argv) {
       synthBin: layout.installedCli,
       instructionFile: cell.instructionFile,
     })
-    await fs.writeFile(path.join(layout.kickoff, `${name}.md`), note)
+    await fs.writeFile(path.join(layout.kickoff, name), note)
   }
   const controlReason = layout.controlAllowed
     ? null
