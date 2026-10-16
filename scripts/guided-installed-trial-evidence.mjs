@@ -617,6 +617,35 @@ export async function verifyCitation({ dir, option, originalIntent, roots = null
 const NO_COMMANDS_RE = /^[(*\-\u2013\u2014\s]*(?:no|none|n\/a|not applicable)\b/i
 
 /**
+ * Split one written line into the commands it names, on `;` — but only where the
+ * `;` actually separates commands. A semicolon inside a parenthetical or a quoted
+ * argument belongs to the prose around it: `… => exit non-zero (expected probe for
+ * missing file; ENOENT, not recorded)` is one command, not a command and a
+ * fragment. Punctuation is read conservatively; an unbalanced quote simply stops
+ * the split, which loses nothing.
+ */
+export function commandClauses(line) {
+  const clauses = []
+  let current = ''
+  let depth = 0
+  let quote = null
+  for (const char of String(line)) {
+    if (quote) {
+      current += char
+      if (char === quote) quote = null
+      continue
+    }
+    if (char === '"' || char === '`') { quote = char; current += char; continue }
+    if (char === '(' || char === '[') depth += 1
+    else if (char === ')' || char === ']') depth = Math.max(0, depth - 1)
+    else if (char === ';' && depth === 0) { clauses.push(current); current = ''; continue }
+    current += char
+  }
+  clauses.push(current)
+  return clauses.map((clause) => clause.trim()).filter((clause) => clause !== '')
+}
+
+/**
  * Commands are read out of the agent's report only; nothing else is treated as a
  * command. Every non-empty line counts, not just a bulleted one: a plainly-written
  * report records its commands inline (`npm test (before change) -> exit 0; …`), and
@@ -636,7 +665,7 @@ export function commandsFromReport(sections) {
     // A plainly-written command list is often one line — `npm test (before change) ->
     // exit 0; npm test (after, no source change) -> exit 0.` Each clause is its own
     // command, kept as written; the section itself is quoted in the cell either way.
-    .flatMap((line) => line.split(';'))
+    .flatMap((line) => commandClauses(line))
     .map((line) => line.replace(/^[-*$]\s*/, '').trim())
     .filter((line) => line !== '')
     .filter((line) => !NO_COMMANDS_RE.test(line))

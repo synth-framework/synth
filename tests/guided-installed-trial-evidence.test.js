@@ -741,6 +741,11 @@ test("a command list written on one line reads as its clauses", async () => {
   const bulleted = evidence.parseReportSections("- Commands: npm test -> exit 0\n- Approach: read first, then proposed.\n")
   assert.deepEqual(evidence.commandsFromReport(bulleted), ["npm test -> exit 0"], "a bulleted COMMANDS label is a label")
   assert.equal(bulleted.APPROACH !== undefined, true, "a bulleted APPROACH label is a label too")
+  // A semicolon inside a parenthetical, or inside a quoted argument, belongs to the
+  // prose it sits in: it must not cut a command into a command and a fragment.
+  const parenthetical = evidence.parseReportSections("COMMANDS:\n- synth first-contact clarify --source-offer missing.json => exit non-zero (expected probe; ENOENT, not recorded)\n")
+  assert.deepEqual(evidence.commandsFromReport(parenthetical), ["synth first-contact clarify --source-offer missing.json => exit non-zero (expected probe; ENOENT, not recorded)"], "a parenthetical semicolon does not end a command")
+  assert.deepEqual(evidence.commandClauses('synth first-contact start "one; two" -> exit 0; synth status -> exit 0'), ['synth first-contact start "one; two" -> exit 0', 'synth status -> exit 0'], "a quoted semicolon does not end a command, a bare one does")
 })
 
 test("a quote that is part of the staged task text reads as a partial quote, not a miss", async () => {
