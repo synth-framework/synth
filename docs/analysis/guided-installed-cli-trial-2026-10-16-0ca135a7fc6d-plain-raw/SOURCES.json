@@ -1,0 +1,95 @@
+{
+  "capturedAt": "2026-10-16T10:16:06.113Z",
+  "workspace": "C:\\Users\\j\\Projects\\raw-board-test",
+  "staging": null,
+  "sources": [
+    {
+      "bundlePath": "INSTRUCTIONS.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\INSTRUCTIONS.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test",
+      "sourceRelative": "INSTRUCTIONS.md",
+      "bytes": 5825,
+      "sha256": "3dcce10b8ac2cadbe617174661d03687882fb850e77681cf354b2ff83f14b0f8",
+      "kind": "staged instruction set",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\greenfield\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test\\greenfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 1870,
+      "sha256": "46aeb960e41c3f13022231b98cce402b9879d7fa95660f32cc3b3d595c353687",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\greenfield\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test\\greenfield",
+      "sourceRelative": "offer.json",
+      "bytes": 3144,
+      "sha256": "1ef1a63c50f75a58da8b24ffd5338c0c6853c2c5b18c66893fe1a498e83cfdba",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\brownfield\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test\\brownfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 2503,
+      "sha256": "d3f64f22dc54d2bacf3fbb4a2cf64da38eca9be7f4eca3a9983b008621788b5f",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\brownfield\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test\\brownfield",
+      "sourceRelative": "offer.json",
+      "bytes": 3715,
+      "sha256": "7f5cc25e2cffb9b05231419be3b161e2db93d0861e5c34e900136e7b5c469607",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\documentation\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test\\documentation",
+      "sourceRelative": "REPORT.md",
+      "bytes": 1985,
+      "sha256": "50a5c140aafb317db7aa20af7ce95acd9e6b130ad5ef895fa1c62f95f5db6f49",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\documentation\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test\\documentation",
+      "sourceRelative": "offer.json",
+      "bytes": 3666,
+      "sha256": "770d52d25cfe51a4bf6a1d344986a0ce989740cecd7cbbf5aed35189266dece5",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "TRANSCRIPT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\raw-board-test\\TRANSCRIPT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\raw-board-test",
+      "sourceRelative": "TRANSCRIPT.md",
+      "bytes": 3562,
+      "sha256": "16609a2b0869dcb393813337298af655e3e7ef101779519909abb4139a54b443",
+      "kind": "other file in TEST_PATH root",
+      "copied": true
+    },
+    {
+      "bundlePath": "fixtures.json",
+      "sourcePath": null,
+      "bytes": 2822,
+      "sha256": "86c843bb1f910ab99718b9a90a0b53176b8b0934447761d2f1f44a2b55f9d216",
+      "kind": "recomputed revisions",
+      "copied": true
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "case_id": "green",
+  "directory": "greenfield/",
+  "task_text": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+  "scope_proposed": "Propose only the next slice's open decisions for a small editable specimen-board exporter. No implementation, no GUI, no stack choice, no validation rule is fixed in this proposal. The proposal stops at the decision that requires the requester.",
+  "question": "Since board input and editing interaction are undecided, what should count as the board, its input, its editing interaction, and its validation for the first exporter slice?",
+  "options": [
+    {
+      "id": "A",
+      "label": "Clarify board kind and input shape first",
+      "description": "Ask the requester to define what a specimen-board is and what input the exporter accepts before any editing is specified.",
+      "tradeoff": "Reduces risk of building the wrong board model, but delivers no exporter behavior until the board definition exists.",
+      "shows_works": "Works if the requester fixes a board definition and an example input that the exporter must accept, and states what invalid input must do.",
+      "grounded_in": {
+        "source": "task text",
+        "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."
+      }
+    },
+    {
+      "id": "B",
+      "label": "Clarify editing interaction first",
+      "description": "Ask the requester to define what editable means for the first slice — what edit is allowed and how it is observed — without assuming any interface or implementation.",
+      "tradeoff": "Surfaces the undecided editing scope early, but leaves board input and validation open so no exporter can be accepted yet.",
+      "shows_works": "Works if the requester fixes one allowed edit and how that edit changes the exported board, without adding an interface or stack.",
+      "grounded_in": {
+        "source": "task text",
+        "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."
+      }
+    },
+    {
+      "id": "C",
+      "label": "Clarify validation and acceptance first",
+      "description": "Ask the requester to define what makes a board valid and what the exporter must do with invalid or missing data.",
+      "tradeoff": "Makes acceptance testable even before input and editing are fixed, but cannot be implemented until board input and editing are decided.",
+      "shows_works": "Works if the requester fixes what counts as valid versus invalid and what observable exporter outcome proves each case.",
+      "grounded_in": {
+        "source": "task text",
+        "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."
+      }
+    }
+  ],
+  "explicitly_not_proposed": "No GUI, no stack, no interface widget, no file format beyond what the task states, and no approval. This proposal makes no implementation choice.",
+  "stopped_without_decision": true
+}

@@ -1,0 +1,93 @@
+# Session transcript — SYNTH trial (2026-10-16)
+
+Workspace: C:\Users\j\Projects\board-test
+CLI under test: C:\Users\j\AppData\Local\Temp\trial-staging\0ca135a7fc6d\global\synth.cmd (also `synth` on PATH, version 2.6.1, schema synth-cli-v1)
+Instruction set: INSTRUCTIONS.md (103 lines, read fully before acting)
+Environment record: ENVIRONMENT.md
+
+This file was written after the trial ended, at the operator's request. It records the agent's actions across the three staged tests. Each test was worked inside its own directory with its own `.synth/` state. No approve / materialize / Mission / Expedition / publishing actions were run. All offers ended awaiting-response.
+
+---
+
+## 0. Setup reads
+
+- Read INSTRUCTIONS.md (root)
+- Read ENVIRONMENT.md (root)
+- Listed workspace root: brownfield/, documentation/, greenfield/, ENVIRONMENT.md, INSTRUCTIONS.md
+- greenfield/ listing: empty
+- brownfield/ listing: docs/, package.json, src/, tests/
+  - Read package.json: {"name":"synthetic-board","type":"module","scripts":{"test":"node --test tests/board.test.js"}}
+  - Read src/board.js line 1: export const render = label => `<text>${label}</text>`;
+  - Read tests/board.test.js lines 1-4 (existing label test)
+  - Read docs/limitation.md line 1: Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.
+- documentation/ listing: docs/
+  - Read docs/requirements.md lines 1-2:
+    1: The first board exports one SVG from local data.
+    2: Editing is requested, but its interaction style is undecided.
+
+---
+
+## 1. Greenfield test (green / greenfield/)
+
+Task text: "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."
+
+Commands (all workdir greenfield/, all exit 0):
+1. `synth --version` + `Get-Command synth` — version 2.6.1
+2. `& "C:\Users\j\AppData\Local\Temp\trial-staging\0ca135a7fc6d\global\synth.cmd" --version` — version 2.6.1 (matched PATH; continued on PATH, recorded both)
+3. `synth first-contact --dry-run` — kind FirstContactOnboardPlan, detected empty, wouldCreate .synth/manifest.json + event-log + canonical-state, wouldRun synth init / mission create / mission approve, nextStep `synth first-contact --approve`. NOT followed (forbidden by §5; recorded in REPORT.md).
+4. `synth first-contact clarify --help` — read-only help, confirmed --source-offer syntax
+5. `synth first-contact start "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."` — kind FirstContactDraft, confidence 0.25, unknowns audience.primaryUsers / environment.targetRuntime / environment.languagePreferences / capabilities.required, nextStep clarify
+6. `synth first-contact status` — state draft, canApprove false, no-source-offer
+7. `synth first-contact clarify` (no args) — ambiguities MISSING_REQUIRED, questions q-1..q-5, suggestion `--field/--answer` NOT followed (used --source-offer per instructions instead)
+8. Wrote offer.json (scope + 1 question + 3 options, all operator-intent sources, no GUI/stack)
+9. `synth first-contact clarify --source-offer offer.json` — kind FirstContactSourceOfferRecorded, id offer-d25d4778-0915-4cb3-b964-b6051b221008
+10. `synth first-contact status` — workingBrief awaiting-response, sourceFreshness current
+11. Wrote REPORT.md
+
+Offer: greenfield/offer.json — question "Which board input and editing interaction should the specimen-board exporter support first?" Options board-file / inline-board / validated-export.
+
+---
+
+## 2. Brownfield test (brown / brownfield/)
+
+Task text: "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."
+
+Commands (all workdir brownfield/, all exit 0):
+1. `synth first-contact --dry-run` — kind FirstContactOnboardPlan, detected brownfield, wouldRun `synth bootstrap --approve`, nextStep `synth discover . --export`, sourceHandoff excerpts matched real file lines. NOT followed (forbidden lifecycle; recorded).
+2. `npm test` BEFORE changes — exit 0 — 1 pass (existing label), 0 fail
+3. `synth first-contact start "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."` — kind FirstContactDraft, confidence 0.083
+4. `synth first-contact status` — state draft, canApprove false
+5. Wrote offer.json (scope + 1 question + 3 options citing src/board.js:1, tests/board.test.js:4, docs/limitation.md:1; delta-only, no rewrite)
+6. `synth first-contact clarify --source-offer offer.json` — kind FirstContactSourceOfferRecorded, id offer-89d39751-1141-4980-a73b-87dd1efed86a
+7. `synth first-contact status` — workingBrief awaiting-response
+8. `npm test` AFTER (no source edits) — exit 0 — 1 pass, 0 fail
+9. Wrote REPORT.md
+
+No existing tests or fixtures edited.
+
+---
+
+## 3. Documentation-led test (docs / documentation/)
+
+Task text: "Continue from the requirements in docs/. The next slice is undecided."
+
+Commands (all workdir documentation/, all exit 0):
+1. `synth first-contact --dry-run` — kind FirstContactOnboardPlan, detected brownfield (docs-only), nextStep `synth docs generate --knowledge-base ./docs`, excerpts matched docs/requirements.md lines 1-2. NOT followed (not in prescribed steps; recorded).
+2. `synth first-contact start "Continue from the requirements in docs/. The next slice is undecided."` — kind FirstContactDraft, confidence 0.083
+3. `synth first-contact status` — state draft, canApprove false
+4. Wrote offer.json (scope + 1 question + 3 options citing docs/requirements.md:1, docs/requirements.md:2, operator-intent; undecided slice left open with consequences)
+5. `synth first-contact clarify --source-offer offer.json` — kind FirstContactSourceOfferRecorded, id offer-54b0cf7f-7c4a-4ee2-ab58-3f489da8c299
+6. `synth first-contact status` — workingBrief awaiting-response
+7. Wrote REPORT.md
+
+---
+
+## 4. Final state
+
+- greenfield/: offer.json, REPORT.md, .synth/first-contact/draft.json (+ CLI state)
+- brownfield/: offer.json, REPORT.md, .synth/ (sources unchanged; npm test 0/0 failures before and after)
+- documentation/: offer.json, REPORT.md, .synth/
+- Optional knowledge-led / conflicting-documents directories were not present; no optional tests run.
+- Nothing approved, verified, delivered, pushed, or committed outside workspace local history. All reports are agent-authored diagnostic output, not human decisions.
+
+End of transcript.

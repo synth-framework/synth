@@ -1,0 +1,141 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.",
+      "goals": [],
+      "successCriteria": []
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.083,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 0,
+        "intent.successCriteria": 0,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.",
+        "timestamp": "2026-10-16T09:57:59.020Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-89d39751-1141-4980-a73b-87dd1efed86a: How should the user-selected fill color be accepted while keeping the existing label output unchanged?",
+        "timestamp": "2026-10-16T09:58:23.596Z"
+      }
+    ]
+  },
+  "journeyId": "49e5e6ec-d6a3-493d-b793-cba6964c6e47",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-89d39751-1141-4980-a73b-87dd1efed86a",
+      "journeyId": "49e5e6ec-d6a3-493d-b793-cba6964c6e47",
+      "version": 1,
+      "scope": "Extend the existing SVG board renderer with a user-selected fill color; existing label output and tests keep working, delta only, no rewrite",
+      "question": "How should the user-selected fill color be accepted while keeping the existing label output unchanged?",
+      "options": [
+        {
+          "id": "optional-fill-arg",
+          "label": "Optional second fill argument, default preserves output",
+          "tradeoff": "Smallest delta on the existing render signature, but positional args scale poorly if more styling is added later.",
+          "acceptanceExample": "Given existing call render('A'), when run, then it still returns '<text>A</text>'; given render('A', 'red'), then label A is preserved with fill red applied.",
+          "source": {
+            "path": "src/board.js",
+            "line": 1,
+            "quote": "export const render = label => `<text>${label}</text>`;",
+            "sha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee"
+          }
+        },
+        {
+          "id": "fill-preserves-test",
+          "label": "Additive fill that keeps the existing test green",
+          "tradeoff": "Guarantees backward compatibility for the label case, but leaves fill validation and defaults to be decided.",
+          "acceptanceExample": "Given existing test render('A') equals '<text>A</text>', when the fill delta lands, then that test still passes unchanged and render('A', 'red') adds only the fill.",
+          "source": {
+            "path": "tests/board.test.js",
+            "line": 4,
+            "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+            "sha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97"
+          }
+        },
+        {
+          "id": "fill-delta-only",
+          "label": "Fill-color delta only, label behavior untouched",
+          "tradeoff": "Limits the slice to the documented gap, but defers any broader renderer redesign.",
+          "acceptanceExample": "Given the limitation that labels work but fill is missing, when a fill is selected, then labels render exactly as before plus the chosen fill.",
+          "source": {
+            "path": "docs/limitation.md",
+            "line": 1,
+            "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+            "sha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246"
+          }
+        }
+      ],
+      "offeredAt": "2026-10-16T09:58:23.596Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "updatedAt": "2026-10-16T09:58:23.602Z"
+}

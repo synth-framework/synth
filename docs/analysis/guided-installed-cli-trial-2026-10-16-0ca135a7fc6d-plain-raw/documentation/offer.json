@@ -1,0 +1,74 @@
+{
+  "case_id": "docs",
+  "directory": "documentation/",
+  "task_text": "Continue from the requirements in docs/. The next slice is undecided.",
+  "scope_proposed": "Propose only the next slice choice from docs/requirements.md. No implementation and no silent resolution of the export-vs-editing tension. The proposal stops at the decision that requires the requester.",
+  "requirements_read": [
+    {
+      "path": "docs/requirements.md",
+      "line": 1,
+      "quote": "The first board exports one SVG from local data."
+    },
+    {
+      "path": "docs/requirements.md",
+      "line": 2,
+      "quote": "Editing is requested, but its interaction style is undecided."
+    }
+  ],
+  "conflict": "Line 1 fixes the first board as one SVG exported from local data, while line 2 requests editing but leaves its interaction style undecided. Building the export hardens a non-editable slice; specifying editing first delays export value and may change what the export must support. Neither line decides which comes next.",
+  "question": "Given the first board exports one SVG from local data but editing is requested with undecided interaction, what should the next slice prioritize?",
+  "options": [
+    {
+      "id": "A",
+      "label": "Harden the single SVG export from local data first",
+      "description": "Make the next slice define and demonstrate one SVG exported from local data, leaving editing interaction undecided and unbuilt.",
+      "tradeoff": "Delivers the line-1 behavior concretely, but leaves the line-2 editing request entirely open and may require rework once interaction is decided.",
+      "shows_works": "Works if one SVG is exported from local data with stated valid/invalid handling, while editing remains explicitly deferred.",
+      "grounded_in": [
+        {
+          "source": "task text",
+          "quote": "Continue from the requirements in docs/. The next slice is undecided."
+        },
+        {
+          "source": "file",
+          "path": "docs/requirements.md",
+          "line": 1,
+          "quote": "The first board exports one SVG from local data."
+        },
+        {
+          "source": "file",
+          "path": "docs/requirements.md",
+          "line": 2,
+          "quote": "Editing is requested, but its interaction style is undecided."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "label": "Decide the editing interaction before hardening export",
+      "description": "Make the next slice fix what editing means and how it is observed, without assuming an interface, before committing to the single-export shape.",
+      "tradeoff": "Answers the line-2 undecided interaction directly, but delays line-1 export value and may change what the export must preserve.",
+      "shows_works": "Works if the requester fixes one allowed edit and how that edit changes the exported board, with export compatibility stated as a consequence.",
+      "grounded_in": [
+        {
+          "source": "task text",
+          "quote": "Continue from the requirements in docs/. The next slice is undecided."
+        },
+        {
+          "source": "file",
+          "path": "docs/requirements.md",
+          "line": 2,
+          "quote": "Editing is requested, but its interaction style is undecided."
+        },
+        {
+          "source": "file",
+          "path": "docs/requirements.md",
+          "line": 1,
+          "quote": "The first board exports one SVG from local data."
+        }
+      ]
+    }
+  ],
+  "explicitly_not_proposed": "No implementation, no interface choice, and no decision that both lines can be satisfied at once. The contradiction is left for the requester.",
+  "stopped_without_decision": true
+}

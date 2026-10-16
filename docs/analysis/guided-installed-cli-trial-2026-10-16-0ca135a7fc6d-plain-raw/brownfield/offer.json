@@ -1,0 +1,76 @@
+{
+  "case_id": "brown",
+  "directory": "brownfield/",
+  "task_text": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.",
+  "scope_proposed": "Delta only: add an optional user-selected fill color to the existing renderer without changing the existing label output path and without editing existing tests or fixtures. No rewrite of working code.",
+  "existing_behavior": {
+    "path": "src/board.js",
+    "line": 1,
+    "quote": "export const render = label => `<text>${label}</text>`;"
+  },
+  "existing_test": {
+    "path": "tests/board.test.js",
+    "line": 4,
+    "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));"
+  },
+  "documented_limitation": {
+    "path": "docs/limitation.md",
+    "line": 1,
+    "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output."
+  },
+  "question": "How should the user-selected fill color be accepted while keeping render('A') as '<text>A</text>'?",
+  "options": [
+    {
+      "id": "A",
+      "label": "Optional second argument with default preserving current output",
+      "description": "Add optional fill parameter that defaults to absent, so one-argument calls keep the exact current string and two-argument calls add the fill.",
+      "tradeoff": "Smallest delta and backward compatible, but mixes positional args if more options are added later.",
+      "shows_works": "Works if render('A') still equals '<text>A</text>' under the existing test and a new manual check shows a supplied fill appears without breaking that case.",
+      "grounded_in": [
+        {
+          "source": "task text",
+          "quote": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."
+        },
+        {
+          "source": "file",
+          "path": "src/board.js",
+          "line": 1,
+          "quote": "export const render = label => `<text>${label}</text>`;"
+        },
+        {
+          "source": "file",
+          "path": "tests/board.test.js",
+          "line": 4,
+          "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "label": "Optional options value with default preserving current output",
+      "description": "Add an optional second value carrying fill that defaults to absent, so omitted fill keeps the exact current string.",
+      "tradeoff": "More extensible for future options than a positional string, but slightly larger delta than a single string argument.",
+      "shows_works": "Works if render('A') still equals '<text>A</text>' under the existing test and a supplied fill is observable only when explicitly provided.",
+      "grounded_in": [
+        {
+          "source": "task text",
+          "quote": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."
+        },
+        {
+          "source": "file",
+          "path": "docs/limitation.md",
+          "line": 1,
+          "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output."
+        },
+        {
+          "source": "file",
+          "path": "tests/board.test.js",
+          "line": 4,
+          "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));"
+        }
+      ]
+    }
+  ],
+  "explicitly_not_proposed": "No rewrite of the label rendering, no edit to tests/board.test.js, no change to fixtures, and no default fill that would alter the existing string.",
+  "stopped_without_decision": true
+}

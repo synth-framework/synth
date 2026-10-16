@@ -1,0 +1,32 @@
+TEST: docs / documentation/
+COMMANDS:
+- `synth first-contact --dry-run` in documentation/ — exit 0
+- `synth first-contact start "Continue from the requirements in docs/. The next slice is undecided."` in documentation/ — exit 0
+- `synth first-contact status` in documentation/ (after start) — exit 0
+- `synth first-contact clarify --source-offer offer.json` in documentation/ — exit 0
+- `synth first-contact status` in documentation/ (after offer) — exit 0
+CLI OUTPUT:
+- --dry-run: kind FirstContactOnboardPlan, detected brownfield (docs-only directory), projectName documentation; stages detect/analyze/apply; wouldCreate .synth/manifest.json, .synth/data/event-log.jsonl, .synth/data/canonical-state.json, docs/reference/capability-validation-map.json; wouldRun `synth bootstrap --approve`; nextStep `synth docs generate --knowledge-base ./docs`; repositoryAdapter detected none; sourceHandoff not-ingested with files docs/requirements.md and live excerpts of both lines. Did not follow bootstrap/docs-generate/adapter steps — see PROBLEMS.
+- start: kind FirstContactDraft, draftPath .synth/first-contact/draft.json, intent reproduced exactly, confidence overall 0.083; nextStep `synth first-contact clarify`.
+- status (after start): kind FirstContactStatus, state draft, canApprove false, sourceOffers [], workingBrief no-source-offer; nextStep clarify.
+- clarify --source-offer: kind FirstContactSourceOfferRecorded, offer id offer-54b0cf7f-7c4a-4ee2-ab58-3f489da8c299, version 1, attribution agent-authored-offer.
+- status (final): kind FirstContactStatus, state draft, canApprove false, sourceOffers contains the recorded offer, workingBrief status awaiting-response, version 1, sourceFreshness current; nextStep `synth first-contact clarify`.
+OFFER: documentation/offer.json
+- scope: "Continue from docs/requirements.md: single SVG export from local data, with requested but undecided editing interaction"
+- question: "What should the next slice after the single-SVG export cover while editing interaction stays undecided?"
+- options:
+  - single-export / "Single SVG export from local data first" / source docs/requirements.md:1 / acceptanceExample local data -> exactly one SVG plus unexportable-data report
+  - decide-editing / "Decide editing interaction before building it" / source docs/requirements.md:2 / acceptanceExample editing scoped only after interaction style decided
+  - defer-slice / "Hold the next slice for an explicit person decision" / source operator-intent task text / acceptanceExample person picks one slice, other stays open
+- Undecided editing interaction surfaced as the decision with consequences (tradeoffs state what ships vs what waits); nothing silently resolved. Ends awaiting-response (no --selection/--human-response used).
+CITATIONS:
+- {"path": "docs/requirements.md", "line": 1, "quote": "The first board exports one SVG from local data."} — matches real file line 1 exactly; read before authoring; CLI returned sha256 b51353a3...
+- {"path": "docs/requirements.md", "line": 2, "quote": "Editing is requested, but its interaction style is undecided."} — matches real file line 2 exactly; CLI returned sha256 b51353a3... (same file hash)
+- {"kind": "operator-intent", "quote": "Continue from the requirements in docs/. The next slice is undecided."} — matches task text in INSTRUCTIONS.md §3 exactly; CLI echoed as originIntent with sha256 e3c190b4...
+APPLICATION TESTS: N/A (documentation-led only; brownfield npm-test rule does not apply; no application code present).
+ASSUMPTIONS: None about which slice is preferred or which editing interaction to use; left both to a person. Assumed docs/requirements.md (2 lines) is the complete requirement set for this test — directory listing showed only docs/requirements.md.
+STILL OPEN: The next-slice decision — export baseline first vs deciding editing interaction first vs holding for explicit person choice. Also open per CLI draft: primary users, target runtime, language, required capabilities. Nothing approved, verified, or delivered.
+PROBLEMS:
+- CLI --dry-run suggested `synth bootstrap --approve`, `synth docs generate --knowledge-base ./docs`, and `synth adapter init`. Did not run any: INSTRUCTIONS.md §2/§5 requires the start/status/clarify --source-offer/status path and forbids approve/materialize/Mission/Expedition/publishing; bootstrap/approve falls under forbidden lifecycle actions and docs-generate was not in the prescribed steps. Recorded here per §2.
+- No CLI refusal/error/contradiction beyond the expected next-step divergence; offer accepted first try.
+EFFORT: ~4 minutes for this test.

@@ -1,0 +1,39 @@
+$ npm.cmd run build
+Copied framework task: onboarding%3Abootstrap.task.json → dist/tasks/onboarding%3Abootstrap.task.json
+Copied framework task: onboarding%3Adetect.task.json → dist/tasks/onboarding%3Adetect.task.json
+Copied framework task: onboarding%3Agovern.task.json → dist/tasks/onboarding%3Agovern.task.json
+Copied framework task: onboarding%3Ainit.task.json → dist/tasks/onboarding%3Ainit.task.json
+Copied framework task: onboarding%3Amission.task.json → dist/tasks/onboarding%3Amission.task.json
+dist manifest written: C:\Users\j\Projects\synth\dist\dist-manifest.json (1224 file(s), rootHash d1993bdba2cba059...)
+
+$ npm.cmd pack --pack-destination C:\Users\j\AppData\Local\Temp\trial-staging\b53f6dcb859f\pack
+npm notice package size: 1.1 MB
+npm notice unpacked size: 5.5 MB
+npm notice shasum: e065d6b41d6097bc310608e238bbb4e21785a3a9
+npm notice integrity: sha512-BGAyvbj69hU9i[...]NSJhGQuusa8dw==
+npm notice total files: 1243
+npm notice
+
+$ npm.cmd install -g --prefix C:\Users\j\AppData\Local\Temp\trial-staging\b53f6dcb859f\global C:\Users\j\AppData\Local\Temp\trial-staging\b53f6dcb859f\pack\synth-framework-synth-2.6.1.tgz
+added 3 packages in 27s
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+$ C:\Users\j\AppData\Local\Temp\trial-staging\b53f6dcb859f\global\synth.cmd --version
+{
+  "status": "ok",
+  "version": "2.6.1",
+  "name": "synth",
+  "schema": "synth-cli-v1"
+}
+
+$ npm run build && npm pack && npm install -g
+
+$ C:\Program Files\nodejs\node.exe C:\Users\j\Projects\synth\scripts\guided-installed-trial-fixtures.mjs C:\Users\j\AppData\Local\Temp\trial-fixtures-69NgIy
+  "treatments": [
+    "plain",
+    "guided"
+  ],
+  "sourceFilesOnly": true
+}
