@@ -140,6 +140,7 @@ test("the plain condition is staged from a checkout without building anything", 
     assert(result.stdout.includes("does not run the tool"), "the banner must say the plain run builds nothing")
     assert.equal(/npm-ci|npm run build/.test(result.stdout), false, "no build may run for the plain condition")
     assert.equal(result.stdout.includes("installed CLI"), false, "the plain run must not claim an installed CLI")
+    assert(result.stdout.includes("runs no product command at all"), "the plain banner must say nothing was built")
 
     const entries = (await fs.readdir(workspace)).sort()
     assert.deepEqual(entries, ["INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])

@@ -42,6 +42,8 @@ This clones the checkout's committed revision into the CLI staging directory (de
 
 The staging directory is **outside TEST_PATH**, so no clone, `node_modules`, tarball, transcript or harness is ever visible to the trial agent. Its only product command is `synth --version`. It never runs a lifecycle command, never starts a test, and never commits, pushes or modifies the checkout it was given.
 
+**Plain comparison (optional).** The plain condition never runs the tool, so nothing is built for it: point the same command at a *separate* TEST_PATH whose path does not spell the tool's name, with `--condition plain`, and the instruction file and fixtures come straight from the checkout. Never let one session see both conditions.
+
 ## Step 2 — create TEST_PATH
 
 ```bash
@@ -140,6 +142,7 @@ node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 - The second command created TEST_PATH with **no npm or git command run at all** — the staged CLI was reused — and produced exactly `INSTRUCTIONS.md`, `ENVIRONMENT.md`, `greenfield/`, `brownfield/`, `documentation/`. Every fixture revision matched the published values; `greenfield/` held no files; `brownfield/` held `package.json`, `src/board.js`, `tests/board.test.js`, `docs/limitation.md`; `documentation/` held `docs/requirements.md`.
 - Inside the staged `brownfield/` the fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0) and the guided initialization exited 0 each step: `--dry-run` discovered the four input files and reported no warnings, and an agent-shaped `offer.json` recorded with `--source-offer` left the brief `awaiting-response` with freshness `current` and zero answers. A first attempt quoting an incomplete source line was **rejected** — `Citation docs/limitation.md:1 does not match the live source line` — which is the citation check working.
 - A `--condition plain` run into a TEST_PATH whose path spells the tool's name is refused up front; `--refresh-cli` forces a rebuild, and a second run without it reuses the staged CLI.
+- A `--condition plain` run into a neutral TEST_PATH built nothing, printed that it ran no product command at all, and produced exactly `INSTRUCTIONS.md`, `greenfield/`, `brownfield/`, `documentation/` — no generated environment note, and **zero** occurrences of the tool's name or the guided commands anywhere in the root instruction file. Its `brownfield/` fixture suite also passed (exit 0).
 - `npm run test:guided-installed-trial-setup` (21 checks) covers the guards, the staging/reuse decision, the inferred layout, the generated environment note, the launch line, both instruction files and the revision constants, and refuses every unsafe case before any network access.
 
 Every trial test remains `not run`. Same agent, one session, unblinded, no independent observation.
@@ -170,6 +173,8 @@ mkdir -p "$WS" "$CLI/fixtures"
 node "$CLI/tools/guided-installed-trial-fixtures.mjs" "$CLI/fixtures" | tee "$CLI/transcripts/fixtures.json"
 for c in green brown docs; do :; done   # case ids: green, brown, docs (+ knowledge, conflict)
 ```
+
+For the plain condition there is no staging step at all: read the instruction file and fixtures straight from the checkout (`$REPO/docs/plans/guided-trial/instructions/plain.md`, generated from `$REPO/scripts/guided-installed-trial-fixtures.mjs`) into a separate TEST_PATH that does not spell the tool's name.
 
 Then copy `$CLI/fixtures/guided/<case>` into `$WS/<test>/`, where `<case>` → `<test>` is `green`→`greenfield`, `brown`→`brownfield`, `docs`→`documentation`, `knowledge`→`knowledge-led`, `conflict`→`conflicting-documents`; write `$CLI/instructions/guided.md` to `$WS/INSTRUCTIONS.md`; write the `ENVIRONMENT.md` of [Appendix B](#appendix-b--the-instruction-file-and-the-environment-note); and delete `$CLI/fixtures`. For the plain condition, stage from `fixtures/plain/`, write `plain.md` as the root `INSTRUCTIONS.md`, and write no environment note.
 

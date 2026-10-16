@@ -346,8 +346,10 @@ export function stopBanner({ layout, manifest, assessment, cases, cliStaging, st
     `  "${launchInstruction()}"`,
     ``,
     `The agent reads the instruction file in the root and works one test at a time inside its own`,
-    `directory. Building, packing and installing are already done and live outside TEST_PATH, so no`,
-    `build output is visible to the agent.`,
+    `directory.`,
+    layout.condition === 'guided'
+      ? `Building, packing and installing were done beforehand and live outside TEST_PATH, so no build output is visible to the agent.`
+      : `The plain condition runs no product command at all, so nothing was built and no build output exists to interfere with it.`,
   )
   return lines.join('\n')
 }
