@@ -207,6 +207,18 @@ test("the layout is inferred from the workspace path alone", async () => {
   assert.equal(override.controlDir("docs"), path.join(os.tmpdir(), "synth-elsewhere", "documentation"))
 })
 
+test("handoff note names are derived once and match the index", async () => {
+  const script = await loadScript()
+  assert.equal(script.handoffNoteName("guided", "brown"), "guided-brownfield.md")
+  assert.equal(script.handoffNoteName("plain", "docs"), "plain-documentation.md")
+  assert.throws(() => script.handoffNoteName("guided", "unknown"), /Unknown case/)
+
+  const index = script.renderKickoffIndex({ workspace: "/tmp/board-trial", cases: ["green", "brown", "docs"], controlCreated: true, controlReason: null })
+  for (const [condition, caseId] of [["guided", "brown"], ["plain", "docs"]]) {
+    assert(index.includes(`\`${script.handoffNoteName(condition, caseId)}\``), `index must name ${condition}-${caseId}`)
+  }
+})
+
 test("test directory names are spelled out, one isolated environment per test", async () => {
   const script = await loadScript()
   assert.deepEqual(script.TEST_DIRS, {
@@ -306,6 +318,7 @@ test("the kickoff index maps cells and explains a skipped control", async () => 
   const withControl = script.renderKickoffIndex({ workspace, cases: ["green", "brown", "docs"], controlCreated: true, controlReason: null })
   assert(withControl.includes("`guided-greenfield.md`"), "index must name the guided notes")
   assert(withControl.includes("`plain-greenfield.md`"), "index must name the plain notes")
+  assert.equal(withControl.includes("| `greenfield/` |"), true, "index must map the test directory")
   assert(withControl.includes("one fresh agent session per cell"), "index must state the per-cell session rule")
 
   const without = script.renderKickoffIndex({

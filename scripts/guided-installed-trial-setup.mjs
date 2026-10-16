@@ -314,6 +314,13 @@ export function renderHandoffNote(condition, { caseId, testDir, workspace, synth
   return lines.join('\n')
 }
 
+/** File name of one cell's handoff note. */
+export function handoffNoteName(condition, caseId) {
+  const test = TEST_DIRS[caseId]
+  if (!test) throw new Error(`Unknown case: ${caseId}`)
+  return `${condition}-${test}.md`
+}
+
 /** Index note for the harness kickoff directory. No process, just the map. */
 export function renderKickoffIndex({ workspace, cases, controlCreated, controlReason }) {
   const lines = [
@@ -330,8 +337,8 @@ export function renderKickoffIndex({ workspace, cases, controlCreated, controlRe
   ]
   for (const caseId of cases) {
     const test = TEST_DIRS[caseId]
-    const plain = controlCreated ? `\`plain-${test}.md\`` : '`not created`'
-    lines.push(`| \`${test}/\` | \`guided-${test}.md\` | ${plain} |`)
+    const plain = controlCreated ? `\`${handoffNoteName('plain', caseId)}\`` : '`not created`'
+    lines.push(`| \`${test}/\` | \`${handoffNoteName('guided', caseId)}\` | ${plain} |`)
   }
   if (!controlCreated) {
     lines.push('', `Plain mirrors were not created: ${controlReason}`)
@@ -465,18 +472,17 @@ async function main(argv) {
 
   const cells = {}
   for (const caseId of parsed.cases) {
-    const test = TEST_DIRS[caseId]
     const guidedDir = layout.testDir(caseId)
     const guidedInstruction = path.join(guidedDir, 'INSTRUCTIONS.md')
     await copyTree(path.join(layout.fixtures, 'guided', caseId), guidedDir)
     await fs.writeFile(guidedInstruction, instructionText.guided)
-    cells[test] = { caseId, workspace: guidedDir, instructionFile: guidedInstruction, revision: expected[caseId], condition: 'guided' }
+    cells[handoffNoteName('guided', caseId)] = { caseId, workspace: guidedDir, instructionFile: guidedInstruction, revision: expected[caseId], condition: 'guided' }
     if (layout.controlAllowed) {
       const plainDir = layout.controlDir(caseId)
       const plainInstruction = path.join(plainDir, 'INSTRUCTIONS.md')
       await copyTree(path.join(layout.fixtures, 'plain', caseId), plainDir)
       await fs.writeFile(plainInstruction, instructionText.plain)
-      cells[`${test}-plain`] = { caseId, workspace: plainDir, instructionFile: plainInstruction, revision: expected[caseId], condition: 'plain' }
+      cells[handoffNoteName('plain', caseId)] = { caseId, workspace: plainDir, instructionFile: plainInstruction, revision: expected[caseId], condition: 'plain' }
     }
   }
   await fs.rm(layout.fixtures, { recursive: true, force: true })
