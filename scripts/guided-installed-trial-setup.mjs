@@ -505,8 +505,11 @@ async function main(argv) {
     throw new Error('the plain instruction set mentions the tool under test; refusing to stage it')
   }
 
+  // The generator requires an existing, empty directory: recreate it rather than
+  // assuming the staging directory is pristine.
   const fixturesDir = path.join(layout.cli.root, 'fixtures')
   await fs.rm(fixturesDir, { recursive: true, force: true })
+  await fs.mkdir(fixturesDir, { recursive: true })
   const generated = runCapture(process.execPath, [cliManifest.fixturesTool, fixturesDir], layout.cli.root)
   if (generated.status !== 0) throw new Error(`fixtures failed (exit ${generated.status}): ${generated.stderr}`)
   record('fixtures', `${process.execPath} ${cliManifest.fixturesTool} ${fixturesDir}`, generated, layout.cli.root)
