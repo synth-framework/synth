@@ -1446,7 +1446,8 @@ export function renderEvidence(model) {
   const identity = [
     ['Operator (who ran the trial)', operator('your name')],
     ['Setup executed by (agent/tool, model, version)', operator('who or what ran `guided-installed-trial-setup.mjs`, and its model/version')],
-    ['Setup command and exit code', model.setupCommand ?? `${operator('the setup command you ran and its exit code')}`],
+    ['Setup command and exit code', model.setupCommand ?? `${operator('the setup command you ran and its exit code')}${model.condition.resolved === 'plain' ? ' — the plain condition writes no manifest outside TEST_PATH, so this one stays yours' : ''}`],
+    ['Setup stopped before any trial test', model.setupStoppedBeforeAgent === true ? 'yes — `setup-manifest.json` records `setup-complete-stop-before-agent` with `trialTestsRun: 0`; the agent was launched afterwards by hand' : model.setupStoppedBeforeAgent === false ? operator('setup recorded trialTestsRun > 0 — check what ran before the agent started') : (model.condition.resolved === 'plain' ? 'not recorded — the plain condition writes no manifest; confirm the agent was started after setup finished' : operator('whether setup ran any trial test before the agent was launched'))],
     ['TEST_PATH state before setup', model.stateBefore ?? operator('missing, or empty')],
     ['Was TEST_PATH created by setup?', model.createdBySetup ?? operator('yes or no')],
     ['Scratch directory (outside TEST_PATH)', model.condition.resolved === 'plain' ? 'not applicable — the plain condition builds nothing and writes nothing outside TEST_PATH' : model.staging.root ? `${inlineCode(model.staging.root)}${model.staging.present ? '' : ' — not reachable from this capture'} — tarball, installed CLI and transcripts` : operator('the staging directory setup used')],
@@ -1463,7 +1464,11 @@ export function renderEvidence(model) {
     }).join('; ') || 'no recorded timestamps'}; filename date \`${model.date}\` (${model.dateSource}). ${operator('your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set')}`],
     ['Running agent, model and version', operator('agent product, model and version; session ids')],
     ['Tool access given to the agent', operator('shell, editor, network, and anything else')],
-    ['Pinned repository revision', model.revision.commit ? `\`${model.revision.commit}\`${model.revision.subject ? ` — ${quote(model.revision.subject)}` : ''}${model.revision.source ? ` (${model.revision.source})` : ''}` : operator('the commit the CLI was built from')],
+    ['Pinned repository revision', model.revision.commit
+      ? `\`${model.revision.commit}\`${model.revision.subject ? ` — ${quote(model.revision.subject)}` : ''}${model.revision.source ? ` (${model.revision.source})` : ''}`
+      : model.condition.resolved === 'plain'
+        ? `not applicable — the plain condition builds and installs nothing, so no CLI commit applies. What identifies this arm's instructions is the staged \`INSTRUCTIONS.md\`: sha256 \`${stagedInstruction.sha256 ?? 'not captured'}\`, the plain set. The CLI revision this trial tested is pinned in the guided capture of the same run.`
+        : operator('the commit the CLI was built from')],
     ['Environment', `${operator('node --version, npm --version, OS — the machine that ran setup and the sessions')}`],
     ['Time box set before starting', operator('the time box you set, and whether the run stayed inside it')],
     ['Private assets involved', '`none` (required; any private asset invalidates this run)'],
@@ -1485,6 +1490,11 @@ export function renderEvidence(model) {
     ['Tarball SHA-256', model.install.tarballSha256 ? `\`${model.install.tarballSha256}\`` : operator('the tarball digest — re-run with `--staging <dir>` on the machine that holds it to fill this in mechanically')],
     ['Global install command and exit', model.install.global],
     ['`synth --version` output', model.install.versionText ? fenced(JSON.stringify(model.install.version ?? model.install.versionText, null, 2), 'json') : operator('the JSON `synth --version` printed')],
+    ['Checkout state the tarball was built from', model.revisionDirty === true
+      ? 'the checkout held **uncommitted changes** when setup read it, so the tarball digest above — not the commit hash — is what identifies the CLI that ran. The stage before setup: `npm run build` compiles whatever the working tree holds, and `npm pack` packs that output.'
+      : model.revisionDirty === false
+        ? 'clean — the working tree matched the pinned commit when setup read it, so the commit and the digest identify the same CLI'
+        : operator('whether the checkout held uncommitted changes when you ran setup')],
   ]
   for (const [field, value] of proof) out.push(`| ${field} | ${value} |`)
   out.push('')
@@ -1544,19 +1554,35 @@ export function renderEvidence(model) {
   out.push('')
   out.push('| Question | Answer |')
   out.push('| --- | --- |')
+  // Five of these are judgements only a person who watched both arms can make. Each
+  // row still says what this capture measured for its own arm, so the judgement is
+  // made against numbers rather than memory — and it never implies the other arm's
+  // facts, which live in that arm's own capture.
+  const arm = model.condition.resolved
+  const optionsPerCell = cases.map((entry) => `${entry.dirName} ${(entry.recorded?.options ?? entry.offer.json?.options ?? []).length}`).join(', ')
+  const questionsRaised = cases.filter((entry) => entry.recorded?.question ?? entry.offer.json?.question).length
+  const guidedHashes = cases.flatMap((entry) => entry.citations).filter((citation) => citation.hashRecorded).length
+  const guidedCitations = cases.flatMap((entry) => entry.citations).length
+  const guidedHashedOk = cases.flatMap((entry) => entry.citations).filter((citation) => citation.hashRecorded && (citation.status === 'matched' || citation.status === 'matched-recomputed')).length
+  const transcripts = cases.filter((entry) => entry.transcript.present).length
+  const operatorEvents = cases.reduce((sum, entry) => sum + entry.integrity.operatorInputEvents, 0)
+  const commandsPerCell = cases.map((entry) => `${entry.dirName} ${entry.commands.length}`).join(', ')
+  const provenanceMeasured = arm === 'guided'
+    ? `measured in this capture: ${guidedHashes} of ${guidedCitations} citation(s) carry a hash the CLI recorded, ${guidedHashedOk} of those recompute to the live source; ${transcripts} of ${cases.length} cell(s) left a CLI transcript and every captured cell left a draft in \`.synth/first-contact/\``
+    : `measured in this capture: ${guidedCitations} citation(s) re-checked quote by quote (${cases.reduce((sum, entry) => sum + entry.citations.filter((citation) => !citation.repeatedReading).length, 0)} distinct) — this arm stores no CLI state, so no hash exists to record, and a reader can verify each quote but not that the agent recorded it at the time`
+  const stepsMeasured = arm === 'guided'
+    ? `measured in this capture: ${operatorEvents} operator input event(s) across the cells (the kickoff line each, as the CLI recorded them); commands the reports list per cell: ${commandsPerCell}`
+    : `measured in this capture: this arm leaves no CLI state, so operator steps are visible only in the report's COMMANDS section (per cell: ${commandsPerCell}) and in your own session log`
   const crossCutting = [
-    'Did the guided condition ask substantively different or better questions?',
-    'Did the guided condition add verifiable provenance the plain condition lacked?',
-    'Which condition required fewer operator steps or less reading?',
-    'Which condition produced a clearer next slice?',
+    ['Did the guided condition ask substantively different or better questions?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — measured in this capture: ${questionsRaised} of ${cases.length} cell(s) raised a question, options per cell ${optionsPerCell}; the questions and options themselves are quoted in §4.`],
+    ['Did the guided condition add verifiable provenance the plain condition lacked?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — ${provenanceMeasured}.`],
+    ['Which condition required fewer operator steps or less reading?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — ${stepsMeasured}.`],
+    ['Which condition produced a clearer next slice?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — nothing mechanical: the slice each option implies is in the offers quoted in §4.`],
     ['Same agent/model and tool access in both conditions?', operator('yes or no, with the evidence that shows it')],
     ['Plain and guided run order, and could ordering explain the result?', operator('the order actually used and your reading of it')],
     ['Sessions used: one per condition, or one per test? Order used?', operator('the session plan you actually ran')],
   ]
-  for (const question of crossCutting) {
-    if (typeof question === 'string') out.push(`| ${question} | ${operator('a comparative judgement — only a person who watched both conditions can answer it')} |`)
-    else out.push(`| ${question[0]} | ${question[1]} |`)
-  }
+  for (const [question, answer] of crossCutting) out.push(`| ${question} | ${answer} |`)
   const failed = cases.flatMap((entry) => entry.dataErrors.flatMap((entryLog) => entryLog.entries.map((row) => `${entry.dirName}: ${row.error ?? JSON.stringify(row)}`)))
   out.push(`| Anything that failed or was skipped, with the exact error text | ${failed.length > 0 ? `recorded CLI errors: ${failed.map((item) => quote(item)).join(' | ')}${cases.some((entry) => !entry.transcript.present) ? '; a CLI transcript was missing for at least one case' : ''}` : 'no CLI error log was captured in this TEST_PATH'}; cells not captured in this file and therefore \`not run\` unless they ran elsewhere: ${missingCells.map((cell) => `\`${cell}\``).join(', ') || 'none'}. |`)
   out.push('')
@@ -1736,7 +1762,24 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
     : model.condition.resolved === 'plain'
       ? '`none — the plain condition writes nothing outside TEST_PATH`'
       : operator('the staging manifest paths')
-  model.setupCommand = null
+  // The setup manifest records facts an operator would otherwise retype, so the
+  // document reads them instead of asking. The command is *rebuilt* from the two
+  // inputs the manifest names — never guessed, never invented — because setup does
+  // not store its own argv. `workingTreeDirty` was read before the build, so it
+  // describes the tree the tarball was packed from, not the build output that run
+  // left behind; it is surfaced because a tarball built from a dirty checkout is
+  // pinned by its digest rather than by the commit it names.
+  const setupManifest = model.staging.setupManifest
+  const setupInputs = setupManifest?.inputs
+  if (typeof setupInputs?.repo === 'string' && typeof setupInputs?.workspace === 'string') {
+    model.setupCommand = `${inlineCode(`node scripts/guided-installed-trial-setup.mjs --workspace ${setupInputs.workspace}`)}, run from ${inlineCode(setupInputs.repo)} → exit 0, since setup writes \`setup-manifest.json\` only after every step succeeded`
+  }
+  model.setupStoppedBeforeAgent = setupManifest
+    ? setupManifest.status === 'setup-complete-stop-before-agent' && setupManifest.trialTestsRun === 0
+    : null
+  model.revisionDirty = setupManifest?.testedRevision?.workingTreeDirty
+    ?? model.staging.manifest?.json?.testedRevision?.workingTreeDirty
+    ?? null
   model.stateBefore = null
   model.createdBySetup = null
 

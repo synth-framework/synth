@@ -65,11 +65,12 @@ async function inventory(root) {
 }
 
 /** A synthetic staging directory shaped exactly like the one setup leaves behind. */
-async function makeStaging({ tarballSha = "a".repeat(64) } = {}) {
+async function makeStaging({ tarballSha = "a".repeat(64), dirty = false, inputs = null } = {}) {
   const staging = await fs.mkdtemp(path.join(os.tmpdir(), "trial-evidence-staging-"))
   await writeTree(staging, {
     "cli-manifest.json": `${JSON.stringify({
       status: "cli-installed",
+      testedRevision: { commit: "917d662a31bd176293c7696bec02f468c8bcbc4f", branch: "arena/f3c711cb-synth", subject: "Keep the check counts current in the trial docs", workingTreeDirty: dirty },
       installedCli: { bin: path.join(staging, "global", "synth.cmd"), tarball: path.join(staging, "pack", "synth-framework-synth-2.6.1.tgz"), tarballSha256: tarballSha, version: { status: "ok", version: "2.6.1", schema: "synth-cli-v1" } },
       trialTestsRun: 0,
     }, null, 2)}\n`,
@@ -79,7 +80,8 @@ async function makeStaging({ tarballSha = "a".repeat(64) } = {}) {
     "transcripts/setup-manifest.json": `${JSON.stringify({
       status: "setup-complete-stop-before-agent",
       condition: "guided",
-      testedRevision: { commit: "917d662a31bd176293c7696bec02f468c8bcbc4f", branch: "arena/f3c711cb-synth", subject: "Keep the check counts current in the trial docs", workingTreeDirty: false },
+      testedRevision: { commit: "917d662a31bd176293c7696bec02f468c8bcbc4f", branch: "arena/f3c711cb-synth", subject: "Keep the check counts current in the trial docs", workingTreeDirty: dirty },
+      ...(inputs ? { inputs } : {}),
       revisions: {},
       launchInstruction: "RECORDED LAUNCH LINE: this trial uses SYNTH, installed here as `synth`.",
       trialTestsRun: 0,
@@ -806,6 +808,71 @@ test("every filed raw bundle is present, recomputes to its own digests and would
   }
   if (absent.length > 0) {
     t.diagnostic(`recorded in SOURCES.json but not filed in the repository: ${absent.join(", ")} — captured, then dropped by an ignore rule before it was committed; restore the file or re-run the capture on the machine that holds it`)
+  }
+})
+
+test("the setup manifest's own facts fill the rows it can, and a dirty build is named", async () => {
+  const repo = await makeRepo()
+  const staging = await makeStaging({ dirty: true, inputs: { repo: "C:\\Users\\j\\Projects\\synth", workspace: "C:\\Users\\j\\Projects\\board-test" } })
+  const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green"], staging })
+  const out = path.join(repo, "docs", "analysis", "setup-facts.md")
+  try {
+    await capture(["--workspace", workspace, "--repo", repo, "--staging", staging, "--date", "2026-10-16", "--out", out])
+    const doc = await fs.readFile(out, "utf-8")
+    // The command is rebuilt from the two inputs the manifest names — not retyped.
+    assert.ok(doc.includes("`node scripts/guided-installed-trial-setup.mjs --workspace C:\\Users\\j\\Projects\\board-test`"), `the setup command is rebuilt from the manifest's inputs:\n${doc.split("\n").filter((line) => line.includes("setup-installed-trial-setup") || line.includes("guided-installed-trial-setup")).join("\n")}`)
+    assert.ok(doc.includes("run from `C:\\Users\\j\\Projects\\synth`"), "the checkout setup ran from is named too")
+    assert.ok(doc.includes("exit 0, since setup writes `setup-manifest.json` only after every step succeeded"), "the exit code follows from the manifest existing at all")
+    assert.ok(doc.includes("yes — `setup-manifest.json` records `setup-complete-stop-before-agent` with `trialTestsRun: 0`"), "setup stopping before the agent is a recorded fact, not a question")
+    // A tarball built from a dirty checkout is pinned by its digest, and the document says so.
+    assert.ok(doc.includes("the checkout held **uncommitted changes** when setup read it"), "a dirty build is named, never smoothed over")
+    assert.equal(doc.includes("clean — the working tree matched the pinned commit"), false, "a dirty build must not also read as clean")
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+    await fs.rm(repo, { recursive: true, force: true })
+  }
+})
+
+test("the plain arm's identity rows say what does not apply instead of asking", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  const out = path.join(repo, "docs", "analysis", "plain-identity.md")
+  try {
+    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+    const doc = await fs.readFile(out, "utf-8")
+    assert.ok(doc.includes("not applicable — the plain condition builds and installs nothing, so no CLI commit applies"), `plain pins no CLI commit, and the row says so:\n${doc.slice(0, 3000)}`)
+    assert.equal(doc.includes("the commit the CLI was built from"), false, "the plain arm must not ask for a commit nothing was built from")
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(repo, { recursive: true, force: true })
+  }
+})
+
+test("each comparative row carries what this capture measured, never the judgement", async () => {
+  const repo = await makeRepo()
+  const staging = await makeStaging()
+  const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green", "brown"], staging })
+  const out = path.join(repo, "docs", "analysis", "cross-cutting.md")
+  try {
+    await capture(["--workspace", workspace, "--repo", repo, "--staging", staging, "--date", "2026-10-16", "--out", out])
+    const doc = await fs.readFile(out, "utf-8")
+    const section = doc.split("## 5. Cross-cutting observations")[1].split("## 6.")[0]
+    for (const question of ["better questions", "verifiable provenance", "fewer operator steps", "clearer next slice"]) {
+      const row = section.split("\n").find((line) => line.includes(question))
+      assert.ok(row, `§5 must still ask: ${question}`)
+      assert.ok(row.includes("a comparative judgement — only a person who watched both conditions can answer it"), `the judgement stays with the operator: ${question}`)
+      assert.ok(row.includes("measured in this capture") || row.includes("nothing mechanical"), `the measured facts sit beside the question: ${question}`)
+    }
+    assert.ok(section.includes("citation(s) carry a hash the CLI recorded"), "the provenance row counts the hashes this arm recorded")
+    assert.ok(section.includes("operator input event(s) across the cells"), "the steps row counts the recorded operator events")
+    // The question text itself names the plain condition; what must not appear is the
+    // plain arm's own measurement, which lives in that arm's capture.
+    assert.equal(section.includes("this arm stores no CLI state"), false, "the guided capture must not speak for the other arm")
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+    await fs.rm(repo, { recursive: true, force: true })
   }
 })
 
