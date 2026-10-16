@@ -22,6 +22,8 @@ Keep the answer capable of being "no". An unfavorable result is legitimate evide
 - Inventing human words. There is no authenticated respondent in this trial; every offer cell must end in `awaiting-response`.
 - Claims of owner value, delivery, production readiness or agent-quality improvement from this single diagnostic.
 
+Short on time? **[Appendix A](#appendix-a--copy-paste-operator-runbook)** is the copy-paste runbook, **[Appendix B](#appendix-b--handoff-prompt-for-the-external-agent)** is the prompt to hand the external agent, and **[Appendix C](#appendix-c--independence-compliance-checklist)** states what makes the run count as independent.
+
 ## Prerequisites
 
 - Node.js ≥ 20 (`node --version`; the `synth` package declares `engines.node >= 20`), npm, git, and network access to clone the repository once.
@@ -145,3 +147,114 @@ The recipe above was smoke-checked by the agent that wrote it, using the same br
 - The generator reproduced all five E4 revision hashes exactly.
 
 This validates the setup, not the trial: it is the same agent, the same session, and it contains no independent observation. Treat it as `not run` for every trial cell above.
+
+## Appendix A — copy-paste operator runbook
+
+Everything happens in a scratch directory outside any repository. Replace the three variables, then run the blocks in order. Nothing here touches the authoring checkout.
+
+```bash
+REPO=<synth-repo-local-path>          # a checkout of the repo, on branch arena/f3c711cb-synth
+PIN=1eeef7358a5378738d4ab720cb90e977cca0aa44   # the PR head under review; replace with the current head you want tested
+TRIAL=/tmp/synth-guided-trial-2026-10-16       # scratch root; use a real date
+
+# A1 — throwaway source clone, pinned (recommended: never pack from your working checkout)
+rm -rf "$TRIAL/src" "$TRIAL/pack" "$TRIAL/global" "$TRIAL/fixtures" "$TRIAL/instructions" "$TRIAL/transcripts"
+git clone --branch arena/f3c711cb-synth --single-branch https://github.com/synth-framework/synth.git "$TRIAL/src"
+git -C "$TRIAL/src" checkout --detach "$PIN"
+git -C "$TRIAL/src" log -1 --oneline
+
+# A2 — build and pack (record the exit codes)
+mkdir -p "$TRIAL"/{pack,global,fixtures,instructions,transcripts}
+( cd "$TRIAL/src" && npm ci && npm run build )
+
+# A3 — install the shipped artifact into a scratch prefix
+( cd "$TRIAL/src" && npm pack --pack-destination "$TRIAL/pack" )
+sha256sum "$TRIAL/pack/"*.tgz | tee "$TRIAL/transcripts/tarball.sha256"
+npm install -g --prefix "$TRIAL/global" "$TRIAL/pack/"*.tgz
+"$TRIAL/global/bin/synth" --version | tee "$TRIAL/transcripts/version.json"
+
+# A4 — bring the instructions and the evidence template out of the clone into the trial root
+cp "$TRIAL/src/docs/plans/guided-installed-cli-trial-instructions.md" \
+   "$TRIAL/src/docs/analysis/guided-three-path-installed-trial-evidence-template.md" \
+   "$TRIAL/instructions/"
+
+# A5 — matched starting inputs for both conditions
+node "$TRIAL/src/scripts/guided-installed-trial-fixtures.mjs" "$TRIAL/fixtures" | tee "$TRIAL/transcripts/fixtures.json"
+
+# A6 — hard isolation: the external agent must not be able to read repo tests or docs
+rm -rf "$TRIAL/src"
+```
+
+Notes on the hash: the `.tgz` digest is a property of **your** build, not a fixed constant — record it, do not compare it to the digest quoted in this document's smoke-check section. What must match exactly are the five fixture revisions printed by A5:
+
+| Case | Expected revision |
+| --- | --- |
+| green | `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945` |
+| brown | `348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe` |
+| docs | `37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179` |
+| knowledge (optional) | `d5c6255f264137b340e3fce58f00a397ed0c0dbd4dbd87894ebc96e0b5a3a338` |
+| conflict (optional) | `fa8d3a7aaaf19968c23d2423bd66109583b16d37f24e6578385843ad1c9af3d5` |
+
+Windows (PowerShell): use `$env:TEMP\synth-guided-trial-<date>`, `Copy-Item` instead of `cp`, `Get-FileHash -Algorithm SHA256` instead of `sha256sum`, and the installed binary at `"$TRIAL\global\bin\synth.cmd"`.
+
+## Appendix B — handoff prompt for the external agent
+
+Paste exactly this into a **fresh session** for each cell, replacing the placeholders and the starting request for the case. Save the prompt text verbatim with the transcript.
+
+**Plain condition:**
+
+```text
+You are taking part in a usability trial. Work only inside this directory:
+  <TRIAL>/fixtures/plain/<case>
+Do not read or write anything outside it. In particular, do not look for or read
+any synth source checkout, test suite or documentation.
+
+Task: <the starting request for this case>
+
+Use only the tools you are given. If you need a decision that only a person can make,
+say so explicitly and stop rather than inventing one. When you stop, report what you
+did, what you assumed, what you left open, and anything you could not verify. Do not
+claim that anything was approved.
+```
+
+**Guided condition:** the same block, with `plain` replaced by `guided`, plus this paragraph:
+
+```text
+A CLI called synth is installed at: <TRIAL>/global/bin/synth  (add it to PATH or call it
+by full path). Run, in this directory:
+  synth first-contact --dry-run
+  synth first-contact start "<the starting request for this case>"
+  synth first-contact status
+
+Then write your own offer JSON: a scope, one consequential question, two or three options
+each with a tradeoff, an acceptance example and a citation to either the operator request
+or an exact line of a file in this workspace. Record it:
+  synth first-contact clarify --source-offer offer.json
+  synth first-contact status
+
+Do not pass --selection or --human-response: there is no human respondent in this trial,
+so the offer must stay awaiting-response. Do not run first-contact approve or materialize,
+do not start any Mission or Expedition, and do not push anything anywhere.
+```
+
+## Appendix C — independence compliance checklist
+
+An outside reviewer should be able to reproduce the same comparison from the recorded artifacts alone. These conditions are what make the run independent rather than a self-check.
+
+| # | Requirement | How to satisfy it | Evidence to attach |
+| --- | --- | --- | --- |
+| 1 | Different agent | A different agent product/model build and a fresh session from the one that authored this branch. The authoring agent must not run any cell. | Agent name, model, version, session ids per cell |
+| 2 | No access to the authoring repo | Step A6 removes the clone; the agent stays inside its case directory and reads only the copied instructions. | Transcript shows no repo reads; `rm -rf` in the run log |
+| 3 | Blind to expectations | The agent is never told which condition is supposed to win. The plain prompt never mentions SYNTH. | Saved prompt text per cell |
+| 4 | Matched inputs | Identical fixture bytes; all required revisions recorded before the first cell. | `fixtures.json`, hash table in the evidence |
+| 5 | Matched treatment | Same agent/model/version, same tools, same starting request, same case directory layout. Only the guided extra commands differ. | Version lines + prompt text for both conditions |
+| 6 | Order control | Fresh session per cell; alternate order across cases (for example green plain→guided, brown guided→plain, docs plain→guided) so practice effects do not all point one way. | Run log with actual order |
+| 7 | Pre-registration | Protocol, time box, expected observations and stop conditions fixed before the first cell. | This document + the filled-in §1 of the template, committed or time-stamped first |
+| 8 | Raw evidence | Verbatim transcripts, wall-clock per cell, and an intervention log. No retroactive tidying. | Transcript files; interventions with exact wording |
+| 9 | Artifact pinning | The installed tarball, not a repo build, is what ran. | `tarball.sha256`, `version.json` |
+| 10 | Condition integrity | No invented human words; guided cells end `awaiting-response`; no lifecycle command; no push. | Cell transcripts and §6 of the template |
+| 11 | Operator non-coaching | Any help beyond "read your instructions" is logged as an intervention verbatim. | Intervention log |
+
+What a compliant run still does **not** establish: owner value, real-user comprehension, team adoption, delivery, production readiness, or that a human confirmed any response. One agent, one model build, one cell per case remains a diagnostic — it can support "keep as is" or "simplify", not a population claim.
+
+If any requirement above is unavoidably unmet, say which and why in the evidence. A partially independent run reported honestly is useful; an unlabelled self-check is not.

@@ -4,6 +4,26 @@ Copy this file into the trial root, fill it in during the run, and attach the co
 
 **This template is filled in by an operator and a running agent. The summary is agent/operator-authored prose, not a human decision record.**
 
+## 0. Independence compliance
+
+Checklist: [instructions, Appendix C](../plans/guided-installed-cli-trial-instructions.md#appendix-c--independence-compliance-checklist). Mark each item and name anything unmet.
+
+| # | Requirement | Met? | Note or evidence |
+| --- | --- | --- | --- |
+| 1 | Different agent and fresh session from the authoring agent | `<yes/no>` | `<...>` |
+| 2 | Agent had no access to the authoring repo (clone removed, workspace confined) | `<yes/no>` | `<...>` |
+| 3 | Agent blind to which condition is expected to win; plain prompt never mentioned SYNTH | `<yes/no>` | `<...>` |
+| 4 | Matched inputs; revisions recorded before the first cell | `<yes/no>` | `<...>` |
+| 5 | Matched agent/model/version, tools, starting request text | `<yes/no>` | `<...>` |
+| 6 | Fresh session per cell; order recorded and alternated across cases | `<yes/no>` | `<...>` |
+| 7 | Protocol, time box, expected observations and stop conditions pre-registered | `<yes/no>` | `<...>` |
+| 8 | Verbatim transcripts, wall-clock per cell, intervention log | `<yes/no>` | `<...>` |
+| 9 | Installed tarball pinned and identified (not a repo build) | `<yes/no>` | `<...>` |
+| 10 | No invented human words; guided cells ended `awaiting-response`; no lifecycle action; no push | `<yes/no>` | `<...>` |
+| 11 | Operator coaching logged verbatim | `<yes/no>` | `<...>` |
+
+Anything unmet, and why: `<...>`
+
 ## 1. Run identity
 
 | Field | Value |
