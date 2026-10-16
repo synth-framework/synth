@@ -1,6 +1,6 @@
 # Guided-journey Mission alignment review (proposed, not approved)
 
-**Review target:** the existing planning draft `48007fcb591e5e16` and the proposed first Expedition in [the bounded split](guided-journey-alignment-expedition-handoff.md). This is a Git-reviewable statement of intended scope, **not** an Intent Model approval, Alignment Contract approval, runtime Mission approval/start, or permission to force-close CLI-003.
+**Review target:** the [source-grounded Intent/Alignment proposal](guided-journey-intent-alignment-proposal.md), the existing planning draft `48007fcb591e5e16`, and the proposed first Expedition in [the bounded split](guided-journey-alignment-expedition-handoff.md). The packet records the exact tracked source files, byte identities, proposed commitments and open limits for owner review. These are Git-reviewable statements of intended scope, **not** an Intent Model approval, Alignment Contract approval, runtime Mission approval/start, or permission to force-close CLI-003.
 
 ## Mission meaning to confirm or change
 
