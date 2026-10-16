@@ -1,0 +1,505 @@
+{
+  "capturedAt": "2026-10-16T06:27:43.675Z",
+  "workspace": "/home/user/trial-workspace",
+  "helper": "scripts/guided-installed-trial-evidence.mjs",
+  "requiredCases": [
+    "green",
+    "brown",
+    "docs"
+  ],
+  "optionalCases": [
+    "knowledge",
+    "conflict"
+  ],
+  "condition": {
+    "inferred": "guided",
+    "inferredFrom": "ENVIRONMENT.md is present in TEST_PATH (guided setup writes it; the plain condition writes nothing outside TEST_PATH)",
+    "declared": null,
+    "resolved": "guided"
+  },
+  "date": {
+    "value": "2026-10-15",
+    "source": "argument"
+  },
+  "instruction": {
+    "present": true,
+    "bytes": 7600,
+    "sha256": "07a7a56df1bb0ec7a5e3f9d5f9017cc12c7b7c42fb00c964be6cae1545d72321",
+    "namesTool": true
+  },
+  "environment": {
+    "present": true,
+    "bytes": 708,
+    "sha256": "aaa644ba7527769a335fbaf5a003ed30d6e4f1d571799a6bc82a93d5558899a0",
+    "workspace": "C:\\Users\\j\\Projects\\board-test",
+    "staging": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\917d662a31bd",
+    "revision": "917d662a31bd176293c7696bec02f468c8bcbc4f"
+  },
+  "launch": {
+    "recorded": "This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.",
+    "source": "inferred"
+  },
+  "revision": {
+    "commit": "917d662a31bd176293c7696bec02f468c8bcbc4f",
+    "short": "917d662",
+    "subject": "917d662 Keep the check counts current in the trial docs",
+    "source": "ENVIRONMENT.md"
+  },
+  "install": {
+    "tarballName": null,
+    "tarballSha256": null,
+    "version": null,
+    "stagingPresent": false,
+    "stagingNotes": [
+      "staging directory not found at capture time: C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\917d662a31bd"
+    ]
+  },
+  "cases": [
+    {
+      "caseId": "green",
+      "dir": "greenfield",
+      "report": {
+        "present": true,
+        "bytes": 6875,
+        "sha256": "121ea4a73cfff33008f16435063dea43c668bfa829bf47685f3e3a79e75c92de"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 2001,
+        "sha256": "0bc02407b7daf11b9a6444a6431b0d63ad0f125e3679685f588ebb1dbdb4cc6a",
+        "id": null,
+        "question": "How should board input be supplied and edited before export, since board kind, inputs, editing and validation are undecided?",
+        "optionIds": [
+          "file-fed-edit-export",
+          "blank-board-edit",
+          "small-change-validation"
+        ],
+        "problems": []
+      },
+      "transcript": {
+        "present": true,
+        "events": 2,
+        "bytes": 499,
+        "sha256": "ba27d1824e32fc0ecdc227df0bd929b2d5f2dd878c6866fa5c0b358821e96757"
+      },
+      "draft": {
+        "present": true,
+        "bytes": 6004,
+        "sha256": "3fd6502dccef493e0dd41be775aed6dfc34ab80961db413d2598ed3b958d02cd",
+        "journeyId": "4e22bb17-e4ca-459d-b997-c9f928deb0bb",
+        "schema": "synth-first-contact-draft-v1",
+        "status": "draft"
+      },
+      "stateFiles": [
+        {
+          "relative": ".synth/data/cli-errors.jsonl",
+          "bytes": 476,
+          "sha256": "716098579c9bf8fdc383501ac85ed443b266569a53b4bc467299874c6f4465ef"
+        },
+        {
+          "relative": ".synth/first-contact/draft.json",
+          "bytes": 6004,
+          "sha256": "3fd6502dccef493e0dd41be775aed6dfc34ab80961db413d2598ed3b958d02cd"
+        },
+        {
+          "relative": ".synth/first-contact/transcript.jsonl",
+          "bytes": 499,
+          "sha256": "ba27d1824e32fc0ecdc227df0bd929b2d5f2dd878c6866fa5c0b358821e96757"
+        }
+      ],
+      "inputs": {
+        "expected": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "observed": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "basis": "no-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "file-fed-edit-export",
+          "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recordedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashRecorded": true,
+          "kind": "operator-intent",
+          "path": null,
+          "line": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        },
+        {
+          "optionId": "blank-board-edit",
+          "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recordedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashRecorded": true,
+          "kind": "operator-intent",
+          "path": null,
+          "line": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        },
+        {
+          "optionId": "small-change-validation",
+          "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recordedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashRecorded": true,
+          "kind": "operator-intent",
+          "path": null,
+          "line": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        }
+      ],
+      "commands": [
+        "`synth first-contact --dry-run` via PATH synth (v2.4.1) -> exit 1 (see PROBLEMS)",
+        "`synth --version` (PATH) -> exit 0, version 2.4.1, schema synth-cli-v1",
+        "`synth --help` (PATH) -> exit 0",
+        "`synth first-contact --help` (PATH) -> exit 0",
+        "`synth first-contact status` (PATH v2.4.1) -> exit 0, state not-started, nextStep start \"<intent>\"",
+        "`synth first-contact start \"<task>\"` (PATH v2.4.1) -> exit 0, draft created (later removed as wrong revision)",
+        "`synth first-contact status` (PATH v2.4.1) -> exit 0, state draft",
+        "`synth first-contact clarify` (PATH v2.4.1) -> exit 0, 5 questions",
+        "`\"<absolute>\" --version` -> exit 0, version 2.6.1 (revision under test)",
+        "`\"<absolute>\" first-contact --dry-run` -> exit 0 (after cleaning legacy .synth)",
+        "`\"<absolute>\" first-contact --help` -> exit 0",
+        "`\"<absolute>\" first-contact status` -> exit 0",
+        "`\"<absolute>\" first-contact start \"Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.\"` -> exit 0, draft created, overall confidence 0.25, nextStep clarify",
+        "`\"<absolute>\" first-contact status` -> exit 0, state draft, canApprove false, nextStep clarify",
+        "`\"<absolute>\" first-contact clarify --source-offer offer.json` (first attempt, missing option id) -> exit 1",
+        "`\"<absolute>\" first-contact clarify --source-offer offer.json` (second attempt, wrong source kind) -> exit 1",
+        "`\"<absolute>\" first-contact clarify --source-offer offer.json` (final) -> exit 0, FirstContactSourceOfferRecorded, offer version 1",
+        "`\"<absolute>\" first-contact status` -> exit 0, state draft, workingBrief awaiting-response"
+      ],
+      "integrity": {
+        "operatorInputEvents": 1,
+        "agentProposalEvents": 1,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "openAgentChoices": 0,
+        "transcriptFirst": "2026-10-16T05:37:24.070Z",
+        "transcriptLast": "2026-10-16T05:38:53.461Z",
+        "spanSeconds": 89
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "CLI OUTPUT",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    },
+    {
+      "caseId": "brown",
+      "dir": "brownfield",
+      "report": {
+        "present": true,
+        "bytes": 4650,
+        "sha256": "e71a020e2e1f5d80bc46300ff4b434f2d1a61e143019fce2e3f7f4cc03dee703"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 1799,
+        "sha256": "4b7e0b6be41e8c6e97e12f9a6e11631f12f1c1a1aba00fd98f76dc578c3c9d65",
+        "id": null,
+        "question": "How should the user-selected fill color be accepted while keeping the current label output and tests working?",
+        "optionIds": [
+          "optional-fill-arg",
+          "keep-label-test",
+          "fill-only-delta"
+        ],
+        "problems": []
+      },
+      "transcript": {
+        "present": true,
+        "events": 2,
+        "bytes": 486,
+        "sha256": "2f58657f914908583ec449f479738714e97c191e87b3f4af2e198c713b9693a0"
+      },
+      "draft": {
+        "present": true,
+        "bytes": 5470,
+        "sha256": "2bfac0b781cf7157da4388a89b3c56ab4c1163b9a98ff4b841fa8b11a76e8e61",
+        "journeyId": "cd4c9276-babc-44d6-9cbb-9d757a08bc26",
+        "schema": "synth-first-contact-draft-v1",
+        "status": "draft"
+      },
+      "stateFiles": [
+        {
+          "relative": ".synth/first-contact/draft.json",
+          "bytes": 5470,
+          "sha256": "2bfac0b781cf7157da4388a89b3c56ab4c1163b9a98ff4b841fa8b11a76e8e61"
+        },
+        {
+          "relative": ".synth/first-contact/transcript.jsonl",
+          "bytes": 486,
+          "sha256": "2f58657f914908583ec449f479738714e97c191e87b3f4af2e198c713b9693a0"
+        }
+      ],
+      "inputs": {
+        "expected": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+        "observed": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+        "basis": "all-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "optional-fill-arg",
+          "quote": "export const render = label => `<text>${label}</text>`;",
+          "recordedSha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee",
+          "hashRecorded": true,
+          "kind": "file",
+          "path": "src/board.js",
+          "line": 1,
+          "pathAllowedByCli": true,
+          "expectedLine": "export const render = label => `<text>${label}</text>`;",
+          "recomputedSha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        },
+        {
+          "optionId": "keep-label-test",
+          "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+          "recordedSha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97",
+          "hashRecorded": true,
+          "kind": "file",
+          "path": "tests/board.test.js",
+          "line": 4,
+          "pathAllowedByCli": true,
+          "expectedLine": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+          "recomputedSha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        },
+        {
+          "optionId": "fill-only-delta",
+          "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+          "recordedSha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246",
+          "hashRecorded": true,
+          "kind": "file",
+          "path": "docs/limitation.md",
+          "line": 1,
+          "pathAllowedByCli": true,
+          "expectedLine": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+          "recomputedSha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        }
+      ],
+      "commands": [
+        "`<absolute> first-contact --dry-run` -> exit 0, detected brownfield, listed docs/limitation.md, src/board.js, tests/board.test.js, package.json",
+        "`<absolute> first-contact start \"Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.\"` -> exit 0, draft created, overall confidence 0.083",
+        "`npm test` (before change) -> exit 0, 1 pass",
+        "`<absolute> first-contact status` -> exit 0, state draft, canApprove false, no-source-offer",
+        "`<absolute> first-contact clarify --source-offer offer.json` -> exit 0, FirstContactSourceOfferRecorded version 1",
+        "`<absolute> first-contact status` -> exit 0, workingBrief awaiting-response, sourceFreshness current",
+        "`npm test` (after, no code changed) -> exit 0, 1 pass"
+      ],
+      "integrity": {
+        "operatorInputEvents": 1,
+        "agentProposalEvents": 1,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "openAgentChoices": 0,
+        "transcriptFirst": "2026-10-16T05:39:26.916Z",
+        "transcriptLast": "2026-10-16T05:39:44.577Z",
+        "spanSeconds": 18
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "CLI OUTPUT",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    },
+    {
+      "caseId": "docs",
+      "dir": "documentation",
+      "report": {
+        "present": true,
+        "bytes": 3787,
+        "sha256": "bd4aefab28a593524bc9a103bcfb7213a05204b2bf2695c51e7c6503639ccfaf"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 1838,
+        "sha256": "0ba521ee0838c25030208121cb9ef0d68bb71d27ccfdaa55ec4b78492f0fb3ff",
+        "id": null,
+        "question": "What editing interaction style should the next slice implement, given the first board exports one SVG from local data and editing is requested but undecided?",
+        "optionIds": [
+          "keep-single-export",
+          "small-edit-on-export",
+          "decide-interaction-first"
+        ],
+        "problems": []
+      },
+      "transcript": {
+        "present": true,
+        "events": 2,
+        "bytes": 477,
+        "sha256": "5223d4d425c10f45e564107cfa5da9472cd366a74e37b276c8c4bbd312da1cf2"
+      },
+      "draft": {
+        "present": true,
+        "bytes": 5443,
+        "sha256": "1eee1b52f870fb2512c910d25519552f22f15421c86f600a1aa771aba628da79",
+        "journeyId": "19bf4fc1-541c-4307-b027-385689446fef",
+        "schema": "synth-first-contact-draft-v1",
+        "status": "draft"
+      },
+      "stateFiles": [
+        {
+          "relative": ".synth/first-contact/draft.json",
+          "bytes": 5443,
+          "sha256": "1eee1b52f870fb2512c910d25519552f22f15421c86f600a1aa771aba628da79"
+        },
+        {
+          "relative": ".synth/first-contact/transcript.jsonl",
+          "bytes": 477,
+          "sha256": "5223d4d425c10f45e564107cfa5da9472cd366a74e37b276c8c4bbd312da1cf2"
+        }
+      ],
+      "inputs": {
+        "expected": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+        "observed": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+        "basis": "all-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "keep-single-export",
+          "quote": "The first board exports one SVG from local data.",
+          "recordedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashRecorded": true,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "line": 1,
+          "pathAllowedByCli": true,
+          "expectedLine": "The first board exports one SVG from local data.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        },
+        {
+          "optionId": "small-edit-on-export",
+          "quote": "Editing is requested, but its interaction style is undecided.",
+          "recordedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashRecorded": true,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "line": 2,
+          "pathAllowedByCli": true,
+          "expectedLine": "Editing is requested, but its interaction style is undecided.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        },
+        {
+          "optionId": "decide-interaction-first",
+          "quote": "Editing is requested, but its interaction style is undecided.",
+          "recordedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashRecorded": true,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "line": 2,
+          "pathAllowedByCli": true,
+          "expectedLine": "Editing is requested, but its interaction style is undecided.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": true,
+          "lineMatches": true,
+          "status": "matched"
+        }
+      ],
+      "commands": [
+        "`<absolute> first-contact --dry-run` -> exit 0, detected brownfield (docs only), excerpts docs/requirements.md:1-2",
+        "`<absolute> first-contact start \"Continue from the requirements in docs/. The next slice is undecided.\"` -> exit 0, draft created, confidence 0.083",
+        "`<absolute> first-contact status` -> exit 0, state draft, no-source-offer",
+        "`<absolute> first-contact clarify --source-offer offer.json` -> exit 0, FirstContactSourceOfferRecorded version 1",
+        "`<absolute> first-contact status` -> exit 0, workingBrief awaiting-response"
+      ],
+      "integrity": {
+        "operatorInputEvents": 1,
+        "agentProposalEvents": 1,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "openAgentChoices": 0,
+        "transcriptFirst": "2026-10-16T05:40:12.019Z",
+        "transcriptLast": "2026-10-16T05:40:30.247Z",
+        "spanSeconds": 18
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "CLI OUTPUT",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    }
+  ],
+  "buildArtifactsInsideTestPath": [],
+  "gitInside": [],
+  "warnings": [
+    "ENVIRONMENT.md points at C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\917d662a31bd, which is not reachable from this machine"
+  ],
+  "operatorGaps": [
+    "§4 greenfield: the exact commands and their exit codes, as you saw them",
+    "§4 greenfield: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§4 brownfield: the exact commands and their exit codes, as you saw them",
+    "§4 brownfield: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§4 documentation: the exact commands and their exit codes, as you saw them",
+    "§4 documentation: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box",
+    "§0 the Met? column for all eleven independence items",
+    "§5 every comparative reading",
+    "§7 the recommendation for ordinary PR #347 review",
+    "§2 the install proof — re-run the capture with --staging <dir> on the machine that holds the scratch directory"
+  ]
+}

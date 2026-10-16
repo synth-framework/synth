@@ -1,0 +1,45 @@
+TEST: brown (brownfield/)
+COMMANDS: each run inside brownfield/ with exit code (absolute CLI = C:\Users\j\AppData\Local\Temp\trial-staging\917d662a31bd\global\synth.cmd, v2.6.1)
+- `<absolute> first-contact --dry-run` -> exit 0, detected brownfield, listed docs/limitation.md, src/board.js, tests/board.test.js, package.json
+- `<absolute> first-contact start "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."` -> exit 0, draft created, overall confidence 0.083
+- `npm test` (before change) -> exit 0, 1 pass
+- `<absolute> first-contact status` -> exit 0, state draft, canApprove false, no-source-offer
+- `<absolute> first-contact clarify --source-offer offer.json` -> exit 0, FirstContactSourceOfferRecorded version 1
+- `<absolute> first-contact status` -> exit 0, workingBrief awaiting-response, sourceFreshness current
+- `npm test` (after, no code changed) -> exit 0, 1 pass
+Used absolute path because PATH synth is 2.4.1 (does not support --dry-run/--source-offer) while staged revision is 2.6.1; recorded in green test.
+CLI OUTPUT: what SYNTH showed at each step, summarized, including final status
+- dry-run: pending-approval FirstContactOnboardPlan, detected brownfield, wouldCreate .synth/manifest.json etc, wouldRun synth bootstrap --approve (did NOT run per §5), sourceHandoff excerpts matched live files, nextStep `synth discover . --export` (did not follow; followed INSTRUCTIONS.md start step which CLI help also lists).
+- start/status: draft, unknowns audience/environment/capabilities, canApprove false, nextStep clarify.
+- clarify --source-offer: ok, offer id version 1, 3 options with sha256-pinned sources.
+- final status: state draft, sourceOffers 1, sourceAnswers [], workingBrief awaiting-response, nextStep clarify. No approve/materialize.
+OFFER: path to offer.json, and the question/options it contains
+- Path: brownfield/offer.json
+- scope: "Extend the existing SVG board renderer with user-selected fill color only; preserve label output and existing tests"
+- question: "How should the user-selected fill color be accepted while keeping the current label output and tests working?"
+- options:
+  1. optional-fill-arg / "Optional fill argument with default preserving output"
+  2. keep-label-test / "Keep label test green, add fill as extra case"
+  3. fill-only-delta / "Fill-only addition honoring the limitation note"
+  Each has label/tradeoff/acceptanceExample/source; only delta proposed, no rewrite.
+CITATIONS: each citation and whether it matched the real file content and line
+- src/board.js:1 quote "export const render = label => `<text>${label}</text>`;" -> matched live file line 1, CLI sha256 550765... accepted.
+- tests/board.test.js:4 quote "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));" -> matched live file line 4, CLI accepted.
+- docs/limitation.md:1 quote "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output." -> matched live file line 1, CLI accepted.
+- All three cover required observation: existing behavior, existing test, documented limitation.
+APPLICATION TESTS: command, exit code and result (brownfield only, before and after any change)
+- Before: `npm test` -> exit 0, pass 1 (existing label), fail 0.
+- After: `npm test` -> exit 0, pass 1, fail 0. No code changed (offer only); did not edit tests or fixtures.
+ASSUMPTIONS: what you assumed without evidence
+- Assumed no code change was correct because offer must end awaiting-response and §5 forbids approve/materialize; stopped at proposal rather than implementing fill.
+- Assumed optional-arg vs extra-case vs fill-only framing counts as delta-only, not wholesale rewrite.
+STILL OPEN: decisions you left to a person, and anything you could not verify
+- Fill-color API shape (the offer question) left awaiting-response; no selection/human-response per §5.
+- Fill validation/default color undecided; did not implement.
+- Could not verify requester preference; stopped rather than guessing.
+PROBLEMS: anything the CLI got wrong, refused, or that contradicted these instructions
+- dry-run nextStep suggested discover/bootstrap which INSTRUCTIONS.md does not use; followed INSTRUCTIONS.md start instead (CLI help lists start as valid, so no hard contradiction, but noted).
+- No --source-offer schema in --help; learned required id/source-path/line/quote shape from error messages and staged source-brief.js, per §4 "Follow the schema the CLI reports".
+- PATH version mismatch same as green test (2.4.1 vs 2.6.1); used absolute path.
+EFFORT: rough elapsed time for this test
+- ~8 minutes.

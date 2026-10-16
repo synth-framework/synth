@@ -1,0 +1,57 @@
+TEST: green (greenfield/)
+COMMANDS: each run inside greenfield/ with exit code
+- `synth first-contact --dry-run` via PATH synth (v2.4.1) -> exit 1 (see PROBLEMS)
+- `synth --version` (PATH) -> exit 0, version 2.4.1, schema synth-cli-v1
+- `synth --help` (PATH) -> exit 0
+- `synth first-contact --help` (PATH) -> exit 0
+- `synth first-contact status` (PATH v2.4.1) -> exit 0, state not-started, nextStep start "<intent>"
+- `synth first-contact start "<task>"` (PATH v2.4.1) -> exit 0, draft created (later removed as wrong revision)
+- `synth first-contact status` (PATH v2.4.1) -> exit 0, state draft
+- `synth first-contact clarify` (PATH v2.4.1) -> exit 0, 5 questions
+- `"<absolute>" --version` -> exit 0, version 2.6.1 (revision under test)
+- `"<absolute>" first-contact --dry-run` -> exit 0 (after cleaning legacy .synth)
+- `"<absolute>" first-contact --help` -> exit 0
+- `"<absolute>" first-contact status` -> exit 0
+- `"<absolute>" first-contact start "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."` -> exit 0, draft created, overall confidence 0.25, nextStep clarify
+- `"<absolute>" first-contact status` -> exit 0, state draft, canApprove false, nextStep clarify
+- `"<absolute>" first-contact clarify --source-offer offer.json` (first attempt, missing option id) -> exit 1
+- `"<absolute>" first-contact clarify --source-offer offer.json` (second attempt, wrong source kind) -> exit 1
+- `"<absolute>" first-contact clarify --source-offer offer.json` (final) -> exit 0, FirstContactSourceOfferRecorded, offer version 1
+- `"<absolute>" first-contact status` -> exit 0, state draft, workingBrief awaiting-response
+Where "<absolute>" = C:\Users\j\AppData\Local\Temp\trial-staging\917d662a31bd\global\synth.cmd from ENVIRONMENT.md. Used absolute path because PATH synth is 2.4.1 while manifest/staged revision is 2.6.1.
+CLI OUTPUT: what SYNTH showed at each step, summarized, including final status
+- PATH v2.4.1 `first-contact --dry-run` refused: {"status":"error","kind":"CLIError","error":"Usage: synth first-contact start ..."}.
+- Staged v2.6.1 `first-contact --dry-run` in empty dir: pending-approval, kind FirstContactOnboardPlan, detected empty, wouldCreate .synth/manifest.json etc, nextStep `synth first-contact --approve`. Did NOT run --approve per trial §5.
+- `start` created .synth/first-contact/draft.json, unknowns: audience.primaryUsers, environment.targetRuntime, environment.languagePreferences, capabilities.required.
+- First --source-offer failed: "option id must be nonempty text up to 2000 characters."
+- Second --source-offer failed: "source path must be nonempty text up to 2000 characters." (had used type task-text).
+- Final --source-offer succeeded after fixing schema to kind operator-intent (see source-brief.js lines 98-103).
+- Final status: state draft, canApprove false, sourceOffers[1 version 1], sourceAnswers [], workingBrief status awaiting-response, sourceFreshness current, nextStep `synth first-contact clarify`. No approval, no materialize.
+OFFER: path to offer.json, and the question/options it contains
+- Path: greenfield/offer.json (workspace-relative offer.json for --source-offer).
+- scope: "Small editable specimen-board exporter for SVG board utility; next slice decides board input source and editing interaction only"
+- question: "How should board input be supplied and edited before export, since board kind, inputs, editing and validation are undecided?"
+- options (3, each label/tradeoff/acceptanceExample/source):
+  1. file-fed-edit-export / "File-fed board with edit-then-export checks"
+  2. blank-board-edit / "Blank-board start with in-place editing"
+  3. small-change-validation / "Small change set on current board with validation"
+  All sources kind operator-intent quoting the exact task text. No GUI/stack invented. Offer ends awaiting-response via CLI workingBrief (offer file itself has scope/question/options; status awaiting-response is CLI workingBrief state, not a human decision).
+CITATIONS: each citation and whether it matched the real file content and line
+- All three options cite operator-intent quote "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." Matched: yes, exact task text from INSTRUCTIONS.md §3 and originalIntent recorded by CLI (sha256 bb2f3014...). No file citations because greenfield/ was empty at start; CLI file-citation regex only allows docs|knowledge|src|tests|package.json, none of which exist here.
+- Verified source-brief.js validation: operator-intent must reproduce journey's exact original request (lines 98-103 of dist/first-contact/source-brief.js in staged 2.6.1 tarball). Matched.
+APPLICATION TESTS: not applicable (greenfield only; brownfield only per §3).
+ASSUMPTIONS: what you assumed without evidence
+- Assumed staged 2.6.1 is the revision under test (from ENVIRONMENT.md + cli-manifest.json version 2.6.1) and PATH 2.4.1 is stale; used absolute path and recorded it.
+- Assumed offer.json schema follows CLI error messages + source-brief.js (id regex, 2-4 options, operator-intent exact quote) where INSTRUCTIONS.md description differed; INSTRUCTIONS.md said "Follow the schema the CLI reports" so CLI won.
+- Assumed cleaning the legacy .synth created by PATH 2.4.1 (Remove-Item .\.synth) was required to restore initial empty-dir state before using correct CLI; no other files existed.
+STILL OPEN: decisions you left to a person, and anything you could not verify
+- Board input source and editing interaction (the offer question) left awaiting-response; no selection, no human-response, no approve, no materialize per §5.
+- Could not verify what requester prefers among the three options; stopped rather than guessing.
+- Did not run `first-contact --approve` even though dry-run suggested it, because §5 forbids lifecycle actions.
+PROBLEMS: anything the CLI got wrong, refused, or that contradicted these instructions
+- PATH `synth` (2.4.1) contradicts INSTRUCTIONS.md: `synth first-contact --dry-run` errors with Usage, and `clarify --source-offer` is undocumented in its --help. Staged 2.6.1 supports both. Recorded exact command/exit/message above.
+- INSTRUCTIONS.md `first-contact --dry-run` dry-run nextStep suggests `--approve`, which §5 forbids; did not follow that nextStep, followed INSTRUCTIONS.md start step instead (which CLI help also lists as valid).
+- INSTRUCTIONS.md §4 example offer shape omits required `id` per option and `kind: operator-intent` source shape; CLI is authoritative per §4 last sentence, so followed CLI.
+- Version mismatch: ENVIRONMENT.md revision 917d662... corresponds to 2.6.1 per cli-manifest.json, but PATH reports 2.4.1. Used absolute path and recorded it.
+EFFORT: rough elapsed time for this test
+- ~12 minutes including version investigation and schema fixes.

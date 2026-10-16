@@ -1,0 +1,143 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+      "goals": [
+        "build a small editable specimen-board exporter for our svg board utility board input"
+      ],
+      "successCriteria": [
+        "Users can a small editable specimen-board exporter for our svg board utility board input"
+      ]
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.25,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 1,
+        "intent.successCriteria": 1,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+        "timestamp": "2026-10-16T05:37:24.070Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-5704b40e-ff3c-47d0-bc17-afdff86a44a4: How should board input be supplied and edited before export, since board kind, inputs, editing and validation are undecided?",
+        "timestamp": "2026-10-16T05:38:53.461Z"
+      }
+    ]
+  },
+  "journeyId": "4e22bb17-e4ca-459d-b997-c9f928deb0bb",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-5704b40e-ff3c-47d0-bc17-afdff86a44a4",
+      "journeyId": "4e22bb17-e4ca-459d-b997-c9f928deb0bb",
+      "version": 1,
+      "scope": "Small editable specimen-board exporter for SVG board utility; next slice decides board input source and editing interaction only",
+      "question": "How should board input be supplied and edited before export, since board kind, inputs, editing and validation are undecided?",
+      "options": [
+        {
+          "id": "file-fed-edit-export",
+          "label": "File-fed board with edit-then-export checks",
+          "tradeoff": "Keeps input explicit and testable, but requires agreeing on the board input shape before editing can be defined.",
+          "acceptanceExample": "Given a small board definition supplied as input, when the exporter runs, then an SVG specimen-board is produced and invalid board entries are rejected with a message.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        },
+        {
+          "id": "blank-board-edit",
+          "label": "Blank-board start with in-place editing",
+          "tradeoff": "Makes editing central from the start, but leaves input validation open until the editing actions are agreed.",
+          "acceptanceExample": "Given an empty board, when a user adds entries through the editing interaction, then the exporter produces the SVG board and re-export reflects the edits.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        },
+        {
+          "id": "small-change-validation",
+          "label": "Small change set on current board with validation",
+          "tradeoff": "Limits scope to the smallest editing delta, but defers broader board-kind decisions to a later slice.",
+          "acceptanceExample": "Given an existing board, when a user changes one entry and re-exports, then only that entry changes in the SVG output and an empty board is rejected.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        }
+      ],
+      "originIntent": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+      "offeredAt": "2026-10-16T05:38:53.461Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "updatedAt": "2026-10-16T05:38:53.465Z"
+}

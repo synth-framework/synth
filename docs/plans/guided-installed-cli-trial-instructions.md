@@ -118,10 +118,28 @@ Task text is single-sourced in `scripts/lib/guided-trial-fixtures.mjs` and quote
 
 ## Step 4 — evidence capture
 
-The evidence template lives with the trial sources, outside TEST_PATH, at `docs/analysis/guided-three-path-installed-trial-evidence-template.md` in the checkout — the agent is never pointed at it. Fill it in as the run proceeds. Per test record:
+Run the capture script against the finished TEST_PATH. It is the primary path: it reads the workspace and files the evidence in the repository.
+
+```bash
+# from the checkout, after the sessions have stopped
+node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>
+```
+
+It writes two things:
+
+- `docs/analysis/guided-installed-cli-trial-<yyyy-mm-dd>[-plain].md` — the completed evidence, in the template's section order;
+- `docs/analysis/guided-installed-cli-trial-<yyyy-mm-dd>[-plain]-raw/` — byte-identical copies of everything it read (`REPORT.md` keeps its bytes under a `.txt` suffix, so the repository link checker cannot mistake an agent's prose for repository links), a `SOURCES.json` inventory with every digest, `fixtures.json` with the recomputed revisions, and `SUMMARY.json` with everything the document was built from.
+
+What it fills mechanically, per case: the recorded revisions recomputed against the frozen record (the same rule the setup executor refuses to drift from); every citation re-checked with the CLI's own rule — full-file SHA-256 plus the exact quoted line, and the exact original intent for `operator-intent` citations — against both the agent's `offer.json` and the CLI's recorded copy in `draft.json`; the offer id, `offeredAt` and attribution; the CLI error log; the recorded timestamps and spans; the staged instruction digests; and, when the scratch directory is reachable, the install proof from `<staging>/transcripts/`. The agent's `REPORT.md` sections are quoted verbatim and attributed to it.
+
+What stays with you, because no file records it: your name, the agent and model, its tool access, local wall-clock, the time box, the `Met?` column of §0, every comparative reading in §5, each cell's terminal state, and the §7 recommendation. Those rows render as `<to confirm — operator: …>` and the script lists them when it finishes. Fill them in your own words; never let a machine guess a pass.
+
+Two limits worth knowing: the scratch directory lives outside TEST_PATH, so pass `--staging <dir>` — or run the capture on the machine that holds it — to fill §2 without retyping digests; and a case whose starting inputs are not in the workspace is reported as `not computable`, never guessed. Refuse to overwrite existing evidence unless you mean it: the script insists on `--force`.
+
+Per test, record — or check against the agent's report — the parts the script can only quote:
 
 - exact commands and their exit codes;
-- the starting-input revision and whether any **input** file changed. `INSTRUCTIONS.md` and `ENVIRONMENT.md` are written to the root, not into the test directories, and the CLI keeps its per-test state in `.synth/` inside the test directory it runs in, so the recorded revision covers the matched **inputs** only — say which of these appeared, and do not present them as fixture drift;
+- the starting-input revision and whether any **input** file changed. `INSTRUCTIONS.md` and `ENVIRONMENT.md` are written to the root, not into the test directories, and the CLI keeps its per-test state in `.synth/` inside the test directory it runs in, so the recorded revision covers the matched **inputs** only — say which of these appeared, and do not present the agent's own files as fixture drift;
 - the relevant output: questions asked, options proposed, citations used, and whether they matched the actual files and lines;
 - operator effort in minutes and the number of agent turns or interventions;
 - unsupported assumptions, unresolved choices, and anything a condition got wrong;
@@ -129,9 +147,9 @@ The evidence template lives with the trial sources, outside TEST_PATH, at `docs/
 
 Keep SYNTH integrity checks separate from application tests. In `brownfield/`, run the project's own test command before and after the agent's change (`npm test`, record exit codes); the unmodified baseline is expected to pass.
 
-A **guided** run records machine-readable setup evidence at `<staging>/transcripts/` (`tarball.sha256`, `version.json`, `setup.log`, `setup-manifest.json`, plus `cli-manifest.json` at the staging root). A **plain** run deliberately writes nothing outside TEST_PATH, so copy the setup banner into your evidence instead — it prints the revision and every staged revision hash.
+The template the script renders is [guided-three-path-installed-trial-evidence-template.md](../analysis/guided-three-path-installed-trial-evidence-template.md); fill it by hand only when the script cannot run.
 
-Attach the completed evidence as a new file (suggested `docs/analysis/guided-installed-cli-trial-<yyyy-mm-dd>.md`) plus raw transcripts, then link it from PR #347 in a comment written by the operator. Exclude private assets, credentials and machine-local secrets.
+Commit the completed file and the raw directory on the trial branch, then link them from PR #347 in a comment written by the operator. Exclude private assets, credentials and machine-local secrets.
 
 ## Known gap: no auto-feed initialization command
 
@@ -163,6 +181,7 @@ node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 - Inside a staged `brownfield/` the fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0) and guided initialization exited 0 each step: `--dry-run` discovered the four input files with no warnings, and an agent-shaped `offer.json` recorded with `--source-offer` left the brief `awaiting-response` with freshness `current` and zero answers. A first attempt quoting an incomplete source line was **rejected** — `Citation docs/limitation.md:1 does not match the live source line` — which is the citation check working.
 - Refusals verified before any build time is spent: a non-empty TEST_PATH, a TEST_PATH inside the checkout, a scratch directory inside TEST_PATH (or containing it), a repo that is not a git work tree, and a `--pin` that does not resolve. Uncommitted changes are no longer a refusal: they are recorded in the manifest, and the tarball digest is what pins the build.
 - The launch line is condition-specific and test-enforced: the guided line names the tool, its install name and its first command, and says so in `INSTRUCTIONS.md` as well; the plain line names nothing, and the plain instruction file and TEST_PATH contain zero occurrences of the tool's name. Nothing on the machine would tell an agent otherwise, so both are checked as strings, not trusted to the operator's phrasing.
+- `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` performs the capture of Step 4. Its suite, `npm run test:guided-installed-trial-evidence` (11 tests, 77 assertions), runs it end to end against synthetic workspaces and asserts byte-identical raw copies, recomputed revisions against the frozen record, one correct and one deliberately wrong citation hash, the launch line taken from the setup manifest rather than retyped, operator-only rows left as placeholders, a plain workspace landing in a `-plain` file, idempotency, and — through the same link rule the repository uses — that every relative link the rendered document contains resolves.
 - `npm run test:guided-installed-trial-setup` (31 checks) covers the guards, the inferred layout, the created/empty/refused TEST_PATH states, the Windows spawn plan, the failure detail for a step with no exit code, the generated environment note, the condition-specific launch line, both instruction files and the revision constants. The suite runs the real npm build, pack and install against a throwaway checkout holding a tiny packable package, so the guided path is exercised rather than simulated.
 
 Every trial test remains `not run`. Same agent, one session, unblinded, no independent observation.
@@ -224,7 +243,7 @@ An outside reviewer should be able to reproduce the same comparison from the rec
 | 1 | Different agent | A different agent product/model build and a fresh session from the one that authored this branch. The authoring agent must not run a trial session. A setup-only agent may be any agent; if it also runs a **plain** session it must not have seen this repository — prefer separate sessions. | Agent name, model, version, session ids; staging identity |
 | 2 | No access to the authoring checkout | Nothing built by setup is inside TEST_PATH, each test directory holds only its own inputs, and the agent stays inside its directory. The checkout the CLI was built from is still on the machine, so on one machine this is confinement by instruction — use a container or separate machine for hard isolation. | `cli-manifest.json`, `setup-manifest.json`; container/machine note if used |
 | 3 | Blind to expectations | The agent is never told which condition is supposed to win. The plain instruction file and a plain TEST_PATH never mention SYNTH. | Staged `INSTRUCTIONS.md` copies, saved verbatim |
-| 4 | Matched inputs | Identical fixture bytes; all revisions recorded before the first test. | `transcripts/fixtures.json` (guided) or the setup banner (plain), plus the revision table in the evidence |
+| 4 | Matched inputs | Identical fixture bytes; all revisions recorded before the first test. | `fixtures.json` in the capture's raw directory (guided) or the setup banner (plain), plus the revision table in the evidence |
 | 5 | Matched treatment | Same agent/model/version, same tools, same task text, same directory layout. Only the guided extra commands differ. | Version lines + staged instruction files for both conditions |
 | 6 | Order control | Fresh session per test where possible; one session per condition at minimum, and record the order actually used. | Run log with actual order |
 | 7 | Pre-registration | Protocol, time box, expected observations and stop conditions fixed before the first session. | This document + the filled-in §1 of the template, committed or time-stamped first |
@@ -252,6 +271,12 @@ This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRU
 
 # plain — never name it
 Read INSTRUCTIONS.md in the root of this workspace and follow it.
+```
+
+When the sessions have stopped, file the evidence from the same TEST_PATH:
+
+```bash
+node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>
 ```
 
 That is the whole runbook. Expected starting-input revisions, printed by setup:

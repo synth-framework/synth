@@ -57,6 +57,13 @@ Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixt
 
    The guided line names the tool because nothing on the machine announces it — no skill, plugin or service — so the operator's sentence is how the agent learns SYNTH exists. The plain line must never name it, and the setup log itself must never go into a plain TEST_PATH: the banner prints the tested revision, whose branch or subject can spell the tool's name.
 3. Log verbatim any help you give beyond that line.
+4. When the sessions have stopped, file the evidence from the same TEST_PATH:
+
+   ```bash
+   node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>
+   ```
+
+   It recomputes every case revision against the frozen record, re-checks every citation hash against the live file or the journey's own request, copies each artifact byte-for-byte into `docs/analysis/guided-installed-cli-trial-<date>-raw/`, and leaves the rows only a person can fill as `<to confirm — operator: …>` in `docs/analysis/guided-installed-cli-trial-<date>.md`. It writes nothing into TEST_PATH.
 
 For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; that condition builds nothing and a session must never see both conditions.
 
