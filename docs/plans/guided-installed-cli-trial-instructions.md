@@ -120,8 +120,9 @@ Today the loop needs a human hand-off: someone must paste the kickoff, because t
 
 Recorded by the agent that wrote the script, for the same reasons as the smoke check it replaces: it validates the recipe only.
 
-- The setup executor ran end to end into a scratch root against a pinned pushed revision; clone, `npm ci`, `npm run build`, `npm pack`, the global install into the scratch prefix and `synth --version` all exited 0, and the fixture generator reproduced all five published revisions.
-- The generated kickoffs, workspaces, transcripts and `setup-manifest.json` were produced without touching this checkout, and the source clone was deleted as the last setup step.
+- The setup executor ran end to end into a scratch root, pinned to `a568e35`: `clone` → `checkout` → `resolve-revision` → `npm-ci` → `build` → `pack` → `install` → `synth-version` → `fixtures` → `delete-source-clone` each exited 0, in about 17 seconds.
+- It produced the per-case workspaces (`cells/<case>`, `<plain-root>/<case>`), the paste-ready kickoffs for both conditions, the packed tarball, the scratch-prefix install, `transcripts/setup.log`, and a `setup-manifest.json` recording `productCommandsRun: ["synth --version"]`, `trialCellsRun: 0` and `lifecycleCommandsRun: []`. All five fixture and workspace revisions matched the published values; the source clone was gone afterwards.
+- The plain kickoff files contained **zero** occurrences of the tool name, and the plain root shared no path component with the trial root.
 - `npm run test:guided-installed-trial-setup` covers the guards, the kickoff text and the revision constants, and refuses every unsafe layout before any network access.
 
 Every trial cell remains `not run`. This section is a recipe check by the authoring agent: one session, unblinded, with no independent observation.
