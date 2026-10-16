@@ -11,7 +11,7 @@ Checklist: [instructions, Appendix C](../plans/guided-installed-cli-trial-instru
 | # | Requirement | Met? | Note or evidence |
 | --- | --- | --- | --- |
 | 1 | Sessions run by a different agent and fresh sessions than the authoring agent (a staging-only agent may be any agent; a plain session must never be run by an agent that has seen this repository) | `<yes/no>` | `<...>` |
-| 2 | Agent had no access to the authoring checkout (setup deleted its clone; each test directory holds only its own inputs) | `<yes/no>` | `<...>` |
+| 2 | Agent had no access to the authoring checkout (nothing built by setup is inside TEST_PATH; each test directory holds only its own inputs) | `<yes/no>` | `<...>` |
 | 2b | Isolation mode: same-machine confinement by layout and instruction, or a container/separate machine | `<confinement/container>` | `<...>` |
 | 3 | Agent blind to which condition is expected to win; plain prompt never mentioned SYNTH | `<yes/no>` | `<...>` |
 | 4 | Matched inputs; revisions recorded before the first cell | `<yes/no>` | `<...>` |
@@ -31,10 +31,10 @@ Anything unmet, and why: `<...>`
 | --- | --- |
 | Operator (who ran the trial) | `<name>` |
 | Setup executed by (agent/tool, model, version) | `<...>` |
-| Setup command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>` → `<exit>` (or the manual sequence in Appendix A) |
+| Setup command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>` → `<exit>`; build, pack and install ran in the checkout into the scratch directory above |
 | TEST_PATH state before setup | `<missing / empty>` |
 | Was TEST_PATH created by setup? | `<yes/no>` |
-| CLI staging directory (outside TEST_PATH) | `<tmp>/trial-staging/<revision>`, reused per revision |
+| Scratch directory (outside TEST_PATH) | `<tmp>/trial-staging/<revision>` — tarball, installed CLI and transcripts |
 | CLI manifest / setup manifest | `<staging>/cli-manifest.json`, `<staging>/transcripts/setup-manifest.json` (guided); `none — the plain condition writes nothing outside TEST_PATH` |
 | Instruction file staged at TEST_PATH root | `INSTRUCTIONS.md` (guided or plain), plus `ENVIRONMENT.md` in a guided run |
 | Launch line given to the agent, verbatim | guided: `This trial uses SYNTH, the CLI installed on this machine as synth. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with the SYNTH initialization command.` / plain: `Read INSTRUCTIONS.md in the root of this workspace and follow it.` — paste what you actually typed, and if you changed the wording, say exactly how |

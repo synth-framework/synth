@@ -25,7 +25,7 @@ Keep the answer capable of being "no". An unfavorable result is legitimate evide
 ## Prerequisites
 
 - Node.js ≥ 20 (`node --version`; the package declares `engines.node >= 20`), npm and git available to the setup process.
-- A clean checkout of the branch under review. The revision tested is that checkout's committed `HEAD`, so uncommitted work is refused unless `--allow-dirty` records that decision deliberately.
+- The checkout of the branch under review, with its dependencies installed (setup runs `npm install`/`npm ci` for you only when `node_modules` is missing). The revision tested is that checkout's committed `HEAD`; uncommitted changes are allowed but recorded, and the tarball digest is what actually pins the build.
 - A TEST_PATH that is missing or empty, outside the checkout. For the plain comparison, a *separate* TEST_PATH whose path does not spell the tool's name.
 - A time box the operator sets before starting. Suggested: ≤ 45 minutes per test, ≤ 4 hours total. Record the actuals.
 
@@ -41,7 +41,15 @@ It infers everything else and, in order:
 
 1. **TEST_PATH** — creates it when missing; refuses and changes nothing when it exists with content in it.
 2. **Revision** — the checkout's committed `HEAD` (this is the revision under test).
-3. **CLI staging, outside TEST_PATH** — clones that revision into `<tmp>/trial-staging/<revision>`, runs `npm ci` and `npm run build` there, packs the tarball and records its SHA-256, installs it into a scratch npm prefix there and records `synth --version`, and copies the trial instructions, the evidence template and both instruction files out of the pin. If a CLI for the same revision is already staged, it is **reused** and no npm or git command runs at all. Its only product command is `synth --version`.
+3. **Build, pack and install — from this checkout, into a scratch directory outside TEST_PATH.** Three ordinary commands, in the checkout itself, with no clone and no second copy of the source tree:
+
+   ```bash
+   npm run build
+   npm pack --pack-destination <tmp>/trial-staging/<revision>/pack
+   npm install -g --prefix <tmp>/trial-staging/<revision>/global <tarball>
+   ```
+
+   The tarball's SHA-256 is recorded and the installed binary answers `synth --version`, the only product command setup runs. `npm install -g` goes into the scratch prefix, not onto the machine's global path, so the plain condition cannot stumble over a `synth` command on `PATH`; if you prefer a machine-wide install, the banner prints the exact `npm install -g <tarball>` line for you.
 4. **TEST_PATH contents** — the condition-appropriate instruction file as `INSTRUCTIONS.md`, the generated `ENVIRONMENT.md` (guided only), and one isolated directory per test, each copied from matched fixtures and verified against its published revision.
 5. Prints the launch line for that condition — the guided line names SYNTH so the agent learns the tool exists — and stops.
 
@@ -56,13 +64,13 @@ It infers everything else and, in order:
   [conflicting-documents/]
 ```
 
-Nothing else lands in TEST_PATH: no clone, `node_modules`, tarball, harness or transcript. Building, packing and installing all live in the staging directory, so they cannot interfere with the run — and after the first run they are done, so the trial itself is just the agent's work.
+Nothing else lands in TEST_PATH: no `node_modules`, tarball, harness or transcript. The build output that npm writes in the checkout (`dist/`) stays in the checkout, the tarball and the installed CLI stay in the scratch directory, and TEST_PATH receives only the instruction file, the environment note and one directory per test — so building, packing and installing cannot interfere with the run.
 
-It never runs a lifecycle command, never starts a test, never commits or pushes, and never modifies the checkout.
+It never runs a lifecycle command, never starts a test, never commits or pushes, and never changes a tracked file in the checkout.
 
-**Plain comparison (optional).** The plain condition never runs the tool, so nothing is built for it. Point the same command at a *separate* TEST_PATH whose path does not spell the tool's name, with `--condition plain`: the instruction file and fixtures come straight from the checkout, and the run writes **nothing** outside TEST_PATH. Never let one session see both conditions.
+**Windows.** The same command works unchanged in PowerShell — quote the TEST_PATH if it contains spaces, e.g. `--workspace "C:\Users\j\Projects\board-test"`. npm's global prefix keeps its executables directly in the prefix directory there, so setup looks for `synth.cmd` as well as `bin/synth` and records whichever it installs.
 
-**Pre-warming (optional).** `node scripts/guided-installed-trial-setup.mjs --stage-only` stages the CLI for this revision and stops without creating TEST_PATH. Useful if you want the build finished before the trial window; otherwise the first normal run does exactly the same thing.
+**Plain comparison (optional).** The plain condition never runs the tool, so nothing is built for it — no `npm run build`, no `npm pack`, no install, and the checkout is untouched. Point the same command at a *separate* TEST_PATH whose path does not spell the tool's name, with `--condition plain`: the instruction file and fixtures come straight from the checkout, and the run writes **nothing** outside TEST_PATH. Never let one session see both conditions.
 
 ## Step 2 — launch the agent in TEST_PATH
 
@@ -140,7 +148,7 @@ Today the loop needs a human hand-off that *says the tool's name*. That is not a
 - The offers end in `awaiting-response`, so nothing here exercises confirmation, delegation or rejection of a response by a real person.
 - A passing guided test shows the installed CLI can run the loop and produce traceable, unauthenticated proposals — not that the guidance improved the outcome. A failing or blocked run is evidence for simplification, not a moral failure of the trial.
 - Setup itself, however carefully run, is never trial evidence.
-- **Isolation is by layout and instruction, not by container.** Each test directory holds only its own inputs, the build lives in a staging directory outside TEST_PATH, and the setup clone is deleted — but a same-machine agent can still reach its parent directory and any other checkout. Use a container or a separate machine when hard isolation is required. In a guided run the staging directory keeps both instruction files, which a determined agent could read; in a plain run nothing is written outside TEST_PATH at all.
+- **Isolation is by layout and instruction, not by container.** Each test directory holds only its own inputs and nothing built by setup is inside TEST_PATH, but the checkout the CLI was built from is still on the machine, and a same-machine agent can reach its parent directory and any other checkout. Use a container or a separate machine when hard isolation is required. In a plain run nothing is written outside TEST_PATH at all.
 
 ## Setup validation performed on this branch (not trial evidence)
 
@@ -150,47 +158,40 @@ Recorded by the agent that wrote the script, for the same reasons as any smoke c
 node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 ```
 
-- Guided: TEST_PATH was created (it did not exist), the CLI was staged outside it, and the result was exactly `INSTRUCTIONS.md`, `ENVIRONMENT.md`, `greenfield/` (no files), `brownfield/` (`package.json`, `src/board.js`, `tests/board.test.js`, `docs/limitation.md`) and `documentation/` (`docs/requirements.md`). Every staged revision matched its published value, and no clone, tarball, `node_modules` or transcript appeared inside TEST_PATH.
-- A second run against the same revision **reused** the staged CLI and ran no npm or git command at all; `--refresh-cli` forced a rebuild.
+- Guided: TEST_PATH was created (it did not exist), the CLI was built from the checkout with no clone, and the result was exactly `INSTRUCTIONS.md`, `ENVIRONMENT.md`, `greenfield/` (no files), `brownfield/` (`package.json`, `src/board.js`, `tests/board.test.js`, `docs/limitation.md`) and `documentation/` (`docs/requirements.md`). Every staged revision matched its published value, and no tarball, `node_modules` or transcript appeared inside TEST_PATH.
 - Plain: a separate neutral TEST_PATH received only `INSTRUCTIONS.md` and the three test directories, with **zero** occurrences of the tool's name or the guided commands in that file, no `ENVIRONMENT.md`, and nothing written outside TEST_PATH.
 - Inside a staged `brownfield/` the fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0) and guided initialization exited 0 each step: `--dry-run` discovered the four input files with no warnings, and an agent-shaped `offer.json` recorded with `--source-offer` left the brief `awaiting-response` with freshness `current` and zero answers. A first attempt quoting an incomplete source line was **rejected** — `Citation docs/limitation.md:1 does not match the live source line` — which is the citation check working.
-- Refusals verified before any build time is spent: a non-empty TEST_PATH, a TEST_PATH inside the checkout, a staging directory inside TEST_PATH, a checkout with uncommitted changes, a repo that is not a git work tree, and a `--pin` that does not resolve.
+- Refusals verified before any build time is spent: a non-empty TEST_PATH, a TEST_PATH inside the checkout, a scratch directory inside TEST_PATH (or containing it), a repo that is not a git work tree, and a `--pin` that does not resolve. Uncommitted changes are no longer a refusal: they are recorded in the manifest, and the tarball digest is what pins the build.
 - The launch line is condition-specific and test-enforced: the guided line names the tool, its install name and its first command, and says so in `INSTRUCTIONS.md` as well; the plain line names nothing, and the plain instruction file and TEST_PATH contain zero occurrences of the tool's name. Nothing on the machine would tell an agent otherwise, so both are checked as strings, not trusted to the operator's phrasing.
-- `npm run test:guided-installed-trial-setup` (29 checks) covers the guards, the staging/reuse decision, the inferred layout, the created/empty/refused TEST_PATH states, the generated environment note, the condition-specific launch line, both instruction files and the revision constants.
+- `npm run test:guided-installed-trial-setup` (29 checks) covers the guards, the inferred layout, the created/empty/refused TEST_PATH states, the generated environment note, the condition-specific launch line, both instruction files and the revision constants. The suite runs the real npm build, pack and install against a throwaway checkout holding a tiny packable package, so the guided path is exercised rather than simulated.
 
 Every trial test remains `not run`. Same agent, one session, unblinded, no independent observation.
 
 ## Appendix A — manual setup equivalent (optional)
 
+The script *is* the three commands plus the copy step; this is the same thing by hand:
+
 ```bash
-REPO=<synth-checkout>        # clean checkout; its committed HEAD is the revision under test
+REPO=<synth-checkout>        # its committed HEAD is the revision under test
 WS=<TEST_PATH>               # missing or empty, outside the checkout
 CLI=<tmp>/trial-staging/$(git -C "$REPO" rev-parse --short=12 HEAD)
 
-mkdir -p "$CLI"/{pack,global,transcripts,instructions,tools/lib}
-git clone --quiet --no-hardlinks "$REPO" "$CLI/src"
-git -C "$CLI/src" checkout --quiet --detach "$(git -C "$REPO" rev-parse HEAD)"
-( cd "$CLI/src" && npm ci && npm run build && npm pack --pack-destination "$CLI/pack" )
+mkdir -p "$CLI/pack" "$CLI/global" "$CLI/transcripts" "$WS"
+
+( cd "$REPO" && npm run build && npm pack --pack-destination "$CLI/pack" )
 sha256sum "$CLI/pack/"*.tgz | tee "$CLI/transcripts/tarball.sha256"
 npm install -g --prefix "$CLI/global" "$CLI/pack/"*.tgz
 "$CLI/global/bin/synth" --version | tee "$CLI/transcripts/version.json"
-cp "$CLI/src/docs/plans/guided-installed-cli-trial-instructions.md" \
-   "$CLI/src/docs/analysis/guided-three-path-installed-trial-evidence-template.md" \
-   "$CLI/src/docs/plans/guided-trial/README.md" \
-   "$CLI/src/docs/plans/guided-trial/instructions/"*.md "$CLI/instructions/"
-cp "$CLI/src/scripts/guided-installed-trial-fixtures.mjs" "$CLI/tools/"
-cp "$CLI/src/scripts/lib/guided-trial-fixtures.mjs" "$CLI/tools/lib/"
-rm -rf "$CLI/src"                 # isolation: keep the checkout out of the trial
 
-mkdir -p "$WS" "$(mktemp -d)/fixtures"
-node "$CLI/tools/guided-installed-trial-fixtures.mjs" "$TMPFIX" | tee "$CLI/transcripts/fixtures.json"
+FIX=$(mktemp -d)
+node "$REPO/scripts/guided-installed-trial-fixtures.mjs" "$FIX" | tee "$CLI/transcripts/fixtures.json"
 ```
 
-Then copy `$TMPFIX/guided/<case>` into `$WS/<test>/`, where `<case>` → `<test>` is `green`→`greenfield`, `brown`→`brownfield`, `docs`→`documentation`, `knowledge`→`knowledge-led`, `conflict`→`conflicting-documents`; write `$CLI/instructions/guided.md` to `$WS/INSTRUCTIONS.md`; write the `ENVIRONMENT.md` of [Appendix B](#appendix-b--the-instruction-file-and-the-environment-note); and remove the temporary fixtures. For the plain condition, stage from `fixtures/plain/`, write `plain.md` as the root `INSTRUCTIONS.md`, and write no environment note.
+Then copy `$FIX/guided/<case>` into `$WS/<test>/`, where `<case>` → `<test>` is `green`→`greenfield`, `brown`→`brownfield`, `docs`→`documentation`, `knowledge`→`knowledge-led`, `conflict`→`conflicting-documents`; write `$REPO/docs/plans/guided-trial/instructions/guided.md` to `$WS/INSTRUCTIONS.md`; write the `ENVIRONMENT.md` of [Appendix B](#appendix-b--the-instruction-file-and-the-environment-note); and remove the temporary fixtures. For the plain condition, stage from `fixtures/plain/`, write `plain.md` as the root `INSTRUCTIONS.md`, and write no environment note — and build nothing.
 
 The script does all of this, verifies every staged revision, refuses unsafe layouts and writes the manifest; prefer it.
 
-Windows (PowerShell): use `$env:TEMP\...`, `Copy-Item`, `Get-FileHash -Algorithm SHA256`, and the installed binary at `"$CLI\global\bin\synth.cmd"`.
+Windows (PowerShell): use `$env:TEMP\...`, `Copy-Item`, `Get-FileHash -Algorithm SHA256`, and note that npm puts the executable directly in the prefix there — `"$CLI\global\synth.cmd"`, not under `bin\`. Setup finds whichever one npm creates.
 
 ## Appendix B — the instruction file and the environment note
 
@@ -221,14 +222,14 @@ An outside reviewer should be able to reproduce the same comparison from the rec
 | # | Requirement | How to satisfy it | Evidence to attach |
 | --- | --- | --- | --- |
 | 1 | Different agent | A different agent product/model build and a fresh session from the one that authored this branch. The authoring agent must not run a trial session. A setup-only agent may be any agent; if it also runs a **plain** session it must not have seen this repository — prefer separate sessions. | Agent name, model, version, session ids; staging identity |
-| 2 | No access to the authoring checkout | Setup deletes its clone, the build lives outside TEST_PATH, and each test directory holds only its own inputs; the agent stays inside its directory. On one machine this is confinement by instruction — use a container or separate machine for hard isolation. | `cli-manifest.json`, `setup-manifest.json`, `delete-source-clone` step; container/machine note if used |
+| 2 | No access to the authoring checkout | Nothing built by setup is inside TEST_PATH, each test directory holds only its own inputs, and the agent stays inside its directory. The checkout the CLI was built from is still on the machine, so on one machine this is confinement by instruction — use a container or separate machine for hard isolation. | `cli-manifest.json`, `setup-manifest.json`; container/machine note if used |
 | 3 | Blind to expectations | The agent is never told which condition is supposed to win. The plain instruction file and a plain TEST_PATH never mention SYNTH. | Staged `INSTRUCTIONS.md` copies, saved verbatim |
 | 4 | Matched inputs | Identical fixture bytes; all revisions recorded before the first test. | `transcripts/fixtures.json` (guided) or the setup banner (plain), plus the revision table in the evidence |
 | 5 | Matched treatment | Same agent/model/version, same tools, same task text, same directory layout. Only the guided extra commands differ. | Version lines + staged instruction files for both conditions |
 | 6 | Order control | Fresh session per test where possible; one session per condition at minimum, and record the order actually used. | Run log with actual order |
 | 7 | Pre-registration | Protocol, time box, expected observations and stop conditions fixed before the first session. | This document + the filled-in §1 of the template, committed or time-stamped first |
 | 8 | Raw evidence | Verbatim transcripts, wall-clock per test, and an intervention log. No retroactive tidying. | Transcript files; interventions with exact wording |
-| 9 | Artifact pinning | The installed tarball, not a repository build, is what ran; the revision is the checkout's committed HEAD. | `<staging>/transcripts/tarball.sha256`, `version.json`, `cli-manifest.json` |
+| 9 | Artifact pinning | The installed tarball, built from the checkout's committed HEAD, is what ran; uncommitted changes are recorded, and the tarball digest is what pins the build. | `<staging>/transcripts/tarball.sha256`, `version.json`, `cli-manifest.json` |
 | 10 | Condition integrity | No invented human words; guided offers end `awaiting-response`; no lifecycle command; no push; the guided session is launched with a line that names the tool, the plain one with a line that does not, and no setup log or evidence bundle enters a plain TEST_PATH. | Session transcripts, the verbatim launch lines and §6 of the template |
 | 11 | Operator non-coaching | Any help beyond the one launch line is logged as an intervention verbatim — including any reminder that the tool exists. | Intervention log |
 
@@ -263,4 +264,4 @@ That is the whole runbook. Expected starting-input revisions, printed by setup:
 | `knowledge-led/` (optional) | `d5c6255f264137b340e3fce58f00a397ed0c0dbd4dbd87894ebc96e0b5a3a338` |
 | `conflicting-documents/` (optional) | `fa8d3a7aaaf19968c23d2423bd66109583b16d37f24e6578385843ad1c9af3d5` |
 
-The tarball digest is a property of **your** build, so it will differ from any figure quoted in this document: record yours instead of comparing. Advanced overrides, all inferred by default: `--condition plain`, `--cases`, `--pin`, `--repo`, `--cli-root`, `--refresh-cli`, `--allow-dirty`, `--stage-only`.
+The tarball digest is a property of **your** build, so it will differ from any figure quoted in this document: record yours instead of comparing. Advanced overrides, all inferred by default: `--condition plain`, `--cases`, `--pin`, `--repo`, `--cli-root`.

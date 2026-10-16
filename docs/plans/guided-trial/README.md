@@ -25,7 +25,7 @@ One of them is copied into the **root of TEST_PATH as `INSTRUCTIONS.md`**, and t
   [conflicting-documents/]
 ```
 
-Build, pack and install live in a CLI staging directory **outside** TEST_PATH (`<tmp>/trial-staging/<revision>`), so no build output, harness or transcript is visible to the agent. Staging is keyed by revision and reused, so the second run of the same revision costs nothing.
+Build, pack and install run in the checkout and land in a scratch directory **outside** TEST_PATH (`<tmp>/trial-staging/<revision>`), so no build output, tarball, harness or transcript is visible to the agent.
 
 ## The tests
 
@@ -44,7 +44,7 @@ Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixt
 ## Running one
 
 1. From the checkout: `node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>`
-   It creates TEST_PATH when missing (and refuses one that already holds something), stages the CLI outside it, and copies the instruction file and one directory per test.
+   It creates TEST_PATH when missing (and refuses one that already holds something), runs the ordinary `npm run build` / `npm pack` / `npm install -g` into a scratch directory outside TEST_PATH, and copies the instruction file and one directory per test.
 2. Start one fresh agent session **in TEST_PATH** and give it the printed line, verbatim:
 
    ```text
@@ -58,7 +58,7 @@ Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixt
    The guided line names the tool because nothing on the machine announces it — no skill, plugin or service — so the operator's sentence is how the agent learns SYNTH exists. The plain line must never name it, and the setup log itself must never go into a plain TEST_PATH: the banner prints the tested revision, whose branch or subject can spell the tool's name.
 3. Log verbatim any help you give beyond that line.
 
-For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; a session must never see both conditions. Optional: `--stage-only` warms the CLI cache without creating TEST_PATH.
+For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; that condition builds nothing and a session must never see both conditions.
 
 ## Keeping the two instruction files consistent
 
