@@ -37,10 +37,10 @@ async function testMissionApproveRequiresAlignmentContract(projectDir) {
   assert(output.status === "error", "error should report error status")
   assert(output.code === "MissingAlignmentContractId", `expected MissingAlignmentContractId, got ${output.code}`)
   assert(
-    output.suggestion && output.suggestion.includes("synth alignment prepare"),
-    `suggestion should mention synth alignment prepare, got ${JSON.stringify(output.suggestion)}`,
+    output.suggestion && output.suggestion.includes("Mission's evidence") && output.suggestion.includes("actual review"),
+    `suggestion should require a grounded, reviewed alignment contract, got ${JSON.stringify(output.suggestion)}`,
   )
-  console.log("[PASS] mission approve hints to create alignment contract")
+  console.log("[PASS] mission approve requires a grounded alignment contract, not a demo baseline")
 }
 
 async function testMissionEvidenceRejectsNumericConfidence(projectDir) {
