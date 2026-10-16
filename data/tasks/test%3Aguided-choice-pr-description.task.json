@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-choice-pr-description",
+  "description": "Check pending material choices, opt-in PR description publication, and read-only GitHub review observations",
+  "command": "node tests/guided-choice-pr-description.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

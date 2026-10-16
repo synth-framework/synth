@@ -17,6 +17,8 @@ export interface AgentChoice {
   scope: string
   alternatives: string[]
   originIntent: string
+  /** Scope for PR publication; earlier records without it remain visible locally. */
+  originJourneyId?: string
   recordedAt: string
 }
 
@@ -25,7 +27,7 @@ export interface ChoiceReview {
   choiceId: string
   impact: "trivial" | "material"
   reason: string
-  disposition: "recorded-agent-choice" | "keep" | "change" | "defer"
+  disposition: "recorded-agent-choice" | "awaiting-human" | "keep" | "change" | "defer"
   /** The supplied words are preserved, but a CLI flag cannot authenticate a human. */
   humanResponse?: string
   attribution: "cli-caller-unverified" | "human-response-supplied-unverified"

@@ -3,8 +3,8 @@
 // SYNTH v2 — First Contact CLI
 // ============================================================
 // Operator surface for greenfield onboarding (EXP-AIFC-008).
-// All subcommands emit JSON. Commands are read-only or proposal-only
-// until approval / materialization.
+// All subcommands emit JSON. Status is read-only by default; the explicit
+// --publish-review flag updates only a managed PR-description section.
 // ============================================================
 
 import { resolveSynthCli } from "../distribution/cli-path.js"
@@ -12,6 +12,8 @@ import fs from "fs/promises"
 import { constants as fsConstants } from "node:fs"
 import { spawn, execSync, execFileSync } from "child_process"
 import path from "path"
+import { choiceDescription } from "../first-contact/review/pr-description.js"
+import { publishChoiceDescription, readChoiceReviews } from "./first-contact-pr.js"
 import * as sdk from "../sdk/index.js"
 
 import { injectIdentityContext, identityEnvVars, getCliIdentity } from "./identity-context.js"
@@ -221,13 +223,13 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
       { name: "synth first-contact clarify --agent-choice <choice> --reason <why> --scope <area>", description: "Record an agent's provisional choice as open, not human-approved", args: "--agent-choice <choice> --reason <why> --scope <area> [--alternative <option>]" },
-      { name: "synth first-contact clarify --review-choice <id> --impact <trivial|material> --reason <why>", description: "Record a pre-merge assessment without inferring reviewer identity", args: "--review-choice <id> --impact <trivial|material> --reason <why> [--decision <keep|change|defer> --human-response <text>]" },
+      { name: "synth first-contact clarify --review-choice <id> --impact <trivial|material> --reason <why>", description: "Record an assessment; material choices may await an actual PR reviewer", args: "--review-choice <id> --impact <trivial|material> --reason <why> [--decision <keep|change|defer> --human-response <unverified text>]" },
       { name: "synth first-contact project", description: "Project architecture candidates from the draft" },
       { name: "synth first-contact verify", description: "Verify capability assumptions for the recommended architecture" },
       { name: "synth first-contact approve", description: "Approve structured draft fields and capability checks; this does not confirm agent choices" },
       { name: "synth first-contact materialize --dry-run", description: "Preview materialization, including recommended adapters (pending approval) and workflow template", args: "--dry-run" },
       { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact and persist recommended adapters to .synth/manifest.json", args: "--approve [--name <project-name>]" },
-      { name: "synth first-contact status", description: "Report current state and open-choice review packet; --pr verifies an optional open PR head", args: "[--pr <number>]" },
+      { name: "synth first-contact status", description: "Preview choice summary; --pr reads a matching PR and reviews, --publish-review explicitly updates only the managed PR description section", args: "[--pr <number> [--publish-review]]" },
       { name: "synth first-contact onboard:detect", description: "Detect repository state for the task-engine onboarding flow" },
       { name: "synth first-contact onboard:archive", description: "Archive legacy Synth state" },
       { name: "synth first-contact onboard:init", description: "Initialize an empty directory as a Synth project" },
@@ -283,8 +285,9 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     if (!choice || !reason || (impact !== "trivial" && impact !== "material") ||
         flags.field !== undefined || flags.answer !== undefined || flags["agent-choice"] !== undefined || flags.scope !== undefined || flags.alternative !== undefined ||
         (impact === "trivial" && (decision !== undefined || flags["human-response"] !== undefined)) ||
-        (impact === "material" && (decision !== "keep" && decision !== "change" && decision !== "defer" || !humanResponse))) {
-      printError("Review an existing choice with --review-choice <id> --impact trivial|material --reason <why>. For material choices also supply --decision keep|change|defer and --human-response <text>. CLI attribution is not authenticated.")
+        (impact === "material" && (decision !== undefined || flags["human-response"] !== undefined) &&
+          ((decision !== "keep" && decision !== "change" && decision !== "defer") || !humanResponse))) {
+      printError("Review an existing choice with --review-choice <id> --impact trivial|material --reason <why>. Material choices may await a PR reviewer; if a CLI response is supplied, both --decision keep|change|defer and --human-response <text> are required and remain unverified.")
     }
     const reviewedAt = nowIso()
     const review: ChoiceReview = {
@@ -292,9 +295,9 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
       choiceId,
       impact,
       reason,
-      disposition: impact === "trivial" ? "recorded-agent-choice" : decision as "keep" | "change" | "defer",
-      ...(impact === "material" ? { humanResponse } : {}),
-      attribution: impact === "trivial" ? "cli-caller-unverified" : "human-response-supplied-unverified",
+      disposition: impact === "trivial" ? "recorded-agent-choice" : (decision ?? "awaiting-human") as "keep" | "change" | "defer" | "awaiting-human",
+      ...(impact === "material" && decision ? { humanResponse } : {}),
+      attribution: impact === "material" && decision ? "human-response-supplied-unverified" : "cli-caller-unverified",
       reviewedAt,
     }
     const entry: TranscriptEntry = {
@@ -340,6 +343,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
       scope,
       alternatives: alternative ? [alternative] : [],
       originIntent: draft.artifact.intent.description,
+      originJourneyId: draft.journeyId,
       recordedAt,
     }
     const entry: TranscriptEntry = {
@@ -610,11 +614,14 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
 }
 
 export async function cmdFirstContactStatus(args: string[], flags: Record<string, string | boolean>): Promise<void> {
+  if (flags["publish-review"] !== undefined && flags["publish-review"] !== true) printError("--publish-review is a flag, not a value.")
+  if (flags["publish-review"] && flags.pr === undefined) printError("--publish-review requires --pr <number> for an existing, matching open PR.")
   const artifactPaths = artifactDraftPaths(process.cwd())
   const draft = await tryReadDraft(process.cwd())
   const approved = await tryReadApproved(process.cwd())
 
   if (!draft && !approved) {
+    if (flags["publish-review"]) printError("No first-contact choice record exists; nothing was published to the PR.")
     printJson({
       status: "ok",
       kind: "FirstContactStatus",
@@ -630,7 +637,39 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
   const strategy = artifact ? clarify(artifact, new DefaultClarificationStrategy()) : undefined
   const choices = draft?.openAgentChoices ?? currentApproved?.openAgentChoices ?? []
   const reviews = draft?.choiceReviews ?? currentApproved?.choiceReviews ?? []
-  const reviewPacket = choiceReviewPacket(choices, reviews, reviewPrBinding(process.cwd(), flags.pr))
+  const pr = reviewPrBinding(process.cwd(), flags.pr)
+  // A new first-contact idea retains older choices for recovery, but must not
+  // accidentally publish those older ideas in a different PR description.
+  const currentJourneyId = draft?.journeyId ?? currentApproved?.journeyId
+  const currentChoices = choices.filter((choice) => currentJourneyId && choice.originJourneyId === currentJourneyId &&
+    choice.originIntent === artifact?.intent.description)
+  const section = currentChoices.length
+    ? choiceDescription(currentChoices, reviews, pr.status === "verified-head" ? pr.headCommit : undefined)
+    : undefined
+  const publication = flags["publish-review"] ? await (async () => {
+    if (pr.status !== "verified-head" || !pr.headCommit || !pr.headBranch || !pr.url || !pr.number) {
+      printError("PR repository, branch and head must match this checkout before publishing a review summary.")
+    }
+    if (!section) printError("No choices for this intent to publish; no PR description was changed.")
+    if (currentChoices.some((choice) => !/^choice-[a-zA-Z0-9-]+$/.test(choice.id))) {
+      printError("An agent choice has an invalid ID; no PR description was changed.")
+    }
+    try {
+      return await publishChoiceDescription(process.cwd(), { number: pr.number, url: pr.url, headCommit: pr.headCommit, headBranch: pr.headBranch }, section)
+    } catch (error) {
+      printError(`Could not publish the PR choice summary: ${error instanceof Error ? error.message : "unknown error"}`)
+    }
+  })() : undefined
+  const githubReviews = pr.status === "verified-head" && pr.headCommit && pr.headBranch && pr.url && pr.number
+    ? readChoiceReviews(process.cwd(), { number: pr.number, url: pr.url, headCommit: pr.headCommit, headBranch: pr.headBranch }, currentChoices.map((choice) => choice.id))
+    : { status: "not-requested", observations: [], note: "GitHub review lookup requires a matching open PR head." }
+  const reviewPacket = {
+    ...choiceReviewPacket(choices, reviews, pr),
+    prDescriptionSection: section,
+    omittedHistoricalChoiceCount: choices.length - currentChoices.length,
+    githubReviews,
+    publication,
+  }
 
   printJson({
     status: "ok",
