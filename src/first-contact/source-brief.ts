@@ -5,7 +5,9 @@ import { constants } from "node:fs"
 import path from "node:path"
 import { createHash, randomUUID } from "node:crypto"
 
-export interface SourceCitation { path: string; line: number; quote: string; sha256: string }
+export interface FileCitation { kind?: "file"; path: string; line: number; quote: string; sha256: string }
+export interface IntentCitation { kind: "operator-intent"; quote: string; sha256: string }
+export type SourceCitation = FileCitation | IntentCitation
 export interface SourceOption {
   id: string
   label: string
@@ -20,6 +22,8 @@ export interface SourceOffer {
   scope: string
   question: string
   options: SourceOption[]
+  /** The exact operator request used for non-file citations, not an agent paraphrase. */
+  originIntent?: string
   supersedesOfferId?: string
   offeredAt: string
   attribution: "agent-authored-offer"
@@ -72,6 +76,11 @@ async function regularWorkspaceFile(cwd: string, relative: string, maxBytes: num
 export async function sourceFreshness(cwd: string, offer: SourceOffer): Promise<"current" | "stale" | "unavailable"> {
   let status: "current" | "stale" | "unavailable" = "current"
   for (const option of offer.options) {
+    if (option.source.kind === "operator-intent") {
+      if (!offer.originIntent || option.source.quote !== offer.originIntent ||
+          createHash("sha256").update(offer.originIntent).digest("hex") !== option.source.sha256) status = "stale"
+      continue
+    }
     try {
       const content = await regularWorkspaceFile(cwd, option.source.path, 64 * 1024)
       if (createHash("sha256").update(content).digest("hex") !== option.source.sha256 ||
@@ -83,7 +92,7 @@ export async function sourceFreshness(cwd: string, offer: SourceOffer): Promise<
   return status
 }
 
-export async function createSourceOffer(cwd: string, proposalFile: string, journeyId: string, earlier: SourceOffer[]): Promise<SourceOffer> {
+export async function createSourceOffer(cwd: string, proposalFile: string, journeyId: string, earlier: SourceOffer[], originalIntent?: string): Promise<SourceOffer> {
   const proposal = JSON.parse(await regularWorkspaceFile(cwd, proposalFile, 16 * 1024)) as Record<string, unknown>
   if (!proposal || typeof proposal !== "object" || Array.isArray(proposal)) throw new Error("Offer file must contain an object.")
   const scope = string(proposal.scope, "scope")
@@ -104,18 +113,31 @@ export async function createSourceOffer(cwd: string, proposalFile: string, journ
     ids.add(id)
     const ref = raw.source as Record<string, unknown> | undefined
     if (!ref || typeof ref !== "object" || Array.isArray(ref)) throw new Error("Each option needs a source citation.")
-    const sourcePath = string(ref.path, "source path")
-    if (!/^(docs|knowledge)\/.+\.(md|mdx)$/i.test(sourcePath)) throw new Error("This documentation-led slice accepts Markdown under docs/ or knowledge/.")
-    const line = ref.line
-    if (!Number.isSafeInteger(line) || (line as number) < 1) throw new Error("Citation line must be a positive integer.")
-    const quote = string(ref.quote, "source quote")
-    const content = await regularWorkspaceFile(cwd, sourcePath, 64 * 1024)
-    if (content.split(/\r?\n/)[line as number - 1] !== quote) throw new Error(`Citation ${sourcePath}:${line} does not match the live source line.`)
+    let source: SourceCitation
+    if (ref.kind === "operator-intent") {
+      const quote = string(ref.quote, "operator intent quote")
+      if (!originalIntent || quote !== originalIntent || ref.path !== undefined || ref.line !== undefined) {
+        throw new Error("An operator-intent citation must reproduce this journey's exact original request without inventing a file.")
+      }
+      source = { kind: "operator-intent", quote, sha256: createHash("sha256").update(originalIntent).digest("hex") }
+    } else {
+      if (ref.kind !== undefined && ref.kind !== "file") throw new Error("Unknown source citation kind.")
+      const sourcePath = string(ref.path, "source path")
+      if (!/^(?:(?:docs|knowledge)\/.+\.(?:md|mdx)|(?:src|tests)\/.+\.(?:js|jsx|ts|tsx|json)|package\.json)$/i.test(sourcePath)) {
+        throw new Error("File citations accept Markdown under docs/ or knowledge/, source/tests code, or root package.json.")
+      }
+      const line = ref.line
+      if (!Number.isSafeInteger(line) || (line as number) < 1) throw new Error("Citation line must be a positive integer.")
+      const quote = string(ref.quote, "source quote")
+      const content = await regularWorkspaceFile(cwd, sourcePath, 64 * 1024)
+      if (content.split(/\r?\n/)[line as number - 1] !== quote) throw new Error(`Citation ${sourcePath}:${line} does not match the live source line.`)
+      source = { path: sourcePath, line: line as number, quote, sha256: createHash("sha256").update(content).digest("hex") }
+    }
     options.push({ id, label: string(raw.label, "label"), tradeoff: string(raw.tradeoff, "tradeoff"),
-      acceptanceExample: string(raw.acceptanceExample, "acceptance example"),
-      source: { path: sourcePath, line: line as number, quote, sha256: createHash("sha256").update(content).digest("hex") } })
+      acceptanceExample: string(raw.acceptanceExample, "acceptance example"), source })
   }
   return { id: `offer-${randomUUID()}`, journeyId, version: prior.length + 1, scope, question, options,
+    ...(options.some(option => option.source.kind === "operator-intent") ? { originIntent: originalIntent } : {}),
     ...(typeof supersedesOfferId === "string" ? { supersedesOfferId } : {}),
     offeredAt: new Date().toISOString(), attribution: "agent-authored-offer" }
 }

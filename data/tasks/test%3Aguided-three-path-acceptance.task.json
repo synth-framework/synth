@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-three-path-acceptance",
+  "description": "Synthetic idea, existing-app and documentation-led first-contact handoff and source offers",
+  "command": "node --test tests/guided-three-path-acceptance.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

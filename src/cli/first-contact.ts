@@ -228,7 +228,7 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact start \"<intent>\"", description: "Extract intent and create a first-contact draft", args: "<intent> [--name <project-name>]" },
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
-      { name: "synth first-contact clarify --source-offer <file>", description: "Record an agent-authored contextual offer with verified documentation quotes", args: "--source-offer <workspace-relative JSON file>" },
+      { name: "synth first-contact clarify --source-offer <file>", description: "Record an agent-authored contextual offer citing the exact operator request or verified docs/code lines; citations do not prove semantic agreement", args: "--source-offer <workspace-relative JSON file>" },
       { name: "synth first-contact clarify --source-answer <id>", description: "Record supplied response to latest offer; attribution remains unverified", args: "--source-answer <id> --selection <option-id|defer> --human-response <text>" },
       { name: "synth first-contact clarify --agent-choice <choice> --reason <why> --scope <area>", description: "Record an agent's provisional choice as open, not human-approved", args: "--agent-choice <choice> --reason <why> --scope <area> [--alternative <option>]" },
       { name: "synth first-contact clarify --review-choice <id> --impact <trivial|material> --reason <why>", description: "Record an assessment; material choices may await an actual PR reviewer", args: "--review-choice <id> --impact <trivial|material> --reason <why> [--decision <keep|change|defer> --human-response <unverified text>]" },
@@ -290,7 +290,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     if (!draft.journeyId) printError("Draft has no journey ID; start a new first-contact idea before making a source offer.")
     let offer: SourceOffer
     try {
-      offer = await createSourceOffer(process.cwd(), flags["source-offer"], draft.journeyId, draft.sourceOffers ?? [])
+      offer = await createSourceOffer(process.cwd(), flags["source-offer"], draft.journeyId, draft.sourceOffers ?? [], draft.artifact.intent.description)
     } catch (error) { printError(`Source offer was not recorded: ${error instanceof Error ? error.message : "invalid proposal"}`) }
     const entry: TranscriptEntry = { turn: (draft.artifact.transcript.at(-1)?.turn ?? 0) + 1, actor: "agent",
       type: "proposal", content: `Source offer ${offer.id}: ${offer.question}`, timestamp: offer.offeredAt }
@@ -298,7 +298,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     const draftPath = await writeDraft(process.cwd(), updated, undefined, undefined, undefined, [...(draft.sourceOffers ?? []), offer])
     await appendTranscript(process.cwd(), [entry])
     printJson({ status: "ok", kind: "FirstContactSourceOfferRecorded", offer, draftPath,
-      note: "This is an agent-authored offer with verified source quotations; output does not prove it was shown to a human." })
+      note: "This is an agent-authored offer citing the recorded operator request or verified live file lines; citations do not prove interpretation or that the offer was shown to a human." })
     return
   }
   if (Object.hasOwn(flags, "source-answer")) {
@@ -1065,8 +1065,12 @@ async function previewSourceHandoff(targetDir: string): Promise<SourceHandoff> {
         } else if (entry.isFile() && /\.(md|mdx|json|js|jsx|ts|tsx)$/i.test(entry.name)) {
           files.push(name)
           count++
-        } else if (entry.isFile() && (root === "docs" || root === "knowledge")) {
-          warn(`${name} was skipped: unsupported source format.`)
+        } else if (entry.isFile()) {
+          // Existing application files in other languages still count as
+          // incomplete source coverage, even when the bounded excerpt parser
+          // cannot display them.
+          if (root === "src" || root === "tests") found.add("outside-conventions")
+          warn(`${name} was skipped: unsupported source format; source coverage is partial.`)
         }
       }
     }
@@ -1080,6 +1084,20 @@ async function previewSourceHandoff(targetDir: string): Promise<SourceHandoff> {
       found.add("package.json")
     } else warn("package.json was skipped: not a regular file.")
   } catch { /* absent */ }
+  // Bounded preview conventions are not general root-project discovery. Name
+  // likely application roots/descriptors that were not read instead of making
+  // an existing Python/Go/etc. project look like an empty idea.
+  try {
+    const known = new Set(["docs", "knowledge", "src", "tests", "package.json", "node_modules", "dist", "build", "coverage"])
+    const entries = (await fs.readdir(targetDir, { withFileTypes: true })).sort((a, b) => a.name.localeCompare(b.name))
+    const unseen = entries.filter(entry => !entry.name.startsWith(".") && !known.has(entry.name) &&
+      (entry.isDirectory() || entry.isSymbolicLink() || /^(?:pyproject\.toml|Cargo\.toml|go\.mod|README\.md|Makefile)$/i.test(entry.name) ||
+        /\.(?:py|go|rs|java|rb|cs)$/i.test(entry.name)))
+    if (unseen.length) {
+      found.add("outside-conventions")
+      warn(`Root inputs outside bounded preview conventions (${unseen.slice(0, 3).map(entry => entry.name + (entry.isDirectory() ? "/" : entry.isSymbolicLink() ? " (symlink not followed)" : "")).join(", ")}${unseen.length > 3 ? ", more omitted" : ""}) were not inspected; source coverage is partial. Use broader discovery before treating this project as understood.`)
+    }
+  } catch { warn("Root inputs could not be listed; source coverage is partial.") }
   if (documentRootsPresent && !found.has("docs") && !found.has("knowledge")) {
     warn("Documentation roots contain no supported readable sources; supply Markdown or JSON, or identify another input before treating the project as understood.")
   }
@@ -1128,7 +1146,7 @@ async function previewSourceHandoff(targetDir: string): Promise<SourceHandoff> {
     }
   }
   const nextSteps: string[] = []
-  if (["src", "tests", "package.json"].some((name) => found.has(name))) nextSteps.push("synth discover . --export")
+  if (["src", "tests", "package.json", "outside-conventions"].some((name) => found.has(name))) nextSteps.push("synth discover . --export")
   for (const root of ["docs", "knowledge"] as const) {
     if (!found.has(root)) continue
     if (excerpts.some((excerpt) => excerpt.path.startsWith(`${root}/`))) {
