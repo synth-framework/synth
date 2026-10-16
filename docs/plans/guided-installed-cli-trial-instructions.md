@@ -133,8 +133,18 @@ Today the loop needs a human hand-off: someone must paste the note, because the 
 
 Recorded by the agent that wrote the script, for the same reasons as any smoke check: it validates the recipe only.
 
-- The executor ran end to end against the branch pin with the two-input invocation; every step exited 0, the revision was resolved from the checkout, fixtures and staged workspaces matched the published revisions, the plain mirrors were created only for the neutral workspace path, and the source clone was deleted as the last setup step.
-- `npm run test:guided-installed-trial-setup` covers the two-input guards, the dirty-checkout refusal and its remedy, the inferred layout (including the control-path leak rule), both handoff notes, both instruction sets and the revision constants, and refuses every unsafe case before any network access.
+Query used (only the two inputs; the neutral workspace also exercised the plain mirrors):
+
+```bash
+node scripts/guided-installed-trial-setup.mjs --repo <checkout> --workspace <empty dir>
+```
+
+- Every step exited 0 in order — `clone`, `checkout`, `resolve-revision`, `npm-ci`, `build`, `pack`, `install`, `synth-version`, `fixtures`, `delete-source-clone` — in about 17 s, with the revision resolved from the checkout's committed `HEAD` (`6ae82fc`, branch `arena/f3c711cb-synth`, clean).
+- It recorded `synth-framework-synth-2.6.1.tgz`, SHA-256 `9c6464396081b2a59a38426747e4e81d5d8948c8e5aee54217b0955c06636a70`, and `synth --version` reporting `2.6.1` with schema `synth-cli-v1`. All fixture and staged-workspace revisions matched the published values, and the manifest recorded `productCommandsRun: ["synth --version"]`, `trialCellsRun: 0`, `lifecycleCommandsRun: []`, `plainSetMentionsTool: false`.
+- The inferred layout came out as documented: `.trial/` (harness, install prefix, transcripts, notes, instruction copies), `greenfield/`, `brownfield/`, `documentation/` each holding only their own inputs plus `INSTRUCTIONS.md`, and `.control/{greenfield,brownfield,documentation}/` for the plain condition. Handoff notes were `guided-<test>.md` and `plain-<test>.md`; the plain notes contained **zero** occurrences of the tool's name or the guided commands.
+- Running the same command into a workspace whose path spells the tool's name skipped the plain mirrors, said so in the banner, the index note and the manifest, and still staged the three guided workspaces and their notes.
+- Inside the staged brownfield workspace the fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0); the guided initialization exited 0 each step — `--dry-run` discovered `docs/limitation.md`, `package.json`, `src/board.js` and `tests/board.test.js`; the agent-shaped offer recorded with `--source-offer` reported `awaiting-response`, version 1, freshness `current`, zero answers. A first offer with an incomplete quoted line was **rejected** with `Citation docs/limitation.md:1 does not match the live source line`, which is the citation check doing its job, not a setup fault.
+- `npm run test:guided-installed-trial-setup` (22 checks) covers the two-input guards, the dirty-checkout refusal and its remedy, the inferred layout including the control-path rule, the note names, both handoff notes, both instruction sets and the revision constants, and refuses every unsafe case before any network access.
 
 Every trial cell remains `not run`. Same agent, one session, unblinded, no independent observation.
 
