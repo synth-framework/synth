@@ -2,7 +2,7 @@
 
 **Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial. It is not a product prompt and not a script: everything you run you run because these instructions or the CLI's own output told you to.
 
-Your workspace is the current directory (the handoff note names it). Work only inside it.
+Your workspace is the current directory. Your operator's opening message (or a separate handoff note) names it and names your assigned test; when in doubt, ask the operator before starting. Work only inside your workspace.
 
 ## 1. How to start: use the SYNTH initialization process
 
@@ -28,11 +28,11 @@ synth first-contact status
 
 If the CLI's own output names a next step, follow the CLI — it is authoritative over this document. If the CLI refuses, errors or contradicts this document, record the exact command, exit code and message, then stop.
 
-If `synth` is not found on `PATH`, use the absolute path in your handoff note and record that you had to.
+If `synth` is not found on `PATH`, use the absolute path in your operator's opening message and record that you had to.
 
 ## 2. The tests: start conditions, task, and required observation
 
-Each test starts from a different synthetic workspace. You are assigned exactly one; the handoff note names it. The tests are listed here in full so you can see the whole set.
+Each test starts from a different synthetic workspace. You are assigned exactly one; your operator's opening message names it. The tests are listed here in full so you can see the whole set.
 
 | Test | Case id | Task text |
 | --- | --- | --- |
@@ -85,5 +85,7 @@ STILL OPEN: decisions you left to a person, and anything you could not verify
 PROBLEMS: anything the CLI got wrong, refused, or that contradicted these instructions
 EFFORT: rough elapsed time for this cell
 ```
+
+Write this report to `REPORT.md` in your workspace before you stop, and show it in your reply as well.
 
 Do not claim that anything was approved, verified or delivered. Your report is agent-authored output in a diagnostic; it is not a human decision and not proof of value.

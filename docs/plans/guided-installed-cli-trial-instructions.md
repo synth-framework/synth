@@ -22,6 +22,8 @@ Keep the answer capable of being "no". An unfavorable result is legitimate evide
 - Inventing human words. There is no authenticated respondent in this trial; every offer cell must end in `awaiting-response`.
 - Claims of owner value, delivery, production readiness or agent-quality improvement from this single diagnostic.
 
+**In a hurry, or want to do it by hand?** [Appendix D](#appendix-d--minimal-manual-kickoff-owner-flow) is the shortest path to a running cell: clone, pack, install, leave the repo, build one workspace per case, copy in the instruction file and the case inputs, then start the agent with one line. [Appendix A](#appendix-a--manual-setup-equivalent-optional) is the fuller manual equivalent of the setup script, [Appendix B](#appendix-b--the-handoff-notes-and-the-instruction-sets) shows the handoff notes, and [Appendix C](#appendix-c--independence-compliance-checklist) states what makes the run count as independent.
+
 ## Prerequisites
 
 - Node.js ≥ 20 (`node --version`; the `synth` package declares `engines.node >= 20`), npm, git, and network access to clone the repository once.
@@ -212,6 +214,7 @@ other checkouts, test suites or documentation.
 
 Why the initialization process lives in the instruction set rather than in a setup-generated command list: the trial is testing SYNTH's own guided entry, so the agent should start from SYNTH's initialization process and follow what the CLI reports, with the setup script limited to staging files and writing paths. The instruction sets are reviewed documents, versioned with the branch, and covered by `npm run test:guided-installed-trial-setup`.
 
+
 ## Appendix C — independence compliance checklist
 
 An outside reviewer should be able to reproduce the same comparison from the recorded artifacts alone. These conditions are what make the run independent rather than a self-check.
@@ -233,3 +236,59 @@ An outside reviewer should be able to reproduce the same comparison from the rec
 What a compliant run still does **not** establish: owner value, real-user comprehension, team adoption, delivery, production readiness, or that a human confirmed any response. One agent, one model build, one cell per case remains a diagnostic — it can support "keep as is" or "simplify", not a population claim.
 
 If any requirement above is unavoidably unmet, say which and why in the evidence. A partially independent run reported honestly is useful; an unlabelled self-check is not.
+
+## Appendix D — minimal manual kickoff (owner flow)
+
+This is the shortest sequence that produces a real cell: no setup script, one workspace per case, and the agent's process supplied entirely by the instruction file you copy in. It is the same protocol as Step 1–2, done by hand.
+
+```bash
+REPO=<synth-repo-local-path>        # your clone, on branch arena/f3c711cb-synth
+PIN=<revision-under-test>           # e.g. 4a48581
+TRIAL=~/synth-trial                 # outside the repo; never inside $REPO
+
+# 1-3. from the clone: build, pack, install into a scratch prefix
+cd "$REPO" && git checkout --detach "$PIN"
+npm ci && npm run build
+mkdir -p "$TRIAL/pack" "$TRIAL/global"
+npm pack --pack-destination "$TRIAL/pack"
+sha256sum "$TRIAL/pack/"*.tgz | tee "$TRIAL/tarball.sha256"     # record it
+npm install -g --prefix "$TRIAL/global" "$TRIAL/pack/"*.tgz
+"$TRIAL/global/bin/synth" --version | tee "$TRIAL/version.json"  # record it
+
+# 4-6. leave the repo, generate the case inputs, build the workspaces
+cd "$TRIAL"
+mkdir -p fixtures
+node "$REPO/scripts/guided-installed-trial-fixtures.mjs" "$TRIAL/fixtures"   # prints the revision hashes
+for c in green brown docs; do                 # add knowledge and conflict if you have time
+  mkdir -p "$TRIAL/guided-$c"
+  cp -r "$TRIAL/fixtures/guided/$c/." "$TRIAL/guided-$c/"
+  cp "$REPO/docs/plans/guided-trial/instructions/guided.md" "$TRIAL/guided-$c/INSTRUCTIONS.md"
+done
+rm -rf "$TRIAL/fixtures"                      # the agent must not see the other cases
+```
+
+**What has to be in the workspace** — and nothing else:
+
+| Item | Why | Where it comes from |
+| --- | --- | --- |
+| the case inputs (`green` has none; `brown` has the renderer, its test and the limitation note; `docs` has `docs/requirements.md`) | The required observation for each test is that the agent reads and cites what is really there; an empty workspace makes `brown`/`docs`/`conflict` unobservable | generated above from the repo's pinned fixture script |
+| `INSTRUCTIONS.md` | The agent's process, tests, rules and report shape | `docs/plans/guided-trial/instructions/guided.md` in the repo |
+| the CLI location, in your opening message (or on `PATH`) | `guided.md` looks for `synth` on `PATH` and otherwise asks for the absolute path | `$TRIAL/global/bin/synth` |
+
+Do **not** copy the repository's own tests, `docs/analysis/`, other case directories, or the source clone into the workspace — they would tell the agent what the trial is measuring and, in the plain condition, reveal the tool. If you want the plain control as well, repeat the loop with `plain` in place of `guided` and copy `instructions/plain.md`; keep those workspace paths free of the word "synth".
+
+**7-8. start the agent in the workspace and hand it the instruction file.** From `$TRIAL/guided-brown`, open a fresh agent session (plain `<TRIAL>/plain-brown` for the other condition) and send exactly one opening message:
+
+```text
+Read INSTRUCTIONS.md in this workspace and follow it.
+Your assigned test is brown.
+The CLI is installed at <TRIAL>/global/bin/synth — if it is not on PATH, call it by that
+full path and note that you had to.
+Pay attention to the rules in the file, and show me your REPORT.md when you stop.
+```
+
+That is enough to kick off. The agent then runs SYNTH's initialization process itself, writes its own `offer.json`, and stops at `awaiting-response` with a report.
+
+**Verified as a recipe check, not a trial cell.** On this branch the manual sequence above was run with the current head: pack and install exited 0 (`synth-framework-synth-2.6.1.tgz`, SHA-256 `b988287651b252628f7e3dd455b662bdeef1fb0cfa1dfac7b5544890c8c8dfa1`); the three workspaces contained exactly `INSTRUCTIONS.md` plus their case inputs; the brownfield fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0); and the guided initialization commands in the brownfield workspace exited 0 each — `first-contact --dry-run` discovered `docs/limitation.md`, `package.json`, `src/board.js` and `tests/board.test.js` with no warnings, and `first-contact status` reported `no-source-offer` because no offer had been written yet. Same authoring agent, unblinded: it validates the instructions, not the outcome. All three trial cells remain `not run`.
+
+Two things this manual path does **not** give you, both recorded in [Appendix C](#appendix-c--independence-compliance-checklist): no manifest or transcripts are written for you, so keep your own notes (commands, exits, tarball hash, versions, per-cell effort); and if the agent has filesystem access to the machine, the repository is still reachable — instruct confinement, and use a container or separate machine if you need real isolation. The setup script ([Step 1](#step-1--setup-run-by-any-agent-or-a-person)) exists mainly to produce those artifacts and that isolation automatically.

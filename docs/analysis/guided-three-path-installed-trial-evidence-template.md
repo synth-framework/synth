@@ -30,8 +30,8 @@ Anything unmet, and why: `<...>`
 | --- | --- |
 | Operator (who ran the trial) | `<name>` |
 | Setup executed by (agent/tool, model, version) | `<...>` |
-| Setup command and exit code | `node scripts/guided-installed-trial-setup.mjs --root <...> --pin <...>` → `<exit>` |
-| Setup manifest path | `<TRIAL>/transcripts/setup-manifest.json` |
+| Setup command and exit code | `node scripts/guided-installed-trial-setup.mjs --root <...> --pin <...>` → `<exit>` — or the manual sequence you ran (Appendix D), with its commands and exits |
+| Setup manifest path | `<TRIAL>/transcripts/setup-manifest.json`, or `none — manual setup` |
 | Kickoff files used, per cell | `<TRIAL>/kickoff/guided-<case>.md`, `<PLAIN>/kickoff-<case>.md` |
 | Kickoff issued by (who) and how (paste only?) | `<...>` |
 | Date and timezone, start/end | `<...>` |

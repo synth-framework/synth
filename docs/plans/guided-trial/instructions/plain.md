@@ -2,13 +2,13 @@
 
 **Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial.
 
-Your workspace is the current directory (the handoff note names it). Work only inside it, and do not look for other checkouts, test suites or documentation.
+Your workspace is the current directory. Your operator's opening message (or a separate handoff note) names it and names your assigned test; when in doubt, ask the operator before starting. Work only inside your workspace, and do not look for other checkouts, test suites or documentation.
 
 ## 1. How to start
 
 Use your ordinary tools and judgment on the task below. There is no required first command and no prescribed process: decide yourself what the work needs.
 
-Your assigned test is named in your handoff note. The tests and their starting conditions are listed here in full so you can see the whole set.
+Your assigned test is named in your operator's opening message. The tests and their starting conditions are listed here in full so you can see the whole set.
 
 ## 2. The tests: start conditions, task, and required observation
 
@@ -61,5 +61,7 @@ STILL OPEN: decisions you left to a person, and anything you could not verify
 PROBLEMS: anything you could not do, or anything that misled you
 EFFORT: rough elapsed time for this cell
 ```
+
+Write this report to `REPORT.md` in your workspace before you stop, and show it in your reply as well.
 
 Do not claim that anything was approved, verified or delivered. Your report is agent-authored output in a diagnostic; it is not a human decision and not proof of value.
