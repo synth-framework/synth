@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-16T08:05:57.204Z",
+  "capturedAt": "2026-10-16T08:27:55.647Z",
   "workspace": "C:\\Users\\j\\Projects\\board-test",
   "helper": "scripts/guided-installed-trial-evidence.mjs",
   "requiredCases": [
@@ -19,7 +19,7 @@
   },
   "date": {
     "value": "2026-10-16",
-    "source": "newest recorded trial event (2026-10-16T07:56:42.308Z)"
+    "source": "argument"
   },
   "instruction": {
     "present": true,
