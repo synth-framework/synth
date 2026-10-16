@@ -153,6 +153,17 @@ Commit the completed file and the raw directory on the trial branch, then link t
 
 The raw directory is evidence, so nothing in it may be dropped on the way into Git: `.gitignore` exempts `docs/analysis/*-raw/**` (a copied setup transcript carries a `.log` name and is still evidence), `.gitattributes` keeps those bytes free of line-ending translation, and the capture suite re-reads every filed bundle — each file must be present, recompute to the digest its own `SOURCES.json` records, and survive this checkout's ignore rules. If `git status` shows nothing for a captured file, the rules are dropping it: commit the bundle with `git add -f <raw-dir>` and fix the rule, or the document will cite bytes the branch does not hold.
 
+A run that comes **after** another one — a re-run at a newer revision, or the other arm on a later day — must not overwrite the document that already records the earlier run. Name the file yourself, absolutely and inside the checkout; the raw directory follows that name, and the automatic `-plain` suffix does not apply, so a plain file has to say `-plain` itself:
+
+```bash
+node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH> --staging <scratch> \
+  --out <checkout>/docs/analysis/guided-installed-cli-trial-<yyyy-mm-dd>-<short-revision>.md
+node scripts/guided-installed-trial-evidence.mjs --workspace <plain TEST_PATH> \
+  --out <checkout>/docs/analysis/guided-installed-cli-trial-<yyyy-mm-dd>-<short-revision>-plain.md
+```
+
+Naming the revision is what tells two runs of the same day apart, and it is the one fact a reader needs when more than one capture is filed. A filed capture stays where it is: it is the machine record of the run it describes, and a later run is a second document, not a correction of the first. Replace one only when the operator decides it should no longer be cited, and say so in the PR comment.
+
 ## Known gap: no auto-feed initialization command
 
 Today the loop needs a human hand-off that *says the tool's name*. That is not a stylistic choice: nothing installed on the machine announces SYNTH — no skill, plugin, hook or service — so the operator's sentence and the staged `INSTRUCTIONS.md` are the entire mechanism by which an agent learns the tool exists. A future guided entry would have to replace that sentence with something equally explicit, not something implicit, and `synth` cannot yet hand instructions back to a running agent. Proposed slice, **not implemented here and not authorized by this document**:
