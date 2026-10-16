@@ -1,6 +1,6 @@
 # Trial instruction set — plain condition
 
-**Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial.
+**Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial, staged in your workspace as `INSTRUCTIONS.md`.
 
 Your workspace is the current directory. Your operator's opening message (or a separate handoff note) names it and names your assigned test; when in doubt, ask the operator before starting. Work only inside your workspace, and do not look for other checkouts, test suites or documentation.
 

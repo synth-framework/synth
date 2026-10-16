@@ -11,7 +11,8 @@ Checklist: [instructions, Appendix C](../plans/guided-installed-cli-trial-instru
 | # | Requirement | Met? | Note or evidence |
 | --- | --- | --- | --- |
 | 1 | Cells run by a different agent and fresh session than the authoring agent (setup-only agent may be any agent; a plain cell must never be run by an agent that has seen this repository) | `<yes/no>` | `<...>` |
-| 2 | Agent had no access to the authoring repo (clone removed, workspace confined) | `<yes/no>` | `<...>` |
+| 2 | Agent had no access to the authoring checkout (setup deleted its clone; each test directory holds only its own inputs) | `<yes/no>` | `<...>` |
+| 2b | Isolation mode: same-machine confinement by layout and instruction, or a container/separate machine | `<confinement/container>` | `<...>` |
 | 3 | Agent blind to which condition is expected to win; plain prompt never mentioned SYNTH | `<yes/no>` | `<...>` |
 | 4 | Matched inputs; revisions recorded before the first cell | `<yes/no>` | `<...>` |
 | 5 | Matched agent/model/version, tools, starting request text | `<yes/no>` | `<...>` |
@@ -30,10 +31,10 @@ Anything unmet, and why: `<...>`
 | --- | --- |
 | Operator (who ran the trial) | `<name>` |
 | Setup executed by (agent/tool, model, version) | `<...>` |
-| Setup command and exit code | `node scripts/guided-installed-trial-setup.mjs --root <...> --pin <...>` → `<exit>` — or the manual sequence you ran (Appendix D), with its commands and exits |
-| Setup manifest path | `<TRIAL>/transcripts/setup-manifest.json`, or `none — manual setup` |
-| Kickoff files used, per cell | `<TRIAL>/kickoff/guided-<case>.md`, `<PLAIN>/kickoff-<case>.md` |
-| Kickoff issued by (who) and how (paste only?) | `<...>` |
+| Setup command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --repo <...> --workspace <...>` → `<exit>` — or the manual sequence you ran (Appendix A), with its commands and exits |
+| Setup manifest path | `<workspace>/.trial/transcripts/setup-manifest.json`, or `none — manual setup` |
+| Handoff notes used, per cell | `<workspace>/.trial/kickoff/guided-<test>.md`, `plain-<test>.md` |
+| Handoff issued by (who) and how (paste only?) | `<...>` |
 | Date and timezone, start/end | `<...>` |
 | Running agent, model and version | `<...>` |
 | Tool access given to the agent | `<shell, editor, network, ...>` |
@@ -69,9 +70,9 @@ If any required case did not match, stop and report `blocked` — do not continu
 
 Fill one block per case and condition. Required cases produce six blocks; optional cases add more.
 
-### `<case>` / plain
+### `<test>` / plain
 
-- Kickoff file pasted, session id, and start time: `<...>`
+- Handoff note pasted, session id, and start time: `<...>`
 - Commands and exit codes: `<...>`
 - Input revision at start / any file change during the cell: `<...>`
 - Questions or options the agent raised: `<...>`
@@ -82,9 +83,9 @@ Fill one block per case and condition. Required cases produce six blocks; option
 - Operator effort (minutes) and agent turns / interventions: `<...>`
 - Terminal state: `pass` / `fail` / `blocked` / `not run` — reason: `<...>`
 
-### `<case>` / guided
+### `<test>` / guided
 
-- Kickoff file pasted, session id, and start time: `<...>`
+- Handoff note pasted, session id, and start time: `<...>`
 - Commands and exit codes: `<...>`
 - Input revision at start / any file change during the cell: `<...>`
 - `first-contact status` terminal projection (`awaiting-response` required here): `<...>`
@@ -108,6 +109,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 | Which condition produced a clearer next slice? | `<...>` |
 | Same agent/model and tool access in both conditions? | `<yes/no + evidence>` |
 | Plain and guided run order, and could ordering explain the result? | `<...>` |
+| Was the plain condition available (workspace path neutral) or skipped? | `<created/skipped + manifest reason>` |
 | Anything that failed or was skipped, with the exact error text | `<...>` |
 
 ## 6. Explicit statements
@@ -117,9 +119,11 @@ Fill one block per case and condition. Required cases produce six blocks; option
 - Runtime Mission/Expedition lifecycle actions: `none` (required).
 - Pushes, pull requests or merges created by this trial: `none` (required).
 - Application tests weakened or skipped to make a cell pass: `none` (required).
+- Isolation mode: `<confinement by layout and instruction / container / separate machine>`.
+- Plain condition: `<created, path> / <skipped, manifest reason>`.
 - Total operator effort and whether it exceeded the time box: `<...>`.
 - Was setup run before the cells by the same agent that ran them? `<yes/no + which cells>`.
-- Any auto-feed: `none — the kickoff was pasted by hand, as the current CLI requires`.
+- Any auto-feed: `none — the handoff note was pasted by hand, as the current CLI requires`.
 
 ## 7. What this evidence does and does not support
 

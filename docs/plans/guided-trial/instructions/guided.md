@@ -1,6 +1,6 @@
 # Trial instruction set — guided condition
 
-**Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial. It is not a product prompt and not a script: everything you run you run because these instructions or the CLI's own output told you to.
+**Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial, staged in your workspace as `INSTRUCTIONS.md`. It is not a product prompt and not a script: everything you run you run because these instructions or the CLI's own output told you to.
 
 Your workspace is the current directory. Your operator's opening message (or a separate handoff note) names it and names your assigned test; when in doubt, ask the operator before starting. Work only inside your workspace.
 

@@ -4,6 +4,8 @@
 
 Owner direction recorded in this session's conversation (2026-10-15, owner local): keep the current branch-local implementation in place until this trial produces evidence about whether a change is warranted. That is an owner instruction from the conversation, not a PR-review decision and not a formal keep decision on a named choice record. It also does not settle the earlier [simplify/adapt recommendation](../analysis/guided-three-path-matched-comparison.md).
 
+The runbook knows **two paths and nothing else** — the SYNTH checkout and the testing workspace. Everything else (revision, harness location, test directories, staged instruction file, CLI path, handoff notes) is inferred by the setup script. [Appendix D](#appendix-d--the-two-input-runbook) is the whole runbook.
+
 ## Purpose and question
 
 The executed E4 diagnostic compared plain-agent and SYNTH-guided conditions inside this checkout, serially, using the same agent that wrote the workflow. It could not show that guidance improved substantive questions; it showed extra mechanical provenance and extra steps.
@@ -22,32 +24,38 @@ Keep the answer capable of being "no". An unfavorable result is legitimate evide
 - Inventing human words. There is no authenticated respondent in this trial; every offer cell must end in `awaiting-response`.
 - Claims of owner value, delivery, production readiness or agent-quality improvement from this single diagnostic.
 
-**In a hurry, or want to do it by hand?** [Appendix D](#appendix-d--minimal-manual-kickoff-owner-flow) is the shortest path to a running cell: clone, pack, install, leave the repo, build one workspace per case, copy in the instruction file and the case inputs, then start the agent with one line. [Appendix A](#appendix-a--manual-setup-equivalent-optional) is the fuller manual equivalent of the setup script, [Appendix B](#appendix-b--the-handoff-notes-and-the-instruction-sets) shows the handoff notes, and [Appendix C](#appendix-c--independence-compliance-checklist) states what makes the run count as independent.
-
 ## Prerequisites
 
-- Node.js ≥ 20 (`node --version`; the `synth` package declares `engines.node >= 20`), npm, git, and network access to clone the repository once.
-- A scratch filesystem location outside this checkout, for example `/tmp/synth-guided-trial-<date>` (replace with a real directory); several hundred MB of free space.
+- Node.js ≥ 20 (`node --version`; the package declares `engines.node >= 20`), npm and git available to the setup process.
+- A clean SYNTH checkout — the revision under test is its committed `HEAD`, so uncommitted work is refused unless `--allow-dirty` records that decision deliberately.
+- An **empty** testing workspace outside that checkout, on a path that does not spell the tool's name if you want the plain mirrors (the harness says why in its manifest when it skips them).
 - A time box the operator sets before starting. Suggested: ≤ 45 minutes per case cell, ≤ 4 hours total. Record the actuals.
 
 ## Step 1 — setup, run by any agent or a person
 
-Setup is mechanical and carries no judgment. Hand it to whatever agent is convenient (or run it yourself) with one command from a checkout of this branch:
+Setup is mechanical and carries no judgment. Point it at the two paths:
 
 ```bash
-node scripts/guided-installed-trial-setup.mjs \
-  --root /tmp/synth-guided-trial-2026-10-16 \
-  --pin <revision-under-test> \
-  [--plain-root /tmp/board-task-2026-10-16]
+node <synth-checkout>/scripts/guided-installed-trial-setup.mjs \
+  --repo <synth-checkout> \
+  --workspace <empty-testing-workspace>
 ```
 
-The setup executor then, in order: clones the pinned revision into a throwaway source tree; runs `npm ci` and `npm run build` there; packs and records the tarball SHA-256; installs it into a scratch npm prefix and records `synth --version`; copies these instructions, the evidence template and the [authored instruction sets](guided-trial/README.md) out of the pin; generates the matched fixtures **with the pinned generator** and verifies every published revision; copies them into ready-to-run per-case workspaces; **stages the condition-appropriate instruction set into each workspace as `INSTRUCTIONS.md`** and writes one short handoff note per cell; **deletes the source clone**; and writes `transcripts/setup.log` plus `transcripts/setup-manifest.json`.
+It infers everything else and, in order: clones the checkout's committed `HEAD` into a throwaway source tree inside the harness (so the checkout itself is never modified); runs `npm ci` and `npm run build` there; packs the tarball and records its SHA-256; installs it into a scratch npm prefix inside the harness and records `synth --version`; copies the trial instructions, the evidence template and both authored instruction sets out of the pin; generates the matched fixtures with the pinned generator and verifies every published revision; stages one isolated test directory per case with the condition-appropriate `INSTRUCTIONS.md`; writes one paste-ready handoff note per cell; **deletes the source clone**; and writes `transcripts/setup.log` plus `transcripts/setup-manifest.json`.
 
-The agent's process is not generated by the setup script. The [instruction sets](guided-trial/instructions/guided.md) are authored documents, staged verbatim; the handoff note carries only the case, the workspace path and — guided only — where the CLI is installed.
+**Inferred layout** — nothing here is passed on the command line:
 
-The only product command setup runs is `synth --version`. It never runs a lifecycle command, never starts a cell, and never commits, pushes or touches the checkout it was invoked from. `--plain-root` defaults to `<tmp>/board-task-<date>` and is refused if its path contains "synth", so the plain condition shares no path with the installed tool.
+| Inferred | Value |
+| --- | --- |
+| harness | `<workspace>/.trial/` (pack, install prefix, transcripts, notes, instructions) |
+| test directories | `greenfield/`, `brownfield/`, `documentation/` — one isolated environment per test, each copied from matched fixtures and containing only its own inputs plus `INSTRUCTIONS.md` |
+| optional test directories | `knowledge-led/`, `conflicting-documents/` with `--cases green,brown,docs,knowledge,conflict` |
+| plain mirrors | `<workspace>/.control/<test>/` — created only when no part of the path spells the tool's name; otherwise skipped and the reason is recorded |
+| installed CLI | `<workspace>/.trial/global/bin/synth` |
+| handoff notes | `<workspace>/.trial/kickoff/guided-<test>.md`, `plain-<test>.md`, and `README.md` |
+| revision | the checkout's committed `HEAD` (`--pin <ref>` overrides) |
 
-Setup finishes by printing, and stopping at:
+The only product command setup runs is `synth --version`. It never runs a lifecycle command, never starts a cell, and never commits, pushes, or modifies the checkout it was given. Setup finishes by printing, and stopping at:
 
 ```
 SETUP COMPLETE — the runbook stops here.
@@ -55,7 +63,7 @@ SETUP COMPLETE — the runbook stops here.
 No trial cell has been run and none may start until the operator issues the handoff.
 ```
 
-Use the optional manual equivalent in [Appendix A](#appendix-a--manual-setup-equivalent-optional) if you prefer to see each command, or on a platform where the script's assumptions do not hold.
+The fuller manual equivalent, if you would rather see each command, is [Appendix A](#appendix-a--manual-setup-equivalent-optional).
 
 ## Step 2 — the handoff, issued by the operator
 
@@ -64,10 +72,10 @@ Setup deliberately stops after staging. Starting a cell requires an explicit hum
 Per cell, the operator:
 
 1. opens **one fresh agent session**;
-2. pastes exactly one handoff note — `kickoff/guided-<case>.md` inside the trial root, or `kickoff-<case>.md` inside the plain root;
+2. pastes exactly one handoff note from `.trial/kickoff/` — `guided-<test>.md` or `plain-<test>.md`;
 3. logs, verbatim, any help given beyond that paste.
 
-The note is short on purpose: it names the case, the workspace and the staged `INSTRUCTIONS.md`, and in a guided cell also where the CLI is installed. The process lives in the instruction set, so the trial exercises SYNTH's own initialization process rather than a script-supplied command list. In a guided cell the agent's first act is the initialization process, exactly as its instruction set states:
+The note is short on purpose: it names the test, the workspace, the staged `INSTRUCTIONS.md`, and in a guided cell also where the CLI is installed. The process lives in the instruction file, so the trial exercises SYNTH's own initialization process rather than a script-supplied command list. In a guided cell the agent's first act is the initialization process, exactly as its instruction file states:
 
 ```bash
 synth first-contact --dry-run     # read the output before anything else
@@ -75,38 +83,38 @@ synth first-contact start "<the task quoted for this test>"
 synth first-contact status
 ```
 
-then it writes its own `offer.json` and records it with `first-contact clarify --source-offer offer.json`. In a plain cell there is no prescribed first command. Appendix B shows both notes and points at the instruction sets.
+then it writes its own `offer.json` and records it with `first-contact clarify --source-offer offer.json`. In a plain cell there is no prescribed first command. [Appendix B](#appendix-b--the-handoff-notes-and-the-instruction-sets) shows both notes and both instruction sets.
 
-## Step 3 — the three case scenarios
+## Step 3 — the case scenarios and their directories
 
-| Case | Starting request given to the agent | Required observation |
-| --- | --- | --- |
-| green | "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." | Relevant questions/options about board kind, inputs, editing and validation; no invented GUI/stack and no automatic approval. |
-| brown | "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working." | Existing behavior, tests and the documented limitation are cited; only the delta is proposed; no generic rewrite. |
-| docs | "Continue from the requirements in `docs/`. The next slice is undecided." | The actual files are read; a genuine conflict is presented as a decision with consequences; nothing is silently resolved. |
-| knowledge (optional) | "Continue from the requirements in `knowledge/`. The next slice is undecided." | Same as `docs`, from the non-conventional root. |
-| conflict (optional) | "Continue from the scope documents under `docs/` and `knowledge/`. The next slice is undecided." | Both documents are cited and the contradiction is surfaced as an unresolved decision, not silently resolved. |
+| Directory | Case id | Starting inputs (staged) | Starting request given to the agent | Required observation |
+| --- | --- | --- | --- | --- |
+| `greenfield/` | green | none — the idea only | "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." | Relevant questions/options about board kind, inputs, editing and validation; no invented GUI/stack and no automatic approval. |
+| `brownfield/` | brown | small synthetic SVG-board renderer, its test, and `docs/limitation.md` | "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working." | Existing behavior, tests and the documented limitation are cited; only the delta is proposed; no generic rewrite. |
+| `documentation/` | docs | `docs/requirements.md` | "Continue from the requirements in `docs/`. The next slice is undecided." | The actual files are read and cited by path and line; nothing is silently resolved. |
+| `knowledge-led/` (optional) | knowledge | `knowledge/requirements.md` | "Continue from the requirements in `knowledge/`. The next slice is undecided." | Same as `documentation`, from the non-conventional root. |
+| `conflicting-documents/` (optional) | conflict | `docs/scope.md` versus `knowledge/scope.md` | "Continue from the scope documents under `docs/` and `knowledge/`. The next slice is undecided." | Both cited; the contradiction is surfaced as an unresolved decision. |
 
-Task text is single-sourced in `scripts/lib/guided-trial-fixtures.mjs` and quoted in both instruction sets, so the conditions receive identical wording; `npm run test:guided-installed-trial-setup` fails if they ever diverge. Each instruction set lists all five tests with their start conditions and required observations, so the agent sees the whole set and its own assignment.
+Inputs are laid out by the case id you see in comments; the **directory** name is the human-readable one. Task text is single-sourced in `scripts/lib/guided-trial-fixtures.mjs` and quoted in both instruction sets, so the conditions receive identical wording; `npm run test:guided-installed-trial-setup` fails if they ever diverge. Each instruction set lists all five tests with their start conditions and required observations, so the agent sees the whole set and its own assignment.
 
 ## Step 4 — evidence capture
 
-Copy `instructions/guided-three-path-installed-trial-evidence-template.md` (staged by setup) into the trial root and fill it in as the run proceeds. Per cell record:
+Copy `.trial/instructions/guided-three-path-installed-trial-evidence-template.md` (staged by setup) into the testing workspace and fill it in as the run proceeds. Per cell record:
 
 - exact commands and their exit codes;
-- the input revision hash, and whether any source file changed during the cell. `INSTRUCTIONS.md` is staged into every workspace after the revision check, and guided cells also create `.synth/` state, so the recorded revision covers the matched **source inputs** only — say which of these appeared, and do not present them as fixture drift;
+- the source-input revision and whether any **source** file changed during the cell. `INSTRUCTIONS.md` is staged into every test directory after the revision check, and guided cells also create `.synth/` state, so the recorded revision covers the matched **inputs** only — say which of these appeared, and do not present them as fixture drift;
 - the relevant output: questions asked, options proposed, citations used, and whether they matched the actual files and lines;
 - operator effort in minutes and the number of agent turns or interventions;
 - unsupported assumptions, unresolved choices, and anything the condition got wrong;
 - a terminal state of `pass`, `fail`, `blocked` or `not run` — with the reason. Never relabel a blocked or skipped cell as a pass.
 
-Keep SYNTH integrity checks separate from application tests. In `brown`, run the application test both before and after the agent's change (`npm test`, record exit code and revision); the unmodified baseline is expected to pass.
+Keep SYNTH integrity checks separate from application tests. In `brownfield`, run the application test both before and after the agent's change (`npm test`, record exit code and revision); the unmodified baseline is expected to pass.
 
 Attach the completed evidence as a new file (suggested `docs/analysis/guided-installed-cli-trial-<yyyy-mm-dd>.md`) plus raw transcripts, then link it from PR #347 in a comment written by the operator. Exclude private assets, credentials and machine-local secrets.
 
 ## Known gap: no auto-feed initialization command
 
-Today the loop needs a human hand-off: someone must paste the kickoff, because the agent has no way to learn that the trial exists and `synth` cannot yet hand instructions back to a running agent. Proposed slice, **not implemented here and not authorized by this document**:
+Today the loop needs a human hand-off: someone must paste the note, because the agent has no way to learn that the trial exists and `synth` cannot yet hand instructions back to a running agent. Proposed slice, **not implemented here and not authorized by this document**:
 
 - Have the existing `first-contact --dry-run` / `status` projection emit an agent-facing next-steps block (machine-readable plus a short human sentence), instead of adding a new verb — the E4 diagnostic argued against growing default ceremony, and the projection already carries a `nextStep` field and a provenance `note`.
 - An agent that is already pointed at `synth` could then self-serve the next commands after each step, reducing the operator to one kickoff per cell.
@@ -114,97 +122,91 @@ Today the loop needs a human hand-off: someone must paste the kickoff, because t
 
 ## Honest limits of this evidence
 
-- One agent, one model build, unblinded, typically one cell per case; plain and guided are serial, so ordering effects are uncontrolled. Alternate the order across cases.
+- One agent, one model build, unblinded, typically one cell per case; plain and guided are serial, so ordering effects are uncontrolled. Alternate the note order across tests.
 - Operator effort in minutes is a crude proxy; owner value, real-user comprehension and team adoption are not measured.
 - The offer cells end in `awaiting-response`, so nothing here exercises confirmation, delegation or rejection of a response by a real person.
 - A passing guided cell shows the installed CLI can run the loop and produce traceable, unauthenticated proposals — not that the guidance improved the outcome. A failing or blocked cell is evidence for simplification, not a moral failure of the trial.
 - Setup itself, however carefully run, is never trial evidence.
+- **Isolation is by layout and instruction, not by container.** Each test directory holds only its own inputs, and the source clone is deleted, but a same-machine agent can still reach its parent directory, the harness, and any other checkout. Use a container or a separate machine when hard isolation is required; instructions alone are not a security boundary. The harness also keeps both instruction sets and the plain mirrors, which a determined agent could read.
 
 ## Setup validation performed on this branch (not trial evidence)
 
-Recorded by the agent that wrote the script, for the same reasons as the smoke check it replaces: it validates the recipe only.
+Recorded by the agent that wrote the script, for the same reasons as any smoke check: it validates the recipe only.
 
-- The setup executor ran end to end into a scratch root, pinned to `a568e35`: `clone` → `checkout` → `resolve-revision` → `npm-ci` → `build` → `pack` → `install` → `synth-version` → `fixtures` → `delete-source-clone` each exited 0, in about 17 seconds.
-- It produced the per-case workspaces (`cells/<case>`, `<plain-root>/<case>`), the paste-ready kickoffs for both conditions, the packed tarball, the scratch-prefix install, `transcripts/setup.log`, and a `setup-manifest.json` recording `productCommandsRun: ["synth --version"]`, `trialCellsRun: 0` and `lifecycleCommandsRun: []`. All five fixture and workspace revisions matched the published values; the source clone was gone afterwards.
-- The plain kickoff files contained **zero** occurrences of the tool name, and the plain root shared no path component with the trial root.
-- `npm run test:guided-installed-trial-setup` covers the guards, the kickoff text and the revision constants, and refuses every unsafe layout before any network access.
+- The executor ran end to end against the branch pin with the two-input invocation; every step exited 0, the revision was resolved from the checkout, fixtures and staged workspaces matched the published revisions, the plain mirrors were created only for the neutral workspace path, and the source clone was deleted as the last setup step.
+- `npm run test:guided-installed-trial-setup` covers the two-input guards, the dirty-checkout refusal and its remedy, the inferred layout (including the control-path leak rule), both handoff notes, both instruction sets and the revision constants, and refuses every unsafe case before any network access.
 
-Every trial cell remains `not run`. This section is a recipe check by the authoring agent: one session, unblinded, with no independent observation.
+Every trial cell remains `not run`. Same agent, one session, unblinded, no independent observation.
 
 ## Appendix A — manual setup equivalent (optional)
 
 ```bash
-REPO=<synth-repo-local-path>                   # a checkout of the repo, on branch arena/f3c711cb-synth
-PIN=<revision-under-test>                      # e.g. the PR head
-TRIAL=/tmp/synth-guided-trial-2026-10-16       # scratch root
-PLAIN=/tmp/board-task-2026-10-16               # plain-condition root; must not contain "synth"
+REPO=<synth-checkout>            # clean checkout; its committed HEAD is the revision under test
+WS=<empty-testing-workspace>     # outside the checkout; no path component spelling the tool's name
+H="$WS/.trial"
 
-git clone --branch arena/f3c711cb-synth --single-branch https://github.com/synth-framework/synth.git "$TRIAL/src"
-git -C "$TRIAL/src" checkout --detach "$PIN"
-mkdir -p "$TRIAL"/{pack,global,fixtures,instructions,kickoff,cells,transcripts} "$PLAIN"
-( cd "$TRIAL/src" && npm ci && npm run build && npm pack --pack-destination "$TRIAL/pack" )
-sha256sum "$TRIAL/pack/"*.tgz | tee "$TRIAL/transcripts/tarball.sha256"
-npm install -g --prefix "$TRIAL/global" "$TRIAL/pack/"*.tgz
-"$TRIAL/global/bin/synth" --version | tee "$TRIAL/transcripts/version.json"
-cp "$TRIAL/src/docs/plans/guided-installed-cli-trial-instructions.md" \
-   "$TRIAL/src/docs/analysis/guided-three-path-installed-trial-evidence-template.md" \
-   "$TRIAL/src/docs/plans/guided-trial/README.md" \
-   "$TRIAL/src/docs/plans/guided-trial/instructions/"*.md "$TRIAL/instructions/"
-node "$TRIAL/src/scripts/guided-installed-trial-fixtures.mjs" "$TRIAL/fixtures" | tee "$TRIAL/transcripts/fixtures.json"
-rm -rf "$TRIAL/src"     # isolation: the trial agent must not read repo tests or docs
+mkdir -p "$H"/{pack,global,transcripts,kickoff,instructions}
+git clone --quiet --no-hardlinks "$REPO" "$H/src"
+git -C "$H/src" checkout --quiet --detach "$(git -C "$REPO" rev-parse HEAD)"
+( cd "$H/src" && npm ci && npm run build && npm pack --pack-destination "$H/pack" )
+sha256sum "$H/pack/"*.tgz | tee "$H/transcripts/tarball.sha256"
+npm install -g --prefix "$H/global" "$H/pack/"*.tgz
+"$H/global/bin/synth" --version | tee "$H/transcripts/version.json"
+cp "$H/src/docs/plans/guided-installed-cli-trial-instructions.md" \
+   "$H/src/docs/analysis/guided-three-path-installed-trial-evidence-template.md" \
+   "$H/src/docs/plans/guided-trial/README.md" \
+   "$H/src/docs/plans/guided-trial/instructions/"*.md "$H/instructions/"
+node "$H/src/scripts/guided-installed-trial-fixtures.mjs" "$H/fixtures" | tee "$H/transcripts/fixtures.json"
+rm -rf "$H/src"                  # isolation: the trial agent must not read the checkout
 ```
 
-Then stage by hand, per case:
-
-- workspace: `fixtures/guided/<case>` → `$TRIAL/cells/<case>`, and `fixtures/plain/<case>` → `$PLAIN/<case>`;
-- instruction set: `$TRIAL/instructions/guided.md` → `$TRIAL/cells/<case>/INSTRUCTIONS.md`, and `$TRIAL/instructions/plain.md` → `$PLAIN/<case>/INSTRUCTIONS.md`;
-- handoff note: `$TRIAL/kickoff/guided-<case>.md` and `$PLAIN/kickoff-<case>.md`, matching the shapes in Appendix B.
+Then stage by hand, per case: copy `$H/fixtures/guided/<case>` into `$WS/<test>/`, write `$H/instructions/guided.md` there as `INSTRUCTIONS.md`, and for the plain condition copy `$H/fixtures/plain/<case>` into `$WS/.control/<test>/` with `plain.md` as its `INSTRUCTIONS.md` — or skip the plain mirrors when a path component spells the tool's name. Write one handoff note per cell in the shape of Appendix B, then delete `$H/fixtures`.
 
 The script does all of this, verifies each copied workspace's revision, checks that the plain set never mentions the tool, and writes a manifest; prefer it.
 
-Windows (PowerShell): use `$env:TEMP\...`, `Copy-Item`, `Get-FileHash -Algorithm SHA256`, and the installed binary at `"$TRIAL\global\bin\synth.cmd"`.
+Windows (PowerShell): use `$env:TEMP\...`, `Copy-Item`, `Get-FileHash -Algorithm SHA256`, and the installed binary at `"$H\global\bin\synth.cmd"`.
 
 ## Appendix B — the handoff notes and the instruction sets
 
-The handoff note is what the operator pastes; it is short by design and contains no process. Both notes name the case, the workspace and the staged instruction set. The plain note never contains the word "synth"; the guided note adds where the CLI is installed. The *process* is owned by the instruction set: [`instructions/guided.md`](guided-trial/instructions/guided.md) (read it for the exact guided wording — it begins with the SYNTH initialization process) and [`instructions/plain.md`](guided-trial/instructions/plain.md), which prescribes no first command.
+The handoff note is what the operator pastes; it is short by design and contains no process. Both notes name the test, the workspace and the staged instruction file. The plain note never contains the word "synth"; the guided note adds where the CLI is installed. The *process* is owned by the instruction file: [`instructions/guided.md`](guided-trial/instructions/guided.md) (read it for the exact guided wording — it begins with the SYNTH initialization process) and [`instructions/plain.md`](guided-trial/instructions/plain.md), which prescribes no first command.
 
-**Plain condition** — `kickoff-<case>.md` in the plain root:
+**Plain condition** — `.trial/kickoff/plain-<test>.md`:
 
 ```text
-# Handoff — <case> (plain condition)
+# Handoff — <test> (plain condition)
 
 You are taking part in a usability trial. Your workspace is:
 
-    <PLAIN>/<case>
+    <workspace>/.control/<test>
 
-Start by reading the instruction set staged in that workspace:
+Start by reading the instruction file staged in that workspace and follow it:
 
-    <PLAIN>/<case>/INSTRUCTIONS.md
+    <workspace>/.control/<test>/INSTRUCTIONS.md
 
-Your assigned test is `<case>`. The instruction set lists all the tests and their
+Your assigned test is `<test>`. The instruction set lists all the tests and their
 starting conditions, and states what your report must contain.
 
 Work only inside your workspace. Do not read or write anything outside it, and do not look for
 other checkouts, test suites or documentation.
 ```
 
-**Guided condition** — `kickoff/guided-<case>.md` inside the trial root:
+**Guided condition** — `.trial/kickoff/guided-<test>.md`:
 
 ```text
-# Handoff — <case> (guided condition)
+# Handoff — <test> (guided condition)
 
 You are taking part in a usability trial. Your workspace is:
 
-    <TRIAL>/cells/<case>
+    <workspace>/<test>
 
-Start by reading the instruction set staged in that workspace:
+Start by reading the instruction file staged in that workspace and follow it:
 
-    <TRIAL>/cells/<case>/INSTRUCTIONS.md
+    <workspace>/<test>/INSTRUCTIONS.md
 
-Your assigned test is `<case>`. The instruction set tells you to begin with the SYNTH
+Your assigned test is `<test>`. The instruction set tells you to begin with the SYNTH
 initialization process. The CLI is installed at:
 
-    <TRIAL>/global/bin/synth
+    <workspace>/.trial/global/bin/synth
 
 and the operator may also have it on PATH as `synth`. If neither works, record that and stop.
 
@@ -212,8 +214,7 @@ Work only inside your workspace. Do not read or write anything outside it, and d
 other checkouts, test suites or documentation.
 ```
 
-Why the initialization process lives in the instruction set rather than in a setup-generated command list: the trial is testing SYNTH's own guided entry, so the agent should start from SYNTH's initialization process and follow what the CLI reports, with the setup script limited to staging files and writing paths. The instruction sets are reviewed documents, versioned with the branch, and covered by `npm run test:guided-installed-trial-setup`.
-
+Why the initialization process lives in the instruction set rather than in setup-generated text: the trial is testing SYNTH's own guided entry, so the agent should start from SYNTH's initialization process and follow what the CLI reports, with the setup script limited to staging files and writing paths. The instruction sets are reviewed documents, versioned with the branch, and covered by `npm run test:guided-installed-trial-setup`.
 
 ## Appendix C — independence compliance checklist
 
@@ -222,73 +223,29 @@ An outside reviewer should be able to reproduce the same comparison from the rec
 | # | Requirement | How to satisfy it | Evidence to attach |
 | --- | --- | --- | --- |
 | 1 | Different agent for the cells | A different agent product/model build and a fresh session from the one that authored this branch. The authoring agent must not run any cell. A setup-only agent may be any agent, but if it also runs a **plain** cell it must not have seen this repository — prefer separate sessions for setup and cells. | Agent name, model, version, session ids per cell; setup executor identity |
-| 2 | No access to the authoring repo | Setup deletes the clone; the agent stays inside its case directory and reads only its kickoff. | `setup-manifest.json`, `delete-source-clone` step, transcripts |
-| 3 | Blind to expectations | The agent is never told which condition is supposed to win. The plain kickoff never mentions SYNTH. | Generated kickoff files, saved verbatim |
-| 4 | Matched inputs | Identical fixture bytes; all required revisions recorded before the first cell. | `fixtures.json`, revision table in the evidence |
-| 5 | Matched treatment | Same agent/model/version, same tools, same task text, same case layout. Only the guided extra commands differ. | Version lines + kickoff files for both conditions |
-| 6 | Order control | Fresh session per cell; alternate order across cases so practice effects do not all point one way. | Run log with actual order |
+| 2 | No access to the authoring checkout | Setup deletes its clone and each test directory holds only its own inputs; the agent stays inside its directory. On one machine this is confinement by instruction — use a container or separate machine for hard isolation. | `setup-manifest.json`, `delete-source-clone` step, transcripts; container/machine note if used |
+| 3 | Blind to expectations | The agent is never told which condition is supposed to win. The plain note and plain set never mention SYNTH. | Staged `INSTRUCTIONS.md` copies and notes, saved verbatim |
+| 4 | Matched inputs | Identical fixture bytes; all revisions recorded before the first cell. | `transcripts/fixtures.json`, revision table in the evidence |
+| 5 | Matched treatment | Same agent/model/version, same tools, same task text, same directory layout. Only the guided extra commands differ. | Version lines + staged instruction files for both conditions |
+| 6 | Order control | Fresh session per cell; alternate note order across tests so practice effects do not all point one way. | Run log with actual order |
 | 7 | Pre-registration | Protocol, time box, expected observations and stop conditions fixed before the first cell. | This document + the filled-in §1 of the template, committed or time-stamped first |
 | 8 | Raw evidence | Verbatim transcripts, wall-clock per cell, and an intervention log. No retroactive tidying. | Transcript files; interventions with exact wording |
-| 9 | Artifact pinning | The installed tarball, not a repo build, is what ran. | `tarball.sha256`, `version.json`, `setup-manifest.json` |
+| 9 | Artifact pinning | The installed tarball, not a repo build, is what ran; the revision is the checkout's committed HEAD. | `transcripts/tarball.sha256`, `version.json`, `setup-manifest.json` |
 | 10 | Condition integrity | No invented human words; guided cells end `awaiting-response`; no lifecycle command; no push. | Cell transcripts and §6 of the template |
-| 11 | Operator non-coaching | Any help beyond pasting the kickoff is logged as an intervention verbatim. | Intervention log |
+| 11 | Operator non-coaching | Any help beyond pasting the note is logged as an intervention verbatim. | Intervention log |
 
 What a compliant run still does **not** establish: owner value, real-user comprehension, team adoption, delivery, production readiness, or that a human confirmed any response. One agent, one model build, one cell per case remains a diagnostic — it can support "keep as is" or "simplify", not a population claim.
 
 If any requirement above is unavoidably unmet, say which and why in the evidence. A partially independent run reported honestly is useful; an unlabelled self-check is not.
 
-## Appendix D — minimal manual kickoff (owner flow)
-
-This is the shortest sequence that produces a real cell: no setup script, one workspace per case, and the agent's process supplied entirely by the instruction file you copy in. It is the same protocol as Step 1–2, done by hand.
+## Appendix D — the two-input runbook
 
 ```bash
-REPO=<synth-repo-local-path>        # your clone, on branch arena/f3c711cb-synth
-PIN=<revision-under-test>           # e.g. 4a48581
-TRIAL=~/synth-trial                 # outside the repo; never inside $REPO
-
-# 1-3. from the clone: build, pack, install into a scratch prefix
-cd "$REPO" && git checkout --detach "$PIN"
-npm ci && npm run build
-mkdir -p "$TRIAL/pack" "$TRIAL/global"
-npm pack --pack-destination "$TRIAL/pack"
-sha256sum "$TRIAL/pack/"*.tgz | tee "$TRIAL/tarball.sha256"     # record it
-npm install -g --prefix "$TRIAL/global" "$TRIAL/pack/"*.tgz
-"$TRIAL/global/bin/synth" --version | tee "$TRIAL/version.json"  # record it
-
-# 4-6. leave the repo, generate the case inputs, build the workspaces
-cd "$TRIAL"
-mkdir -p fixtures
-node "$REPO/scripts/guided-installed-trial-fixtures.mjs" "$TRIAL/fixtures"   # prints the revision hashes
-for c in green brown docs; do                 # add knowledge and conflict if you have time
-  mkdir -p "$TRIAL/guided-$c"
-  cp -r "$TRIAL/fixtures/guided/$c/." "$TRIAL/guided-$c/"
-  cp "$REPO/docs/plans/guided-trial/instructions/guided.md" "$TRIAL/guided-$c/INSTRUCTIONS.md"
-done
-rm -rf "$TRIAL/fixtures"                      # the agent must not see the other cases
+node <synth-checkout>/scripts/guided-installed-trial-setup.mjs \
+  --repo <synth-checkout> \
+  --workspace <empty-testing-workspace>
 ```
 
-**What has to be in the workspace** — and nothing else:
+Then, per cell: open one fresh agent session and paste one note from `<workspace>/.trial/kickoff/`. That is the whole procedure; everything the note and the staged instruction file need was inferred from those two paths.
 
-| Item | Why | Where it comes from |
-| --- | --- | --- |
-| the case inputs (`green` has none; `brown` has the renderer, its test and the limitation note; `docs` has `docs/requirements.md`) | The required observation for each test is that the agent reads and cites what is really there; an empty workspace makes `brown`/`docs`/`conflict` unobservable | generated above from the repo's pinned fixture script |
-| `INSTRUCTIONS.md` | The agent's process, tests, rules and report shape | `docs/plans/guided-trial/instructions/guided.md` in the repo |
-| the CLI location, in your opening message (or on `PATH`) | `guided.md` looks for `synth` on `PATH` and otherwise asks for the absolute path | `$TRIAL/global/bin/synth` |
-
-Do **not** copy the repository's own tests, `docs/analysis/`, other case directories, or the source clone into the workspace — they would tell the agent what the trial is measuring and, in the plain condition, reveal the tool. If you want the plain control as well, repeat the loop with `plain` in place of `guided` and copy `instructions/plain.md`; keep those workspace paths free of the word "synth".
-
-**7-8. start the agent in the workspace and hand it the instruction file.** From `$TRIAL/guided-brown`, open a fresh agent session (plain `<TRIAL>/plain-brown` for the other condition) and send exactly one opening message:
-
-```text
-Read INSTRUCTIONS.md in this workspace and follow it.
-Your assigned test is brown.
-The CLI is installed at <TRIAL>/global/bin/synth — if it is not on PATH, call it by that
-full path and note that you had to.
-Pay attention to the rules in the file, and show me your REPORT.md when you stop.
-```
-
-That is enough to kick off. The agent then runs SYNTH's initialization process itself, writes its own `offer.json`, and stops at `awaiting-response` with a report.
-
-**Verified as a recipe check, not a trial cell.** On this branch the manual sequence above was run with the current head: pack and install exited 0 (`synth-framework-synth-2.6.1.tgz`, SHA-256 `b988287651b252628f7e3dd455b662bdeef1fb0cfa1dfac7b5544890c8c8dfa1`); the three workspaces contained exactly `INSTRUCTIONS.md` plus their case inputs; the brownfield fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0); and the guided initialization commands in the brownfield workspace exited 0 each — `first-contact --dry-run` discovered `docs/limitation.md`, `package.json`, `src/board.js` and `tests/board.test.js` with no warnings, and `first-contact status` reported `no-source-offer` because no offer had been written yet. Same authoring agent, unblinded: it validates the instructions, not the outcome. All three trial cells remain `not run`.
-
-Two things this manual path does **not** give you, both recorded in [Appendix C](#appendix-c--independence-compliance-checklist): no manifest or transcripts are written for you, so keep your own notes (commands, exits, tarball hash, versions, per-cell effort); and if the agent has filesystem access to the machine, the repository is still reachable — instruct confinement, and use a container or separate machine if you need real isolation. The setup script ([Step 1](#step-1--setup-run-by-any-agent-or-a-person)) exists mainly to produce those artifacts and that isolation automatically.
+Advanced overrides, all with inferred defaults: `--cases` (add `knowledge,conflict`), `--pin <ref>`, `--allow-dirty`, `--control-root <dir>`. The script refuses a dirty checkout, a workspace inside the checkout, a non-empty workspace, a repo that is not a git work tree, and a `--pin` that does not resolve — each before it touches the network.
