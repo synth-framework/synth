@@ -98,6 +98,11 @@ export const USAGE = `Usage: node scripts/guided-installed-trial-evidence.mjs --
   --date <yyyy-mm-dd>   default: the date of the newest recorded trial event (falls back to file mtime)
 
   Advanced overrides, all inferred by default:
+  --operator <name>     who ran the trial (else read from the guided setup manifest)
+  --setup-agent <what>  who or what ran the setup
+  --agent <what>        the trial agent's product, model and version
+  --tools <what>        the tool access that agent was given
+  --time-box <what>     the time box set before starting
   --repo <path>         default: the checkout this script lives in
   --out <path>          default: ${EVIDENCE_DIR}/${EVIDENCE_PREFIX}-<date>[-plain].md
   --raw-dir <path>      default: the evidence file's path without the .md suffix, plus -raw
@@ -280,6 +285,11 @@ export function parseArgs(argv) {
     out: undefined,
     rawDir: undefined,
     repo: undefined,
+    operator: undefined,
+    setupAgent: undefined,
+    agent: undefined,
+    tools: undefined,
+    timeBox: undefined,
     force: false,
     dryRun: false,
     json: false,
@@ -293,6 +303,11 @@ export function parseArgs(argv) {
     '--out': 'out',
     '--raw-dir': 'rawDir',
     '--repo': 'repo',
+    '--operator': 'operator',
+    '--setup-agent': 'setupAgent',
+    '--agent': 'agent',
+    '--tools': 'tools',
+    '--time-box': 'timeBox',
   }
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i]
@@ -1042,6 +1057,71 @@ export async function collectCase({ caseId, dir, dirName, workspaceRoot = null }
 }
 
 /**
+ * The exit a command line states, as written: a number, `non-zero`, or null when the
+ * line records none. Nothing is inferred from a command's name.
+ */
+export function exitStated(command) {
+  const match = String(command ?? '').match(/(?:=>|->|→|—|-)\s*exit\s*(?:code\s*)?(non-?zero|\d+)/i)
+    ?? String(command ?? '').match(/\bexit\s*(?:code\s*)?(non-?zero|\d+)/i)
+  if (!match) return null
+  return /non-?zero/i.test(match[1]) ? 'non-zero' : Number(match[1])
+}
+
+/**
+ * The capture's own reading of a cell's terminal state, and the rule behind it.
+ *
+ * The rule is a checklist, not a verdict: it can say that nothing in the captured
+ * evidence contradicts a pass, and it can name the one place it cannot decide — a
+ * command that records a non-zero exit, which may be the intended probe or a real
+ * failure, and only the operator knows which. It never says `fail` or `blocked`
+ * on its own, because severity is a judgement about intent that no file records.
+ */
+export function terminalChecklist(entry) {
+  const ok = (citation) => citation.status === 'matched' || citation.status === 'matched-recomputed' || citation.status === 'matched-partial'
+  const exits = entry.commands.map((command) => ({ command, exit: exitStated(command) }))
+  const failed = exits.filter((item) => typeof item.exit === 'number' && item.exit !== 0)
+  const nonzero = exits.filter((item) => item.exit === 'non-zero')
+  const silent = exits.filter((item) => item.exit === null)
+  const responses = entry.integrity.sourceAnswers + entry.integrity.choiceReviews
+  const citationsOk = entry.citations.filter(ok).length
+  const citationsAll = entry.citations.length
+  const recorded = entry.recorded ?? null
+  const status = entry.integrity.terminalState ?? (entry.integrity.workingBriefStatus ?? null)
+  const blockers = []
+  if (!entry.report.present) blockers.push('no `REPORT.md` was captured for this cell')
+  if (!entry.offer.present && !recorded) blockers.push('no offer file and no CLI-recorded offer were captured')
+  if (failed.length > 0 || nonzero.length > 0) {
+    blockers.push(`a command records a non-zero exit (${[...nonzero, ...failed].map((item) => quote(item.command)).join('; ')}) — whether that was the intended probe or a failure is not in any file`)
+  }
+  if (entry.integrity.lifecycleCommands.length > 0) blockers.push(`a lifecycle, selection or push command was captured: ${entry.integrity.lifecycleCommands.map((item) => quote(item)).join(' | ')}`)
+  if (responses > 0) blockers.push(`${responses} recorded human response(s) — the isolation rule expects none`)
+  if (citationsAll > 0 && citationsOk !== citationsAll) blockers.push(`${citationsAll - citationsOk} citation(s) did not verify against the live source`)
+  // The CLI keeps its own error log, and it can hold a failed command the agent's
+  // report never lists — a probe it judged uninteresting, or a real refusal. Either
+  // way the checklist must not read "nothing contradicts a pass" while a file in the
+  // capture records a non-zero exit.
+  const errorRows = entry.dataErrors.flatMap((entryLog) => entryLog.entries.map((row) => ({ name: entryLog.name, error: row.error ?? JSON.stringify(row), exitCode: row.exitCode ?? null })))
+  if (errorRows.length > 0) {
+    blockers.push(`the CLI's own error log records ${errorRows.length} failed command(s): ${errorRows.map((row) => quote(`${row.error}${row.exitCode !== null ? ` (exit ${row.exitCode})` : ''}`)).join('; ')} — whether that was an intended probe or a refusal is not in the log`)
+  }
+  const facts = [
+    `report captured: ${entry.report.present ? 'yes' : 'NO'}`,
+    `offer: ${recorded ? `recorded by the CLI as \`${recorded.id}\`${status ? `, brief \`${status}\`` : ''}` : entry.offer.present ? 'an agent offer file was captured (no CLI record in this arm)' : 'none captured'}`,
+    `commands recorded: ${entry.commands.length}${entry.commands.length > 0 ? ` — stating exit 0: ${exits.filter((item) => item.exit === 0).length}, stating another exit: ${[...nonzero, ...failed].length}, stating no exit: ${silent.length}` : ' — nothing ran'}`,
+    `lifecycle / selection / push commands: ${entry.integrity.lifecycleCommands.length === 0 ? 'none' : entry.integrity.lifecycleCommands.length}`,
+    `recorded human responses: ${responses}`,
+    citationsAll > 0 ? `citations re-checked: ${citationsAll}, verified: ${citationsOk}` : 'citations re-checked: none found in this arm\'s offer shape',
+    `CLI error log rows: ${errorRows.length}`, 
+  ]
+  return {
+    facts,
+    silent: silent.map((item) => item.command),
+    blockers,
+    reading: blockers.length === 0 ? 'pass, pending your confirmation' : 'not derivable here',
+  }
+}
+
+/**
  * The report shape is fixed by the instruction set (§6); these labels are recognised.
  * `APPROACH` is in the plain condition's §6 shape only, and is recognised so that a
  * report written exactly as that shape asks is never treated as unlabelled.
@@ -1318,6 +1398,11 @@ function renderCell(entry, model) {
   if (sections.PROBLEMS) reportExtras.push(bullet('What the agent reported as wrong or contradictory (`REPORT.md` section PROBLEMS, verbatim)', fenced(sections.PROBLEMS)))
   if (entry.reportUnlabelled) reportExtras.push(bullet('The whole `REPORT.md`, verbatim (some of it was not labelled in a shape the capture reads)', `${reportFallbackNote(entry)}\n\n${fenced(entry.report.text ?? '')}`))
   const terminal = bullet('Terminal state: `pass` / `fail` / `blocked` / `not run` — reason', operator(`the terminal state for this cell, with the reason — the captured files prove what happened, not whether it counts as a pass (recorded for this cell: ${entry.integrity.terminalState ?? 'no machine-recorded terminal projection'})`))
+  // The counting is mechanical; the verdict is not. This prints the checklist behind
+  // the rule and names anything it cannot decide, so the operator answers one
+  // question per cell instead of reconstructing the evidence from memory.
+  const checklist = terminalChecklist(entry)
+  const checklistNote = bullet('What the capture can check before you answer (a checklist, not a verdict)', `${checklist.reading === 'pass, pending your confirmation' ? '**Nothing in the captured evidence contradicts a pass, pending your confirmation.**' : '**Not derivable here** — one item cannot be decided from the files:'} ${checklist.blockers.length > 0 ? `${checklist.blockers.map((item) => quote(item)).join('; ')}. ` : ''}The checklist: ${checklist.facts.join('; ')}.${checklist.silent.length > 0 ? ` ${checklist.silent.length} command line(s) record no exit code and count as neither success nor failure: ${checklist.silent.map((item) => quote(item)).join('; ')}.` : ''} This rule never returns \`fail\` or \`blocked\`: severity is a judgement about intent that no file holds.`)
 
   if (condition === 'plain') {
     return cellBlock(`${entry.dirName} / plain`, [
@@ -1330,6 +1415,7 @@ function renderCell(entry, model) {
       bullet('Unresolved choices it left open', sections['STILL OPEN'] ? `as written in \`REPORT.md\`:\n\n${fenced(sections['STILL OPEN'])}` : operator('unresolved choices')),
       bullet('Application test command and exit (brown only)', sections['APPLICATION TESTS'] ? `as written in \`REPORT.md\`:\n\n${fenced(sections['APPLICATION TESTS'])}` : `not applicable or not reported; ${operator('the application test command and exit codes')}`),
       terminal,
+      checklistNote,
       ...reportExtras,
     ])
   }
@@ -1376,6 +1462,7 @@ function renderCell(entry, model) {
     bullet('Any SYNTH integrity message, warning or failure text', entry.dataErrors.length > 0 ? `${entry.dataErrors.reduce((sum, entryLog) => sum + entryLog.rows, 0)} recorded error line(s) in ${entry.dataErrors.map((entryLog) => `\`${entryLog.name}\``).join(', ')}:\n\n${fenced(entry.dataErrors.flatMap((entryLog) => entryLog.entries.map((row) => `${row.timestamp ?? ''} ${row.error ?? JSON.stringify(row)}`)).join('\n'))}` : (sections.PROBLEMS ? `no CLI error log was captured; the report's PROBLEMS section:\n\n${fenced(sections.PROBLEMS)}` : operator('any integrity message, warning or failure text'))),
     bullet('Application test command and exit (brown only, before and after any change)', sections['APPLICATION TESTS'] ? `as written in \`REPORT.md\`:\n\n${fenced(sections['APPLICATION TESTS'])}` : `not reported in this cell; ${operator('the application test command and exit codes')}`),
     terminal,
+    checklistNote,
     ...reportExtras,
   ])
 }
@@ -1443,9 +1530,11 @@ export function renderEvidence(model) {
   out.push('')
   out.push('| Field | Value |')
   out.push('| --- | --- |')
+  const operatorFacts = model.operatorFacts ?? {}
+  const factsSource = model.operatorFactsSource ? ` (recorded by ${model.operatorFactsSource})` : ''
   const identity = [
-    ['Operator (who ran the trial)', operator('your name')],
-    ['Setup executed by (agent/tool, model, version)', operator('who or what ran `guided-installed-trial-setup.mjs`, and its model/version')],
+    ['Operator (who ran the trial)', operatorFacts.operator ? `${inlineCode(operatorFacts.operator)}${factsSource}` : operator('your name')],
+    ['Setup executed by (agent/tool, model, version)', operatorFacts.setupAgent ? `${inlineCode(operatorFacts.setupAgent)}${factsSource}` : operator('who or what ran `guided-installed-trial-setup.mjs`, and its model/version')],
     ['Setup command and exit code', model.setupCommand ?? `${operator('the setup command you ran and its exit code')}${model.condition.resolved === 'plain' ? ' — the plain condition writes no manifest outside TEST_PATH, so this one stays yours' : ''}`],
     ['Setup stopped before any trial test', model.setupStoppedBeforeAgent === true ? 'yes — `setup-manifest.json` records `setup-complete-stop-before-agent` with `trialTestsRun: 0`; the agent was launched afterwards by hand' : model.setupStoppedBeforeAgent === false ? operator('setup recorded trialTestsRun > 0 — check what ran before the agent started') : (model.condition.resolved === 'plain' ? 'not recorded — the plain condition writes no manifest; confirm the agent was started after setup finished' : operator('whether setup ran any trial test before the agent was launched'))],
     ['TEST_PATH state before setup', model.stateBefore ?? operator('missing, or empty')],
@@ -1462,15 +1551,17 @@ export function renderEvidence(model) {
       if (entry.mtimeRange) return `\`${entry.dirName}\`: ${entry.mtimeRange.first} → ${entry.mtimeRange.last} (artifact mtimes — this condition records no CLI timestamps)`
       return `\`${entry.dirName}\`: no timestamp`
     }).join('; ') || 'no recorded timestamps'}; filename date \`${model.date}\` (${model.dateSource}). ${operator('your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set')}`],
-    ['Running agent, model and version', operator('agent product, model and version; session ids')],
-    ['Tool access given to the agent', operator('shell, editor, network, and anything else')],
+    ['Running agent, model and version', operatorFacts.agent ? `${inlineCode(operatorFacts.agent)}${factsSource} — session ids: ${operator('the session id(s), if the platform shows them')}` : operator('agent product, model and version; session ids')],
+    ['Tool access given to the agent', operatorFacts.tools ? `${inlineCode(operatorFacts.tools)}${factsSource}` : operator('shell, editor, network, and anything else')],
     ['Pinned repository revision', model.revision.commit
       ? `\`${model.revision.commit}\`${model.revision.subject ? ` — ${quote(model.revision.subject)}` : ''}${model.revision.source ? ` (${model.revision.source})` : ''}`
       : model.condition.resolved === 'plain'
         ? `not applicable — the plain condition builds and installs nothing, so no CLI commit applies. What identifies this arm's instructions is the staged \`INSTRUCTIONS.md\`: sha256 \`${stagedInstruction.sha256 ?? 'not captured'}\`, the plain set. The CLI revision this trial tested is pinned in the guided capture of the same run.`
         : operator('the commit the CLI was built from')],
-    ['Environment', `${operator('node --version, npm --version, OS — the machine that ran setup and the sessions')}`],
-    ['Time box set before starting', operator('the time box you set, and whether the run stayed inside it')],
+    ['Environment', model.machineFacts
+      ? `recorded by setup on the machine that staged the run: node \`${model.machineFacts.node}\`${model.machineFacts.npm ? `, npm \`${model.machineFacts.npm}\`` : ''}, \`${model.machineFacts.platform} ${model.machineFacts.release}\` (\`${model.machineFacts.arch}\`), timezone \`${model.machineFacts.timezone ?? 'unknown'}\`. ${operator('confirm the sessions ran on this machine, and add anything the agent itself needed')}`
+      : operator('node --version, npm --version, OS — the machine that ran setup and the sessions')],
+    ['Time box set before starting', operatorFacts.timeBox ? `${inlineCode(operatorFacts.timeBox)}${factsSource} — ${operator('whether the run stayed inside it')}` : operator('the time box you set, and whether the run stayed inside it')],
     ['Private assets involved', '`none` (required; any private asset invalidates this run)'],
   ]
   for (const [field, value] of identity) out.push(`| ${field} | ${value} |`)
@@ -1638,7 +1729,7 @@ export function renderEvidence(model) {
 // #region capture
 
 /** Read TEST_PATH and build the model the renderer needs. */
-export async function collectWorkspace({ repo, workspace, stagingRoot, condition, cases, explicitDate }) {
+export async function collectWorkspace({ repo, workspace, stagingRoot, condition, cases, explicitDate, operatorFactsInput = null }) {
   const drifted = CASE_ORDER.filter((caseId) => caseRevisions()[caseId] !== E4_REVISIONS[caseId])
   if (drifted.length > 0) {
     throw new Error(`Fixture drift against the executed E4 record: ${drifted.join(', ')} — recomputed revisions would compare two different things`)
@@ -1647,6 +1738,7 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
     capturedAt: new Date().toISOString(),
     repo,
     workspace,
+    operatorFactsInput,
     outPath: null,
     rawDir: null,
     rawRelative: null,
@@ -1777,6 +1869,23 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
   model.setupStoppedBeforeAgent = setupManifest
     ? setupManifest.status === 'setup-complete-stop-before-agent' && setupManifest.trialTestsRun === 0
     : null
+  // Operator facts: what the person running the trial told setup, or passed to this
+  // capture for an arm whose setup writes no manifest. Recorded once, read here —
+  // the values are the operator's own words, never inferred from anything else.
+  const manifestFacts = setupManifest?.operatorFacts ?? {}
+  model.operatorFacts = {
+    operator: model.operatorFactsInput?.operator ?? manifestFacts.operator ?? null,
+    setupAgent: model.operatorFactsInput?.setupAgent ?? manifestFacts.setupAgent ?? null,
+    agent: model.operatorFactsInput?.agent ?? manifestFacts.agent ?? null,
+    tools: model.operatorFactsInput?.tools ?? manifestFacts.tools ?? null,
+    timeBox: model.operatorFactsInput?.timeBox ?? manifestFacts.timeBox ?? null,
+  }
+  model.operatorFactsSource = model.operatorFactsInput && Object.values(model.operatorFactsInput).some(Boolean)
+    ? 'this capture\'s flags'
+    : setupManifest?.operatorFacts && Object.keys(setupManifest.operatorFacts).length > 0
+      ? 'the guided setup manifest'
+      : null
+  model.machineFacts = setupManifest?.machineFacts ?? null
   model.revisionDirty = setupManifest?.testedRevision?.workingTreeDirty
     ?? model.staging.manifest?.json?.testedRevision?.workingTreeDirty
     ?? null
@@ -2082,6 +2191,13 @@ async function main(argv) {
     condition: parsed.condition,
     cases: parsed.cases,
     explicitDate: parsed.date,
+    operatorFactsInput: {
+      operator: parsed.operator,
+      setupAgent: parsed.setupAgent,
+      agent: parsed.agent,
+      tools: parsed.tools,
+      timeBox: parsed.timeBox,
+    },
   })
   const suffix = model.condition.resolved === 'plain' ? '-plain' : ''
   const outPath = parsed.out ? path.resolve(parsed.out) : path.join(repo, EVIDENCE_DIR, `${EVIDENCE_PREFIX}-${model.date}${suffix}.md`)

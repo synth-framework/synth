@@ -132,7 +132,9 @@ It writes two things:
 
 What it fills mechanically, per case: the recorded revisions recomputed against the frozen record (the same rule the setup executor refuses to drift from); every citation re-checked with the CLI's own rule — full-file SHA-256 plus the exact quoted line, and the exact original intent for `operator-intent` citations — against both the agent's `offer.json` and the CLI's recorded copy in `draft.json`; the offer id, `offeredAt` and attribution; the CLI error log; the recorded timestamps and spans; the staged instruction digests; and, when the scratch directory is reachable, the install proof from `<staging>/transcripts/`. The agent's `REPORT.md` sections are quoted verbatim and attributed to it. The plain condition has no CLI record and no citation hashes, so there each quote is compared with the live file line, and quotes marked as the task text with the staged task text — the capture says so rather than implying a hash it never saw.
 
-What stays with you, because no file records it: your name, the agent and model, its tool access, local wall-clock, the time box, the `Met?` column of §0, every comparative reading in §5, each cell's terminal state, and the §7 recommendation. Those rows render as `<to confirm — operator: …>` and the script lists them when it finishes. Fill them in your own words; never let a machine guess a pass.
+Each cell's terminal state now arrives with a **checklist** beside it: the capture counts what the evidence holds — report captured, offer recorded (and its brief status), commands recorded and how many state exit 0, lifecycle/selection/push commands, recorded human responses, citations re-checked and verified — and prints either *"nothing in the captured evidence contradicts a pass, pending your confirmation"* or *"not derivable here"* with the item it cannot decide, such as a command that records a non-zero exit or a row in the CLI's own error log. The rule never returns `fail` or `blocked`: severity is a judgement about intent, and no file holds it. So the verdict is still yours, but it is one confirmation per cell rather than a reconstruction.
+
+What stays with you, because no file records it: your name and the agent identity (unless recorded at setup), local wall-clock, the `Met?` column of §0, every comparative reading in §5, each cell's terminal state, and the §7 recommendation. Those rows render as `<to confirm — operator: …>` and the script lists them when it finishes. Fill them in your own words; never let a machine guess a pass.
 
 Two limits worth knowing: the scratch directory lives outside TEST_PATH, so pass `--staging <dir>` — or run the capture on the machine that holds it — to fill §2 without retyping digests; and a case whose starting inputs are not in the workspace is reported as `not computable`, never guessed. Refuse to overwrite existing evidence unless you mean it: the script insists on `--force`.
 
@@ -279,6 +281,22 @@ If any requirement above is unavoidably unmet, say which and why in the evidence
 # from the checkout
 node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 ```
+
+The four facts only a person knows — who runs the trial, who or what ran this setup, the trial
+agent's product/model/version, and the tool access it was given — plus the time box are typed
+**once, here**, and recorded in `setup-manifest.json` for the capture to read:
+
+```bash
+node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH> \
+  --operator "<your name>" --setup-agent "<who ran this>" \
+  --agent "<agent product, model, version>" --tools "<shell, editor, network …>" \
+  --time-box "<what you set before starting>"
+```
+
+The machine facts (node, npm, OS, timezone) are read by setup itself. The same values can be given
+to the capture instead — `--operator/--setup-agent/--agent/--tools/--time-box` — which is how the
+plain arm, whose setup writes no manifest, gets them into its document. Anything not given stays an
+operator row; nothing is ever inferred from a log.
 
 Then start the agent in `<TEST_PATH>` and give it the line the banner prints:
 

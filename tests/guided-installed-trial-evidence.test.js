@@ -876,6 +876,89 @@ test("each comparative row carries what this capture measured, never the judgeme
   }
 })
 
+test("the terminal-state checklist counts, and says when it cannot decide", async () => {
+  const repo = await makeRepo()
+  // The guided fixture carries a CLI error log with one failed command — the case
+  // the checklist must refuse to call either way.
+  const staging = await makeStaging()
+  const { workspace } = await makeWorkspace({ condition: "guided", cases: ["brown"], staging })
+  const guidedOut = path.join(repo, "docs", "analysis", "checklist-guided.md")
+  try {
+    await capture(["--workspace", workspace, "--repo", repo, "--staging", staging, "--date", "2026-10-16", "--out", guidedOut])
+    const guided = await fs.readFile(guidedOut, "utf-8")
+    assert.ok(guided.includes("**Not derivable here**"), "a failed command the report may or may not have intended is not called a pass")
+    assert.ok(guided.includes("the CLI's own error log records 1 failed command(s)"), "the error log is read as evidence about the terminal state")
+    assert.ok(guided.includes("This rule never returns `fail` or `blocked`"), "the rule's own limit is stated")
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+  }
+
+  // A plain cell with no CLI state at all and every recorded exit at 0: nothing in
+  // the evidence contradicts a pass, and the document says so — as a confirmation.
+  const plain = await makeWorkspace({ condition: "plain", cases: ["brown"], offerShape: "loose-plain" })
+  const lib = await loadLib()
+  await fs.writeFile(path.join(plain.workspace, "brownfield", "offer.json"), `${JSON.stringify({
+    question: "How should the fill colour be accepted?",
+    options: [{ label: "A", grounded_in: { path: "src/board.js", line: 1, quote: lib.FIXTURES.brown["src/board.js"].split("\n")[0] } }],
+  }, null, 2)}\n`)
+  await fs.writeFile(path.join(plain.workspace, "brownfield", "REPORT.md"), [
+    "TEST: brown / brownfield/",
+    "COMMANDS: npm test (before proposal) -> exit 0; npm test (after, source untouched) -> exit 0.",
+    "APPROACH: read first, then proposed.",
+    "CITATIONS: src/board.js line 1 matched.",
+    "",
+  ].join("\n"))
+  const plainOut = path.join(repo, "docs", "analysis", "checklist-plain.md")
+  try {
+    await capture(["--workspace", plain.workspace, "--repo", repo, "--date", "2026-10-16", "--out", plainOut])
+    const doc = await fs.readFile(plainOut, "utf-8")
+    assert.ok(doc.includes("**Nothing in the captured evidence contradicts a pass, pending your confirmation.**"), `a clean cell reads as a confirmation, not a verdict:\n${doc.slice(0, 3000)}`)
+    assert.ok(doc.includes("commands recorded: 2 — stating exit 0: 2, stating another exit: 0, stating no exit: 0"), "the checklist counts what it read")
+    assert.ok(doc.includes("recorded human responses: 0"), "no response is recorded, and the count says so")
+  } finally {
+    await fs.rm(plain.workspace, { recursive: true, force: true })
+    await fs.rm(repo, { recursive: true, force: true })
+  }
+})
+
+test("the operator facts are recorded once and read back, never retyped", async () => {
+  const repo = await makeRepo()
+  const staging = await makeStaging({ inputs: { repo: "C:\\Users\\j\\Projects\\synth", workspace: "C:\\Users\\j\\Projects\\board-test" } })
+  const setup = await loadSetup()
+  // Write the facts the way setup does, through setup's own helper.
+  const facts = setup.operatorFacts({ operator: "the operator", setupAgent: "Arena Agent Mode", agent: "some model, build 7", tools: "shell, editor", timeBox: "30 minutes" })
+  const manifestPath = path.join(staging, "transcripts", "setup-manifest.json")
+  const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
+  await fs.writeFile(manifestPath, `${JSON.stringify({ ...manifest, operatorFacts: facts, machineFacts: { node: "v22.22.3", npm: "10.9.8", platform: "win32", release: "10.0.26100", arch: "x64", timezone: "America/Hermosillo" } }, null, 2)}\n`)
+
+  const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green"], staging })
+  const out = path.join(repo, "docs", "analysis", "operator-facts.md")
+  try {
+    await capture(["--workspace", workspace, "--repo", repo, "--staging", staging, "--date", "2026-10-16", "--out", out])
+    const doc = await fs.readFile(out, "utf-8")
+    assert.ok(doc.includes("| Operator (who ran the trial) | `the operator` (recorded by the guided setup manifest) |"), "the operator is read from the manifest")
+    assert.ok(doc.includes("| Running agent, model and version | `some model, build 7` (recorded by the guided setup manifest)"), "the agent is read from the manifest")
+    assert.ok(doc.includes("| Tool access given to the agent | `shell, editor`"), "tool access is read from the manifest")
+    assert.ok(doc.includes("| Time box set before starting | `30 minutes`"), "the time box is read from the manifest")
+    assert.ok(doc.includes("recorded by setup on the machine that staged the run: node `v22.22.3`, npm `10.9.8`, `win32 10.0.26100` (`x64`), timezone `America/Hermosillo`"), "machine facts come from setup, not from the operator")
+    assert.equal(doc.includes("| Operator (who ran the trial) | <to confirm"), false, "a recorded fact must not also be asked for")
+
+    // A capture flag wins over the manifest, and fills the rows for an arm whose
+    // setup writes no manifest at all.
+    const plain = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+    const plainOut = path.join(repo, "docs", "analysis", "operator-facts-plain.md")
+    await capture(["--workspace", plain.workspace, "--repo", repo, "--date", "2026-10-16", "--out", plainOut, "--operator", "the operator", "--agent", "another model"])
+    const plainDoc = await fs.readFile(plainOut, "utf-8")
+    assert.ok(plainDoc.includes("| Operator (who ran the trial) | `the operator` (recorded by this capture's flags) |"), "the flags fill the rows too")
+    await fs.rm(plain.workspace, { recursive: true, force: true })
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+    await fs.rm(repo, { recursive: true, force: true })
+  }
+})
+
 // #region source contract
 
 test("the capture script reads the workspace and writes only inside the repository", async () => {

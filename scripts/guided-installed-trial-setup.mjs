@@ -80,6 +80,14 @@ export const USAGE = `Usage: node scripts/guided-installed-trial-setup.mjs --wor
                         name, and builds nothing at all
   --cases <a,b,c>       default ${REQUIRED_CASES.join(',')} (available: ${CASE_ORDER.join(', ')})
 
+  Operator facts, recorded once here so no evidence document has to ask for them.
+  All optional: what you do not give stays an operator row in the capture.
+  --operator <name>     who runs the trial
+  --setup-agent <what>  who or what ran this setup, and its model/version
+  --agent <what>        the trial agent's product, model and version
+  --tools <what>        the tool access that agent was given
+  --time-box <what>     the time box set before starting
+
   Advanced overrides, all inferred by default:
   --repo <path>         default: the checkout this script lives in
   --pin <ref>           default: that checkout's committed HEAD
@@ -141,8 +149,14 @@ function prefixBinDir(staging) {
 
 /** Parse and validate arguments. TEST_PATH is the only thing the operator must supply. */
 export function parseArgs(argv) {
-  const args = { workspace: undefined, cases: REQUIRED_CASES.slice(), pin: undefined, repo: undefined, cliRoot: undefined, condition: 'guided' }
-  const takesValue = { '--repo': 'repo', '--workspace': 'workspace', '--cases': 'cases', '--pin': 'pin', '--cli-root': 'cliRoot', '--condition': 'condition' }
+  const args = {
+    workspace: undefined, cases: REQUIRED_CASES.slice(), pin: undefined, repo: undefined, cliRoot: undefined, condition: 'guided',
+    operator: undefined, setupAgent: undefined, agent: undefined, tools: undefined, timeBox: undefined,
+  }
+  const takesValue = {
+    '--repo': 'repo', '--workspace': 'workspace', '--cases': 'cases', '--pin': 'pin', '--cli-root': 'cliRoot', '--condition': 'condition',
+    '--operator': 'operator', '--setup-agent': 'setupAgent', '--agent': 'agent', '--tools': 'tools', '--time-box': 'timeBox',
+  }
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i]
     if (flag === '--help' || flag === '-h') return { help: true }
@@ -179,6 +193,37 @@ export function assertSafeLayout({ repo, workspace, stagingRoot }) {
     throw new Error('--cli-root and --workspace may not contain each other: the build must not touch the trial')
   }
   return { repo, workspace, stagingRoot }
+}
+
+/**
+ * The machine facts a trial document would otherwise ask the operator to type:
+ * runtime, OS and timezone of the machine setup ran on. They describe *this*
+ * machine at staging time; whether the sessions ran on the same machine stays a
+ * confirmation, because nothing here can prove it.
+ */
+export function machineFacts() {
+  const facts = {
+    node: process.version,
+    platform: process.platform,
+    release: os.release(),
+    arch: process.arch,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? null,
+    npm: null,
+  }
+  const probe = spawnTool(NPM_BIN, ['--version'], { encoding: 'utf-8' })
+  if (probe.status === 0 && /\d/.test(probe.stdout ?? '')) facts.npm = probe.stdout.trim()
+  return facts
+}
+
+/** The operator facts this run was told, in the order the evidence asks for them. */
+export function operatorFacts(parsed) {
+  const facts = {}
+  if (parsed.operator) facts.operator = parsed.operator
+  if (parsed.setupAgent) facts.setupAgent = parsed.setupAgent
+  if (parsed.agent) facts.agent = parsed.agent
+  if (parsed.tools) facts.tools = parsed.tools
+  if (parsed.timeBox) facts.timeBox = parsed.timeBox
+  return facts
 }
 
 /**
@@ -363,9 +408,25 @@ export function stopBanner({ layout, manifest, assessment, cases, revisions, sta
     `  staging revision   :`,
   )
   for (const caseId of cases) lines.push(`      ${TEST_DIRS[caseId]}/  ${revisions[caseId]}`)
+  const record = manifest ?? null
   lines.push(
     `  manifest           : ${manifest ?? 'none — the plain condition writes nothing outside TEST_PATH'}`,
     ``,
+  )
+  // What the operator told setup, echoed back: it is recorded in the manifest and the
+  // capture reads it there, so it never has to be retyped into an evidence document.
+  const operators = record?.operatorFacts ?? {}
+  const machine = record?.machineFacts ?? null
+  if (machine) {
+    const named = Object.entries(operators).map(([key, value]) => `${key}: ${value}`)
+    lines.push(
+      `Recorded for the evidence (no document will ask for these again):`,
+      `  machine            : node ${machine.node}${machine.npm ? `, npm ${machine.npm}` : ''}, ${machine.platform} ${machine.release} (${machine.arch}), timezone ${machine.timezone ?? 'unknown'}`,
+      named.length > 0 ? `  operator           : ${named.join('; ')}` : `  operator           : none given — pass --operator/--agent/--tools/--time-box, or the capture will ask`,
+      ``,
+    )
+  }
+  lines.push(
     `Next step: start one fresh agent session in ${layout.workspace} and give it this line verbatim:`,
     ``,
     `  ${launchInstruction(layout.condition)}`,
@@ -598,6 +659,8 @@ async function main(argv) {
       productCommandsRun: ['synth --version'],
       trialTestsRun: 0,
       lifecycleCommandsRun: [],
+      operatorFacts: operatorFacts(parsed),
+      machineFacts: machineFacts(),
       launchInstruction: launchInstruction(parsed.condition),
       note: 'Setup only. The CLI was built from this checkout into the scratch directory outside TEST_PATH. Counts as a validated recipe, never as trial evidence. The agent is launched in TEST_PATH and told to follow INSTRUCTIONS.md.',
     }, null, 2)}\n`)
