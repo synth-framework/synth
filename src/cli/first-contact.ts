@@ -16,7 +16,7 @@ import * as sdk from "../sdk/index.js"
 
 import { injectIdentityContext, identityEnvVars, getCliIdentity } from "./identity-context.js"
 import { extractIntent } from "../first-contact/extract/index.js"
-import type { IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
+import type { AgentChoice, IntentExtractionResult, TranscriptEntry } from "../first-contact/extract/types.js"
 import { clarify, DefaultClarificationStrategy } from "../first-contact/clarify/index.js"
 import type { ClarificationAnswer, ClarificationQuestion } from "../first-contact/clarify/types.js"
 import { projectArchitecture } from "../first-contact/project/index.js"
@@ -33,6 +33,9 @@ interface DraftEnvelope {
   schema: "synth-first-contact-draft-v1"
   status: typeof DRAFT_STATUS
   artifact: IntentExtractionResult
+  journeyId?: string
+  /** Open agent-made choices are not approvals or settled product requirements. */
+  openAgentChoices?: AgentChoice[]
   updatedAt: string
 }
 
@@ -40,8 +43,11 @@ interface ApprovedEnvelope {
   schema: "synth-first-contact-approved-v1"
   status: typeof APPROVED_STATUS
   artifact: IntentExtractionResult
+  journeyId?: string
   selectedArchitecture: ArchitectureCandidate
   verificationReport: import("../first-contact/verify/types.js").CapabilityVerificationReport
+  /** Snapshot of choices still open when structured-field approval ran. */
+  openAgentChoices?: AgentChoice[]
   approvedAt: string
   artifactHash: string
 }
@@ -85,13 +91,18 @@ async function readDraft(cwd: string): Promise<DraftEnvelope> {
   return draft
 }
 
-async function writeDraft(cwd: string, artifact: IntentExtractionResult): Promise<string> {
+async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices?: AgentChoice[], journeyId?: string): Promise<string> {
   const { draftPath } = artifactDraftPaths(cwd)
+  // Starting a new idea or answering a generic question must never silently
+  // erase an open agent choice. Its originIntent keeps earlier scope visible.
+  const prior = await tryReadDraft(cwd)
   await ensureFirstContactDir(cwd)
   const envelope: DraftEnvelope = {
     schema: "synth-first-contact-draft-v1",
     status: DRAFT_STATUS,
     artifact,
+    journeyId: journeyId ?? prior?.journeyId ?? uuid(),
+    openAgentChoices: choices ?? prior?.openAgentChoices ?? [],
     updatedAt: nowIso(),
   }
   await sdk.json.writeJsonNewline(draftPath, envelope)
@@ -125,6 +136,13 @@ async function writeApproved(cwd: string, envelope: ApprovedEnvelope): Promise<s
   return approvedPath
 }
 
+/** A prior approval cannot be reused for a new or edited working request. */
+function approvalMatchesDraft(approved: ApprovedEnvelope, draft: DraftEnvelope | undefined): boolean {
+  if (!draft) return true // Old approved projects may not retain a draft.
+  if (approved.journeyId && draft.journeyId && approved.journeyId !== draft.journeyId) return false
+  return hashArtifact(draft.artifact as unknown as Record<string, unknown>) === approved.artifactHash
+}
+
 export async function cmdFirstContactHelp(): Promise<void> {
   printJson({
     status: "ok",
@@ -139,9 +157,10 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact start \"<intent>\"", description: "Extract intent and create a first-contact draft", args: "<intent> [--name <project-name>]" },
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
+      { name: "synth first-contact clarify --agent-choice <choice> --reason <why> --scope <area>", description: "Record an agent's provisional choice as open, not human-approved", args: "--agent-choice <choice> --reason <why> --scope <area> [--alternative <option>]" },
       { name: "synth first-contact project", description: "Project architecture candidates from the draft" },
       { name: "synth first-contact verify", description: "Verify capability assumptions for the recommended architecture" },
-      { name: "synth first-contact approve", description: "Approve the draft once it is unambiguous and verifiable" },
+      { name: "synth first-contact approve", description: "Approve structured draft fields and capability checks; open agent choices remain unreviewed" },
       { name: "synth first-contact materialize --dry-run", description: "Preview materialization, including recommended adapters (pending approval) and workflow template", args: "--dry-run" },
       { name: "synth first-contact materialize --approve", description: "Materialize the approved artifact and persist recommended adapters to .synth/manifest.json", args: "--approve [--name <project-name>]" },
       { name: "synth first-contact status", description: "Report the current first-contact state" },
@@ -166,7 +185,7 @@ export async function cmdFirstContactStart(args: string[], flags: Record<string,
   const context = { sessionId: uuid(), turn: 1 }
   const artifact = extractIntent(intentInput, context)
 
-  const draftPath = await writeDraft(process.cwd(), artifact)
+  const draftPath = await writeDraft(process.cwd(), artifact, undefined, context.sessionId)
   await appendTranscript(process.cwd(), artifact.transcript)
 
   printJson({
@@ -177,6 +196,7 @@ export async function cmdFirstContactStart(args: string[], flags: Record<string,
     intent: artifact.intent.description,
     confidence: artifact.confidence,
     unknowns: artifact.unknowns,
+    openAgentChoices: (await readDraft(process.cwd())).openAgentChoices ?? [],
     nextStep: "synth first-contact clarify",
   })
 }
@@ -187,6 +207,51 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
 
   const answerField = typeof flags.field === "string" ? flags.field : undefined
   const answerContent = typeof flags.answer === "string" ? flags.answer : undefined
+  const hasChoice = Object.hasOwn(flags, "agent-choice")
+  if (hasChoice) {
+    const choiceText = typeof flags["agent-choice"] === "string" ? flags["agent-choice"].trim() : ""
+    const reason = typeof flags.reason === "string" ? flags.reason.trim() : ""
+    const scope = typeof flags.scope === "string" ? flags.scope.trim() : ""
+    if (!choiceText || !reason || !scope || flags.field !== undefined || flags.answer !== undefined) {
+      printError("Record a provisional choice with --agent-choice <choice> --reason <why> --scope <area>; do not combine it with --field/--answer.")
+    }
+    const alternative = typeof flags.alternative === "string" ? flags.alternative.trim() : ""
+    const recordedAt = nowIso()
+    const choice: AgentChoice = {
+      id: `choice-${uuid()}`,
+      actor: "agent",
+      status: "open",
+      choice: choiceText,
+      reason,
+      scope,
+      alternatives: alternative ? [alternative] : [],
+      originIntent: draft.artifact.intent.description,
+      recordedAt,
+    }
+    const entry: TranscriptEntry = {
+      turn: (draft.artifact.transcript.at(-1)?.turn ?? 0) + 1,
+      actor: "agent",
+      type: "proposal",
+      content: choiceText,
+      timestamp: recordedAt,
+      agentChoice: choice,
+    }
+    const updated = { ...draft.artifact, transcript: [...draft.artifact.transcript, entry] }
+    const draftPath = await writeDraft(process.cwd(), updated, [...(draft.openAgentChoices ?? []), choice])
+    await appendTranscript(process.cwd(), [entry])
+    printJson({
+      status: "ok",
+      kind: "FirstContactAgentChoiceRecorded",
+      draftPath,
+      choice,
+      note: "An agent's open choice may guide reversible work. It is not a human selection; bring its reason to ordinary review before Git merge.",
+      nextStep: "synth first-contact clarify",
+    })
+    return
+  }
+  if (flags.reason !== undefined || flags.scope !== undefined || flags.alternative !== undefined) {
+    printError("--reason, --scope and --alternative require --agent-choice.")
+  }
 
   if (answerField && answerContent !== undefined) {
     const clarification = clarify(draft.artifact, strategy)
@@ -209,7 +274,8 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
       draftPath: updatedPath,
       sourceHandoff,
       sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
-      readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts.",
+      openAgentChoices: draft.openAgentChoices ?? [],
+      readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts or open agent choices.",
       canApprove: nextClarification.canApprove,
       remainingQuestions: nextClarification.questions.length,
       nextStep: sourceHandoff.selectionRequired
@@ -226,7 +292,8 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     kind: "FirstContactClarification",
     sourceHandoff,
     sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
-    readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts.",
+    openAgentChoices: draft.openAgentChoices ?? [],
+    readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts or open agent choices.",
     draftPath: artifactDraftPaths(process.cwd()).draftPath,
     canApprove: clarification.canApprove,
     ambiguities: clarification.ambiguities,
@@ -296,6 +363,7 @@ export async function cmdFirstContactApprove(args: string[], flags: Record<strin
       reason: "Draft still has unresolved ambiguities",
       ambiguities: clarification.ambiguities,
       questions: clarification.questions,
+      openAgentChoices: draft.openAgentChoices ?? [],
       nextStep: "synth first-contact clarify --field <field> --answer <answer>",
     })
     process.exit(1)
@@ -319,8 +387,10 @@ export async function cmdFirstContactApprove(args: string[], flags: Record<strin
     schema: "synth-first-contact-approved-v1",
     status: APPROVED_STATUS,
     artifact: approvedArtifact,
+    journeyId: draft.journeyId,
     selectedArchitecture: candidate,
     verificationReport: report,
+    openAgentChoices: draft.openAgentChoices ?? [],
     approvedAt: nowIso(),
     artifactHash: hashArtifact(approvedArtifact as Record<string, unknown>),
   }
@@ -334,12 +404,18 @@ export async function cmdFirstContactApprove(args: string[], flags: Record<strin
     artifactHash: envelope.artifactHash,
     selectedArchitecture: candidate,
     verificationReport: report,
+    openAgentChoices: envelope.openAgentChoices,
+    choiceReviewStatus: envelope.openAgentChoices?.length ? "unreviewed" : "no-agent-choices",
+    approvalScope: "This approves structured draft fields and capability verification, not open agent choices or source agreement.",
     nextStep: "synth first-contact materialize --dry-run",
   })
 }
 
 export async function cmdFirstContactMaterialize(args: string[], flags: Record<string, string | boolean>): Promise<void> {
   const approved = await readApproved(process.cwd())
+  if (!approvalMatchesDraft(approved, await tryReadDraft(process.cwd()))) {
+    printError("The approved artifact belongs to an earlier draft or request. Review the current draft before materialization; the old approval has not been deleted.")
+  }
   const dryRun = flags["dry-run"] === true || flags["dry-run"] === "true"
   const projectName = typeof flags.name === "string" ? flags.name : approved.artifact.intent.description.slice(0, 40)
 
@@ -373,7 +449,9 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
       selectedArchitecture: approved.selectedArchitecture,
       recommendedAdapters,
       workflowTemplate,
-      note: "Dry-run: no files were written. Adapters are pending approval. Run 'synth first-contact materialize --approve' to materialize.",
+      openAgentChoices: approved.openAgentChoices ?? [],
+      choiceReviewStatus: approved.openAgentChoices?.length ? "unreviewed" : "no-agent-choices",
+      note: "Dry-run: no files were written. Adapters are pending approval. Open agent choices are not human-confirmed. Run 'synth first-contact materialize --approve' to materialize.",
     })
     return
   }
@@ -404,6 +482,8 @@ export async function cmdFirstContactMaterialize(args: string[], flags: Record<s
     expeditions: result.expeditions,
     recommendedAdapters: result.recommendedAdapters,
     workflowTemplate: result.workflowTemplate,
+    openAgentChoices: approved.openAgentChoices ?? [],
+    choiceReviewStatus: approved.openAgentChoices?.length ? "unreviewed" : "no-agent-choices",
     nextStep: "synth explain replay",
   })
 }
@@ -423,8 +503,9 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     return
   }
 
-  const state = approved ? "approved" : draft ? "draft" : "unknown"
-  const artifact = approved?.artifact ?? draft?.artifact
+  const currentApproved = approved && approvalMatchesDraft(approved, draft) ? approved : undefined
+  const state = currentApproved ? "approved" : draft ? "draft" : "unknown"
+  const artifact = currentApproved?.artifact ?? draft?.artifact
   const strategy = artifact ? clarify(artifact, new DefaultClarificationStrategy()) : undefined
 
   printJson({
@@ -432,13 +513,16 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     kind: "FirstContactStatus",
     state,
     draftPath: draft ? artifactPaths.draftPath : undefined,
-    approvedPath: approved ? artifactPaths.approvedPath : undefined,
+    approvedPath: currentApproved ? artifactPaths.approvedPath : undefined,
+    supersededApprovedPath: approved && !currentApproved ? artifactPaths.approvedPath : undefined,
     intent: artifact?.intent.description,
     confidence: artifact?.confidence,
     canApprove: strategy?.canApprove ?? false,
-    selectedArchitecture: approved?.selectedArchitecture,
-    artifactHash: approved?.artifactHash,
-    nextStep: approved
+    openAgentChoices: draft?.openAgentChoices ?? currentApproved?.openAgentChoices ?? [],
+    choiceReviewStatus: (draft?.openAgentChoices ?? currentApproved?.openAgentChoices ?? []).length ? "unreviewed" : "no-agent-choices",
+    selectedArchitecture: currentApproved?.selectedArchitecture,
+    artifactHash: currentApproved?.artifactHash,
+    nextStep: currentApproved
       ? "synth first-contact materialize --dry-run"
       : strategy?.canApprove
         ? "synth first-contact project"

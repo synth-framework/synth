@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-agent-choices",
+  "description": "Check open agent choices, rationale persistence and stale first-contact approvals against synthetic guided-journey inputs",
+  "command": "node tests/guided-agent-choices.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -22,6 +22,6 @@ export async function run(positional: string[], flags: Record<string, string | b
   else if (sub === "onboard:govern") await cmdFirstContactOnboardGovern(positional.slice(2), flags)
   else
     printError(
-      "Usage: synth first-contact [--dry-run | --approve] | synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status | synth first-contact onboard:<detect|archive|init|bootstrap|mission|govern>",
+      "Usage: synth first-contact [--dry-run | --approve] | synth first-contact start \"<intent>\" | synth first-contact clarify [--field <field> --answer <answer> | --agent-choice <choice> --reason <why> --scope <area>] | synth first-contact project | synth first-contact verify | synth first-contact approve | synth first-contact materialize --dry-run | --approve | synth first-contact status | synth first-contact onboard:<detect|archive|init|bootstrap|mission|govern>",
     )
 }

@@ -8,12 +8,26 @@
 
 export type ConfidenceScore = number
 
+export interface AgentChoice {
+  id: string
+  actor: "agent"
+  status: "open"
+  choice: string
+  reason: string
+  scope: string
+  alternatives: string[]
+  originIntent: string
+  recordedAt: string
+}
+
 export interface TranscriptEntry {
   turn: number
-  actor: "operator" | "system"
+  actor: "operator" | "system" | "agent"
   type: "input" | "question" | "answer" | "proposal" | "approval"
   content: string
   timestamp: string
+  /** A provisional agent choice is not an operator answer or an approval. */
+  agentChoice?: AgentChoice
 }
 
 export interface ExtractedIntent {
