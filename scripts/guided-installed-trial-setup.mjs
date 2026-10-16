@@ -234,14 +234,18 @@ function sha256(value) {
  */
 export function spawnPlan(command, args, options = {}, platform = process.platform) {
   if (platform === 'win32' && /\.(cmd|bat)$/i.test(command)) {
-    // Node joins the command line for the shell without escaping it, so anything
-    // with a space in it — an install path, a temp directory under a user name
-    // with a space, a TEST_PATH — has to be quoted here. Quotes are otherwise
-    // passed through verbatim; cmd.exe metacharacters such as % are not escaped.
+    // cmd.exe runs the shim: Node's shell option warns (DEP0190) because it
+    // concatenates unescaped arguments, so the command line is built here instead
+    // and handed over verbatim. Anything with a space — an install path, a temp
+    // directory under a user name with a space, a TEST_PATH — is quoted. cmd.exe
+    // still expands % inside a quoted argument; no path this script builds or is
+    // given contains one.
+    const quote = (value) => (/[\s"&|<>^()]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)
+    const commandLine = [quote(command), ...args.map(quote)].join(' ')
     return {
-      command: /\s/.test(command) ? `"${command}"` : command,
-      args: args.map((value) => (/[\s"]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)),
-      options: { ...options, shell: true },
+      command: process.env.comspec || process.env.ComSpec || 'cmd.exe',
+      args: ['/d', '/s', '/c', `"${commandLine}"`],
+      options: { ...options, windowsVerbatimArguments: true },
     }
   }
   return { command, args, options }

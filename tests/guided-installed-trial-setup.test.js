@@ -304,32 +304,31 @@ test("a non-empty TEST_PATH is refused before anything is built and left untouch
   }
 })
 
-test("Windows shims are launched through the command shell, real executables directly", async () => {
+test("Windows shims run through cmd.exe with a quoted command line, other tools directly", async () => {
   const script = await loadScript()
 
-  // Node refuses to start a .cmd/.bat through CreateProcess since the 2024 fix;
-  // npm on Windows is npm.cmd, so it must go through the shell.
+  // Node refuses to start a .cmd/.bat through CreateProcess since its 2024 fix, and
+  // its shell option concatenates unescaped arguments (DEP0190), so setup builds the
+  // command line itself and hands it to cmd.exe verbatim.
   const win = script.spawnPlan("npm.cmd", ["run", "build"], { encoding: "utf-8" }, "win32")
-  assert.equal(win.options.shell, true, "npm.cmd must not be spawned directly")
-  assert.equal(win.command, "npm.cmd")
+  assert.match(win.command, /cmd\.exe$/i, "the command runs through cmd.exe")
+  assert.deepEqual(win.args.slice(0, 3), ["/d", "/s", "/c"])
+  assert.equal(win.args.at(-1), '"npm.cmd run build"', "the shim and its arguments form one quoted command line")
+  assert.equal(win.options.windowsVerbatimArguments, true, "the command line is handed over as written")
+  assert.equal(win.options.shell, undefined, "the shell option would warn and escape nothing")
+  assert.equal(win.options.encoding, "utf-8", "the caller's options are preserved")
 
-  const spaced = script.spawnPlan("C:\\Program Files\\nodejs\\npm.cmd", ["run", "build"], {}, "win32")
-  assert.equal(spaced.options.shell, true)
-  assert.equal(spaced.command.startsWith('"') && spaced.command.endsWith('"'), true, "a path with a space must be quoted for cmd.exe")
+  const spaced = script.spawnPlan("C:\\Program Files\\nodejs\\npm.cmd", ["pack", "--pack-destination", "C:\\Users\\John Doe\\AppData\\Local\\Temp\\pack"], {}, "win32")
+  assert(spaced.args.at(-1).includes('"C:\\Program Files\\nodejs\\npm.cmd" pack'), "a path with a space is quoted for cmd.exe")
+  assert(spaced.args.at(-1).includes('--pack-destination "C:\\Users\\John Doe\\AppData\\Local\\Temp\\pack"'), "an argument with a space is quoted too")
 
-  const installed = script.spawnPlan("C:\\Temp\\trial-staging\\abc\\global\\synth.cmd", ["--version"], {}, "win32")
-  assert.equal(installed.options.shell, true, "the installed CLI is a .cmd shim as well")
-  assert.equal(installed.args.join(" "), "--version")
-
-  // Node joins a shell command line unescaped, so a path with a space must arrive quoted.
-  const packPath = "C:\\Users\\John Doe\\AppData\\Local\\Temp\\trial-staging\\abc\\pack"
-  const spacedArg = script.spawnPlan("npm.cmd", ["pack", "--pack-destination", packPath], {}, "win32")
-  assert.equal(spacedArg.args[0], "pack", "arguments without spaces stay untouched")
-  assert.equal(spacedArg.args[1], "--pack-destination")
-  assert.equal(spacedArg.args[2], `"${packPath}"`, "an argument with a space must be quoted for cmd.exe")
+  const installed = script.spawnPlan("C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\abc\\global\\synth.cmd", ["--version"], {}, "win32")
+  assert(installed.args.at(-1).includes("synth.cmd --version"), "the installed CLI is a .cmd shim as well")
 
   assert.equal(script.spawnPlan("git", ["-C", "/repo", "status"], {}, "win32").options.shell, undefined, "git.exe is not a shim")
+  assert.equal(script.spawnPlan("git", ["-C", "/repo", "status"], {}, "win32").command, "git", "a real executable is spawned directly")
   assert.equal(script.spawnPlan("npm", ["run", "build"], {}, "linux").options.shell, undefined, "POSIX npm is a real executable")
+  assert.equal(script.spawnPlan("npm", ["run", "build"], {}, "linux").command, "npm")
 })
 
 test("a spawn that produces no exit code says why instead of printing null", async () => {

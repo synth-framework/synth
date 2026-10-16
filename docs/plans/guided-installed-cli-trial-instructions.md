@@ -118,7 +118,7 @@ Task text is single-sourced in `scripts/lib/guided-trial-fixtures.mjs` and quote
 
 ## Step 4 — evidence capture
 
-The evidence template is staged **outside TEST_PATH** at `<staging>/instructions/guided-three-path-installed-trial-evidence-template.md`, so the agent never reads it. Fill it in as the run proceeds. Per test record:
+The evidence template lives with the trial sources, outside TEST_PATH, at `docs/analysis/guided-three-path-installed-trial-evidence-template.md` in the checkout — the agent is never pointed at it. Fill it in as the run proceeds. Per test record:
 
 - exact commands and their exit codes;
 - the starting-input revision and whether any **input** file changed. `INSTRUCTIONS.md` and `ENVIRONMENT.md` are written to the root, not into the test directories, and the CLI keeps its per-test state in `.synth/` inside the test directory it runs in, so the recorded revision covers the matched **inputs** only — say which of these appeared, and do not present them as fixture drift;
