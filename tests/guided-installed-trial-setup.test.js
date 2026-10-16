@@ -38,6 +38,24 @@ const loadScript = () => import(pathToFileURL(SCRIPT).href)
 const tempPath = (prefix) => path.join(os.tmpdir(), `${prefix}-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`)
 
 /** Create a throwaway git checkout with one commit (and optionally a dirty file). */
+/** The trial files a temp checkout needs before the setup script can copy them. */
+async function seedCheckout(checkout) {
+  const copies = [
+    "docs/plans/guided-trial/instructions/guided.md",
+    "docs/plans/guided-trial/instructions/plain.md",
+    "docs/plans/guided-trial/README.md",
+    "scripts/guided-installed-trial-fixtures.mjs",
+    "scripts/lib/guided-trial-fixtures.mjs",
+  ]
+  for (const relative of copies) {
+    const target = path.join(checkout, relative)
+    await fs.mkdir(path.dirname(target), { recursive: true })
+    await fs.copyFile(path.join(REPO_ROOT, relative), target)
+  }
+  git(["add", "."], checkout)
+  git(["commit", "-q", "-m", "trial sources"], checkout)
+}
+
 async function makeCheckout(prefix, { dirty = false } = {}) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), prefix))
   git(["init", "-q"], dir)
@@ -318,7 +336,8 @@ test("the guided run creates TEST_PATH from a staged CLI without building anythi
     const result = runScript(["--workspace", workspace, "--repo", checkout, "--cli-root", staged])
     assert.equal(result.status, 0, result.stderr)
     assert(result.stdout.includes("reused a CLI staged earlier for this revision"), result.stdout)
-    assert(result.stdout.includes(`"${"Read INSTRUCTIONS.md in the root of this workspace and follow it."}"`), "the banner must print the launch line")
+    assert(result.stdout.includes("This trial uses SYNTH, the CLI installed on this machine as `synth`."), "the guided banner must print a launch line that names the tool")
+    assert(result.stdout.includes("in the root of this workspace and follow it"), "the banner must print the launch line")
 
     assert.deepEqual((await fs.readdir(workspace)).sort(), ["ENVIRONMENT.md", "INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])
     const instruction = await fs.readFile(path.join(workspace, "INSTRUCTIONS.md"), "utf-8")
@@ -419,11 +438,47 @@ test("the environment note records paths and build identity, never process", asy
   assert(note.includes("do not edit"), "the note must say it is generated")
 })
 
-test("the launch instruction is one line naming the root instruction file", async () => {
+test("the launch instruction names the tool in guided and nothing in plain", async () => {
   const script = await loadScript()
-  const line = script.launchInstruction()
-  assert.equal(line, "Read INSTRUCTIONS.md in the root of this workspace and follow it.")
-  assert.equal(line.includes("\n"), false)
+  const guided = script.launchInstruction("guided")
+  const plain = script.launchInstruction("plain")
+  assert.equal(guided.includes("\n"), false, "the launch line must stay one line")
+  assert.equal(plain.includes("\n"), false, "the launch line must stay one line")
+
+  // An agent has no ambient way to learn the tool exists, so the guided line must say it.
+  assert(/SYNTH/.test(guided), "the guided line must name SYNTH explicitly")
+  assert(/`synth`/.test(guided), "the guided line must give the installed command name")
+  assert(/first-contact --dry-run/.test(guided), "the guided line must carry the first command")
+  assert(guided.includes("INSTRUCTIONS.md"), "the guided line must still point at the instruction file")
+  assert.equal(script.launchInstruction(), guided, "guided is the default condition")
+
+  // The plain condition must never learn that the tool exists.
+  assert.equal(TOOL_WORD.test(plain), false, "the plain line must not name the tool")
+  assert.equal(/first-contact/i.test(plain), false, "the plain line must not carry guided commands")
+  assert(plain.includes("INSTRUCTIONS.md"), "the plain line must point at the instruction file")
+})
+
+test("the guided banner says the tool must be named, and the plain banner refuses to name it", async () => {
+  const checkout = await makeCheckout("board-banner-src-")
+  await seedCheckout(checkout)
+  const staging = await makeStagedCli({ commit: commitOf(checkout) })
+  const guidedWs = tempPath("board-banner-guided")
+  const plainWs = tempPath("board-banner-plain")
+  try {
+    const guided = runScript(["--workspace", guidedWs, "--repo", checkout, "--cli-root", staging])
+    assert.equal(guided.status, 0, guided.stderr)
+    assert(guided.stdout.includes("SYNTH"), "the guided banner must print a launch line naming the tool")
+    assert(/no\s+skill, plugin, hook or background service/.test(guided.stdout.replace(/\n/g, " ")), "the guided banner must say nothing announces the tool")
+    assert(guided.stdout.includes("give it this line verbatim"), "the guided banner must mark the line verbatim")
+
+    const plain = runScript(["--workspace", plainWs, "--repo", checkout, "--condition", "plain", "--cli-root", tempPath("board-banner-plain-staging")])
+    assert.equal(plain.stdout.includes("This trial uses SYNTH"), false, "the plain banner must not hand out a tool-naming line")
+    assert.equal(plain.status, 0, plain.stderr)
+    assert.equal(/SYNTH|first-contact/i.test(plain.stdout), false, "the plain banner must not name the tool")
+    assert(plain.stdout.includes("must run without any hint that a CLI exists"), "the plain banner must say why the line stays neutral")
+  } finally {
+    for (const target of [guidedWs, plainWs, staging]) await fs.rm(target, { recursive: true, force: true })
+  }
 })
 
 test("test directory names are spelled out, one isolated environment per test", async () => {
@@ -476,6 +531,14 @@ test("the guided instruction file begins with the SYNTH initialization process",
   assert(text.includes("do not run `first-contact materialize`"), "guided set must forbid lifecycle actions")
   assert(text.includes("Do not push anywhere"), "guided set must forbid publishing")
   assert(text.includes("cd <test directory>"), "guided set must start each test inside its own directory")
+})
+
+test("the guided instruction file opens by telling the agent the tool exists", async () => {
+  const text = await fs.readFile(GUIDED_SET, "utf-8")
+  assert(text.includes("**You are using SYNTH.**"), "the guided set must state the tool plainly up front")
+  assert(text.includes("no skill, plugin, hook or service"), "the guided set must say nothing announces the tool")
+  assert(/synth first-contact --dry-run/.test(text), "the guided set must carry the initialization command")
+  assert(/synth --version/.test(text), "the guided set must tell the agent how to check the tool is installed")
 })
 
 test("the plain instruction file never names the tool or its commands", async () => {
@@ -531,6 +594,8 @@ test("the script runs no product command other than --version and stages no buil
   assert(source.includes("buildArtifactsInsideTestPath: []"), "the manifest must state that no build output lands in TEST_PATH")
   assert(source.includes("delete-source-clone"), "isolation cleanup must be a recorded step")
   assert(source.includes("shouldReuseCli"), "setup must reuse a CLI staged for this revision instead of rebuilding")
-  assert.equal(/first-contact/.test(source), false, "no product workflow command may appear in the setup script at all")
+  assert.equal(/run(?:Capture)?\([^)]*first-contact/.test(source), false, "setup may never execute a product workflow command")
+  assert.equal((source.match(/first-contact/g) ?? []).length, 1, "the only mention of a workflow command is the operator's launch line")
+  assert(source.includes("begin each test with `synth first-contact --dry-run`"), "that mention is the guided launch line")
   assert.equal(/npm run (?!build|pack)/.test(source), false, "setup may only run npm build and npm pack")
 })

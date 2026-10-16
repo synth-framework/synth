@@ -328,9 +328,18 @@ export function renderEnvironment({ workspace, testDirs, stagingRoot, installedC
   ].join('\n')
 }
 
-/** The one line the operator pastes into a fresh agent session started at TEST_PATH. */
-export function launchInstruction() {
-  return 'Read INSTRUCTIONS.md in the root of this workspace and follow it.'
+/**
+ * The line the operator pastes into a fresh agent session started at TEST_PATH.
+ *
+ * An agent has no ambient way to learn that SYNTH exists: no skill, plugin, hook or
+ * service on this machine announces it, and nothing outside this workspace refers to
+ * it. The guided line therefore names the tool and its initialization command itself.
+ * The plain line names nothing, because the plain condition must never hear of it.
+ */
+export function launchInstruction(condition = 'guided') {
+  if (condition === 'plain') return 'Read INSTRUCTIONS.md in the root of this workspace and follow it.'
+  return 'This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md '
+    + 'in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.'
 }
 
 /** Closing banner: the runbook stops here; only an operator starts the agent. */
@@ -340,6 +349,7 @@ export function stopBanner({ layout, manifest, assessment, cases, revisions, sta
     `SETUP COMPLETE — the runbook stops here.`,
     ``,
     `No trial test has been run and none may start until the operator launches the agent.`,
+    `The agent cannot discover the tool by itself: the launch line below is what tells it.`,
     `  testing workspace  : ${layout.workspace}`,
     `  condition          : ${layout.condition}`,
   ]
@@ -359,9 +369,27 @@ export function stopBanner({ layout, manifest, assessment, cases, revisions, sta
   lines.push(
     `  manifest           : ${manifest ?? 'none — the plain condition writes nothing outside TEST_PATH'}`,
     ``,
-    `Next step: start one fresh agent session in ${layout.workspace} and give it the line:`,
-    `  "${launchInstruction()}"`,
+    `Next step: start one fresh agent session in ${layout.workspace} and give it this line verbatim:`,
     ``,
+    `  ${launchInstruction(layout.condition)}`,
+    ``,
+  )
+  if (layout.condition === 'guided') {
+    lines.push(
+      `The line names SYNTH on purpose. Nothing on this machine announces that the tool exists — no`,
+      `skill, plugin, hook or background service — so an agent only learns about it from this line and`,
+      `from INSTRUCTIONS.md. Do not paraphrase it into a tool-free "follow the instructions" line, or`,
+      `the guided session runs without ever knowing the tool is there.`,
+      ``,
+    )
+  } else {
+    lines.push(
+      `The line names no tool on purpose: this condition must run without any hint that a CLI exists, so`,
+      `do not add anything to it, do not name any tool, and keep this setup log out of TEST_PATH.`,
+      ``,
+    )
+  }
+  lines.push(
     `The agent reads the instruction file in the root and works one test at a time inside its own`,
     `directory. Building, packing and installing live in ${layout.staging.root}, outside TEST_PATH, so`,
     `no build output is visible to the agent.`,
@@ -609,7 +637,7 @@ async function main(argv) {
       productCommandsRun: ['synth --version'],
       trialTestsRun: 0,
       lifecycleCommandsRun: [],
-      launchInstruction: launchInstruction(),
+      launchInstruction: launchInstruction(parsed.condition),
       note: 'Setup only. The CLI was staged outside TEST_PATH. Counts as a validated recipe, never as trial evidence. The agent is launched in TEST_PATH and told to follow INSTRUCTIONS.md.',
     }, null, 2)}\n`)
     await fs.writeFile(path.join(layout.staging.transcripts, 'setup.log'), `${log.join('\n\n')}\n`)

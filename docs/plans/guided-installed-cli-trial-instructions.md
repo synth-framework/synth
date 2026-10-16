@@ -43,7 +43,7 @@ It infers everything else and, in order:
 2. **Revision** — the checkout's committed `HEAD` (this is the revision under test).
 3. **CLI staging, outside TEST_PATH** — clones that revision into `<tmp>/trial-staging/<revision>`, runs `npm ci` and `npm run build` there, packs the tarball and records its SHA-256, installs it into a scratch npm prefix there and records `synth --version`, and copies the trial instructions, the evidence template and both instruction files out of the pin. If a CLI for the same revision is already staged, it is **reused** and no npm or git command runs at all. Its only product command is `synth --version`.
 4. **TEST_PATH contents** — the condition-appropriate instruction file as `INSTRUCTIONS.md`, the generated `ENVIRONMENT.md` (guided only), and one isolated directory per test, each copied from matched fixtures and verified against its published revision.
-5. Prints the launch line, and stops.
+5. Prints the launch line for that condition — the guided line names SYNTH so the agent learns the tool exists — and stops.
 
 ```
 <TEST_PATH>/
@@ -66,13 +66,23 @@ It never runs a lifecycle command, never starts a test, never commits or pushes,
 
 ## Step 2 — launch the agent in TEST_PATH
 
-Start **one fresh agent session in TEST_PATH** and give it one line:
+Start **one fresh agent session in TEST_PATH** and give it the printed launch line verbatim.
+
+**Guided condition — the line must name SYNTH:**
+
+```text
+This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.
+```
+
+**Plain condition — the line names no tool:**
 
 ```text
 Read INSTRUCTIONS.md in the root of this workspace and follow it.
 ```
 
-That is the whole hand-off, and it is deliberately manual — see [the known gap](#known-gap-no-auto-feed-initialization-command). The agent reads the staged instruction file, works through the tests present one directory at a time, and in the guided condition starts each test with SYNTH's own initialization process:
+Nothing on the machine announces SYNTH: there is no skill, plugin, hook, MCP server or background service that would let the agent infer that a CLI called `synth` exists, is installed, or is relevant to this work — and no file outside the trial workspace refers to it. An agent that is told only "follow the instructions" is free to invent an ordinary process and skip the tool entirely, which would quietly turn the guided condition into a second plain run. So the guided hand-off states the tool, its install name and the first command in the operator's own words, and `INSTRUCTIONS.md` states it again as its opening paragraph. This is also why the setup banner refuses to look neutral: it prints the line for the condition it just staged and says what must not be added.
+
+The hand-off stays manual, and it is deliberately small — see [the known gap](#known-gap-no-auto-feed-initialization-command). The agent reads the staged instruction file, works through the tests present one directory at a time, and in the guided condition starts each test with SYNTH's own initialization process:
 
 ```bash
 synth first-contact --dry-run     # read the output before anything else
@@ -115,7 +125,7 @@ Attach the completed evidence as a new file (suggested `docs/analysis/guided-ins
 
 ## Known gap: no auto-feed initialization command
 
-Today the loop needs a human hand-off: someone must launch the agent and point it at the instruction file, because the agent has no way to learn that the trial exists and `synth` cannot yet hand instructions back to a running agent. Proposed slice, **not implemented here and not authorized by this document**:
+Today the loop needs a human hand-off that *says the tool's name*. That is not a stylistic choice: nothing installed on the machine announces SYNTH — no skill, plugin, hook or service — so the operator's sentence and the staged `INSTRUCTIONS.md` are the entire mechanism by which an agent learns the tool exists. A future guided entry would have to replace that sentence with something equally explicit, not something implicit, and `synth` cannot yet hand instructions back to a running agent. Proposed slice, **not implemented here and not authorized by this document**:
 
 - Have the existing `first-contact --dry-run` / `status` projection emit an agent-facing next-steps block (machine-readable plus a short human sentence), instead of adding a new verb — the E4 diagnostic argued against growing default ceremony, and the projection already carries a `nextStep` field and a provenance `note`.
 - An agent already pointed at `synth` could then self-serve the next commands after each step, reducing the operator to one launch.
@@ -143,7 +153,8 @@ node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 - Plain: a separate neutral TEST_PATH received only `INSTRUCTIONS.md` and the three test directories, with **zero** occurrences of the tool's name or the guided commands in that file, no `ENVIRONMENT.md`, and nothing written outside TEST_PATH.
 - Inside a staged `brownfield/` the fixture's own suite passed (`npm test`, exit 0, pass 1 / fail 0) and guided initialization exited 0 each step: `--dry-run` discovered the four input files with no warnings, and an agent-shaped `offer.json` recorded with `--source-offer` left the brief `awaiting-response` with freshness `current` and zero answers. A first attempt quoting an incomplete source line was **rejected** — `Citation docs/limitation.md:1 does not match the live source line` — which is the citation check working.
 - Refusals verified before any build time is spent: a non-empty TEST_PATH, a TEST_PATH inside the checkout, a staging directory inside TEST_PATH, a checkout with uncommitted changes, a repo that is not a git work tree, and a `--pin` that does not resolve.
-- `npm run test:guided-installed-trial-setup` (27 checks) covers the guards, the staging/reuse decision, the inferred layout, the created/empty/refused TEST_PATH states, the generated environment note, the launch line, both instruction files and the revision constants.
+- The launch line is condition-specific and test-enforced: the guided line names the tool, its install name and its first command, and says so in `INSTRUCTIONS.md` as well; the plain line names nothing, and the plain instruction file and TEST_PATH contain zero occurrences of the tool's name. Nothing on the machine would tell an agent otherwise, so both are checked as strings, not trusted to the operator's phrasing.
+- `npm run test:guided-installed-trial-setup` (29 checks) covers the guards, the staging/reuse decision, the inferred layout, the created/empty/refused TEST_PATH states, the generated environment note, the condition-specific launch line, both instruction files and the revision constants.
 
 Every trial test remains `not run`. Same agent, one session, unblinded, no independent observation.
 
@@ -230,7 +241,15 @@ If any requirement above is unavoidably unmet, say which and why in the evidence
 node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 ```
 
-Then start the agent in `<TEST_PATH>` and give it: `Read INSTRUCTIONS.md in the root of this workspace and follow it.`
+Then start the agent in `<TEST_PATH>` and give it the line the banner prints:
+
+```text
+# guided — name the tool, or the agent never learns it exists
+This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.
+
+# plain — never name it
+Read INSTRUCTIONS.md in the root of this workspace and follow it.
+```
 
 That is the whole runbook. Expected starting-input revisions, printed by setup:
 

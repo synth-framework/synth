@@ -37,7 +37,7 @@ Anything unmet, and why: `<...>`
 | CLI staging directory (outside TEST_PATH) | `<tmp>/trial-staging/<revision>`, reused per revision |
 | CLI manifest / setup manifest | `<staging>/cli-manifest.json`, `<staging>/transcripts/setup-manifest.json` (guided); `none — the plain condition writes nothing outside TEST_PATH` |
 | Instruction file staged at TEST_PATH root | `INSTRUCTIONS.md` (guided or plain), plus `ENVIRONMENT.md` in a guided run |
-| Launch line given to the agent, verbatim | `<Read INSTRUCTIONS.md in the root of this workspace and follow it.>` |
+| Launch line given to the agent, verbatim | guided: `This trial uses SYNTH, the CLI installed on this machine as synth. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with the SYNTH initialization command.` / plain: `Read INSTRUCTIONS.md in the root of this workspace and follow it.` — paste what you actually typed, and if you changed the wording, say exactly how |
 | Date and timezone, start/end | `<...>` |
 | Running agent, model and version | `<...>` |
 | Tool access given to the agent | `<shell, editor, network, ...>` |
@@ -128,7 +128,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 
 - Total operator effort and whether it exceeded the time box: `<...>`.
 - Was setup run before the cells by the same agent that ran them? `<yes/no + which cells>`.
-- Any auto-feed: `none — the agent was launched by hand and pointed at the root instruction file, as the current CLI requires`.
+- Any auto-feed: `none — the agent was launched by hand with a line that names SYNTH, as the current CLI requires; no skill, plugin or service announces the tool`.
 
 ## 7. What this evidence does and does not support
 

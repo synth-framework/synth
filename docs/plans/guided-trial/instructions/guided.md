@@ -1,5 +1,7 @@
 # Trial instruction set — guided condition
 
+**You are using SYNTH.** The operator who launched you installed a CLI called **SYNTH** on this machine and put this file here so you would use it. Nothing else tells you that: there is no skill, plugin, hook or service that announces it, and no file outside this workspace refers to it. You will not discover it by exploring; you know about it because this file says so.
+
 **Read this document completely before doing anything.** It is the instruction set for the workspace you are in, staged in its root as `INSTRUCTIONS.md`. The generated `ENVIRONMENT.md` next to it records paths only — where the CLI is installed and which revision is under test.
 
 ## 1. What this workspace is
@@ -41,7 +43,7 @@ synth first-contact status
 
 If the CLI's own output names a next step, follow the CLI — it is authoritative over this document. If the CLI refuses, errors or contradicts this document, record the exact command, exit code and message, finish the report for that test, and stop.
 
-If `synth` is not found on `PATH`, use the absolute path in `ENVIRONMENT.md` and record that you had to. When a test is finished — the offer recorded and its report written — move to the next directory and repeat from the top of this section.
+If `synth` is not found on `PATH`, use the absolute path in `ENVIRONMENT.md` and record that you had to. If you are ever unsure whether the tool is installed, check with `synth --version` before concluding it is missing — do not fall back to a hand-rolled process. When a test is finished — the offer recorded and its report written — move to the next directory and repeat from the top of this section.
 
 ## 3. The tests: task text and required observation
 

@@ -45,7 +45,17 @@ Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixt
 
 1. From the checkout: `node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>`
    It creates TEST_PATH when missing (and refuses one that already holds something), stages the CLI outside it, and copies the instruction file and one directory per test.
-2. Start one fresh agent session **in TEST_PATH** and give it the printed line — `Read INSTRUCTIONS.md in the root of this workspace and follow it.`
+2. Start one fresh agent session **in TEST_PATH** and give it the printed line, verbatim:
+
+   ```text
+   # guided
+   This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.
+
+   # plain
+   Read INSTRUCTIONS.md in the root of this workspace and follow it.
+   ```
+
+   The guided line names the tool because nothing on the machine announces it — no skill, plugin or service — so the operator's sentence is how the agent learns SYNTH exists. The plain line must never name it.
 3. Log verbatim any help you give beyond that line.
 
 For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; a session must never see both conditions. Optional: `--stage-only` warms the CLI cache without creating TEST_PATH.
