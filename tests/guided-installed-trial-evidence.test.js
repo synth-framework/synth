@@ -173,6 +173,8 @@ async function makeWorkspace({ condition = "guided", cases = ["green", "brown"],
         grounded_in: caseId === "brown"
           ? [
             { path: "src/board.js", line: 1, quote: lib.FIXTURES.brown["src/board.js"].split(/\r?\n/)[0] },
+            // A free shape may name the same fields differently; the aliases must read.
+            { file: "tests/board.test.js", lineNumber: 4, snippet: lib.FIXTURES.brown["tests/board.test.js"].split(/\r?\n/)[3] },
             { path: "docs/limitation.md", line: 1, quote: "a line that is not in the staged file" },
           ]
           : [
@@ -459,6 +461,18 @@ test("--cases narrows the capture and --out refuses to write into TEST_PATH", as
   }
 })
 
+test("a plain offer whose grounding is prose says so instead of leaving the row empty", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"] })
+  const offerPath = path.join(workspace, "greenfield", "offer.json")
+  await fs.writeFile(offerPath, `${JSON.stringify({ case_id: "green", options: [{ label: "Option A", grounded_in: "I read the directory and nothing else was there." }] }, null, 2)}\n`)
+  const out = path.join(repo, "docs", "analysis", "plain-prose.md")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("No quote-with-a-path, and no quote marked as the task text, was found in `offer.json`"), "the miss must be explained, not silent")
+  assert.ok(doc.includes("its keys: `case_id`, `options`"), "the note must name the keys it did read")
+})
+
 test("a plain offer in whatever shape is re-checked line by line, without pretending a hash exists", async () => {
   const repo = await makeRepo()
   const { workspace } = await makeWorkspace({ condition: "plain", offerShape: "loose-plain" })
@@ -468,14 +482,14 @@ test("a plain offer in whatever shape is re-checked line by line, without preten
 
   // Both plain cases carry two citations, one correct and one invented.
   assert.ok(doc.includes("Re-checked here from `offer.json`"), "the capture must re-check plain grounding, not just quote it")
-  assert.match(doc, /2 citation\(s\), 1 matched \(1 file line\(s\), 0 task-text quote\(s\)\), 1 did NOT/, "the brownfield grounding must be counted by kind")
+  assert.match(doc, /3 citation\(s\), 2 matched \(2 file line\(s\), 0 task-text quote\(s\)\), 1 did NOT/, "the brownfield grounding must be counted by kind, aliases included")
   assert.match(doc, /2 citation\(s\), 1 matched \(0 file line\(s\), 1 task-text quote\(s\)\), 1 did NOT/, "the greenfield grounding must be counted by kind")
   assert.ok(doc.includes("docs/limitation.md:1 — the staged file line reads"), "a wrong file line must be named with what the file actually reads")
   assert.ok(doc.includes("not this case's staged task text"), "a wrong task-text quote must be flagged as such")
   const noteLine = doc.split("Re-checked here from")[1].split("\n")[0]
   assert.ok(noteLine.includes("the plain condition records no citation hashes"), "the note must say plainly that no hash exists to compare")
   assert.equal(noteLine.includes("the hash the CLI recorded recomputes"), false, "the plain note must not imply a recorded hash exists")
-  assert.match(doc, /in the plain condition the capture re-checked 4 grounding citation\(s\)/, "the summary must count the plain citations it checked")
+  assert.match(doc, /in the plain condition the capture re-checked 5 grounding citation\(s\) found in the offer files, with 3 matching/, "the summary must count the plain citations it checked")
 
   // Nothing about the plain run is upgraded into a guided claim.
   assert.ok(doc.includes("no `ENVIRONMENT.md` (plain condition)"), "the plain condition must stay visible as such")

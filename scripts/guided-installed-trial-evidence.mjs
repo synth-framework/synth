@@ -564,22 +564,40 @@ export function integrityOf(caseData) {
  */
 export function looseGrounding(value) {
   const found = []
+  // Key aliases only. The plain instruction set lets an agent write `offer.json`
+  // in any clear shape, so a citation is recognised by what it holds (a quote
+  // paired with a path and line, or a quote paired with a task-text marker), not
+  // by the name of the file it was written for.
+  const PATH_KEYS = ['path', 'file', 'filePath', 'file_path', 'sourcePath', 'source_path']
+  const LINE_KEYS = ['line', 'lineNumber', 'line_number', 'startLine', 'start_line']
+  const QUOTE_KEYS = ['quote', 'snippet', 'line_text', 'text']
+  const TASK_TEXT_RE = /^(?:the\s+)?(?:task|prompt|request|intent|operator[-_ ]?intent|operator\s+intent|task[-_ ]?text)(?:\s+text)?$/i
+  const stringKey = (node, keys) => {
+    for (const key of keys) {
+      const candidate = node[key]
+      if (typeof candidate === 'string' && candidate.trim() !== '') return candidate
+    }
+    return null
+  }
   const walk = (node, trail) => {
     if (!node || typeof node !== 'object') return
     if (Array.isArray(node)) {
       node.forEach((item, index) => walk(item, [...trail, String(index)]))
       return
     }
-    const quote = typeof node.quote === 'string' ? node.quote : null
-    const relative = typeof node.path === 'string' ? node.path : null
-    const intentLike = node.source === 'task_text' || node.kind === 'operator-intent'
+    const quote = stringKey(node, QUOTE_KEYS)
+    const relative = stringKey(node, PATH_KEYS)
+    const markers = [node.source, node.kind, node.type, node.basis]
+      .filter((marker) => typeof marker === 'string')
+    const intentLike = markers.some((marker) => TASK_TEXT_RE.test(marker.trim())) || relative === 'task_text'
     if (quote && (relative || intentLike)) {
+      const line = LINE_KEYS.map((key) => node[key]).find((candidate) => Number.isSafeInteger(candidate))
       found.push({
         optionId: typeof node.id === 'string' ? node.id : null,
         label: typeof node.label === 'string' ? node.label : null,
         trail: trail.join('.'),
-        source: relative
-          ? { path: relative, line: Number.isSafeInteger(node.line) ? node.line : 1, quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined }
+        source: relative && relative !== 'task_text'
+          ? { path: relative, line: line ?? 1, quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined }
           : { kind: 'operator-intent', quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined },
       })
       return
@@ -861,7 +879,14 @@ function bullet(label, value) {
  * quote is only ever compared with the live line, or with the staged task text.
  */
 function plainCitationNote(entry) {
-  if (entry.citations.length === 0) return ''
+  if (entry.citations.length === 0) {
+    if (!entry.offer.present) return ''
+    const keys = entry.offer.json && typeof entry.offer.json === 'object' && !Array.isArray(entry.offer.json)
+      ? Object.keys(entry.offer.json)
+      : null
+    // Say why the re-check found nothing rather than letting the row look empty.
+    return `\n\nNo quote-with-a-path, and no quote marked as the task text, was found in \`offer.json\`${keys && keys.length > 0 ? ` (its keys: ${keys.map((key) => `\`${key}\``).join(', ')})` : ''} — its grounding may be prose or a shape this capture does not read. The offer file itself is in the raw copies.`
+  }
   const ok = (citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'
   const matched = entry.citations.filter(ok)
   const failed = entry.citations.filter((citation) => !ok(citation))

@@ -1,6 +1,6 @@
 # Installed-CLI guided-journey trial — evidence (2026-10-15)
 
-Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `/home/user/trial-workspace` on 2026-10-16T07:14:57.726Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
+Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `/home/user/trial-workspace` on 2026-10-16T07:17:33.791Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
 
 Machine-read rows come from the finished workspace — `REPORT.md`, `offer.json`, `.synth/first-contact/` (including the CLI's own recorded offer with its citation hashes), any other CLI-stored file — and from the scratch directory when it was reachable. Quotes attributed to `REPORT.md` are the agent's own words, copied verbatim. Rows reading `<to confirm — operator: …>` are operator-only: this script has no way to know them and will not guess. Raw byte-for-byte copies: `docs/analysis/guided-installed-cli-trial-2026-10-15-raw/`.
 
