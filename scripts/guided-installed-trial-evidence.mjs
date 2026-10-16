@@ -82,6 +82,13 @@ const CITATION_PATH_RE = /^(?:(?:docs|knowledge)\/.+\.(?:md|mdx)|(?:src|tests)\/
 /** The CLI reads at most 64 KiB per citation. */
 const CITATION_READ_LIMIT = 64 * 1024
 
+/**
+ * Files an agent or operator left in the workspace that are not starting inputs are
+ * copied into the raw bundle when they are small enough to be evidence rather than
+ * bulk; nothing is ever deleted or moved from TEST_PATH.
+ */
+const EXTRA_FILE_LIMIT = 2 * 1024 * 1024
+
 export const USAGE = `Usage: node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH> [options]
 
   --workspace <dir>     the finished TEST_PATH to harvest (required; the only input that matters)
@@ -155,6 +162,36 @@ async function readBytes(target) {
   return fs.readFile(target).catch(() => null)
 }
 
+/**
+ * Every regular file in TEST_PATH root that setup did not stage — a transcript the
+ * agent was asked to save, a handoff note, anything an operator dropped there. These
+ * are the files a reader would otherwise have to be sent by hand.
+ */
+export async function listRootExtras(workspace) {
+  const entries = await fs.readdir(workspace, { withFileTypes: true }).catch(() => [])
+  const extras = []
+  for (const entry of entries) {
+    if (!entry.isFile()) continue
+    if (entry.name === 'INSTRUCTIONS.md' || entry.name === 'ENVIRONMENT.md') continue
+    if (/\.tgz$/i.test(entry.name)) continue
+    const file = path.join(workspace, entry.name)
+    const stat = await statOrNull(file)
+    if (!stat) continue
+    const withinLimit = stat.size <= EXTRA_FILE_LIMIT
+    const bytes = withinLimit ? await readBytes(file) : null
+    extras.push({
+      relative: entry.name,
+      file,
+      bytes: stat.size,
+      mtime: stat.mtime.toISOString(),
+      sha256: bytes ? sha256(bytes) : null,
+      copied: withinLimit,
+      note: withinLimit ? null : `not copied — over the ${EXTRA_FILE_LIMIT} byte cap for workspace-root files`,
+    })
+  }
+  return extras.sort((a, b) => a.relative.localeCompare(b.relative))
+}
+
 /** Parse a JSONL file loosely: unparsable lines are reported, never dropped silently. */
 function parseJsonl(text) {
   const rows = []
@@ -168,6 +205,14 @@ function parseJsonl(text) {
     }
   })
   return { rows, problems }
+}
+
+/**
+ * A bundled copy never keeps a `.md` name: scripts/check-links.js walks every `.md`
+ * file it can find, including evidence raw copies.
+ */
+function bundleNameFor(relative) {
+  return String(relative).toLowerCase().endsWith('.md') ? `${relative}.txt` : String(relative)
 }
 
 /** Escape `](` so a quoted sentence cannot be read as a link by scripts/check-links.js. */
@@ -454,41 +499,88 @@ export async function checkInputs({ caseId, dir }) {
  * a file citation hashes the entire file and must also reproduce the exact line; an
  * operator-intent citation hashes the journey's exact original intent.
  */
-export async function verifyCitation({ dir, option, originalIntent }) {
+export async function verifyCitation({ dir, option, originalIntent, roots = null }) {
   const source = option?.source ?? {}
   const hashRecorded = typeof source.sha256 === 'string' && source.sha256.length > 0
   const base = { optionId: option?.id ?? null, quote: source.quote ?? null, recordedSha256: source.sha256 ?? null, hashRecorded }
   if (source.path !== undefined || source.line !== undefined) {
     const relative = String(source.path ?? '')
-    const file = path.join(dir, relative)
-    const bytes = await readBytes(file)
+    // A path is looked for exactly as written, then with backslashes normalised and
+    // with a leading `./` dropped; each candidate is tried in the case directory
+    // first and then in the TEST_PATH root, because a plain offer may cite either.
+    const candidates = [relative]
+    if (relative.includes('\\')) candidates.push(relative.replace(/\\/g, '/'))
+    if (relative.startsWith('./')) candidates.push(relative.slice(2))
+    let file = null
+    let resolvedFrom = null
+    let resolvedPath = relative
+    for (const candidate of candidates) {
+      for (const root of [dir, ...(roots ?? [])]) {
+        if (!root) continue
+        const target = path.join(root, candidate)
+        if (!isInside(root, target)) continue
+        const stat = await statOrNull(target)
+        if (stat?.isFile()) {
+          file = target
+          resolvedFrom = root === dir ? 'the case directory' : 'the TEST_PATH root'
+          resolvedPath = candidate
+          break
+        }
+      }
+      if (file) break
+    }
+    const bytes = file ? await readBytes(file) : null
     const result = {
       ...base,
       kind: 'file',
-      path: relative,
+      path: resolvedPath,
+      pathAsWritten: relative === resolvedPath ? null : relative,
+      resolvedFrom,
       line: source.line ?? null,
+      lineAsWritten: typeof source.line === 'string' ? source.line : null,
       pathAllowedByCli: CITATION_PATH_RE.test(relative) && !path.isAbsolute(relative) && !relative.includes('\\'),
       expectedLine: null,
       recomputedSha256: null,
       hashMatches: null,
       lineMatches: null,
+      mismatchNote: null,
     }
     if (!bytes) return { ...result, status: 'file-missing' }
     if (bytes.length > CITATION_READ_LIMIT) return { ...result, status: 'file-over-cli-read-limit' }
     const content = bytes.toString('utf-8')
     result.recomputedSha256 = sha256(content)
     result.hashMatches = hashRecorded ? result.recomputedSha256 === source.sha256 : null
-    const line = Number(source.line)
+    // A line number written as text (`"4"`) is read, not thrown away: it is the same
+    // number, and reporting `line 1` for it would be a false mismatch.
+    const line = typeof source.line === 'string' && /^\d+$/.test(source.line.trim()) ? Number(source.line.trim()) : Number(source.line)
+    if (typeof source.line === 'string' && /^\d+$/.test(source.line.trim())) result.line = line
     result.expectedLine = Number.isSafeInteger(line) && line >= 1 ? content.split(/\r?\n/)[line - 1] ?? null : null
     result.lineMatches = Number.isSafeInteger(line) && line >= 1 ? result.expectedLine === source.quote : false
     result.status = !result.lineMatches
       ? 'line-mismatch'
       : hashRecorded ? (result.hashMatches ? 'matched' : 'hash-mismatch') : 'matched-recomputed'
+    // Why it did not match, without ever turning a near miss into a match.
+    if (!result.lineMatches && typeof source.quote === 'string' && typeof result.expectedLine === 'string') {
+      const collapse = (text) => text.replace(/\s+/g, ' ').trim()
+      result.mismatchNote = collapse(result.expectedLine) === collapse(source.quote)
+        ? 'the quote differs from that live line only in whitespace'
+        : result.expectedLine.includes(source.quote.trim()) && source.quote.trim() !== ''
+          ? 'that live line contains this text, but the quote is not the whole line'
+          : null
+    }
     return result
   }
   if (source.kind === 'operator-intent') {
     const quoteMatches = originalIntent !== null && source.quote === originalIntent
     const recomputedSha256 = originalIntent === null ? null : sha256(originalIntent)
+    const collapse = (text) => String(text ?? '').replace(/\s+/g, ' ').trim()
+    const mismatchNote = quoteMatches || typeof source.quote !== 'string' || originalIntent === null
+      ? null
+      : collapse(source.quote) === collapse(originalIntent)
+        ? 'the quote differs from the staged task text only in whitespace'
+        : originalIntent.includes(source.quote.trim()) && source.quote.trim() !== ''
+          ? 'the quote is part of the staged task text, not all of it'
+          : null
     return {
       ...base,
       kind: 'operator-intent',
@@ -499,6 +591,7 @@ export async function verifyCitation({ dir, option, originalIntent }) {
       recomputedSha256,
       hashMatches: hashRecorded ? recomputedSha256 !== null && recomputedSha256 === source.sha256 : null,
       lineMatches: quoteMatches,
+      mismatchNote,
       status: quoteMatches
         ? (hashRecorded ? (recomputedSha256 === source.sha256 ? 'matched' : 'hash-mismatch') : 'matched-recomputed')
         : originalIntent === null ? 'original-intent-not-captured' : 'quote-mismatch',
@@ -568,16 +661,30 @@ export function looseGrounding(value) {
   // in any clear shape, so a citation is recognised by what it holds (a quote
   // paired with a path and line, or a quote paired with a task-text marker), not
   // by the name of the file it was written for.
-  const PATH_KEYS = ['path', 'file', 'filePath', 'file_path', 'sourcePath', 'source_path']
+  const PATH_KEYS = ['path', 'file', 'filePath', 'file_path', 'sourcePath', 'source_path', 'source']
   const LINE_KEYS = ['line', 'lineNumber', 'line_number', 'startLine', 'start_line']
   const QUOTE_KEYS = ['quote', 'snippet', 'line_text', 'text']
+  // §4 of the plain instruction set asks for one thing per option: what it is
+  // grounded in — the task text, or an exact path, line and quote. These are the key
+  // names that sentence invites, and their value is `task text` or `path:line`.
+  const GROUNDING_KEYS = ['grounded_in', 'groundedIn', 'grounding', 'grounded', 'based_on', 'basedOn']
   const TASK_TEXT_RE = /^(?:the\s+)?(?:task|prompt|request|intent|operator[-_ ]?intent|operator\s+intent|task[-_ ]?text)(?:\s+text)?$/i
+  // A path written with its line attached (`tests/board.test.js:4`).
+  const PATH_WITH_LINE_RE = /^([A-Za-z0-9._/-]+?):(\d+)$/
   const stringKey = (node, keys) => {
     for (const key of keys) {
       const candidate = node[key]
       if (typeof candidate === 'string' && candidate.trim() !== '') return candidate
     }
     return null
+  }
+  const lineValue = (node, attached) => {
+    if (attached !== null) return Number(attached)
+    // The line is passed through exactly as written — integer or text — and the
+    // verifier is the one place that reads it, so `line 4` written as `"4"` is
+    // reported rather than silently turned into line 1.
+    const candidate = LINE_KEYS.map((key) => node[key]).find((value) => Number.isSafeInteger(value) || (typeof value === 'string' && /^\d+$/.test(value.trim())))
+    return candidate === undefined ? null : candidate
   }
   const walk = (node, trail) => {
     if (!node || typeof node !== 'object') return
@@ -586,19 +693,40 @@ export function looseGrounding(value) {
       return
     }
     const quote = stringKey(node, QUOTE_KEYS)
-    const relative = stringKey(node, PATH_KEYS)
-    const markers = [node.source, node.kind, node.type, node.basis]
+    const written = stringKey(node, PATH_KEYS)
+    const grounding = stringKey(node, GROUNDING_KEYS)
+    const markers = [node.source, node.kind, node.type, node.basis, grounding]
       .filter((marker) => typeof marker === 'string')
-    const intentLike = markers.some((marker) => TASK_TEXT_RE.test(marker.trim())) || relative === 'task_text'
-    if (quote && (relative || intentLike)) {
-      const line = LINE_KEYS.map((key) => node[key]).find((candidate) => Number.isSafeInteger(candidate))
+    const attached = written !== null ? written.trim().match(PATH_WITH_LINE_RE) : null
+    const relative = attached ? attached[1] : written
+    // `task text`, `the task`, `operator intent` … all mean the same citation: the
+    // request the agent was given, not a file.
+    const intentLike = markers.some((marker) => TASK_TEXT_RE.test(marker.trim()))
+      || (relative !== null && TASK_TEXT_RE.test(relative.trim()))
+    const fileLike = relative !== null && relative.trim() !== '' && !/\s/.test(relative.trim()) && !TASK_TEXT_RE.test(relative.trim())
+    // The grounding sentence may itself carry the citation (`tests/board.test.js:4`)
+    // while the quote sits beside it.
+    const groundingTarget = !fileLike && !intentLike && grounding !== null && !TASK_TEXT_RE.test(grounding.trim())
+      ? grounding.trim().match(PATH_WITH_LINE_RE)
+      : null
+    if (quote && (fileLike || intentLike)) {
+      const line = lineValue(node, attached ? attached[2] : null)
       found.push({
         optionId: typeof node.id === 'string' ? node.id : null,
         label: typeof node.label === 'string' ? node.label : null,
         trail: trail.join('.'),
-        source: relative && relative !== 'task_text'
+        source: fileLike
           ? { path: relative, line: line ?? 1, quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined }
           : { kind: 'operator-intent', quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined },
+      })
+      return
+    }
+    if (quote && groundingTarget) {
+      found.push({
+        optionId: typeof node.id === 'string' ? node.id : null,
+        label: typeof node.label === 'string' ? node.label : null,
+        trail: trail.join('.'),
+        source: { path: groundingTarget[1], line: Number(groundingTarget[2]), quote, sha256: typeof node.sha256 === 'string' ? node.sha256 : undefined },
       })
       return
     }
@@ -664,8 +792,11 @@ export function compareOffers(agentOffer, recorded) {
 }
 
 /** Everything one case directory holds, read once. */
-export async function collectCase({ caseId, dir, dirName }) {
+export async function collectCase({ caseId, dir, dirName, workspaceRoot = null }) {
   const collected = { caseId, dirName, dir, present: true, notes: [] }
+  // A plain offer may cite a path relative to the case directory or to TEST_PATH
+  // root; both are looked up, and which one resolved is reported with the citation.
+  const citationRoots = workspaceRoot ? [workspaceRoot] : []
 
   const reportFile = path.join(dir, 'REPORT.md')
   const reportBytes = await readBytes(reportFile)
@@ -796,7 +927,7 @@ export async function collectCase({ caseId, dir, dirName }) {
     // An option with no source object is not a citation; the guided schema always
     // carries one, and the loose scan below is what reads everything else.
     if (!option || typeof option.source !== 'object' || option.source === null) continue
-    collected.citations.push(await verifyCitation({ dir, option, originalIntent: collected.originalIntent }))
+    collected.citations.push(await verifyCitation({ dir, option, originalIntent: collected.originalIntent, roots: citationRoots }))
   }
   collected.citationShape = 'schema'
   if (collected.citations.length === 0 && collected.offer.json) {
@@ -808,6 +939,7 @@ export async function collectCase({ caseId, dir, dirName }) {
         dir,
         option: { id: candidate.optionId ?? candidate.label ?? candidate.trail, source: candidate.source },
         originalIntent: collected.originalIntent,
+        roots: citationRoots,
       }))
     }
     if (loose.length > 0) collected.citationShape = 'loose'
@@ -833,9 +965,13 @@ export async function collectCase({ caseId, dir, dirName }) {
   return collected
 }
 
-/** The report shape is fixed by the instruction set (§6); these labels are recognised. */
+/**
+ * The report shape is fixed by the instruction set (§6); these labels are recognised.
+ * `APPROACH` is in the plain condition's §6 shape only, and is recognised so that a
+ * report written exactly as that shape asks is never treated as unlabelled.
+ */
 export const KNOWN_REPORT_SECTIONS = new Set([
-  'TEST', 'COMMANDS', 'CLI OUTPUT', 'OFFER', 'CITATIONS', 'APPLICATION TESTS',
+  'TEST', 'COMMANDS', 'APPROACH', 'CLI OUTPUT', 'OFFER', 'CITATIONS', 'APPLICATION TESTS',
   'ASSUMPTIONS', 'STILL OPEN', 'PROBLEMS', 'EFFORT',
 ])
 
@@ -893,13 +1029,27 @@ function resolveReportLabel(label) {
 function reportSectionLabel(line, previousLine) {
   const raw = String(line ?? '').replace(/\s+$/, '')
   if (raw.trim() === '') return null
-  const columnZero = raw.match(/^([A-Za-z][A-Za-z /-]*):\s*(.*)$/)
+  // A column-zero label may carry a qualifier before its colon — `COMMANDS (exit 0
+  // unless noted):`, `CITATIONS - each checked against the live file:`. The plain
+  // instruction set's own shape invites one, and a qualified label must not make a
+  // whole report read as unlabelled.
+  const qualified = raw.match(/^([A-Za-z][A-Za-z /-]*?)\s*(?:\([^()]*\)|[-–—]\s+[^:]*?)\s*:\s*(.*)$/)
+  const columnZero = qualified ?? raw.match(/^([A-Za-z][A-Za-z /-]*):\s*(.*)$/)
   if (columnZero) {
     const label = normaliseReportLabel(columnZero[1])
     const standalone = previousLine === undefined || String(previousLine).trim() === ''
     const name = KNOWN_REPORT_SECTIONS.has(label) ? label : standalone ? resolveReportLabel(label) : null
     if (!name) return null
     return { name, inline: columnZero[2].trim() }
+  }
+  // A bare label with no text after it is still a label: `COMMANDS (exit 0 unless
+  // noted)`, `CITATIONS - checked`. Exact known names and aliases only, so a prose
+  // line that merely mentions a section name is not read as one.
+  const bareQualified = raw.match(/^([A-Za-z][A-Za-z /-]*?)\s*(?:\([^()]*\)|[-–—]\s+[^:]*?)?\s*$/)
+  if (bareQualified) {
+    const label = normaliseReportLabel(bareQualified[1])
+    const name = KNOWN_REPORT_SECTIONS.has(label) ? label : REPORT_SECTION_ALIASES.get(label) ?? null
+    if (name) return { name, inline: '' }
   }
   let bare = null
   let inline = ''
@@ -950,9 +1100,18 @@ export function reportSectionsDiagnostic(text) {
     }
     const line = lines[index].trim()
     if (line === '' || line.length > 60) continue
-    // A document title, a sentence or a list item is not an unrecognised section.
-    if (index === firstContent || /^#\s+\S/.test(line) || line.endsWith('.')) continue
-    if (/^(?:#{2,6}\s+\S|\*\*\S.*\*\*\s*:?\s*$|[A-Za-z][A-Za-z /-]{2,24}:\s*$)/.test(line)) headings.push(line)
+    // A document title is not an unrecognised section.
+    if (index === firstContent || /^#\s+\S/.test(line)) continue
+    // What an unrecognised section looks like: a short label — at most three words,
+    // optionally with a qualifier — followed by a colon or standing alone. This is
+    // the alternative that matters most, because without it a report can be half-read
+    // in silence: exactly how a `COMMANDS` list goes missing while the capture says
+    // nothing about it.
+    const shortLabel = '[A-Za-z]+(?:[ /-][A-Za-z0-9]+){0,2}'
+    const labelLike = new RegExp(`^(?:${shortLabel}\\s*\\([^()]*\\)\\s*:\\s*\\S|${shortLabel}\\s*:\\s*\\S|${shortLabel}\\s*\\([^()]*\\)\\s*$|${shortLabel}\\s*:\\s*$)`).test(line)
+    // A sentence is not an unrecognised section — unless it opens like a label.
+    if (line.endsWith('.') && !labelLike) continue
+    if (/^(?:#{2,6}\s+\S|\*\*\S.*\*\*\s*:?\s*$)/.test(line) || labelLike) headings.push(line)
   }
   return { recognised, headings: headings.slice(0, 12), lookedFor: [...KNOWN_REPORT_SECTIONS] }
 }
@@ -1010,10 +1169,21 @@ function plainCitationNote(entry) {
   const failed = entry.citations.filter((citation) => !ok(citation))
   const matchedFile = matched.filter((citation) => citation.kind === 'file').length
   const matchedText = matched.length - matchedFile
-  const detail = failed.map((citation) => citation.kind === 'file'
-    ? `${citation.path ?? '(no path)'}:${citation.line ?? '?'} — the staged file line reads ${JSON.stringify(citation.expectedLine ?? null)}`
-    : "a quote marked as the task text that is not this case's staged task text")
-  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s), ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}.`
+  const detail = failed.map((citation) => {
+    const note = citation.mismatchNote ? ` (${citation.mismatchNote})` : ''
+    if (citation.kind !== 'file') return `a quote marked as the task text that is not this case's staged task text${note}`
+    if (citation.status === 'file-missing') return `${citation.path ?? '(no path)'}:${citation.line ?? '?'} — no file at that path under the case directory or the TEST_PATH root`
+    return `${citation.path ?? '(no path)'}:${citation.line ?? '?'} — the staged file line reads ${JSON.stringify(citation.expectedLine ?? null)}${note}`
+  })
+  // Both facts change how a reader should read a failure, so they are stated, never
+  // smoothed into the count.
+  const fromRoot = entry.citations.filter((citation) => citation.resolvedFrom === 'the TEST_PATH root')
+  const asText = entry.citations.filter((citation) => citation.lineAsWritten !== null && citation.lineAsWritten !== undefined)
+  const extra = [
+    fromRoot.length > 0 ? `${fromRoot.length} resolved against the TEST_PATH root rather than the case directory` : null,
+    asText.length > 0 ? `${asText.length} wrote the line number as text and it was read as a number` : null,
+  ].filter(Boolean)
+  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s), ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}${extra.length > 0 ? `. Of the citations read: ${extra.join('; ')}` : ''}.`
 }
 
 /**
@@ -1062,6 +1232,7 @@ function renderCell(entry, model) {
     bullet('Operator effort (minutes) and agent turns / interventions', `${sections.EFFORT ? `the report's own estimate: ${quote(firstDetail(sections.EFFORT) ?? '')}` : 'the report records no effort estimate'}; recorded ${entry.integrity.operatorInputEvents} operator input event(s) and ${entry.integrity.agentProposalEvents} agent event(s) in the CLI transcript${entry.offeredAt ? `, offer recorded at \`${entry.offeredAt}\`` : ''}${entry.draft?.json?.updatedAt ? `, draft last written \`${entry.draft.json.updatedAt}\`` : ''}. ${operator('elapsed minutes on the clock, turns, and every intervention verbatim')}`),
   ]
   const reportExtras = []
+  if (sections.APPROACH) reportExtras.push(bullet('How the agent says it worked (`REPORT.md` section APPROACH, requested by the plain instruction set, verbatim)', fenced(sections.APPROACH)))
   if (sections['CLI OUTPUT']) reportExtras.push(bullet('CLI output the agent summarized (`REPORT.md` section CLI OUTPUT, verbatim)', fenced(sections['CLI OUTPUT'])))
   if (sections.PROBLEMS) reportExtras.push(bullet('What the agent reported as wrong or contradictory (`REPORT.md` section PROBLEMS, verbatim)', fenced(sections.PROBLEMS)))
   if (entry.reportUnlabelled) reportExtras.push(bullet('The whole `REPORT.md`, verbatim (some of it was not labelled in a shape the capture reads)', `${reportFallbackNote(entry)}\n\n${fenced(entry.report.text ?? '')}`))
@@ -1197,6 +1368,9 @@ export function renderEvidence(model) {
     ['Scratch directory (outside TEST_PATH)', model.condition.resolved === 'plain' ? 'not applicable — the plain condition builds nothing and writes nothing outside TEST_PATH' : model.staging.root ? `${inlineCode(model.staging.root)}${model.staging.present ? '' : ' — not reachable from this capture'} — tarball, installed CLI and transcripts` : operator('the staging directory setup used')],
     ['CLI manifest / setup manifest', model.manifestNote],
     ['Instruction file staged at TEST_PATH root', stagedInstruction.present ? `\`INSTRUCTIONS.md\` (${stagedInstruction.namesTool ? 'guided set — names the tool' : 'plain set — names no tool'}), sha256 \`${stagedInstruction.sha256}\`${model.environment.present ? ', plus `ENVIRONMENT.md`' : ', no `ENVIRONMENT.md` (plain condition)'}` : operator('which instruction file was staged')],
+    ['Other files in TEST_PATH root (not starting inputs)', (model.rootExtras ?? []).length === 0
+      ? 'none — the root holds only the staged `INSTRUCTIONS.md` and, for the guided condition, `ENVIRONMENT.md`'
+      : (model.rootExtras ?? []).map((extra) => `\`${extra.relative}\` (${humanBytes(extra.bytes)}${extra.sha256 ? `, sha256 \`${extra.sha256}\`` : ''}${extra.copied ? ', copied into the raw bundle' : `, ${extra.note}`})`).join(', ')],
     ['Launch line given to the agent, verbatim', `recorded by setup: ${inlineCode(model.launch.recorded ?? '')}${model.launch.source === 'manifest' ? ' (from `setup-manifest.json`)' : model.launch.source === 'inferred' ? ' (the line this repository\'s script prints for this condition — the manifest was not reachable)' : ''}. ${operator('paste what you actually typed, and if you changed the wording, say exactly how')}`],
     ['Date and timezone, start/end', `${cases.map((entry) => {
       if (entry.dates.length > 0) return `\`${entry.dirName}\`: ${entry.dates[0]} → ${entry.dates[entry.dates.length - 1]} (CLI-recorded)`
@@ -1373,6 +1547,7 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
   }
   model.environment = await readEnvironment(workspace)
   model.instruction = await readStagedInstruction(workspace)
+  model.rootExtras = await listRootExtras(workspace)
   const inferredCondition = model.environment.present ? 'guided' : 'plain'
   model.condition = {
     inferred: inferredCondition,
@@ -1399,7 +1574,7 @@ export async function collectWorkspace({ repo, workspace, stagingRoot, condition
     const dir = path.join(workspace, dirName)
     const stat = await statOrNull(dir)
     if (!stat || !stat.isDirectory()) continue
-    caseEntries.push(await collectCase({ caseId, dir, dirName }))
+    caseEntries.push(await collectCase({ caseId, dir, dirName, workspaceRoot: workspace }))
   }
   if (caseEntries.length === 0) {
     throw new Error(`no case directory found in ${workspace}: expected one of ${CASE_ORDER.map((caseId) => `${TEST_DIRS[caseId]}/`).join(', ')}`)
@@ -1572,10 +1747,48 @@ export async function copyRawArtifacts({ model, rawDir }) {
     if (entry.report.present) await copyFile(entry.report.file, path.join(caseTarget, 'REPORT.md.txt'), 'agent report', { relativeTo: entry.dir })
     else sources.push({ bundlePath: `${entry.dirName}/REPORT.md.txt`, sourcePath: entry.report.file, bytes: null, sha256: null, kind: 'agent report', copied: false, note: 'not present' })
     if (entry.offer.present) await copyFile(entry.offer.file, path.join(caseTarget, 'offer.json'), 'agent-authored offer', { relativeTo: entry.dir })
+    for (const extra of entry.extras) {
+      const bundlePath = bundleNameFor(extra.relative)
+      const stat = await statOrNull(extra.file)
+      if (!stat || stat.size > EXTRA_FILE_LIMIT) {
+        sources.push({
+          bundlePath: `${entry.dirName}/${bundlePath}`,
+          sourcePath: extra.file,
+          sourceRoot: entry.dir,
+          sourceRelative: extra.relative,
+          bytes: stat?.size ?? null,
+          sha256: null,
+          kind: 'other file the agent wrote',
+          copied: false,
+          note: stat ? `not copied — over the ${EXTRA_FILE_LIMIT} byte cap for workspace files` : 'not copied — unreadable at capture time',
+        })
+        continue
+      }
+      await copyFile(extra.file, path.join(caseTarget, ...bundlePath.split('/')), 'other file the agent wrote', { relativeTo: entry.dir })
+    }
     for (const file of entry.stateFiles) {
       const target = path.join(caseTarget, 'synth-state', ...file.relative.replace(/^\.synth\//, '').split('/'))
       await copyFile(file.file, target, 'CLI-stored state', { relativeTo: entry.dir })
     }
+  }
+
+  for (const extra of model.rootExtras ?? []) {
+    const bundlePath = bundleNameFor(extra.relative)
+    if (!extra.copied) {
+      sources.push({
+        bundlePath,
+        sourcePath: extra.file,
+        sourceRoot: model.workspace,
+        sourceRelative: extra.relative,
+        bytes: extra.bytes,
+        sha256: null,
+        kind: 'other file in TEST_PATH root',
+        copied: false,
+        note: extra.note,
+      })
+      continue
+    }
+    await copyFile(extra.file, path.join(rawDir, ...bundlePath.split('/')), 'other file in TEST_PATH root', { relativeTo: model.workspace })
   }
 
   if (model.staging.present) {
@@ -1688,6 +1901,7 @@ export function summaryOf(model) {
       reportSections: Object.keys(entry.sections ?? {}),
       extras: entry.extras.map((extra) => extra.relative),
     })),
+    rootExtras: (model.rootExtras ?? []).map((extra) => ({ relative: extra.relative, bytes: extra.bytes, sha256: extra.sha256, copied: extra.copied })),
     buildArtifactsInsideTestPath: model.buildArtifactsInsideTestPath,
     gitInside: model.gitInside,
     warnings: model.warnings,

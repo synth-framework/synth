@@ -579,6 +579,100 @@ test("staging that cannot be reached is reported instead of guessed", async () =
 
 // #endregion capture
 
+test("a report label carrying a qualifier is read, not skipped as unlabelled", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  await fs.writeFile(path.join(workspace, "greenfield", "REPORT.md"), [
+    "# Report — greenfield",
+    "",
+    "COMMANDS (all in greenfield/, exit 0 unless noted):",
+    "- `node scripts/nothing.mjs` -> exit 0, nothing to run",
+    "",
+    "APPROACH (why this process):",
+    "- read the directory, then wrote the proposal.",
+    "",
+    "STILL OPEN: decisions you left to a person",
+    "- the board kind.",
+    "",
+  ].join("\n"))
+  const out = path.join(repo, "docs", "analysis", "plain-qualified.md")
+  const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("`node scripts/nothing.mjs` -> exit 0, nothing to run"), "a qualified COMMANDS label must still yield the command list")
+  assert.ok(doc.includes("section APPROACH"), "the plain instruction set's APPROACH section must be quoted, not dropped")
+  assert.equal(doc.includes("The whole `REPORT.md`, verbatim"), false, "a report written in the documented shape must not be quoted wholesale")
+  assert.equal(result.stdout.includes("no labelled COMMANDS section was recognised"), false, "the gap list must not claim the section was missing")
+})
+
+test("a report line the capture cannot read is surfaced instead of half-read", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  await fs.writeFile(path.join(workspace, "greenfield", "REPORT.md"), [
+    "# Report",
+    "",
+    "SCOPE (all files): the exporter only, nothing else.",
+    "",
+    "COMMANDS: nothing to run",
+    "",
+  ].join("\n"))
+  const out = path.join(repo, "docs", "analysis", "plain-unread-line.md")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes("The whole `REPORT.md`, verbatim"), "an unrecognised label line must trigger the whole-report quote")
+  assert.ok(doc.includes("SCOPE (all files): the exporter only, nothing else."), "the note must name the line it did not recognise")
+})
+
+test("grounding written the way §4 asks is read: the sentence, the path, the line and the quote", async () => {
+  const repo = await makeRepo()
+  const lib = await loadLib()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green", "brown"], offerShape: "loose-plain" })
+  const boardLine = lib.FIXTURES.brown["src/board.js"].split("\n")[0]
+  await fs.writeFile(path.join(workspace, "brownfield", "offer.json"), `${JSON.stringify({
+    question: "How should the fill colour be accepted?",
+    options: [
+      // The grounding sentence carries the citation and the quote sits beside it.
+      { id: "A", label: "Optional fill argument", grounded_in: "src/board.js:1", quote: boardLine, tradeoff: "t", shows_it_works: "a" },
+      // A path written from the TEST_PATH root, a line written as text.
+      { id: "B", label: "Options object", grounded_in: { path: "brownfield/tests/board.test.js", line: "4", quote: lib.FIXTURES.brown["tests/board.test.js"].split("\n")[3] }, tradeoff: "t", shows_it_works: "a" },
+      // A quote that differs from the live line only in whitespace: reported, never accepted.
+      { id: "C", label: "Separate function", grounded_in: { path: "docs/limitation.md", line: 1, quote: `  ${lib.FIXTURES.brown["docs/limitation.md"].trim().replace(/ /g, "  ")}  ` }, tradeoff: "t", shows_it_works: "a" },
+    ],
+  }, null, 2)}\n`)
+  const out = path.join(repo, "docs", "analysis", "plain-grounding.md")
+  const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.match(result.stdout, /brownfield\s+:.*citations 2\/3 verified/, result.stdout)
+  assert.match(doc, /3 citation\(s\), 2 matched \(2 file line\(s\), 0 task-text quote\(s\)\), 1 did NOT/, "each shape must be counted")
+  assert.ok(doc.includes("1 resolved against the TEST_PATH root rather than the case directory"), "a citation resolved from the TEST_PATH root must say so")
+  assert.ok(doc.includes("1 wrote the line number as text and it was read as a number"), "a line written as text must be reported as read")
+  assert.ok(doc.includes("differs from that live line only in whitespace"), "a near miss must say what differs, and still count as a mismatch")
+})
+
+test("a file the agent left in TEST_PATH is copied into the raw bundle, never left behind", async () => {
+  const repo = await makeRepo()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  const transcript = "# Session transcript (agent-reconstructed)\n\nThe trial is over; this was written at the operator's request.\n"
+  const notes = "The board kind is the decision that blocks everything else.\n"
+  await fs.writeFile(path.join(workspace, "TRANSCRIPT.md"), transcript)
+  await fs.writeFile(path.join(workspace, "greenfield", "NOTES.md"), notes)
+  const out = path.join(repo, "docs", "analysis", "plain-handoff.md")
+  const raw = path.join(repo, "docs", "analysis", "plain-handoff-raw")
+  await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+  const doc = await fs.readFile(out, "utf-8")
+  assert.ok(doc.includes(`\`TRANSCRIPT.md\` (${Buffer.byteLength(transcript)} B`), "a root-level file must be named in §1 with its size")
+  assert.ok(doc.includes("copied into the raw bundle"), "the row must say the file was captured")
+  assert.equal(await fs.readFile(path.join(raw, "TRANSCRIPT.md.txt"), "utf-8"), transcript, "the root file must be copied byte-for-byte")
+  assert.equal(await fs.readFile(path.join(raw, "greenfield", "NOTES.md.txt"), "utf-8"), notes, "a file inside a case directory must be copied too")
+  const sources = JSON.parse(await fs.readFile(path.join(raw, "SOURCES.json"), "utf-8"))
+  const roots = sources.sources.filter((entry) => entry.kind === "other file in TEST_PATH root")
+  assert.equal(roots.length, 1, "the root file must be listed in the manifest")
+  assert.equal(roots[0].bundlePath, "TRANSCRIPT.md.txt")
+  assert.equal(roots[0].sha256, sha256(Buffer.from(transcript)))
+  assert(sources.sources.some((entry) => entry.kind === "other file the agent wrote" && entry.bundlePath === "greenfield/NOTES.md.txt"))
+  const summary = JSON.parse(await fs.readFile(path.join(raw, "SUMMARY.json"), "utf-8"))
+  assert.deepEqual(summary.rootExtras.map((entry) => entry.relative), ["TRANSCRIPT.md"], "the summary must name the root files it saw")
+})
+
 // #region source contract
 
 test("the capture script reads the workspace and writes only inside the repository", async () => {
