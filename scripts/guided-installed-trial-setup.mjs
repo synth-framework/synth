@@ -450,6 +450,14 @@ export function stopBanner({ layout, manifest, assessment, cases, revisions, sta
   lines.push(
     `The agent reads the instruction file in the root and works one test at a time inside its own`,
     `directory. Nothing built by setup is inside TEST_PATH, so no build output is visible to the agent.`,
+    ``,
+    `When the sessions have stopped, file the evidence from the checkout — one line, no flags to`,
+    `compose: the capture infers the scratch directory from ENVIRONMENT.md, dates itself from the`,
+    `recorded events, and names its own file (a second run of the same day is stepped around, never`,
+    `overwritten):`,
+    ``,
+    `  node scripts/guided-installed-trial-evidence.mjs --workspace ${layout.workspace}`,
+    ``,
   )
   return lines.join('\n')
 }

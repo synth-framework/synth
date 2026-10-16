@@ -121,9 +121,16 @@ Task text is single-sourced in `scripts/lib/guided-trial-fixtures.mjs` and quote
 Run the capture script against the finished TEST_PATH. It is the primary path: it reads the workspace and files the evidence in the repository.
 
 ```bash
-# from the checkout, after the sessions have stopped
+# from the checkout, after the sessions have stopped — no other flags are needed
 node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>
 ```
+
+Everything else is inferred, because it was already recorded somewhere: the scratch directory comes from
+the `CLI staging` line in `ENVIRONMENT.md` (so `--staging` is only for a capture run on a different
+machine), the date comes from the newest recorded trial event or artifact mtime (so `--date` is only for
+overriding it), and the file names itself — `…-<date>-<revision>[-plain].md`, with a second run of the
+same day stepped around (`-2`, `-3`) rather than overwritten. The setup banner prints this exact command
+when it finishes. An explicit `--out` is the one case that refuses to overwrite without `--force`.
 
 It writes two things:
 
@@ -165,6 +172,8 @@ node scripts/guided-installed-trial-evidence.mjs --workspace <plain TEST_PATH> \
 ```
 
 Naming the revision is what tells two runs of the same day apart, and it is the one fact a reader needs when more than one capture is filed. A filed capture stays where it is: it is the machine record of the run it describes, and a later run is a second document, not a correction of the first. Replace one only when the operator decides it should no longer be cited, and say so in the PR comment.
+
+The operator facts recorded at setup — who ran the trial, the agent and its tool access, the time box — are read back into §1, and the machine facts (node, npm, OS, timezone) are filled by setup itself; §1's start/end row is rendered on the trial machine's own clock when setup recorded its timezone. §5's comparative rows pair the **other arm's filed capture automatically** (by date, from its `SUMMARY.json`) and print its measured counts beside this arm's, so the comparison is against a file rather than memory.
 
 Re-running the capture over a TEST_PATH you already captured is safe **while its operator rows are still blank**: it reads the same artifacts, so only rows the script learned to fill since may change. Once you have filled a row in your own words, re-capturing would overwrite them — fill the operator rows last, or keep your words in the PR comment and say where they belong. Capture on the machine that ran the trial: workspace paths, staging paths and artifact mtimes are recorded as that machine reports them.
 

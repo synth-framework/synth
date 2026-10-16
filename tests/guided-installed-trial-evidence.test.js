@@ -247,6 +247,13 @@ async function capture(args) {
   return result
 }
 
+/** The evidence file the run says it wrote — the default name is not the operator's job. */
+function writtenEvidence(result) {
+  const match = result.stdout.match(/evidence file\s+:\s+(\S+)/)
+  assert.ok(match, `the capture must print the file it wrote:\n${result.stdout}`)
+  return match[1]
+}
+
 // #region guards
 
 test("help names the one input that matters and the operator-only contract", () => {
@@ -299,9 +306,9 @@ test("a matched captured workspace files byte-identical raw copies and a resolvi
   const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green", "brown"], staging, reportExtra: " — see [the offer](missing.md) for detail" })
   const before = await inventory(workspace)
   try {
-    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--json"])
-    const out = path.join(repo, "docs", "analysis", "guided-installed-cli-trial-2026-10-15.md")
-    const raw = path.join(repo, "docs", "analysis", "guided-installed-cli-trial-2026-10-15-raw")
+    const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--json"])
+    const out = path.join(repo, writtenEvidence(result))
+    const raw = `${out.replace(/\.md$/, "")}-raw`
     const doc = await fs.readFile(out, "utf-8")
 
     // Raw copies are byte-for-byte, including the report that had to change suffix.
@@ -388,8 +395,8 @@ test("a changed input is reported as a revision mismatch, not smoothed over", as
     tamper: { case: "brown", path: "docs/limitation.md", content: "edited by the agent during the cell\n" },
   })
   try {
-    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
-    const doc = await fs.readFile(path.join(repo, "docs", "analysis", "guided-installed-cli-trial-2026-10-15.md"), "utf-8")
+    const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
+    const doc = await fs.readFile(path.join(repo, writtenEvidence(result)), "utf-8")
     const lib = await loadLib()
     assert(doc.includes(`| brownfield | \`${lib.E4_REVISIONS.brown}\` | \`${lib.revisionFor({ ...lib.FIXTURES.brown, "docs/limitation.md": "edited by the agent during the cell\n" })}\` | NO |`), "an edited input must produce a recomputed, non-matching revision")
     assert(doc.includes("Input files whose bytes are not the frozen fixture bodies — this is starting-input drift, not fixture drift:"), "the drift must be named")
@@ -452,13 +459,22 @@ test("--dry-run renders without writing, and existing evidence is not clobbered 
   const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green"] })
   try {
     await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--dry-run"])
-    const out = path.join(repo, "docs", "analysis", "guided-installed-cli-trial-2026-10-15.md")
-    await fs.stat(out).then(() => assert.fail("--dry-run must not write the evidence file"), () => {})
-    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
-    const second = runScript(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
-    assert.notEqual(second.status, 0, "a second capture must refuse to overwrite")
-    assert(/already exists/.test(second.stderr), second.stderr)
-    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--force"])
+    const directory = path.join(repo, "docs", "analysis")
+    await fs.readdir(directory).then((names) => assert.equal(names.includes("guided-installed-cli-trial-2026-10-15.md"), false), () => {})
+    const first = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
+    const out = path.join(repo, writtenEvidence(first))
+    const original = await fs.readFile(out, "utf-8")
+    // A second run of the same day names itself rather than overwriting, and says where it went.
+    const second = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
+    const secondPath = path.join(repo, writtenEvidence(second))
+    assert.notEqual(secondPath, out, "the second capture must not write over the first")
+    assert(/an evidence file for this date and revision already existed/.test(second.stdout), second.stdout)
+    assert.equal(await fs.readFile(out, "utf-8"), original, "the first file must be untouched")
+    // An explicit --out is the operator naming a file: that one is never clobbered unasked.
+    const explicit = runScript(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+    assert.notEqual(explicit.status, 0, "an explicit --out that exists must refuse without --force")
+    assert(/already exists/.test(explicit.stderr), explicit.stderr)
+    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out, "--force"])
     assert((await fs.readFile(out, "utf-8")).startsWith("# Installed-CLI guided-journey trial — evidence"), "the forced capture must rewrite the file")
   } finally {
     await fs.rm(repo, { recursive: true, force: true })
@@ -470,8 +486,8 @@ test("--cases narrows the capture and --out refuses to write into TEST_PATH", as
   const repo = await makeRepo()
   const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green", "brown"] })
   try {
-    await capture(["--workspace", workspace, "--repo", repo, "--cases", "brown", "--date", "2026-10-15"])
-    const doc = await fs.readFile(path.join(repo, "docs", "analysis", "guided-installed-cli-trial-2026-10-15.md"), "utf-8")
+    const result = await capture(["--workspace", workspace, "--repo", repo, "--cases", "brown", "--date", "2026-10-15"])
+    const doc = await fs.readFile(path.join(repo, writtenEvidence(result)), "utf-8")
     assert(doc.includes("### brownfield / guided"), "the selected case must be captured")
     assert.equal(/### greenfield \/ guided/.test(doc), false, "an unselected case must not be captured")
     const inside = runScript(["--workspace", workspace, "--repo", repo, "--out", path.join(workspace, "evidence.md")])
@@ -514,7 +530,10 @@ test("a plain capture marks the install proof not applicable and never asks for 
   const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
   const doc = await fs.readFile(out, "utf-8")
   assert.ok(doc.includes("not applicable — the plain condition installs nothing"), "§2 must say the plain arm installs nothing")
-  assert.ok(doc.includes("(artifact mtimes — this condition records no CLI timestamps)"), "§1 must show artifact mtimes for the plain arm")
+  assert.ok(doc.includes("(artifact mtimes in UTC — this condition records no CLI timestamps)"), "§1 must show artifact mtimes for the plain arm")
+  // No setup manifest for this arm, so the timezone row stays the operator's — but the
+  // mtimes themselves are the machine's, and the row says whose clock they are.
+  assert.ok(doc.includes("not a clock the operator set") || doc.includes("Timezone `"), "the row must say whose clock the times came from")
   assert.equal(result.stdout.includes("--staging"), false, "the plain gap list must not ask for a scratch directory")
   assert.match(result.stdout, /citations 1\/2 verified/, "the summary must count a recomputed citation as verified and show the one that failed")
 })
@@ -569,7 +588,7 @@ test("staging that cannot be reached is reported instead of guessed", async () =
   try {
     const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15"])
     assert(result.stdout.includes("install proof      : not reachable"), result.stdout)
-    const doc = await fs.readFile(path.join(repo, "docs", "analysis", "guided-installed-cli-trial-2026-10-15.md"), "utf-8")
+    const doc = await fs.readFile(path.join(repo, writtenEvidence(result)), "utf-8")
     assert(doc.includes("Staging notes:"), "the unreachable staging directory must be named in §2")
     assert(doc.includes("<to confirm — operator: the tarball digest"), "the digest must stay an operator value")
     assert(doc.includes("<to confirm — operator: the exit code from your own run>"), "install exits must not be invented")
@@ -956,6 +975,38 @@ test("the operator facts are recorded once and read back, never retyped", async 
     await fs.rm(workspace, { recursive: true, force: true })
     await fs.rm(staging, { recursive: true, force: true })
     await fs.rm(repo, { recursive: true, force: true })
+  }
+})
+
+test("the other arm's capture is paired automatically, and §5 says where its counts came from", async () => {
+  const repo = await makeRepo()
+  const analysis = path.join(repo, "docs", "analysis")
+  // A previously filed plain capture of the same date, in the shape the capture writes.
+  const sibling = path.join(analysis, "guided-installed-cli-trial-2026-10-15-plain-raw")
+  await fs.mkdir(sibling, { recursive: true })
+  await fs.writeFile(path.join(sibling, "SUMMARY.json"), `${JSON.stringify({
+    capturedAt: "2026-10-15T12:00:00.000Z",
+    date: { value: "2026-10-15", source: "argument" },
+    condition: { resolved: "plain" },
+    revision: { short: null },
+    cases: [
+      { dir: "greenfield", commands: [], citations: [] },
+      { dir: "brownfield", commands: ["npm test -> exit 0"], citations: [{ hashRecorded: false }, { hashRecorded: false }, { hashRecorded: false, repeatedReading: true }] },
+    ],
+  }, null, 2)}\n`)
+  const { workspace } = await makeWorkspace({ condition: "guided", cases: ["green"] })
+  const out = path.join(analysis, "paired.md")
+  try {
+    const result = await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-15", "--out", out])
+    const doc = await fs.readFile(out, "utf-8")
+    const section = doc.split("## 5. Cross-cutting observations")[1].split("## 6.")[0]
+    assert.ok(section.includes("the plain arm's capture of this date (`docs/analysis/guided-installed-cli-trial-2026-10-15-plain-raw/SUMMARY.json`)"), `§5 must name the counterpart's capture:\n${section.slice(0, 1200)}`)
+    assert.ok(section.includes("brownfield 1 command(s), 3 citation reading(s) (none hashed — that arm stores no CLI state), 1 repeating an earlier reading"), "the counterpart's counts are read from its own summary")
+    assert.ok(section.includes("greenfield 0 command(s)"), "a cell with no commands is reported as such")
+    assert.match(result.stdout, /evidence file\s+:\s+docs\/analysis\/paired\.md/, "the run prints the file it wrote")
+  } finally {
+    await fs.rm(repo, { recursive: true, force: true })
+    await fs.rm(workspace, { recursive: true, force: true })
   }
 })
 

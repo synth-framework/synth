@@ -104,7 +104,9 @@ export const USAGE = `Usage: node scripts/guided-installed-trial-evidence.mjs --
   --tools <what>        the tool access that agent was given
   --time-box <what>     the time box set before starting
   --repo <path>         default: the checkout this script lives in
-  --out <path>          default: ${EVIDENCE_DIR}/${EVIDENCE_PREFIX}-<date>[-plain].md
+  --out <path>          default: ${EVIDENCE_DIR}/${EVIDENCE_PREFIX}-<date>[-<revision>][-plain].md,
+                        never overwriting an existing file (a second run of the same
+                        day gets -2, -3 … and the name it used is printed)
   --raw-dir <path>      default: the evidence file's path without the .md suffix, plus -raw
   --force               overwrite an existing evidence file and raw directory
   --dry-run             print the evidence file instead of writing it
@@ -260,6 +262,22 @@ function secondsBetween(from, to) {
   const b = Date.parse(to)
   if (Number.isNaN(a) || Number.isNaN(b)) return null
   return Math.max(0, Math.round((b - a) / 1000))
+}
+
+/**
+ * A timestamp as the machine that ran the trial would have shown it. The timezone is
+ * read from the setup manifest or from this capture's own clock — never assumed, and
+ * the row says which.
+ */
+function localStamp(iso, timeZone) {
+  if (!iso || !timeZone) return null
+  const at = new Date(iso)
+  if (Number.isNaN(at.getTime())) return null
+  try {
+    return new Intl.DateTimeFormat('en-GB', { timeZone, dateStyle: 'medium', timeStyle: 'medium' }).format(at)
+  } catch {
+    return null
+  }
 }
 
 function humanSpan(seconds) {
@@ -1057,6 +1075,61 @@ export async function collectCase({ caseId, dir, dirName, workspaceRoot = null }
 }
 
 /**
+ * The other arm's capture, when one is filed for the same date: read straight from its
+ * `SUMMARY.json`, so §5's comparative rows can carry the counterpart's measured counts
+ * instead of asking the operator to remember them. Paired by date and condition only —
+ * it never claims the two ran with the same agent, which stays a confirmation.
+ */
+export async function findPairedCapture({ repo, rawDir, condition, date }) {
+  const analysis = path.join(repo, EVIDENCE_DIR)
+  let entries = []
+  try {
+    entries = await fs.readdir(analysis, { withFileTypes: true })
+  } catch {
+    return null
+  }
+  const candidates = []
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !entry.name.endsWith('-raw')) continue
+    const summaryFile = path.join(analysis, entry.name, 'SUMMARY.json')
+    if (rawDir && path.resolve(path.dirname(summaryFile)) === path.resolve(rawDir)) continue
+    const bytes = await readBytes(summaryFile)
+    if (!bytes) continue
+    let summary = null
+    try {
+      summary = JSON.parse(bytes.toString('utf-8'))
+    } catch {
+      continue
+    }
+    if (!summary || summary.condition?.resolved === condition) continue
+    if (summary.date?.value !== date) continue
+    candidates.push({ file: summaryFile, summary })
+  }
+  if (candidates.length === 0) return null
+  candidates.sort((a, b) => String(a.summary.capturedAt ?? '').localeCompare(String(b.summary.capturedAt ?? '')))
+  const { file, summary } = candidates[candidates.length - 1]
+  const cells = (summary.cases ?? []).map((cell) => ({
+    dir: cell.dir,
+    commands: (cell.commands ?? []).length,
+    citations: (cell.citations ?? []).length,
+    citationsHashed: (cell.citations ?? []).filter((citation) => citation.hashRecorded).length,
+    citationsRepeated: (cell.citations ?? []).filter((citation) => citation.repeatedReading).length,
+  }))
+  return {
+    file,
+    fileRelative: relativeTo(repo, file),
+    condition: summary.condition?.resolved ?? null,
+    revisionShort: summary.revision?.short ?? null,
+    capturedAt: summary.capturedAt ?? null,
+    cells,
+    commandsTotal: cells.reduce((sum, cell) => sum + cell.commands, 0),
+    citationsTotal: cells.reduce((sum, cell) => sum + cell.citations, 0),
+    citationsHashed: cells.reduce((sum, cell) => sum + cell.citationsHashed, 0),
+    citationsRepeated: cells.reduce((sum, cell) => sum + cell.citationsRepeated, 0),
+  }
+}
+
+/**
  * The exit a command line states, as written: a number, `non-zero`, or null when the
  * line records none. Nothing is inferred from a command's name.
  */
@@ -1530,6 +1603,14 @@ export function renderEvidence(model) {
   out.push('')
   out.push('| Field | Value |')
   out.push('| --- | --- |')
+  const clockFor = (entry) => {
+    const zone = model.machineFacts?.timezone
+    if (!zone) return null
+    const source = entry.dates.length > 0 ? entry.dates : (entry.mtimes ?? [])
+    const stamps = source.map((iso) => localStamp(iso, zone)).filter(Boolean)
+    if (stamps.length === 0) return null
+    return stamps.length > 1 ? `${stamps[0]} → ${stamps[stamps.length - 1]}` : stamps[0]
+  }
   const operatorFacts = model.operatorFacts ?? {}
   const factsSource = model.operatorFactsSource ? ` (recorded by ${model.operatorFactsSource})` : ''
   const identity = [
@@ -1547,10 +1628,14 @@ export function renderEvidence(model) {
       : (model.rootExtras ?? []).map((extra) => `\`${extra.relative}\` (${humanBytes(extra.bytes)}${extra.sha256 ? `, sha256 \`${extra.sha256}\`` : ''}${extra.copied ? ', copied into the raw bundle' : `, ${extra.note}`})`).join(', ')],
     ['Launch line given to the agent, verbatim', `recorded by setup: ${inlineCode(model.launch.recorded ?? '')}${model.launch.source === 'manifest' ? ' (from `setup-manifest.json`)' : model.launch.source === 'inferred' ? ' (the line this repository\'s script prints for this condition — the manifest was not reachable)' : ''}. ${operator('paste what you actually typed, and if you changed the wording, say exactly how')}`],
     ['Date and timezone, start/end', `${cases.map((entry) => {
-      if (entry.dates.length > 0) return `\`${entry.dirName}\`: ${entry.dates[0]} → ${entry.dates[entry.dates.length - 1]} (CLI-recorded)`
-      if (entry.mtimeRange) return `\`${entry.dirName}\`: ${entry.mtimeRange.first} → ${entry.mtimeRange.last} (artifact mtimes — this condition records no CLI timestamps)`
+      if (entry.dates.length > 0) return `\`${entry.dirName}\`: ${entry.dates[0]} → ${entry.dates[entry.dates.length - 1]} (CLI-recorded, UTC)`
+      if (entry.mtimeRange) return `\`${entry.dirName}\`: ${entry.mtimeRange.first} → ${entry.mtimeRange.last} (artifact mtimes in UTC — this condition records no CLI timestamps)`
       return `\`${entry.dirName}\`: no timestamp`
-    }).join('; ') || 'no recorded timestamps'}; filename date \`${model.date}\` (${model.dateSource}). ${operator('your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set')}`],
+    }).join('; ') || 'no recorded timestamps'}; filename date \`${model.date}\` (${model.dateSource}). ${model.machineFacts?.timezone
+      ? 'Timezone ' + inlineCode(model.machineFacts.timezone) + ' (recorded by setup on the machine that staged the run). On that clock: '
+        + cases.map((entry) => inlineCode(entry.dirName) + ' ' + (clockFor(entry) ?? 'no readable stamp')).join('; ')
+        + '. ' + operator('write "confirmed" if those are the times you saw, and correct them if the sessions ran on another machine')
+      : operator('your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set')}`],
     ['Running agent, model and version', operatorFacts.agent ? `${inlineCode(operatorFacts.agent)}${factsSource} — session ids: ${operator('the session id(s), if the platform shows them')}` : operator('agent product, model and version; session ids')],
     ['Tool access given to the agent', operatorFacts.tools ? `${inlineCode(operatorFacts.tools)}${factsSource}` : operator('shell, editor, network, and anything else')],
     ['Pinned repository revision', model.revision.commit
@@ -1661,13 +1746,19 @@ export function renderEvidence(model) {
   const provenanceMeasured = arm === 'guided'
     ? `measured in this capture: ${guidedHashes} of ${guidedCitations} citation(s) carry a hash the CLI recorded, ${guidedHashedOk} of those recompute to the live source; ${transcripts} of ${cases.length} cell(s) left a CLI transcript and every captured cell left a draft in \`.synth/first-contact/\``
     : `measured in this capture: ${guidedCitations} citation(s) re-checked quote by quote (${cases.reduce((sum, entry) => sum + entry.citations.filter((citation) => !citation.repeatedReading).length, 0)} distinct) — this arm stores no CLI state, so no hash exists to record, and a reader can verify each quote but not that the agent recorded it at the time`
+  // The counterpart's own capture, when one is filed for this date: its measured counts
+  // are printed beside this arm's, so the comparison is against a file, not memory.
+  const paired = model.paired ?? null
+  const pairedLine = paired
+    ? `the ${paired.condition} arm's capture of this date (\`${paired.fileRelative}\`${paired.revisionShort ? `, revision \`${paired.revisionShort}\`` : ''}) measured: ${paired.cells.map((cell) => `${cell.dir} ${cell.commands} command(s)${cell.citations > 0 ? `, ${cell.citations} citation reading(s)${cell.citationsHashed > 0 ? ` (${cell.citationsHashed} with a CLI-recorded hash)` : ' (none hashed — that arm stores no CLI state)'}${cell.citationsRepeated > 0 ? `, ${cell.citationsRepeated} repeating an earlier reading` : ''}` : ''}`).join('; ')}`
+    : `no ${arm === 'guided' ? 'plain' : 'guided'} capture for this date was found in this checkout, so the counterpart's counts are not beside these — file both arms and the next capture pairs them automatically`
   const stepsMeasured = arm === 'guided'
     ? `measured in this capture: ${operatorEvents} operator input event(s) across the cells (the kickoff line each, as the CLI recorded them); commands the reports list per cell: ${commandsPerCell}`
     : `measured in this capture: this arm leaves no CLI state, so operator steps are visible only in the report's COMMANDS section (per cell: ${commandsPerCell}) and in your own session log`
   const crossCutting = [
-    ['Did the guided condition ask substantively different or better questions?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — measured in this capture: ${questionsRaised} of ${cases.length} cell(s) raised a question, options per cell ${optionsPerCell}; the questions and options themselves are quoted in §4.`],
-    ['Did the guided condition add verifiable provenance the plain condition lacked?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — ${provenanceMeasured}.`],
-    ['Which condition required fewer operator steps or less reading?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — ${stepsMeasured}.`],
+    ['Did the guided condition ask substantively different or better questions?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — measured in this capture: ${questionsRaised} of ${cases.length} cell(s) raised a question, options per cell ${optionsPerCell}; ${pairedLine}; the questions and options themselves are quoted in §4.`],
+    ['Did the guided condition add verifiable provenance the plain condition lacked?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — ${provenanceMeasured}; ${pairedLine}.`],
+    ['Which condition required fewer operator steps or less reading?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — ${stepsMeasured}; ${pairedLine}.`],
     ['Which condition produced a clearer next slice?', `${operator('a comparative judgement — only a person who watched both conditions can answer it')} — nothing mechanical: the slice each option implies is in the offers quoted in §4.`],
     ['Same agent/model and tool access in both conditions?', operator('yes or no, with the evidence that shows it')],
     ['Plain and guided run order, and could ordering explain the result?', operator('the order actually used and your reading of it')],
@@ -2200,13 +2291,26 @@ async function main(argv) {
     },
   })
   const suffix = model.condition.resolved === 'plain' ? '-plain' : ''
-  const outPath = parsed.out ? path.resolve(parsed.out) : path.join(repo, EVIDENCE_DIR, `${EVIDENCE_PREFIX}-${model.date}${suffix}.md`)
+  let outPath = parsed.out ? path.resolve(parsed.out) : path.join(repo, EVIDENCE_DIR, `${EVIDENCE_PREFIX}-${model.date}${model.revision.short ? `-${model.revision.short}` : ''}${suffix}.md`)
+  if (!parsed.out && !parsed.force) {
+    // Nothing has to be typed for the second run of a day: the name carries the date and
+    // the revision, and a genuine collision is stepped around rather than overwritten.
+    let counter = 1
+    while (await exists(outPath)) {
+      counter += 1
+      outPath = path.join(repo, EVIDENCE_DIR, `${EVIDENCE_PREFIX}-${model.date}${model.revision.short ? `-${model.revision.short}` : ''}${suffix}-${counter}.md`)
+    }
+    if (counter > 1) model.warnings.push(`an evidence file for this date and revision already existed; this capture wrote ${relativeTo(repo, outPath)}`)
+  }
   const rawDir = parsed.rawDir ? path.resolve(parsed.rawDir) : `${outPath.replace(/\.md$/, '')}-raw`
   if (!isInside(repo, outPath) || !isInside(repo, rawDir)) throw new Error(`--out and --raw-dir must live inside the checkout: ${repo}`)
   if (isInside(workspace, outPath) || isInside(workspace, rawDir)) throw new Error('refusing to write evidence into TEST_PATH')
   model.outPath = outPath
   model.rawDir = rawDir
   model.rawRelative = relativeTo(repo, rawDir)
+  // The counterpart's own capture, when one is filed for this date: §5's rows carry its
+  // measured counts so the comparison is against a file rather than against memory.
+  model.paired = await findPairedCapture({ repo, rawDir, condition: model.condition.resolved, date: model.date })
 
   const text = renderEvidence(model)
   if (parsed.dryRun) {
