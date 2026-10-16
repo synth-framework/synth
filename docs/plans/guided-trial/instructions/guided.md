@@ -41,9 +41,9 @@ synth first-contact clarify --source-offer offer.json
 synth first-contact status
 ```
 
-If the CLI's own output names a next step, follow the CLI — it is authoritative over this document. If the CLI refuses, errors or contradicts this document, record the exact command, exit code and message, finish the report for that test, and stop.
+If the CLI's own output names a next step, follow the CLI — it is authoritative over this document — **except** when that step is one §5 forbids (approval, materialize, Mission or Expedition work, publishing): do not run it, continue with the steps above, and record both the suggestion and why you did not follow it. If the CLI refuses, errors or contradicts this document, record the exact command, exit code and message, finish the report for that test, and stop.
 
-If `synth` is not found on `PATH`, use the absolute path in `ENVIRONMENT.md` and record that you had to. If you are ever unsure whether the tool is installed, check with `synth --version` before concluding it is missing — do not fall back to a hand-rolled process. When a test is finished — the offer recorded and its report written — move to the next directory and repeat from the top of this section.
+If `synth` is not found on `PATH`, use the absolute path in `ENVIRONMENT.md` and record that you had to. If a `synth` on `PATH` answers but is not the revision `ENVIRONMENT.md` records, use the recorded absolute path for **every** command and record the mismatch — a stale tool on `PATH` is not the one under test. If you are ever unsure whether the tool is installed, check with `synth --version` before concluding it is missing — do not fall back to a hand-rolled process. When a test is finished — the offer recorded and its report written — move to the next directory and repeat from the top of this section.
 
 ## 3. The tests: task text and required observation
 
@@ -71,7 +71,7 @@ In the brownfield test, run the project's own test command (`npm test`) **before
 
 In the test's own directory:
 
-- `offer.json` — your offer: a `scope`, one `question` naming the consequential decision you cannot make for the requester, two or three `options` each carrying a `label`, a `tradeoff` and an `acceptanceExample`, and a `source` citation per option (the task text, or an exact `path`, `line` and `quote` from a file in that directory). Quote the file exactly; a reviewer will check the line. Follow the schema the CLI reports for `--source-offer` if it differs from this description.
+- `offer.json` — your offer: a `scope`, one `question` naming the consequential decision you cannot make for the requester, and two or three `options` each carrying an `id` (letters, digits and `-` only; `defer` is reserved), a `label`, a `tradeoff`, an `acceptanceExample` and one `source`. A `source` is either the task text — `{"kind": "operator-intent", "quote": "<the task text, exactly>"}` — or a line from a file in that directory — `{"path": "src/board.js", "line": 1, "quote": "<that line, exactly>"}`. Quote exactly; a reviewer will check the line. The CLI validates the file when you pass `--source-offer`: if its error disagrees with this description, the CLI is right — fix the file and record what it refused.
 - `REPORT.md` — the report described in §5.
 
 ## 5. Rules that protect the trial's honesty
