@@ -1,0 +1,143 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+      "goals": [
+        "build a small editable specimen-board exporter for our svg board utility board input"
+      ],
+      "successCriteria": [
+        "Users can a small editable specimen-board exporter for our svg board utility board input"
+      ]
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.25,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 1,
+        "intent.successCriteria": 1,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+        "timestamp": "2026-10-16T07:53:00.414Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-5cd1f081-a77a-4a0e-83c9-83039475f9c8: Which board kind, input source, and editing-plus-validation behavior should the first exporter slice support?",
+        "timestamp": "2026-10-16T07:54:47.961Z"
+      }
+    ]
+  },
+  "journeyId": "c0072e06-e311-4c47-ab3c-8f6c7308a8a2",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-5cd1f081-a77a-4a0e-83c9-83039475f9c8",
+      "journeyId": "c0072e06-e311-4c47-ab3c-8f6c7308a8a2",
+      "version": 1,
+      "scope": "Small editable specimen-board exporter for SVG board utility",
+      "question": "Which board kind, input source, and editing-plus-validation behavior should the first exporter slice support?",
+      "options": [
+        {
+          "id": "fixed-file-input",
+          "label": "Fixed board kind from file input with strict validation",
+          "tradeoff": "Predictable exporter output and clear validation, but narrower board-kind support in the first slice.",
+          "acceptanceExample": "Given a specimen board file with a missing required cell, the exporter refuses with a named validation error instead of emitting partial SVG.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        },
+        {
+          "id": "flexible-board-input",
+          "label": "Flexible board kinds from file input with documented defaults",
+          "tradeoff": "Broader input coverage early, but harder to pin down validation and exporter guarantees.",
+          "acceptanceExample": "Given two board variants of different dimensions, the exporter accepts both and documents which fields were defaulted during editing.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        },
+        {
+          "id": "manual-edit-checks",
+          "label": "Manually specified board with inline editing checks before export",
+          "tradeoff": "Simplest input to describe, but leaves the editing interaction to be decided and specified next.",
+          "acceptanceExample": "Given an inline board edit that breaks the specimen shape, the edit is rejected with the rule name before export is attempted.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        }
+      ],
+      "originIntent": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+      "offeredAt": "2026-10-16T07:54:47.961Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "updatedAt": "2026-10-16T07:54:47.966Z"
+}

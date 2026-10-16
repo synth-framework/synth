@@ -1,0 +1,14 @@
+{
+  "id": "test:guided-installed-trial-evidence",
+  "description": "Byte-for-byte evidence capture from a finished trial TEST_PATH: recomputed revisions, re-checked citation hashes, raw copies and operator-only rows",
+  "command": "node --test tests/guided-installed-trial-evidence.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": [
+    "runtime",
+    "test"
+  ],
+  "estimatedDurationMs": 30000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

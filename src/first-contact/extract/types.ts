@@ -8,12 +8,41 @@
 
 export type ConfidenceScore = number
 
+export interface AgentChoice {
+  id: string
+  actor: "agent"
+  status: "open"
+  choice: string
+  reason: string
+  scope: string
+  alternatives: string[]
+  originIntent: string
+  /** Scope for PR publication; earlier records without it remain visible locally. */
+  originJourneyId?: string
+  recordedAt: string
+}
+
+export interface ChoiceReview {
+  id: string
+  choiceId: string
+  impact: "trivial" | "material"
+  reason: string
+  disposition: "recorded-agent-choice" | "awaiting-human" | "keep" | "change" | "defer"
+  /** The supplied words are preserved, but a CLI flag cannot authenticate a human. */
+  humanResponse?: string
+  attribution: "cli-caller-unverified" | "human-response-supplied-unverified"
+  reviewedAt: string
+}
+
 export interface TranscriptEntry {
   turn: number
-  actor: "operator" | "system"
+  actor: "operator" | "system" | "agent"
   type: "input" | "question" | "answer" | "proposal" | "approval"
   content: string
   timestamp: string
+  /** A provisional agent choice is not an operator answer or an approval. */
+  agentChoice?: AgentChoice
+  choiceReview?: ChoiceReview
 }
 
 export interface ExtractedIntent {

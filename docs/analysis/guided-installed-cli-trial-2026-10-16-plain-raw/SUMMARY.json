@@ -1,0 +1,574 @@
+{
+  "capturedAt": "2026-10-16T08:31:40.965Z",
+  "workspace": "C:\\Users\\j\\Projects\\raw-board-test",
+  "helper": "scripts/guided-installed-trial-evidence.mjs",
+  "requiredCases": [
+    "green",
+    "brown",
+    "docs"
+  ],
+  "optionalCases": [
+    "knowledge",
+    "conflict"
+  ],
+  "condition": {
+    "inferred": "plain",
+    "inferredFrom": "no ENVIRONMENT.md in TEST_PATH",
+    "declared": null,
+    "resolved": "plain"
+  },
+  "date": {
+    "value": "2026-10-16",
+    "source": "argument"
+  },
+  "instruction": {
+    "present": true,
+    "bytes": 5825,
+    "sha256": "3dcce10b8ac2cadbe617174661d03687882fb850e77681cf354b2ff83f14b0f8",
+    "namesTool": false
+  },
+  "environment": {
+    "present": false,
+    "bytes": null,
+    "sha256": null,
+    "workspace": null,
+    "staging": null,
+    "revision": null
+  },
+  "launch": {
+    "recorded": "Read INSTRUCTIONS.md in the root of this workspace and follow it.",
+    "source": "inferred"
+  },
+  "revision": {
+    "commit": null,
+    "short": null,
+    "subject": null,
+    "source": null
+  },
+  "install": {
+    "tarballName": null,
+    "tarballSha256": null,
+    "version": null,
+    "stagingPresent": false,
+    "stagingNotes": []
+  },
+  "cases": [
+    {
+      "caseId": "green",
+      "dir": "greenfield",
+      "report": {
+        "present": true,
+        "bytes": 1590,
+        "sha256": "d21a6af41d8bc8379f8a3a1fb9518205a88b8d4dc580289e6ca1e6a266f9b4a1"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 2996,
+        "sha256": "7fb42c8a8e663b211b8251e842b681f03bf28c6acb168ee2b04e60eb19b717af",
+        "id": null,
+        "question": "What board input and editing interaction should the first slice support?",
+        "optionIds": [
+          null,
+          null,
+          null
+        ],
+        "problems": [
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "scope is missing"
+        ]
+      },
+      "transcript": {
+        "present": false,
+        "events": 0,
+        "bytes": null,
+        "sha256": null
+      },
+      "draft": {
+        "present": false,
+        "bytes": null,
+        "sha256": null,
+        "journeyId": null,
+        "schema": null,
+        "status": null
+      },
+      "stateFiles": [],
+      "inputs": {
+        "expected": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "observed": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "basis": "no-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "options.0.grounded_in",
+          "quote": "Board input and editing interaction are undecided.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "operator-intent",
+          "path": null,
+          "line": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashMatches": null,
+          "lineMatches": false,
+          "mismatchNote": "the quote is part of the staged task text, not all of it",
+          "status": "quote-mismatch"
+        },
+        {
+          "optionId": "options.1.grounded_in",
+          "quote": "Build a small editable specimen-board exporter for our SVG board utility.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "operator-intent",
+          "path": null,
+          "line": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashMatches": null,
+          "lineMatches": false,
+          "mismatchNote": "the quote is part of the staged task text, not all of it",
+          "status": "quote-mismatch"
+        },
+        {
+          "optionId": "options.2.grounded_in",
+          "quote": "Build a small editable specimen-board exporter for our SVG board utility.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "operator-intent",
+          "path": null,
+          "line": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+          "recomputedSha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183",
+          "hashMatches": null,
+          "lineMatches": false,
+          "mismatchNote": "the quote is part of the staged task text, not all of it",
+          "status": "quote-mismatch"
+        }
+      ],
+      "commands": [],
+      "integrity": {
+        "operatorInputEvents": 0,
+        "agentProposalEvents": 0,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "draftStatus": null,
+        "lastEvent": null,
+        "openAgentChoices": null,
+        "transcriptFirst": null,
+        "transcriptLast": null,
+        "spanSeconds": null
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "APPROACH",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    },
+    {
+      "caseId": "brown",
+      "dir": "brownfield",
+      "report": {
+        "present": true,
+        "bytes": 1941,
+        "sha256": "469cba612b1594da94db0a085078381160496c3c97a44945ce566a6043d143f7"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 3239,
+        "sha256": "a4abc541b03e5ca459f1bc956669c08d74a2f483a2a426dd19f0a4cd7cf4a771",
+        "id": null,
+        "question": "How should the user-selected fill color be accepted while preserving the existing label output?",
+        "optionIds": [
+          null,
+          null,
+          null
+        ],
+        "problems": [
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "scope is missing"
+        ]
+      },
+      "transcript": {
+        "present": false,
+        "events": 0,
+        "bytes": null,
+        "sha256": null
+      },
+      "draft": {
+        "present": false,
+        "bytes": null,
+        "sha256": null,
+        "journeyId": null,
+        "schema": null,
+        "status": null
+      },
+      "stateFiles": [],
+      "inputs": {
+        "expected": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+        "observed": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+        "basis": "all-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "citations.0",
+          "quote": "export const render = label => `<text>${label}</text>`;",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "src/board.js",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "export const render = label => `<text>${label}</text>`;",
+          "recomputedSha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "citations.1",
+          "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "tests/board.test.js",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 4,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+          "recomputedSha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "citations.2",
+          "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/limitation.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+          "recomputedSha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "options.0.grounded_in",
+          "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "tests/board.test.js",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 4,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+          "recomputedSha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "options.1.grounded_in",
+          "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/limitation.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+          "recomputedSha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "options.2.grounded_in",
+          "quote": "export const render = label => `<text>${label}</text>`;",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "src/board.js",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "export const render = label => `<text>${label}</text>`;",
+          "recomputedSha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        }
+      ],
+      "commands": [],
+      "integrity": {
+        "operatorInputEvents": 0,
+        "agentProposalEvents": 0,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "draftStatus": null,
+        "lastEvent": null,
+        "openAgentChoices": null,
+        "transcriptFirst": null,
+        "transcriptLast": null,
+        "spanSeconds": null
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "APPROACH",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    },
+    {
+      "caseId": "docs",
+      "dir": "documentation",
+      "report": {
+        "present": true,
+        "bytes": 1751,
+        "sha256": "9f872a8658ef690293cee8fcff0522f738f595034b9c0ffad81c42c7e48bd487"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 2833,
+        "sha256": "cfe0af2a5236962d35b5035e4b58e318ebca6e8ac67b93cd3d89b0e5cd942083",
+        "id": null,
+        "question": "Given that export is from local data but editing is requested with undecided style, what editing interaction should the next slice include?",
+        "optionIds": [
+          null,
+          null,
+          null
+        ],
+        "problems": [
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "option id undefined is not [a-zA-Z0-9-]+",
+          "scope is missing"
+        ]
+      },
+      "transcript": {
+        "present": false,
+        "events": 0,
+        "bytes": null,
+        "sha256": null
+      },
+      "draft": {
+        "present": false,
+        "bytes": null,
+        "sha256": null,
+        "journeyId": null,
+        "schema": null,
+        "status": null
+      },
+      "stateFiles": [],
+      "inputs": {
+        "expected": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+        "observed": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+        "basis": "all-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "citations.0",
+          "quote": "The first board exports one SVG from local data.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "The first board exports one SVG from local data.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "citations.1",
+          "quote": "Editing is requested, but its interaction style is undecided.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 2,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Editing is requested, but its interaction style is undecided.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "options.0.grounded_in",
+          "quote": "The first board exports one SVG from local data.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "The first board exports one SVG from local data.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "options.1.grounded_in",
+          "quote": "Editing is requested, but its interaction style is undecided.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 2,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Editing is requested, but its interaction style is undecided.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        },
+        {
+          "optionId": "options.2.grounded_in",
+          "quote": "Editing is requested, but its interaction style is undecided.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the case directory",
+          "line": 2,
+          "lineAsWritten": null,
+          "pathAllowedByCli": true,
+          "expectedLine": "Editing is requested, but its interaction style is undecided.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed"
+        }
+      ],
+      "commands": [],
+      "integrity": {
+        "operatorInputEvents": 0,
+        "agentProposalEvents": 0,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "draftStatus": null,
+        "lastEvent": null,
+        "openAgentChoices": null,
+        "transcriptFirst": null,
+        "transcriptLast": null,
+        "spanSeconds": null
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "APPROACH",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    }
+  ],
+  "rootExtras": [],
+  "buildArtifactsInsideTestPath": [],
+  "gitInside": [],
+  "warnings": [],
+  "operatorGaps": [
+    "§4 greenfield: confirm the quoted command list and exit codes are the ones you saw (REPORT.md lists no commands — paste the commands and exit codes you saw)",
+    "§4 greenfield: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§4 brownfield: confirm the quoted command list and exit codes are the ones you saw (REPORT.md lists no commands — paste the commands and exit codes you saw)",
+    "§4 brownfield: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§4 documentation: confirm the quoted command list and exit codes are the ones you saw (REPORT.md lists no commands — paste the commands and exit codes you saw)",
+    "§4 documentation: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box",
+    "§0 the Met? column for all eleven independence items",
+    "§5 every comparative reading",
+    "§7 the recommendation for ordinary PR #347 review",
+    "§1 the plain arm installs nothing, so §2 is not applicable here; the install proof belongs to the guided capture"
+  ]
+}

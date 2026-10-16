@@ -1,0 +1,50 @@
+# Session transcript — raw-board-test trial
+
+Trial instruction source: INSTRUCTIONS.md in workspace root (80 lines, read at session start).
+Workspace root at start: brownfield/, documentation/, greenfield/, INSTRUCTIONS.md
+No knowledge-led/ or conflicting-documents/ present, so 3 tests were run: green, brown, docs.
+
+## 1. User request
+"Read INSTRUCTIONS.md in the root of this workspace and follow it."
+
+## 2. Assistant investigation (reads, no shell writes)
+- Read C:\Users\j\Projects\raw-board-test\INSTRUCTIONS.md
+- Read workspace root C:\Users\j\Projects\raw-board-test
+- Read greenfield/ (0 entries), brownfield/ (docs/, package.json, src/, tests/), documentation/ (docs/)
+- Read brownfield/package.json, brownfield/src, brownfield/tests, brownfield/docs, documentation/docs
+- Read brownfield/src/board.js: `export const render = label => `<text>${label}</text>`;` (line 1)
+- Read brownfield/tests/board.test.js line 4: `test('existing label', () => assert.equal(render('A'), '<text>A</text>'));`
+- Read brownfield/docs/limitation.md line 1: `Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.`
+- Read documentation/docs/requirements.md line 1: `The first board exports one SVG from local data.` line 2: `Editing is requested, but its interaction style is undecided.`
+
+## 3. Test green / greenfield/
+Task text: "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."
+Actions:
+- Wrote greenfield/offer.json (case_id green, scope proposal-only, one question on board/input/editing/validation, 3 options A/B/C grounded in task text, explicitly no GUI/stack/approval, stopped_without_decision true)
+- Wrote greenfield/REPORT.md (TEST/COMMANDS/APPROACH/OFFER/CITATIONS/APPLICATION TESTS n/a/ASSUMPTIONS/STILL OPEN/PROBLEMS/EFFORT)
+- No shell commands run inside greenfield/
+
+## 4. Test brown / brownfield/
+Task text: "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."
+Actions:
+- Ran `npm test` in brownfield/ before any change — exit 0, 1 pass / 0 fail
+- Ran `npm test; echo EXIT:$LASTEXITCODE` in brownfield/ before proposal — exit 0
+- Wrote brownfield/offer.json (case_id brown, delta-only scope, cites src/board.js:1, tests/board.test.js:4, docs/limitation.md:1, one question on fill acceptance, 2 options, grounded_in task text + files, stopped_without_decision true)
+- Ran `npm test; echo EXIT:$LASTEXITCODE` in brownfield/ after proposal (no src/test/fixture edits) — exit 0, 1 pass / 0 fail
+- Wrote brownfield/REPORT.md with before/after APPLICATION TESTS, no test/fixture edits
+
+## 5. Test docs / documentation/
+Task text: "Continue from the requirements in docs/. The next slice is undecided."
+Actions:
+- Wrote documentation/offer.json (case_id docs, scope proposal-only, cites docs/requirements.md:1 and :2, conflict export-vs-editing surfaced as unresolved, one question with 2 options, grounded_in task text + both lines, stopped_without_decision true)
+- Wrote documentation/REPORT.md (COMMANDS none, CITATIONS matched, APPLICATION TESTS n/a)
+- No shell commands run inside documentation/
+
+## 6. Completion summary to user
+Reported 6 files created, brownfield exit codes 0/0, all proposals stopped at requester decision.
+
+## 7. User request
+"Trial ended, let's save this session's transcript in the workspace root"
+
+This file (TRANSCRIPT.md) written in response, in workspace root.
+No further test-directory writes made after trial end.

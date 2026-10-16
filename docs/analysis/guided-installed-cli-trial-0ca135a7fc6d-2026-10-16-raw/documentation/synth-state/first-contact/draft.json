@@ -1,0 +1,141 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Continue from the requirements in docs/. The next slice is undecided.",
+      "goals": [],
+      "successCriteria": []
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.083,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 0,
+        "intent.successCriteria": 0,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Continue from the requirements in docs/. The next slice is undecided.",
+        "timestamp": "2026-10-16T09:59:12.226Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-54b0cf7f-7c4a-4ee2-ab58-3f489da8c299: What should the next slice after the single-SVG export cover while editing interaction stays undecided?",
+        "timestamp": "2026-10-16T09:59:29.440Z"
+      }
+    ]
+  },
+  "journeyId": "df19fbde-a070-41c8-935e-57299987e5d9",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-54b0cf7f-7c4a-4ee2-ab58-3f489da8c299",
+      "journeyId": "df19fbde-a070-41c8-935e-57299987e5d9",
+      "version": 1,
+      "scope": "Continue from docs/requirements.md: single SVG export from local data, with requested but undecided editing interaction",
+      "question": "What should the next slice after the single-SVG export cover while editing interaction stays undecided?",
+      "options": [
+        {
+          "id": "single-export",
+          "label": "Single SVG export from local data first",
+          "tradeoff": "Delivers the agreed export baseline, but leaves the requested editing entirely for a later slice.",
+          "acceptanceExample": "Given local board data, when the first slice runs, then it exports exactly one SVG and reports any data that cannot export.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 1,
+            "quote": "The first board exports one SVG from local data.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        },
+        {
+          "id": "decide-editing",
+          "label": "Decide editing interaction before building it",
+          "tradeoff": "Prevents building the wrong editing UI, but delays any editable behavior until the interaction is chosen by a person.",
+          "acceptanceExample": "Given editing is requested, when the next slice is scoped, then it decides the interaction style first and builds only that agreed interaction.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 2,
+            "quote": "Editing is requested, but its interaction style is undecided.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        },
+        {
+          "id": "defer-slice",
+          "label": "Hold the next slice for an explicit person decision",
+          "tradeoff": "Keeps the undecided slice honestly open, but ships nothing further until the decision is made.",
+          "acceptanceExample": "Given the next slice is undecided, when a person picks one option, then only that slice is built and the other remains explicitly open.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Continue from the requirements in docs/. The next slice is undecided.",
+            "sha256": "e3c190b4c5b828f80624e2ebab1d1f266e1a647af9c179c2421a0bd4b4e8856f"
+          }
+        }
+      ],
+      "originIntent": "Continue from the requirements in docs/. The next slice is undecided.",
+      "offeredAt": "2026-10-16T09:59:29.440Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "updatedAt": "2026-10-16T09:59:29.444Z"
+}

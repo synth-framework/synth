@@ -1,0 +1,45 @@
+{
+  "attribution": "Agent-authored synthetic proposals, not SYNTH-generated questions or human decisions",
+  "proposals": {
+    "green": {
+      "scope": "First board input",
+      "question": "Should the first editable board take a dropped file as its source, or begin with manual entries?",
+      "options": [
+        { "id": "drop", "label": "Dropped source file", "tradeoff": "Drop-and-parse makes reuse easier but needs an input format decision.", "acceptanceExample": "A supplied sample source produces one editable board.", "source": { "kind": "operator-intent", "quote": "Build a small editable specimen-board exporter; board input and editing interaction are undecided." } },
+        { "id": "manual", "label": "Manual entries", "tradeoff": "Manual entries defer the format decision but require re-entry later.", "acceptanceExample": "A typed entry appears on a board and exports without a source file.", "source": { "kind": "operator-intent", "quote": "Build a small editable specimen-board exporter; board input and editing interaction are undecided." } }
+      ]
+    },
+    "brown": {
+      "scope": "Add fill color without replacing the working renderer",
+      "question": "Should the first color increment add a default-preserving optional fill argument, or take a separate configuration object?",
+      "options": [
+        { "id": "argument", "label": "Optional fill argument", "tradeoff": "Small additive signature; existing one-argument calls must keep their exact output.", "acceptanceExample": "render('A') is unchanged, and render('A', 'red') yields a color-bearing text element.", "source": { "path": "src/board.js", "line": 1, "quote": "export const render = label => `<text>${label}</text>`;" } },
+        { "id": "config", "label": "Separate config", "tradeoff": "More extensible for future attributes but introduces a new input shape.", "acceptanceExample": "A config object can request fill, and existing label-only calls still pass their original test.", "source": { "path": "tests/board.test.js", "line": 4, "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));" } }
+      ]
+    },
+    "docs": {
+      "scope": "Next editing slice",
+      "question": "Should the next slice edit labels in-place, or via a separate form before SVG export?",
+      "options": [
+        { "id": "in-place", "label": "In-place editing", "tradeoff": "Immediate visual feedback, but interaction details need review.", "acceptanceExample": "A label edit is visible on the board and in one exported SVG.", "source": { "path": "docs/requirements.md", "line": 2, "quote": "Editing is requested, but its interaction style is undecided." } },
+        { "id": "form", "label": "Separate form", "tradeoff": "A simpler input surface, but less direct visual editing.", "acceptanceExample": "A form change updates the export without claiming in-place editing.", "source": { "path": "docs/requirements.md", "line": 1, "quote": "The first board exports one SVG from local data." } }
+      ]
+    },
+    "knowledge": {
+      "scope": "Next editing slice",
+      "question": "Should the next slice edit labels in-place, or via a separate form before SVG export?",
+      "options": [
+        { "id": "in-place", "label": "In-place editing", "tradeoff": "Immediate visual feedback, but interaction details need review.", "acceptanceExample": "A label edit is visible on the board and in one exported SVG.", "source": { "path": "knowledge/requirements.md", "line": 2, "quote": "Editing is requested, but its interaction style is undecided." } },
+        { "id": "form", "label": "Separate form", "tradeoff": "A simpler input surface, but less direct visual editing.", "acceptanceExample": "A form change updates the export without claiming in-place editing.", "source": { "path": "knowledge/requirements.md", "line": 1, "quote": "The first board exports one SVG from local data." } }
+      ]
+    },
+    "conflict": {
+      "scope": "First distribution slice with contradictory sources",
+      "question": "Which requirement should the first export slice honor: local-only or cloud-synced sharing?",
+      "options": [
+        { "id": "local", "label": "Local-only", "tradeoff": "Avoids a network service but does not provide cross-device sharing.", "acceptanceExample": "A local export works without a network and no upload is claimed.", "source": { "path": "docs/scope.md", "line": 1, "quote": "Exports must stay local-only." } },
+        { "id": "sync", "label": "Cloud sync", "tradeoff": "Adds sharing but needs a service and data-handling decisions.", "acceptanceExample": "A separately authorized sync path makes an export available on a second device.", "source": { "path": "knowledge/scope.md", "line": 1, "quote": "Exports must be shared through cloud sync." } }
+      ]
+    }
+  }
+}

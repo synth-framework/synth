@@ -1,0 +1,66 @@
+{
+  "status": "setup-complete-stop-before-agent",
+  "generatedAt": "2026-10-16T09:54:36.802Z",
+  "inputs": {
+    "repo": "C:\\Users\\j\\Projects\\synth",
+    "workspace": "C:\\Users\\j\\Projects\\board-test"
+  },
+  "inferred": {
+    "stagingRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\0ca135a7fc6d",
+    "testDirs": {
+      "green": "greenfield",
+      "brown": "brownfield",
+      "docs": "documentation"
+    },
+    "rootInstruction": "C:\\Users\\j\\Projects\\board-test\\INSTRUCTIONS.md",
+    "environmentFile": "C:\\Users\\j\\Projects\\board-test\\ENVIRONMENT.md"
+  },
+  "condition": "guided",
+  "testedRevision": {
+    "commit": "0ca135a7fc6d018df3d7de30ac59ef56dd45d2d5",
+    "branch": "arena/f3c711cb-synth",
+    "subject": "0ca135a Say how to file a run that comes after another one",
+    "workingTreeDirty": true
+  },
+  "builtFrom": "C:\\Users\\j\\Projects\\synth",
+  "cloneUsed": false,
+  "installedCli": {
+    "bin": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\0ca135a7fc6d\\global\\synth.cmd",
+    "tarball": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\0ca135a7fc6d\\pack\\synth-framework-synth-2.6.1.tgz",
+    "tarballSha256": "5cd1899d363fbb1a9ac0c51a83cd3a376b05f4ccdc480bc6889e94c429cbb86b",
+    "version": {
+      "status": "ok",
+      "version": "2.6.1",
+      "name": "synth",
+      "schema": "synth-cli-v1"
+    }
+  },
+  "revisions": {
+    "green": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "brown": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+    "docs": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+    "knowledge": "d5c6255f264137b340e3fce58f00a397ed0c0dbd4dbd87894ebc96e0b5a3a338",
+    "conflict": "fa8d3a7aaaf19968c23d2423bd66109583b16d37f24e6578385843ad1c9af3d5"
+  },
+  "cases": [
+    "green",
+    "brown",
+    "docs"
+  ],
+  "optionalCases": [
+    "knowledge",
+    "conflict"
+  ],
+  "copiedIntoTestPath": [
+    "INSTRUCTIONS.md",
+    "ENVIRONMENT.md"
+  ],
+  "buildArtifactsInsideTestPath": [],
+  "productCommandsRun": [
+    "synth --version"
+  ],
+  "trialTestsRun": 0,
+  "lifecycleCommandsRun": [],
+  "launchInstruction": "This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.",
+  "note": "Setup only. The CLI was built from this checkout into the scratch directory outside TEST_PATH. Counts as a validated recipe, never as trial evidence. The agent is launched in TEST_PATH and told to follow INSTRUCTIONS.md."
+}

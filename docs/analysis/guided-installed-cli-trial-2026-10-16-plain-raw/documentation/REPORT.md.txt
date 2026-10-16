@@ -1,0 +1,10 @@
+TEST: docs / documentation/
+COMMANDS: (no shell commands run for this test; directory and file reads via file read)
+APPROACH: Listed documentation/docs/ then read documentation/docs/requirements.md in full; treated its two lines as the full scope (export decided, editing style undecided) and framed the conflict as the decision question; wrote offer.json with three grounded options showing consequences; wrote this report. Chose this process because the required observation is to cite actual docs files by path and line and surface conflict as a decision, not silently resolve it.
+OFFER: path documentation/offer.json; question "Given that export is from local data but editing is requested with undecided style, what editing interaction should the next slice include?"; options (A) Export-only slice defer editing, (B) Minimal pre-export edit of one field, (C) Explicit staged edit then export.
+CITATIONS: docs/requirements.md line 1 "The first board exports one SVG from local data." — matched real file content and line; docs/requirements.md line 2 "Editing is requested, but its interaction style is undecided." — matched.
+APPLICATION TESTS: N/A (brownfield only)
+ASSUMPTIONS: Assumed "local data" means caller-supplied in-memory data (not a file or remote source) but did not verify; assumed no other requirements files exist beyond docs/requirements.md as found by listing.
+STILL OPEN: Decision in offer.json left to a person (editing interaction style for next slice); validation rules, board kind, and export format details unverified.
+PROBLEMS: None; nothing misled. Genuine tension between line 1 (decided export) and line 2 (undecided editing) kept as explicit decision with consequences per option.
+EFFORT: ~5 minutes for this test

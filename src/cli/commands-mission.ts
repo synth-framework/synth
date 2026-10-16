@@ -9,7 +9,6 @@ import { appendDecision, latestDecision, listDecisions } from "../mission-studio
 import * as sdk from "../sdk/index.js"
 import { loadGovernanceInventory, filterByValues } from "../governance/inventory.js"
 
-import { isStrictContext, echoResolution, resolveInferredAlignmentContractId } from "./context.js"
 import type { PlanningObservation } from "../planning/observation.js"
 import type { MissionNode, PlanningSession } from "../mission-studio/types.js"
 import { bootstrapWithCapabilities } from "./auto-commit-ceremony.js"
@@ -18,6 +17,7 @@ import { namespaceHelp } from "./command-help.js"
 import type { DeclaredBranchInfo } from "./command-lifecycle.js"
 import { commitDraftCeremony, makeObservation, serializePlanningSession } from "./command-planning.js"
 import { inferMissionProgram } from "./command-program-inference.js"
+import { approvalActionForDraft, blockingExpeditionForMission } from "./mission-approval-target.js"
 
 
 export async function cmdMissionHelp() {
@@ -155,7 +155,10 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
   if (noCreateFlag && !declaredBranchFlag) printError("--no-create requires --branch")
   if (!draftId) printError("--draft-id is required")
 
-  let alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
+  // An unrelated approved contract is not evidence that this draft is aligned.
+  // Require the operator to select the actual contract rather than silently
+  // inferring the most recent approved contract in non-strict contexts.
+  const alignmentContractId = typeof flags["alignment-contract-id"] === "string" ? flags["alignment-contract-id"] : undefined
   if (!alignmentContractId) {
     // EXP-REUSE-001: surface approved alignment contracts so operators can reuse
     // an existing baseline instead of creating a new one for every mission.
@@ -169,33 +172,24 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
       (c) => c.status === "approved"
     )
 
-    if (!isStrictContext() && approvedContracts.length >= 1) {
-      alignmentContractId = resolveInferredAlignmentContractId(derived)
-      if (alignmentContractId) {
-        echoResolution("alignment-contract-id", alignmentContractId, "latest approved alignment contract")
-      }
+    let suggestion: string
+    if (approvedContracts.length > 0) {
+      const list = approvedContracts
+        .map((c) => `  - ${c.id}: ${c.intentSummary || "(no summary)"}`)
+        .join("\n")
+      suggestion = `Approved alignment contracts available for reuse (check that one actually covers this Mission):\n${list}\n\nSelect the relevant reviewed contract explicitly:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>`
+    } else {
+      suggestion = "No approved alignment contracts found. Ground a new contract in this Mission's evidence and obtain actual review before approving it. The demonstration 'alignment prepare' baseline is not Mission evidence."
     }
 
-    if (!alignmentContractId) {
-      let suggestion: string
-      if (approvedContracts.length > 0) {
-        const list = approvedContracts
-          .map((c) => `  - ${c.id}: ${c.intentSummary || "(no summary)"}`)
-          .join("\n")
-        suggestion = `Approved alignment contracts available for reuse:\n${list}\n\nCreate a new contract with:\n  synth alignment prepare\nOr approve with an existing contract:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>`
-      } else {
-        suggestion = "No approved alignment contracts found.\nCreate one with:\n  synth alignment prepare\nThen approve the mission with:\n  synth mission approve --draft-id <draft-id> --alignment-contract-id <contract-id>"
-      }
-
-      printError(
-        "Mission approval requires --alignment-contract-id.",
-        {
-          code: "MissingAlignmentContractId",
-          category: "governance",
-          suggestion,
-        },
-      )
-    }
+    printError(
+      "Mission approval requires --alignment-contract-id; it cannot infer a relevant contract from recency.",
+      {
+        code: "MissingAlignmentContractId",
+        category: "governance",
+        suggestion,
+      },
+    )
   }
 
   // Validate the draft exists before running the approval gate. This gives the
@@ -211,22 +205,36 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
     printError(`Draft not found: ${draftPath}`)
   }
 
-  // Resolve the project's actual governance state before allowing approval.
+  // Verify the draft before using its Mission ID as the intake target. Without
+  // that ID the gate defaults to the unrelated active Mission and can suggest
+  // closing its executing Expedition.
+  const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
+  if (!integrity.ok) {
+    await appendDecision(dataDir, {
+      type: "MISSION_DRAFT_INTEGRITY_REJECTED",
+      draftId,
+      reason: integrity.message,
+    })
+    printError(integrity.message)
+  }
+  const session = deserializePlanningSession(draftData)
+  let approvalAction: ReturnType<typeof approvalActionForDraft>
+  try { approvalAction = approvalActionForDraft(session) }
+  catch (error) { printError(error instanceof Error ? error.message : "Invalid Mission draft") }
+
+  // Resolve the project's actual governance state for this draft's Mission.
   const gateCtx = await bootstrapWithCapabilities({
     skipGenesis: true,
     infra: { persistence: "file" },
   })
   const state = await gateCtx.runtime.getState()
-  const intake = await gateDecision({ kind: "mission.approve" }, state, gateCtx.runtime)
+  const intake = await gateDecision(approvalAction, state, gateCtx.runtime)
   if (intake.decision === "BLOCK") {
     // E (a+b): an explicit --complete-first closes the blocking executing
     // expedition in the same mission, then re-evaluates the approval gate.
     const completeFirst = flags["complete-first"] === true || flags["complete-first"] === "true"
     if (completeFirst) {
-      const activeMission = Object.values(state.missions).find((m) => m.status === "active")
-      const blocking =
-        activeMission &&
-        Object.values(state.expeditions).find((e) => e.missionId === activeMission.id && e.status === "executing")
+      const blocking = blockingExpeditionForMission(state, approvalAction.missionId)
       if (blocking) {
         console.error(
           `[mission approve --complete-first] closing executing expedition ${blocking.id} (${blocking.name}) before approving the mission.`,
@@ -241,7 +249,7 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
           infra: { persistence: "file" },
         })
         const state2 = await gateCtx2.runtime.getState()
-        const intake2 = await gateDecision({ kind: "mission.approve" }, state2, gateCtx2.runtime)
+        const intake2 = await gateDecision(approvalAction, state2, gateCtx2.runtime)
         if (intake2.decision === "BLOCK") {
           printGateBlock(intake2)
         }
@@ -252,20 +260,6 @@ export async function cmdMissionApprove(flags: Record<string, string | boolean>)
       printGateBlock(intake)
     }
   }
-
-  // Drafts are editable artifacts; certify before trusting anything (EXP-TRUST-002).
-  const integrity = await verifyDraftIntegrity(draftsDir, draftId, draftData)
-  if (!integrity.ok) {
-    // Decisions are durable: the integrity rejection is recorded (EXP-TRUST-004).
-    await appendDecision(dataDir, {
-      type: "MISSION_DRAFT_INTEGRITY_REJECTED",
-      draftId,
-      reason: integrity.message,
-    })
-    printError(integrity.message)
-  }
-
-  const session = deserializePlanningSession(draftData)
 
   // ECOSYSTEM-001: fail fast when the current branch does not satisfy the
   // declared mission branch policy. The ExecutionGate enforces the same

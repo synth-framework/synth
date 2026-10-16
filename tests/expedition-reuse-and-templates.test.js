@@ -67,6 +67,16 @@ async function main() {
     assert.equal(missingContractJson.code, "MissingAlignmentContractId", "error code should be MissingAlignmentContractId")
     assert.ok(missingContractJson.suggestion.includes(contractId), "suggestion should include approved contract id")
     assert.ok(missingContractJson.suggestion.includes("Approved alignment contracts available for reuse"), "suggestion should mention reuse")
+    // Even outside strict mode, recency alone cannot prove the approved
+    // contract covers this draft. Approval must not infer one silently.
+    delete process.env.SYNTH_STRICT_CONTEXT
+    try {
+      const nonStrict = runSynth(["mission", "approve", "--draft-id", draftId], projectDir)
+      assert.notEqual(nonStrict.status, 0)
+      assert.equal(parseJson(nonStrict.stdout).code, "MissingAlignmentContractId")
+    } finally {
+      process.env.SYNTH_STRICT_CONTEXT = "1"
+    }
 
     // 4. Create and approve a runtime mission via API so the CLI can reference it for expedition creation.
     //    Mission Studio confidence gating makes pure-CLI mission approval fragile in tests.

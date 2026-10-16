@@ -15,7 +15,7 @@
 // `release` and `report`; and it ignored the global --human / --json / --quiet /
 // --summary flags entirely, so `synth status --human` answered with JSON.
 import { fileURLToPath } from "url"
-import path from "path"
+import { realpathSync } from "node:fs"
 import { resolveLightExplain, runExplainFromArgv } from "./verb-registry.js"
 import { parseArgs, setAgentTelemetryFromFlags } from "./cli-args.js"
 import { projectVersion, printVersion } from "./version.js"
@@ -99,7 +99,14 @@ export async function run(): Promise<void> {
 // SYNTH-LOADER-001: only auto-run when executed directly; tests import { run }.
 const isMainModule = (): boolean => {
   if (!process.argv[1]) return false
-  return path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  try {
+    // Package-manager/global bins may be symlinks to this entry point.
+    // Compare the resolved file, not the invocation path; imports still do
+    // not auto-run because their argv[1] resolves to a different module.
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)
+  } catch {
+    return false
+  }
 }
 
 if (isMainModule()) {

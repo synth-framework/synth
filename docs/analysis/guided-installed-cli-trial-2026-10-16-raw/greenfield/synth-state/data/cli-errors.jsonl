@@ -1,0 +1,1 @@
+{"timestamp":"2026-10-16T07:53:34.188Z","cwd":"C:\\Users\\j\\Projects\\board-test\\greenfield","kind":"CLIError","error":"Source offer was not recorded: ENOENT: no such file or directory, lstat 'C:\\Users\\j\\Projects\\board-test\\greenfield\\missing.json'","exitCode":1,"mode":"json"}

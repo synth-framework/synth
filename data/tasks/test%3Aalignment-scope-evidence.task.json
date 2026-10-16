@@ -1,0 +1,11 @@
+{
+  "id": "test:alignment-scope-evidence",
+  "description": "Inspect a scoped GitHub PR comment and reviewed source hashes read-only; refuse mismatches without governance events",
+  "command": "node tests/alignment-scope-evidence.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

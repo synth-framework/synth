@@ -1,0 +1,42 @@
+TEST: brown / brownfield/
+COMMANDS: each run inside brownfield/ with exit code
+- synth first-contact --dry-run => exit 0
+- synth first-contact start "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working." => exit 0
+- synth first-contact status => exit 0
+- npm test (before change) => exit 0
+- synth first-contact clarify --source-offer offer.json => exit 0 (recorded offer-2ffeb707-1e3c-4e08-b85c-2f941fa52c68, version 1)
+- synth first-contact status (final) => exit 0
+- npm test (after offer, no src/test edits) => exit 0
+CLI OUTPUT: summarized
+- --dry-run: kind FirstContactOnboardPlan, detected brownfield, wouldCreate .synth/manifest.json etc + docs/reference/capability-validation-map.json, wouldRun synth bootstrap --approve, nextStep "synth discover . --export". sourceHandoff listed 4 files with excerpts: docs/limitation.md:1, src/board.js:1, tests/board.test.js:1-4, package.json:1. Notice: quoted prefixes are live partial evidence, not parsed requirements.
+- start: kind FirstContactDraft, draftPath .synth/first-contact/draft.json, intent reproduced exactly, confidence overall 0.083, unknowns audience/runtime/language/capabilities, nextStep clarify.
+- status pre-offer: state draft, canApprove false, workingBrief no-source-offer, nextStep clarify.
+- clarify --source-offer: kind FirstContactSourceOfferRecorded, 3 options, attribution agent-authored-offer, note citations do not prove interpretation.
+- status final: state draft, canApprove false, sourceOffers 1, sourceAnswers [], workingBrief status awaiting-response, version 1, sourceFreshness current, nextStep clarify. No approval/materialize/mission, no selection/human-response.
+OFFER: path offer.json (brownfield/offer.json)
+- scope: Extend SVG board renderer with user-selected fill color, preserving label output
+- question: How should the user-selected fill color be accepted while keeping the existing label output and tests working?
+- options:
+  1. optional-fill-arg / Optional second fill argument, default preserves current label output / tradeoff smallest delta, callers without fill unchanged / acceptanceExample render('A') stays '<text>A</text>', render('A','red') adds fill / source src/board.js:1
+  2. fill-with-test-guard / Additive fill support guarded by existing label test / tradeoff keeps current test as gate, new coverage only for delta / acceptanceExample existing test still passes, new fill case checked separately / source tests/board.test.js:4
+  3. preserve-label-add-fill / Preserve label output and add only fill-color handling / tradeoff addresses limitation with no rewrite / acceptanceExample same label plus fill, no-fill matches prior / source docs/limitation.md:1
+- Only the delta (fill param) is proposed; no rewrite of render logic proposed. Ends awaiting-response.
+CITATIONS: each matched live file line at time of offer
+- src/board.js:1 quote "export const render = label => `<text>${label}</text>`;" => matched, CLI accepted with sha256 55076569...
+- tests/board.test.js:4 quote "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));" => matched, CLI accepted with sha256 d97df217...
+- docs/limitation.md:1 quote "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output." => matched, CLI accepted with sha256 f4ee00a6...
+- All three cover required observation: existing behavior, existing test, documented limitation.
+APPLICATION TESTS: brownfield only
+- Before: npm test => exit 0, 1 pass (existing label), 0 fail. Command: node --test tests/board.test.js via package.json script.
+- After: npm test => exit 0, 1 pass, 0 fail (same). No edits to src/board.js, tests/board.test.js, or fixtures; only added offer.json (+ this report). No weakening.
+ASSUMPTIONS: what assumed without evidence
+- Assumed fill should be additive/optional to preserve label output, per limitation doc; did not assume color format, SVG element shape, or default color.
+- Assumed existing test must remain the compatibility gate; did not run or propose broader renderer changes.
+STILL OPEN: decisions left to a person
+- Which fill-acceptance shape (optional arg vs options object vs validated string) to adopt; left awaiting-response.
+- Default fill value, validation rules, and SVG output shape for fill remain undecided.
+- WorkingBrief is provisional-unverified? No: currently awaiting-response with no answer; not agreement, not approved.
+PROBLEMS: CLI wrong / refused / contradicted instructions
+- --dry-run nextStep suggested "synth discover . --export" (and wouldRun bootstrap --approve), while INSTRUCTIONS section 2 requires start/status/clarify --source-offer/status and section 5 forbids approve/materialize/mission actions. I followed INSTRUCTIONS section 2 and did not run bootstrap --approve or discover; no files outside .synth/first-contact + offer.json were created by me. Recording this divergence; no hard error, but CLI onboarding plan conflicts with trial's no-lifecycle rule if followed literally.
+- No other refusals; all first-contact commands succeeded.
+EFFORT: rough elapsed time for this test ~10 minutes

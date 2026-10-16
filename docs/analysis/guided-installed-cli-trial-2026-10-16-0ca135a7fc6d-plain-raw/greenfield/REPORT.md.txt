@@ -1,0 +1,10 @@
+TEST: green / greenfield/
+COMMANDS: none — no shell commands were run inside greenfield/ (exit codes: n/a)
+APPROACH: 1) Read INSTRUCTIONS.md fully. 2) Listed the workspace root and confirmed greenfield/ exists and is empty. 3) Used only the quoted task text for this test and stopped at the undecided decision instead of inventing a GUI or stack. 4) Wrote greenfield/offer.json with one question and three options, then wrote this REPORT.md.
+OFFER: path greenfield/offer.json. Question: "Since board input and editing interaction are undecided, what should count as the board, its input, its editing interaction, and its validation for the first exporter slice?" Options: (A) Clarify board kind and input shape first; (B) Clarify editing interaction first; (C) Clarify validation and acceptance first. Each option lists tradeoff and what would show it works, grounded in the task text.
+CITATIONS: (1) Task text quoted from INSTRUCTIONS.md Section 3 table: "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." — matched INSTRUCTIONS.md as read. (2) No files under greenfield/ to cite — directory read returned 0 entries, verified. Offer options ground in (1), not in invented files.
+APPLICATION TESTS: n/a — greenfield test has no application tests.
+ASSUMPTIONS: Assumed that proposing without implementing is the correct outcome when input and interaction are explicitly undecided. Assumed no hidden files in greenfield/ beyond the empty directory listing.
+STILL OPEN: Board kind, board input shape, editing interaction scope, and validation/acceptance — all left to the requester. No option selected here.
+PROBLEMS: Nothing blocked; empty starting directory means every input, interaction, and validation choice requires a person.
+EFFORT: rough elapsed time for this test: ~10 minutes

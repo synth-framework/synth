@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-response-provenance",
+  "description": "Synthetic ambiguous-response, provisional mapping, deferral and offer-revision provenance checks",
+  "command": "node --test tests/guided-response-provenance.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "test:mission-approval-target",
+  "description": "Check Mission approval intake and complete-first use the certified draft's Mission, not an unrelated active Mission",
+  "command": "node tests/mission-approval-target.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-source-brief",
+  "description": "Exercise a synthetic documentation-led offer, unverified answer, source freshness and scoped brief revision",
+  "command": "node tests/guided-source-brief.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}

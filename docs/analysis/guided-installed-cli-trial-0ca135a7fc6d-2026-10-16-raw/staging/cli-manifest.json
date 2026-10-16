@@ -1,0 +1,27 @@
+{
+  "status": "cli-installed",
+  "stagedAt": "2026-10-16T09:54:36.424Z",
+  "builtFrom": "C:\\Users\\j\\Projects\\synth",
+  "testedRevision": {
+    "commit": "0ca135a7fc6d018df3d7de30ac59ef56dd45d2d5",
+    "branch": "arena/f3c711cb-synth",
+    "subject": "0ca135a Say how to file a run that comes after another one",
+    "workingTreeDirty": true
+  },
+  "installedCli": {
+    "bin": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\0ca135a7fc6d\\global\\synth.cmd",
+    "tarball": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\0ca135a7fc6d\\pack\\synth-framework-synth-2.6.1.tgz",
+    "tarballSha256": "5cd1899d363fbb1a9ac0c51a83cd3a376b05f4ccdc480bc6889e94c429cbb86b",
+    "version": {
+      "status": "ok",
+      "version": "2.6.1",
+      "name": "synth",
+      "schema": "synth-cli-v1"
+    }
+  },
+  "productCommandsRun": [
+    "synth --version"
+  ],
+  "trialTestsRun": 0,
+  "lifecycleCommandsRun": []
+}

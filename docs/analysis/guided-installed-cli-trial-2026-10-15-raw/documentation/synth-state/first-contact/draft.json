@@ -1,0 +1,141 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Continue from the requirements in docs/. The next slice is undecided.",
+      "goals": [],
+      "successCriteria": []
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.083,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 0,
+        "intent.successCriteria": 0,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Continue from the requirements in docs/. The next slice is undecided.",
+        "timestamp": "2026-10-16T05:40:12.019Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-5b25ba50-5ef5-47f9-b383-ab793c570838: What editing interaction style should the next slice implement, given the first board exports one SVG from local data and editing is requested but undecided?",
+        "timestamp": "2026-10-16T05:40:30.247Z"
+      }
+    ]
+  },
+  "journeyId": "19bf4fc1-541c-4307-b027-385689446fef",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-5b25ba50-5ef5-47f9-b383-ab793c570838",
+      "journeyId": "19bf4fc1-541c-4307-b027-385689446fef",
+      "version": 1,
+      "scope": "Continue from docs/requirements.md; next slice decides editing interaction only, preserving single-SVG local export",
+      "question": "What editing interaction style should the next slice implement, given the first board exports one SVG from local data and editing is requested but undecided?",
+      "options": [
+        {
+          "id": "keep-single-export",
+          "label": "Keep single-SVG local export, defer editing",
+          "tradeoff": "Protects the agreed export behavior, but leaves the requested editing unaddressed for this slice.",
+          "acceptanceExample": "Given local board data, when the first slice runs, then one SVG is exported and no editing interaction is added yet.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 1,
+            "quote": "The first board exports one SVG from local data.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        },
+        {
+          "id": "small-edit-on-export",
+          "label": "Small edit interaction on top of local export",
+          "tradeoff": "Delivers the requested editing in the smallest form, but forces a choice of interaction style now.",
+          "acceptanceExample": "Given local board data and one SVG export, when a user edits an entry, then re-export reflects the edit and the chosen interaction is the only new behavior.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 2,
+            "quote": "Editing is requested, but its interaction style is undecided.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        },
+        {
+          "id": "decide-interaction-first",
+          "label": "Decide interaction style before extending export",
+          "tradeoff": "Makes the open decision explicit with consequences for scope, but delays any editing implementation until the style is agreed.",
+          "acceptanceExample": "Given the undecided interaction style, when the next slice is scoped, then it names the interaction explicitly and rejects silent extension of the export format.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 2,
+            "quote": "Editing is requested, but its interaction style is undecided.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        }
+      ],
+      "offeredAt": "2026-10-16T05:40:30.247Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "updatedAt": "2026-10-16T05:40:30.252Z"
+}

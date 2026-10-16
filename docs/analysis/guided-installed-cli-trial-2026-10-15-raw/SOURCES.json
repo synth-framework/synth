@@ -1,0 +1,165 @@
+{
+  "capturedAt": "2026-10-16T08:18:35.057Z",
+  "workspace": "/home/user/trial-workspace",
+  "staging": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\917d662a31bd",
+  "sources": [
+    {
+      "bundlePath": "INSTRUCTIONS.md.txt",
+      "sourcePath": "/home/user/trial-workspace/INSTRUCTIONS.md",
+      "sourceRoot": "/home/user/trial-workspace",
+      "sourceRelative": "INSTRUCTIONS.md",
+      "bytes": 7600,
+      "sha256": "07a7a56df1bb0ec7a5e3f9d5f9017cc12c7b7c42fb00c964be6cae1545d72321",
+      "kind": "staged instruction set",
+      "copied": true
+    },
+    {
+      "bundlePath": "ENVIRONMENT.md.txt",
+      "sourcePath": "/home/user/trial-workspace/ENVIRONMENT.md",
+      "sourceRoot": "/home/user/trial-workspace",
+      "sourceRelative": "ENVIRONMENT.md",
+      "bytes": 708,
+      "sha256": "aaa644ba7527769a335fbaf5a003ed30d6e4f1d571799a6bc82a93d5558899a0",
+      "kind": "staged environment note",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/REPORT.md.txt",
+      "sourcePath": "/home/user/trial-workspace/greenfield/REPORT.md",
+      "sourceRoot": "/home/user/trial-workspace/greenfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 6875,
+      "sha256": "121ea4a73cfff33008f16435063dea43c668bfa829bf47685f3e3a79e75c92de",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/offer.json",
+      "sourcePath": "/home/user/trial-workspace/greenfield/offer.json",
+      "sourceRoot": "/home/user/trial-workspace/greenfield",
+      "sourceRelative": "offer.json",
+      "bytes": 2001,
+      "sha256": "0bc02407b7daf11b9a6444a6431b0d63ad0f125e3679685f588ebb1dbdb4cc6a",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/synth-state/data/cli-errors.jsonl",
+      "sourcePath": "/home/user/trial-workspace/greenfield/.synth/data/cli-errors.jsonl",
+      "sourceRoot": "/home/user/trial-workspace/greenfield",
+      "sourceRelative": ".synth/data/cli-errors.jsonl",
+      "bytes": 476,
+      "sha256": "716098579c9bf8fdc383501ac85ed443b266569a53b4bc467299874c6f4465ef",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/synth-state/first-contact/draft.json",
+      "sourcePath": "/home/user/trial-workspace/greenfield/.synth/first-contact/draft.json",
+      "sourceRoot": "/home/user/trial-workspace/greenfield",
+      "sourceRelative": ".synth/first-contact/draft.json",
+      "bytes": 6004,
+      "sha256": "3fd6502dccef493e0dd41be775aed6dfc34ab80961db413d2598ed3b958d02cd",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/synth-state/first-contact/transcript.jsonl",
+      "sourcePath": "/home/user/trial-workspace/greenfield/.synth/first-contact/transcript.jsonl",
+      "sourceRoot": "/home/user/trial-workspace/greenfield",
+      "sourceRelative": ".synth/first-contact/transcript.jsonl",
+      "bytes": 499,
+      "sha256": "ba27d1824e32fc0ecdc227df0bd929b2d5f2dd878c6866fa5c0b358821e96757",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/REPORT.md.txt",
+      "sourcePath": "/home/user/trial-workspace/brownfield/REPORT.md",
+      "sourceRoot": "/home/user/trial-workspace/brownfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 4650,
+      "sha256": "e71a020e2e1f5d80bc46300ff4b434f2d1a61e143019fce2e3f7f4cc03dee703",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/offer.json",
+      "sourcePath": "/home/user/trial-workspace/brownfield/offer.json",
+      "sourceRoot": "/home/user/trial-workspace/brownfield",
+      "sourceRelative": "offer.json",
+      "bytes": 1799,
+      "sha256": "4b7e0b6be41e8c6e97e12f9a6e11631f12f1c1a1aba00fd98f76dc578c3c9d65",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/synth-state/first-contact/draft.json",
+      "sourcePath": "/home/user/trial-workspace/brownfield/.synth/first-contact/draft.json",
+      "sourceRoot": "/home/user/trial-workspace/brownfield",
+      "sourceRelative": ".synth/first-contact/draft.json",
+      "bytes": 5470,
+      "sha256": "2bfac0b781cf7157da4388a89b3c56ab4c1163b9a98ff4b841fa8b11a76e8e61",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/synth-state/first-contact/transcript.jsonl",
+      "sourcePath": "/home/user/trial-workspace/brownfield/.synth/first-contact/transcript.jsonl",
+      "sourceRoot": "/home/user/trial-workspace/brownfield",
+      "sourceRelative": ".synth/first-contact/transcript.jsonl",
+      "bytes": 486,
+      "sha256": "2f58657f914908583ec449f479738714e97c191e87b3f4af2e198c713b9693a0",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/REPORT.md.txt",
+      "sourcePath": "/home/user/trial-workspace/documentation/REPORT.md",
+      "sourceRoot": "/home/user/trial-workspace/documentation",
+      "sourceRelative": "REPORT.md",
+      "bytes": 3787,
+      "sha256": "bd4aefab28a593524bc9a103bcfb7213a05204b2bf2695c51e7c6503639ccfaf",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/offer.json",
+      "sourcePath": "/home/user/trial-workspace/documentation/offer.json",
+      "sourceRoot": "/home/user/trial-workspace/documentation",
+      "sourceRelative": "offer.json",
+      "bytes": 1838,
+      "sha256": "0ba521ee0838c25030208121cb9ef0d68bb71d27ccfdaa55ec4b78492f0fb3ff",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/synth-state/first-contact/draft.json",
+      "sourcePath": "/home/user/trial-workspace/documentation/.synth/first-contact/draft.json",
+      "sourceRoot": "/home/user/trial-workspace/documentation",
+      "sourceRelative": ".synth/first-contact/draft.json",
+      "bytes": 5443,
+      "sha256": "1eee1b52f870fb2512c910d25519552f22f15421c86f600a1aa771aba628da79",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/synth-state/first-contact/transcript.jsonl",
+      "sourcePath": "/home/user/trial-workspace/documentation/.synth/first-contact/transcript.jsonl",
+      "sourceRoot": "/home/user/trial-workspace/documentation",
+      "sourceRelative": ".synth/first-contact/transcript.jsonl",
+      "bytes": 477,
+      "sha256": "5223d4d425c10f45e564107cfa5da9472cd366a74e37b276c8c4bbd312da1cf2",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "fixtures.json",
+      "sourcePath": null,
+      "bytes": 2822,
+      "sha256": "86c843bb1f910ab99718b9a90a0b53176b8b0934447761d2f1f44a2b55f9d216",
+      "kind": "recomputed revisions",
+      "copied": true
+    }
+  ]
+}

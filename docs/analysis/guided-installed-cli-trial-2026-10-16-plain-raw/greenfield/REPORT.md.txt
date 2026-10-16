@@ -1,0 +1,10 @@
+TEST: green / greenfield/
+COMMANDS: (no shell commands run for this test; directory listing done via file read)
+APPROACH: Inspected greenfield/ directory first and confirmed it is empty; derived proposal only from the quoted task text; wrote offer.json with one decision question and three grounded options; wrote this report. Chose this process because with no starting files the only evidence is the task text, and the required observation is questions/options about board kind, inputs, editing and validation without inventing GUI or stack.
+OFFER: path greenfield/offer.json; question "What board input and editing interaction should the first slice support?"; options (A) SVG-file input with single-attribute edit, (B) Explicit specimen-list input with list edit, (C) Fixed minimal board kind with constrained edit.
+CITATIONS: No file citations (directory empty, verified by read of greenfield/). Task text quoted in offer.json as "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." — matches INSTRUCTIONS.md Section 3 task text.
+APPLICATION TESTS: N/A (brownfield only)
+ASSUMPTIONS: Assumed empty directory means no hidden constraints on board kind, input format, or stack; assumed "specimen-board exporter" implies SVG output but left board kind open.
+STILL OPEN: Decision in offer.json left to a person (board input and editing interaction); board kind, full input schema, validation rules, and wider editing scope unverified and undecided.
+PROBLEMS: None; nothing misled.
+EFFORT: ~5 minutes for this test

@@ -1,0 +1,36 @@
+TEST: brown / brownfield/
+COMMANDS:
+- `synth first-contact --dry-run` in brownfield/ — exit 0
+- `npm test` in brownfield/ (before any change) — exit 0
+- `synth first-contact start "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working."` in brownfield/ — exit 0
+- `synth first-contact status` in brownfield/ (after start) — exit 0
+- `synth first-contact clarify --source-offer offer.json` in brownfield/ — exit 0
+- `synth first-contact status` in brownfield/ (after offer) — exit 0
+- `npm test` in brownfield/ (after offer; no source edits made) — exit 0
+CLI OUTPUT:
+- --dry-run: kind FirstContactOnboardPlan, detected brownfield, projectName brownfield; stages detect/analyze/apply; wouldCreate .synth/manifest.json, .synth/data/event-log.jsonl, .synth/data/canonical-state.json, docs/reference/capability-validation-map.json; wouldRun `synth bootstrap --approve`; nextStep `synth discover . --export`; repositoryAdapter detected none; sourceHandoff not-ingested with files docs/limitation.md, package.json, src/board.js, tests/board.test.js and live excerpts matching real lines. Did not follow bootstrap/discover/docs-generate/adapter steps — see PROBLEMS.
+- start: kind FirstContactDraft, draftPath .synth/first-contact/draft.json, intent reproduced exactly, confidence overall 0.083; nextStep `synth first-contact clarify`.
+- status (after start): kind FirstContactStatus, state draft, canApprove false, sourceOffers [], workingBrief no-source-offer; nextStep clarify.
+- clarify --source-offer: kind FirstContactSourceOfferRecorded, offer id offer-89d39751-1141-4980-a73b-87dd1efed86a, version 1, attribution agent-authored-offer.
+- status (final): kind FirstContactStatus, state draft, canApprove false, sourceOffers contains the recorded offer, workingBrief status awaiting-response, version 1, sourceFreshness current; nextStep `synth first-contact clarify`.
+OFFER: brownfield/offer.json
+- scope: "Extend the existing SVG board renderer with a user-selected fill color; existing label output and tests keep working, delta only, no rewrite"
+- question: "How should the user-selected fill color be accepted while keeping the existing label output unchanged?"
+- options:
+  - optional-fill-arg / "Optional second fill argument, default preserves output" / source src/board.js:1 / acceptanceExample render('A') still '<text>A</text>', render('A','red') preserves label plus fill
+  - fill-preserves-test / "Additive fill that keeps the existing test green" / source tests/board.test.js:4 / acceptanceExample existing test unchanged, fill only additive
+  - fill-delta-only / "Fill-color delta only, label behavior untouched" / source docs/limitation.md:1 / acceptanceExample limitation gap closed, labels as before plus fill
+- No wholesale rewrite proposed; delta only. Ends awaiting-response (no --selection/--human-response used).
+CITATIONS:
+- {"path": "src/board.js", "line": 1, "quote": "export const render = label => `<text>${label}</text>`;"} — matches real file content and line 1 exactly; CLI returned sha256 55076569...
+- {"path": "tests/board.test.js", "line": 4, "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));"} — matches real file line 4 exactly; CLI returned sha256 d97df217...
+- {"path": "docs/limitation.md", "line": 1, "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output."} — matches real file line 1 exactly; CLI returned sha256 f4ee00a6...
+APPLICATION TESTS:
+- Before: `npm test` (node --test tests/board.test.js) — exit 0 — 1 pass (existing label), 0 fail.
+- After: `npm test` — exit 0 — 1 pass, 0 fail. No source, test, or fixture edits made; did not edit existing tests or fixtures.
+ASSUMPTIONS: None about fill API shape beyond the question; left fill passing/defaults/validation to a person. Assumed relative paths (src/board.js etc.) from brownfield/ are the correct citation form — CLI accepted them, confirming the assumption.
+STILL OPEN: How fill color should be accepted (positional arg vs other delta form, defaults, validation) while preserving render('A') output and the existing test. Nothing approved, verified, or delivered; no code changed.
+PROBLEMS:
+- CLI --dry-run suggested `synth bootstrap --approve`, `synth discover . --export`, `synth docs generate --knowledge-base ./docs`, and `synth adapter init`. Did not run any: INSTRUCTIONS.md §2/§5 requires the start/status/clarify --source-offer/status path and forbids approve/materialize/Mission/Expedition/publishing; bootstrap/approve and Mission-equivalent onboarding steps fall under the forbidden lifecycle actions. Recorded here per §2.
+- No CLI refusal/error/contradiction beyond the expected next-step divergence; offer accepted first try.
+EFFORT: ~5 minutes for this test.

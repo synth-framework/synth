@@ -8,7 +8,7 @@
 import { spawnSync } from "child_process"
 import fs from "fs/promises"
 import path from "path"
-import { runSynth, parseJson, withTempDir, writeManifest, CLI_PATH } from "./helpers/cli-harness.js"
+import { runSynth, parseJson, withTempDir, writeManifest, readEventLog, CLI_PATH } from "./helpers/cli-harness.js"
 import { assert } from "./helpers/assert.js"
 
 async function testDryRunOnEmptyDirectory() {
@@ -27,6 +27,8 @@ async function testDryRunOnEmptyDirectory() {
     assert(output.taskPlan.includes("onboarding:mission"), "taskPlan should include onboarding:mission")
     assert(Array.isArray(output.wouldCreate), "wouldCreate should be an array")
     assert(output.wouldCreate.includes(".synth/manifest.json"), "wouldCreate should include manifest")
+    assert(output.sourceHandoff.sourceStatus === "not-ingested", "an empty workspace must not pretend it has source evidence")
+    assert(output.sourceHandoff.files.length === 0 && output.sourceHandoff.nextSteps.length === 0, "greenfield should begin with the idea, not invented file paths")
 
     const files = await fs.readdir(tmpDir)
     assert(files.length === 0, "dry-run should not write files")
@@ -49,6 +51,52 @@ async function testPlanOnBrownfieldDirectory() {
     assert(output.wouldRun.includes("synth bootstrap --approve"), "plan should include bootstrap")
   })
   console.log("[PASS] synth first-contact on brownfield directory returns bootstrap plan")
+}
+
+async function testSourceHandoffBeforeApproval() {
+  await withTempDir("synth-guided-sources-", async (tmpDir) => {
+    for (const directory of ["docs", "knowledge", "src", "tests"]) {
+      await fs.mkdir(path.join(tmpDir, directory))
+    }
+    await fs.writeFile(path.join(tmpDir, "docs", "board.md"), "# Specimen boards\nUse portable tokens.\n")
+    await fs.writeFile(path.join(tmpDir, "knowledge", "constraints.md"), "# Collaboration\nSources must stay local; shared editing is also requested.\n")
+    await fs.writeFile(path.join(tmpDir, "src", "board.js"), "export const renderBoard = () => '<svg/>'\n")
+    await fs.writeFile(path.join(tmpDir, "tests", "board.test.js"), "// Existing board test\n")
+
+    const result = runSynth(["first-contact", "--dry-run"], tmpDir)
+    assert(result.status === 0, `source preview should exit 0: ${result.stdout}\n${result.stderr}`)
+    const output = parseJson(result.stdout)
+    const handoff = output.sourceHandoff
+    assert(handoff?.sourceStatus === "not-ingested", "inventory must not claim the documents were read or approved")
+    assert(handoff.files.includes("src/board.js") && handoff.files.includes("tests/board.test.js"), "brownfield source/test paths must be visible")
+    assert(handoff.files.includes("docs/board.md") && handoff.files.includes("knowledge/constraints.md"), "both possible documentation roots must be visible")
+    assert(handoff.nextSteps.includes("synth discover . --export"), "brownfield must show the actual discovery handoff")
+    assert(handoff.nextSteps.includes("synth docs generate --knowledge-base ./knowledge"), "knowledge/ must not silently route to ./docs")
+    assert(handoff.selectionRequired === true, "two document roots must require explicit source selection")
+    assert(output.nextStep.includes("choose the intended source"), "do not silently select docs/ or knowledge/ or suggest approval before review")
+    assert(!handoff.nextSteps.some((s) => s.includes("alignment prepare")), "source inventory must not fabricate an approved reviewer")
+    assert(!(await fs.readdir(tmpDir)).includes(".synth"), "dry-run must not write governance files")
+  })
+  console.log("[PASS] first-contact preview inventories sources without claiming ingestion or human choice")
+}
+
+async function testDocsOnlyHandoff() {
+  await withTempDir("synth-guided-docs-", async (tmpDir) => {
+    await fs.mkdir(path.join(tmpDir, "docs"))
+    await fs.mkdir(path.join(tmpDir, "knowledge", "specs"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, "knowledge", "specs", "atlas.md"), "# Synthetic atlas\nComponent states are not yet specified.\n")
+    const result = runSynth(["first-contact", "--dry-run"], tmpDir)
+    assert(result.status === 0, `knowledge-only preview should exit 0: ${result.stdout}\n${result.stderr}`)
+    const output = parseJson(result.stdout)
+    const handoff = output.sourceHandoff
+    assert(handoff.files.includes("knowledge/specs/atlas.md"), "nested knowledge source path must be reported")
+    assert(handoff.nextSteps.includes("synth docs generate --knowledge-base ./knowledge"), "explicit knowledge route required")
+    assert(!handoff.nextSteps.includes("synth docs generate --knowledge-base ./docs"), "empty docs/ must not be treated as an ingested source")
+    assert(handoff.selectionRequired === false, "one populated source root should not require a root choice")
+    assert(handoff.sourceStatus === "not-ingested", "preview must not claim parsing or conflict resolution")
+    assert(output.nextStep === "synth docs generate --knowledge-base ./knowledge", "knowledge-only guidance should not say to apply governance before reading sources")
+  })
+  console.log("[PASS] knowledge-only preview gives the correct explicit docs source")
 }
 
 async function testAlreadyInitializedV2() {
@@ -81,8 +129,10 @@ async function testApproveOnEmptyDirectory() {
     const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
     assert(manifest.projectName === "Approved Test Project", "manifest projectName should match")
 
-    const eventLogPath = path.join(tmpDir, ".synth", "data", "event-log.jsonl")
-    assert(await fs.access(eventLogPath).then(() => true).catch(() => false), "event log should be created")
+    // The authoritative event store is partitioned on current builds; a
+    // monolithic event-log.jsonl is only a legacy fallback.
+    const events = await readEventLog(tmpDir)
+    assert(events.some((event) => event.type === "PROJECT_INITIALIZED"), "project initialization should be recorded in the event stream")
   })
   console.log("[PASS] synth first-contact --approve on empty directory initializes project")
 }
@@ -179,6 +229,8 @@ async function testOnboardingGovernTaskRunsProjectGovern() {
 async function main() {
   await testDryRunOnEmptyDirectory()
   await testPlanOnBrownfieldDirectory()
+  await testSourceHandoffBeforeApproval()
+  await testDocsOnlyHandoff()
   await testAlreadyInitializedV2()
   await testApproveOnEmptyDirectory()
   await testLegacyStateArchivedAndBootstrapped()

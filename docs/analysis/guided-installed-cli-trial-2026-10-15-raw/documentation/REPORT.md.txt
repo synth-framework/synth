@@ -1,0 +1,37 @@
+TEST: docs (documentation/)
+COMMANDS: each run inside documentation/ with exit code (absolute CLI = C:\Users\j\AppData\Local\Temp\trial-staging\917d662a31bd\global\synth.cmd, v2.6.1)
+- `<absolute> first-contact --dry-run` -> exit 0, detected brownfield (docs only), excerpts docs/requirements.md:1-2
+- `<absolute> first-contact start "Continue from the requirements in docs/. The next slice is undecided."` -> exit 0, draft created, confidence 0.083
+- `<absolute> first-contact status` -> exit 0, state draft, no-source-offer
+- `<absolute> first-contact clarify --source-offer offer.json` -> exit 0, FirstContactSourceOfferRecorded version 1
+- `<absolute> first-contact status` -> exit 0, workingBrief awaiting-response
+Used absolute path for same version reason as prior tests (PATH 2.4.1 lacks --dry-run/--source-offer).
+CLI OUTPUT: what SYNTH showed at each step, summarized, including final status
+- dry-run: pending-approval, detected brownfield, wouldCreate manifest/event-log, wouldRun bootstrap --approve (not run per §5), sourceHandoff files [docs/requirements.md] with both lines quoted, nextStep docs generate (not followed; followed INSTRUCTIONS.md start).
+- start/status: draft, unknowns audience/environment/capabilities, canApprove false.
+- final status: state draft, 1 sourceOffer, 0 sourceAnswers, workingBrief awaiting-response, sourceFreshness current, nextStep clarify. No approval/materialize.
+OFFER: path to offer.json, and the question/options it contains
+- Path: documentation/offer.json
+- scope: "Continue from docs/requirements.md; next slice decides editing interaction only, preserving single-SVG local export"
+- question: "What editing interaction style should the next slice implement, given the first board exports one SVG from local data and editing is requested but undecided?"
+- options:
+  1. keep-single-export / "Keep single-SVG local export, defer editing"
+  2. small-edit-on-export / "Small edit interaction on top of local export"
+  3. decide-interaction-first / "Decide interaction style before extending export"
+  The undecided interaction is surfaced as the decision with consequences (defer vs implement vs decide-first); nothing silently resolved.
+CITATIONS: each citation and whether it matched the real file content and line
+- docs/requirements.md:1 quote "The first board exports one SVG from local data." -> matched live line 1, CLI accepted (sha256 b51353...).
+- docs/requirements.md:2 quote "Editing is requested, but its interaction style is undecided." -> matched live line 2, CLI accepted (used for options 2 and 3).
+- Both lines of the only docs/ file cited by path and line; verified by CLI exact-line check.
+APPLICATION TESTS: not applicable (documentation test; brownfield only per §3).
+ASSUMPTIONS: what you assumed without evidence
+- Assumed the tension between line 1 (single-SVG local export) and line 2 (editing requested, style undecided) is the genuine conflict/decision to surface, rather than inventing additional requirements.
+- Assumed duplicate citation of line 2 for two options is acceptable since CLI validates per-option line match, not uniqueness.
+STILL OPEN: decisions you left to a person, and anything you could not verify
+- Editing interaction style for next slice left awaiting-response; no selection/human-response, no approve/materialize.
+- Could not verify preferred interaction; stopped rather than guessing.
+PROBLEMS: anything the CLI got wrong, refused, or that contradicted these instructions
+- dry-run classified docs-only dir as "brownfield" and suggested bootstrap/docs-generate nextSteps not in INSTRUCTIONS.md; followed INSTRUCTIONS.md start (valid per CLI help).
+- Same PATH vs staged version mismatch as prior tests; used absolute path.
+EFFORT: rough elapsed time for this test
+- ~6 minutes.

@@ -1,0 +1,38 @@
+TEST: docs / documentation/
+COMMANDS: each run inside documentation/ with exit code
+- synth first-contact --dry-run => exit 0
+- synth first-contact start "Continue from the requirements in docs/. The next slice is undecided." => exit 0
+- synth first-contact status => exit 0
+- synth first-contact clarify --source-offer offer.json => exit 0 (recorded offer-a24af281-490b-4863-b1c3-d221c7ca1efe, version 1)
+- synth first-contact status (final) => exit 0
+CLI OUTPUT: summarized
+- --dry-run: kind FirstContactOnboardPlan, detected brownfield (existing docs), wouldCreate .synth/manifest.json etc, wouldRun synth bootstrap --approve, nextStep "synth docs generate --knowledge-base ./docs". sourceHandoff files ["docs/requirements.md"] with excerpts lines 1-2. Notice: quoted prefixes are live partial evidence, not parsed requirements.
+- start: kind FirstContactDraft, draftPath .synth/first-contact/draft.json, intent reproduced exactly, confidence overall 0.083, unknowns audience/runtime/language/capabilities, nextStep clarify.
+- status pre-offer: state draft, canApprove false, workingBrief no-source-offer, nextStep clarify.
+- clarify --source-offer: kind FirstContactSourceOfferRecorded, 3 options, attribution agent-authored-offer.
+- status final: state draft, canApprove false, sourceOffers 1, sourceAnswers [], workingBrief status awaiting-response, version 1, sourceFreshness current, nextStep clarify. No approval/materialize/mission, no selection/human-response.
+OFFER: path offer.json (documentation/offer.json)
+- scope: Next slice from docs/ requirements: single-SVG export with requested but undecided editing
+- question: What should the next undecided slice implement for editing interaction while preserving single-SVG export from local data?
+- options:
+  1. single-export-gate / Single-SVG export from local data as the slice gate / tradeoff keeps export guarantee but leaves editing undecided / acceptanceExample fixed local data emits exactly one SVG / source docs/requirements.md:1
+  2. export-only-defer-edit / Export-only next slice, editing interaction explicitly deferred / tradeoff delivers export now but delays editing value / acceptanceExample edit request without agreed style ships export-only with open decision recorded / source docs/requirements.md:2
+  3. validated-local-edit / Minimal local-data edit with validation before single export / tradeoff concrete path with consequences but commits to one interaction pre-decision / acceptanceExample invalid correction rejected with rule name before export / source docs/requirements.md:2
+- Undecided editing left as explicit decision with consequences per option; nothing silently resolved.
+CITATIONS: each matched live file
+- docs/requirements.md is the only file under docs/ (verified via directory listing; length 111 bytes, 2 lines).
+- docs/requirements.md:1 quote "The first board exports one SVG from local data." => matched, CLI accepted sha256 b51353a3...
+- docs/requirements.md:2 quote "Editing is requested, but its interaction style is undecided." => matched twice (options 2 and 3), CLI accepted same sha256.
+- Both lines read in full (Read tool) and cited by exact path/line/quote; no other docs/ files exist to cite.
+APPLICATION TESTS: N/A (documentation-led only; brownfield npm-test rule does not apply; no package.json/test in this directory)
+ASSUMPTIONS: what assumed without evidence
+- Assumed no hidden requirements beyond the 2 read lines; did not invent stack, GUI, or editing style.
+- Assumed next slice must preserve single-SVG-from-local-data while editing remains the consequential choice.
+STILL OPEN: decisions left to a person
+- Which editing path (export-only defer vs minimal validated edit vs export gate) for the next slice; left awaiting-response.
+- No genuine file-vs-file conflict was found in docs/ (single 2-line file, lines compatible); therefore no conflict decision was forced. If a reviewer expects a conflict, there was none to surface without invention.
+- WorkingBrief is awaiting-response, not agreement; not approved/verified/delivered.
+PROBLEMS: CLI wrong / refused / contradicted instructions
+- --dry-run nextStep suggested "synth docs generate --knowledge-base ./docs" (and wouldRun bootstrap --approve), while INSTRUCTIONS section 2 requires start/status/clarify --source-offer/status and section 5 forbids approve/materialize/mission actions. I followed INSTRUCTIONS section 2 and did not run bootstrap --approve or docs generate; recording divergence. No hard error.
+- No other refusals.
+EFFORT: rough elapsed time for this test ~8 minutes
