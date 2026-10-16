@@ -68,7 +68,7 @@ Nothing else lands in TEST_PATH: no `node_modules`, tarball, harness or transcri
 
 It never runs a lifecycle command, never starts a test, never commits or pushes, and never changes a tracked file in the checkout.
 
-**Windows.** The same command works unchanged in PowerShell — quote the TEST_PATH if it contains spaces, e.g. `--workspace "C:\Users\j\Projects\board-test"`. npm's global prefix keeps its executables directly in the prefix directory there, so setup looks for `synth.cmd` as well as `bin/synth` and records whichever it installs.
+**Windows.** The same command works unchanged in PowerShell — quote the TEST_PATH if it contains spaces, e.g. `--workspace "C:\Users\j\Projects\board-test"`. npm's global prefix keeps its executables directly in the prefix directory there, so setup looks for `synth.cmd` as well as `bin/synth` and records whichever it installs. npm itself is a `.cmd` shim, which Node refuses to start directly since its 2024 command-injection fix, so on Windows those shims are launched through the command shell with their arguments quoted; a step that produces no exit code now reports the spawn error instead of `exit null`.
 
 **Plain comparison (optional).** The plain condition never runs the tool, so nothing is built for it — no `npm run build`, no `npm pack`, no install, and the checkout is untouched. Point the same command at a *separate* TEST_PATH whose path does not spell the tool's name, with `--condition plain`: the instruction file and fixtures come straight from the checkout, and the run writes **nothing** outside TEST_PATH. Never let one session see both conditions.
 

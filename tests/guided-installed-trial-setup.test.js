@@ -304,6 +304,43 @@ test("a non-empty TEST_PATH is refused before anything is built and left untouch
   }
 })
 
+test("Windows shims are launched through the command shell, real executables directly", async () => {
+  const script = await loadScript()
+
+  // Node refuses to start a .cmd/.bat through CreateProcess since the 2024 fix;
+  // npm on Windows is npm.cmd, so it must go through the shell.
+  const win = script.spawnPlan("npm.cmd", ["run", "build"], { encoding: "utf-8" }, "win32")
+  assert.equal(win.options.shell, true, "npm.cmd must not be spawned directly")
+  assert.equal(win.command, "npm.cmd")
+
+  const spaced = script.spawnPlan("C:\\Program Files\\nodejs\\npm.cmd", ["run", "build"], {}, "win32")
+  assert.equal(spaced.options.shell, true)
+  assert.equal(spaced.command.startsWith('"') && spaced.command.endsWith('"'), true, "a path with a space must be quoted for cmd.exe")
+
+  const installed = script.spawnPlan("C:\\Temp\\trial-staging\\abc\\global\\synth.cmd", ["--version"], {}, "win32")
+  assert.equal(installed.options.shell, true, "the installed CLI is a .cmd shim as well")
+  assert.equal(installed.args.join(" "), "--version")
+
+  // Node joins a shell command line unescaped, so a path with a space must arrive quoted.
+  const packPath = "C:\\Users\\John Doe\\AppData\\Local\\Temp\\trial-staging\\abc\\pack"
+  const spacedArg = script.spawnPlan("npm.cmd", ["pack", "--pack-destination", packPath], {}, "win32")
+  assert.equal(spacedArg.args[0], "pack", "arguments without spaces stay untouched")
+  assert.equal(spacedArg.args[1], "--pack-destination")
+  assert.equal(spacedArg.args[2], `"${packPath}"`, "an argument with a space must be quoted for cmd.exe")
+
+  assert.equal(script.spawnPlan("git", ["-C", "/repo", "status"], {}, "win32").options.shell, undefined, "git.exe is not a shim")
+  assert.equal(script.spawnPlan("npm", ["run", "build"], {}, "linux").options.shell, undefined, "POSIX npm is a real executable")
+})
+
+test("a spawn that produces no exit code says why instead of printing null", async () => {
+  const script = await loadScript()
+  assert.equal(script.failureDetail({ status: null, error: { code: "EINVAL" } }), " (EINVAL)")
+  assert.equal(script.failureDetail({ status: null, error: new Error("boom") }), " (boom)")
+  assert.equal(script.failureDetail({ status: null, signal: "SIGTERM" }), " (killed by SIGTERM)")
+  assert.equal(script.failureDetail({ status: 1 }), "", "a normal non-zero exit needs no extra detail")
+  assert.equal(script.failureDetail({ status: 0 }), "")
+})
+
 test("the installed binary is discovered where this platform puts it", async () => {
   const script = await loadScript()
   const prefix = await fs.mkdtemp(path.join(os.tmpdir(), "trial-prefix-"))

@@ -186,7 +186,7 @@ export function assertSafeLayout({ repo, workspace, stagingRoot }) {
  * the tarball digest pins what was actually built and installed.
  */
 export function assessRepo(repo, { pin } = {}) {
-  const git = (gitArgs) => spawnSync('git', ['-C', repo, ...gitArgs], { encoding: 'utf-8' })
+  const git = (gitArgs) => spawnTool('git', ['-C', repo, ...gitArgs], { encoding: 'utf-8' })
   const inside = git(['rev-parse', '--is-inside-work-tree'])
   if (inside.status !== 0 || inside.stdout.trim() !== 'true') {
     return { ok: false, kind: 'not-a-checkout', reason: `not a git work tree: ${repo}` }
@@ -221,6 +221,42 @@ export async function workspaceState(dir) {
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex')
+}
+
+/**
+ * How to launch a tool on this platform.
+ *
+ * Node refuses to start a .cmd/.bat through CreateProcess since the 2024
+ * command-injection fix, so npm's Windows shim has to go through the command
+ * shell — with the executable quoted, because the Node install directory often
+ * contains a space. Everything else (git.exe, node.exe, a Linux binary) is
+ * spawned directly.
+ */
+export function spawnPlan(command, args, options = {}, platform = process.platform) {
+  if (platform === 'win32' && /\.(cmd|bat)$/i.test(command)) {
+    // Node joins the command line for the shell without escaping it, so anything
+    // with a space in it — an install path, a temp directory under a user name
+    // with a space, a TEST_PATH — has to be quoted here. Quotes are otherwise
+    // passed through verbatim; cmd.exe metacharacters such as % are not escaped.
+    return {
+      command: /\s/.test(command) ? `"${command}"` : command,
+      args: args.map((value) => (/[\s"]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value)),
+      options: { ...options, shell: true },
+    }
+  }
+  return { command, args, options }
+}
+
+/** Why a spawn produced no exit code: a spawn error or a signal, never a silent null. */
+export function failureDetail(result) {
+  if (result?.error) return ` (${result.error.code ?? result.error.message ?? 'spawn error'})`
+  if (result?.signal) return ` (killed by ${result.signal})`
+  return ''
+}
+
+function spawnTool(command, args, options = {}) {
+  const plan = spawnPlan(command, args, options)
+  return spawnSync(plan.command, plan.args, plan.options)
 }
 
 async function exists(target) {
@@ -431,7 +467,7 @@ async function main(argv) {
   }
 
   const log = []
-  const logger = { step: (entry) => log.push(`$ ${entry.command}\n${entry.outputTail}`.trim()) }
+  const logger = { step: (entry) => log.push(`$ ${entry.command}\n${entry.outputTail}${entry.spawnNote ? `${entry.outputTail ? '\n' : ''}[${entry.spawnNote}]` : ''}`.trim()) }
   const record = (name, command, result, cwd) => logger.step({
     step: name,
     command,
@@ -439,19 +475,27 @@ async function main(argv) {
     exitCode: result.status,
     durationMs: result.durationMs,
     outputTail: `${result.stdout || ''}${result.stderr || ''}`.trim().split('\n').slice(-6).join('\n'),
+    spawnNote: result.error ? `spawn ${result.error.code ?? result.error.message}` : result.signal ? `signal ${result.signal}` : undefined,
   })
   const run = (name, command, args, cwd) => {
     const started = Date.now()
-    const result = spawnSync(command, args, { cwd, encoding: 'utf-8' })
-    const wrapped = { status: result.status, stdout: result.stdout || '', stderr: result.stderr || '', durationMs: Date.now() - started }
+    const result = spawnTool(command, args, { cwd, encoding: 'utf-8' })
+    const wrapped = {
+      status: result.status,
+      stdout: result.stdout || '',
+      stderr: result.stderr || '',
+      durationMs: Date.now() - started,
+      error: result.error,
+      signal: result.signal,
+    }
     record(name, [command, ...args].join(' '), wrapped, cwd)
     if (wrapped.status !== 0) {
       const detail = `${wrapped.stdout}${wrapped.stderr}`.trim().split('\n').slice(-4).join(' | ')
-      throw new Error(`${name} failed (exit ${wrapped.status})${detail ? `: ${detail}` : ''}`)
+      throw new Error(`${name} failed (exit ${wrapped.status})${failureDetail(wrapped)}${detail ? `: ${detail}` : ''}`)
     }
     return wrapped
   }
-  const runCapture = (command, args, cwd) => spawnSync(command, args, { cwd, encoding: 'utf-8' })
+  const runCapture = (command, args, cwd) => spawnTool(command, args, { cwd, encoding: 'utf-8' })
 
   // --- guided: build, pack and install from this checkout; plain: build nothing ---
   let cliManifest = null
