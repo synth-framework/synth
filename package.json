@@ -96,6 +96,7 @@
     "test:guided-choice-pr-description": "node scripts/task-adapter-shim.js test:guided-choice-pr-description",
     "test:guided-source-brief": "node scripts/task-adapter-shim.js test:guided-source-brief",
     "test:guided-three-path-acceptance": "node scripts/task-adapter-shim.js test:guided-three-path-acceptance",
+    "test:guided-response-provenance": "node scripts/task-adapter-shim.js test:guided-response-provenance",
     "test:mission-approval-target": "node scripts/task-adapter-shim.js test:mission-approval-target",
     "test:alignment-scope-evidence": "node scripts/task-adapter-shim.js test:alignment-scope-evidence",
     "test:first-contact-archive-a": "node scripts/task-adapter-shim.js test:first-contact-archive-a",

@@ -32,7 +32,8 @@ export interface SourceAnswer {
   id: string
   offerId: string
   journeyId: string
-  proposedSelection: string
+  /** Agent/caller's proposed mapping, not an authenticated respondent choice. Absent means unresolved. */
+  proposedSelection?: string
   response: string
   answeredAt: string
   attribution: "cli-response-unverified"
@@ -109,7 +110,7 @@ export async function createSourceOffer(cwd: string, proposalFile: string, journ
   for (const raw of proposal.options as Array<Record<string, unknown>>) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Each option must be an object.")
     const id = string(raw.id, "option id")
-    if (!/^[a-zA-Z0-9-]+$/.test(id) || ids.has(id)) throw new Error("Option IDs must be unique and alphanumeric/hyphenated.")
+    if (!/^[a-zA-Z0-9-]+$/.test(id) || id === "defer" || ids.has(id)) throw new Error("Option IDs must be unique, alphanumeric/hyphenated and not the reserved defer selection.")
     ids.add(id)
     const ref = raw.source as Record<string, unknown> | undefined
     if (!ref || typeof ref !== "object" || Array.isArray(ref)) throw new Error("Each option needs a source citation.")
@@ -142,11 +143,14 @@ export async function createSourceOffer(cwd: string, proposalFile: string, journ
     offeredAt: new Date().toISOString(), attribution: "agent-authored-offer" }
 }
 
-export function createSourceAnswer(offer: SourceOffer, selection: string, response: string, existing: SourceAnswer[]): SourceAnswer {
+export function createSourceAnswer(offer: SourceOffer, selection: string | undefined, response: string, existing: SourceAnswer[]): SourceAnswer {
   if (existing.some((answer) => answer.offerId === offer.id)) throw new Error("This offer already has an answer; revise the offer instead of overwriting it.")
-  if (selection !== "defer" && !offer.options.some((option) => option.id === selection)) throw new Error("Selection must name a displayed option ID or defer.")
+  if (selection !== undefined && selection !== "defer" && !offer.options.some((option) => option.id === selection)) {
+    throw new Error("Selection must name a displayed option ID or defer; omit it when the supplied response is unresolved.")
+  }
   return { id: `answer-${randomUUID()}`, offerId: offer.id, journeyId: offer.journeyId,
-    proposedSelection: selection, response: string(response, "supplied response"), answeredAt: new Date().toISOString(),
+    ...(selection !== undefined ? { proposedSelection: selection } : {}),
+    response: string(response, "supplied response"), answeredAt: new Date().toISOString(),
     attribution: "cli-response-unverified" }
 }
 
@@ -154,9 +158,10 @@ export async function workingBrief(cwd: string, journeyId: string | undefined, o
   const offer = offers.filter((item) => item.journeyId === journeyId).at(-1)
   if (!offer) return { status: "no-source-offer" as const }
   const answer = answers.find((item) => item.offerId === offer.id)
-  const option = offer.options.find((item) => item.id === answer?.proposedSelection)
+  const option = answer?.proposedSelection === "defer" ? undefined : offer.options.find((item) => item.id === answer?.proposedSelection)
   return {
-    status: !answer ? "awaiting-response" as const : option ? "provisional-unverified" as const : "deferred-unverified" as const,
+    status: !answer ? "awaiting-response" as const : answer.proposedSelection === "defer" ? "deferred-unverified" as const :
+      option ? "provisional-unverified" as const : "unresolved-unverified" as const,
     version: offer.version, offerId: offer.id, answerId: answer?.id,
     scope: offer.scope, question: offer.question, proposedSelection: answer?.proposedSelection,
     acceptanceExample: option?.acceptanceExample, source: option?.source,

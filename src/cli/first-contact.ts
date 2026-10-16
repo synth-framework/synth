@@ -229,7 +229,7 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
       { name: "synth first-contact clarify --source-offer <file>", description: "Record an agent-authored contextual offer citing the exact operator request or verified docs/code lines; citations do not prove semantic agreement", args: "--source-offer <workspace-relative JSON file>" },
-      { name: "synth first-contact clarify --source-answer <id>", description: "Record supplied response to latest offer; attribution remains unverified", args: "--source-answer <id> --selection <option-id|defer> --human-response <text>" },
+      { name: "synth first-contact clarify --source-answer <id>", description: "Record raw supplied words against the latest offer; omit selection if ambiguous, or map/defer provisionally; attribution remains unverified", args: "--source-answer <id> --human-response <text> [--selection <option-id|defer>]" },
       { name: "synth first-contact clarify --agent-choice <choice> --reason <why> --scope <area>", description: "Record an agent's provisional choice as open, not human-approved", args: "--agent-choice <choice> --reason <why> --scope <area> [--alternative <option>]" },
       { name: "synth first-contact clarify --review-choice <id> --impact <trivial|material> --reason <why>", description: "Record an assessment; material choices may await an actual PR reviewer", args: "--review-choice <id> --impact <trivial|material> --reason <why> [--decision <keep|change|defer> --human-response <unverified text>]" },
       { name: "synth first-contact project", description: "Project architecture candidates from the draft" },
@@ -302,9 +302,10 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     return
   }
   if (Object.hasOwn(flags, "source-answer")) {
-    if (typeof flags["source-answer"] !== "string" || typeof flags.selection !== "string" || typeof flags["human-response"] !== "string" ||
-        flags.field !== undefined || flags.answer !== undefined || flags["agent-choice"] !== undefined || flags["review-choice"] !== undefined) {
-      printError("--source-answer <id> requires --selection <option-id|defer> and --human-response <supplied words>.")
+    if (typeof flags["source-answer"] !== "string" || (flags.selection !== undefined && typeof flags.selection !== "string") ||
+        typeof flags["human-response"] !== "string" || flags.field !== undefined || flags.answer !== undefined ||
+        flags["agent-choice"] !== undefined || flags["review-choice"] !== undefined) {
+      printError("--source-answer <id> requires --human-response <supplied words>; use --selection <option-id|defer> only for a provisional mapping, or omit it for an unresolved response.")
     }
     const offer = (draft.sourceOffers ?? []).filter((item) => item.journeyId === draft.journeyId).at(-1)
     if (!offer || offer.id !== flags["source-answer"]) printError("Only the latest source offer for this journey may receive an answer.")
