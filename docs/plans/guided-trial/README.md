@@ -25,7 +25,7 @@ One of them is copied into the **root of TEST_PATH as `INSTRUCTIONS.md`**, and t
   [conflicting-documents/]
 ```
 
-Build, pack and install live in the CLI staging directory **outside** TEST_PATH (default: the sibling `<TEST_PATH>-cli`), so no build output, harness or transcript is visible to the agent. The staged CLI is reusable across runs for the same revision, so preparing it beforehand costs nothing at trial time.
+Build, pack and install live in a CLI staging directory **outside** TEST_PATH (`<tmp>/trial-staging/<revision>`), so no build output, harness or transcript is visible to the agent. Staging is keyed by revision and reused, so the second run of the same revision costs nothing.
 
 ## The tests
 
@@ -43,14 +43,12 @@ Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixt
 
 ## Running one
 
-1. Prepare the CLI beforehand, outside TEST_PATH:
-   `node scripts/guided-installed-trial-setup.mjs --repo <checkout> --workspace <TEST_PATH> --stage-only`
-2. Create TEST_PATH:
-   `node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>`
-3. Start one fresh agent session **in TEST_PATH** and give it the printed line — `Read INSTRUCTIONS.md in the root of this workspace and follow it.`
-4. Log verbatim any help you give beyond that line.
+1. From the checkout: `node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>`
+   It creates TEST_PATH when missing (and refuses one that already holds something), stages the CLI outside it, and copies the instruction file and one directory per test.
+2. Start one fresh agent session **in TEST_PATH** and give it the printed line — `Read INSTRUCTIONS.md in the root of this workspace and follow it.`
+3. Log verbatim any help you give beyond that line.
 
-For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; a session must never see both conditions.
+For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; a session must never see both conditions. Optional: `--stage-only` warms the CLI cache without creating TEST_PATH.
 
 ## Keeping the two instruction files consistent
 

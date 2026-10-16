@@ -31,10 +31,11 @@ Anything unmet, and why: `<...>`
 | --- | --- |
 | Operator (who ran the trial) | `<name>` |
 | Setup executed by (agent/tool, model, version) | `<...>` |
-| Beforehand staging command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --repo <...> --workspace <...> --stage-only` → `<exit>` (or the manual sequence in Appendix A) |
-| TEST_PATH creation command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --workspace <...>` → `<exit>` |
-| CLI staging directory (outside TEST_PATH) | `<cli-root>`, e.g. `<TEST_PATH>-cli` |
-| CLI manifest / setup manifest | `<cli-root>/cli-manifest.json`, `<cli-root>/transcripts/setup-manifest.json` (or `none — manual setup`) |
+| Setup command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>` → `<exit>` (or the manual sequence in Appendix A) |
+| TEST_PATH state before setup | `<missing / empty>` |
+| Was TEST_PATH created by setup? | `<yes/no>` |
+| CLI staging directory (outside TEST_PATH) | `<tmp>/trial-staging/<revision>`, reused per revision |
+| CLI manifest / setup manifest | `<staging>/cli-manifest.json`, `<staging>/transcripts/setup-manifest.json` (guided); `none — the plain condition writes nothing outside TEST_PATH` |
 | Instruction file staged at TEST_PATH root | `INSTRUCTIONS.md` (guided or plain), plus `ENVIRONMENT.md` in a guided run |
 | Launch line given to the agent, verbatim | `<Read INSTRUCTIONS.md in the root of this workspace and follow it.>` |
 | Date and timezone, start/end | `<...>` |
@@ -123,7 +124,8 @@ Fill one block per case and condition. Required cases produce six blocks; option
 - Application tests weakened or skipped to make a cell pass: `none` (required).
 - Isolation mode: `<confinement by layout and instruction / container / separate machine>`.
 - Plain condition: `<own TEST_PATH at ...> / <not run>`.
-- Build output visible inside TEST_PATH: `none — staging lives at <cli-root>`.
+- Build output visible inside TEST_PATH: `none — staging lives outside it`.
+
 - Total operator effort and whether it exceeded the time box: `<...>`.
 - Was setup run before the cells by the same agent that ran them? `<yes/no + which cells>`.
 - Any auto-feed: `none — the agent was launched by hand and pointed at the root instruction file, as the current CLI requires`.

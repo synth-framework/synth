@@ -2,9 +2,10 @@
 // SYNTH — guided-journey trial setup executor tests
 // ============================================================
 // These tests cover the setup script's guards, the layout it infers, the staged
-// instruction files and the fixture revision constants. They never clone,
-// build, install or run a trial cell: the npm path is exercised by an operator,
-// not by CI. Every case below is refused before the script can touch the network.
+// instruction files and the fixture revision constants. They never build or
+// install anything: the npm path is exercised by an operator, not by CI. Where a
+// test needs the guided path, it uses a pre-staged CLI fixture so the reuse
+// branch is exercised without network access.
 // ============================================================
 
 import test from "node:test"
@@ -34,6 +35,8 @@ const git = (args, cwd) =>
 const loadLib = () => import(pathToFileURL(LIB).href)
 const loadScript = () => import(pathToFileURL(SCRIPT).href)
 
+const tempPath = (prefix) => path.join(os.tmpdir(), `${prefix}-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`)
+
 /** Create a throwaway git checkout with one commit (and optionally a dirty file). */
 async function makeCheckout(prefix, { dirty = false } = {}) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), prefix))
@@ -43,6 +46,33 @@ async function makeCheckout(prefix, { dirty = false } = {}) {
   git(["commit", "-q", "-m", "initial"], dir)
   if (dirty) await fs.writeFile(path.join(dir, "wip.txt"), "uncommitted\n")
   return dir
+}
+
+const commitOf = (dir) => git(["rev-parse", "HEAD"], dir).stdout.trim()
+
+/**
+ * A pre-staged CLI fixture: the state `--stage-only` would leave behind, with a
+ * placeholder binary. Used so the guided staging branch runs without building.
+ */
+async function makeStagedCli({ commit }) {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "trial-staged-cli-"))
+  for (const dir of ["global/bin", "instructions", "tools/lib", "pack", "transcripts"]) {
+    await fs.mkdir(path.join(root, dir), { recursive: true })
+  }
+  await fs.writeFile(path.join(root, "global", "bin", "synth"), "#!/bin/sh\nexit 0\n")
+  for (const source of [GUIDED_SET, PLAIN_SET]) {
+    await fs.copyFile(source, path.join(root, "instructions", path.basename(source)))
+  }
+  await fs.copyFile(path.resolve(REPO_ROOT, "scripts", "guided-installed-trial-fixtures.mjs"), path.join(root, "tools", "guided-installed-trial-fixtures.mjs"))
+  await fs.copyFile(LIB, path.join(root, "tools", "lib", "guided-trial-fixtures.mjs"))
+  await fs.writeFile(path.join(root, "cli-manifest.json"), `${JSON.stringify({
+    status: "cli-staged",
+    testedRevision: { commit },
+    instructionsDir: path.join(root, "instructions"),
+    fixturesTool: path.join(root, "tools", "guided-installed-trial-fixtures.mjs"),
+    productCommandsRun: ["synth --version"],
+  }, null, 2)}\n`)
+  return root
 }
 
 /**
@@ -62,32 +92,38 @@ function taskTable(text) {
   return rows
 }
 
-test("help states the two inputs, the staging split and that setup stops before the agent", () => {
+test("help documents the single required argument and the inferred rest", () => {
   const result = runScript(["--help"])
   assert.equal(result.status, 0, result.stderr)
-  assert(result.stdout.includes("--repo <path>"), "usage must document the checkout input")
-  assert(result.stdout.includes("--workspace <dir>"), "usage must document the TEST_PATH input")
-  assert(result.stdout.includes("--stage-only"), "usage must document the beforehand staging step")
-  assert(result.stdout.includes("never interfere with the test run"), "usage must state the build lives outside TEST_PATH")
-  assert(result.stdout.includes("told to follow the instruction file in its root"), "usage must describe how the agent starts")
+  assert(result.stdout.includes("--workspace <TEST_PATH>"), "usage must document TEST_PATH")
+  assert(result.stdout.includes("created when missing"), "usage must say TEST_PATH is created when missing")
+  assert(result.stdout.includes("inferred from this script's location"), "usage must say the repository is inferred")
+  assert(result.stdout.includes("cannot interfere with the run"), "usage must state the staging is outside TEST_PATH")
+  assert(result.stdout.includes("Advanced overrides"), "the remaining flags must be presented as advanced")
+  assert(result.stdout.includes("never trial evidence"), "usage must not let setup be read as trial evidence")
 })
 
-test("workspace and, for staging, a repo or cli root are required", () => {
-  const noWorkspace = runScript(["--repo", REPO_ROOT])
-  assert.notEqual(noWorkspace.status, 0)
-  assert(noWorkspace.stderr.includes("--workspace is required"), noWorkspace.stderr)
+test("TEST_PATH is the only required argument, and --stage-only needs none", async () => {
+  const script = await loadScript()
 
-  const stageOnlyNoTarget = runScript(["--repo", REPO_ROOT, "--stage-only"])
-  assert.notEqual(stageOnlyNoTarget.status, 0)
-  assert(stageOnlyNoTarget.stderr.includes("--stage-only needs --workspace"), stageOnlyNoTarget.stderr)
+  const noArgs = runScript([])
+  assert.notEqual(noArgs.status, 0)
+  assert(noArgs.stderr.includes("--workspace is required"), noArgs.stderr)
 
-  const missingStaging = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-no-staging")])
-  assert.notEqual(missingStaging.status, 0)
-  assert(missingStaging.stderr.includes("no staged CLI"), missingStaging.stderr)
+  const minimal = script.parseArgs(["--workspace", "/tmp/board-tests"])
+  assert.equal(minimal.workspace, "/tmp/board-tests")
+  assert.equal(minimal.repo, undefined, "the repository must be inferred, not required")
+  assert.deepEqual(minimal.cases, ["green", "brown", "docs"])
+  assert.equal(minimal.condition, "guided")
+  assert.equal(minimal.cliRoot, undefined, "the staging directory must be inferred")
+
+  const stagingOnly = script.parseArgs(["--stage-only"])
+  assert.equal(stagingOnly.stageOnly, true)
+  assert.equal(stagingOnly.workspace, undefined)
 })
 
-test("unknown or valueless flags fail rather than guessing", () => {
-  const unknown = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-unknown"), "--turbo"])
+test("unknown or valueless flags fail rather than guessing", async () => {
+  const unknown = runScript(["--workspace", tempPath("board-ws-unknown"), "--turbo"])
   assert.notEqual(unknown.status, 0)
   assert(unknown.stderr.includes("Unknown argument: --turbo"), unknown.stderr)
 
@@ -95,73 +131,22 @@ test("unknown or valueless flags fail rather than guessing", () => {
   assert.notEqual(valueless.status, 0)
   assert(valueless.stderr.includes("--workspace requires a value"), valueless.stderr)
 
-  const badCase = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-case"), "--cases", "greenfield"])
+  const badCase = runScript(["--workspace", tempPath("board-ws-case"), "--cases", "greenfield"])
   assert.notEqual(badCase.status, 0)
   assert(badCase.stderr.includes("Unknown case: greenfield"), badCase.stderr)
 
-  const badCondition = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-cond"), "--condition", "guided-ish"])
+  const badCondition = runScript(["--workspace", tempPath("board-ws-cond"), "--condition", "guided-ish"])
   assert.notEqual(badCondition.status, 0)
   assert(badCondition.stderr.includes("--condition must be guided or plain"), badCondition.stderr)
+
+  const script = await loadScript()
+  assert.throws(() => script.parseArgs(["--condition", "plain", "--stage-only"]), /does not use/)
 })
 
-test("plain refuses a TEST_PATH that would reveal the tool, and refuses --stage-only", () => {
-  const leaky = runScript(["--workspace", path.join(os.tmpdir(), "synth-plain-leak"), "--condition", "plain"])
-  assert.notEqual(leaky.status, 0)
-  assert(leaky.stderr.includes("does not spell the tool's name"), leaky.stderr)
-
-  const staging = runScript(["--repo", REPO_ROOT, "--workspace", path.join(os.tmpdir(), "board-plain-stage"), "--condition", "plain", "--stage-only"])
-  assert.notEqual(staging.status, 0)
-  assert(staging.stderr.includes("does not use"), staging.stderr)
-})
-
-test("the plain condition is staged from a checkout without building anything", async () => {
-  // A fake checkout carrying only the files the plain staging path reads: the
-  // instruction sets, the index and the fixture generator with its library.
-  const checkout = await makeCheckout("board-plain-src-")
-  const workspace = path.join(os.tmpdir(), `board-plain-${process.pid}-${Date.now()}`)
-  try {
-    const copies = [
-      ["docs/plans/guided-trial/instructions/guided.md", "docs/plans/guided-trial/instructions/guided.md"],
-      ["docs/plans/guided-trial/instructions/plain.md", "docs/plans/guided-trial/instructions/plain.md"],
-      ["docs/plans/guided-trial/README.md", "docs/plans/guided-trial/README.md"],
-      ["scripts/guided-installed-trial-fixtures.mjs", "scripts/guided-installed-trial-fixtures.mjs"],
-      ["scripts/lib/guided-trial-fixtures.mjs", "scripts/lib/guided-trial-fixtures.mjs"],
-    ]
-    for (const [from, to] of copies) {
-      const target = path.join(checkout, to)
-      await fs.mkdir(path.dirname(target), { recursive: true })
-      await fs.copyFile(path.join(REPO_ROOT, from), target)
-    }
-    git(["add", "."], checkout)
-    git(["commit", "-q", "-m", "trial sources"], checkout)
-
-    const result = runScript(["--repo", checkout, "--workspace", workspace, "--condition", "plain"])
-    assert.equal(result.status, 0, result.stderr)
-    assert(result.stdout.includes("does not run the tool"), "the banner must say the plain run builds nothing")
-    assert.equal(/npm-ci|npm run build/.test(result.stdout), false, "no build may run for the plain condition")
-    assert.equal(result.stdout.includes("installed CLI"), false, "the plain run must not claim an installed CLI")
-    assert(result.stdout.includes("runs no product command at all"), "the plain banner must say nothing was built")
-
-    const entries = (await fs.readdir(workspace)).sort()
-    assert.deepEqual(entries, ["INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])
-    const instruction = await fs.readFile(path.join(workspace, "INSTRUCTIONS.md"), "utf-8")
-    assert.equal(TOOL_WORD.test(instruction), false, "the plain root instruction must not name the tool")
-    assert.equal(/first-contact/.test(instruction), false, "the plain root instruction must not carry guided commands")
-    assert.deepEqual((await fs.readdir(path.join(workspace, "greenfield"))).length, 0, "greenfield starts empty")
-    assert.deepEqual((await fs.readdir(path.join(workspace, "documentation"))).sort(), ["docs"])
-    assert.deepEqual((await fs.readdir(path.join(workspace, "brownfield"))).sort(), ["docs", "package.json", "src", "tests"])
-    assert.equal(await fs.access(path.join(workspace, "ENVIRONMENT.md")).then(() => true, () => false), false, "no generated environment note in a plain run")
-
-    const manifest = JSON.parse(await fs.readFile(path.join(`${workspace}-cli`, "transcripts", "setup-manifest.json"), "utf-8"))
-    assert.equal(manifest.condition, "plain")
-    assert.equal(manifest.installedCli, null)
-    assert.equal(manifest.cliStagingUsed, false)
-    assert.deepEqual(manifest.productCommandsRun, ["synth --version"])
-  } finally {
-    await fs.rm(checkout, { recursive: true, force: true })
-    await fs.rm(workspace, { recursive: true, force: true })
-    await fs.rm(`${workspace}-cli`, { recursive: true, force: true })
-  }
+test("plain refuses a TEST_PATH that would reveal the tool", () => {
+  const result = runScript(["--workspace", path.join(os.tmpdir(), "synth-plain-leak"), "--condition", "plain"])
+  assert.notEqual(result.status, 0)
+  assert(result.stderr.includes("does not spell the tool's name"), result.stderr)
 })
 
 test("a relative workspace is refused", () => {
@@ -170,24 +155,25 @@ test("a relative workspace is refused", () => {
   assert(result.stderr.includes("--workspace must be an absolute path"), result.stderr)
 })
 
-test("the checkout, TEST_PATH and the CLI staging directory may not contain each other", () => {
-  const insideRepo = runScript(["--repo", REPO_ROOT, "--workspace", path.join(REPO_ROOT, ".trial-should-not-exist")])
+test("the checkout, TEST_PATH and the staging directory may not contain each other", () => {
+  const insideRepo = runScript(["--workspace", path.join(REPO_ROOT, ".trial-should-not-exist")])
   assert.notEqual(insideRepo.status, 0)
   assert(insideRepo.stderr.includes("--workspace must be outside the checkout"), insideRepo.stderr)
 
-  const repoInside = runScript(["--repo", path.join(os.tmpdir(), "board-ws-outer", "checkout"), "--workspace", path.join(os.tmpdir(), "board-ws-outer")])
+  const repoInside = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-outer"), "--repo", path.join(os.tmpdir(), "board-ws-outer", "checkout")])
   assert.notEqual(repoInside.status, 0)
-  assert(repoInside.stderr.includes("--repo must not be inside --workspace"), repoInside.stderr)
+  assert(repoInside.stderr.includes("must not contain the checkout"), repoInside.stderr)
 
-  const cliInside = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-cli"), "--cli-root", path.join(os.tmpdir(), "board-ws-cli", "harness")])
-  assert.notEqual(cliInside.status, 0)
-  assert(cliInside.stderr.includes("--cli-root must be outside --workspace"), cliInside.stderr)
+  const workspace = tempPath("board-ws-cli")
+  const insideWorkspace = runScript(["--workspace", workspace, "--cli-root", path.join(workspace, "staging")])
+  assert.notEqual(insideWorkspace.status, 0)
+  assert(insideWorkspace.stderr.includes("staging directory must be outside --workspace"), insideWorkspace.stderr)
 })
 
 test("a repo that is not a checkout is refused", async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), "board-ws-notrepo-"))
   try {
-    const result = runScript(["--repo", dir, "--workspace", path.join(os.tmpdir(), "board-ws-notrepo-target")])
+    const result = runScript(["--workspace", tempPath("board-ws-notrepo-target"), "--repo", dir])
     assert.notEqual(result.status, 0)
     assert(result.stderr.includes("not a git work tree"), result.stderr)
   } finally {
@@ -209,7 +195,7 @@ test("a dirty checkout is refused with a remedy, and --allow-dirty records the d
     assert.equal(allowed.dirty, true, "the dirtiness is still recorded, not hidden")
     assert.match(allowed.commit, /^[0-9a-f]{40}$/)
 
-    const viaCli = runScript(["--repo", checkout, "--workspace", path.join(os.tmpdir(), "board-ws-dirty-target")])
+    const viaCli = runScript(["--workspace", tempPath("board-ws-dirty-target"), "--repo", checkout])
     assert.notEqual(viaCli.status, 0)
     assert(viaCli.stderr.includes("--allow-dirty"), viaCli.stderr)
   } finally {
@@ -239,37 +225,77 @@ test("a clean checkout resolves HEAD, and a bad --pin is refused", async () => {
   }
 })
 
-test("the layout keeps the build out of TEST_PATH and puts one directory per test in it", async () => {
+test("the staging directory is keyed by revision, neutral, and outside TEST_PATH", async () => {
+  const script = await loadScript()
+  const commit = "abcdef0123456789".padEnd(40, "0")
+
+  const inferred = script.stagingRootFor(commit)
+  assert.equal(inferred, path.join(os.tmpdir(), "trial-staging", "abcdef012345"))
+  assert.equal(TOOL_WORD.test(inferred), false, "the staging path must stay neutral")
+  assert.equal(inferred.startsWith(os.tmpdir() + path.sep), true, "staging lives in the temp area")
+
+  const other = script.stagingRootFor("ffffffffffffffff".padEnd(40, "0"))
+  assert.notEqual(inferred, other, "two revisions must not share a staging directory")
+
+  const override = script.stagingRootFor(commit, { cliRoot: path.join(os.tmpdir(), "trial-cli-manual") })
+  assert.equal(override, path.join(os.tmpdir(), "trial-cli-manual"))
+
+  assert.throws(() => script.stagingRootFor(undefined), /needs the revision/)
+})
+
+test("the layout puts one directory per test in TEST_PATH and the build outside it", async () => {
   const script = await loadScript()
   const workspace = path.join(os.tmpdir(), "board-tests")
-  const layout = script.layoutFor(workspace)
+  const staging = path.join(os.tmpdir(), "trial-staging", "abcdef012345")
+  const layout = script.layoutFor(workspace, { stagingRoot: staging })
 
   assert.equal(layout.workspace, workspace)
-  assert.equal(layout.cliRoot, `${workspace}-cli`, "the CLI staging directory is inferred next to TEST_PATH")
-  assert.equal(layout.cliRoot.startsWith(workspace + path.sep), false, "staging must not live inside TEST_PATH")
   assert.equal(layout.rootInstruction, path.join(workspace, "INSTRUCTIONS.md"))
   assert.equal(layout.environmentFile, path.join(workspace, "ENVIRONMENT.md"))
   assert.equal(layout.testDir("green"), path.join(workspace, "greenfield"))
   assert.equal(layout.testDir("brown"), path.join(workspace, "brownfield"))
   assert.equal(layout.testDir("docs"), path.join(workspace, "documentation"))
-  assert.equal(layout.cli.installedCli, path.join(layout.cliRoot, "global", "bin", process.platform === "win32" ? "synth.cmd" : "synth"))
-  assert.equal(layout.cli.transcripts, path.join(layout.cliRoot, "transcripts"))
-  assert.equal(layout.cli.manifest, path.join(layout.cliRoot, "cli-manifest.json"))
-
-  const override = script.layoutFor(workspace, { cliRoot: path.join(os.tmpdir(), "board-harness") })
-  assert.equal(override.cliRoot, path.join(os.tmpdir(), "board-harness"))
-  assert.equal(override.testDir("docs"), path.join(workspace, "documentation"))
+  assert.equal(layout.testDir("knowledge"), path.join(workspace, "knowledge-led"))
+  assert.equal(layout.testDir("conflict"), path.join(workspace, "conflicting-documents"))
+  assert.equal(layout.staging.root, staging)
+  assert.equal(layout.staging.installedCli, path.join(staging, "global", "bin", process.platform === "win32" ? "synth.cmd" : "synth"))
+  assert.equal(layout.staging.manifest, path.join(staging, "cli-manifest.json"))
+  assert.equal(layout.staging.root.startsWith(workspace + path.sep), false, "the staging directory must not sit inside TEST_PATH")
 })
 
-test("test directory names are spelled out, one isolated environment per test", async () => {
+test("TEST_PATH may be missing, empty, or refused when it already holds something", async () => {
   const script = await loadScript()
-  assert.deepEqual(script.TEST_DIRS, {
-    green: "greenfield",
-    brown: "brownfield",
-    docs: "documentation",
-    knowledge: "knowledge-led",
-    conflict: "conflicting-documents",
-  })
+  const missing = tempPath("board-state-missing")
+  assert.deepEqual(await script.workspaceState(missing), { exists: false, empty: true })
+
+  const empty = await fs.mkdtemp(path.join(os.tmpdir(), "board-state-empty-"))
+  assert.deepEqual(await script.workspaceState(empty), { exists: true, empty: true })
+
+  const used = await fs.mkdtemp(path.join(os.tmpdir(), "board-state-used-"))
+  await fs.writeFile(path.join(used, "offer.json"), "{}\n")
+  assert.deepEqual(await script.workspaceState(used), { exists: true, empty: false })
+
+  await fs.rm(empty, { recursive: true, force: true })
+  await fs.rm(used, { recursive: true, force: true })
+})
+
+test("a non-empty TEST_PATH is refused before anything is built and left untouched", async () => {
+  const checkout = await makeCheckout("board-ws-nonempty-src-")
+  const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "board-ws-nonempty-"))
+  const staging = tempPath("board-ws-nonempty-cli")
+  try {
+    await fs.writeFile(path.join(workspace, "keep.txt"), "existing content\n")
+    const result = runScript(["--workspace", workspace, "--repo", checkout, "--condition", "plain", "--cli-root", staging])
+    assert.notEqual(result.status, 0)
+    assert(result.stderr.includes("is not empty"), result.stderr)
+    assert(result.stderr.includes("never merges"), result.stderr)
+    assert.equal(await fs.readFile(path.join(workspace, "keep.txt"), "utf-8"), "existing content\n")
+    assert.equal(await fs.access(staging).then(() => true, () => false), false, "nothing may be staged for a refused TEST_PATH")
+  } finally {
+    await fs.rm(checkout, { recursive: true, force: true })
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+  }
 })
 
 test("a staged CLI is reused only for the same revision and only when it is present", async () => {
@@ -284,17 +310,109 @@ test("a staged CLI is reused only for the same revision and only when it is pres
   assert.equal(script.shouldReuseCli(null, assessment, { installedCliExists: true }).reuse, false)
 })
 
+test("the guided run creates TEST_PATH from a staged CLI without building anything", async () => {
+  const checkout = await makeCheckout("board-guided-src-")
+  const staged = await makeStagedCli({ commit: commitOf(checkout) })
+  const workspace = tempPath("board-guided-ws")
+  try {
+    const result = runScript(["--workspace", workspace, "--repo", checkout, "--cli-root", staged])
+    assert.equal(result.status, 0, result.stderr)
+    assert(result.stdout.includes("reused a CLI staged earlier for this revision"), result.stdout)
+    assert(result.stdout.includes(`"${"Read INSTRUCTIONS.md in the root of this workspace and follow it."}"`), "the banner must print the launch line")
+
+    assert.deepEqual((await fs.readdir(workspace)).sort(), ["ENVIRONMENT.md", "INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])
+    const instruction = await fs.readFile(path.join(workspace, "INSTRUCTIONS.md"), "utf-8")
+    assert.equal(instruction, await fs.readFile(GUIDED_SET, "utf-8"), "the guided instruction file is staged verbatim")
+    const environment = await fs.readFile(path.join(workspace, "ENVIRONMENT.md"), "utf-8")
+    assert(environment.includes(path.join(staged, "global", "bin", process.platform === "win32" ? "synth.cmd" : "synth")), "the environment note must give the CLI path")
+    assert.deepEqual((await fs.readdir(path.join(workspace, "greenfield"))).length, 0, "greenfield starts empty")
+    assert.deepEqual((await fs.readdir(path.join(workspace, "documentation"))).sort(), ["docs"])
+    assert.deepEqual((await fs.readdir(path.join(workspace, "brownfield"))).sort(), ["docs", "package.json", "src", "tests"])
+
+    const manifest = JSON.parse(await fs.readFile(path.join(staged, "transcripts", "setup-manifest.json"), "utf-8"))
+    assert.equal(manifest.condition, "guided")
+    assert.equal(manifest.status, "setup-complete-stop-before-agent")
+    assert.equal(manifest.stagingReused, true)
+    assert.deepEqual(manifest.buildArtifactsInsideTestPath, [])
+    assert.deepEqual(manifest.trialTestsRun, 0)
+    assert.deepEqual(manifest.lifecycleCommandsRun, [])
+  } finally {
+    await fs.rm(checkout, { recursive: true, force: true })
+    await fs.rm(staged, { recursive: true, force: true })
+    await fs.rm(workspace, { recursive: true, force: true })
+  }
+})
+
+test("the plain run builds nothing, leaks nothing, and writes nothing outside TEST_PATH", async () => {
+  const checkout = await makeCheckout("board-plain-src-")
+  const staging = tempPath("board-plain-staging")
+  const workspace = tempPath("board-plain-ws")
+  try {
+    const copies = [
+      "docs/plans/guided-trial/instructions/guided.md",
+      "docs/plans/guided-trial/instructions/plain.md",
+      "docs/plans/guided-trial/README.md",
+      "scripts/guided-installed-trial-fixtures.mjs",
+      "scripts/lib/guided-trial-fixtures.mjs",
+    ]
+    for (const relative of copies) {
+      const target = path.join(checkout, relative)
+      await fs.mkdir(path.dirname(target), { recursive: true })
+      await fs.copyFile(path.join(REPO_ROOT, relative), target)
+    }
+    git(["add", "."], checkout)
+    git(["commit", "-q", "-m", "trial sources"], checkout)
+
+    const result = runScript(["--workspace", workspace, "--repo", checkout, "--condition", "plain", "--cli-root", staging])
+    assert.equal(result.status, 0, result.stderr)
+    assert(result.stdout.includes("runs no product command at all"), "the banner must say nothing was built")
+    assert.equal(result.stdout.includes("installed CLI"), false, "the plain run must not claim an installed CLI")
+    assert.equal(/npm-ci|npm run build/.test(result.stdout), false, "no build may run for the plain condition")
+    assert(result.stdout.includes("none — the plain condition writes nothing outside TEST_PATH"), result.stdout)
+
+    assert.deepEqual((await fs.readdir(workspace)).sort(), ["INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])
+    const instruction = await fs.readFile(path.join(workspace, "INSTRUCTIONS.md"), "utf-8")
+    assert.equal(TOOL_WORD.test(instruction), false, "the plain root instruction must not name the tool")
+    assert.equal(/first-contact/.test(instruction), false, "the plain root instruction must not carry guided commands")
+    assert.equal(await fs.access(path.join(workspace, "ENVIRONMENT.md")).then(() => true, () => false), false, "no generated environment note in a plain run")
+    assert.deepEqual((await fs.readdir(path.join(workspace, "brownfield"))).sort(), ["docs", "package.json", "src", "tests"])
+    assert.equal(await fs.access(staging).then(() => true, () => false), false, "the plain condition stages nothing, not even outside TEST_PATH")
+  } finally {
+    await fs.rm(checkout, { recursive: true, force: true })
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+  }
+})
+
+test("the repository is inferred from the script's own location when --repo is omitted", async (t) => {
+  const script = await loadScript()
+  const assessment = script.assessRepo(REPO_ROOT)
+  if (!assessment.ok) return t.skip(`checkout not usable here: ${assessment.reason}`)
+
+  const workspace = tempPath("board-inferred-ws")
+  const staging = tempPath("board-inferred-staging")
+  try {
+    const result = runScript(["--workspace", workspace, "--condition", "plain", "--cli-root", staging])
+    assert.equal(result.status, 0, result.stderr)
+    assert(result.stdout.includes(assessment.commit), "the inferred revision must be this checkout's HEAD")
+    assert.deepEqual((await fs.readdir(workspace)).sort(), ["INSTRUCTIONS.md", "brownfield", "documentation", "greenfield"])
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(staging, { recursive: true, force: true })
+  }
+})
+
 test("the environment note records paths and build identity, never process", async () => {
   const script = await loadScript()
   const note = script.renderEnvironment({
     workspace: "/tmp/board-tests",
     testDirs: ["greenfield", "brownfield", "documentation"],
-    cliRoot: "/tmp/board-tests-cli",
-    installedCli: "/tmp/board-tests-cli/global/bin/synth",
-    manifestPath: "/tmp/board-tests-cli/transcripts/setup-manifest.json",
+    stagingRoot: "/tmp/trial-staging/abcdef012345",
+    installedCli: "/tmp/trial-staging/abcdef012345/global/bin/synth",
+    manifestPath: "/tmp/trial-staging/abcdef012345/cli-manifest.json",
     revision: { commit: "c".repeat(40), subject: "abc1234 example" },
   })
-  assert(note.includes("/tmp/board-tests-cli/global/bin/synth"), "the note must say where the CLI is")
+  assert(note.includes("/tmp/trial-staging/abcdef012345/global/bin/synth"), "the note must say where the CLI is")
   assert(note.includes("greenfield/"), "the note must list the test directories")
   assert(note.includes("c".repeat(40)), "the note must record the revision")
   assert.equal(/first-contact/.test(note), false, "the note must not carry the process")
@@ -306,6 +424,17 @@ test("the launch instruction is one line naming the root instruction file", asyn
   const line = script.launchInstruction()
   assert.equal(line, "Read INSTRUCTIONS.md in the root of this workspace and follow it.")
   assert.equal(line.includes("\n"), false)
+})
+
+test("test directory names are spelled out, one isolated environment per test", async () => {
+  const script = await loadScript()
+  assert.deepEqual(script.TEST_DIRS, {
+    green: "greenfield",
+    brown: "brownfield",
+    docs: "documentation",
+    knowledge: "knowledge-led",
+    conflict: "conflicting-documents",
+  })
 })
 
 test("both instruction files list every test with the task text used for hashing", async () => {
@@ -365,6 +494,7 @@ test("the instruction-set index explains the layout and the launch", async () =>
   }
   assert(text.includes("INSTRUCTIONS.md"), "index must say the instruction file is staged in the root")
   assert(text.includes("TEST_PATH"), "index must describe TEST_PATH")
+  assert(text.includes("--workspace"), "index must show the single-argument command")
   assert(text.includes("test:guided-installed-trial-setup"), "index must point at the consistency guard")
 })
 
@@ -400,7 +530,7 @@ test("the script runs no product command other than --version and stages no buil
   assert(source.includes("productCommandsRun: ['synth --version']"), "the manifest must record which product command setup ran")
   assert(source.includes("buildArtifactsInsideTestPath: []"), "the manifest must state that no build output lands in TEST_PATH")
   assert(source.includes("delete-source-clone"), "isolation cleanup must be a recorded step")
-  assert(source.includes("shouldReuseCli"), "setup must reuse a CLI staged beforehand instead of rebuilding")
+  assert(source.includes("shouldReuseCli"), "setup must reuse a CLI staged for this revision instead of rebuilding")
   assert.equal(/first-contact/.test(source), false, "no product workflow command may appear in the setup script at all")
   assert.equal(/npm run (?!build|pack)/.test(source), false, "setup may only run npm build and npm pack")
 })

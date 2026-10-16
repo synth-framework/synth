@@ -2,45 +2,46 @@
 // ============================================================
 // SYNTH — guided-journey trial: setup executor
 // ============================================================
-// Mechanical setup for the operator-run trial described in
-// docs/plans/guided-installed-cli-trial-instructions.md.
+// One command, one argument:
 //
-// Two things are needed and nothing else:
-//
-//   --repo       the local checkout of SYNTH whose HEAD is the revision under test
-//   --workspace  the empty TEST_PATH that will hold the trial
-//
-// Building, packing and installing happen in a separate CLI staging directory
-// OUTSIDE the testing workspace, so nothing about the build can interfere with
-// the test run. Prepare it beforehand with `--stage-only`, then create TEST_PATH
-// later (the staged CLI is reused, and no npm or git command runs at all):
-//
-//   # beforehand, once
-//   node scripts/guided-installed-trial-setup.mjs --repo <checkout> --workspace <TEST_PATH> --stage-only
-//
-//   # then, whenever the trial is run
 //   node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>
 //
-// The testing workspace contains the instruction file and one isolated
-// directory per test — no harness, no transcripts, no build output:
+// The repository is the checkout this script lives in, so it is never passed on
+// the command line. Everything else is inferred:
+//
+//   * if TEST_PATH is missing it is created; if it exists it must be empty
+//     (setup never merges into a directory that already holds something)
+//   * the revision under test is that checkout's committed HEAD
+//   * the CLI is reserved for the revision when possible
+//   * the CLI is staged — cloned, built, packed and installed — in a staging
+//     directory keyed by revision, OUTSIDE TEST_PATH, so no build output,
+//     tarball, transcript or node_modules can interfere with the trial
+//   * the condition-appropriate instruction file, the environment note and one
+//     isolated directory per test are copied into TEST_PATH
+//
+// What TEST_PATH ends up holding, and nothing else:
 //
 //   <TEST_PATH>/
-//     INSTRUCTIONS.md        copied from the repository: the file the agent follows
-//     ENVIRONMENT.md         guided only: generated paths (CLI location, revision)
-//     greenfield/            one isolated environment per test …
-//     brownfield/            … holding only that test's own inputs
+//     INSTRUCTIONS.md      copied from the repository: the file the agent follows
+//     ENVIRONMENT.md       guided only: generated paths (CLI location, revision)
+//     greenfield/          one isolated environment per test …
+//     brownfield/          … holding only that test's own starting inputs
 //     documentation/
-//     [knowledge-led/] [conflicting-documents/]
+//     [knowledge-led/] [conflicting-documents/]     (optional cases)
 //
-// Everything is inferred: the revision, the CLI staging directory, the per-test
-// directory names, the staged instruction file and where the CLI is installed.
+// Then the operator starts an agent in TEST_PATH and tells it to follow
+// INSTRUCTIONS.md. No trial test is started, and no lifecycle command is run, by
+// this script. The ONLY product command it runs is `synth --version`.
 //
-// The script performs no judgment, runs no trial cell and no lifecycle action,
-// and never commits, pushes or modifies the checkout it is given. The ONLY
-// product command it runs is `synth --version`.
+// Optional, for pre-warming the CLI cache before a trial window:
+//
+//   node scripts/guided-installed-trial-setup.mjs --stage-only
+//
+// The script never commits, pushes or modifies the checkout it lives in.
 // ============================================================
 
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -77,67 +78,79 @@ export const TEST_DIRS = {
   conflict: 'conflicting-documents',
 }
 
+/** Default staging directory name; deliberately neutral, and outside TEST_PATH. */
+export const STAGING_DIR_NAME = 'trial-staging'
+
 const npmBin = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const synthBinName = process.platform === 'win32' ? 'synth.cmd' : 'synth'
 
 export const USAGE = `Usage: node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH> [options]
-       node scripts/guided-installed-trial-setup.mjs --repo <checkout> --workspace <TEST_PATH> --stage-only
+       node scripts/guided-installed-trial-setup.mjs --stage-only
 
-  --repo <path>         local checkout of the repository; its committed HEAD is the revision under test
-                        (required to build/stage the CLI; optional once a staged CLI exists)
-  --workspace <dir>     TEST_PATH: absolute, empty or nonexistent, outside the checkout
-  --stage-only          beforehand: build, pack and install the CLI, copy the instructions and tools,
-                        then stop without creating TEST_PATH
-  --cli-root <dir>      advanced; default: the sibling directory <TEST_PATH>-cli, outside TEST_PATH
-  --refresh-cli         rebuild even when a staged CLI for this revision already exists
-  --condition <name>    guided (default) or plain; plain refuses a path that spells the tool's name
-                        and is staged without any CLI: it runs no product command at all
+  --workspace <dir>     TEST_PATH; created when missing, and required to be empty when it exists
+  --condition <name>    guided (default) or plain; plain refuses a path that spells the tool's
+                        name, and runs no product command at all
   --cases <a,b,c>       default ${REQUIRED_CASES.join(',')} (available: ${CASE_ORDER.join(', ')})
-  --pin <ref>           advanced; default: the checkout's committed HEAD
-  --allow-dirty         proceed although the checkout has uncommitted changes (the artifact still comes
-                        from the committed HEAD only; the decision is recorded)
+  --stage-only          optional: stage the CLI for this revision and stop, without creating TEST_PATH
+
+  Advanced overrides, all inferred by default:
+  --repo <path>         default: the checkout this script lives in
+  --pin <ref>           default: that checkout's committed HEAD
+  --cli-root <dir>      default: <tmp>/${STAGING_DIR_NAME}/<revision>, outside TEST_PATH
+  --refresh-cli         rebuild even when a staged CLI for this revision already exists
+  --allow-dirty         proceed although the checkout has uncommitted changes (the artifact still
+                        comes from the committed HEAD only; the decision is recorded)
   --help                print this text
 
-TEST_PATH receives only the instruction file, the environment note (guided) and one
-isolated directory per test. Building, packing and installing live in the CLI staging
-directory outside TEST_PATH, so they never interfere with the test run.
+The repository is inferred from this script's location, so it is never passed. The CLI is staged
+outside TEST_PATH, so building, packing and installing cannot interfere with the run.
 
-No trial cell is started and no lifecycle command is run: the agent is launched
-afterwards, in TEST_PATH, and told to follow the instruction file in its root.`
+No trial test is started and no lifecycle command is run: start an agent in TEST_PATH afterwards
+and tell it to follow the INSTRUCTIONS.md staged in that root. Setup complete means the recipe
+ran; it is never trial evidence.`
 
-/** Every inferred location, derived from TEST_PATH. */
-export function layoutFor(workspace, { cliRoot, condition = 'guided' } = {}) {
-  const root = path.resolve(workspace)
-  const cli = path.resolve(cliRoot ?? `${root}-cli`)
+/** Where the CLI staging directory lives: outside TEST_PATH, keyed by revision. */
+export function stagingRootFor(commit, { cliRoot } = {}) {
+  if (cliRoot) return path.resolve(cliRoot)
+  if (!commit) throw new Error('stagingRootFor needs the revision under test')
+  return path.join(os.tmpdir(), STAGING_DIR_NAME, commit.slice(0, 12))
+}
+
+/** Every inferred location. TEST_PATH and the staging directory never overlap. */
+export function layoutFor(workspace, { stagingRoot, condition = 'guided' } = {}) {
+  const root = workspace ? path.resolve(workspace) : undefined
+  const staging = path.resolve(stagingRoot)
   return {
     workspace: root,
     condition,
-    cliRoot: cli,
-    rootInstruction: path.join(root, 'INSTRUCTIONS.md'),
-    environmentFile: path.join(root, 'ENVIRONMENT.md'),
-    testDir: (caseId) => path.join(root, TEST_DIRS[caseId]),
-    cli: {
-      root: cli,
-      pack: path.join(cli, 'pack'),
-      globalPrefix: path.join(cli, 'global'),
-      transcripts: path.join(cli, 'transcripts'),
-      instructions: path.join(cli, 'instructions'),
-      tools: path.join(cli, 'tools'),
-      sourceClone: path.join(cli, 'src'),
-      manifest: path.join(cli, 'cli-manifest.json'),
-      installedCli: path.join(cli, 'global', 'bin', synthBinName),
+    rootInstruction: root ? path.join(root, 'INSTRUCTIONS.md') : undefined,
+    environmentFile: root ? path.join(root, 'ENVIRONMENT.md') : undefined,
+    testDir: (caseId) => {
+      if (!root) throw new Error('no TEST_PATH was given')
+      return path.join(root, TEST_DIRS[caseId])
+    },
+    staging: {
+      root: staging,
+      pack: path.join(staging, 'pack'),
+      globalPrefix: path.join(staging, 'global'),
+      transcripts: path.join(staging, 'transcripts'),
+      instructions: path.join(staging, 'instructions'),
+      tools: path.join(staging, 'tools'),
+      sourceClone: path.join(staging, 'src'),
+      manifest: path.join(staging, 'cli-manifest.json'),
+      installedCli: path.join(staging, 'global', 'bin', synthBinName),
     },
   }
 }
 
-/** Parse and validate arguments. Throws on anything unsafe or ambiguous. */
+/** Parse and validate arguments. TEST_PATH is the only thing the operator must supply. */
 export function parseArgs(argv) {
   const args = {
-    repo: undefined,
     workspace: undefined,
     cases: REQUIRED_CASES.slice(),
     pin: undefined,
     allowDirty: false,
+    repo: undefined,
     cliRoot: undefined,
     refreshCli: false,
     stageOnly: false,
@@ -174,16 +187,15 @@ export function parseArgs(argv) {
     i += 1
   }
   if (args.condition !== 'guided' && args.condition !== 'plain') throw new Error('--condition must be guided or plain')
-  if (!args.workspace && !args.cliRoot) {
-    throw new Error(args.stageOnly
-      ? '--stage-only needs --workspace (to infer the CLI staging directory) or an explicit --cli-root'
-      : '--workspace is required: the empty TEST_PATH that will hold the trial')
-  }
-  if (args.workspace && !path.isAbsolute(args.workspace)) throw new Error('--workspace must be an absolute path')
-  if (args.cliRoot !== undefined && !path.isAbsolute(args.cliRoot)) throw new Error('--cli-root must be an absolute path')
   if (args.condition === 'plain' && args.stageOnly) {
     throw new Error('--stage-only stages a CLI, which the plain condition does not use; drop it or use --condition guided')
   }
+  if (!args.stageOnly && !args.workspace) {
+    throw new Error('--workspace is required: the TEST_PATH that will hold the trial (created when missing)')
+  }
+  if (args.workspace && !path.isAbsolute(args.workspace)) throw new Error('--workspace must be an absolute path')
+  if (args.repo !== undefined && !path.isAbsolute(args.repo)) throw new Error('--repo must be an absolute path')
+  if (args.cliRoot !== undefined && !path.isAbsolute(args.cliRoot)) throw new Error('--cli-root must be an absolute path')
   if (args.condition === 'plain' && args.workspace && /synth/i.test(args.workspace)) {
     throw new Error(`--condition plain needs a TEST_PATH whose path does not spell the tool's name: ${args.workspace}`)
   }
@@ -191,25 +203,17 @@ export function parseArgs(argv) {
 }
 
 /** Refuse layouts that would let the build or the checkout leak into the trial. */
-export function assertSafeLayout(args) {
-  const repo = args.repo ? path.resolve(args.repo) : undefined
-  const workspace = args.workspace ? path.resolve(args.workspace) : undefined
-  const cliRoot = args.cliRoot
-    ? path.resolve(args.cliRoot)
-    : workspace
-      ? path.resolve(`${workspace}-cli`)
-      : undefined
+export function assertSafeLayout({ repo, workspace, stagingRoot }) {
   const inside = (child, parent) => child === parent || child.startsWith(parent + path.sep)
-  if (repo && workspace) {
-    if (inside(workspace, repo)) throw new Error('--workspace must be outside the checkout given by --repo')
-    if (inside(repo, workspace)) throw new Error('--repo must not be inside --workspace: the testing workspace must not contain the checkout')
+  if (workspace && repo) {
+    if (inside(workspace, repo)) throw new Error('--workspace must be outside the checkout')
+    if (inside(repo, workspace)) throw new Error('--workspace must not contain the checkout')
   }
-  if (cliRoot && workspace) {
-    if (inside(cliRoot, workspace)) throw new Error('--cli-root must be outside --workspace: the staged CLI must not appear inside the trial')
-    if (inside(workspace, cliRoot)) throw new Error('--workspace must not be inside --cli-root')
+  if (workspace && stagingRoot && (inside(stagingRoot, workspace) || inside(workspace, stagingRoot))) {
+    throw new Error('the CLI staging directory must be outside --workspace: the build must not touch the trial')
   }
-  if (cliRoot && repo && inside(cliRoot, repo)) throw new Error('--cli-root must be outside the checkout')
-  return { repo, workspace, cliRoot }
+  if (stagingRoot && repo && inside(stagingRoot, repo)) throw new Error('--cli-root must be outside the checkout')
+  return { repo, workspace, stagingRoot }
 }
 
 /** Decide whether the given checkout can be used as the pinned source. */
@@ -226,7 +230,7 @@ export function assessRepo(repo, { allowDirty = false, pin } = {}) {
       ok: false,
       kind: 'dirty',
       dirty,
-      reason: 'the checkout has uncommitted changes, so a clone of it would carry the committed history only',
+      reason: 'the checkout has uncommitted changes, so the trial would not test the committed revision',
       remedy: 'commit or stash the changes, or pass --allow-dirty to record that decision explicitly',
     }
   }
@@ -251,20 +255,22 @@ export function shouldReuseCli(manifest, assessment, { installedCliExists, refre
   return { reuse: true, reason: `staged CLI for ${assessment.commit}` }
 }
 
+/** Does TEST_PATH exist, and may setup write into it? */
+export async function workspaceState(dir) {
+  try {
+    const entries = await fs.readdir(dir)
+    return { exists: true, empty: entries.length === 0 }
+  } catch {
+    return { exists: false, empty: true }
+  }
+}
+
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex')
 }
 
 async function exists(target) {
   return fs.access(target).then(() => true, () => false)
-}
-
-async function pathIsEmptyOrMissing(dir) {
-  try {
-    return (await fs.readdir(dir)).length === 0
-  } catch {
-    return true
-  }
 }
 
 async function copyTree(source, target) {
@@ -292,12 +298,20 @@ export async function revisionOfDir(dir) {
   return createHash('sha256').update(JSON.stringify(rows)).digest('hex')
 }
 
+async function readJsonOrNull(target) {
+  try {
+    return JSON.parse(await fs.readFile(target, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
 // #region generated-text — paths, hashes and revisions only; no process, no product command
 /**
  * The environment note staged in a guided TEST_PATH. It carries machine paths and
  * build identity so the instruction file can stay versioned and path-free.
  */
-export function renderEnvironment({ workspace, testDirs, cliRoot, installedCli, manifestPath, revision }) {
+export function renderEnvironment({ workspace, testDirs, stagingRoot, installedCli, manifestPath, revision }) {
   return [
     `# Environment (generated by trial setup — do not edit)`,
     ``,
@@ -308,7 +322,7 @@ export function renderEnvironment({ workspace, testDirs, cliRoot, installedCli, 
     `SYNTH CLI         : ${installedCli}`,
     `                    (or \`synth\` when the operator put it on PATH)`,
     `Revision under test: ${revision.commit}  ${revision.subject}`,
-    `CLI staging       : ${cliRoot}`,
+    `CLI staging       : ${stagingRoot}`,
     `Setup manifest    : ${manifestPath}`,
     ``,
   ].join('\n')
@@ -320,52 +334,45 @@ export function launchInstruction() {
 }
 
 /** Closing banner: the runbook stops here; only an operator starts the agent. */
-export function stopBanner({ layout, manifest, assessment, cases, cliStaging, stagingReused }) {
+export function stopBanner({ layout, manifest, assessment, cases, revisions, stagingUsed, stagingReused }) {
   const dirty = assessment?.dirty ? '  (dirty checkout; --allow-dirty was used)' : ''
   const lines = [
     `SETUP COMPLETE — the runbook stops here.`,
     ``,
-    `No trial cell has been run and none may start until the operator launches the agent.`,
+    `No trial test has been run and none may start until the operator launches the agent.`,
     `  testing workspace  : ${layout.workspace}`,
     `  condition          : ${layout.condition}`,
   ]
   if (assessment) lines.push(`  tested revision    : ${assessment.commit}  ${assessment.branch}  ${assessment.subject}${dirty}`)
-  if (cliStaging) {
-    lines.push(`  CLI staging        : ${layout.cliRoot}   (${stagingReused ? 'reused a CLI staged earlier' : 'built, packed and installed beforehand'})`)
-    lines.push(`  installed CLI      : ${layout.cli.installedCli}   (setup invoked only: synth --version)`)
-    lines.push(`  transcripts        : ${layout.cli.transcripts}`)
+  if (stagingUsed) {
+    lines.push(`  CLI staging        : ${layout.staging.root}   (${stagingReused ? 'reused a CLI staged earlier for this revision' : 'built, packed and installed for this revision'})`)
+    lines.push(`  installed CLI      : ${layout.staging.installedCli}   (setup invoked only: synth --version)`)
   } else {
-    lines.push(`  CLI staging        : none — the plain condition does not run the tool, so nothing was built`)
+    lines.push(`  CLI staging        : not used — the plain condition runs no product command at all`)
   }
   lines.push(
     `  tests              : ${cases.map((caseId) => `${TEST_DIRS[caseId]}/`).join('  ')}`,
     `  copied into root   : ${layout.condition === 'guided' ? 'INSTRUCTIONS.md  ENVIRONMENT.md' : 'INSTRUCTIONS.md'}`,
-    `  manifest           : ${manifest}`,
+    `  staging revision   :`,
+  )
+  for (const caseId of cases) lines.push(`      ${TEST_DIRS[caseId]}/  ${revisions[caseId]}`)
+  lines.push(
+    `  manifest           : ${manifest ?? 'none — the plain condition writes nothing outside TEST_PATH'}`,
     ``,
     `Next step: start one fresh agent session in ${layout.workspace} and give it the line:`,
     `  "${launchInstruction()}"`,
     ``,
     `The agent reads the instruction file in the root and works one test at a time inside its own`,
-    `directory.`,
-    layout.condition === 'guided'
-      ? `Building, packing and installing were done beforehand and live outside TEST_PATH, so no build output is visible to the agent.`
-      : `The plain condition runs no product command at all, so nothing was built and no build output exists to interfere with it.`,
+    `directory. Building, packing and installing live in ${layout.staging.root}, outside TEST_PATH, so`,
+    `no build output is visible to the agent.`,
   )
   return lines.join('\n')
 }
 // #endregion generated-text
 
-async function readJsonOrNull(target) {
-  try {
-    return JSON.parse(await fs.readFile(target, 'utf-8'))
-  } catch {
-    return null
-  }
-}
-
-/** Build, pack and install the CLI, then copy the instructions and tools out of the pin. */
+/** Build, pack and install the CLI into the staging directory, then copy the instructions out of the pin. */
 export async function prepareCli({ repo, assessment, layout, run, runCapture, logger }) {
-  const cli = layout.cli
+  const cli = layout.staging
   for (const dir of [cli.root, cli.pack, cli.globalPrefix, cli.transcripts, cli.instructions, cli.tools, path.join(cli.tools, 'lib')]) {
     await fs.mkdir(dir, { recursive: true })
   }
@@ -406,9 +413,9 @@ export async function prepareCli({ repo, assessment, layout, run, runCapture, lo
     installedCli: { bin: cli.installedCli, tarball, tarballSha256, version: JSON.parse(version.stdout) },
     instructionHashes,
     instructionsDir: cli.instructions,
-    fixturesTool: path.join(cli.tools, 'guided-installed-trial-fixtures.mjs'),
+    fixturesTool: path.join(cli.tools, path.basename(FIXTURE_GENERATOR)),
     productCommandsRun: ['synth --version'],
-    trialCellsRun: 0,
+    trialTestsRun: 0,
     lifecycleCommandsRun: [],
   }
   await fs.writeFile(cli.manifest, `${JSON.stringify(manifest, null, 2)}\n`)
@@ -424,11 +431,35 @@ async function main(argv) {
     console.log(USAGE)
     return 0
   }
-  const { repo, workspace, cliRoot } = assertSafeLayout(parsed)
-  const layout = layoutFor(workspace ?? path.join(cliRoot, 'unused'), { cliRoot, condition: parsed.condition })
 
   const drifted = revisionMismatches()
   if (drifted.length > 0) throw new Error(`Fixture drift against the executed E4 record: ${JSON.stringify(drifted)}`)
+
+  // The repository is inferred: this script lives in it.
+  const repo = path.resolve(parsed.repo ?? REPO_ROOT)
+
+  // Path safety first: an unsafe TEST_PATH must fail before any git or build work.
+  assertSafeLayout({
+    repo,
+    workspace: parsed.workspace ? path.resolve(parsed.workspace) : undefined,
+    stagingRoot: parsed.cliRoot ? path.resolve(parsed.cliRoot) : undefined,
+  })
+  if (!(await exists(repo))) throw new Error(`--repo does not exist: ${repo}`)
+
+  const assessment = assessRepo(repo, { allowDirty: parsed.allowDirty, pin: parsed.pin })
+  if (!assessment.ok) throw new Error(`${assessment.reason}${assessment.remedy ? `. ${assessment.remedy}` : ''}`)
+
+  const stagingRoot = stagingRootFor(assessment.commit, { cliRoot: parsed.cliRoot })
+  const layout = layoutFor(parsed.workspace, { stagingRoot, condition: parsed.condition })
+  assertSafeLayout({ repo, workspace: layout.workspace, stagingRoot })
+
+  // Fail fast on TEST_PATH, before spending any build time, without creating it.
+  if (!parsed.stageOnly) {
+    const state = await workspaceState(layout.workspace)
+    if (state.exists && !state.empty) {
+      throw new Error(`--workspace is not empty: ${layout.workspace}. Setup creates TEST_PATH when it is missing and never merges into an existing directory — use a new path, or remove the existing one to start over.`)
+    }
+  }
 
   const log = []
   const steps = []
@@ -438,7 +469,14 @@ async function main(argv) {
       log.push(`$ ${entry.command}\n${entry.outputTail}`)
     },
   }
-  const record = (name, command, result, cwd) => logger.step({ step: name, command, cwd, exitCode: result.status, durationMs: result.durationMs, outputTail: `${result.stdout || ''}${result.stderr || ''}`.trim().split('\n').slice(-6).join('\n') })
+  const record = (name, command, result, cwd) => logger.step({
+    step: name,
+    command,
+    cwd,
+    exitCode: result.status,
+    durationMs: result.durationMs,
+    outputTail: `${result.stdout || ''}${result.stderr || ''}`.trim().split('\n').slice(-6).join('\n'),
+  })
   const run = (name, command, args, cwd) => {
     const started = Date.now()
     const result = spawnSync(command, args, { cwd, encoding: 'utf-8' })
@@ -449,78 +487,51 @@ async function main(argv) {
   }
   const runCapture = (command, args, cwd) => spawnSync(command, args, { cwd, encoding: 'utf-8' })
 
-  // --- resolve the revision under test (only when a checkout is given) ---
-  let assessment = null
-  if (repo) {
-    if (!(await exists(repo))) throw new Error(`--repo does not exist: ${repo}`)
-    assessment = assessRepo(repo, { allowDirty: parsed.allowDirty, pin: parsed.pin })
-    if (!assessment.ok) throw new Error(`${assessment.reason}${assessment.remedy ? `. ${assessment.remedy}` : ''}`)
-  }
-
-  // --- CLI staging: beforehand, outside TEST_PATH, and only when the condition uses the CLI ---
-  const stagedManifest = await readJsonOrNull(layout.cli.manifest)
-  let cliStaging = false
+  // --- the CLI is staged outside TEST_PATH; the plain condition stages nothing ---
+  const stagedManifest = await readJsonOrNull(layout.staging.manifest)
+  let stagingUsed = false
   let stagingReused = false
-  let cliManifest = stagedManifest
   let instructionSource = null
   let fixturesTool = null
+  let cliManifest = null
   if (parsed.condition === 'guided') {
-    if (!assessment && !stagedManifest) {
-      throw new Error(`no staged CLI at ${layout.cli.manifest}, and no --repo was given to build one`)
-    }
-    if (assessment) {
-      const decision = shouldReuseCli(stagedManifest, assessment, {
-        installedCliExists: await exists(layout.cli.installedCli),
-        refresh: parsed.refreshCli,
-      })
-      if (decision.reuse) {
-        stagingReused = true
-        cliManifest = stagedManifest
-      } else {
-        cliManifest = await prepareCli({ repo, assessment, layout, run, runCapture, logger })
-      }
-    }
-    cliStaging = true
+    const decision = shouldReuseCli(stagedManifest, assessment, {
+      installedCliExists: await exists(layout.staging.installedCli),
+      refresh: parsed.refreshCli,
+    })
+    cliManifest = decision.reuse
+      ? stagedManifest
+      : await prepareCli({ repo, assessment, layout, run, runCapture, logger })
+    stagingUsed = true
+    stagingReused = decision.reuse
     instructionSource = cliManifest.instructionsDir
     fixturesTool = cliManifest.fixturesTool
   } else {
-    // The plain condition never runs the tool, so nothing is built for it. Its
-    // instruction file and fixtures come from the staged pin when one matches,
-    // otherwise straight from the given checkout.
-    const stagedMatches = Boolean(stagedManifest) && (!assessment || stagedManifest.testedRevision?.commit === assessment.commit)
-    if (stagedMatches) {
-      instructionSource = stagedManifest.instructionsDir
-      fixturesTool = stagedManifest.fixturesTool
-    } else if (repo) {
-      instructionSource = path.join(repo, INSTRUCTION_SET_DIR, 'instructions')
-      fixturesTool = path.join(repo, FIXTURE_GENERATOR)
-    } else {
-      throw new Error('--condition plain needs --repo to read the instruction file, or an existing CLI staging directory for the same revision')
-    }
-    cliStaging = Boolean(cliManifest)
+    // Plain: no CLI. Read the instruction file and fixtures from the staged pin when one
+    // matches this revision, otherwise straight from the checkout.
+    const stagedSharesRevision = Boolean(stagedManifest) && stagedManifest.testedRevision?.commit === assessment.commit
+    instructionSource = stagedSharesRevision ? stagedManifest.instructionsDir : path.join(repo, INSTRUCTION_SET_DIR, 'instructions')
+    fixturesTool = stagedSharesRevision ? stagedManifest.fixturesTool : path.join(repo, FIXTURE_GENERATOR)
   }
 
   if (parsed.stageOnly) {
-    await fs.mkdir(layout.cli.transcripts, { recursive: true })
-    await fs.writeFile(path.join(layout.cli.transcripts, 'staged.log'), `${log.join('\n\n')}\n`)
+    await fs.writeFile(path.join(layout.staging.transcripts, 'staged.log'), `${log.join('\n\n')}\n`)
     console.log([
       `CLI STAGED — nothing else was created.`,
       ``,
-      `  CLI staging     : ${layout.cliRoot}`,
-      `  installed CLI   : ${layout.cli.installedCli}   (setup invoked only: synth --version)`,
-      `  revision        : ${cliManifest.testedRevision.commit}  ${cliManifest.testedRevision.subject}`,
-      `  tarball SHA-256 : ${cliManifest.installedCli.tarballSha256}`,
-      `  transcripts     : ${layout.cli.transcripts}`,
+      `  CLI staging     : ${layout.staging.root}`,
+      `  installed CLI   : ${layout.staging.installedCli}   (setup invoked only: synth --version)`,
+      `  revision        : ${assessment.commit}  ${assessment.subject}${assessment.dirty ? '   (dirty checkout; --allow-dirty was used)' : ''}`,
+      `  transcripts     : ${layout.staging.transcripts}`,
       ``,
-      `The trial workspace was NOT created. Later, run:`,
+      `TEST_PATH was NOT created. Later, run:`,
       `  node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>`,
-      `and the staged CLI above is reused without running npm or git again.`,
+      `and this staged CLI is reused without running npm or git again.`,
     ].join('\n'))
     return 0
   }
 
-  // --- TEST_PATH: instruction file plus one isolated directory per test ---
-  if (!(await pathIsEmptyOrMissing(layout.workspace))) throw new Error(`--workspace must be empty or nonexistent: ${layout.workspace}`)
+  // --- TEST_PATH: create it, then copy the instruction file and one isolated directory per test ---
   await fs.mkdir(layout.workspace, { recursive: true })
 
   const instructionText = {}
@@ -535,74 +546,84 @@ async function main(argv) {
     throw new Error('the plain instruction set mentions the tool under test; refusing to stage it')
   }
 
-  // The generator requires an existing, empty directory: recreate it rather than
-  // assuming the staging directory is pristine.
-  const fixturesDir = path.join(layout.cli.root, 'fixtures')
-  await fs.rm(fixturesDir, { recursive: true, force: true })
-  await fs.mkdir(fixturesDir, { recursive: true })
-  const generated = runCapture(process.execPath, [fixturesTool, fixturesDir], layout.cli.root)
-  if (generated.status !== 0) throw new Error(`fixtures failed (exit ${generated.status}): ${generated.stderr}`)
-  record('fixtures', `${process.execPath} ${fixturesTool} ${fixturesDir}`, generated, layout.cli.root)
-  const revisions = JSON.parse(generated.stdout).revisions
-  const expected = caseRevisions()
-  for (const caseId of CASE_ORDER) {
-    if (revisions[caseId] !== expected[caseId]) throw new Error(`fixture revision mismatch for ${caseId}: ${revisions[caseId]} != ${expected[caseId]}`)
+  // Fixtures are generated in a throwaway directory, never inside TEST_PATH and never
+  // left behind in the staging directory.
+  const fixturesDir = await fs.mkdtemp(path.join(os.tmpdir(), 'trial-fixtures-'))
+  let revisions
+  let expected
+  try {
+    const generated = runCapture(process.execPath, [fixturesTool, fixturesDir], path.dirname(fixturesDir))
+    if (generated.status !== 0) throw new Error(`fixtures failed (exit ${generated.status}): ${generated.stderr}`)
+    record('fixtures', `${process.execPath} ${fixturesTool} ${fixturesDir}`, generated, path.dirname(fixturesDir))
+    revisions = JSON.parse(generated.stdout).revisions
+    expected = caseRevisions()
+    for (const caseId of CASE_ORDER) {
+      if (revisions[caseId] !== expected[caseId]) throw new Error(`fixture revision mismatch for ${caseId}: ${revisions[caseId]} != ${expected[caseId]}`)
+    }
+    for (const caseId of parsed.cases) {
+      const dir = layout.testDir(caseId)
+      await copyTree(path.join(fixturesDir, parsed.condition === 'plain' ? 'plain' : 'guided', caseId), dir)
+      const observed = await revisionOfDir(dir)
+      if (observed !== expected[caseId]) throw new Error(`staged ${dir} does not match revision ${expected[caseId]} (observed ${observed})`)
+    }
+  } finally {
+    await fs.rm(fixturesDir, { recursive: true, force: true })
   }
-
-  for (const caseId of parsed.cases) {
-    const dir = layout.testDir(caseId)
-    await copyTree(path.join(fixturesDir, parsed.condition === 'plain' ? 'plain' : 'guided', caseId), dir)
-    const observed = await revisionOfDir(dir)
-    if (observed !== expected[caseId]) throw new Error(`staged ${dir} does not match revision ${expected[caseId]} (observed ${observed})`)
-  }
-  await fs.rm(fixturesDir, { recursive: true, force: true })
 
   await fs.writeFile(layout.rootInstruction, stagedSet)
   if (parsed.condition === 'guided') {
     await fs.writeFile(layout.environmentFile, renderEnvironment({
       workspace: layout.workspace,
       testDirs: parsed.cases.map((caseId) => TEST_DIRS[caseId]),
-      cliRoot: layout.cliRoot,
-      installedCli: layout.cli.installedCli,
-      manifestPath: path.join(layout.cli.transcripts, 'setup-manifest.json'),
-      revision: cliManifest.testedRevision,
+      stagingRoot: layout.staging.root,
+      installedCli: layout.staging.installedCli,
+      manifestPath: layout.staging.manifest,
+      revision: { commit: assessment.commit, subject: assessment.subject },
     }))
   }
 
-  await fs.mkdir(layout.cli.transcripts, { recursive: true })
-  const manifest = path.join(layout.cli.transcripts, 'setup-manifest.json')
-  await fs.writeFile(manifest, `${JSON.stringify({
-    status: 'setup-complete-stop-before-agent',
-    generatedAt: new Date().toISOString(),
-    inputs: { repo: repo ?? null, workspace: layout.workspace },
-    inferred: {
-      cliRoot: layout.cliRoot,
-      testDirs: Object.fromEntries(parsed.cases.map((caseId) => [caseId, TEST_DIRS[caseId]])),
-      rootInstruction: layout.rootInstruction,
-      environmentFile: parsed.condition === 'guided' ? layout.environmentFile : null,
-    },
-    condition: parsed.condition,
-    testedRevision: cliManifest ? cliManifest.testedRevision : { commit: assessment.commit, branch: assessment.branch, subject: assessment.subject, dirty: assessment.dirty },
-    installedCli: cliManifest ? cliManifest.installedCli : null,
-    cliStagingUsed: parsed.condition === 'guided',
-    instructionSource,
-    fixturesTool,
-    stagingReused,
-    stagingBuiltFrom: cliManifest ? cliManifest.repo : null,
-    revisions: expected,
-    cases: parsed.cases,
-    optionalCases: OPTIONAL_CASES,
-    copiedIntoTestPath: parsed.condition === 'guided' ? ['INSTRUCTIONS.md', 'ENVIRONMENT.md'] : ['INSTRUCTIONS.md'],
-    buildArtifactsInsideTestPath: [],
-    productCommandsRun: ['synth --version'],
-    trialCellsRun: 0,
-    lifecycleCommandsRun: [],
-    launchInstruction: launchInstruction(),
-    note: 'Setup only. Build, pack and install live outside TEST_PATH. Counts as a validated recipe, never as trial evidence. The agent is launched in TEST_PATH and told to follow INSTRUCTIONS.md.',
-  }, null, 2)}\n`)
-  await fs.writeFile(path.join(layout.cli.transcripts, 'setup.log'), `${log.join('\n\n')}\n`)
+  // Guided runs record the manifest in the staging directory; plain runs deliberately write
+  // nothing outside TEST_PATH, so nothing on the machine can leak the tool to that session.
+  let manifest = null
+  if (parsed.condition === 'guided') {
+    manifest = path.join(layout.staging.transcripts, 'setup-manifest.json')
+    await fs.writeFile(manifest, `${JSON.stringify({
+      status: 'setup-complete-stop-before-agent',
+      generatedAt: new Date().toISOString(),
+      inputs: { repo, workspace: layout.workspace },
+      inferred: {
+        stagingRoot: layout.staging.root,
+        testDirs: Object.fromEntries(parsed.cases.map((caseId) => [caseId, TEST_DIRS[caseId]])),
+        rootInstruction: layout.rootInstruction,
+        environmentFile: layout.environmentFile,
+      },
+      condition: parsed.condition,
+      testedRevision: { commit: assessment.commit, branch: assessment.branch, subject: assessment.subject, dirty: assessment.dirty, dirtyIgnored: assessment.dirty && parsed.allowDirty },
+      installedCli: cliManifest.installedCli ?? null,
+      stagingReused,
+      revisions: expected,
+      cases: parsed.cases,
+      optionalCases: OPTIONAL_CASES,
+      copiedIntoTestPath: ['INSTRUCTIONS.md', 'ENVIRONMENT.md'],
+      buildArtifactsInsideTestPath: [],
+      productCommandsRun: ['synth --version'],
+      trialTestsRun: 0,
+      lifecycleCommandsRun: [],
+      launchInstruction: launchInstruction(),
+      note: 'Setup only. The CLI was staged outside TEST_PATH. Counts as a validated recipe, never as trial evidence. The agent is launched in TEST_PATH and told to follow INSTRUCTIONS.md.',
+    }, null, 2)}\n`)
+    await fs.writeFile(path.join(layout.staging.transcripts, 'setup.log'), `${log.join('\n\n')}\n`)
+  }
 
-  console.log(stopBanner({ layout, manifest, assessment, cases: parsed.cases, cliStaging, stagingReused }))
+  console.log(stopBanner({
+    layout,
+    manifest,
+    assessment,
+    cases: parsed.cases,
+    revisions: expected,
+    stagingUsed,
+    stagingReused,
+  }))
   return 0
 }
 
