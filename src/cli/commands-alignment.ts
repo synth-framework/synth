@@ -6,11 +6,13 @@ import * as sdk from "../sdk/index.js"
 import { bootstrapWithCapabilities } from "./auto-commit-ceremony.js"
 import { namespaceHelp } from "./command-help.js"
 import { AlignmentPrepareResult, prepareAlignmentContract } from "./command-alignment.js"
+import { inspectAlignmentScopeEvidence } from "./alignment-scope-evidence.js"
 
 
 export async function cmdAlignmentHelp() {
   printJson(namespaceHelp("alignment", "Intent alignment and divergence governance", [
     { name: "synth alignment create --intent-model-id <id>", description: "Derive an Alignment Contract from an approved Intent Model" },
+    { name: "synth alignment create --dry-run --review-pr <number> --comment-id <id> --reviewed-commit <sha> --packet <path> --expected-account <login>", description: "Inspect account-attributed scope evidence without creating or approving any runtime artifact" },
     { name: "synth alignment submit --contract-id <id>", description: "Submit an Alignment Contract for review" },
     { name: "synth alignment approve --contract-id <id>", description: "Approve an Alignment Contract, authorizing Mission creation" },
     { name: "synth alignment prepare", description: "Create a minimal aligned contract and output its id" },
@@ -19,6 +21,26 @@ export async function cmdAlignmentHelp() {
 
 
 export async function cmdAlignmentCreate(flags: Record<string, string | boolean>) {
+  const scopeFlags = ["dry-run", "review-pr", "comment-id", "reviewed-commit", "packet", "expected-account"]
+  if (scopeFlags.some(flag => flags[flag] !== undefined)) {
+    if (flags["dry-run"] !== true || typeof flags["review-pr"] !== "string" || typeof flags["comment-id"] !== "string" ||
+        typeof flags["reviewed-commit"] !== "string" || typeof flags.packet !== "string" ||
+        typeof flags["expected-account"] !== "string" || flags["intent-model-id"] !== undefined) {
+      printError("Scope evidence inspection requires --dry-run --review-pr <number> --comment-id <id> --reviewed-commit <sha> --packet <path> --expected-account <login>. No runtime artifact is written by this route.")
+    }
+    const integer = (value: string) => /^(?:[1-9][0-9]*)$/.test(value) ? Number(value) : NaN
+    try {
+      const evidence = inspectAlignmentScopeEvidence(process.cwd(), {
+        pr: integer(flags["review-pr"] as string), commentId: integer(flags["comment-id"] as string),
+        reviewedCommit: flags["reviewed-commit"] as string, packetPath: flags.packet as string,
+        expectedAccount: flags["expected-account"] as string,
+      })
+      printJson({ ...evidence, status: "ok", kind: "AlignmentScopeEvidencePreview" })
+    } catch (error) {
+      printError(`Alignment scope evidence unavailable: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    return
+  }
   const intentModelId = typeof flags["intent-model-id"] === "string" ? flags["intent-model-id"] : undefined
   if (!intentModelId) {
     printError("Usage: synth alignment create --intent-model-id <id> [--evidence <path>]")
