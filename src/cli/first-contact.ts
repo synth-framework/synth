@@ -13,6 +13,8 @@ import { constants as fsConstants } from "node:fs"
 import { spawn, execSync, execFileSync } from "child_process"
 import path from "path"
 import { choiceDescription } from "../first-contact/review/pr-description.js"
+import { createSourceOffer, createSourceAnswer, sourceFreshness, workingBrief } from "../first-contact/source-brief.js"
+import type { SourceOffer, SourceAnswer } from "../first-contact/source-brief.js"
 import { publishChoiceDescription, readChoiceReviews } from "./first-contact-pr.js"
 import * as sdk from "../sdk/index.js"
 
@@ -39,6 +41,8 @@ interface DraftEnvelope {
   /** Open agent-made choices are not approvals or settled product requirements. */
   openAgentChoices?: AgentChoice[]
   choiceReviews?: ChoiceReview[]
+  sourceOffers?: SourceOffer[]
+  sourceAnswers?: SourceAnswer[]
   updatedAt: string
 }
 
@@ -95,7 +99,7 @@ async function readDraft(cwd: string): Promise<DraftEnvelope> {
   return draft
 }
 
-async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices?: AgentChoice[], journeyId?: string, reviews?: ChoiceReview[]): Promise<string> {
+async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices?: AgentChoice[], journeyId?: string, reviews?: ChoiceReview[], offers?: SourceOffer[], answers?: SourceAnswer[]): Promise<string> {
   const { draftPath } = artifactDraftPaths(cwd)
   // Starting a new idea or answering a generic question must never silently
   // erase an open agent choice. Its originIntent keeps earlier scope visible.
@@ -108,6 +112,8 @@ async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices
     journeyId: journeyId ?? prior?.journeyId ?? uuid(),
     openAgentChoices: choices ?? prior?.openAgentChoices ?? [],
     choiceReviews: reviews ?? prior?.choiceReviews ?? [],
+    sourceOffers: offers ?? prior?.sourceOffers ?? [],
+    sourceAnswers: answers ?? prior?.sourceAnswers ?? [],
     updatedAt: nowIso(),
   }
   await sdk.json.writeJsonNewline(draftPath, envelope)
@@ -222,6 +228,8 @@ export async function cmdFirstContactHelp(): Promise<void> {
       { name: "synth first-contact start \"<intent>\"", description: "Extract intent and create a first-contact draft", args: "<intent> [--name <project-name>]" },
       { name: "synth first-contact clarify", description: "Show the next clarification questions for the draft" },
       { name: "synth first-contact clarify --field <field> --answer <answer>", description: "Apply a clarification answer to the draft", args: "--field <field> --answer <answer>" },
+      { name: "synth first-contact clarify --source-offer <file>", description: "Record an agent-authored contextual offer with verified documentation quotes", args: "--source-offer <workspace-relative JSON file>" },
+      { name: "synth first-contact clarify --source-answer <id>", description: "Record supplied response to latest offer; attribution remains unverified", args: "--source-answer <id> --selection <option-id|defer> --human-response <text>" },
       { name: "synth first-contact clarify --agent-choice <choice> --reason <why> --scope <area>", description: "Record an agent's provisional choice as open, not human-approved", args: "--agent-choice <choice> --reason <why> --scope <area> [--alternative <option>]" },
       { name: "synth first-contact clarify --review-choice <id> --impact <trivial|material> --reason <why>", description: "Record an assessment; material choices may await an actual PR reviewer", args: "--review-choice <id> --impact <trivial|material> --reason <why> [--decision <keep|change|defer> --human-response <unverified text>]" },
       { name: "synth first-contact project", description: "Project architecture candidates from the draft" },
@@ -275,6 +283,48 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
 
   const answerField = typeof flags.field === "string" ? flags.field : undefined
   const answerContent = typeof flags.answer === "string" ? flags.answer : undefined
+  if (Object.hasOwn(flags, "source-offer")) {
+    if (typeof flags["source-offer"] !== "string" || flags["source-answer"] !== undefined || flags.selection !== undefined ||
+        flags["human-response"] !== undefined || flags.field !== undefined || flags.answer !== undefined || flags["agent-choice"] !== undefined ||
+        flags["review-choice"] !== undefined) printError("--source-offer needs a single workspace-relative JSON proposal file.")
+    if (!draft.journeyId) printError("Draft has no journey ID; start a new first-contact idea before making a source offer.")
+    let offer: SourceOffer
+    try {
+      offer = await createSourceOffer(process.cwd(), flags["source-offer"], draft.journeyId, draft.sourceOffers ?? [])
+    } catch (error) { printError(`Source offer was not recorded: ${error instanceof Error ? error.message : "invalid proposal"}`) }
+    const entry: TranscriptEntry = { turn: (draft.artifact.transcript.at(-1)?.turn ?? 0) + 1, actor: "agent",
+      type: "proposal", content: `Source offer ${offer.id}: ${offer.question}`, timestamp: offer.offeredAt }
+    const updated = { ...draft.artifact, transcript: [...draft.artifact.transcript, entry] }
+    const draftPath = await writeDraft(process.cwd(), updated, undefined, undefined, undefined, [...(draft.sourceOffers ?? []), offer])
+    await appendTranscript(process.cwd(), [entry])
+    printJson({ status: "ok", kind: "FirstContactSourceOfferRecorded", offer, draftPath,
+      note: "This is an agent-authored offer with verified source quotations; output does not prove it was shown to a human." })
+    return
+  }
+  if (Object.hasOwn(flags, "source-answer")) {
+    if (typeof flags["source-answer"] !== "string" || typeof flags.selection !== "string" || typeof flags["human-response"] !== "string" ||
+        flags.field !== undefined || flags.answer !== undefined || flags["agent-choice"] !== undefined || flags["review-choice"] !== undefined) {
+      printError("--source-answer <id> requires --selection <option-id|defer> and --human-response <supplied words>.")
+    }
+    const offer = (draft.sourceOffers ?? []).filter((item) => item.journeyId === draft.journeyId).at(-1)
+    if (!offer || offer.id !== flags["source-answer"]) printError("Only the latest source offer for this journey may receive an answer.")
+    if (await sourceFreshness(process.cwd(), offer) !== "current") printError("Cited sources changed or are unavailable; revise the offer before recording an answer.")
+    let answer: SourceAnswer
+    try { answer = createSourceAnswer(offer, flags.selection, flags["human-response"], draft.sourceAnswers ?? []) }
+    catch (error) { printError(`Source answer was not recorded: ${error instanceof Error ? error.message : "invalid answer"}`) }
+    const entry: TranscriptEntry = { turn: (draft.artifact.transcript.at(-1)?.turn ?? 0) + 1, actor: "agent",
+      type: "proposal", content: `CLI-supplied response to ${offer.id}: ${answer.response}`, timestamp: answer.answeredAt }
+    const updated = { ...draft.artifact, transcript: [...draft.artifact.transcript, entry] }
+    const draftPath = await writeDraft(process.cwd(), updated, undefined, undefined, undefined, undefined, [...(draft.sourceAnswers ?? []), answer])
+    await appendTranscript(process.cwd(), [entry])
+    printJson({ status: "ok", kind: "FirstContactSourceAnswerRecorded", answer, draftPath,
+      workingBrief: await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], [...(draft.sourceAnswers ?? []), answer]),
+      note: "Response words were supplied through the CLI; no human identity or agreement was authenticated." })
+    return
+  }
+  if (flags.selection !== undefined || (flags["human-response"] !== undefined && flags["review-choice"] === undefined)) {
+    printError("--selection and source --human-response require --source-answer.")
+  }
   if (Object.hasOwn(flags, "review-choice")) {
     const choiceId = typeof flags["review-choice"] === "string" ? flags["review-choice"].trim() : ""
     const impact = flags.impact
@@ -394,7 +444,8 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
       sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
       openAgentChoices: draft.openAgentChoices ?? [],
       choiceReviews: draft.choiceReviews ?? [],
-      readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts or open agent choices.",
+      workingBrief: await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], draft.sourceAnswers ?? []),
+      readinessScope: "canApprove covers structured draft fields only; it does not establish source-linked brief agreement or settle open agent choices.",
       canApprove: nextClarification.canApprove,
       remainingQuestions: nextClarification.questions.length,
       nextStep: sourceHandoff.selectionRequired
@@ -413,7 +464,8 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
     openAgentChoices: draft.openAgentChoices ?? [],
     choiceReviews: draft.choiceReviews ?? [],
-    readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts or open agent choices.",
+    workingBrief: await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], draft.sourceAnswers ?? []),
+    readinessScope: "canApprove covers structured draft fields only; it does not establish source-linked brief agreement or settle open agent choices.",
     draftPath: artifactDraftPaths(process.cwd()).draftPath,
     canApprove: clarification.canApprove,
     ambiguities: clarification.ambiguities,
@@ -685,6 +737,9 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     choiceReviews: reviews,
     reviewPacket,
     choiceReviewStatus: choiceReviewStatus(choices, reviews),
+    sourceOffers: draft?.sourceOffers ?? [],
+    sourceAnswers: draft?.sourceAnswers ?? [],
+    workingBrief: await workingBrief(process.cwd(), draft?.journeyId, draft?.sourceOffers ?? [], draft?.sourceAnswers ?? []),
     selectedArchitecture: currentApproved?.selectedArchitecture,
     artifactHash: currentApproved?.artifactHash,
     nextStep: currentApproved
