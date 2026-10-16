@@ -1,0 +1,27 @@
+{
+  "status": "cli-installed",
+  "stagedAt": "2026-10-16T07:38:05.664Z",
+  "builtFrom": "C:\\Users\\j\\Projects\\synth",
+  "testedRevision": {
+    "commit": "b53f6dcb859f9f054040454f419a5c20ebef12ff",
+    "branch": "arena/f3c711cb-synth",
+    "subject": "b53f6dc Read plainly-written reports, and stop asking the plain arm for an install proof",
+    "workingTreeDirty": true
+  },
+  "installedCli": {
+    "bin": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\global\\synth.cmd",
+    "tarball": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\pack\\synth-framework-synth-2.6.1.tgz",
+    "tarballSha256": "e3cc81e3be1aba3edf1c8bd85e0451a177cae8045962ae2cc4e015e1d7f4fe50",
+    "version": {
+      "status": "ok",
+      "version": "2.6.1",
+      "name": "synth",
+      "schema": "synth-cli-v1"
+    }
+  },
+  "productCommandsRun": [
+    "synth --version"
+  ],
+  "trialTestsRun": 0,
+  "lifecycleCommandsRun": []
+}

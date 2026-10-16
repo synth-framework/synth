@@ -1,0 +1,43 @@
+TEST: green / greenfield/
+COMMANDS: each run inside greenfield/ with exit code 0 unless noted
+- synth --version => exit 0 (version 2.6.1, synth-cli-v1, PATH OK)
+- synth first-contact --dry-run => exit 0
+- synth first-contact start "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." => exit 0
+- synth first-contact status => exit 0
+- synth first-contact clarify => exit 0 (read-only inspection to understand questions)
+- synth first-contact clarify --help => exit 0 (read-only inspection to understand --source-offer usage)
+- synth first-contact clarify --source-offer missing.json => exit non-zero / error envelope (expected probe for missing file; ENOENT, not recorded)
+- synth first-contact clarify --source-offer offer.json => exit 0 (recorded as offer-5cd1f081-a77a-4a0e-83c9-83039475f9c8)
+- synth first-contact status => exit 0 (final)
+CLI OUTPUT: summarized
+- --dry-run: kind FirstContactOnboardPlan, detected empty, wouldCreate .synth/manifest.json etc, wouldRun synth init / mission create / mission approve, nextStep named "synth first-contact --approve". No files written.
+- start: kind FirstContactDraft, draftPath .synth/first-contact/draft.json, intent reproduced exactly, confidence overall 0.25, unknowns for audience/runtime/language/capabilities, nextStep "synth first-contact clarify".
+- status (pre-offer): state draft, canApprove false, workingBrief no-source-offer, nextStep clarify.
+- clarify: 5 ambiguities/questions (primaryUsers, stakeholders, targetRuntime, languagePreferences, required capabilities), sourceHandoff not-ingested, nextStep clarify --field.
+- clarify --source-offer offer.json: kind FirstContactSourceOfferRecorded, version 1, 3 options, attribution agent-authored-offer, note citations do not prove interpretation.
+- status (final): state draft, canApprove false, sourceOffers 1 entry, sourceAnswers [], workingBrief status awaiting-response, version 1, sourceFreshness current, nextStep "synth first-contact clarify". No approval, no materialization, no mission.
+OFFER: path offer.json (greenfield/offer.json)
+- scope: Small editable specimen-board exporter for SVG board utility
+- question: Which board kind, input source, and editing-plus-validation behavior should the first exporter slice support?
+- options (3):
+  1. fixed-file-input / Fixed board kind from file input with strict validation / tradeoff predictable output but narrower support / acceptanceExample exporter refuses missing cell with named validation error
+  2. flexible-board-input / Flexible board kinds from file input with documented defaults / tradeoff broader coverage but harder guarantees / acceptanceExample accepts two variants and documents defaults
+  3. manual-edit-checks / Manually specified board with inline editing checks before export / tradeoff simplest input but editing interaction still to decide / acceptanceExample edit breaking shape rejected with rule name before export
+- All options cite operator-intent with exact task text. No GUI framework or stack invented. No selection/human-response passed; ends awaiting-response.
+CITATIONS: each citation and match check
+- All 3 options use kind operator-intent, quote "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."
+- Verified: quote equals the exact start intent reproduced by CLI in draftPath intent field and final status intent field. CLI accepted it (sha256 bb2f3014...) and sourceFreshness current. No file citations used because greenfield/ contains no docs/, knowledge/, src/, tests/, or package.json (only .synth/ + offer.json); file regex would have rejected other paths.
+APPLICATION TESTS: N/A (greenfield only; brownfield rule does not apply)
+ASSUMPTIONS: what assumed without evidence
+- Assumed exact task-text string is the operator intent to cite; no other source exists in this empty directory.
+- Assumed --source-offer JSON shape (scope/question/options with id/label/tradeoff/acceptanceExample/source) from INSTRUCTIONS plus CLI error probing and local CLI dist reading for validation rules; CLI did not publish a separate schema in its help output.
+- Did not assume users, runtime, language, or stack; left them open.
+STILL OPEN: decisions left to a person
+- Board kind, input source, and editing-plus-validation choice among the 3 options; undecided per task text.
+- Primary users, stakeholders, runtime, language, required capabilities (CLI q-1..q-5) remain unanswered.
+- Could not verify human reading of offer; workingBrief is awaiting-response by design, not agreement.
+PROBLEMS: CLI wrong / refused / contradicted instructions
+- --dry-run nextStep said "synth first-contact --approve", which contradicts INSTRUCTIONS section 5 (No lifecycle actions: do not run first-contact approve/materialize, do not start/approve Mission/Expedition) and the required greenfield observation (no automatic approval). I did NOT run --approve; followed INSTRUCTIONS section 2 start/status/clarify --source-offer/status instead. Recording this contradiction and stopping auto-onboarding here.
+- Probe with missing.json correctly errored ENOENT and did not record; no other refusals.
+- No other contradiction: start/status/clarify/clarify --source-offer/status all behaved as INSTRUCTIONS described.
+EFFORT: rough elapsed time for this test ~10 minutes including schema discovery

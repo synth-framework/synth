@@ -1,0 +1,10 @@
+TEST: brown / brownfield/
+COMMANDS: npm test (before change) -> exit 0; npm test (after, no source change) -> exit 0. Both run with workdir brownfield/.
+APPROACH: Read brownfield/package.json, src/board.js, tests/board.test.js, docs/limitation.md in that order to establish existing behavior; ran npm test before any change; wrote offer.json as delta-only proposal citing all three files with exact path/line/quote; re-ran npm test to verify no drift; wrote this report. Chose proposal-only with no source edits to preserve existing behavior and tests per the documented limitation.
+OFFER: path brownfield/offer.json; question "How should the user-selected fill color be accepted while preserving the existing label output?"; options (A) Optional second fill argument with default preserving output, (B) Optional options object with fill field, (C) Separate fill-aware function reusing render.
+CITATIONS: src/board.js line 1 "export const render = label => `<text>${label}</text>`;" — matched real file content and line; tests/board.test.js line 4 "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));" — matched; docs/limitation.md line 1 "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output." — matched.
+APPLICATION TESTS: before change: command "npm test", exit 0, result pass 1 fail 0 (existing label); after change: no source change made (proposal only), re-ran "npm test", exit 0, result pass 1 fail 0. Existing tests and fixtures not edited.
+ASSUMPTIONS: Assumed npm test exit code 0 means existing behavior intact; assumed fill color means SVG fill attribute on the text element (not verified with requester).
+STILL OPEN: Decision in offer.json left to a person (fill-color parameter shape); fill value validation, default color, and SVG escaping not decided.
+PROBLEMS: None; nothing misled. No wholesale rewrite done.
+EFFORT: ~10 minutes for this test

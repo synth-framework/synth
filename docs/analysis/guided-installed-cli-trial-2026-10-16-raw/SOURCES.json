@@ -1,0 +1,226 @@
+{
+  "capturedAt": "2026-10-16T08:05:57.204Z",
+  "workspace": "C:\\Users\\j\\Projects\\board-test",
+  "staging": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+  "sources": [
+    {
+      "bundlePath": "INSTRUCTIONS.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\INSTRUCTIONS.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test",
+      "sourceRelative": "INSTRUCTIONS.md",
+      "bytes": 7600,
+      "sha256": "07a7a56df1bb0ec7a5e3f9d5f9017cc12c7b7c42fb00c964be6cae1545d72321",
+      "kind": "staged instruction set",
+      "copied": true
+    },
+    {
+      "bundlePath": "ENVIRONMENT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\ENVIRONMENT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test",
+      "sourceRelative": "ENVIRONMENT.md",
+      "bytes": 741,
+      "sha256": "b59302c1761a267e38b4a924ae703a74bfae33e9b2fb10aaaa14fff81a32ffd5",
+      "kind": "staged environment note",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\greenfield\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\greenfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 5425,
+      "sha256": "8c61a23832fbc782ad62cd8083400296bafed302c03fff56583b29ca9ecfb71d",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\greenfield\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\greenfield",
+      "sourceRelative": "offer.json",
+      "bytes": 1857,
+      "sha256": "856467e7b61441a2c5fd043f57be8e8aaee65af36cfb5d09aa5ab591635f0046",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/synth-state/data/cli-errors.jsonl",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\greenfield\\.synth\\data\\cli-errors.jsonl",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\greenfield",
+      "sourceRelative": ".synth/data/cli-errors.jsonl",
+      "bytes": 286,
+      "sha256": "c057b5acf6069edf9a149779644211a4ff70cb7be325a18ededa9ef8708ec255",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/synth-state/first-contact/draft.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\greenfield\\.synth\\first-contact\\draft.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\greenfield",
+      "sourceRelative": ".synth/first-contact/draft.json",
+      "bytes": 5845,
+      "sha256": "53a607e0dd071b07eb9fa67be088bf2153ae920abacff190e13ad88bac02c9e0",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/synth-state/first-contact/transcript.jsonl",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\greenfield\\.synth\\first-contact\\transcript.jsonl",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\greenfield",
+      "sourceRelative": ".synth/first-contact/transcript.jsonl",
+      "bytes": 484,
+      "sha256": "4f761886c322eaa0cfc9261efa3e89adb2d1fd2112410ec7e24ba4ddf2593f67",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\brownfield\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\brownfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 5162,
+      "sha256": "051f9441283da3ad764186b1eedbef6540a726e9d8a652d1a405824155b50086",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\brownfield\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\brownfield",
+      "sourceRelative": "offer.json",
+      "bytes": 1829,
+      "sha256": "e8eb86c6b78a4143199fec7fa3156ceb14f659eda339c2579dc9282248962df9",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/synth-state/first-contact/draft.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\brownfield\\.synth\\first-contact\\draft.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\brownfield",
+      "sourceRelative": ".synth/first-contact/draft.json",
+      "bytes": 5501,
+      "sha256": "2ea921a6d8e7711684ede4faac8c97c59b4cebf0b52a9b7b8a4aaa1f985cbb11",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/synth-state/first-contact/transcript.jsonl",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\brownfield\\.synth\\first-contact\\transcript.jsonl",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\brownfield",
+      "sourceRelative": ".synth/first-contact/transcript.jsonl",
+      "bytes": 487,
+      "sha256": "e3c694bfddb145c122e3a08afaf2d1c43da2a6d325ea7a8bb73ed485e214cae4",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\documentation\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\documentation",
+      "sourceRelative": "REPORT.md",
+      "bytes": 4570,
+      "sha256": "fa6527630ff9d715c06e1446e4c59f8d14ec109cfb59c54daa2331179ff0597c",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\documentation\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\documentation",
+      "sourceRelative": "offer.json",
+      "bytes": 1778,
+      "sha256": "1448a1aa7700e57c9d16295478a815518e602645c647810768deb425d8774c0a",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/synth-state/first-contact/draft.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\documentation\\.synth\\first-contact\\draft.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\documentation",
+      "sourceRelative": ".synth/first-contact/draft.json",
+      "bytes": 5348,
+      "sha256": "3eb25c5e4ec6013737ed133d244db3b7a94559785c3290e41f50b77480788d2c",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/synth-state/first-contact/transcript.jsonl",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-test\\documentation\\.synth\\first-contact\\transcript.jsonl",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-test\\documentation",
+      "sourceRelative": ".synth/first-contact/transcript.jsonl",
+      "bytes": 442,
+      "sha256": "4a582f4622502defdc4437448672f1ad39eb875a7e61021d969d3bd6fb153e5d",
+      "kind": "CLI-stored state",
+      "copied": true
+    },
+    {
+      "bundlePath": "staging/transcripts/setup-manifest.json",
+      "sourcePath": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\transcripts\\setup-manifest.json",
+      "sourceRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+      "sourceRelative": "transcripts/setup-manifest.json",
+      "bytes": 2611,
+      "sha256": "b3346075c67921c508b37bc20f58f17e6a8f5c30b55734f73f0a0771b97c946e",
+      "kind": "setup transcript",
+      "copied": true
+    },
+    {
+      "bundlePath": "staging/transcripts/tarball.sha256",
+      "sourcePath": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\transcripts\\tarball.sha256",
+      "sourceRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+      "sourceRelative": "transcripts/tarball.sha256",
+      "bytes": 160,
+      "sha256": "8fad959a6a7af7bf6f6fe42a5c97cf69897e9c6ca0faa0b66716dccd6f952071",
+      "kind": "setup transcript",
+      "copied": true
+    },
+    {
+      "bundlePath": "staging/transcripts/version.json",
+      "sourcePath": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\transcripts\\version.json",
+      "sourceRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+      "sourceRelative": "transcripts/version.json",
+      "bytes": 90,
+      "sha256": "8f5bab090fb6b23e3dba6f787e6f87cf10644c337ba67c1356f5c84be81dc4ec",
+      "kind": "setup transcript",
+      "copied": true
+    },
+    {
+      "bundlePath": "staging/transcripts/setup.log",
+      "sourcePath": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\transcripts\\setup.log",
+      "sourceRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+      "sourceRelative": "transcripts/setup.log",
+      "bytes": 1694,
+      "sha256": "001bac9d5fe6003e9539d741e6820b2b7fa60dfe3c1a12622022548cd35e496d",
+      "kind": "setup transcript",
+      "copied": true
+    },
+    {
+      "bundlePath": "staging/cli-manifest.json",
+      "sourcePath": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\cli-manifest.json",
+      "sourceRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+      "sourceRelative": "cli-manifest.json",
+      "bytes": 943,
+      "sha256": "cb4616ccf618d8064bd8edc90a0de31685e24b39b0759878d2365956d5bb12d5",
+      "kind": "CLI manifest",
+      "copied": true
+    },
+    {
+      "bundlePath": "staging/pack/synth-framework-synth-2.6.1.tgz",
+      "sourcePath": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f\\pack\\synth-framework-synth-2.6.1.tgz",
+      "sourceRoot": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\b53f6dcb859f",
+      "sourceRelative": "pack/synth-framework-synth-2.6.1.tgz",
+      "bytes": 1112149,
+      "sha256": null,
+      "kind": "packed artifact",
+      "copied": false,
+      "note": "binary artifact — the digest is in transcripts/tarball.sha256"
+    },
+    {
+      "bundlePath": "fixtures.json",
+      "sourcePath": null,
+      "bytes": 2822,
+      "sha256": "86c843bb1f910ab99718b9a90a0b53176b8b0934447761d2f1f44a2b55f9d216",
+      "kind": "recomputed revisions",
+      "copied": true
+    }
+  ]
+}
