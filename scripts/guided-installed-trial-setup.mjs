@@ -5,25 +5,28 @@
 // Mechanical setup for the operator-run trial described in
 // docs/plans/guided-installed-cli-trial-instructions.md. Any agent (or a person)
 // can run this; it performs no judgment, no trial cell and no product lifecycle
-// action. It deliberately STOPS after staging the workspaces, kickoff files and
-// instructions: starting a cell requires an operator-issued kickoff, because no
-// auto-feed initialization command exists yet that hands instructions back to a
-// running agent.
+// action. It deliberately STOPS after staging the workspaces, the authored
+// instruction sets and a one-line handoff note per cell: starting a cell requires
+// an operator-issued handoff, because no auto-feed initialization command exists
+// yet that hands instructions back to a running agent.
 //
 // What it does, in order:
 //   1. clone the pinned revision into a throwaway source tree
 //   2. npm ci && npm run build in that tree
 //   3. npm pack, record the tarball SHA-256
 //   4. install the tarball into a scratch npm prefix and record `synth --version`
-//   5. copy the trial instructions and evidence template out of the pin
+//   5. copy the trial instructions, evidence template and the authored
+//      instruction sets (docs/plans/guided-trial/) out of the pin
 //   6. generate the matched fixtures with the pinned generator, verify the
 //      published revisions, and copy them into ready-to-run per-case workspaces
-//   7. write paste-ready kickoff files for both conditions
+//   7. stage the condition-appropriate instruction set into each workspace as
+//      INSTRUCTIONS.md and write one short handoff note per cell
 //   8. delete the source clone (isolation: the trial agent must not read repo
 //      tests or docs) and write transcripts + a setup manifest
 //
-// The ONLY product command this script runs is `synth --version`. Lifecycle
-// commands appear solely as text inside the kickoff templates.
+// The ONLY product command this script runs is `synth --version`. The instruction
+// sets are authored documents staged verbatim; the handoff note carries only the
+// case, the workspace path and (guided only) where the CLI is installed.
 //
 // Usage:
 //   node scripts/guided-installed-trial-setup.mjs --root <abs empty dir> [options]
@@ -62,6 +65,15 @@ const DEFAULT_BRANCH = 'arena/f3c711cb-synth'
 const INSTRUCTIONS_SOURCE = 'docs/plans/guided-installed-cli-trial-instructions.md'
 const TEMPLATE_SOURCE = 'docs/analysis/guided-three-path-installed-trial-evidence-template.md'
 const FIXTURE_GENERATOR = 'scripts/guided-installed-trial-fixtures.mjs'
+
+// Authored instruction sets, staged verbatim. The guided set is the only place
+// the trial tells an agent how to begin; the plain set must never name the tool.
+export const INSTRUCTION_SET_DIR = 'docs/plans/guided-trial'
+export const INSTRUCTION_SETS = {
+  guided: `${INSTRUCTION_SET_DIR}/instructions/guided.md`,
+  plain: `${INSTRUCTION_SET_DIR}/instructions/plain.md`,
+}
+const INSTRUCTION_SET_INDEX = `${INSTRUCTION_SET_DIR}/README.md`
 
 const npmBin = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const installedSynthBin = (root) => path.join(root, 'global', 'bin', process.platform === 'win32' ? 'synth.cmd' : 'synth')
@@ -115,94 +127,70 @@ export function assertSafeLayout(args, repoRoot = REPO_ROOT) {
   return { root, plainRoot }
 }
 
-// #region product-command-text — guidance text only; never executed
+// #region handoff-note-text — staged note text; the only product naming in a cell is here, guided-only
 /**
- * Kickoff text for one cell. The plain text never mentions the tool under test,
- * and renders the workspace path it is given (validated by assertSafeLayout).
+ * Short handoff note for one cell: the case, the workspace, and — guided only —
+ * where the CLI is installed. It carries no process and no command list; the
+ * process lives in the staged instruction set the note points at.
  */
-export function renderKickoff(condition, { caseName, workspace, synthBin, task }) {
+export function renderHandoffNote(condition, { caseName, workspace, synthBin }) {
   if (condition !== 'plain' && condition !== 'guided') throw new Error(`Unknown condition: ${condition}`)
-  if (!task) throw new Error('kickoff requires the case task text')
-  const shared = [
-    `You are taking part in a usability trial. Work only inside this directory:`,
+  const lines = [
+    `# Handoff — ${caseName} (${condition} condition)`,
+    ``,
+    `You are taking part in a usability trial. Your workspace is:`,
     ``,
     `    ${workspace}`,
     ``,
-    `Do not read or write anything outside it.`,
+    `Start by reading the instruction set staged in that workspace:`,
     ``,
-    `Task:`,
-    ``,
-    `    ${task}`,
+    `    ${path.join(workspace, 'INSTRUCTIONS.md')}`,
     ``,
   ]
-  if (condition === 'plain') {
-    return [
-      `# Kickoff — ${caseName} (plain condition)`,
+  if (condition === 'guided') {
+    lines.push(
+      `Your assigned test is \`${caseName}\`. The instruction set tells you to begin with the SYNTH`,
+      `initialization process. The CLI is installed at:`,
       ``,
-      ...shared,
-      `Do not look for other checkouts, test suites or documentation. Use only the tools you are given.`,
-      `If a decision is needed that only a person can make, say so explicitly and stop instead of`,
-      `inventing one.`,
+      `    ${synthBin}`,
       ``,
-      `When you stop, report:`,
-      `  - what you did and the exact commands you ran;`,
-      `  - what you assumed without evidence;`,
-      `  - what you left open or could not verify;`,
-      `  - anything you would need a person to decide.`,
-      `Do not claim that anything was approved.`,
+      `and the operator may also have it on PATH as \`synth\`. If neither works, record that and stop.`,
       ``,
-    ].join('\n')
+    )
+  } else {
+    lines.push(
+      `Your assigned test is \`${caseName}\`. The instruction set lists all the tests and their`,
+      `starting conditions, and states what your report must contain.`,
+      ``,
+    )
   }
-  return [
-    `# Kickoff — ${caseName} (guided condition)`,
+  lines.push(
+    `Work only inside your workspace. Do not read or write anything outside it, and do not look for`,
+    `other checkouts, test suites or documentation.`,
     ``,
-    ...shared,
-    `Run the initialization commands below from that directory, in order, and read their output`,
-    `before writing anything:`,
-    ``,
-    `    ${synthBin} first-contact --dry-run`,
-    `    ${synthBin} first-contact start "${task}"`,
-    `    ${synthBin} first-contact status`,
-    ``,
-    `Then write your own offer as JSON: a scope, one consequential question, two or three options`,
-    `that each carry a tradeoff, an acceptance example, and a citation to either the task text or an`,
-    `exact line of a file in this workspace. Record it, then re-check status:`,
-    ``,
-    `    ${synthBin} first-contact clarify --source-offer offer.json`,
-    `    ${synthBin} first-contact status`,
-    ``,
-    `Rules:`,
-    `  - Do not pass --selection or --human-response. There is no human respondent in this trial, so`,
-    `    the offer must stay awaiting-response. Do not invent a person's words.`,
-    `  - Do not run first-contact approve or first-contact materialize, do not start a Mission or`,
-    `    Expedition, and do not push anywhere.`,
-    `  - If a decision is needed that only a person can make, say so and stop instead of choosing.`,
-    `  - If the CLI refuses or errors, record the exact command, exit code and message, then stop.`,
-    ``,
-    `When you stop, report: the commands and their exit codes, what the CLI showed, which files and`,
-    `lines you cited, what you assumed without evidence, what you left open, and anything the CLI`,
-    `got wrong.`,
-    ``,
-  ].join('\n')
+  )
+  return lines.join('\n')
 }
 
-// #endregion product-command-text
+// #endregion handoff-note-text
 
 /** Closing banner: the runbook stops here; only an operator starts a cell. */
 export function stopBanner({ root, plainRoot, synthBin, manifest, testedRevision, pinned }) {
   return [
     `SETUP COMPLETE — the runbook stops here.`,
     ``,
-    `No trial cell has been run and none may start until the operator issues the kickoff.`,
+    `No trial cell has been run and none may start until the operator issues the handoff.`,
     `  tested revision  : ${testedRevision}${pinned ? '' : '  (no --pin given; this is the clone head)'}`,
     `  installed CLI    : ${synthBin}   (setup invoked only: synth --version)`,
-    `  guided kickoffs  : ${path.join(root, 'kickoff', 'guided-<case>.md')}`,
-    `  plain kickoffs   : ${path.join(plainRoot, 'kickoff-<case>.md')}`,
+    `  instruction sets : ${path.join(root, 'instructions')}  and staged as INSTRUCTIONS.md per workspace`,
+    `  guided handoffs  : ${path.join(root, 'kickoff', 'guided-<case>.md')}`,
+    `  plain handoffs   : ${path.join(plainRoot, 'kickoff-<case>.md')}`,
     `  manifest         : ${manifest}`,
     ``,
-    `Next step (operator, one fresh session per cell): paste the matching kickoff file and let the`,
-    `agent start with the synth initialization commands. Until an auto-feed initialization command`,
-    `exists that returns instructions to a running agent, this human hand-off is required.`,
+    `Next step (operator, one fresh session per cell): paste the matching handoff note. The agent`,
+    `reads its staged instruction set, and in a guided cell begins with the SYNTH initialization`,
+    `process rather than any setup script. Until an auto-feed initialization command exists that`,
+    `returns instructions to a running agent, this human hand-off is required.`,
   ].join('\n')
 }
 
@@ -307,9 +295,13 @@ async function main(argv) {
   await fs.writeFile(path.join(root, 'transcripts', 'version.json'), version.stdout)
   const versionJson = JSON.parse(version.stdout)
 
-  // 5. instructions and evidence template, taken from the pin itself
-  for (const relative of [INSTRUCTIONS_SOURCE, TEMPLATE_SOURCE]) {
+  // 5. trial instructions, evidence template and authored instruction sets, taken from the pin
+  for (const relative of [INSTRUCTIONS_SOURCE, TEMPLATE_SOURCE, INSTRUCTION_SET_INDEX, INSTRUCTION_SETS.guided, INSTRUCTION_SETS.plain]) {
     await fs.copyFile(path.join(src, relative), path.join(root, 'instructions', path.basename(relative)))
+  }
+  const instructionText = {}
+  for (const condition of ['guided', 'plain']) {
+    instructionText[condition] = await fs.readFile(path.join(src, INSTRUCTION_SETS[condition]), 'utf-8')
   }
 
   // 6. fixtures from the pinned generator, verified against the published record
@@ -336,33 +328,20 @@ async function main(argv) {
     }
   }
 
-  // 7. paste-ready kickoff files
-  for (const name of CASE_ORDER) {
-    const guidedKickoff = renderKickoff('guided', { caseName: name, workspace: workspaces.guided[name], synthBin, task: TASKS[name] })
-    await fs.writeFile(path.join(root, 'kickoff', `guided-${name}.md`), guidedKickoff)
-    const plainKickoff = renderKickoff('plain', { caseName: name, workspace: workspaces.plain[name], synthBin, task: TASKS[name] })
-    await fs.writeFile(path.join(plainRoot, `kickoff-${name}.md`), plainKickoff)
+  // 7. stage the condition-appropriate instruction set into each workspace, then one
+  //    short handoff note per cell. Instruction sets are authored documents, staged
+  //    verbatim; the note carries only case, workspace and (guided) CLI location.
+  if (instructionText.guided === instructionText.plain) {
+    throw new Error('guided and plain instruction sets are byte-identical: the conditions are indistinguishable')
   }
-  // #region product-command-text
-  await fs.writeFile(path.join(root, 'kickoff', 'README.md'), [
-    '# Kickoff files — setup is not a trial run',
-    '',
-    `Required cases: ${REQUIRED_CASES.join(', ')}. Optional: ${OPTIONAL_CASES.join(', ')}.`,
-    '',
-    '- Guided cells: `guided-<case>.md` in this directory; workspaces at `<root>/cells/<case>`.',
-    `- Plain cells: \`kickoff-<case>.md\` under ${plainRoot}; workspaces at ${plainRoot}/<case>.`,
-    '',
-    'Operator procedure per cell: open one fresh agent session, paste exactly one kickoff file, and',
-    'log any extra help verbatim. Alternate plain/guided order across cases so practice effects do',
-    'not all point one way. Fill in the evidence template in `../instructions/` as you go.',
-    '',
-    'No auto-feed initialization command exists yet that returns instructions to a running agent,',
-    'so this hand-off is manual by design. Proposal (not implemented here): have the existing',
-    '`first-contact --dry-run` / `status` projection emit an agent-facing next-steps block instead',
-    'of adding a new verb — to be judged against the same trial evidence before it is built.',
-    '',
-  ].join('\n'))
-  // #endregion product-command-text
+  for (const name of CASE_ORDER) {
+    await fs.writeFile(path.join(workspaces.guided[name], 'INSTRUCTIONS.md'), instructionText.guided)
+    await fs.writeFile(path.join(workspaces.plain[name], 'INSTRUCTIONS.md'), instructionText.plain)
+    await fs.writeFile(path.join(root, 'kickoff', `guided-${name}.md`),
+      renderHandoffNote('guided', { caseName: name, workspace: workspaces.guided[name], synthBin }))
+    await fs.writeFile(path.join(plainRoot, `kickoff-${name}.md`),
+      renderHandoffNote('plain', { caseName: name, workspace: workspaces.plain[name], synthBin }))
+  }
 
   // 8. isolation, transcripts, manifest
   await fs.rm(src, { recursive: true, force: true })
@@ -371,7 +350,7 @@ async function main(argv) {
 
   const manifest = path.join(root, 'transcripts', 'setup-manifest.json')
   const manifestBody = {
-    status: 'setup-complete-stop-before-kickoff',
+    status: 'setup-complete-stop-before-handoff',
     generatedAt: new Date().toISOString(),
     repo: parsed.repo,
     branch: isUrl ? parsed.branch : null,
@@ -382,16 +361,24 @@ async function main(argv) {
     npm: runCapture(npmBin, ['--version'], root).stdout.trim(),
     platform: `${process.platform} ${process.arch}`,
     installedCli: { bin: synthBin, tarball, tarballSha256, version: versionJson },
-    instructions: { dir: path.join(root, 'instructions'), sources: [INSTRUCTIONS_SOURCE, TEMPLATE_SOURCE] },
+    instructions: {
+      dir: path.join(root, 'instructions'),
+      sources: [INSTRUCTIONS_SOURCE, TEMPLATE_SOURCE, INSTRUCTION_SET_INDEX, INSTRUCTION_SETS.guided, INSTRUCTION_SETS.plain],
+      stagedPerWorkspace: 'INSTRUCTIONS.md',
+      conditionSets: INSTRUCTION_SETS,
+      plainSetMentionsTool: /synth/i.test(instructionText.plain),
+    },
+    handoffNotes: { guided: path.join(root, 'kickoff'), plain: plainRoot },
     revisions: expected,
     requiredCases: REQUIRED_CASES,
     optionalCases: OPTIONAL_CASES,
     workspaces,
+    workspaceNote: 'workspaces hold the matched source fixtures; INSTRUCTIONS.md was staged into each one after the recorded revision check, so the revision covers the source inputs only',
     steps,
     productCommandsRun: ['synth --version'],
     trialCellsRun: 0,
     lifecycleCommandsRun: [],
-    note: 'Setup only. Counts as a validated recipe, never as trial evidence. Cells start only after an operator kickoff.',
+    note: 'Setup only. Counts as a validated recipe, never as trial evidence. Cells start only after an operator handoff; in a guided cell the agent begins with the SYNTH initialization process, not with a setup script.',
   }
   await fs.writeFile(manifest, `${JSON.stringify(manifestBody, null, 2)}\n`)
   await fs.writeFile(path.join(root, 'transcripts', 'setup.log'), `${log.join('\n\n')}\n`)
