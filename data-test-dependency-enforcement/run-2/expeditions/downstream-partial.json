@@ -1,0 +1,16 @@
+{
+  "id": "downstream-partial",
+  "missionId": "M-PARTIAL",
+  "name": "Expedition downstream-partial",
+  "goal": "",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [
+    "upstream-partial"
+  ],
+  "metadata": {},
+  "createdAt": 20,
+  "updatedAt": 20
+}

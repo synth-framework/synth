@@ -1,0 +1,16 @@
+{
+  "id": "downstream-map",
+  "missionId": "M-MAP",
+  "name": "Expedition downstream-map",
+  "goal": "",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [
+    "upstream-map"
+  ],
+  "metadata": {},
+  "createdAt": 20,
+  "updatedAt": 20
+}

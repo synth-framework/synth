@@ -1,0 +1,81 @@
+{
+  "version": 22,
+  "stateHash": "1534820479",
+  "lifecycle": "uninitialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {
+    "M-MAP": {
+      "id": "M-MAP",
+      "name": "Mission M-MAP",
+      "purpose": "Dependency enforcement test",
+      "status": "active",
+      "expeditions": [
+        "upstream-map",
+        "downstream-map"
+      ],
+      "metadata": {},
+      "createdAt": 1,
+      "updatedAt": 20,
+      "alignmentContractId": "alignment-contract-mvaqcuu7-uqwhsx"
+    }
+  },
+  "expeditions": {
+    "upstream-map": {
+      "id": "upstream-map",
+      "missionId": "M-MAP",
+      "name": "Expedition upstream-map",
+      "goal": "",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 13,
+      "updatedAt": 17
+    },
+    "downstream-map": {
+      "id": "downstream-map",
+      "missionId": "M-MAP",
+      "name": "Expedition downstream-map",
+      "goal": "",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [
+        "upstream-map"
+      ],
+      "metadata": {},
+      "createdAt": 20,
+      "updatedAt": 20
+    }
+  },
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-mvaqcutb-kog0ye": {
+      "id": "evidence-mvaqcutb-kog0ye",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792140794111
+    },
+    "evidence-mvaqcutw-wmzfs0": {
+      "id": "evidence-mvaqcutw-wmzfs0",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792140794132
+    }
+  },
+  "lastEventOffset": 21
+}

@@ -124,3 +124,12 @@ examples/*/docs-generated/
 
 # npm pack artifacts
 *.tgz
+
+# =============================================================================
+# Evidence bundles keep the bytes that were captured
+# =============================================================================
+
+# Raw evidence copies are digested in the bundle's SOURCES.json, so nothing inside
+# one may be dropped by a broader rule — a raw setup transcript is still evidence,
+# even though it carries a .log name.
+!docs/analysis/*-raw/**

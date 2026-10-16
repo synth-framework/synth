@@ -1,0 +1,7 @@
+# Evidence raw bundles (docs/analysis/*-raw/) are byte-for-byte copies of files
+# captured on the machine that ran a trial. SOURCES.json records the sha256 of each
+# copy, so Git must not translate line endings when storing or checking them out:
+# with core.autocrlf=true (the Git for Windows default) the staged instruction file
+# is turned back into LF on commit and the recorded digest stops recomputing.
+docs/analysis/*-raw/** -text
+docs/analysis/*-raw/* -text

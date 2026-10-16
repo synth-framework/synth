@@ -1,0 +1,16 @@
+{
+  "id": "downstream-pass",
+  "missionId": "M-PASS",
+  "name": "Expedition downstream-pass",
+  "goal": "",
+  "status": "executing",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [
+    "upstream-pass"
+  ],
+  "metadata": {},
+  "createdAt": 20,
+  "updatedAt": 23
+}

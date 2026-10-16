@@ -1,0 +1,81 @@
+{
+  "version": 21,
+  "stateHash": "1472376962",
+  "lifecycle": "uninitialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {
+    "M-NO-CERT": {
+      "id": "M-NO-CERT",
+      "name": "Mission M-NO-CERT",
+      "purpose": "Dependency enforcement test",
+      "status": "active",
+      "expeditions": [
+        "upstream-no-cert",
+        "downstream-no-cert"
+      ],
+      "metadata": {},
+      "createdAt": 1,
+      "updatedAt": 19,
+      "alignmentContractId": "alignment-contract-mvaqcu6f-0csy65"
+    }
+  },
+  "expeditions": {
+    "upstream-no-cert": {
+      "id": "upstream-no-cert",
+      "missionId": "M-NO-CERT",
+      "name": "Expedition upstream-no-cert",
+      "goal": "",
+      "status": "completed",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [],
+      "metadata": {},
+      "createdAt": 13,
+      "updatedAt": 17
+    },
+    "downstream-no-cert": {
+      "id": "downstream-no-cert",
+      "missionId": "M-NO-CERT",
+      "name": "Expedition downstream-no-cert",
+      "goal": "",
+      "status": "draft",
+      "objectives": [],
+      "discoveries": [],
+      "decisions": [],
+      "dependsOn": [
+        "upstream-no-cert"
+      ],
+      "metadata": {},
+      "createdAt": 19,
+      "updatedAt": 19
+    }
+  },
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-mvaqcu5b-6159xw": {
+      "id": "evidence-mvaqcu5b-6159xw",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792140793247
+    },
+    "evidence-mvaqcu62-phwqf4": {
+      "id": "evidence-mvaqcu62-phwqf4",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792140793274
+    }
+  },
+  "lastEventOffset": 20
+}

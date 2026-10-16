@@ -1,0 +1,106 @@
+{
+  "version": 15,
+  "stateHash": "373936852",
+  "lifecycle": "uninitialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {
+    "mission-mvaq81kh-ult8wj": {
+      "id": "mission-mvaq81kh-ult8wj",
+      "name": "Build a deterministic execution system",
+      "purpose": "Mission Studio workspace as homepage",
+      "status": "draft",
+      "projectionStatus": "certified",
+      "objectives": [],
+      "constraints": [
+        "Persistent workspace",
+        "Artifact-driven interaction"
+      ],
+      "nonGoals": [
+        "Generic dashboard",
+        "Marketing landing page"
+      ],
+      "allowedVariation": [],
+      "forbiddenDrift": [
+        "Add chat interface",
+        "Use bootstrap aesthetics"
+      ],
+      "referenceEvidence": [
+        "evidence-mvaq81hl-i47j1c"
+      ],
+      "lineage": {
+        "alignmentContractId": "alignment-contract-mvaq81id-4iepoq",
+        "intentModelId": "intent-model-mvaq81i4-tj6zaz",
+        "refinementReportId": "refinement-report-mvaq81jt-vo7lzx"
+      },
+      "fingerprint": "b04e62e079f1001c46edea5063084ae42c1b2b8f4273cfeb4c9234b0cf09c378",
+      "projectionId": "mission-projection-mvaq81kh-zkgtck",
+      "createdAt": 1792140569585,
+      "updatedAt": 1792140569585,
+      "expeditions": [],
+      "metadata": {}
+    },
+    "mission-mvaqk2sg-xsv527": {
+      "id": "mission-mvaqk2sg-xsv527",
+      "name": "Build a deterministic execution system",
+      "purpose": "Mission Studio workspace as homepage",
+      "status": "draft",
+      "projectionStatus": "certified",
+      "objectives": [],
+      "constraints": [
+        "Persistent workspace",
+        "Artifact-driven interaction"
+      ],
+      "nonGoals": [
+        "Generic dashboard",
+        "Marketing landing page"
+      ],
+      "allowedVariation": [],
+      "forbiddenDrift": [
+        "Add chat interface",
+        "Use bootstrap aesthetics"
+      ],
+      "referenceEvidence": [
+        "evidence-mvaqk2pe-wyqtle"
+      ],
+      "lineage": {
+        "alignmentContractId": "alignment-contract-mvaqk2q8-rfrpry",
+        "intentModelId": "intent-model-mvaqk2pr-j9rpzh",
+        "refinementReportId": "refinement-report-mvaqk2rx-2ztrqp"
+      },
+      "fingerprint": "6afbcd2ec451ee4143e02c001efaed15e57359b3889189960884500de06570d4",
+      "projectionId": "mission-projection-mvaqk2sg-a4p8bw",
+      "createdAt": 1792141131040,
+      "updatedAt": 1792141131040,
+      "expeditions": [],
+      "metadata": {}
+    }
+  },
+  "expeditions": {},
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-mvaq81hl-i47j1c": {
+      "id": "evidence-mvaq81hl-i47j1c",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792140569481
+    },
+    "evidence-mvaqk2pe-wyqtle": {
+      "id": "evidence-mvaqk2pe-wyqtle",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792141130930
+    }
+  },
+  "lastEventOffset": 28
+}

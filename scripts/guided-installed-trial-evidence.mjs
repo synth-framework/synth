@@ -574,13 +574,21 @@ export async function verifyCitation({ dir, option, originalIntent, roots = null
     const quoteMatches = originalIntent !== null && source.quote === originalIntent
     const recomputedSha256 = originalIntent === null ? null : sha256(originalIntent)
     const collapse = (text) => String(text ?? '').replace(/\s+/g, ' ').trim()
-    const mismatchNote = quoteMatches || typeof source.quote !== 'string' || originalIntent === null
+    // A quote that is a real part of the staged task text — or all of it with different
+    // whitespace — did come from the request. The plain instruction set asks what an
+    // option is grounded in, and a fragment of the task text is a real answer to that,
+    // so it is read as a partial quote and named as one: never as a full quote, and
+    // never as a miss.
+    const partialNote = quoteMatches || typeof source.quote !== 'string' || originalIntent === null || source.quote.trim() === ''
       ? null
       : collapse(source.quote) === collapse(originalIntent)
         ? 'the quote differs from the staged task text only in whitespace'
-        : originalIntent.includes(source.quote.trim()) && source.quote.trim() !== ''
+        : collapse(originalIntent).includes(collapse(source.quote))
           ? 'the quote is part of the staged task text, not all of it'
           : null
+    const mismatchNote = quoteMatches || partialNote !== null || typeof source.quote !== 'string' || originalIntent === null
+      ? partialNote
+      : 'the quote does not appear in the staged task text'
     return {
       ...base,
       kind: 'operator-intent',
@@ -594,7 +602,8 @@ export async function verifyCitation({ dir, option, originalIntent, roots = null
       mismatchNote,
       status: quoteMatches
         ? (hashRecorded ? (recomputedSha256 === source.sha256 ? 'matched' : 'hash-mismatch') : 'matched-recomputed')
-        : originalIntent === null ? 'original-intent-not-captured' : 'quote-mismatch',
+        : partialNote !== null ? 'matched-partial'
+          : originalIntent === null ? 'original-intent-not-captured' : 'quote-mismatch',
     }
   }
   return { ...base, kind: source.kind ?? 'unknown', path: null, line: null, status: 'unsupported-source-kind' }
@@ -621,8 +630,16 @@ export function commandsFromReport(sections) {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line !== '')
+    // A line that says outright that nothing ran is prose, not a list: its `;` clauses
+    // are read as prose too, so it is dropped before anything is split.
     .filter((line) => !NO_COMMANDS_RE.test(line))
-    .map((line) => line.replace(/^[-*$]\s*/, ''))
+    // A plainly-written command list is often one line — `npm test (before change) ->
+    // exit 0; npm test (after, no source change) -> exit 0.` Each clause is its own
+    // command, kept as written; the section itself is quoted in the cell either way.
+    .flatMap((line) => line.split(';'))
+    .map((line) => line.replace(/^[-*$]\s*/, '').trim())
+    .filter((line) => line !== '')
+    .filter((line) => !NO_COMMANDS_RE.test(line))
 }
 
 const LIFECYCLE_RE = /(?:^|[\s`"'])(?:--approve|--selection|--human-response|-approve|materialize|mission\s+(?:build|approve|start)|expedition\s+(?:start|complete)|deliver|seal|git\s+push)(?=$|[\s`"',;])/i
@@ -1059,12 +1076,15 @@ function resolveReportLabel(label) {
 function reportSectionLabel(line, previousLine) {
   const raw = String(line ?? '').replace(/\s+$/, '')
   if (raw.trim() === '') return null
+  // A label may be written as a bullet — `- Commands: npm test -> exit 0`. The bullet
+  // is punctuation in front of the label, not part of it.
+  const unbulleted = raw.replace(/^[-*•]\s+/, '')
   // A column-zero label may carry a qualifier before its colon — `COMMANDS (exit 0
   // unless noted):`, `CITATIONS - each checked against the live file:`. The plain
   // instruction set's own shape invites one, and a qualified label must not make a
   // whole report read as unlabelled.
-  const qualified = raw.match(/^([A-Za-z][A-Za-z /-]*?)\s*(?:\([^()]*\)|[-–—]\s+[^:]*?)\s*:\s*(.*)$/)
-  const columnZero = qualified ?? raw.match(/^([A-Za-z][A-Za-z /-]*):\s*(.*)$/)
+  const qualified = unbulleted.match(/^([A-Za-z][A-Za-z /-]*?)\s*(?:\([^()]*\)|[-–—]\s+[^:]*?)\s*:\s*(.*)$/)
+  const columnZero = qualified ?? unbulleted.match(/^([A-Za-z][A-Za-z /-]*):\s*(.*)$/)
   if (columnZero) {
     const label = normaliseReportLabel(columnZero[1])
     const standalone = previousLine === undefined || String(previousLine).trim() === ''
@@ -1075,7 +1095,7 @@ function reportSectionLabel(line, previousLine) {
   // A bare label with no text after it is still a label: `COMMANDS (exit 0 unless
   // noted)`, `CITATIONS - checked`. Exact known names and aliases only, so a prose
   // line that merely mentions a section name is not read as one.
-  const bareQualified = raw.match(/^([A-Za-z][A-Za-z /-]*?)\s*(?:\([^()]*\)|[-–—]\s+[^:]*?)?\s*$/)
+  const bareQualified = unbulleted.match(/^([A-Za-z][A-Za-z /-]*?)\s*(?:\([^()]*\)|[-–—]\s+[^:]*?)?\s*$/)
   if (bareQualified) {
     const label = normaliseReportLabel(bareQualified[1])
     const name = KNOWN_REPORT_SECTIONS.has(label) ? label : REPORT_SECTION_ALIASES.get(label) ?? null
@@ -1196,7 +1216,8 @@ function plainCitationNote(entry) {
   }
   const ok = (citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'
   const matched = entry.citations.filter(ok)
-  const failed = entry.citations.filter((citation) => !ok(citation))
+  const partial = entry.citations.filter((citation) => citation.status === 'matched-partial')
+  const failed = entry.citations.filter((citation) => !ok(citation) && citation.status !== 'matched-partial')
   const matchedFile = matched.filter((citation) => citation.kind === 'file').length
   const matchedText = matched.length - matchedFile
   const detail = failed.map((citation) => {
@@ -1214,7 +1235,7 @@ function plainCitationNote(entry) {
     asText.length > 0 ? `${asText.length} wrote the line number as text and it was read as a number` : null,
   ].filter(Boolean)
   const repeats = entry.citationRepeats ?? 0
-  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s)${repeats > 0 ? ` — ${entry.citations.length - repeats} distinct, ${repeats} of them recorded twice` : ''}, ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}${extra.length > 0 ? `. Of the citations read: ${extra.join('; ')}` : ''}.`
+  return `\n\nRe-checked here from \`offer.json\` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): ${entry.citations.length} citation(s)${repeats > 0 ? ` — ${entry.citations.length - repeats} distinct, ${repeats} of them recorded twice` : ''}, ${matched.length} matched (${matchedFile} file line(s), ${matchedText} task-text quote(s))${partial.length > 0 ? `, ${partial.length} quote part of the staged task text rather than all of it (${partial.map((citation) => quote(citation.quote ?? '')).join('; ')})` : ''}${failed.length > 0 ? `, ${failed.length} did NOT — ${detail.join('; ')}` : ''}${extra.length > 0 ? `. Of the citations read: ${extra.join('; ')}` : ''}.`
 }
 
 /**
@@ -1295,14 +1316,17 @@ function renderCell(entry, model) {
             ? `NO — recomputed sha256 ${citation.recomputedSha256 ?? 'unavailable'} ≠ recorded ${citation.recordedSha256 ?? 'unavailable'}`
             : citation.status === 'line-mismatch'
               ? `NO — the hash matches but line ${citation.line} reads ${JSON.stringify(citation.expectedLine ?? null)}`
-              : citation.status === 'quote-mismatch'
-                ? "NO — the quoted intent is not this journey's original request"
-                : `NO — ${citation.status}`
+              : citation.status === 'matched-partial'
+                ? `partly — the quote is part of the staged task text, not all of it (the whole task text hashes to \`${citation.recomputedSha256}\`)`
+                : citation.status === 'quote-mismatch'
+                  ? `NO — ${citation.mismatchNote ?? "the quoted intent is not this journey's original request"}`
+                  : `NO — ${citation.status}`
       return `  - \`${citation.optionId ?? '(no id)'}\` → ${target}: ${detail}`
     }).join('\n')
     : (entry.offer.present || entry.recorded ? '  - the captured offer carries no citations' : '  - no offer was captured')
   const citationOk = (citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'
   const allCitationsMatched = entry.citations.length > 0 && entry.citations.every(citationOk)
+  const partialCitations = entry.citations.filter((citation) => citation.status === 'matched-partial')
   const agreement = entry.offerAgreement ?? { available: false, filePresent: false, notes: [] }
   const agreementLine = agreement.available && agreement.filePresent
     ? `${agreement.optionIdsMatch && agreement.questionMatches && agreement.scopeMatches && agreement.sourcesMatch ? 'yes' : 'NO'}${agreement.notes.length > 0 ? ` (${agreement.notes.map((note) => quote(note)).join('; ')})` : ''}`
@@ -1316,7 +1340,7 @@ function renderCell(entry, model) {
     bullet('Agent-authored offer path and its citation targets', entry.offer.present
       ? `\`${entry.dirName}/offer.json\` (${humanBytes(entry.offer.bytes)}, sha256 \`${entry.offer.sha256}\`); the CLI recorded it as \`${entry.offerId ?? 'an offer whose id was not captured'}\`${entry.recorded?.version !== undefined ? ` version ${entry.recorded.version}` : ''}${entry.attribution ? `, attribution \`${entry.attribution}\`` : ''}${entry.offeredAt ? `, offeredAt \`${entry.offeredAt}\`` : ''}; question: ${quote(entry.recorded?.question ?? entry.offer.json?.question ?? 'not captured')}\n\n${fenced((entry.recorded?.options ?? entry.offer.json?.options ?? []).map((option) => `${option.id ?? '(no id)'} — ${option.label ?? ''}${option.source?.path ? ` [${option.source.path}:${option.source.line}]` : option.source?.kind ? ` [${option.source.kind}]` : ''}`).join('\n'), 'text')}\n  File and record agree on option ids, question and scope: ${agreementLine}.`
       : operator('which offer the agent wrote and where it left it')),
-    bullet('Whether each citation matched the real file content and line', `${allCitationsMatched ? 'all' : 'not all'} recomputed here with the CLI rule, against ${entry.citationSource} (a recorded hash must recompute to the same value; a source with no recorded hash is verified by its quote and reported with the recomputed digest):\n${citationLines}${entry.citations.some((citation) => citation.status === 'file-missing') ? `\n  - note: the cited input files are not part of this capture, so those citations could not be re-checked here; the CLI's recorded hashes are preserved in \`draft.json\`` : ''}${entry.offer.problems?.length ? `\n  - offer-file schema notes: ${entry.offer.problems.join('; ')}` : ''}`),
+    bullet('Whether each citation matched the real file content and line', `${allCitationsMatched ? 'all' : 'not all'} recomputed here with the CLI rule, against ${entry.citationSource}${partialCitations.length > 0 ? ` — ${partialCitations.length} quote part of the staged task text, listed below as partial rather than as a match` : ''} (a recorded hash must recompute to the same value; a source with no recorded hash is verified by its quote and reported with the recomputed digest):\n${citationLines}${entry.citations.some((citation) => citation.status === 'file-missing') ? `\n  - note: the cited input files are not part of this capture, so those citations could not be re-checked here; the CLI's recorded hashes are preserved in \`draft.json\`` : ''}${entry.offer.problems?.length ? `\n  - offer-file schema notes: ${entry.offer.problems.join('; ')}` : ''}`),
     bullet('Questions or options the agent raised', `the recorded question and options are the offer above; ${sections.OFFER ? `as written in \`REPORT.md\`:\n\n${fenced(sections.OFFER)}` : operator('anything the report should add')}`),
     bullet('Unsupported assumptions', sections.ASSUMPTIONS ? `as written in \`REPORT.md\`:\n\n${fenced(sections.ASSUMPTIONS)}` : operator('unsupported assumptions')),
     bullet('Unresolved choices it left open', sections['STILL OPEN'] ? `as written in \`REPORT.md\`:\n\n${fenced(sections['STILL OPEN'])}` : operator('unresolved choices')),
@@ -1538,7 +1562,7 @@ export function renderEvidence(model) {
   const completed = guidedCases.filter((entry) => entry.citations.length > 0 && entry.citations.every((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed'))
   const unreachable = guidedCases.filter((entry) => entry.citations.some((citation) => citation.status === 'file-missing'))
   const plainClause = plainCitations.length > 0
-    ? `in the plain condition the capture re-checked ${plainCitations.length} grounding citation(s) found in the offer files${plainCitations.filter((citation) => citation.repeatedReading).length > 0 ? ` (${plainCitations.filter((citation) => !citation.repeatedReading).length} distinct — the rest record a path, line and quote already read)` : ''}, with ${plainCitations.filter((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed').length} matching the live file line or the staged task text`
+    ? `in the plain condition the capture re-checked ${plainCitations.length} grounding citation(s) found in the offer files${plainCitations.filter((citation) => citation.repeatedReading).length > 0 ? ` (${plainCitations.filter((citation) => !citation.repeatedReading).length} distinct — the rest record a path, line and quote already read)` : ''}, with ${plainCitations.filter((citation) => citation.status === 'matched' || citation.status === 'matched-recomputed').length} matching the live file line or the staged task text in full${plainCitations.filter((citation) => citation.status === 'matched-partial').length > 0 ? ` and ${plainCitations.filter((citation) => citation.status === 'matched-partial').length} quoting part of the staged task text` : ''}`
     : null
   const guidedClause = guidedCases.length > 0
     ? `the installed CLI recorded an offer in ${guidedCases.filter((entry) => entry.recorded ?? entry.offer.present).length} of ${guidedCases.length} captured guided cell(s)${completed.length > 0 ? `, and in ${completed.length} of them every recorded citation recomputes to the live source` : ''}${unreachable.length > 0 ? ` (in ${unreachable.length} cell(s) the cited files were not part of this capture, so those citations could not be re-checked here — their recorded hashes are preserved)` : ''}`

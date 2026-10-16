@@ -1,0 +1,16 @@
+{
+  "id": "downstream-cancelled",
+  "missionId": "M-CANCELLED",
+  "name": "Expedition downstream-cancelled",
+  "goal": "",
+  "status": "executing",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [
+    "upstream-cancelled"
+  ],
+  "metadata": {},
+  "createdAt": 18,
+  "updatedAt": 21
+}

@@ -1,0 +1,14 @@
+{
+  "id": "M-NO-CERT",
+  "name": "Mission M-NO-CERT",
+  "purpose": "Dependency enforcement test",
+  "status": "active",
+  "expeditions": [
+    "upstream-no-cert",
+    "downstream-no-cert"
+  ],
+  "metadata": {},
+  "createdAt": 1,
+  "updatedAt": 19,
+  "alignmentContractId": "alignment-contract-mvaqcu6f-0csy65"
+}

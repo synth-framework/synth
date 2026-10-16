@@ -1,0 +1,16 @@
+{
+  "id": "downstream-no-cert",
+  "missionId": "M-NO-CERT",
+  "name": "Expedition downstream-no-cert",
+  "goal": "",
+  "status": "draft",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [
+    "upstream-no-cert"
+  ],
+  "metadata": {},
+  "createdAt": 19,
+  "updatedAt": 19
+}

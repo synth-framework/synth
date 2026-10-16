@@ -728,6 +728,82 @@ test("a citation recorded twice is counted once as distinct", async () => {
   assert.ok(doc.includes("3 distinct — the rest record a path, line and quote already read"), "the summary clause must carry the distinct count too")
 })
 
+test("a command list written on one line reads as its clauses", async () => {
+  const evidence = await import(pathToFileURL(SCRIPT).href)
+  const inline = evidence.parseReportSections("COMMANDS: npm test (before change) -> exit 0; npm test (after, no source change) -> exit 0. Both run with workdir brownfield/.\n")
+  assert.deepEqual(evidence.commandsFromReport(inline), [
+    "npm test (before change) -> exit 0",
+    "npm test (after, no source change) -> exit 0. Both run with workdir brownfield/.",
+  ], "each clause is a command, as written")
+  const nothingRan = evidence.parseReportSections("COMMANDS: (no shell commands run for this test; directory listing done via file read)\n")
+  assert.deepEqual(evidence.commandsFromReport(nothingRan), [], "a sentence saying nothing ran is not a command list, and its clauses are prose")
+  // A label may be written as a bullet; the bullet is not part of the label.
+  const bulleted = evidence.parseReportSections("- Commands: npm test -> exit 0\n- Approach: read first, then proposed.\n")
+  assert.deepEqual(evidence.commandsFromReport(bulleted), ["npm test -> exit 0"], "a bulleted COMMANDS label is a label")
+  assert.equal(bulleted.APPROACH !== undefined, true, "a bulleted APPROACH label is a label too")
+})
+
+test("a quote that is part of the staged task text reads as a partial quote, not a miss", async () => {
+  const repo = await makeRepo()
+  const lib = await loadLib()
+  const { workspace } = await makeWorkspace({ condition: "plain", cases: ["green"], offerShape: "loose-plain" })
+  await fs.writeFile(path.join(workspace, "greenfield", "offer.json"), `${JSON.stringify({
+    question: "What board input and editing interaction should the first slice support?",
+    options: [
+      { label: "A", grounded_in: "task text", quote: "Board input and editing interaction are undecided." },
+      { label: "B", grounded_in: "task text", quote: "a quote that appears nowhere in the request" },
+    ],
+  }, null, 2)}\n`)
+  const out = path.join(repo, "docs", "analysis", "plain-partial.md")
+  try {
+    await capture(["--workspace", workspace, "--repo", repo, "--date", "2026-10-16", "--out", out])
+    const doc = await fs.readFile(out, "utf-8")
+    assert.ok(doc.includes("1 quote part of the staged task text rather than all of it"), `the partial quote must be counted apart from a full one:\n${doc.slice(0, 4000)}`)
+    assert.ok(doc.includes("1 did NOT"), "the quote that is nowhere in the request is still a miss")
+    assert.equal(doc.includes("2 did NOT"), false, "a fragment of the task text must not be counted as a miss")
+    assert.ok(doc.includes("Board input and editing interaction are undecided."), "the partial quote is named beside the count, so the operator sees what was read")
+    assert.ok(doc.replace(/\s+/g, " ").includes("1 quote part of the staged task text"), "the fragment is read as the task text it came from")
+  } finally {
+    await fs.rm(workspace, { recursive: true, force: true })
+    await fs.rm(repo, { recursive: true, force: true })
+  }
+})
+
+test("every filed raw bundle is present, recomputes to its own digests and would be committed", async (t) => {
+  const analysis = path.join(REPO_ROOT, "docs", "analysis")
+  const bundles = (await fs.readdir(analysis, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory() && entry.name.endsWith("-raw"))
+    .map((entry) => entry.name)
+    .sort()
+  assert.ok(bundles.length > 0, "at least one filed evidence bundle must exist")
+  const absent = []
+  for (const bundle of bundles) {
+    const dir = path.join(analysis, bundle)
+    const sources = JSON.parse(await fs.readFile(path.join(dir, "SOURCES.json"), "utf-8"))
+    for (const entry of sources.sources ?? []) {
+      if (!entry.copied) continue
+      const target = path.join(dir, entry.bundlePath)
+      const bytes = await fs.readFile(target).catch(() => null)
+      if (!bytes) {
+        absent.push(`${bundle}/${entry.bundlePath}`)
+        continue
+      }
+      assert.equal(sha256(bytes), entry.sha256, `${bundle}/${entry.bundlePath}: the filed bytes must recompute to the digest SOURCES.json records`)
+      if (entry.bytes !== null && entry.bytes !== undefined) {
+        assert.equal(bytes.length, entry.bytes, `${bundle}/${entry.bundlePath}: the filed file must be the size SOURCES.json records`)
+      }
+      // A bundle whose files this checkout's ignore rules exclude cannot be filed at
+      // all: the operator's `git add` drops them and the digests record bytes that
+      // never reach the branch. That is how a copied setup transcript was lost.
+      const ignored = spawnSync("git", ["-C", REPO_ROOT, "check-ignore", "--quiet", path.relative(REPO_ROOT, target)], { encoding: "utf-8" })
+      assert.notEqual(ignored.status, 0, `${bundle}/${entry.bundlePath} is excluded by this checkout's ignore rules and would not be committed — widen the rule so the bundle travels whole`)
+    }
+  }
+  if (absent.length > 0) {
+    t.diagnostic(`recorded in SOURCES.json but not filed in the repository: ${absent.join(", ")} — captured, then dropped by an ignore rule before it was committed; restore the file or re-run the capture on the machine that holds it`)
+  }
+})
+
 // #region source contract
 
 test("the capture script reads the workspace and writes only inside the repository", async () => {

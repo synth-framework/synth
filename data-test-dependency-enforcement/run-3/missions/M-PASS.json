@@ -1,0 +1,14 @@
+{
+  "id": "M-PASS",
+  "name": "Mission M-PASS",
+  "purpose": "Dependency enforcement test",
+  "status": "active",
+  "expeditions": [
+    "upstream-pass",
+    "downstream-pass"
+  ],
+  "metadata": {},
+  "createdAt": 1,
+  "updatedAt": 20,
+  "alignmentContractId": "alignment-contract-mvaqculd-m4lk6o"
+}

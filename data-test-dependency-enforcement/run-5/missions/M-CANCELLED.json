@@ -1,0 +1,14 @@
+{
+  "id": "M-CANCELLED",
+  "name": "Mission M-CANCELLED",
+  "purpose": "Dependency enforcement test",
+  "status": "active",
+  "expeditions": [
+    "upstream-cancelled",
+    "downstream-cancelled"
+  ],
+  "metadata": {},
+  "createdAt": 1,
+  "updatedAt": 18,
+  "alignmentContractId": "alignment-contract-mvaqcv1x-kvotzi"
+}

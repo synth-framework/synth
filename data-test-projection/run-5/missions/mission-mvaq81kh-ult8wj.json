@@ -1,0 +1,35 @@
+{
+  "id": "mission-mvaq81kh-ult8wj",
+  "name": "Build a deterministic execution system",
+  "purpose": "Mission Studio workspace as homepage",
+  "status": "draft",
+  "projectionStatus": "certified",
+  "objectives": [],
+  "constraints": [
+    "Persistent workspace",
+    "Artifact-driven interaction"
+  ],
+  "nonGoals": [
+    "Generic dashboard",
+    "Marketing landing page"
+  ],
+  "allowedVariation": [],
+  "forbiddenDrift": [
+    "Add chat interface",
+    "Use bootstrap aesthetics"
+  ],
+  "referenceEvidence": [
+    "evidence-mvaq81hl-i47j1c"
+  ],
+  "lineage": {
+    "alignmentContractId": "alignment-contract-mvaq81id-4iepoq",
+    "intentModelId": "intent-model-mvaq81i4-tj6zaz",
+    "refinementReportId": "refinement-report-mvaq81jt-vo7lzx"
+  },
+  "fingerprint": "b04e62e079f1001c46edea5063084ae42c1b2b8f4273cfeb4c9234b0cf09c378",
+  "projectionId": "mission-projection-mvaq81kh-zkgtck",
+  "createdAt": 1792140569585,
+  "updatedAt": 1792140569585,
+  "expeditions": [],
+  "metadata": {}
+}

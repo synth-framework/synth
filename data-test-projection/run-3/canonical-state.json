@@ -1,0 +1,35 @@
+{
+  "version": 5,
+  "stateHash": "488222720",
+  "lifecycle": "uninitialized",
+  "workItems": {},
+  "plans": {},
+  "milestones": {},
+  "projects": {},
+  "missions": {},
+  "expeditions": {},
+  "objectives": {},
+  "discoveries": {},
+  "decisions": {},
+  "referenceEvidence": {
+    "evidence-mvaq81az-qqa7fi": {
+      "id": "evidence-mvaq81az-qqa7fi",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792140569243
+    },
+    "evidence-mvaqk2ga-b8pbgb": {
+      "id": "evidence-mvaqk2ga-b8pbgb",
+      "kind": "image",
+      "uri": "file://test/reference.png",
+      "hash": "sha256:deadbeef",
+      "mimeType": "image/png",
+      "description": "Reference evidence for alignment fixture",
+      "capturedAt": 1792141130602
+    }
+  },
+  "lastEventOffset": 8
+}

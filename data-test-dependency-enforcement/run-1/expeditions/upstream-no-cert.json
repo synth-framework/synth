@@ -1,0 +1,14 @@
+{
+  "id": "upstream-no-cert",
+  "missionId": "M-NO-CERT",
+  "name": "Expedition upstream-no-cert",
+  "goal": "",
+  "status": "completed",
+  "objectives": [],
+  "discoveries": [],
+  "decisions": [],
+  "dependsOn": [],
+  "metadata": {},
+  "createdAt": 13,
+  "updatedAt": 17
+}
