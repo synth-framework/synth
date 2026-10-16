@@ -1,24 +1,38 @@
 # Trial instruction set — plain condition
 
-**Read this document completely before doing anything in your workspace.** It is your instruction set for one cell of a usability trial, staged in your workspace as `INSTRUCTIONS.md`.
+**Read this document completely before doing anything.** It is the instruction set for the workspace you are in, staged in its root as `INSTRUCTIONS.md`.
 
-Your workspace is the current directory. Your operator's opening message (or a separate handoff note) names it and names your assigned test; when in doubt, ask the operator before starting. Work only inside your workspace, and do not look for other checkouts, test suites or documentation.
+## 1. What this workspace is
 
-## 1. How to start
+The workspace holds **one directory per test**, and each directory is an isolated environment containing only that test's own starting inputs:
 
-Use your ordinary tools and judgment on the task below. There is no required first command and no prescribed process: decide yourself what the work needs.
+| Directory | Kind of start |
+| --- | --- |
+| `greenfield/` | an idea, no files |
+| `brownfield/` | a small existing project with a test and a documented limitation |
+| `documentation/` | requirement documents only |
+| `knowledge-led/` (if present) | the same, under a different conventional root |
+| `conflicting-documents/` (if present) | two requirement documents that contradict each other |
 
-Your assigned test is named in your operator's opening message. The tests and their starting conditions are listed here in full so you can see the whole set.
+Work on the tests **one at a time**, each entirely inside its own directory. Do not create, move or delete anything outside the directory of the test you are working on.
 
-## 2. The tests: start conditions, task, and required observation
+## 2. How to run one test
 
-| Test | Case id | Task text |
-| --- | --- | --- |
-| Greenfield | `green` | "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." |
-| Brownfield | `brown` | "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working." |
-| Documentation-led | `docs` | "Continue from the requirements in docs/. The next slice is undecided." |
-| Knowledge-rooted (optional) | `knowledge` | "Continue from the requirements in knowledge/. The next slice is undecided." |
-| Conflicting documents (optional) | `conflict` | "Continue from the scope documents under docs/ and knowledge/. The next slice is undecided." |
+Inside the test's own directory, use your ordinary tools and judgment. There is no required first command and no prescribed process: decide yourself what the work needs.
+
+When a test is finished — your proposal written and its report written — move to the next directory and repeat.
+
+## 3. The tests: task text and required observation
+
+Use each test's task text exactly as quoted; a reviewer will compare it with what you submit.
+
+| Test | Case id | Directory | Task text |
+| --- | --- | --- | --- |
+| Greenfield | `green` | `greenfield/` | "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." |
+| Brownfield | `brown` | `brownfield/` | "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working." |
+| Documentation-led | `docs` | `documentation/` | "Continue from the requirements in docs/. The next slice is undecided." |
+| Knowledge-rooted (optional) | `knowledge` | `knowledge-led/` | "Continue from the requirements in knowledge/. The next slice is undecided." |
+| Conflicting documents (optional) | `conflict` | `conflicting-documents/` | "Continue from the scope documents under docs/ and knowledge/. The next slice is undecided." |
 
 **Required observation per test** — what a reviewer will check in your output:
 
@@ -28,29 +42,30 @@ Your assigned test is named in your operator's opening message. The tests and th
 - **Knowledge-rooted (optional)** — the same as documentation-led, from `knowledge/` instead of `docs/`.
 - **Conflicting documents (optional)** — both scope documents are cited and the contradiction is surfaced as an unresolved decision, not silently resolved.
 
-## 3. What to produce
+In the brownfield test, run the project's own test command (`npm test`) **before** you change anything and **after** any change, and record both exit codes and results in your report. Do not edit the existing tests or fixture files to make something pass.
 
-Write your proposal for the next slice into this workspace as `offer.json`, in whatever shape you consider clear. A reviewer must be able to see:
+## 4. What to produce per test
 
-- the scope you propose, in a few words;
-- the consequential decision you cannot make for the requester, phrased as one question;
-- two or three options, each with its tradeoff and what would show it works;
-- for each option, what it is grounded in: the task text, or an exact path, line and quote from a file in this workspace. Quote the file exactly; a reviewer will check the line.
+In the test's own directory:
 
-## 4. Rules that protect the trial's honesty
+- `offer.json` — your proposal for the next slice, in whatever shape you consider clear. A reviewer must be able to see: the scope you propose, the consequential decision you cannot make for the requester phrased as one question, two or three options each with its tradeoff and what would show it works, and for each option what it is grounded in — the task text, or an exact path, line and quote from a file in that directory. Quote the file exactly; a reviewer will check the line.
+- `REPORT.md` — the report described in §5.
+
+## 5. Rules that protect the trial's honesty
 
 - **No invented people.** There is no human respondent in this trial. Never write words as if a person said them or approved something.
-- **No lifecycle actions.** Do not create or approve any plan, mission or governance record; this cell is a proposal, nothing more.
-- **No publishing.** Do not push anywhere, open a pull request, or create a commit on any branch outside this workspace's own local history.
-- **No weakening results.** Do not edit existing tests or fixtures to make something pass. If the brownfield test suite fails, record the failure.
+- **No approval records.** Do not create or approve any plan, mission or governance record; this work is a proposal, nothing more.
+- **No publishing.** Do not push anywhere, open a pull request, or create a commit on any branch outside the workspace's own local history.
+- **No weakening results.** Do not edit existing tests or fixtures to make something pass; record failures instead.
 - **Stop rather than guessing.** If a decision requires a person, say which decision and stop. That is a correct, expected outcome.
+- **Stay in the test's own directory.** Anything you write outside the directory of the test you are working on breaks the isolation the trial depends on.
 
-## 5. How to report when you stop
+## 6. How to report when you stop
 
-Give your report in this shape, and keep it truthful over complete:
+Write one `REPORT.md` per test directory, in this shape, and keep it truthful over complete:
 
 ```text
-TEST: <case id>
+TEST: <case id and directory>
 COMMANDS: each command you ran with its exit code
 APPROACH: what you did, in order, and why you chose that process
 OFFER: path to offer.json, and the question/options it contains
@@ -59,9 +74,7 @@ APPLICATION TESTS: command, exit code and result (brownfield only, before and af
 ASSUMPTIONS: what you assumed without evidence
 STILL OPEN: decisions you left to a person, and anything you could not verify
 PROBLEMS: anything you could not do, or anything that misled you
-EFFORT: rough elapsed time for this cell
+EFFORT: rough elapsed time for this test
 ```
-
-Write this report to `REPORT.md` in your workspace before you stop, and show it in your reply as well.
 
 Do not claim that anything was approved, verified or delivered. Your report is agent-authored output in a diagnostic; it is not a human decision and not proof of value.

@@ -1,11 +1,10 @@
 // ============================================================
 // SYNTH — guided-journey trial setup executor tests
 // ============================================================
-// These tests cover the setup script's guards, the layout it infers from its two
-// inputs, the handoff notes, the authored instruction sets and the fixture
-// revision constants. They never clone, install, or run a trial cell: the
-// network/npm path is exercised by an operator, not by CI. Every case below is
-// refused before the script can touch the network.
+// These tests cover the setup script's guards, the layout it infers, the staged
+// instruction files and the fixture revision constants. They never clone,
+// build, install or run a trial cell: the npm path is exercised by an operator,
+// not by CI. Every case below is refused before the script can touch the network.
 // ============================================================
 
 import test from "node:test"
@@ -24,7 +23,6 @@ const PLAIN_SET = path.resolve(REPO_ROOT, "docs", "plans", "guided-trial", "inst
 const SET_INDEX = path.resolve(REPO_ROOT, "docs", "plans", "guided-trial", "README.md")
 
 const TOOL_WORD = /\bsynth\b/i
-const LIFECYCLE_WORDS = ["first-contact", "materialize", "approve", "mission", "expedition"]
 const GIT_ENV = { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_SYSTEM: "/dev/null" }
 
 const runScript = (args) =>
@@ -47,61 +45,78 @@ async function makeCheckout(prefix, { dirty = false } = {}) {
   return dir
 }
 
-async function makeEmptyDir(prefix) {
-  return fs.mkdtemp(path.join(os.tmpdir(), prefix))
-}
-
-/** Case-id → task text as quoted in an instruction set's test table. */
+/**
+ * Case-id → task text as quoted in an instruction file's test table. The table
+ * has Test / Case id / Directory / Task text columns, so parse by cells rather
+ * than by column position.
+ */
 function taskTable(text) {
   const rows = {}
   for (const line of text.split("\n")) {
-    const match = line.match(/^\| [^|]+ \| `(green|brown|docs|knowledge|conflict)` \| "(.+)" \|$/)
-    if (match) rows[match[1]] = match[2]
+    if (!line.startsWith("|")) continue
+    const cells = line.split("|").slice(1, -1).map((cell) => cell.trim())
+    const caseCell = cells.find((cell) => /^`(green|brown|docs|knowledge|conflict)`$/.test(cell))
+    const taskCell = cells.find((cell) => /^".*"$/.test(cell))
+    if (caseCell && taskCell) rows[caseCell.slice(1, -1)] = taskCell.slice(1, -1)
   }
   return rows
 }
 
-test("help states the two inputs and that setup stops before any cell", () => {
+test("help states the two inputs, the staging split and that setup stops before the agent", () => {
   const result = runScript(["--help"])
   assert.equal(result.status, 0, result.stderr)
   assert(result.stdout.includes("--repo <path>"), "usage must document the checkout input")
-  assert(result.stdout.includes("--workspace <dir>"), "usage must document the testing workspace input")
-  assert(result.stdout.includes("Everything else is inferred"), "usage must say the rest is inferred")
-  assert(result.stdout.includes("Stops after staging"), "usage must state that setup stops before any cell")
-  assert(result.stdout.includes("never trial evidence"), "usage must not let setup be read as trial evidence")
+  assert(result.stdout.includes("--workspace <dir>"), "usage must document the TEST_PATH input")
+  assert(result.stdout.includes("--stage-only"), "usage must document the beforehand staging step")
+  assert(result.stdout.includes("never interfere with the test run"), "usage must state the build lives outside TEST_PATH")
+  assert(result.stdout.includes("told to follow the instruction file in its root"), "usage must describe how the agent starts")
 })
 
-test("both inputs are required", () => {
+test("workspace and, for staging, a repo or cli root are required", () => {
   const noWorkspace = runScript(["--repo", REPO_ROOT])
   assert.notEqual(noWorkspace.status, 0)
   assert(noWorkspace.stderr.includes("--workspace is required"), noWorkspace.stderr)
 
-  const noRepo = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-required")])
-  assert.notEqual(noRepo.status, 0)
-  assert(noRepo.stderr.includes("--repo is required"), noRepo.stderr)
+  const stageOnlyNoTarget = runScript(["--repo", REPO_ROOT, "--stage-only"])
+  assert.notEqual(stageOnlyNoTarget.status, 0)
+  assert(stageOnlyNoTarget.stderr.includes("--stage-only needs --workspace"), stageOnlyNoTarget.stderr)
+
+  const missingStaging = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-no-staging")])
+  assert.notEqual(missingStaging.status, 0)
+  assert(missingStaging.stderr.includes("no staged CLI"), missingStaging.stderr)
 })
 
 test("unknown or valueless flags fail rather than guessing", () => {
-  const unknown = runScript(["--repo", REPO_ROOT, "--workspace", path.join(os.tmpdir(), "board-ws-unknown"), "--turbo"])
+  const unknown = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-unknown"), "--turbo"])
   assert.notEqual(unknown.status, 0)
   assert(unknown.stderr.includes("Unknown argument: --turbo"), unknown.stderr)
 
-  const valueless = runScript(["--repo", REPO_ROOT, "--workspace"])
+  const valueless = runScript(["--workspace"])
   assert.notEqual(valueless.status, 0)
   assert(valueless.stderr.includes("--workspace requires a value"), valueless.stderr)
 
-  const badCase = runScript(["--repo", REPO_ROOT, "--workspace", path.join(os.tmpdir(), "board-ws-case"), "--cases", "greenfield"])
+  const badCase = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-case"), "--cases", "greenfield"])
   assert.notEqual(badCase.status, 0)
   assert(badCase.stderr.includes("Unknown case: greenfield"), badCase.stderr)
+
+  const badCondition = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-cond"), "--condition", "guided-ish"])
+  assert.notEqual(badCondition.status, 0)
+  assert(badCondition.stderr.includes("--condition must be guided or plain"), badCondition.stderr)
+})
+
+test("plain refuses a TEST_PATH that would reveal the tool", () => {
+  const result = runScript(["--workspace", path.join(os.tmpdir(), "synth-plain-leak"), "--condition", "plain"])
+  assert.notEqual(result.status, 0)
+  assert(result.stderr.includes("does not spell the tool's name"), result.stderr)
 })
 
 test("a relative workspace is refused", () => {
-  const result = runScript(["--repo", REPO_ROOT, "--workspace", "relative/workspace"])
+  const result = runScript(["--workspace", "relative/workspace"])
   assert.notEqual(result.status, 0)
   assert(result.stderr.includes("--workspace must be an absolute path"), result.stderr)
 })
 
-test("the two inputs may not contain each other", async () => {
+test("the checkout, TEST_PATH and the CLI staging directory may not contain each other", () => {
   const insideRepo = runScript(["--repo", REPO_ROOT, "--workspace", path.join(REPO_ROOT, ".trial-should-not-exist")])
   assert.notEqual(insideRepo.status, 0)
   assert(insideRepo.stderr.includes("--workspace must be outside the checkout"), insideRepo.stderr)
@@ -109,25 +124,14 @@ test("the two inputs may not contain each other", async () => {
   const repoInside = runScript(["--repo", path.join(os.tmpdir(), "board-ws-outer", "checkout"), "--workspace", path.join(os.tmpdir(), "board-ws-outer")])
   assert.notEqual(repoInside.status, 0)
   assert(repoInside.stderr.includes("--repo must not be inside --workspace"), repoInside.stderr)
-})
 
-test("a non-empty workspace is refused and left untouched", async () => {
-  const checkout = await makeCheckout("board-ws-nonempty-repo-")
-  const dir = await makeEmptyDir("board-ws-nonempty-")
-  try {
-    await fs.writeFile(path.join(dir, "keep.txt"), "existing content\n")
-    const result = runScript(["--repo", checkout, "--workspace", dir])
-    assert.notEqual(result.status, 0)
-    assert(result.stderr.includes("must be empty or nonexistent"), result.stderr)
-    assert.equal(await fs.readFile(path.join(dir, "keep.txt"), "utf-8"), "existing content\n")
-  } finally {
-    await fs.rm(dir, { recursive: true, force: true })
-    await fs.rm(checkout, { recursive: true, force: true })
-  }
+  const cliInside = runScript(["--workspace", path.join(os.tmpdir(), "board-ws-cli"), "--cli-root", path.join(os.tmpdir(), "board-ws-cli", "harness")])
+  assert.notEqual(cliInside.status, 0)
+  assert(cliInside.stderr.includes("--cli-root must be outside --workspace"), cliInside.stderr)
 })
 
 test("a repo that is not a checkout is refused", async () => {
-  const dir = await makeEmptyDir("board-ws-notrepo-")
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "board-ws-notrepo-"))
   try {
     const result = runScript(["--repo", dir, "--workspace", path.join(os.tmpdir(), "board-ws-notrepo-target")])
     assert.notEqual(result.status, 0)
@@ -167,7 +171,6 @@ test("a clean checkout resolves HEAD, and a bad --pin is refused", async () => {
     assert.equal(decision.ok, true)
     assert.equal(decision.dirty, false)
     assert.match(decision.commit, /^[0-9a-f]{40}$/)
-    assert.equal(decision.branch.length > 0, true)
 
     const pinned = script.assessRepo(checkout, { pin: "HEAD" })
     assert.equal(pinned.ok, true)
@@ -182,41 +185,26 @@ test("a clean checkout resolves HEAD, and a bad --pin is refused", async () => {
   }
 })
 
-test("the layout is inferred from the workspace path alone", async () => {
+test("the layout keeps the build out of TEST_PATH and puts one directory per test in it", async () => {
   const script = await loadScript()
-  const workspace = path.join(os.tmpdir(), "board-trial")
+  const workspace = path.join(os.tmpdir(), "board-tests")
   const layout = script.layoutFor(workspace)
 
   assert.equal(layout.workspace, workspace)
-  assert.equal(layout.harness, path.join(workspace, ".trial"))
-  assert.equal(layout.kickoff, path.join(workspace, ".trial", "kickoff"))
-  assert.equal(layout.transcripts, path.join(workspace, ".trial", "transcripts"))
-  assert.equal(layout.installedCli, path.join(workspace, ".trial", "global", "bin", process.platform === "win32" ? "synth.cmd" : "synth"))
+  assert.equal(layout.cliRoot, `${workspace}-cli`, "the CLI staging directory is inferred next to TEST_PATH")
+  assert.equal(layout.cliRoot.startsWith(workspace + path.sep), false, "staging must not live inside TEST_PATH")
+  assert.equal(layout.rootInstruction, path.join(workspace, "INSTRUCTIONS.md"))
+  assert.equal(layout.environmentFile, path.join(workspace, "ENVIRONMENT.md"))
   assert.equal(layout.testDir("green"), path.join(workspace, "greenfield"))
   assert.equal(layout.testDir("brown"), path.join(workspace, "brownfield"))
   assert.equal(layout.testDir("docs"), path.join(workspace, "documentation"))
-  assert.equal(layout.controlRoot, path.join(workspace, ".control"))
-  assert.equal(layout.controlDir("green"), path.join(workspace, ".control", "greenfield"))
-  assert.equal(layout.controlAllowed, true, "a neutral workspace may host plain mirrors")
+  assert.equal(layout.cli.installedCli, path.join(layout.cliRoot, "global", "bin", process.platform === "win32" ? "synth.cmd" : "synth"))
+  assert.equal(layout.cli.transcripts, path.join(layout.cliRoot, "transcripts"))
+  assert.equal(layout.cli.manifest, path.join(layout.cliRoot, "cli-manifest.json"))
 
-  const leaky = script.layoutFor(path.join(os.tmpdir(), "synth-tests"))
-  assert.equal(leaky.controlAllowed, false, "a workspace path spelling the tool's name must not host plain mirrors")
-
-  const override = script.layoutFor(workspace, path.join(os.tmpdir(), "synth-elsewhere"))
-  assert.equal(override.controlAllowed, false, "a leaky control root is refused too")
-  assert.equal(override.controlDir("docs"), path.join(os.tmpdir(), "synth-elsewhere", "documentation"))
-})
-
-test("handoff note names are derived once and match the index", async () => {
-  const script = await loadScript()
-  assert.equal(script.handoffNoteName("guided", "brown"), "guided-brownfield.md")
-  assert.equal(script.handoffNoteName("plain", "docs"), "plain-documentation.md")
-  assert.throws(() => script.handoffNoteName("guided", "unknown"), /Unknown case/)
-
-  const index = script.renderKickoffIndex({ workspace: "/tmp/board-trial", cases: ["green", "brown", "docs"], controlCreated: true, controlReason: null })
-  for (const [condition, caseId] of [["guided", "brown"], ["plain", "docs"]]) {
-    assert(index.includes(`\`${script.handoffNoteName(condition, caseId)}\``), `index must name ${condition}-${caseId}`)
-  }
+  const override = script.layoutFor(workspace, { cliRoot: path.join(os.tmpdir(), "board-harness") })
+  assert.equal(override.cliRoot, path.join(os.tmpdir(), "board-harness"))
+  assert.equal(override.testDir("docs"), path.join(workspace, "documentation"))
 })
 
 test("test directory names are spelled out, one isolated environment per test", async () => {
@@ -230,7 +218,43 @@ test("test directory names are spelled out, one isolated environment per test", 
   })
 })
 
-test("both instruction sets list every test with the task text used for hashing", async () => {
+test("a staged CLI is reused only for the same revision and only when it is present", async () => {
+  const script = await loadScript()
+  const manifest = { testedRevision: { commit: "a".repeat(40) } }
+  const assessment = { commit: "a".repeat(40) }
+
+  assert.equal(script.shouldReuseCli(manifest, assessment, { installedCliExists: true }).reuse, true)
+  assert.equal(script.shouldReuseCli(manifest, assessment, { installedCliExists: true, refresh: true }).reuse, false)
+  assert.equal(script.shouldReuseCli(manifest, assessment, { installedCliExists: false }).reuse, false)
+  assert.equal(script.shouldReuseCli(manifest, { commit: "b".repeat(40) }, { installedCliExists: true }).reuse, false)
+  assert.equal(script.shouldReuseCli(null, assessment, { installedCliExists: true }).reuse, false)
+})
+
+test("the environment note records paths and build identity, never process", async () => {
+  const script = await loadScript()
+  const note = script.renderEnvironment({
+    workspace: "/tmp/board-tests",
+    testDirs: ["greenfield", "brownfield", "documentation"],
+    cliRoot: "/tmp/board-tests-cli",
+    installedCli: "/tmp/board-tests-cli/global/bin/synth",
+    manifestPath: "/tmp/board-tests-cli/transcripts/setup-manifest.json",
+    revision: { commit: "c".repeat(40), subject: "abc1234 example" },
+  })
+  assert(note.includes("/tmp/board-tests-cli/global/bin/synth"), "the note must say where the CLI is")
+  assert(note.includes("greenfield/"), "the note must list the test directories")
+  assert(note.includes("c".repeat(40)), "the note must record the revision")
+  assert.equal(/first-contact/.test(note), false, "the note must not carry the process")
+  assert(note.includes("do not edit"), "the note must say it is generated")
+})
+
+test("the launch instruction is one line naming the root instruction file", async () => {
+  const script = await loadScript()
+  const line = script.launchInstruction()
+  assert.equal(line, "Read INSTRUCTIONS.md in the root of this workspace and follow it.")
+  assert.equal(line.includes("\n"), false)
+})
+
+test("both instruction files list every test with the task text used for hashing", async () => {
   const lib = await loadLib()
   const sets = {
     guided: await fs.readFile(GUIDED_SET, "utf-8"),
@@ -247,13 +271,15 @@ test("both instruction sets list every test with the task text used for hashing"
     }
     assert(text.includes("Required observation per test"), `${condition} set must state the required observation`)
     assert(text.includes("No invented people"), `${condition} set must keep the honesty rule`)
-    assert(text.includes("INSTRUCTIONS.md"), `${condition} set must be the file staged as INSTRUCTIONS.md`)
+    assert(text.includes("INSTRUCTIONS.md"), `${condition} set must be the file staged in the root`)
     assert(text.includes("REPORT.md"), `${condition} set must ask for a written report`)
+    assert(text.includes("one at a time"), `${condition} set must run the tests one at a time`)
+    assert(text.includes("`brownfield/`"), `${condition} set must name the brownfield directory`)
   }
   assert(sets.guided.includes("awaiting-response"), "guided set must require the offer to stay unanswered")
 })
 
-test("the guided instruction set begins with the SYNTH initialization process", async () => {
+test("the guided instruction file begins with the SYNTH initialization process", async () => {
   const text = await fs.readFile(GUIDED_SET, "utf-8")
   const dryRun = text.indexOf("first-contact --dry-run")
   const start = text.indexOf("first-contact start")
@@ -262,73 +288,30 @@ test("the guided instruction set begins with the SYNTH initialization process", 
   assert(dryRun < start && start < clarify, "guided set must order dry-run, start, then the offer")
   assert(text.includes("do not substitute another script"), "guided set must forbid substituting another script for the CLI process")
   assert(text.includes("follow the CLI"), "guided set must make the CLI authoritative over the document")
+  assert(text.includes("ENVIRONMENT.md"), "guided set must point at the generated environment note")
   assert(text.includes("Do **not** pass `--selection` or `--human-response`"), "guided set must forbid invented responses")
   assert(text.includes("do not run `first-contact materialize`"), "guided set must forbid lifecycle actions")
   assert(text.includes("Do not push anywhere"), "guided set must forbid publishing")
+  assert(text.includes("cd <test directory>"), "guided set must start each test inside its own directory")
 })
 
-test("the plain instruction set never names the tool or its commands", async () => {
+test("the plain instruction file never names the tool or its commands", async () => {
   const text = await fs.readFile(PLAIN_SET, "utf-8")
   assert.equal(TOOL_WORD.test(text), false, "the plain set must not reveal the tool under test")
   assert.equal(/first-contact/i.test(text), false, "the plain set must not carry the guided commands")
+  assert.equal(/ENVIRONMENT\.md/.test(text), false, "the plain workspace has no generated environment note")
   assert(text.includes("There is no required first command"), "the plain set must leave the process to the agent")
   assert(text.includes("offer.json"), "plain set must still ask for a reviewable proposal")
 })
 
-test("the instruction-set index explains the tests and the handoff", async () => {
+test("the instruction-set index explains the layout and the launch", async () => {
   const text = await fs.readFile(SET_INDEX, "utf-8")
   for (const name of ["green", "brown", "docs", "knowledge", "conflict"]) {
     assert(text.includes(`\`${name}\``), `index must name case ${name}`)
   }
-  assert(text.includes("INSTRUCTIONS.md"), "index must say the sets are staged as INSTRUCTIONS.md")
+  assert(text.includes("INSTRUCTIONS.md"), "index must say the instruction file is staged in the root")
+  assert(text.includes("TEST_PATH"), "index must describe TEST_PATH")
   assert(text.includes("test:guided-installed-trial-setup"), "index must point at the consistency guard")
-})
-
-test("the guided handoff note points at the staged file and the CLI location", async () => {
-  const script = await loadScript()
-  const workspace = path.join(os.tmpdir(), "board-trial", "documentation")
-  const instructionFile = path.join(workspace, "INSTRUCTIONS.md")
-  const bin = path.join(os.tmpdir(), "board-trial", ".trial", "global", "bin", "synth")
-  const note = script.renderHandoffNote("guided", { caseId: "docs", testDir: "documentation", workspace, synthBin: bin, instructionFile })
-
-  assert(note.includes(instructionFile), "guided note must point at the staged instruction file")
-  assert(note.includes(bin), "guided note must say where the CLI is installed")
-  assert(note.includes("`documentation`"), "guided note must name the assigned test directory")
-  assert(note.includes("initialization process"), "guided note must name the initialization process, not a command list")
-  assert.equal(/first-contact/.test(note), false, "the guided note must not duplicate the process the instruction set owns")
-  assert(note.includes("one fresh") === false, "the note is read by the agent, not the operator")
-})
-
-test("the plain handoff note never reveals the tool under test", async () => {
-  const script = await loadScript()
-  const workspace = path.join(os.tmpdir(), "board-trial", ".control", "greenfield")
-  const instructionFile = path.join(workspace, "INSTRUCTIONS.md")
-  const note = script.renderHandoffNote("plain", { caseId: "green", testDir: "greenfield", workspace, synthBin: "/nowhere/synth", instructionFile })
-
-  assert.equal(TOOL_WORD.test(note), false, "the plain note must not name the tool")
-  assert.equal(/first-contact/i.test(note), false, "the plain note must not carry commands")
-  assert(note.includes(workspace), "plain note must name the workspace")
-  assert(note.includes(instructionFile), "plain note must point at the staged instruction file")
-  assert(note.includes("Do not read or write anything outside it"), "plain note must confine the agent")
-})
-
-test("the kickoff index maps cells and explains a skipped control", async () => {
-  const script = await loadScript()
-  const workspace = path.join(os.tmpdir(), "board-trial")
-  const withControl = script.renderKickoffIndex({ workspace, cases: ["green", "brown", "docs"], controlCreated: true, controlReason: null })
-  assert(withControl.includes("`guided-greenfield.md`"), "index must name the guided notes")
-  assert(withControl.includes("`plain-greenfield.md`"), "index must name the plain notes")
-  assert.equal(withControl.includes("| `greenfield/` |"), true, "index must map the test directory")
-  assert(withControl.includes("one fresh agent session per cell"), "index must state the per-cell session rule")
-
-  const without = script.renderKickoffIndex({
-    workspace: path.join(os.tmpdir(), "synth-trial"),
-    cases: ["green"],
-    controlCreated: false,
-    controlReason: "the workspace path spells the tool's name",
-  })
-  assert(without.includes("not created"), "index must say the plain mirrors were skipped")
-  assert(without.includes("spells the tool's name"), "index must say why")
 })
 
 test("fixture revisions still match the executed E4 record", async () => {
@@ -358,21 +341,12 @@ test("the revision rule round-trips on a copied workspace", async () => {
   }
 })
 
-test("setup stages both instruction sets, names no commands, and runs no lifecycle action", async () => {
+test("the script runs no product command other than --version and stages no build output in TEST_PATH", async () => {
   const source = await fs.readFile(SCRIPT, "utf-8")
-  assert(source.includes("INSTRUCTION_SETS"), "setup must stage instruction sets from the authored directory")
-  assert(source.includes("INSTRUCTIONS.md"), "setup must stage the condition-appropriate set into each workspace")
-  assert(source.includes("renderHandoffNote"), "setup must write one handoff note per cell")
   assert(source.includes("productCommandsRun: ['synth --version']"), "the manifest must record which product command setup ran")
+  assert(source.includes("buildArtifactsInsideTestPath: []"), "the manifest must state that no build output lands in TEST_PATH")
   assert(source.includes("delete-source-clone"), "isolation cleanup must be a recorded step")
-  assert(source.includes("plainSetMentionsTool"), "the manifest must record whether the plain set leaked the tool name")
-  assert(source.includes("controlAllowed"), "setup must decide rather than assume whether plain mirrors are safe")
-
-  const start = source.indexOf("// #region handoff-note-text")
-  const end = source.indexOf("// #endregion handoff-note-text")
-  assert(start !== -1 && end > start, "the handoff-note region must be marked")
-  const outside = (source.slice(0, start) + source.slice(end)).toLowerCase()
-  for (const forbidden of LIFECYCLE_WORDS) {
-    assert.equal(outside.includes(forbidden), false, `'${forbidden}' must appear only inside the handoff-note region`)
-  }
+  assert(source.includes("shouldReuseCli"), "setup must reuse a CLI staged beforehand instead of rebuilding")
+  assert.equal(/first-contact/.test(source), false, "no product workflow command may appear in the setup script at all")
+  assert.equal(/npm run (?!build|pack)/.test(source), false, "setup may only run npm build and npm pack")
 })

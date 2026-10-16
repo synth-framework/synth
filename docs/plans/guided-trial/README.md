@@ -1,34 +1,35 @@
 # Guided-journey trial — instruction set
 
-This directory holds the instruction files a running agent reads inside its workspace, plus the operator's index. The full protocol, the two-input setup command, the compliance checklist and the limits live in [the trial instructions](../guided-installed-cli-trial-instructions.md). Nothing here starts a cell, and nothing here is trial evidence.
+This directory holds the instruction files a running agent reads. The full protocol, the setup commands, the compliance checklist and the limits live in [the trial instructions](../guided-installed-cli-trial-instructions.md). Nothing here starts a trial, and nothing here is trial evidence.
 
 ## The files
 
 | File | Read by | Purpose |
 | --- | --- | --- |
-| `instructions/guided.md` | The agent in a **guided** cell | Starts with the SYNTH initialization process, then the tests, offer requirements, honesty rules and report shape |
-| `instructions/plain.md` | The agent in a **plain** cell | Same tests, observations, rules and report shape, with no prescribed starting process |
-| `README.md` (this file) | The operator | What the tests are, how a cell is handed off, and how the set is kept consistent |
+| `instructions/guided.md` | The agent in a **guided** run | Starts with the SYNTH initialization process, then the tests, offer requirements, honesty rules and report shape |
+| `instructions/plain.md` | The agent in a **plain** run | Same tests, observations, rules and report shape, with no prescribed starting process |
+| `README.md` (this file) | The operator | What the tests are, how TEST_PATH is laid out, and how the set is kept consistent |
 
-Setup stages the condition-appropriate file into each test directory as `INSTRUCTIONS.md` and writes one short handoff note per cell in `<workspace>/.trial/kickoff/`. The instruction files are staged, not generated: the only script-written text is the note's test name, workspace path, staged file name and CLI location.
+One of them is copied into the **root of TEST_PATH as `INSTRUCTIONS.md`**, and the agent is told to read it. The files are staged, not generated; the only generated text is `ENVIRONMENT.md` (guided runs only), which records paths and build identity and carries no process.
 
-## The layout the harness creates
+## TEST_PATH
 
 ```
-<testing-workspace>/
-  .trial/                    harness: pack, installed CLI, transcripts, handoff notes, instruction copies
-  greenfield/                one isolated environment per test, holding only its own inputs + INSTRUCTIONS.md
-  brownfield/
+<TEST_PATH>/
+  INSTRUCTIONS.md          copied from this repository: the file the agent follows
+  ENVIRONMENT.md           guided only: generated paths — CLI location, revision, staging directory
+  greenfield/              one isolated environment per test …
+  brownfield/              … holding only that test's own starting inputs
   documentation/
-  [knowledge-led/]           optional cases, with --cases knowledge,conflict
+  [knowledge-led/]         optional, with --cases knowledge,conflict
   [conflicting-documents/]
-  .control/                  plain-condition mirrors; created only when no path component spells the tool's name
-    greenfield/ brownfield/ documentation/
 ```
+
+Build, pack and install live in the CLI staging directory **outside** TEST_PATH (default: the sibling `<TEST_PATH>-cli`), so no build output, harness or transcript is visible to the agent. The staged CLI is reusable across runs for the same revision, so preparing it beforehand costs nothing at trial time.
 
 ## The tests
 
-All five tests are listed in full inside each instruction file, so the agent sees the whole set and its own assignment. Three are required; two are optional extras for a longer time box.
+Each instruction file lists all five tests with their task text and required observation, so the agent sees the whole set and works through the ones present, one directory at a time.
 
 | Test | Case id | Directory | Starting inputs | Required observation |
 | --- | --- | --- | --- | --- |
@@ -40,12 +41,16 @@ All five tests are listed in full inside each instruction file, so the agent see
 
 Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixtures.mjs`; `npm run test:guided-installed-trial-setup` fails if the task text quoted in these instruction files ever diverges from that file, or if fixtures drift from the published revisions.
 
-## Handing off one cell
+## Running one
 
-1. Open one fresh agent session per cell. Never reuse a session between a guided and a plain cell.
-2. Paste the cell's handoff note from `<workspace>/.trial/kickoff/`.
-3. The agent reads `INSTRUCTIONS.md` in its own directory and follows it. In a guided cell its first act is the SYNTH initialization process; in a plain cell there is no prescribed first command.
-4. Log verbatim any help you give beyond pasting the note.
+1. Prepare the CLI beforehand, outside TEST_PATH:
+   `node scripts/guided-installed-trial-setup.mjs --repo <checkout> --workspace <TEST_PATH> --stage-only`
+2. Create TEST_PATH:
+   `node scripts/guided-installed-trial-setup.mjs --workspace <TEST_PATH>`
+3. Start one fresh agent session **in TEST_PATH** and give it the printed line — `Read INSTRUCTIONS.md in the root of this workspace and follow it.`
+4. Log verbatim any help you give beyond that line.
+
+For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; a session must never see both conditions.
 
 ## Keeping the two instruction files consistent
 
@@ -55,4 +60,4 @@ The two files must differ **only** in the condition they describe: the guided on
 npm run test:guided-installed-trial-setup
 ```
 
-That test also enforces the hard rule that the plain file never contains the tool's name or its commands.
+That test also enforces the hard rule that the plain file never contains the tool's name or its commands, and that the plain run stages no generated environment note.

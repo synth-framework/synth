@@ -10,13 +10,13 @@ Checklist: [instructions, Appendix C](../plans/guided-installed-cli-trial-instru
 
 | # | Requirement | Met? | Note or evidence |
 | --- | --- | --- | --- |
-| 1 | Cells run by a different agent and fresh session than the authoring agent (setup-only agent may be any agent; a plain cell must never be run by an agent that has seen this repository) | `<yes/no>` | `<...>` |
+| 1 | Sessions run by a different agent and fresh sessions than the authoring agent (a staging-only agent may be any agent; a plain session must never be run by an agent that has seen this repository) | `<yes/no>` | `<...>` |
 | 2 | Agent had no access to the authoring checkout (setup deleted its clone; each test directory holds only its own inputs) | `<yes/no>` | `<...>` |
 | 2b | Isolation mode: same-machine confinement by layout and instruction, or a container/separate machine | `<confinement/container>` | `<...>` |
 | 3 | Agent blind to which condition is expected to win; plain prompt never mentioned SYNTH | `<yes/no>` | `<...>` |
 | 4 | Matched inputs; revisions recorded before the first cell | `<yes/no>` | `<...>` |
 | 5 | Matched agent/model/version, tools, starting request text | `<yes/no>` | `<...>` |
-| 6 | Fresh session per cell; order recorded and alternated across cases | `<yes/no>` | `<...>` |
+| 6 | Session plan and order (fresh session per test where possible; one session per condition at minimum) | `<yes/no>` | `<...>` |
 | 7 | Protocol, time box, expected observations and stop conditions pre-registered | `<yes/no>` | `<...>` |
 | 8 | Verbatim transcripts, wall-clock per cell, intervention log | `<yes/no>` | `<...>` |
 | 9 | Installed tarball pinned and identified (not a repo build) | `<yes/no>` | `<...>` |
@@ -31,10 +31,12 @@ Anything unmet, and why: `<...>`
 | --- | --- |
 | Operator (who ran the trial) | `<name>` |
 | Setup executed by (agent/tool, model, version) | `<...>` |
-| Setup command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --repo <...> --workspace <...>` → `<exit>` — or the manual sequence you ran (Appendix A), with its commands and exits |
-| Setup manifest path | `<workspace>/.trial/transcripts/setup-manifest.json`, or `none — manual setup` |
-| Handoff notes used, per cell | `<workspace>/.trial/kickoff/guided-<test>.md`, `plain-<test>.md` |
-| Handoff issued by (who) and how (paste only?) | `<...>` |
+| Beforehand staging command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --repo <...> --workspace <...> --stage-only` → `<exit>` (or the manual sequence in Appendix A) |
+| TEST_PATH creation command and exit code | `node <synth-checkout>/scripts/guided-installed-trial-setup.mjs --workspace <...>` → `<exit>` |
+| CLI staging directory (outside TEST_PATH) | `<cli-root>`, e.g. `<TEST_PATH>-cli` |
+| CLI manifest / setup manifest | `<cli-root>/cli-manifest.json`, `<cli-root>/transcripts/setup-manifest.json` (or `none — manual setup`) |
+| Instruction file staged at TEST_PATH root | `INSTRUCTIONS.md` (guided or plain), plus `ENVIRONMENT.md` in a guided run |
+| Launch line given to the agent, verbatim | `<Read INSTRUCTIONS.md in the root of this workspace and follow it.>` |
 | Date and timezone, start/end | `<...>` |
 | Running agent, model and version | `<...>` |
 | Tool access given to the agent | `<shell, editor, network, ...>` |
@@ -70,9 +72,9 @@ If any required case did not match, stop and report `blocked` — do not continu
 
 Fill one block per case and condition. Required cases produce six blocks; optional cases add more.
 
-### `<test>` / plain
+### `<test>` / plain (own TEST_PATH)
 
-- Handoff note pasted, session id, and start time: `<...>`
+- Session id and start time: `<...>`
 - Commands and exit codes: `<...>`
 - Input revision at start / any file change during the cell: `<...>`
 - Questions or options the agent raised: `<...>`
@@ -85,7 +87,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 
 ### `<test>` / guided
 
-- Handoff note pasted, session id, and start time: `<...>`
+- Session id and start time: `<...>`
 - Commands and exit codes: `<...>`
 - Input revision at start / any file change during the cell: `<...>`
 - `first-contact status` terminal projection (`awaiting-response` required here): `<...>`
@@ -109,7 +111,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 | Which condition produced a clearer next slice? | `<...>` |
 | Same agent/model and tool access in both conditions? | `<yes/no + evidence>` |
 | Plain and guided run order, and could ordering explain the result? | `<...>` |
-| Was the plain condition available (workspace path neutral) or skipped? | `<created/skipped + manifest reason>` |
+| Sessions used: one per condition, or one per test? Order used? | `<...>` |
 | Anything that failed or was skipped, with the exact error text | `<...>` |
 
 ## 6. Explicit statements
@@ -120,10 +122,11 @@ Fill one block per case and condition. Required cases produce six blocks; option
 - Pushes, pull requests or merges created by this trial: `none` (required).
 - Application tests weakened or skipped to make a cell pass: `none` (required).
 - Isolation mode: `<confinement by layout and instruction / container / separate machine>`.
-- Plain condition: `<created, path> / <skipped, manifest reason>`.
+- Plain condition: `<own TEST_PATH at ...> / <not run>`.
+- Build output visible inside TEST_PATH: `none — staging lives at <cli-root>`.
 - Total operator effort and whether it exceeded the time box: `<...>`.
 - Was setup run before the cells by the same agent that ran them? `<yes/no + which cells>`.
-- Any auto-feed: `none — the handoff note was pasted by hand, as the current CLI requires`.
+- Any auto-feed: `none — the agent was launched by hand and pointed at the root instruction file, as the current CLI requires`.
 
 ## 7. What this evidence does and does not support
 
