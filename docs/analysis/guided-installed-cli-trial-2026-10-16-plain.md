@@ -1,6 +1,6 @@
 # Installed-CLI guided-journey trial — evidence (2026-10-16)
 
-Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `C:\Users\j\Projects\raw-board-test` on 2026-10-16T08:27:08.788Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
+Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `C:\Users\j\Projects\raw-board-test` on 2026-10-16T08:31:40.965Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
 
 Machine-read rows come from the finished workspace — `REPORT.md`, `offer.json`, `.synth/first-contact/` (including the CLI's own recorded offer with its citation hashes), any other CLI-stored file — and from the scratch directory when it was reachable. Quotes attributed to `REPORT.md` are the agent's own words, copied verbatim. Rows reading `<to confirm — operator: …>` are operator-only: this script has no way to know them and will not guess. Raw byte-for-byte copies: `docs/analysis/guided-installed-cli-trial-2026-10-16-plain-raw/`.
 
@@ -39,6 +39,7 @@ Anything unmet, and why: <to confirm — operator: list every unmet item and the
 | Scratch directory (outside TEST_PATH) | not applicable — the plain condition builds nothing and writes nothing outside TEST_PATH |
 | CLI manifest / setup manifest | `none — the plain condition writes nothing outside TEST_PATH` |
 | Instruction file staged at TEST_PATH root | `INSTRUCTIONS.md` (plain set — names no tool), sha256 `3dcce10b8ac2cadbe617174661d03687882fb850e77681cf354b2ff83f14b0f8`, no `ENVIRONMENT.md` (plain condition) |
+| Other files in TEST_PATH root (not starting inputs) | none — the root holds only the staged `INSTRUCTIONS.md` and, for the guided condition, `ENVIRONMENT.md` |
 | Launch line given to the agent, verbatim | recorded by setup: `Read INSTRUCTIONS.md in the root of this workspace and follow it.` (the line this repository's script prints for this condition — the manifest was not reachable). <to confirm — operator: paste what you actually typed, and if you changed the wording, say exactly how> |
 | Date and timezone, start/end | `greenfield`: 2026-10-16T07:53:48.962Z → 2026-10-16T07:53:54.126Z (artifact mtimes — this condition records no CLI timestamps); `brownfield`: 2026-10-16T07:54:32.103Z → 2026-10-16T07:54:41.612Z (artifact mtimes — this condition records no CLI timestamps); `documentation`: 2026-10-16T07:54:55.953Z → 2026-10-16T07:55:00.948Z (artifact mtimes — this condition records no CLI timestamps); filename date `2026-10-16` (argument). <to confirm — operator: your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set> |
 | Running agent, model and version | <to confirm — operator: agent product, model and version; session ids> |
@@ -77,7 +78,6 @@ One block per case and condition. This capture holds 3 cell(s): `greenfield/plai
 
 ```text
 (no shell commands run for this test; directory listing done via file read)
-APPROACH: Inspected greenfield/ directory first and confirmed it is empty; derived proposal only from the quoted task text; wrote offer.json with one decision question and three grounded options; wrote this report. Chose this process because with no starting files the only evidence is the task text, and the required observation is questions/options about board kind, inputs, editing and validation without inventing GUI or stack.
 ```
 - Input revision at start / any file change during the cell: expected `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`; observed `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`; matched yes — this case starts empty, so the revision is the hash of an empty file set. Files present that are not starting inputs: `REPORT.md` (1590 B), `offer.json` (2996 B).
 - Operator effort (minutes) and agent turns / interventions: the report's own estimate: ~5 minutes for this test; recorded 0 operator input event(s) and 0 agent event(s) in the CLI transcript. <to confirm — operator: elapsed minutes on the clock, turns, and every intervention verbatim>
@@ -92,7 +92,7 @@ path greenfield/offer.json; question "What board input and editing interaction s
 No file citations (directory empty, verified by read of greenfield/). Task text quoted in offer.json as "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." — matches INSTRUCTIONS.md Section 3 task text.
 ```
 
-Re-checked here from `offer.json` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): 3 citation(s), 0 matched (0 file line(s), 0 task-text quote(s)), 3 did NOT — a quote marked as the task text that is not this case's staged task text; a quote marked as the task text that is not this case's staged task text; a quote marked as the task text that is not this case's staged task text.
+Re-checked here from `offer.json` (the plain condition records no citation hashes, so each quote was compared with the live file line, and task-text quotes with the staged task text): 3 citation(s), 0 matched (0 file line(s), 0 task-text quote(s)), 3 did NOT — a quote marked as the task text that is not this case's staged task text (the quote is part of the staged task text, not all of it); a quote marked as the task text that is not this case's staged task text (the quote is part of the staged task text, not all of it); a quote marked as the task text that is not this case's staged task text (the quote is part of the staged task text, not all of it).
 - Unsupported assumptions: as written in `REPORT.md`:
 
 ```text
@@ -109,6 +109,9 @@ Decision in offer.json left to a person (board input and editing interaction); b
 N/A (brownfield only)
 ```
 - Terminal state: `pass` / `fail` / `blocked` / `not run` — reason: <to confirm — operator: the terminal state for this cell, with the reason — the captured files prove what happened, not whether it counts as a pass (recorded for this cell: no machine-recorded terminal projection)>
+- How the agent says it worked (`REPORT.md` section APPROACH, requested by the plain instruction set, verbatim): ```text
+Inspected greenfield/ directory first and confirmed it is empty; derived proposal only from the quoted task text; wrote offer.json with one decision question and three grounded options; wrote this report. Chose this process because with no starting files the only evidence is the task text, and the required observation is questions/options about board kind, inputs, editing and validation without inventing GUI or stack.
+```
 - What the agent reported as wrong or contradictory (`REPORT.md` section PROBLEMS, verbatim): ```text
 None; nothing misled.
 ```
@@ -120,7 +123,6 @@ None; nothing misled.
 
 ```text
 npm test (before change) -> exit 0; npm test (after, no source change) -> exit 0. Both run with workdir brownfield/.
-APPROACH: Read brownfield/package.json, src/board.js, tests/board.test.js, docs/limitation.md in that order to establish existing behavior; ran npm test before any change; wrote offer.json as delta-only proposal citing all three files with exact path/line/quote; re-ran npm test to verify no drift; wrote this report. Chose proposal-only with no source edits to preserve existing behavior and tests per the documented limitation.
 ```
 - Input revision at start / any file change during the cell: expected `348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe`; observed `348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe`; matched yes — 4 input file(s): all byte-identical to the frozen fixtures. Files present that are not starting inputs: `REPORT.md` (1941 B), `offer.json` (3239 B).
 - Operator effort (minutes) and agent turns / interventions: the report's own estimate: ~10 minutes for this test; recorded 0 operator input event(s) and 0 agent event(s) in the CLI transcript. <to confirm — operator: elapsed minutes on the clock, turns, and every intervention verbatim>
@@ -152,6 +154,9 @@ Decision in offer.json left to a person (fill-color parameter shape); fill value
 before change: command "npm test", exit 0, result pass 1 fail 0 (existing label); after change: no source change made (proposal only), re-ran "npm test", exit 0, result pass 1 fail 0. Existing tests and fixtures not edited.
 ```
 - Terminal state: `pass` / `fail` / `blocked` / `not run` — reason: <to confirm — operator: the terminal state for this cell, with the reason — the captured files prove what happened, not whether it counts as a pass (recorded for this cell: no machine-recorded terminal projection)>
+- How the agent says it worked (`REPORT.md` section APPROACH, requested by the plain instruction set, verbatim): ```text
+Read brownfield/package.json, src/board.js, tests/board.test.js, docs/limitation.md in that order to establish existing behavior; ran npm test before any change; wrote offer.json as delta-only proposal citing all three files with exact path/line/quote; re-ran npm test to verify no drift; wrote this report. Chose proposal-only with no source edits to preserve existing behavior and tests per the documented limitation.
+```
 - What the agent reported as wrong or contradictory (`REPORT.md` section PROBLEMS, verbatim): ```text
 None; nothing misled. No wholesale rewrite done.
 ```
@@ -163,7 +168,6 @@ None; nothing misled. No wholesale rewrite done.
 
 ```text
 (no shell commands run for this test; directory and file reads via file read)
-APPROACH: Listed documentation/docs/ then read documentation/docs/requirements.md in full; treated its two lines as the full scope (export decided, editing style undecided) and framed the conflict as the decision question; wrote offer.json with three grounded options showing consequences; wrote this report. Chose this process because the required observation is to cite actual docs files by path and line and surface conflict as a decision, not silently resolve it.
 ```
 - Input revision at start / any file change during the cell: expected `37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179`; observed `37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179`; matched yes — 1 input file(s): all byte-identical to the frozen fixtures. Files present that are not starting inputs: `REPORT.md` (1751 B), `offer.json` (2833 B).
 - Operator effort (minutes) and agent turns / interventions: the report's own estimate: ~5 minutes for this test; recorded 0 operator input event(s) and 0 agent event(s) in the CLI transcript. <to confirm — operator: elapsed minutes on the clock, turns, and every intervention verbatim>
@@ -195,6 +199,9 @@ Decision in offer.json left to a person (editing interaction style for next slic
 N/A (brownfield only)
 ```
 - Terminal state: `pass` / `fail` / `blocked` / `not run` — reason: <to confirm — operator: the terminal state for this cell, with the reason — the captured files prove what happened, not whether it counts as a pass (recorded for this cell: no machine-recorded terminal projection)>
+- How the agent says it worked (`REPORT.md` section APPROACH, requested by the plain instruction set, verbatim): ```text
+Listed documentation/docs/ then read documentation/docs/requirements.md in full; treated its two lines as the full scope (export decided, editing style undecided) and framed the conflict as the decision question; wrote offer.json with three grounded options showing consequences; wrote this report. Chose this process because the required observation is to cite actual docs files by path and line and surface conflict as a decision, not silently resolve it.
+```
 - What the agent reported as wrong or contradictory (`REPORT.md` section PROBLEMS, verbatim): ```text
 None; nothing misled. Genuine tension between line 1 (decided export) and line 2 (undecided editing) kept as explicit decision with consequences per option.
 ```

@@ -1,6 +1,6 @@
 # Installed-CLI guided-journey trial — evidence (2026-10-16)
 
-Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `C:\Users\j\Projects\board-test` on 2026-10-16T08:27:55.647Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
+Captured by `node scripts/guided-installed-trial-evidence.mjs --workspace <TEST_PATH>` from `C:\Users\j\Projects\board-test` on 2026-10-16T08:31:17.511Z (argument). Template: [guided-three-path-installed-trial-evidence-template.md](guided-three-path-installed-trial-evidence-template.md). Runbook: [guided-installed-cli-trial-instructions.md](../plans/guided-installed-cli-trial-instructions.md).
 
 Machine-read rows come from the finished workspace — `REPORT.md`, `offer.json`, `.synth/first-contact/` (including the CLI's own recorded offer with its citation hashes), any other CLI-stored file — and from the scratch directory when it was reachable. Quotes attributed to `REPORT.md` are the agent's own words, copied verbatim. Rows reading `<to confirm — operator: …>` are operator-only: this script has no way to know them and will not guess. Raw byte-for-byte copies: `docs/analysis/guided-installed-cli-trial-2026-10-16-raw/`.
 
@@ -41,6 +41,7 @@ Anything unmet, and why: <to confirm — operator: list every unmet item and the
 | Scratch directory (outside TEST_PATH) | `C:\Users\j\AppData\Local\Temp\trial-staging\b53f6dcb859f` — tarball, installed CLI and transcripts |
 | CLI manifest / setup manifest | `cli-manifest.json`, `transcripts/setup-manifest.json` |
 | Instruction file staged at TEST_PATH root | `INSTRUCTIONS.md` (guided set — names the tool), sha256 `07a7a56df1bb0ec7a5e3f9d5f9017cc12c7b7c42fb00c964be6cae1545d72321`, plus `ENVIRONMENT.md` |
+| Other files in TEST_PATH root (not starting inputs) | none — the root holds only the staged `INSTRUCTIONS.md` and, for the guided condition, `ENVIRONMENT.md` |
 | Launch line given to the agent, verbatim | recorded by setup: ``This trial uses SYNTH, the CLI installed on this machine as `synth`. Read INSTRUCTIONS.md in the root of this workspace and follow it; begin each test with `synth first-contact --dry-run`.`` (from `setup-manifest.json`). <to confirm — operator: paste what you actually typed, and if you changed the wording, say exactly how> |
 | Date and timezone, start/end | `greenfield`: 2026-10-16T07:53:00.414Z → 2026-10-16T07:54:47.961Z (CLI-recorded); `brownfield`: 2026-10-16T07:55:16.972Z → 2026-10-16T07:55:46.769Z (CLI-recorded); `documentation`: 2026-10-16T07:56:19.505Z → 2026-10-16T07:56:42.308Z (CLI-recorded); filename date `2026-10-16` (argument). <to confirm — operator: your local timezone, and the start/end the operator saw — the mtimes are the machine clock reading when the files were written, not a clock the operator set> |
 | Running agent, model and version | <to confirm — operator: agent product, model and version; session ids> |
