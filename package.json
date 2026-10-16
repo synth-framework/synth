@@ -90,6 +90,7 @@
     "test:continuous-publication": "node scripts/task-adapter-shim.js test:continuous-publication",
     "test:first-contact-patterns": "node scripts/task-adapter-shim.js test:first-contact-patterns",
     "test:first-contact-quickstart": "node scripts/task-adapter-shim.js test:first-contact-quickstart",
+    "test:guided-source-excerpts": "node scripts/task-adapter-shim.js test:guided-source-excerpts",
     "test:first-contact-archive-a": "node scripts/task-adapter-shim.js test:first-contact-archive-a",
     "test:brownfield": "node scripts/task-adapter-shim.js test:brownfield",
     "test:adoption-validation": "node scripts/task-adapter-shim.js test:adoption-validation",

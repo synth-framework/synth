@@ -9,6 +9,7 @@
 
 import { resolveSynthCli } from "../distribution/cli-path.js"
 import fs from "fs/promises"
+import { constants as fsConstants } from "node:fs"
 import { spawn, execSync } from "child_process"
 import path from "path"
 import * as sdk from "../sdk/index.js"
@@ -200,27 +201,39 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     await appendTranscript(process.cwd(), newEntries)
 
     const nextClarification = clarify(updatedArtifact, strategy)
+    const sourceHandoff = await previewSourceHandoff(process.cwd())
     printJson({
       status: "ok",
       kind: "FirstContactClarificationApplied",
       field: answerField,
       draftPath: updatedPath,
+      sourceHandoff,
+      sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
+      readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts.",
       canApprove: nextClarification.canApprove,
       remainingQuestions: nextClarification.questions.length,
-      nextStep: nextClarification.canApprove ? "synth first-contact project" : "synth first-contact clarify",
+      nextStep: sourceHandoff.selectionRequired
+        ? "Review docs/ and knowledge/; choose the intended sources and resolve material conflicts with the operator."
+        : nextClarification.canApprove ? "synth first-contact project" : "synth first-contact clarify",
     })
     return
   }
 
   const clarification = clarify(draft.artifact, strategy)
+  const sourceHandoff = await previewSourceHandoff(process.cwd())
   printJson({
     status: "ok",
     kind: "FirstContactClarification",
+    sourceHandoff,
+    sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
+    readinessScope: "canApprove covers structured draft fields only; it does not establish agreement with source excerpts.",
     draftPath: artifactDraftPaths(process.cwd()).draftPath,
     canApprove: clarification.canApprove,
     ambiguities: clarification.ambiguities,
     questions: clarification.questions,
-    nextStep: clarification.canApprove ? "synth first-contact project" : "synth first-contact clarify --field <field> --answer <answer>",
+    nextStep: sourceHandoff.selectionRequired
+      ? "Review docs/ and knowledge/; choose the intended sources and resolve material conflicts with the operator."
+      : clarification.canApprove ? "synth first-contact project" : "synth first-contact clarify --field <field> --answer <answer>",
   })
 }
 
@@ -688,39 +701,68 @@ function buildOnboardPlan(
   return base
 }
 
-// A read-only input inventory for the onboarding preview. It is intentionally
-// not a parser or an approval gate: a path is not evidence that its contents
-// were understood, and conflicting sources still need a human decision.
-async function previewSourceHandoff(targetDir: string): Promise<{
+// A bounded, live source preview for onboarding and clarification. Quotes are
+// evidence for an agent/operator to inspect, not parsed requirements or choices.
+type SourceExcerpt = {
+  path: string
+  lines: Array<{ number: number; text: string }>
+  truncated: boolean
+}
+type SourceHandoff = {
   sourceStatus: "not-ingested"
   files: string[]
   truncated: boolean
+  excerpts: SourceExcerpt[]
+  excerptLimitReached: boolean
+  warnings: string[]
   selectionRequired: boolean
   nextSteps: string[]
   notice: string
-}> {
+}
+
+async function previewSourceHandoff(targetDir: string): Promise<SourceHandoff> {
   const files: string[] = []
   const roots = ["docs", "knowledge", "src", "tests"] as const
   const found = new Set<string>()
+  const warnings: string[] = []
+  const warn = (message: string): void => {
+    if (warnings.length < 12) warnings.push(message)
+    else if (warnings.length === 12) warnings.push("Additional source warnings omitted.")
+  }
   let truncated = false
+  let documentRootsPresent = false
   for (const root of roots) {
     let count = 0
+    let rootStat
+    try { rootStat = await fs.lstat(path.join(targetDir, root)) } catch { continue }
+    if (root === "docs" || root === "knowledge") documentRootsPresent = true
+    if (!rootStat.isDirectory()) {
+      warn(`${root}/ was skipped: not a regular directory (symlinks are not followed).`)
+      continue
+    }
     const visit = async (relative: string, depth: number): Promise<void> => {
       if (count >= 24) { truncated = true; return }
       let entries
       try {
         entries = await fs.readdir(path.join(targetDir, relative), { withFileTypes: true })
-      } catch { return }
+      } catch {
+        warn(`${relative}/ could not be read.`)
+        return
+      }
       for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
         if (count >= 24) { truncated = true; break }
         if (entry.name.startsWith(".") || entry.name === "generated" || entry.name === "node_modules") continue
         const name = `${relative}/${entry.name}`
-        if (entry.isDirectory()) {
+        if (entry.isSymbolicLink()) {
+          warn(`${name} was skipped: symlinks are not followed.`)
+        } else if (entry.isDirectory()) {
           if (depth < 3) await visit(name, depth + 1)
           else truncated = true
         } else if (entry.isFile() && /\.(md|mdx|json|js|jsx|ts|tsx)$/i.test(entry.name)) {
           files.push(name)
           count++
+        } else if (entry.isFile() && (root === "docs" || root === "knowledge")) {
+          warn(`${name} was skipped: unsupported source format.`)
         }
       }
     }
@@ -728,22 +770,79 @@ async function previewSourceHandoff(targetDir: string): Promise<{
     if (count > 0) found.add(root)
   }
   try {
-    if ((await fs.stat(path.join(targetDir, "package.json"))).isFile()) {
+    const rootPackage = await fs.lstat(path.join(targetDir, "package.json"))
+    if (rootPackage.isFile()) {
       files.push("package.json")
       found.add("package.json")
-    }
+    } else warn("package.json was skipped: not a regular file.")
   } catch { /* absent */ }
+  if (documentRootsPresent && !found.has("docs") && !found.has("knowledge")) {
+    warn("Documentation roots contain no supported readable sources; supply Markdown or JSON, or identify another input before treating the project as understood.")
+  }
+  files.sort()
+
+  // Reserve one quote per populated input kind before filling the remaining
+  // slots: a large docs/ tree must not hide the only knowledge/ contradiction
+  // or the existing renderer. Line numbers refer to the file, not a summary.
+  const selected: string[] = []
+  for (const root of ["docs/", "knowledge/", "src/", "tests/", "package.json"]) {
+    const match = files.find((file) => root === "package.json" ? file === root : file.startsWith(root))
+    if (match) selected.push(match)
+  }
+  for (const file of files) {
+    if (selected.length >= 8) break
+    if (!selected.includes(file)) selected.push(file)
+  }
+  const excerpts: SourceExcerpt[] = []
+  for (const relative of selected) {
+    let handle
+    try {
+      handle = await fs.open(path.join(targetDir, relative), fsConstants.O_RDONLY | (fsConstants.O_NOFOLLOW ?? 0))
+      if (!(await handle.stat()).isFile()) throw new Error("not a regular file")
+      const buffer = Buffer.alloc(4097)
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0)
+      const contents = buffer.subarray(0, Math.min(bytesRead, 4096))
+      if (contents.includes(0)) {
+        warn(`${relative} was skipped: binary content.`)
+        continue
+      }
+      const lines = contents.toString("utf8").split(/\r?\n/)
+      if (lines.at(-1) === "") lines.pop()
+      let clipped = bytesRead > 4096 || lines.length > 12
+      excerpts.push({
+        path: relative,
+        lines: lines.slice(0, 12).map((text, index) => {
+          if (text.length > 600) clipped = true
+          return { number: index + 1, text: text.slice(0, 600) }
+        }),
+        truncated: clipped,
+      })
+    } catch {
+      warn(`${relative} could not be previewed (the file may have changed).`)
+    } finally {
+      await handle?.close()
+    }
+  }
   const nextSteps: string[] = []
   if (["src", "tests", "package.json"].some((name) => found.has(name))) nextSteps.push("synth discover . --export")
-  if (found.has("docs")) nextSteps.push("synth docs generate --knowledge-base ./docs")
-  if (found.has("knowledge")) nextSteps.push("synth docs generate --knowledge-base ./knowledge")
+  for (const root of ["docs", "knowledge"] as const) {
+    if (!found.has(root)) continue
+    if (excerpts.some((excerpt) => excerpt.path.startsWith(`${root}/`))) {
+      nextSteps.push(`synth docs generate --knowledge-base ./${root}`)
+    } else {
+      warn(`No readable excerpt was obtained from ${root}/; check its source warnings before generation.`)
+    }
+  }
   return {
     sourceStatus: "not-ingested",
-    files: files.sort(),
+    files,
     truncated,
+    excerpts,
+    excerptLimitReached: files.length > 8,
+    warnings,
     selectionRequired: found.has("docs") && found.has("knowledge"),
     nextSteps,
-    notice: "Paths only: source contents, contradictions and decisions have not been reviewed. Select intended sources, inspect their evidence and resolve material conflicts with the operator before treating any brief as agreed.",
+    notice: "Quoted prefixes are live, partial source evidence, not parsed requirements. Sources have not been compared; material contradictions and choices require explicit human review before a brief can be called agreed.",
   }
 }
 
@@ -928,7 +1027,9 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
       // plan is not the same as agreeing to the project's product intent.
       nextStep: sourceHandoff?.selectionRequired
         ? "Review docs/ and knowledge/; choose the intended source before generating a brief."
-        : sourceHandoff?.nextSteps[0] ?? plan.nextStep,
+        : sourceHandoff?.nextSteps[0] ?? (sourceHandoff?.warnings.length
+          ? "Review source warnings; provide readable inputs before treating this project as understood."
+          : plan.nextStep),
       ...(sourceHandoff ? { sourceHandoff } : {}),
       taskPlan,
       note: dryRun

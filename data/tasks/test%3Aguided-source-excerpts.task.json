@@ -1,0 +1,11 @@
+{
+  "id": "test:guided-source-excerpts",
+  "description": "Check bounded read-only source quotes in first-contact onboarding and clarification against synthetic three-path fixtures",
+  "command": "node tests/guided-source-excerpts.test.js",
+  "group": "runtime",
+  "dependsOn": [],
+  "tags": ["runtime", "test"],
+  "estimatedDurationMs": 10000,
+  "capabilities": [],
+  "lifecycle": "accepted"
+}
