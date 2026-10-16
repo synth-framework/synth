@@ -416,7 +416,7 @@ async function main(argv) {
   const runCapture = (command, args, cwd) => spawnSync(command, args, { cwd, encoding: 'utf-8' })
 
   await fs.mkdir(workspace, { recursive: true })
-  for (const dir of [layout.harness, layout.pack, layout.globalPrefix, layout.transcripts, layout.kickoff, layout.instructions]) {
+  for (const dir of [layout.harness, layout.pack, layout.globalPrefix, layout.transcripts, layout.kickoff, layout.instructions, layout.fixtures]) {
     await fs.mkdir(dir, { recursive: true })
   }
 
@@ -571,6 +571,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     .then((code) => process.exit(code))
     .catch((error) => {
       console.error(`Setup failed: ${error.message}`)
+      const workspace = process.argv.includes('--workspace') ? process.argv[process.argv.indexOf('--workspace') + 1] : '<workspace>'
+      console.error(`Partial state, if any, is left under ${workspace} for diagnosis. Retry in a fresh empty workspace.`)
       process.exit(1)
     })
 }
