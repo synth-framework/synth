@@ -82,6 +82,8 @@ Read INSTRUCTIONS.md in the root of this workspace and follow it.
 
 Nothing on the machine announces SYNTH: there is no skill, plugin, hook, MCP server or background service that would let the agent infer that a CLI called `synth` exists, is installed, or is relevant to this work — and no file outside the trial workspace refers to it. An agent that is told only "follow the instructions" is free to invent an ordinary process and skip the tool entirely, which would quietly turn the guided condition into a second plain run. So the guided hand-off states the tool, its install name and the first command in the operator's own words, and `INSTRUCTIONS.md` states it again as its opening paragraph. This is also why the setup banner refuses to look neutral: it prints the line for the condition it just staged and says what must not be added.
 
+**The setup log is the operator's, not the agent's input.** The banner prints the tested revision, and a branch name or commit subject can itself spell the tool's name — this working branch is `arena/f3c711cb-synth`, for example. That is harmless on the operator's screen, but it means the setup output must never go into a plain TEST_PATH, into a plain evidence bundle the agent reads, or onto a screen the agent shares. Keep it with the operator's notes, and prefer a revision whose branch and subject are neutral for a plain run.
+
 The hand-off stays manual, and it is deliberately small — see [the known gap](#known-gap-no-auto-feed-initialization-command). The agent reads the staged instruction file, works through the tests present one directory at a time, and in the guided condition starts each test with SYNTH's own initialization process:
 
 ```bash
@@ -227,8 +229,8 @@ An outside reviewer should be able to reproduce the same comparison from the rec
 | 7 | Pre-registration | Protocol, time box, expected observations and stop conditions fixed before the first session. | This document + the filled-in §1 of the template, committed or time-stamped first |
 | 8 | Raw evidence | Verbatim transcripts, wall-clock per test, and an intervention log. No retroactive tidying. | Transcript files; interventions with exact wording |
 | 9 | Artifact pinning | The installed tarball, not a repository build, is what ran; the revision is the checkout's committed HEAD. | `<staging>/transcripts/tarball.sha256`, `version.json`, `cli-manifest.json` |
-| 10 | Condition integrity | No invented human words; guided offers end `awaiting-response`; no lifecycle command; no push. | Session transcripts and §6 of the template |
-| 11 | Operator non-coaching | Any help beyond the one launch line is logged as an intervention verbatim. | Intervention log |
+| 10 | Condition integrity | No invented human words; guided offers end `awaiting-response`; no lifecycle command; no push; the guided session is launched with a line that names the tool, the plain one with a line that does not, and no setup log or evidence bundle enters a plain TEST_PATH. | Session transcripts, the verbatim launch lines and §6 of the template |
+| 11 | Operator non-coaching | Any help beyond the one launch line is logged as an intervention verbatim — including any reminder that the tool exists. | Intervention log |
 
 What a compliant run still does **not** establish: owner value, real-user comprehension, team adoption, delivery, production readiness, or that a human confirmed any response. One agent, one model build, one run per condition remains a diagnostic — it can support "keep as is" or "simplify", not a population claim.
 

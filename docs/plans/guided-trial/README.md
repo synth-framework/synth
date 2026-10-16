@@ -55,7 +55,7 @@ Task text and fixture bytes are single-sourced in `scripts/lib/guided-trial-fixt
    Read INSTRUCTIONS.md in the root of this workspace and follow it.
    ```
 
-   The guided line names the tool because nothing on the machine announces it — no skill, plugin or service — so the operator's sentence is how the agent learns SYNTH exists. The plain line must never name it.
+   The guided line names the tool because nothing on the machine announces it — no skill, plugin or service — so the operator's sentence is how the agent learns SYNTH exists. The plain line must never name it, and the setup log itself must never go into a plain TEST_PATH: the banner prints the tested revision, whose branch or subject can spell the tool's name.
 3. Log verbatim any help you give beyond that line.
 
 For the plain comparison use a separate TEST_PATH whose path does not spell the tool's name and add `--condition plain`; a session must never see both conditions. Optional: `--stage-only` warms the CLI cache without creating TEST_PATH.

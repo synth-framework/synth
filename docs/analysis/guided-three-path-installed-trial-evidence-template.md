@@ -129,6 +129,7 @@ Fill one block per case and condition. Required cases produce six blocks; option
 - Total operator effort and whether it exceeded the time box: `<...>`.
 - Was setup run before the cells by the same agent that ran them? `<yes/no + which cells>`.
 - Any auto-feed: `none — the agent was launched by hand with a line that names SYNTH, as the current CLI requires; no skill, plugin or service announces the tool`.
+- Setup log: `<kept with the operator's notes / path>` — confirm it never entered a plain TEST_PATH (it prints the tested revision, whose branch or subject can spell the tool's name).
 
 ## 7. What this evidence does and does not support
 

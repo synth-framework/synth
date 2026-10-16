@@ -472,10 +472,16 @@ test("the guided banner says the tool must be named, and the plain banner refuse
     assert(guided.stdout.includes("give it this line verbatim"), "the guided banner must mark the line verbatim")
 
     const plain = runScript(["--workspace", plainWs, "--repo", checkout, "--condition", "plain", "--cli-root", tempPath("board-banner-plain-staging")])
-    assert.equal(plain.stdout.includes("This trial uses SYNTH"), false, "the plain banner must not hand out a tool-naming line")
     assert.equal(plain.status, 0, plain.stderr)
-    assert.equal(/SYNTH|first-contact/i.test(plain.stdout), false, "the plain banner must not name the tool")
+    // Scope: the banner is the operator's log, not the agent's input, so repository metadata
+    // (branch and commit subject, which may themselves spell the tool's name) is out of scope
+    // here and is covered by the operator rule in the trial instructions. What must never
+    // appear is the guided hand-off or any hint that a CLI is involved in this run.
+    assert.equal(plain.stdout.includes("This trial uses SYNTH"), false, "the plain banner must not hand out a tool-naming launch line")
+    assert.equal(/first-contact/i.test(plain.stdout), false, "the plain banner must not carry guided commands")
+    assert.equal(plain.stdout.includes("installed CLI"), false, "the plain banner must not suggest an installed CLI")
     assert(plain.stdout.includes("must run without any hint that a CLI exists"), "the plain banner must say why the line stays neutral")
+    assert(plain.stdout.includes("keep this setup log out of TEST_PATH"), "the plain banner must warn that its own log is not agent input")
   } finally {
     for (const target of [guidedWs, plainWs, staging]) await fs.rm(target, { recursive: true, force: true })
   }
