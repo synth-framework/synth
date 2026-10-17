@@ -46,6 +46,11 @@ await withTempDir("synth-source-brief-", async (cwd) => {
   }
   const offered = call(["clarify", "--source-offer", "offer.json"], cwd)
   assert(offered.offer.question === proposal().question && offered.offer.options.length === 2, "store the offered question and exact options")
+  assert(offered.workingBrief?.status === "awaiting-response" && offered.workingBrief.offerId === offered.offer.id,
+    "source-offer command emits awaiting-response workingBrief directly")
+  const storedAfterOffer = JSON.parse(await fs.readFile(path.join(cwd, ".synth", "first-contact", "draft.json"), "utf8"))
+  assert(storedAfterOffer.workingBrief?.status === "awaiting-response" && storedAfterOffer.workingBrief.offerId === offered.offer.id,
+    "draft.json persists awaiting-response workingBrief where it can be read rather than derived")
   await fs.writeFile(offerPath, JSON.stringify({ ...proposal("Boards must remain local-only."), question: "A later edited question" }))
   assert(call(["status"], cwd).sourceOffers[0].question === offered.offer.question, "editing the input file cannot rewrite the original offer")
   assert(offered.offer.options[0].source.sha256.length === 64, "pin quoted source file identity")
@@ -54,6 +59,9 @@ await withTempDir("synth-source-brief-", async (cwd) => {
   assert(bad.status !== 0 && call(["status"], cwd).sourceAnswers.length === 0, "invalid selection must not write")
   const answered = call(["clarify", "--source-answer", offered.offer.id, "--selection", "local", "--human-response", "Synthetic respondent: start local-only; revisit sharing later"], cwd)
   assert(answered.answer.attribution === "cli-response-unverified" && answered.answer.response.includes("revisit sharing"), "preserve exact supplied words without authenticating a human")
+  const storedAfterAnswer = JSON.parse(await fs.readFile(path.join(cwd, ".synth", "first-contact", "draft.json"), "utf8"))
+  assert(storedAfterAnswer.workingBrief?.status === "provisional-unverified" && storedAfterAnswer.workingBrief.answerId === answered.answer.id,
+    "draft.json persists answered workingBrief state directly")
   let brief = call(["status"], cwd).workingBrief
   assert(brief.status === "provisional-unverified" && brief.proposedSelection === "local" && brief.acceptanceExample.includes("offline export"), "brief is scoped, not a frozen spec or approved plan")
   assert(brief.sourceFreshness === "current" && brief.offerId === offered.offer.id && brief.version === 1, "tie projection to stored offer and source evidence")

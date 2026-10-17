@@ -43,6 +43,7 @@ interface DraftEnvelope {
   choiceReviews?: ChoiceReview[]
   sourceOffers?: SourceOffer[]
   sourceAnswers?: SourceAnswer[]
+  workingBrief?: Awaited<ReturnType<typeof workingBrief>>
   updatedAt: string
 }
 
@@ -105,15 +106,19 @@ async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices
   // erase an open agent choice. Its originIntent keeps earlier scope visible.
   const prior = await tryReadDraft(cwd)
   await ensureFirstContactDir(cwd)
+  const resolvedJourneyId = journeyId ?? prior?.journeyId ?? uuid()
+  const resolvedOffers = offers ?? prior?.sourceOffers ?? []
+  const resolvedAnswers = answers ?? prior?.sourceAnswers ?? []
   const envelope: DraftEnvelope = {
     schema: "synth-first-contact-draft-v1",
     status: DRAFT_STATUS,
     artifact,
-    journeyId: journeyId ?? prior?.journeyId ?? uuid(),
+    journeyId: resolvedJourneyId,
     openAgentChoices: choices ?? prior?.openAgentChoices ?? [],
     choiceReviews: reviews ?? prior?.choiceReviews ?? [],
-    sourceOffers: offers ?? prior?.sourceOffers ?? [],
-    sourceAnswers: answers ?? prior?.sourceAnswers ?? [],
+    sourceOffers: resolvedOffers,
+    sourceAnswers: resolvedAnswers,
+    workingBrief: await workingBrief(cwd, resolvedJourneyId, resolvedOffers, resolvedAnswers),
     updatedAt: nowIso(),
   }
   await sdk.json.writeJsonNewline(draftPath, envelope)
@@ -273,6 +278,7 @@ export async function cmdFirstContactStart(args: string[], flags: Record<string,
     unknowns: artifact.unknowns,
     openAgentChoices: persisted.openAgentChoices ?? [],
     choiceReviews: persisted.choiceReviews ?? [],
+    workingBrief: persisted.workingBrief,
     nextStep: "synth first-contact clarify",
   })
 }
@@ -295,9 +301,11 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     const entry: TranscriptEntry = { turn: (draft.artifact.transcript.at(-1)?.turn ?? 0) + 1, actor: "agent",
       type: "proposal", content: `Source offer ${offer.id}: ${offer.question}`, timestamp: offer.offeredAt }
     const updated = { ...draft.artifact, transcript: [...draft.artifact.transcript, entry] }
-    const draftPath = await writeDraft(process.cwd(), updated, undefined, undefined, undefined, [...(draft.sourceOffers ?? []), offer])
+    const nextOffers = [...(draft.sourceOffers ?? []), offer]
+    const draftPath = await writeDraft(process.cwd(), updated, undefined, undefined, undefined, nextOffers)
     await appendTranscript(process.cwd(), [entry])
     printJson({ status: "ok", kind: "FirstContactSourceOfferRecorded", offer, draftPath,
+      workingBrief: await workingBrief(process.cwd(), draft.journeyId, nextOffers, draft.sourceAnswers ?? []),
       note: "This is an agent-authored offer citing the recorded operator request or verified live file lines; citations do not prove interpretation or that the offer was shown to a human." })
     return
   }
