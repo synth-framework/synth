@@ -38,6 +38,42 @@ export interface SourceAnswer {
   answeredAt: string
   attribution: "cli-response-unverified"
 }
+export interface WorkingBriefCommitment {
+  scope: string
+  question: string
+  option: SourceOption
+  version: number
+  offerId: string
+  answerId: string
+  supersedesOfferId?: string
+  status: "provisional-unverified"
+  proposedSelection: string
+  response: string
+  acceptanceExample: string
+  source: SourceCitation
+  sourceFreshness: "current" | "stale" | "unavailable"
+}
+
+export interface WorkingBriefRevision {
+  version: number
+  offerId: string
+  answerId?: string
+  supersedesOfferId?: string
+  supersededByOfferId?: string
+  superseded: boolean
+  scope: string
+  question: string
+  option: SourceOption | null
+  commitment: { scope: string; question: string; option: SourceOption } | null
+  status: "awaiting-response" | "provisional-unverified" | "deferred-unverified" | "unresolved-unverified"
+  proposedSelection?: string
+  response?: string
+  acceptanceExample?: string
+  source?: SourceCitation
+  sourceFreshness: "current" | "stale" | "unavailable"
+  offeredAt: string
+  answeredAt?: string
+}
 
 function string(value: unknown, label: string): string {
   if (typeof value !== "string" || !value.trim() || value.length > 2000) throw new Error(`${label} must be nonempty text up to 2000 characters.`)
@@ -74,21 +110,28 @@ async function regularWorkspaceFile(cwd: string, relative: string, maxBytes: num
   }
 }
 
+async function citationFreshness(cwd: string, offer: SourceOffer, citation: SourceCitation): Promise<"current" | "stale" | "unavailable"> {
+  if (citation.kind === "operator-intent") {
+    if (!offer.originIntent || citation.quote !== offer.originIntent ||
+        createHash("sha256").update(offer.originIntent).digest("hex") !== citation.sha256) return "stale"
+    return "current"
+  }
+  try {
+    const content = await regularWorkspaceFile(cwd, citation.path, 64 * 1024)
+    if (createHash("sha256").update(content).digest("hex") !== citation.sha256 ||
+        content.split(/\r?\n/)[citation.line - 1] !== citation.quote) return "stale"
+    return "current"
+  } catch {
+    return "unavailable"
+  }
+}
+
 export async function sourceFreshness(cwd: string, offer: SourceOffer): Promise<"current" | "stale" | "unavailable"> {
   let status: "current" | "stale" | "unavailable" = "current"
   for (const option of offer.options) {
-    if (option.source.kind === "operator-intent") {
-      if (!offer.originIntent || option.source.quote !== offer.originIntent ||
-          createHash("sha256").update(offer.originIntent).digest("hex") !== option.source.sha256) status = "stale"
-      continue
-    }
-    try {
-      const content = await regularWorkspaceFile(cwd, option.source.path, 64 * 1024)
-      if (createHash("sha256").update(content).digest("hex") !== option.source.sha256 ||
-          content.split(/\r?\n/)[option.source.line - 1] !== option.source.quote) status = "stale"
-    } catch {
-      return "unavailable"
-    }
+    const check = await citationFreshness(cwd, offer, option.source)
+    if (check === "unavailable") return "unavailable"
+    if (check === "stale") status = "stale"
   }
   return status
 }
@@ -99,9 +142,14 @@ export async function createSourceOffer(cwd: string, proposalFile: string, journ
   const scope = string(proposal.scope, "scope")
   const question = string(proposal.question, "question")
   const prior = earlier.filter((item) => item.journeyId === journeyId)
+  const sameScope = prior.filter((item) => item.scope === scope)
   const supersedesOfferId = proposal.supersedesOfferId
-  if (prior.length && supersedesOfferId !== prior.at(-1)?.id) throw new Error("A revision must supersede the latest offer for this journey.")
-  if (!prior.length && supersedesOfferId !== undefined) throw new Error("No earlier offer can be superseded in this journey.")
+  if (sameScope.length && supersedesOfferId !== sameScope.at(-1)?.id) throw new Error("A revision must supersede the latest offer for the same scope in this journey.")
+  if (!sameScope.length && supersedesOfferId !== undefined) {
+    throw new Error(prior.length
+      ? "A new scope must not set supersedesOfferId; omit supersedesOfferId when introducing a new scope."
+      : "No earlier offer can be superseded in this journey.")
+  }
   if (!Array.isArray(proposal.options) || proposal.options.length < 2 || proposal.options.length > 4) {
     throw new Error("A source offer needs two to four explicit options.")
   }
@@ -155,17 +203,74 @@ export function createSourceAnswer(offer: SourceOffer, selection: string | undef
 }
 
 export async function workingBrief(cwd: string, journeyId: string | undefined, offers: SourceOffer[], answers: SourceAnswer[]) {
-  const offer = offers.filter((item) => item.journeyId === journeyId).at(-1)
-  if (!offer) return { status: "no-source-offer" as const }
-  const answer = answers.find((item) => item.offerId === offer.id)
-  const option = answer?.proposedSelection === "defer" ? undefined : offer.options.find((item) => item.id === answer?.proposedSelection)
+  const journeyOffers = offers.filter((item) => item.journeyId === journeyId)
+  if (!journeyOffers.length) return { status: "no-source-offer" as const, revisions: [] as WorkingBriefRevision[], commitments: [] as WorkingBriefCommitment[] }
+  const supersededBy = new Map<string, string>()
+  for (const item of journeyOffers) {
+    if (item.supersedesOfferId) supersededBy.set(item.supersedesOfferId, item.id)
+  }
+  const revisions: WorkingBriefRevision[] = []
+  for (const item of journeyOffers) {
+    const answer = answers.find((entry) => entry.offerId === item.id)
+    const option = answer?.proposedSelection === "defer" ? undefined : item.options.find((opt) => opt.id === answer?.proposedSelection)
+    const status = !answer ? "awaiting-response" as const : answer.proposedSelection === "defer" ? "deferred-unverified" as const :
+      option ? "provisional-unverified" as const : "unresolved-unverified" as const
+    const freshness = option ? await citationFreshness(cwd, item, option.source) : await sourceFreshness(cwd, item)
+    const supersededByOfferId = supersededBy.get(item.id)
+    revisions.push({
+      version: item.version,
+      offerId: item.id,
+      ...(answer?.id ? { answerId: answer.id } : {}),
+      ...(item.supersedesOfferId ? { supersedesOfferId: item.supersedesOfferId } : {}),
+      ...(supersededByOfferId ? { supersededByOfferId } : {}),
+      superseded: Boolean(supersededByOfferId),
+      scope: item.scope,
+      question: item.question,
+      option: option ?? null,
+      commitment: option ? { scope: item.scope, question: item.question, option } : null,
+      status,
+      ...(answer?.proposedSelection !== undefined ? { proposedSelection: answer.proposedSelection } : {}),
+      ...(answer?.response !== undefined ? { response: answer.response } : {}),
+      ...(option?.acceptanceExample !== undefined ? { acceptanceExample: option.acceptanceExample } : {}),
+      ...(option?.source !== undefined ? { source: option.source } : {}),
+      sourceFreshness: freshness,
+      offeredAt: item.offeredAt,
+      ...(answer?.answeredAt !== undefined ? { answeredAt: answer.answeredAt } : {}),
+    })
+  }
+  const commitments: WorkingBriefCommitment[] = revisions
+    .filter((rev): rev is WorkingBriefRevision & { option: SourceOption; answerId: string; proposedSelection: string; response: string; acceptanceExample: string; source: SourceCitation; status: "provisional-unverified" } =>
+      !rev.superseded && rev.status === "provisional-unverified" && rev.option !== null && typeof rev.answerId === "string")
+    .map((rev) => ({
+      scope: rev.scope,
+      question: rev.question,
+      option: rev.option,
+      version: rev.version,
+      offerId: rev.offerId,
+      answerId: rev.answerId,
+      ...(rev.supersedesOfferId ? { supersedesOfferId: rev.supersedesOfferId } : {}),
+      status: "provisional-unverified" as const,
+      proposedSelection: rev.proposedSelection,
+      response: rev.response,
+      acceptanceExample: rev.acceptanceExample,
+      source: rev.source,
+      sourceFreshness: rev.sourceFreshness,
+    }))
+  const latest = revisions.at(-1)!
   return {
-    status: !answer ? "awaiting-response" as const : answer.proposedSelection === "defer" ? "deferred-unverified" as const :
-      option ? "provisional-unverified" as const : "unresolved-unverified" as const,
-    version: offer.version, offerId: offer.id, answerId: answer?.id,
-    scope: offer.scope, question: offer.question, proposedSelection: answer?.proposedSelection,
-    acceptanceExample: option?.acceptanceExample, source: option?.source,
-    sourceFreshness: await sourceFreshness(cwd, offer),
+    status: latest.status,
+    version: latest.version,
+    offerId: latest.offerId,
+    answerId: latest.answerId,
+    scope: latest.scope,
+    question: latest.question,
+    option: latest.option,
+    proposedSelection: latest.proposedSelection,
+    acceptanceExample: latest.acceptanceExample,
+    source: latest.source,
+    sourceFreshness: latest.sourceFreshness,
+    commitments,
+    revisions,
     note: "Agent-authored options and CLI-supplied responses are not authenticated human agreement. This is a scoped working-brief proposal, not an approved plan or check result.",
   }
 }

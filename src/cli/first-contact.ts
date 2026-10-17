@@ -315,8 +315,10 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
         flags["agent-choice"] !== undefined || flags["review-choice"] !== undefined) {
       printError("--source-answer <id> requires --human-response <supplied words>; use --selection <option-id|defer> only for a provisional mapping, or omit it for an unresolved response.")
     }
-    const offer = (draft.sourceOffers ?? []).filter((item) => item.journeyId === draft.journeyId).at(-1)
-    if (!offer || offer.id !== flags["source-answer"]) printError("Only the latest source offer for this journey may receive an answer.")
+    const journeyOffers = (draft.sourceOffers ?? []).filter((item) => item.journeyId === draft.journeyId)
+    const offer = journeyOffers.find((item) => item.id === flags["source-answer"])
+    const latestForScope = offer ? journeyOffers.filter((item) => item.scope === offer.scope).at(-1) : undefined
+    if (!offer || latestForScope?.id !== offer.id) printError("Only the latest source offer for its scope in this journey may receive an answer.")
     if (await sourceFreshness(process.cwd(), offer) !== "current") printError("Cited sources changed or are unavailable; revise the offer before recording an answer.")
     let answer: SourceAnswer
     try { answer = createSourceAnswer(offer, flags.selection, flags["human-response"], draft.sourceAnswers ?? []) }
