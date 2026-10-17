@@ -29,6 +29,8 @@ async function testDryRunOnEmptyDirectory() {
     assert(output.wouldCreate.includes(".synth/manifest.json"), "wouldCreate should include manifest")
     assert(output.sourceHandoff.sourceStatus === "not-ingested", "an empty workspace must not pretend it has source evidence")
     assert(output.sourceHandoff.files.length === 0 && output.sourceHandoff.nextSteps.length === 0, "greenfield should begin with the idea, not invented file paths")
+    assert(output.nextStep.includes("synth first-contact start") && output.nextStep.includes("--source-offer") && !output.nextStep.includes("--approve"),
+      `fresh greenfield nextStep should point to start/clarify offer, got ${output.nextStep}`)
 
     const files = await fs.readdir(tmpDir)
     assert(files.length === 0, "dry-run should not write files")
@@ -128,6 +130,8 @@ async function testApproveOnEmptyDirectory() {
     assert(await fs.access(manifestPath).then(() => true).catch(() => false), "manifest should be created")
     const manifest = JSON.parse(await fs.readFile(manifestPath, "utf-8"))
     assert(manifest.projectName === "Approved Test Project", "manifest projectName should match")
+    assert(typeof manifest.quickStart === "string" && manifest.quickStart.includes("clarify --source-offer") && !manifest.quickStart.includes("--approve"),
+      `manifest quickStart should guide through start and source-offer, got ${manifest.quickStart}`)
 
     // The authoritative event store is partitioned on current builds; a
     // monolithic event-log.jsonl is only a legacy fallback.

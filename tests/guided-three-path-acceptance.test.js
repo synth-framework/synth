@@ -21,10 +21,14 @@ async function offer(cwd, proposal) {
 const option = (id, source, label = id) => ({ id, label, tradeoff: `Trade-off for ${id}`, acceptanceExample: `Observe ${id}`, source })
 
 await test("greenfield: attribute the original idea, not an invented file citation", async () => withTempDir("synth-three-green-", async cwd => {
+  const dryRun = call(cwd, "--dry-run")
+  assert.match(dryRun.nextStep, /first-contact start .*clarify --source-offer/)
+  assert.doesNotMatch(dryRun.nextStep, /--approve/)
   const idea = "Build a small editable specimen-board tool; source format still undecided"
   call(cwd, "start", idea)
   const initial = call(cwd, "clarify")
   assert.equal(initial.sourceHandoff.files.length, 0)
+  assert.equal(initial.nextStep, "synth first-contact clarify --source-offer <file>")
   const proposal = { scope: "First input slice", question: "What should the first board take as input?", options: [
     option("drop", { kind: "operator-intent", quote: idea }, "Parse a dropped source file"),
     option("manual", { kind: "operator-intent", quote: idea }, "Start with manual entries"),
@@ -40,8 +44,10 @@ await test("greenfield: attribute the original idea, not an invented file citati
   assert.equal(offered.options[0].source.quote, idea)
   assert.equal(offered.options[0].source.path, undefined)
   assert.equal(offered.options[0].source.sha256, crypto.createHash("sha256").update(idea).digest("hex"))
-  assert.equal(call(cwd, "status").workingBrief.status, "awaiting-response")
-  assert.equal(call(cwd, "status").sourceOffers.length, 1, "a misattributed idea writes no offer")
+  const afterOfferStatus = call(cwd, "status")
+  assert.equal(afterOfferStatus.workingBrief.status, "awaiting-response")
+  assert.doesNotMatch(afterOfferStatus.nextStep, /\bsynth\b|(?:^|[\s`"'])(?:--approve|--selection|--human-response|-approve|materialize|mission\s+(?:build|approve|start)|expedition\s+(?:start|complete)|deliver|seal|git\s+push)(?=$|[\s`"',;])/i)
+  assert.equal(afterOfferStatus.sourceOffers.length, 1, "a misattributed idea writes no offer")
 }))
 
 await test("brownfield: executable baseline, code/test citations, bounded offer and no rewrite", async t => withTempDir("synth-three-brown-", async cwd => {

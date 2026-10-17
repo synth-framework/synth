@@ -70,6 +70,8 @@ async function testEmptyDirectoryDetected() {
     assert(output.repositoryAdapter, "plan should include repositoryAdapter")
     assert(output.repositoryAdapter.detected === "none", `detected should be none, got ${output.repositoryAdapter.detected}`)
     assert(output.repositoryAdapter.initialized === false, "initialized should be false")
+    assert(output.nextStep.includes("clarify --source-offer") && !output.nextStep.includes("--approve"),
+      `empty dry-run nextStep should point to guided clarify offer, got ${output.nextStep}`)
   })
   console.log("[PASS] synth first-contact --dry-run on empty directory surfaces no adapter")
 }

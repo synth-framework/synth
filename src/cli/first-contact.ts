@@ -444,6 +444,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
 
     const nextClarification = clarify(updatedArtifact, strategy)
     const sourceHandoff = await previewSourceHandoff(process.cwd())
+    const brief = await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], draft.sourceAnswers ?? [])
     printJson({
       status: "ok",
       kind: "FirstContactClarificationApplied",
@@ -453,19 +454,24 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
       sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
       openAgentChoices: draft.openAgentChoices ?? [],
       choiceReviews: draft.choiceReviews ?? [],
-      workingBrief: await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], draft.sourceAnswers ?? []),
+      workingBrief: brief,
       readinessScope: "canApprove covers structured draft fields only; it does not establish source-linked brief agreement or settle open agent choices.",
       canApprove: nextClarification.canApprove,
       remainingQuestions: nextClarification.questions.length,
       nextStep: sourceHandoff.selectionRequired
         ? "Review docs/ and knowledge/; choose the intended sources and resolve material conflicts with the operator."
-        : nextClarification.canApprove ? "synth first-contact project" : "synth first-contact clarify",
+        : brief.status === "no-source-offer"
+          ? "synth first-contact clarify --source-offer <file>"
+          : brief.status === "awaiting-response"
+            ? "Await operator response to the recorded source offer; no agent command should be run until the operator replies."
+            : nextClarification.canApprove ? "synth first-contact project" : "synth first-contact clarify",
     })
     return
   }
 
   const clarification = clarify(draft.artifact, strategy)
   const sourceHandoff = await previewSourceHandoff(process.cwd())
+  const brief = await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], draft.sourceAnswers ?? [])
   printJson({
     status: "ok",
     kind: "FirstContactClarification",
@@ -473,7 +479,7 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     sourceReviewStatus: sourceHandoff.files.length || sourceHandoff.warnings.length ? "unreviewed" : "no-sources",
     openAgentChoices: draft.openAgentChoices ?? [],
     choiceReviews: draft.choiceReviews ?? [],
-    workingBrief: await workingBrief(process.cwd(), draft.journeyId, draft.sourceOffers ?? [], draft.sourceAnswers ?? []),
+    workingBrief: brief,
     readinessScope: "canApprove covers structured draft fields only; it does not establish source-linked brief agreement or settle open agent choices.",
     draftPath: artifactDraftPaths(process.cwd()).draftPath,
     canApprove: clarification.canApprove,
@@ -481,7 +487,11 @@ export async function cmdFirstContactClarify(args: string[], flags: Record<strin
     questions: clarification.questions,
     nextStep: sourceHandoff.selectionRequired
       ? "Review docs/ and knowledge/; choose the intended sources and resolve material conflicts with the operator."
-      : clarification.canApprove ? "synth first-contact project" : "synth first-contact clarify --field <field> --answer <answer>",
+      : brief.status === "no-source-offer"
+        ? "synth first-contact clarify --source-offer <file>"
+        : brief.status === "awaiting-response"
+          ? "Await operator response to the recorded source offer; no agent command should be run until the operator replies."
+          : clarification.canApprove ? "synth first-contact project" : "synth first-contact clarify --field <field> --answer <answer>",
   })
 }
 
@@ -732,6 +742,7 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     publication,
   }
 
+  const brief = await workingBrief(process.cwd(), draft?.journeyId, draft?.sourceOffers ?? [], draft?.sourceAnswers ?? [])
   printJson({
     status: "ok",
     kind: "FirstContactStatus",
@@ -748,14 +759,20 @@ export async function cmdFirstContactStatus(args: string[], flags: Record<string
     choiceReviewStatus: choiceReviewStatus(choices, reviews),
     sourceOffers: draft?.sourceOffers ?? [],
     sourceAnswers: draft?.sourceAnswers ?? [],
-    workingBrief: await workingBrief(process.cwd(), draft?.journeyId, draft?.sourceOffers ?? [], draft?.sourceAnswers ?? []),
+    workingBrief: brief,
     selectedArchitecture: currentApproved?.selectedArchitecture,
     artifactHash: currentApproved?.artifactHash,
     nextStep: currentApproved
       ? "synth first-contact materialize --dry-run"
-      : strategy?.canApprove
-        ? "synth first-contact project"
-        : "synth first-contact clarify",
+      : !draft
+        ? "synth first-contact start \"<intent>\""
+        : brief.status === "no-source-offer"
+          ? "synth first-contact clarify --source-offer <file>"
+          : brief.status === "awaiting-response"
+            ? "Await operator response to the recorded source offer; no agent command should be run until the operator replies."
+            : strategy?.canApprove
+              ? "synth first-contact project"
+              : "synth first-contact clarify",
   })
 }
 
@@ -966,7 +983,7 @@ function buildOnboardPlan(
         ".synth/data/canonical-state.json",
       ]
       base.wouldRun = ["synth init", "synth mission create", "synth mission approve"]
-      base.nextStep = "synth first-contact --approve"
+      base.nextStep = "synth first-contact start \"<intent>\" && synth first-contact clarify --source-offer <file>"
       break
     }
     case "brownfield": {
@@ -982,7 +999,7 @@ function buildOnboardPlan(
         "docs/reference/capability-validation-map.json",
       ]
       base.wouldRun = ["synth bootstrap --approve"]
-      base.nextStep = "synth first-contact --approve"
+      base.nextStep = "synth first-contact start \"<intent>\" && synth first-contact clarify --source-offer <file>"
       break
     }
     case "legacy": {
@@ -999,7 +1016,7 @@ function buildOnboardPlan(
         ".synth/data/canonical-state.json",
       ]
       base.wouldRun = ["mv .synth .synth_bk_<timestamp>", "synth bootstrap --approve"]
-      base.nextStep = "synth first-contact --approve"
+      base.nextStep = "synth first-contact start \"<intent>\" && synth first-contact clarify --source-offer <file>"
       break
     }
     case "initialized-v2": {
@@ -1222,7 +1239,7 @@ async function initializeEmptyProject(targetDir: string, projectName: string) {
     },
     publicVocabulary: ["Mission", "Expedition", "Evidence", "Plan", "Event", "State", "Replay"],
     govern: "npm run govern",
-    quickStart: "synth first-contact --approve && npm run govern",
+    quickStart: "synth first-contact start \"<intent>\" && synth first-contact clarify --source-offer <file>",
   }
 
   await sdk.json.writeJson(sdk.paths.manifestPath(targetDir), manifest)
@@ -1365,7 +1382,7 @@ export async function cmdFirstContactOnboard(args: string[], flags: Record<strin
       taskPlan,
       note: dryRun
         ? "Dry-run: no files were written."
-        : "Review the plan and run 'synth first-contact --approve' to apply.",
+        : "Review the plan and start a guided brief with 'synth first-contact start \"<intent>\"' and 'synth first-contact clarify --source-offer <file>' before applying governance.",
     })
     return
   }
@@ -1473,7 +1490,9 @@ export async function cmdFirstContactOnboardDetect(args: string[], flags: Record
     projectName,
     targetDir,
     repositoryAdapter,
-    nextStep: state.kind === "initialized-v2" ? "synth status" : "synth first-contact --approve",
+    nextStep: state.kind === "initialized-v2"
+      ? "synth status"
+      : "synth first-contact start \"<intent>\" && synth first-contact clarify --source-offer <file>",
   })
 }
 

@@ -21,6 +21,7 @@ await withTempDir("synth-guided-green-", async (cwd) => {
   const clarify = parseJson(runSynth(["first-contact", "clarify"], cwd).stdout)
   assert(clarify.sourceHandoff.excerpts.length === 0 && clarify.sourceReviewStatus === "no-sources", "greenfield must not invent repository facts")
   assert(clarify.questions.length > 0, "idea still needs clarification")
+  assert(clarify.nextStep === "synth first-contact clarify --source-offer <file>", `fresh journey clarify nextStep should point to source-offer, got ${clarify.nextStep}`)
 })
 
 await withTempDir("synth-guided-brown-", async (cwd) => {
