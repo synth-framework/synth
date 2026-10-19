@@ -28,7 +28,15 @@ await withTempDir("synth-source-brief-", async (cwd) => {
   })
   const offerPath = path.join(cwd, "offer.json")
   await fs.writeFile(offerPath, JSON.stringify(proposal("Boards must remain local-only.")))
-  call(["start", "Make editable specimen boards"], cwd)
+  const started = call(["start", "Make editable specimen boards"], cwd)
+  assert(started.workingBrief?.status === "no-source-offer" &&
+    Array.isArray(started.workingBrief.revisions) && started.workingBrief.revisions.length === 0 &&
+    Array.isArray(started.workingBrief.commitments) && started.workingBrief.commitments.length === 0,
+    "start returns the full read-time workingBrief projection with revisions and commitments")
+  const storedAfterStart = JSON.parse(await fs.readFile(path.join(cwd, ".synth", "first-contact", "draft.json"), "utf8"))
+  assert(storedAfterStart.workingBrief?.status === "no-source-offer" &&
+    storedAfterStart.workingBrief.revisions === undefined && storedAfterStart.workingBrief.commitments === undefined,
+    "draft.json after start persists only the workingBrief summary")
   const before = call(["clarify"], cwd)
   assert(before.sourceHandoff.selectionRequired && before.sourceReviewStatus === "unreviewed", "conflicting roots remain open")
   await fs.writeFile(offerPath, JSON.stringify(proposal("A fabricated quote")))

@@ -278,7 +278,7 @@ export async function cmdFirstContactStart(args: string[], flags: Record<string,
     unknowns: artifact.unknowns,
     openAgentChoices: persisted.openAgentChoices ?? [],
     choiceReviews: persisted.choiceReviews ?? [],
-    workingBrief: persisted.workingBrief,
+    workingBrief: await workingBrief(process.cwd(), persisted.journeyId, persisted.sourceOffers ?? [], persisted.sourceAnswers ?? []),
     nextStep: "synth first-contact clarify",
   })
 }
