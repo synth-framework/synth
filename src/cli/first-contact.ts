@@ -13,8 +13,8 @@ import { constants as fsConstants } from "node:fs"
 import { spawn, execSync, execFileSync } from "child_process"
 import path from "path"
 import { choiceDescription } from "../first-contact/review/pr-description.js"
-import { createSourceOffer, createSourceAnswer, sourceFreshness, workingBrief } from "../first-contact/source-brief.js"
-import type { SourceOffer, SourceAnswer } from "../first-contact/source-brief.js"
+import { createSourceOffer, createSourceAnswer, sourceFreshness, workingBrief, workingBriefSummary } from "../first-contact/source-brief.js"
+import type { PersistedWorkingBriefSummary, SourceOffer, SourceAnswer } from "../first-contact/source-brief.js"
 import { publishChoiceDescription, readChoiceReviews } from "./first-contact-pr.js"
 import * as sdk from "../sdk/index.js"
 
@@ -43,7 +43,7 @@ interface DraftEnvelope {
   choiceReviews?: ChoiceReview[]
   sourceOffers?: SourceOffer[]
   sourceAnswers?: SourceAnswer[]
-  workingBrief?: Awaited<ReturnType<typeof workingBrief>>
+  workingBrief?: PersistedWorkingBriefSummary
   updatedAt: string
 }
 
@@ -118,7 +118,7 @@ async function writeDraft(cwd: string, artifact: IntentExtractionResult, choices
     choiceReviews: reviews ?? prior?.choiceReviews ?? [],
     sourceOffers: resolvedOffers,
     sourceAnswers: resolvedAnswers,
-    workingBrief: await workingBrief(cwd, resolvedJourneyId, resolvedOffers, resolvedAnswers),
+    workingBrief: workingBriefSummary(resolvedJourneyId, resolvedOffers, resolvedAnswers),
     updatedAt: nowIso(),
   }
   await sdk.json.writeJsonNewline(draftPath, envelope)

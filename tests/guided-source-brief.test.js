@@ -51,6 +51,9 @@ await withTempDir("synth-source-brief-", async (cwd) => {
   const storedAfterOffer = JSON.parse(await fs.readFile(path.join(cwd, ".synth", "first-contact", "draft.json"), "utf8"))
   assert(storedAfterOffer.workingBrief?.status === "awaiting-response" && storedAfterOffer.workingBrief.offerId === offered.offer.id,
     "draft.json persists awaiting-response workingBrief where it can be read rather than derived")
+  assert(storedAfterOffer.workingBrief.revisions === undefined && storedAfterOffer.workingBrief.commitments === undefined &&
+    storedAfterOffer.workingBrief.sourceFreshness === undefined,
+    "draft.json persists only the capture summary without duplicating revisions, commitments, or live sourceFreshness")
   await fs.writeFile(offerPath, JSON.stringify({ ...proposal("Boards must remain local-only."), question: "A later edited question" }))
   assert(call(["status"], cwd).sourceOffers[0].question === offered.offer.question, "editing the input file cannot rewrite the original offer")
   assert(offered.offer.options[0].source.sha256.length === 64, "pin quoted source file identity")
@@ -62,6 +65,9 @@ await withTempDir("synth-source-brief-", async (cwd) => {
   const storedAfterAnswer = JSON.parse(await fs.readFile(path.join(cwd, ".synth", "first-contact", "draft.json"), "utf8"))
   assert(storedAfterAnswer.workingBrief?.status === "provisional-unverified" && storedAfterAnswer.workingBrief.answerId === answered.answer.id,
     "draft.json persists answered workingBrief state directly")
+  assert(storedAfterAnswer.workingBrief.revisions === undefined && storedAfterAnswer.workingBrief.commitments === undefined &&
+    storedAfterAnswer.workingBrief.sourceFreshness === undefined,
+    "draft.json summary never stores drift-prone revisions, commitments, or sourceFreshness")
   let brief = call(["status"], cwd).workingBrief
   assert(brief.status === "provisional-unverified" && brief.proposedSelection === "local" && brief.acceptanceExample.includes("offline export"), "brief is scoped, not a frozen spec or approved plan")
   assert(brief.sourceFreshness === "current" && brief.offerId === offered.offer.id && brief.version === 1, "tie projection to stored offer and source evidence")
@@ -73,6 +79,8 @@ await withTempDir("synth-source-brief-", async (cwd) => {
   assert(call(["status"], cwd).workingBrief.sourceFreshness === "current", "unrelated changes do not stale cited lines")
   await fs.writeFile(local, "# Product\nBoards may be exported locally, but can later sync.\n")
   assert(call(["status"], cwd).workingBrief.sourceFreshness === "stale", "edited cited source must not be called current")
+  const storedAfterSourceEdit = JSON.parse(await fs.readFile(path.join(cwd, ".synth", "first-contact", "draft.json"), "utf8"))
+  assert(storedAfterSourceEdit.workingBrief?.sourceFreshness === undefined, "draft.json workingBrief never holds a stale cached sourceFreshness")
   const oldOffers = call(["status"], cwd).sourceOffers
   await fs.writeFile(offerPath, JSON.stringify(proposal("Boards may be exported locally, but can later sync.", offered.offer.id)))
   const revised = call(["clarify", "--source-offer", "offer.json"], cwd)

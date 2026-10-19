@@ -75,6 +75,15 @@ export interface WorkingBriefRevision {
   answeredAt?: string
 }
 
+export interface PersistedWorkingBriefSummary {
+  status: "no-source-offer" | "awaiting-response" | "provisional-unverified" | "deferred-unverified" | "unresolved-unverified"
+  version?: number
+  offerId?: string
+  answerId?: string
+  scope?: string
+  proposedSelection?: string
+}
+
 function string(value: unknown, label: string): string {
   if (typeof value !== "string" || !value.trim() || value.length > 2000) throw new Error(`${label} must be nonempty text up to 2000 characters.`)
   return value // preserve the original wording; no paraphrase
@@ -200,6 +209,23 @@ export function createSourceAnswer(offer: SourceOffer, selection: string | undef
     ...(selection !== undefined ? { proposedSelection: selection } : {}),
     response: string(response, "supplied response"), answeredAt: new Date().toISOString(),
     attribution: "cli-response-unverified" }
+}
+
+export function workingBriefSummary(journeyId: string | undefined, offers: SourceOffer[], answers: SourceAnswer[]): PersistedWorkingBriefSummary {
+  const offer = offers.filter((item) => item.journeyId === journeyId).at(-1)
+  if (!offer) return { status: "no-source-offer" }
+  const answer = answers.find((entry) => entry.offerId === offer.id)
+  const option = answer?.proposedSelection === "defer" ? undefined : offer.options.find((opt) => opt.id === answer?.proposedSelection)
+  const status = !answer ? "awaiting-response" as const : answer.proposedSelection === "defer" ? "deferred-unverified" as const :
+    option ? "provisional-unverified" as const : "unresolved-unverified" as const
+  return {
+    status,
+    version: offer.version,
+    offerId: offer.id,
+    ...(answer?.id ? { answerId: answer.id } : {}),
+    scope: offer.scope,
+    ...(answer?.proposedSelection !== undefined ? { proposedSelection: answer.proposedSelection } : {}),
+  }
 }
 
 export async function workingBrief(cwd: string, journeyId: string | undefined, offers: SourceOffer[], answers: SourceAnswer[]) {
