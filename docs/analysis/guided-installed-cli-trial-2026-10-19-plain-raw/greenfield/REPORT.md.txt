@@ -1,0 +1,36 @@
+TEST: green — greenfield/
+
+COMMANDS:
+- (none beyond file reads) list directory contents: exit 0. greenfield/ contained no files at start and commands are not needed to answer the proposal question; no build/test commands exist here.
+
+APPROACH:
+1. Read INSTRUCTIONS.md and noted the required observation: questions/options about board kind, inputs, editing and validation; no invented GUI or stack; no automatic approval.
+2. Verified greenfield/ is empty (no starting inputs, no code, no docs), so there are no file citations possible; the only grounding is the task text.
+3. Rather than inventing an environment or building undecided behavior, wrote offer.json as a scope proposal plus the input-format decision as an explicit question with three options (A: JSON/object input, B: import from existing SVG artifacts, C: interactive editing), each with tradeoff, proof-of-work demonstration, and grounding.
+4. Wrote this report.
+
+OFFER:
+- Path: greenfield/offer.json
+- Question: what board input format must the exporter accept (object/JSON vs importing existing SVG documents vs interactive editing first)?
+- Options: 3 (A, B, C as above), with an informal recommendation of A, flagged as not a decision made by any person.
+
+CITATIONS:
+- Task text quoted verbatim in offer.json ("Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided."). Matches INSTRUCTIONS.md §3 table row for Greenfield exactly.
+- No file citations exist because greenfield/ is empty; I did not fabricate any.
+
+APPLICATION TESTS:
+- Not applicable (no project, no test command exists in this directory).
+
+ASSUMPTIONS:
+- Assumed the exporter is a library/script capability rather than a GUI; "no invented GUI or stack" pushed me away from proposing one.
+- Assumed "specimen-board" means a board presenting labeled specimen entries (name, position, fill); the task text alone does not define this precisely.
+
+STILL OPEN:
+- Input format decision (the question in offer.json) — requires the requester.
+- Whether "editable" must mean interactive editing or programmatic editability — same decision deferred.
+- What an existing SVG board document looks like (needed for option B) — no sample exists in the workspace.
+
+PROBLEMS:
+- None; the empty directory is simply a limit on grounding, which I report rather than paper over.
+
+EFFORT: ~10 minutes.

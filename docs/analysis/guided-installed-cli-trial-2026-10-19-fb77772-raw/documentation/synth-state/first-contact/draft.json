@@ -1,0 +1,147 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Continue from the requirements in docs/. The next slice is undecided.",
+      "goals": [],
+      "successCriteria": []
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.083,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 0,
+        "intent.successCriteria": 0,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Continue from the requirements in docs/. The next slice is undecided.",
+        "timestamp": "2026-10-19T10:52:24.673Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-4e174e03-4bf1-453d-8641-484a5afca317: Which slice is next, given that the interaction style for editing is still undecided: build export-from-local-data first, or block everything on the editing decision?",
+        "timestamp": "2026-10-19T10:52:54.543Z"
+      }
+    ]
+  },
+  "journeyId": "bf21ccb9-97a6-4664-a0c4-2b67bb9fa700",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-4e174e03-4bf1-453d-8641-484a5afca317",
+      "journeyId": "bf21ccb9-97a6-4664-a0c4-2b67bb9fa700",
+      "version": 1,
+      "scope": "Next slice continuing from docs/requirements.md: the already-given capacity — \"the first board exports one SVG from local data\" — is taken as settled context; this slice only decides which of the below candidate shapes editing-and-export takes. No GUI, stack, or persistence choice is invented here.",
+      "question": "Which slice is next, given that the interaction style for editing is still undecided: build export-from-local-data first, or block everything on the editing decision?",
+      "options": [
+        {
+          "id": "export-first",
+          "label": "Do the export slice now, editing untouched",
+          "tradeoff": "Delivers the only settled requirement (one SVG exported from local data) without guessing the undecided editing interaction. Costs: the editing slice lands later and may reshape some of the same output path; meanwhile no editing behavior exists at all, which 'Editing is requested' will eventually require.",
+          "acceptanceExample": "Given local data in the repository-described form, invoking the export routine produces exactly one SVG file; invoking again overwrites that one file rather than creating a second; no editing interface is shipped in this slice.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 1,
+            "quote": "The first board exports one SVG from local data.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        },
+        {
+          "id": "editing-decision-first",
+          "label": "Decide editing interaction before any slice",
+          "tradeoff": "Treats the undecided interaction as a blocker so the export path is designed once, with edit hooks in place from the start. Costs: 'The first board exports one SVG from local data' is already requested and would stay undelivered while waiting; the decision itself needs a person, per INSTRUCTIONS §5, so this option delivers nothing until a respondent answers.",
+          "acceptanceExample": "No running code in this slice; deliverable is a decision request naming the interaction-style options. Success condition: an operator records an interaction-style choice; export+editing work proceeds as one integrated slice afterward.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 2,
+            "quote": "Editing is requested, but its interaction style is undecided.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        },
+        {
+          "id": "export-plus-data-boundary",
+          "label": "Export slice with a data boundary reserved for editing",
+          "tradeoff": "Do the export slice now but keep the board model as a plain data structure handed to the exporter, so a later interaction slice plugs into that boundary without touching the SVG path. Costs: slightly more abstraction than the pure export slice, and the interaction style remains undecided — the boundary is reserved, not implemented.",
+          "acceptanceExample": "Same export acceptance as export-first, plus: the exporter consumes only a board data structure (no assumptions about where edits came from), verified by exporting one fixed board constructed directly in code with no editing step.",
+          "source": {
+            "path": "docs/requirements.md",
+            "line": 2,
+            "quote": "Editing is requested, but its interaction style is undecided.",
+            "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+          }
+        }
+      ],
+      "offeredAt": "2026-10-19T10:52:54.543Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "workingBrief": {
+    "status": "awaiting-response",
+    "version": 1,
+    "offerId": "offer-4e174e03-4bf1-453d-8641-484a5afca317",
+    "scope": "Next slice continuing from docs/requirements.md: the already-given capacity — \"the first board exports one SVG from local data\" — is taken as settled context; this slice only decides which of the below candidate shapes editing-and-export takes. No GUI, stack, or persistence choice is invented here."
+  },
+  "updatedAt": "2026-10-19T10:52:54.546Z"
+}

@@ -1,0 +1,149 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+      "goals": [
+        "build a small editable specimen-board exporter for our svg board utility board input"
+      ],
+      "successCriteria": [
+        "Users can a small editable specimen-board exporter for our svg board utility board input"
+      ]
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.25,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 1,
+        "intent.successCriteria": 1,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+        "timestamp": "2026-10-19T10:49:43.283Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-620a6956-1b41-4a44-acf0-b6a86beb307f: What board kind and editing model should the first slice support, and how strict should validation of the board input be?",
+        "timestamp": "2026-10-19T10:50:12.530Z"
+      }
+    ]
+  },
+  "journeyId": "3348fa11-a13e-4354-931b-9770efcd9bc3",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-620a6956-1b41-4a44-acf0-b6a86beb307f",
+      "journeyId": "3348fa11-a13e-4354-931b-9770efcd9bc3",
+      "version": 1,
+      "scope": "A small editable specimen-board exporter for our SVG board utility, limited to: (1) loading a board from an input format, (2) basic editing of board contents, (3) exporting a specimen board. Deliberately excludes any GUI design, framework choice, or persistence backend until the decisions below are made.",
+      "question": "What board kind and editing model should the first slice support, and how strict should validation of the board input be?",
+      "options": [
+        {
+          "id": "grid-strict",
+          "label": "Rectangular grid board, strict validation",
+          "tradeoff": "Smallest, most predictable first slice: the board is a fixed rectangular grid of cells, input is validated up front and rejected with clear errors, and editing is cell-by-cell. Costs: cannot represent irregular or freeform boards until a later slice; some input sources will be rejected that a lenient parser would accept.",
+          "acceptanceExample": "Given a JSON input describing a 8x6 grid of cells with labels, loading succeeds; loading input where one row has 7 cells fails with \"row 4 has 7 cells, expected 8\"; editing a cell label and exporting produces an SVG specimen-board reflecting the edit.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        },
+        {
+          "id": "canvas-lenient",
+          "label": "Freely-placed items board, lenient parsing",
+          "tradeoff": "Supports irregular boards: the board is a set of items with positions/sizes rather than a grid, and parsing accepts partial or malformed data by applying defaults and recording warnings. Costs: harder to validate, exports can silently differ from uploader intent, and editing needs a spatial interaction model rather than simple cell addressing.",
+          "acceptanceExample": "Given input with items at coordinates, loading succeeds even if one item is missing a size (default applied with a warning); editing an item's position and exporting produces an SVG reflecting the new position; export log lists all applied warnings.",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        },
+        {
+          "id": "grid-then-canvas",
+          "label": "Grid first with an item abstraction reserved",
+          "tradeoff": "Start with the strict rectangular grid (cheapest to validate and edit) but internally model the board as a list of positioned items, so a freer board kind can be added later without an export rewrite. Costs: slightly more abstraction up front than the strict-grid-only slice, and the second board kind itself remains undecided, not promised.",
+          "acceptanceExample": "Given the same 8x6 grid input as the strict option, all strict-option acceptance behaviors hold; additionally the export routine never branches on \"is grid\" but on the board's item list, verified by a second board kind producing the same SVG path in a later slice (not tested here).",
+          "source": {
+            "kind": "operator-intent",
+            "quote": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+            "sha256": "bb2f3014b997d9b9eb9fa069db3e3fec37da4318700a9e40794b5b7980aa0183"
+          }
+        }
+      ],
+      "originIntent": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+      "offeredAt": "2026-10-19T10:50:12.530Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "workingBrief": {
+    "status": "awaiting-response",
+    "version": 1,
+    "offerId": "offer-620a6956-1b41-4a44-acf0-b6a86beb307f",
+    "scope": "A small editable specimen-board exporter for our SVG board utility, limited to: (1) loading a board from an input format, (2) basic editing of board contents, (3) exporting a specimen board. Deliberately excludes any GUI design, framework choice, or persistence backend until the decisions below are made."
+  },
+  "updatedAt": "2026-10-19T10:50:12.534Z"
+}

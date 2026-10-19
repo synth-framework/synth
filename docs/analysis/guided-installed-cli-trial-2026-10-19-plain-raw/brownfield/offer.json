@@ -1,0 +1,41 @@
+{
+  "case": "brown",
+  "task_text": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.",
+  "proposed_scope": {
+    "summary": "Delta only: add an optional second parameter to the existing render function that emits a fill attribute on the <text> element. When no fill is supplied, the output is byte-identical to today's <text>${label}</text>. No rewrite of the existing module; one function, one signature extension.",
+    "implemented_delta": [
+      "src/board.js:1 — render(label) became render(label, fill); without fill the string is unchanged.",
+      "tests/fill.test.js (new) — asserts both the unchanged default output and the fill-attribute output.",
+      "package.json:1 — npm test now also runs tests/fill.test.js (the existing test file and its assertions were not edited)."
+    ]
+  },
+  "key_decision_question": "How should the user-selected fill value be validated or constrained before it is placed inside the fill attribute (free-form string vs. checked color syntax), since render interpolates values into SVG markup unescaped?",
+  "options": [
+    {
+      "id": "A",
+      "title": "Free-form string passthrough",
+      "description": "Accept any string and interpolate it into fill=\"...\" as done now. Callers are responsible for valid colors.",
+      "tradeoff": "Simplest and matches the existing code's style (label is also interpolated unescaped); any CSS/SVG color (named, hex, rgb()) works — but a crafted string can inject attributes or elements into the markup.",
+      "shows_it_works": "Existing behavior: tests/board.test.js:4 still passes unchanged (✔ existing label), plus the new test rendering with '#00ff00'.",
+      "grounded_in": "src/board.js:1 currently does fill-free interpolation with no escaping: `export const render = label => `<text>${label}</text>`;` — the delta merely extends the same convention."
+    },
+    {
+      "id": "B",
+      "title": "Validate the value, warn on mismatch",
+      "description": "Check the value against the syntax of a CSS color (e.g. a small parser for #hex / rgb() / named colors); return a documented warning or throw when it does not match.",
+      "tradeoff": "Catches typos and blocks most injection, but invents a color vocabulary the codebase has not defined and risks rejecting valid SVG values.",
+      "shows_it_works": "New tests render('#00ff00') accepted, render('<svg>') rejected with a clear error.",
+      "grounded_in": "docs/limitation.md:1: 'Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.' — the doc names the feature but says nothing about validation, so the constraint level is undecidable from the repo."
+    },
+    {
+      "id": "C",
+      "title": "Named palette options",
+      "description": "Restrict the selectable fill to a small fixed palette (e.g. a map of palette names to colors) instead of free strings.",
+      "tradeoff": "Safest and easiest for users to pick, but makes 'user-selected color' narrower than the task text implies and adds a palette definition no file provides.",
+      "shows_it_works": "Palette map present with tests covering each entry; unknown name rejected.",
+      "grounded_in": "Task text: 'user-selected fill color' — a palette is one reading of that; no repo file defines any palette."
+    }
+  ],
+  "recommendation": "The minimal passthrough (A) is already implemented and green; whether B or C is wanted is a requester decision, not something a file in this repo answers.",
+  "notes": "Proposal only; nothing here is approved and no person was consulted. The existing test file tests/board.test.js and its content were left untouched."
+}

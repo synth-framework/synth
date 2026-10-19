@@ -1,0 +1,41 @@
+TEST: docs — documentation/
+
+COMMANDS:
+- synth --version (PATH) — FAIL, not found; absolute path used for all commands: C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\global\synth.cmd
+- synth first-contact --dry-run — exit code: 0 (no files written)
+- synth first-contact start "Continue from the requirements in docs/. The next slice is undecided." — exit code: 0
+- synth first-contact status — exit code: 0 (pre-offer)
+- synth first-contact clarify --source-offer offer.json — exit code: 0 (one typo in offer fixed before recording)
+- synth first-contact status — exit code: 0 (final)
+
+CLI OUTPUT:
+- --dry-run: detected "brownfield" (it found docs/ so it treated the directory as an existing project without Synth governance); same anomaly as brownfield: nextStep "synth docs generate --knowledge-base ./docs" and wouldRun "synth bootstrap --approve" — the latter is an approval-type lifecycle action, not run, per §5. Source ingested docs/requirements.md, lines 1–2 quoted verbatim, with the notice that quoted prefixes are partial evidence requiring human review. Note: dry-run wrote nothing.
+- start: draft created at .synth/first-contact/draft.json; confidence 0.083; unknowns as before; nextStep clarify.
+- status (pre-offer): state draft; sourceOffers []; workingBrief "no-source-offer".
+- clarify: offer offer-4e174e03-... recorded; attribution "agent-authored-offer"; workingBrief "awaiting-response", option null.
+- status (final): workingBrief "awaiting-response"; nextStep "Await operator response to the recorded source offer..."; no approval/materialize step appeared.
+
+OFFER: documentation/offer.json — scope: next slice after docs/requirements.md's already-given capacity; no GUI/stack/persistence invented. Question: "Which slice is next, given that the interaction style for editing is still undecided: build export-from-local-data first, or block everything on the editing decision?" Options: export-first (do the settled export requirement now, editing untouched), editing-decision-first (treat the undecided interaction as an explicit blocker; delivers no code until a person answers), export-plus-data-boundary (export now, board data boundary reserved for the later editing slice). Final status: awaiting-response.
+
+CITATIONS (all read from docs/requirements.md directly by me before citing):
+- docs/requirements.md:1 — "The first board exports one SVG from local data." — MATCHED the actual file line exactly.
+- docs/requirements.md:2 — "Editing is requested, but its interaction style is undecided." — MATCHED the actual file line exactly (cited for two options).
+- The decision between the two lines is surfaced as the offer's question with consequences in each tradeoff (deliver now vs. block vs. deliver with reserved boundary); neither line was silently resolved, reinterpreted, or merged — the unresolved middle rests in the operator's choice.
+
+APPLICATION TESTS: n/a — this directory has no code or test command (requirement documents only).
+
+ASSUMPTIONS:
+- Assumed the two requirement lines genuinely coexist (they do not contradict each other textually); the "conflict" is that one line names a deliverable while the other names an undecided decision governing the same pipeline — I settled nothing myself and made it the offer's question.
+- Assumed the absolute-path synth is the revision under test (no revision self-report available).
+- The file has exactly 2 lines; line numbers cited are the complete extent of the document.
+
+STILL OPEN:
+- Sequencing decision (export first / decision first / export with reserved boundary) — left to the operator; workingBrief awaits response.
+- If editing-decision-first is chosen, the interaction-style decision itself still needs a person: nothing here decides it.
+- Could not verify CLI binary identity equals revision fb77772…
+
+PROBLEMS:
+- One observation: the CLI attached the same sha256 (b51353a3…) to three citations that quote two different lines; the hash evidently applies to something other than the individual quote (likely the whole source file). Citations themselves verified as matching by me and the CLI accepted them; recording this for the reviewer's attention only.
+- Same dry-run nextStep/anomaly as brownfield (bootstrap --approve suggestion not followed, recorded).
+
+EFFORT: roughly 10 minutes.

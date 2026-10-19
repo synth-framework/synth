@@ -1,0 +1,36 @@
+TEST: green — greenfield/
+
+COMMANDS:
+- synth --version (from workspace root, PATH lookup) — exit code: FAIL (CommandNotFoundException; `synth` not on PATH)
+- C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\global\synth.cmd --version — exit code: 0 ({status: ok, version: 2.6.1})
+- synth first-contact --dry-run — exit code: 0
+- synth first-contact start "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided." — exit code: 0
+- synth first-contact status — exit code: 0 (before offer)
+- synth first-contact clarify --source-offer offer.json — exit code: 0
+- synth first-contact status — exit code: 0 (final)
+
+CLI OUTPUT:
+- --version: {status ok, version 2.6.1, schema synth-cli-v1}.
+- --dry-run: detected "empty" directory for project "greenfield"; plan stages detect → init → mission; wouldCreate .synth/manifest.json, event-log.jsonl, canonical-state.json; nextStep: first-contact start + clarify. Note: "Dry-run: no files were written."
+- start: created FirstContactDraft at .synth/first-contact/draft.json; confidence overall 0.25 (intent fields 1.0; audience/runtime/language/capabilities 0, listed as unknowns); nextStep "synth first-contact clarify".
+- status (pre-offer): state draft; canApprove false; sourceOffers empty; workingBrief status "no-source-offer"; nextStep clarify --source-offer.
+- clarify: offer recorded, id offer-620a6956-..., attribution "agent-authored-offer"; workingBrief status "awaiting-response", version 1, option null; note that agent-authored offers are not human agreement.
+- status (final): state draft; sourceOffers contains the recorded offer; workingBrief status "awaiting-response"; nextStep "Await operator response ...; no agent command should be run until the operator replies." Nothing in any output named an approval or materialize step, so nothing was refused on those grounds and no forbidden step was suggested.
+
+OFFER: greenfield/offer.json — scope: small editable specimen-board exporter for the SVG board utility (load, basic edit, export), explicitly excluding GUI/framework/persistence choices. Question: "What board kind and editing model should the first slice support, and how strict should validation of the board input be?" Options: grid-strict (rectangular grid, strict validation), canvas-lenient (freely-placed items, lenient parsing with warnings), grid-then-canvas (grid first, item abstraction reserved). Final working-brief status: awaiting-response.
+
+CITATIONS: three options, each sourced as {"kind": "operator-intent", "quote": "<task text>"} — the CLI hashed each (sha256 bb2f3014...) and accepted the file. No file lines were cited because the greenfield directory intentionally has no files besides the CLI's own .synth state.
+
+APPLICATION TESTS: n/a (greenfield; no project code, no test command exists).
+
+ASSUMPTIONS:
+- Assumed the absolute-path synth (version 2.6.1) is the revision under test; the version output exposes no git revision, and ENVIRONMENT.md's revision string (fb77772...) is not printed by any command I ran, so revision identity was verified only by the path/manifest recorded by the operator.
+- Assumed drafts under .synth/first-contact are normal CLI state, not "work outside the test directory".
+
+STILL OPEN:
+- Board kind (grid vs. free item placement vs. layered), editing interaction model, validation strictness, target runtime/language — all left to the operator; the offer awaits a response and I did not select an option.
+- Could not verify that the CLI binary IS revision fb77772... (no revision self-report available).
+
+PROBLEMS: none. Everything the CLI did matched INSTRUCTIONS.md; the only deviation was using the absolute path because synth was not on PATH (allowed and recorded here).
+
+EFFORT: well under one hour; roughly 10 minutes including reading instructions and writing offer + report.

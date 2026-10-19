@@ -1,0 +1,39 @@
+{
+  "scope": "The smallest change to the existing renderer: `render` gains an optional fill parameter that (a) leaves the current single-argument output byte-identical when fill is not supplied, and (b) emits a fill attribute when a fill is supplied. Nothing else changes: no rewrite of the label path, no new dependencies, no new API surface beyond the optional argument.",
+  "question": "How should the user-selected fill be applied and what is the default when no fill is given?",
+  "options": [
+    {
+      "id": "optional-attr-default-absent",
+      "label": "Optional fill argument; attribute omitted when absent",
+      "tradeoff": "Most conservative delta: `render(label, fill?)` adds ` fill=\"...\"` to the generated markup only when fill is provided, so existing single-argument callers and the existing test output stay literally unchanged. Costs: absent fill produces markup with no fill attribute, which inherits SVG defaults rather than having an explicit color — a caller wanting an explicit default must pass one.",
+      "acceptanceExample": "render('A') === '<text>A</text>' (unchanged); render('A', 'red') === '<text fill=\"red\">A</text>'; the existing test passes unmodified.",
+      "source": {
+        "path": "src/board.js",
+        "line": 1,
+        "quote": "export const render = label => `<text>${label}</text>`;"
+      }
+    },
+    {
+      "id": "optional-attr-explicit-default",
+      "label": "Optional fill argument with an explicit default in output",
+      "tradeoff": "Same optional argument, but when no fill is supplied the software picks a declared default color and always emits ` fill=\"…\"`. Costs: the current markup is no longer byte-identical for existing callers, so the existing test's expected value must keep matching either by keeping fill internal-only for the legacy path or by updating the expectation — and updating the expectation is a change to a working behavior that needs the operator's explicit choice of default color.",
+      "acceptanceExample": "render('A', 'red') === '<text fill=\"red\">A</text>'; render('A') === '<text fill=\"#000000\">A</text>' for the chosen default; the existing test passes unmodified.",
+      "source": {
+        "path": "docs/limitation.md",
+        "line": 1,
+        "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output."
+      }
+    },
+    {
+      "id": "option-object-shape",
+      "label": "Options-object parameter for future extension",
+      "tradeoff": "Introduce `render(label, { fill })` so later attributes (size, anchor, …) extend without further signature churn. Costs: a partial signature change for callers passing a second positional argument (none exist today in this repo), and it is more machinery than this one-slice delta strictly needs.",
+      "acceptanceExample": "render('A') === '<text>A</text>' (unchanged); render('A', { fill: 'red' }) === '<text fill=\"red\">A</text>'; the existing test passes unmodified.",
+      "source": {
+        "path": "tests/board.test.js",
+        "line": 4,
+        "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));"
+      }
+    }
+  ]
+}

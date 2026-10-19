@@ -1,0 +1,39 @@
+$ npm.cmd run build
+dist manifest written: C:\Users\j\Projects\synth\dist\dist-manifest.json (1224 file(s), rootHash 5380d3e6a46f4d90...)
+npm notice
+npm notice New major version of npm available! 11.16.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+$ npm.cmd pack --pack-destination C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\pack
+npm notice package size: 1.1 MB
+npm notice unpacked size: 5.5 MB
+npm notice shasum: 1b4d57631799aeb1d2db1a68601ef300004811fa
+npm notice integrity: sha512-jUsR1VlJzxHTF[...]o1LaWX3ubVSpg==
+npm notice total files: 1243
+npm notice
+
+$ npm.cmd install -g --prefix C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\global C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\pack\synth-framework-synth-2.6.1.tgz
+added 3 packages in 38s
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+$ C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\global\synth.cmd --version
+{
+  "status": "ok",
+  "version": "2.6.1",
+  "name": "synth",
+  "schema": "synth-cli-v1"
+}
+
+$ npm run build && npm pack && npm install -g
+
+$ C:\Program Files\nodejs\node.exe C:\Users\j\Projects\synth\scripts\guided-installed-trial-fixtures.mjs C:\Users\j\AppData\Local\Temp\trial-fixtures-TeML3a
+  "treatments": [
+    "plain",
+    "guided"
+  ],
+  "sourceFilesOnly": true
+}

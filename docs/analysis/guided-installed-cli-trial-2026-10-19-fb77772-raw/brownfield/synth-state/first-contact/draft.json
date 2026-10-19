@@ -1,0 +1,147 @@
+{
+  "schema": "synth-first-contact-draft-v1",
+  "status": "draft",
+  "artifact": {
+    "intent": {
+      "description": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.",
+      "goals": [],
+      "successCriteria": []
+    },
+    "audience": {
+      "primaryUsers": [],
+      "stakeholders": []
+    },
+    "environment": {
+      "targetRuntime": "",
+      "languagePreferences": [],
+      "platformConstraints": []
+    },
+    "capabilities": {
+      "required": [],
+      "optional": []
+    },
+    "constraints": {
+      "functional": [],
+      "nonFunctional": []
+    },
+    "unknowns": [
+      {
+        "field": "audience.primaryUsers",
+        "description": "Primary users are not identified in the input.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.targetRuntime",
+        "description": "Target runtime is not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "environment.languagePreferences",
+        "description": "Language preferences are not specified.",
+        "confidence": 0.2,
+        "accepted": false
+      },
+      {
+        "field": "capabilities.required",
+        "description": "Required capabilities could not be inferred from the input.",
+        "confidence": 0.2,
+        "accepted": false
+      }
+    ],
+    "confidence": {
+      "overall": 0.083,
+      "byField": {
+        "intent.description": 1,
+        "intent.goals": 0,
+        "intent.successCriteria": 0,
+        "audience.primaryUsers": 0,
+        "audience.stakeholders": 0,
+        "environment.targetRuntime": 0,
+        "environment.languagePreferences": 0,
+        "environment.platformConstraints": 0,
+        "capabilities.required": 0,
+        "capabilities.optional": 0,
+        "constraints.functional": 0,
+        "constraints.nonFunctional": 0
+      }
+    },
+    "transcript": [
+      {
+        "turn": 1,
+        "actor": "operator",
+        "type": "input",
+        "content": "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working.",
+        "timestamp": "2026-10-19T10:51:08.434Z"
+      },
+      {
+        "turn": 2,
+        "actor": "agent",
+        "type": "proposal",
+        "content": "Source offer offer-4a04f238-7424-498f-bd1d-0b684e38a2de: How should the user-selected fill be applied and what is the default when no fill is given?",
+        "timestamp": "2026-10-19T10:51:36.553Z"
+      }
+    ]
+  },
+  "journeyId": "bf7facaf-fa01-41b3-a0b7-eb6e03802c53",
+  "openAgentChoices": [],
+  "choiceReviews": [],
+  "sourceOffers": [
+    {
+      "id": "offer-4a04f238-7424-498f-bd1d-0b684e38a2de",
+      "journeyId": "bf7facaf-fa01-41b3-a0b7-eb6e03802c53",
+      "version": 1,
+      "scope": "The smallest change to the existing renderer: `render` gains an optional fill parameter that (a) leaves the current single-argument output byte-identical when fill is not supplied, and (b) emits a fill attribute when a fill is supplied. Nothing else changes: no rewrite of the label path, no new dependencies, no new API surface beyond the optional argument.",
+      "question": "How should the user-selected fill be applied and what is the default when no fill is given?",
+      "options": [
+        {
+          "id": "optional-attr-default-absent",
+          "label": "Optional fill argument; attribute omitted when absent",
+          "tradeoff": "Most conservative delta: `render(label, fill?)` adds ` fill=\"...\"` to the generated markup only when fill is provided, so existing single-argument callers and the existing test output stay literally unchanged. Costs: absent fill produces markup with no fill attribute, which inherits SVG defaults rather than having an explicit color — a caller wanting an explicit default must pass one.",
+          "acceptanceExample": "render('A') === '<text>A</text>' (unchanged); render('A', 'red') === '<text fill=\"red\">A</text>'; the existing test passes unmodified.",
+          "source": {
+            "path": "src/board.js",
+            "line": 1,
+            "quote": "export const render = label => `<text>${label}</text>`;",
+            "sha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee"
+          }
+        },
+        {
+          "id": "optional-attr-explicit-default",
+          "label": "Optional fill argument with an explicit default in output",
+          "tradeoff": "Same optional argument, but when no fill is supplied the software picks a declared default color and always emits ` fill=\"…\"`. Costs: the current markup is no longer byte-identical for existing callers, so the existing test's expected value must keep matching either by keeping fill internal-only for the legacy path or by updating the expectation — and updating the expectation is a change to a working behavior that needs the operator's explicit choice of default color.",
+          "acceptanceExample": "render('A', 'red') === '<text fill=\"red\">A</text>'; render('A') === '<text fill=\"#000000\">A</text>' for the chosen default; the existing test passes unmodified.",
+          "source": {
+            "path": "docs/limitation.md",
+            "line": 1,
+            "quote": "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output.",
+            "sha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246"
+          }
+        },
+        {
+          "id": "option-object-shape",
+          "label": "Options-object parameter for future extension",
+          "tradeoff": "Introduce `render(label, { fill })` so later attributes (size, anchor, …) extend without further signature churn. Costs: a partial signature change for callers passing a second positional argument (none exist today in this repo), and it is more machinery than this one-slice delta strictly needs.",
+          "acceptanceExample": "render('A') === '<text>A</text>' (unchanged); render('A', { fill: 'red' }) === '<text fill=\"red\">A</text>'; the existing test passes unmodified.",
+          "source": {
+            "path": "tests/board.test.js",
+            "line": 4,
+            "quote": "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));",
+            "sha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97"
+          }
+        }
+      ],
+      "offeredAt": "2026-10-19T10:51:36.553Z",
+      "attribution": "agent-authored-offer"
+    }
+  ],
+  "sourceAnswers": [],
+  "workingBrief": {
+    "status": "awaiting-response",
+    "version": 1,
+    "offerId": "offer-4a04f238-7424-498f-bd1d-0b684e38a2de",
+    "scope": "The smallest change to the existing renderer: `render` gains an optional fill parameter that (a) leaves the current single-argument output byte-identical when fill is not supplied, and (b) emits a fill attribute when a fill is supplied. Nothing else changes: no rewrite of the label path, no new dependencies, no new API surface beyond the optional argument."
+  },
+  "updatedAt": "2026-10-19T10:51:36.556Z"
+}

@@ -1,0 +1,86 @@
+{
+  "note": "Recomputed at capture time from the workspace with the shared rule (SHA-256 over sorted [relative path, content] pairs). Expected values are the frozen E4 record.",
+  "revisions": {
+    "green": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "brown": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+    "docs": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179"
+  },
+  "observed": {
+    "green": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "brown": "e598ed0f12e368c064a62c8b79dd53acb7d1bd65e0f584131004f451aaf87fd8",
+    "docs": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179"
+  },
+  "matched": {
+    "green": true,
+    "brown": false,
+    "docs": true
+  },
+  "cases": {
+    "green": {
+      "dir": "greenfield",
+      "basis": "no-inputs",
+      "files": [],
+      "missing": [],
+      "changed": []
+    },
+    "brown": {
+      "dir": "brownfield",
+      "basis": "all-inputs",
+      "files": [
+        {
+          "path": "docs/limitation.md",
+          "present": true,
+          "matches": true,
+          "bytes": 105,
+          "sha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246",
+          "expectedSha256": "f4ee00a6c83e8e1294a9863b83e167afd3f4e3a7e4c943c2aadbb23669d8a246"
+        },
+        {
+          "path": "package.json",
+          "present": true,
+          "matches": false,
+          "bytes": 115,
+          "sha256": "d29cf8bd0c2b23e371b35e963a6beffe44f48ca5bfba2b273f31438c3bfa1a18",
+          "expectedSha256": "b09c3249bd64d0348608b57e4ff4c7eda6051c0979e80d5478d4652c6ea8fdb2"
+        },
+        {
+          "path": "src/board.js",
+          "present": true,
+          "matches": false,
+          "bytes": 128,
+          "sha256": "ad6bbed1e03553dc3e1f4d4f2b9f735ee7fbbbcec6f0f3c32594af7df2863e04",
+          "expectedSha256": "550765693891f48b26e0476610b80d9776e94a43413630d9b27e9e02de3435ee"
+        },
+        {
+          "path": "tests/board.test.js",
+          "present": true,
+          "matches": true,
+          "bytes": 195,
+          "sha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97",
+          "expectedSha256": "d97df21784804d026e92b27e129a622e3209e176a2ac82502f1bb2637f9a3a97"
+        }
+      ],
+      "missing": [],
+      "changed": [
+        "package.json",
+        "src/board.js"
+      ]
+    },
+    "docs": {
+      "dir": "documentation",
+      "basis": "all-inputs",
+      "files": [
+        {
+          "path": "docs/requirements.md",
+          "present": true,
+          "matches": true,
+          "bytes": 111,
+          "sha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "expectedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469"
+        }
+      ],
+      "missing": [],
+      "changed": []
+    }
+  }
+}

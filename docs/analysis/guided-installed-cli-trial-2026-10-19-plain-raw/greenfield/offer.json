@@ -1,0 +1,42 @@
+{
+  "case": "green",
+  "task_text": "Build a small editable specimen-board exporter for our SVG board utility. Board input and editing interaction are undecided.",
+  "proposed_scope": {
+    "summary": "A library module (no GUI) with two parts: (1) an editable specimen-board data model — a board holding named specimen entries, each with position, size and a fill attribute, that can be created from a board description and mutated by add/move/restyle operations; (2) an exporter that serializes the board to an SVG fragment (one <rect>/<text> group per specimen) suitable for dropping into the existing SVG board utility's output.",
+    "deliverables": [
+      "board model with create/add/move/remove/set-fill operations",
+      "validation of board (duplicate specimen names, positions inside board bounds)",
+      "exporter: board -> SVG markup string",
+      "a few small unit tests for model round-trip and exporter output"
+    ]
+  },
+  "key_decision_question": "What is the board input format this exporter must accept, since 'Board input and editing interaction are undecided'?",
+  "options": [
+    {
+      "id": "A",
+      "title": "Plain JS object / JSON board description as input",
+      "description": "createBoard(JSON.parse(file)) accepts a JSON document: { width, height, specimens: [...] }. Editing is via library calls in scripts/tests, not an interactive UI.",
+      "tradeoff": "Cheapest to build and test, works headless, but no interactive editing — 'editable' means programmatically editable only.",
+      "shows_it_works": "A test writes a JSON file, loads it into the model, mutates it (move one specimen, set a fill), exports SVG, and asserts the exported markup reflects the mutation.",
+      "grounded_in": "Task text only: the directory is empty and the task says 'Board input and editing interaction are undecided.'"
+    },
+    {
+      "id": "B",
+      "title": "Load input from an existing SVG board document",
+      "description": "The importer reads an SVG file the utility already produces (rect/text shapes), converts it into the editable model, allow edits, then re-export.",
+      "tradeoff": "Round-trips with the current utility's real artifacts, but depends on an SVG dialect I cannot see anywhere in this workspace, so parsing rules would be guesswork.",
+      "shows_it_works": "Given a sample SVG from the existing utility, import-mutate-export round-trip test preserves all unchanged specimens.",
+      "grounded_in": "Task text mentions 'our SVG board utility', implying existing SVG board artifacts exist somewhere; no such file exists in greenfield/ to confirm their shape."
+    },
+    {
+      "id": "C",
+      "title": "Interactive editing (CLI prompt or GUI) first",
+      "description": "Build the editing interaction (e.g. a small CLI that lets a user pick a specimen and move/restyle it) before the exporter.",
+      "tradeoff": "Directly addresses the undecided 'editing interaction', but is the largest scope, needs UX decisions a prototype cannot make alone, and delays anything exportable.",
+      "shows_it_works": "A scripted terminal session creates a board, edits two specimens, and exports valid SVG.",
+      "grounded_in": "Task text: 'editable specimen-board exporter ... editing interaction are undecided.'"
+    }
+  ],
+  "recommendation": "Option A, with B as a follow-up slice once a sample SVG from the real utility is available.",
+  "notes": "No person has been consulted and nothing here is approved; this is a proposal only. The consequential decision (input format, and whether 'editable' must be interactive) belongs to the requester."
+}

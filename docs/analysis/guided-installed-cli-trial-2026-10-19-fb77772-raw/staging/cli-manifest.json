@@ -1,0 +1,27 @@
+{
+  "status": "cli-installed",
+  "stagedAt": "2026-10-19T10:41:18.158Z",
+  "builtFrom": "C:\\Users\\j\\Projects\\synth",
+  "testedRevision": {
+    "commit": "fb77772d19ed52bcf9bd7159663dca25afc4c179",
+    "branch": "arena/dd4475f5-synth",
+    "subject": "fb77772 Return full workingBrief projection in cmdFirstContactStart",
+    "workingTreeDirty": false
+  },
+  "installedCli": {
+    "bin": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\fb77772d19ed\\global\\synth.cmd",
+    "tarball": "C:\\Users\\j\\AppData\\Local\\Temp\\trial-staging\\fb77772d19ed\\pack\\synth-framework-synth-2.6.1.tgz",
+    "tarballSha256": "f82ae0afa93d942c1ad636ea0098d00c61249dbd9c7436676a0f0feffd01b1b9",
+    "version": {
+      "status": "ok",
+      "version": "2.6.1",
+      "name": "synth",
+      "schema": "synth-cli-v1"
+    }
+  },
+  "productCommandsRun": [
+    "synth --version"
+  ],
+  "trialTestsRun": 0,
+  "lifecycleCommandsRun": []
+}

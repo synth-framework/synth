@@ -1,0 +1,41 @@
+TEST: brown — brownfield/
+
+COMMANDS:
+- synth --version (PATH) — FAIL, not found; used absolute path C:\Users\j\AppData\Local\Temp\trial-staging\fb77772d19ed\global\synth.cmd for all commands
+- synth first-contact --dry-run — exit code: 0 (no files written)
+- npm test (BEFORE any change) — exit code: 0; 1 test (existing label), 1 pass, 0 fail. First run also exit 0 with pass 1.
+- synth first-contact start "Extend this existing SVG board renderer with a user-selected fill color. Its current label output and tests must keep working." — exit code: 0
+- synth first-contact status — exit code: 0 (pre-offer)
+- synth first-contact clarify --source-offer offer.json — exit code: 0
+- synth first-contact status — exit code: 0 (final)
+
+CLI OUTPUT:
+- --dry-run: detected "brownfield" (existing project without Synth governance); anomaly: its nextStep said "synth discover . --export" and wouldRun listed "synth bootstrap --approve". I did NOT run either: the §2 procedure prescribes first-contact start/clarify, and "synth bootstrap --approve" is an approval-type lifecycle action §5 forbids. Recorded here as required. The dry-run ingested source excerpts for docs/limitation.md, package.json, src/board.js, tests/board.test.js with a notice that quoted prefixes are partial evidence needing human review.
+- start: draft created; confidence overall 0.083; unknowns list same as greenfield; nextStep "synth first-contact clarify".
+- status (pre-offer): state draft, sourceOffers [], workingBrief "no-source-offer".
+- clarify: offer offer-4a04f238-... recorded, attribution "agent-authored-offer"; workingBrief status "awaiting-response", option null.
+- status (final): workingBrief "awaiting-response"; nextStep "Await operator response to the recorded source offer...". No approval/materialize step appeared at any point.
+
+OFFER: brownfield/offer.json — scope: minimal delta on the existing render function (optional fill parameter, byte-identical output when absent; no rewrite/deps/new API beyond that). Question: "How should the user-selected fill be applied and what is the default when no fill is given?" Options: optional-attr-default-absent (omit attribute when no fill), optional-attr-explicit-default (always emit fill with a chosen default — needs operator's color choice), option-object-shape (options object for future attributes). Final status: awaiting-response.
+
+CITATIONS:
+- src/board.js:1 — "export const render = label => `<text>${label}</text>`;" — MATCHED the actual file line exactly (CLI hashed it, sha256 55076569…).
+- docs/limitation.md:1 — "Current renderer supports labels but not a user-selected fill color. Preserve its existing label output." — MATCHED the actual file line exactly (sha256 f4ee00a6…). This is the documented limitation, cited as required.
+- tests/board.test.js:4 — "test('existing label', () => assert.equal(render('A'), '<text>A</text>'));" — MATCHED the actual file line exactly (sha256 d97df217…). This is the existing test, cited as required.
+
+APPLICATION TESTS:
+- BEFORE any change: `npm test` — exit code 0, result: tests 1, pass 1, fail 0 ("existing label" passed).
+- AFTER: no change was made — the offer awaits the operator's choice of fill semantics; I did not modify src/, or the test. The test suite is therefore still in the pre-change state (rerun immediately beforehand confirmed exit 0, pass 1). No test or fixture was edited.
+
+ASSUMPTIONS:
+- Assumed the absolute-path synth is the revision under test (see greenfield report; no revision self-report available).
+- Assumed line numbers in the README-less miniature project are stable because I made no edits before citing.
+
+STILL OPEN:
+- Fill semantics decision (attribute omitted vs. explicit default vs. options object) — left to the operator; workingBrief awaits response.
+- If option 2 were chosen, the default color and any test expectation update would need the operator (and no expectation update was performed by me).
+- Could not verify CLI binary identity equals revision fb77772…
+
+PROBLEMS: none beyond the PATH absence (recorded). The dry-run's suggestion of "synth bootstrap --approve" was noted and not run because §5 forbids lifecycle approval actions; this is a possible discrepancy nextStep between the dry-run plan and the instructions, both recorded honestly.
+
+EFFORT: roughly 10–15 minutes.

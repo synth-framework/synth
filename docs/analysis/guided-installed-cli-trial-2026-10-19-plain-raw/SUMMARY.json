@@ -1,0 +1,370 @@
+{
+  "capturedAt": "2026-10-19T11:02:36.092Z",
+  "workspace": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain",
+  "helper": "scripts/guided-installed-trial-evidence.mjs",
+  "requiredCases": [
+    "green",
+    "brown",
+    "docs"
+  ],
+  "optionalCases": [
+    "knowledge",
+    "conflict"
+  ],
+  "condition": {
+    "inferred": "plain",
+    "inferredFrom": "no ENVIRONMENT.md in TEST_PATH",
+    "declared": null,
+    "resolved": "plain"
+  },
+  "date": {
+    "value": "2026-10-19",
+    "source": "newest artifact mtime (2026-10-19T10:53:06.400Z)"
+  },
+  "instruction": {
+    "present": true,
+    "bytes": 5825,
+    "sha256": "3dcce10b8ac2cadbe617174661d03687882fb850e77681cf354b2ff83f14b0f8",
+    "namesTool": false
+  },
+  "environment": {
+    "present": false,
+    "bytes": null,
+    "sha256": null,
+    "workspace": null,
+    "staging": null,
+    "revision": null
+  },
+  "launch": {
+    "recorded": "Read INSTRUCTIONS.md in the root of this workspace and follow it.",
+    "source": "inferred"
+  },
+  "revision": {
+    "commit": null,
+    "short": null,
+    "subject": null,
+    "source": null
+  },
+  "install": {
+    "tarballName": null,
+    "tarballSha256": null,
+    "version": null,
+    "stagingPresent": false,
+    "stagingNotes": []
+  },
+  "cases": [
+    {
+      "caseId": "green",
+      "dir": "greenfield",
+      "report": {
+        "present": true,
+        "bytes": 2391,
+        "sha256": "6ad9834e5a4602797abca47c2c0cfb929899065a5ed68bace36d2a7ed40e62ec"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 3613,
+        "sha256": "958a6fdb0098aad2f9bda4d86c6b14dc7ecaedd9bde7fa7a46ee5c7f5839c101",
+        "id": null,
+        "question": null,
+        "optionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "problems": [
+          "question is missing",
+          "scope is missing"
+        ]
+      },
+      "transcript": {
+        "present": false,
+        "events": 0,
+        "bytes": null,
+        "sha256": null
+      },
+      "draft": {
+        "present": false,
+        "bytes": null,
+        "sha256": null,
+        "journeyId": null,
+        "schema": null,
+        "status": null
+      },
+      "stateFiles": [],
+      "inputs": {
+        "expected": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "observed": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "basis": "no-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [],
+      "commands": [],
+      "integrity": {
+        "operatorInputEvents": 0,
+        "agentProposalEvents": 0,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "draftStatus": null,
+        "lastEvent": null,
+        "openAgentChoices": null,
+        "transcriptFirst": null,
+        "transcriptLast": null,
+        "spanSeconds": null
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "APPROACH",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    },
+    {
+      "caseId": "brown",
+      "dir": "brownfield",
+      "report": {
+        "present": true,
+        "bytes": 3925,
+        "sha256": "ca2d65d7a62d2559fc7a615f7805f54bcc0ed67d06d230befe9d9fbb8e17dfa8"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 3732,
+        "sha256": "ea151fb65cbc97ff7c0ec4edf7c21b003e9aa0b397d0061ec318c1bf3ef879ab",
+        "id": null,
+        "question": null,
+        "optionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "problems": [
+          "question is missing",
+          "scope is missing"
+        ]
+      },
+      "transcript": {
+        "present": false,
+        "events": 0,
+        "bytes": null,
+        "sha256": null
+      },
+      "draft": {
+        "present": false,
+        "bytes": null,
+        "sha256": null,
+        "journeyId": null,
+        "schema": null,
+        "status": null
+      },
+      "stateFiles": [],
+      "inputs": {
+        "expected": "348c5a3c625bf8a1f014b72415247198ac3843b10484354f166e921ad91fabfe",
+        "observed": "e598ed0f12e368c064a62c8b79dd53acb7d1bd65e0f584131004f451aaf87fd8",
+        "basis": "all-inputs",
+        "matched": false,
+        "missing": [],
+        "changed": [
+          "package.json",
+          "src/board.js"
+        ]
+      },
+      "citations": [],
+      "commands": [
+        "Read files: package.json, docs/limitation.md, src/board.js, tests/board.test.js (no commands, all exit 0).",
+        "`npm test` (before any change): exit code 0",
+        "result: 1 test, 1 pass, 0 fail (\"✔ existing label\").",
+        "`npm test` (after changes): exit code 0",
+        "result: 3 tests, 3 pass, 0 fail (\"✔ existing label\", \"✔ existing label output unchanged when no fill is given\", \"✔ user-selected fill is emitted as a fill attribute\")."
+      ],
+      "integrity": {
+        "operatorInputEvents": 0,
+        "agentProposalEvents": 0,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "draftStatus": null,
+        "lastEvent": null,
+        "openAgentChoices": null,
+        "transcriptFirst": null,
+        "transcriptLast": null,
+        "spanSeconds": null
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "APPROACH",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": [
+        "tests/fill.test.js"
+      ]
+    },
+    {
+      "caseId": "docs",
+      "dir": "documentation",
+      "report": {
+        "present": true,
+        "bytes": 3675,
+        "sha256": "485c47e9bb54ba1d8e9bb9fe29216625d265d147280218844e657c7c815f9906"
+      },
+      "offer": {
+        "present": true,
+        "bytes": 4243,
+        "sha256": "287a1991161e0a64ac818c74e20296004959e8b3eb2ec63d317b02fb7cf5215b",
+        "id": null,
+        "question": null,
+        "optionIds": [
+          "A",
+          "B",
+          "C"
+        ],
+        "problems": [
+          "question is missing",
+          "scope is missing"
+        ]
+      },
+      "transcript": {
+        "present": false,
+        "events": 0,
+        "bytes": null,
+        "sha256": null
+      },
+      "draft": {
+        "present": false,
+        "bytes": null,
+        "sha256": null,
+        "journeyId": null,
+        "schema": null,
+        "status": null
+      },
+      "stateFiles": [],
+      "inputs": {
+        "expected": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+        "observed": "37a9341d13c50fbf308459e1145e154768a6c28812a49eb1a0dc9af733b72179",
+        "basis": "all-inputs",
+        "matched": true,
+        "missing": [],
+        "changed": []
+      },
+      "citations": [
+        {
+          "optionId": "requirements_read.0",
+          "quote": "The first board exports one SVG from local data.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "documentation/docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the TEST_PATH root",
+          "line": 1,
+          "lineAsWritten": null,
+          "pathAllowedByCli": false,
+          "expectedLine": "The first board exports one SVG from local data.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed",
+          "repeatedReading": false
+        },
+        {
+          "optionId": "requirements_read.1",
+          "quote": "Editing is requested, but its interaction style is undecided.",
+          "recordedSha256": null,
+          "hashRecorded": false,
+          "kind": "file",
+          "path": "documentation/docs/requirements.md",
+          "pathAsWritten": null,
+          "resolvedFrom": "the TEST_PATH root",
+          "line": 2,
+          "lineAsWritten": null,
+          "pathAllowedByCli": false,
+          "expectedLine": "Editing is requested, but its interaction style is undecided.",
+          "recomputedSha256": "b51353a3e8b89f9d680ab78110bce3ce599ca21bcb548a7fbc35a00c9a851469",
+          "hashMatches": null,
+          "lineMatches": true,
+          "mismatchNote": null,
+          "status": "matched-recomputed",
+          "repeatedReading": false
+        }
+      ],
+      "commands": [
+        "Read directory and files: documentation/docs/ (listing), documentation/docs/requirements.md — no build/test commands exist here",
+        "all file reads succeeded (no commands producing exit codes were run)."
+      ],
+      "integrity": {
+        "operatorInputEvents": 0,
+        "agentProposalEvents": 0,
+        "lifecycleCommands": [],
+        "sourceAnswers": 0,
+        "choiceReviews": 0,
+        "workingBriefStatus": null,
+        "terminalState": null,
+        "draftStatus": null,
+        "lastEvent": null,
+        "openAgentChoices": null,
+        "transcriptFirst": null,
+        "transcriptLast": null,
+        "spanSeconds": null
+      },
+      "reportSections": [
+        "TEST",
+        "COMMANDS",
+        "APPROACH",
+        "OFFER",
+        "CITATIONS",
+        "APPLICATION TESTS",
+        "ASSUMPTIONS",
+        "STILL OPEN",
+        "PROBLEMS",
+        "EFFORT"
+      ],
+      "extras": []
+    }
+  ],
+  "rootExtras": [
+    {
+      "relative": "TRANSCRIPT.md",
+      "bytes": 8487,
+      "sha256": "9c938bb4022dac34eed4db08a4541f5540b90c991b1607aaf569667bdd8335a9",
+      "copied": true
+    }
+  ],
+  "buildArtifactsInsideTestPath": [],
+  "gitInside": [],
+  "warnings": [],
+  "operatorGaps": [
+    "§4 greenfield: confirm the quoted command list and exit codes are the ones you saw (the report's own COMMANDS section records no command — it reads (none beyond file reads) list directory contents: exit 0. greenfield/ contained no files at start and commands are not needed to answer the proposal question; no build/test commands exist here., and the full section is quoted in the cell)",
+    "§4 greenfield: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§4 brownfield: confirm the quoted command list and exit codes are the ones you saw",
+    "§4 brownfield: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§4 documentation: confirm the quoted command list and exit codes are the ones you saw",
+    "§4 documentation: the terminal state (pass / fail / blocked / not run) and its reason",
+    "§1 operator name, agent model/version, tool access, local timezone, wall-clock start/end, time box",
+    "§0 the Met? column for all eleven independence items",
+    "§5 every comparative reading",
+    "§7 the recommendation for ordinary PR #347 review",
+    "§1 the plain arm installs nothing, so §2 is not applicable here; the install proof belongs to the guided capture"
+  ]
+}

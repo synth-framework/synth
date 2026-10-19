@@ -1,0 +1,39 @@
+{
+  "scope": "Next slice continuing from docs/requirements.md: the already-given capacity — \"the first board exports one SVG from local data\" — is taken as settled context; this slice only decides which of the below candidate shapes editing-and-export takes. No GUI, stack, or persistence choice is invented here.",
+  "question": "Which slice is next, given that the interaction style for editing is still undecided: build export-from-local-data first, or block everything on the editing decision?",
+  "options": [
+    {
+      "id": "export-first",
+      "label": "Do the export slice now, editing untouched",
+      "tradeoff": "Delivers the only settled requirement (one SVG exported from local data) without guessing the undecided editing interaction. Costs: the editing slice lands later and may reshape some of the same output path; meanwhile no editing behavior exists at all, which 'Editing is requested' will eventually require.",
+      "acceptanceExample": "Given local data in the repository-described form, invoking the export routine produces exactly one SVG file; invoking again overwrites that one file rather than creating a second; no editing interface is shipped in this slice.",
+      "source": {
+        "path": "docs/requirements.md",
+        "line": 1,
+        "quote": "The first board exports one SVG from local data."
+      }
+    },
+    {
+      "id": "editing-decision-first",
+      "label": "Decide editing interaction before any slice",
+      "tradeoff": "Treats the undecided interaction as a blocker so the export path is designed once, with edit hooks in place from the start. Costs: 'The first board exports one SVG from local data' is already requested and would stay undelivered while waiting; the decision itself needs a person, per INSTRUCTIONS §5, so this option delivers nothing until a respondent answers.",
+      "acceptanceExample": "No running code in this slice; deliverable is a decision request naming the interaction-style options. Success condition: an operator records an interaction-style choice; export+editing work proceeds as one integrated slice afterward.",
+      "source": {
+        "path": "docs/requirements.md",
+        "line": 2,
+        "quote": "Editing is requested, but its interaction style is undecided."
+      }
+    },
+    {
+      "id": "export-plus-data-boundary",
+      "label": "Export slice with a data boundary reserved for editing",
+      "tradeoff": "Do the export slice now but keep the board model as a plain data structure handed to the exporter, so a later interaction slice plugs into that boundary without touching the SVG path. Costs: slightly more abstraction than the pure export slice, and the interaction style remains undecided — the boundary is reserved, not implemented.",
+      "acceptanceExample": "Same export acceptance as export-first, plus: the exporter consumes only a board data structure (no assumptions about where edits came from), verified by exporting one fixed board constructed directly in code with no editing step.",
+      "source": {
+        "path": "docs/requirements.md",
+        "line": 2,
+        "quote": "Editing is requested, but its interaction style is undecided."
+      }
+    }
+  ]
+}

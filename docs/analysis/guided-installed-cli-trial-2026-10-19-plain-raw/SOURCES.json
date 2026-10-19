@@ -1,0 +1,105 @@
+{
+  "capturedAt": "2026-10-19T11:02:36.092Z",
+  "workspace": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain",
+  "staging": null,
+  "sources": [
+    {
+      "bundlePath": "INSTRUCTIONS.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\INSTRUCTIONS.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain",
+      "sourceRelative": "INSTRUCTIONS.md",
+      "bytes": 5825,
+      "sha256": "3dcce10b8ac2cadbe617174661d03687882fb850e77681cf354b2ff83f14b0f8",
+      "kind": "staged instruction set",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\greenfield\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\greenfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 2391,
+      "sha256": "6ad9834e5a4602797abca47c2c0cfb929899065a5ed68bace36d2a7ed40e62ec",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "greenfield/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\greenfield\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\greenfield",
+      "sourceRelative": "offer.json",
+      "bytes": 3613,
+      "sha256": "958a6fdb0098aad2f9bda4d86c6b14dc7ecaedd9bde7fa7a46ee5c7f5839c101",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\brownfield\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\brownfield",
+      "sourceRelative": "REPORT.md",
+      "bytes": 3925,
+      "sha256": "ca2d65d7a62d2559fc7a615f7805f54bcc0ed67d06d230befe9d9fbb8e17dfa8",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\brownfield\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\brownfield",
+      "sourceRelative": "offer.json",
+      "bytes": 3732,
+      "sha256": "ea151fb65cbc97ff7c0ec4edf7c21b003e9aa0b397d0061ec318c1bf3ef879ab",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "brownfield/tests/fill.test.js",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\brownfield\\tests\\fill.test.js",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\brownfield",
+      "sourceRelative": "tests/fill.test.js",
+      "bytes": 386,
+      "sha256": "b1dc4407d447832bb4b32a7a985b2b2b85e1bc9120130bf6014ee48efef733bc",
+      "kind": "other file the agent wrote",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/REPORT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\documentation\\REPORT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\documentation",
+      "sourceRelative": "REPORT.md",
+      "bytes": 3675,
+      "sha256": "485c47e9bb54ba1d8e9bb9fe29216625d265d147280218844e657c7c815f9906",
+      "kind": "agent report",
+      "copied": true
+    },
+    {
+      "bundlePath": "documentation/offer.json",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\documentation\\offer.json",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\documentation",
+      "sourceRelative": "offer.json",
+      "bytes": 4243,
+      "sha256": "287a1991161e0a64ac818c74e20296004959e8b3eb2ec63d317b02fb7cf5215b",
+      "kind": "agent-authored offer",
+      "copied": true
+    },
+    {
+      "bundlePath": "TRANSCRIPT.md.txt",
+      "sourcePath": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain\\TRANSCRIPT.md",
+      "sourceRoot": "C:\\Users\\j\\Projects\\board-trial-fb77772-plain",
+      "sourceRelative": "TRANSCRIPT.md",
+      "bytes": 8487,
+      "sha256": "9c938bb4022dac34eed4db08a4541f5540b90c991b1607aaf569667bdd8335a9",
+      "kind": "other file in TEST_PATH root",
+      "copied": true
+    },
+    {
+      "bundlePath": "fixtures.json",
+      "sourcePath": null,
+      "bytes": 2881,
+      "sha256": "0893d30487314408410e1e108b1407cb93d7ae268ff22b24230e505710cab55c",
+      "kind": "recomputed revisions",
+      "copied": true
+    }
+  ]
+}

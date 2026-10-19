@@ -1,0 +1,55 @@
+{
+  "case": "docs",
+  "task_text": "Continue from the requirements in docs/. The next slice is undecided.",
+  "requirements_read": [
+    {
+      "path": "documentation/docs/requirements.md",
+      "line": 1,
+      "quote": "The first board exports one SVG from local data."
+    },
+    {
+      "path": "documentation/docs/requirements.md",
+      "line": 2,
+      "quote": "Editing is requested, but its interaction style is undecided."
+    }
+  ],
+  "proposed_scope": {
+    "summary": "Deliver exactly what line 1 names and no more: a module that loads one board description from a local file (plain JSON, since no other format is specified anywhere in docs/), exports it as one SVG document, and is tested. Editing is prepared only as library operations (add/move/set-fill on the loaded board) because line 2 requests editing but explicitly leaves 'its interaction style' undecided — no interface, no UI, no persistence of edits back to the file is built.",
+    "deliverables": [
+      "loadBoard(localData) -> board",
+      "exportSVG(board) -> SVG document string",
+      "library editing operations on board (no interaction layer)",
+      "unit tests: load, export, edit-then-export"
+    ],
+    "explicitly_not_included": "any editing UI or CLI (interaction style undecided, line 2), write-back of edits to the local data file (not requested by any line)"
+  },
+  "key_decision_question": "Does 'local data' mean a file format that edits must write back into, or just an in-repo/on-disk read-only source — i.e., when a user edits the board in a later slice, where do the edits live?",
+  "options": [
+    {
+      "id": "A",
+      "title": "Local data is a JSON file loaded at start; edits stay in memory for the session",
+      "description": "loadBoard reads JSON from disk once; building edits happen in memory; nothing is written back in this slice.",
+      "tradeoff": "Fully matches line 1 with no assumptions beyond 'local data reads from somewhere local'; export is one-shot as required — but edited boards are lost on restart unless a later slice adds persistence.",
+      "shows_it_works": "Test loads docs sample JSON from disk, exports one SVG, edits a position, and re-exports showing the change in markup.",
+      "grounded_in": "documentation/docs/requirements.md:1, quoted exactly above: 'The first board exports one SVG from local data.'"
+    },
+    {
+      "id": "B",
+      "title": "Local data is a JSON file and edits write back to it",
+      "description": "Same load, plus a saveBoard(board) that serializes edits back to the local file, so defined editing has tangible persistence.",
+      "tradeoff": "Editing becomes more 'real' (persistent), but write-back is not requested by any line in docs/, risks data loss on bad writes, and pre-decides how editing manifests without answering line 2's undecided interaction.",
+      "shows_it_works": "Test loads, edits, saves, reloads from disk and asserts the edit survived round-trip.",
+      "grounded_in": "documentation/docs/requirements.md:2, 'Editing is requested, but its interaction style is undecided.' — persistence is one interpretation of editing, chosen rather than derived; flagged as such."
+    },
+    {
+      "id": "C",
+      "title": "Defer building until the interaction style is decided",
+      "description": "Stop after reading docs/ and produce no slice until line 2 is answered, since editing could reshape data loading.",
+      "tradeoff": "Avoids any rework risk, but line 1's slice is independently decidable ('The first board exports one SVG from local data.') and does not depend on how editing is interacted with; deferring blocks the named first slice without cause.",
+      "shows_it_works": "Nothing to demonstrate; this option is a stop, which is a permitted outcome, just not required for line 1.",
+      "grounded_in": "documentation/docs/requirements.md:2, 'its interaction style is undecided.'"
+    }
+  ],
+  "recommendation": "Option A: it implements line 1 verbatim and parks line 2 as an explicit open decision rather than silently resolving it.",
+  "notes": "The unresolved tension between the two lines is stated as the key decision question above. Nothing is approved, no person was consulted, and this is a proposal only."
+}
